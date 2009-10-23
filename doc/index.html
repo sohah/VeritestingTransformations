@@ -1,0 +1,860 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type"
+        content="text/html; charset=us-ascii" />
+
+  <title>Symbolic Execution</title>
+  <link rel="stylesheet"
+        type="text/css"
+        media="screen"
+        href="../../../doc/JPF_files/JPF-mod.css" />
+  <base target="_blank" />
+</head>
+
+<body>
+
+
+<h1>Symbolic Execution</h1>
+<p/>
+<a name="Figure 1"></a>
+<img src="SymExe2.PNG" style="margin:5px"/>
+<br>
+Figure 1: Symbolic Execution
+<br><br>
+This JPF extension performs symbolic execution of Java programs.
+One of the main applications is automated generation of test inputs that
+obtain high coverage (e.g. path coverage) of code. Other applications include
+error detection in concurrent programs that take inputs from unbounded domains
+and lightweight theorem proving.
+
+<br><br>
+The extension combines symbolic execution with model checking and
+constraint solving for test input generation. In this tool, programs are
+executed on symbolic inputs that cover all possible concrete inputs.
+Values of variables are represented as numeric expressions and constraints,
+generated from analysis of the code structure. These constraints are
+then solved to generate test inputs guaranteed
+to reach that part of code.
+
+<br><br>
+For example, in <a href="#Figure 1">Figure 1</a> the path condition (<b>PC</b>) is initially <b>true</b>.
+If the program takes the <code>if</code> statement's <code>then</code> branch, the path condition will be <b>X&lt;Y</b>.
+If the program takes the <code>if</code> statement's <code>else</code> branch, the path condition will be <b>X&ge;Y</b>.
+
+<br><br>
+For more information, please look at:
+<a href="http://ti.arc.nasa.gov/projects/advtesting/">
+http://ti.arc.nasa.gov/projects/advtesting/</a>.
+
+<br><br><br>
+<h2>Implementation</h2>
+
+At this time (December, 2007) symbolic execution works best for methods with integer arguments.
+We are now extending symbolic execution to work with double or float arguments so at the moment it does work in some cases, but not all.
+
+
+<br><br>
+Symbolic execution is implemented by a "non-standard" interpretation of
+bytecodes. The symbolic information is propagated via attributes
+associated with program variables, operands, etc. The current implementation
+uses Choco (pure Java, from
+<a href="http://choco.sourceforge.net/">sourceforge</a>) for linear/non-linear
+integer/real constraints. Symbolic execution can start from any point in
+the program and it can perform mixed concrete/symbolic execution.
+State matching is turned off during symbolic execution.
+<br><br><br>
+<h2>Instructions</h2>
+To execute a method symbolically, the user needs to specify which
+method arguments are symbolic/concrete. Globals (i.e. fields) can also be
+specified to be symbolic, via special annotations (to add more here...).
+Here is an example of a JPF run configuration. It enables symbolic
+execution of method "test" in main class "ExSymExe"
+(see the "test" directory), where first argument
+is symbolic, and second argument is concrete).
+
+<pre class="code">
++vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory
++jpf.listener=gov.nasa.jpf.symbc.SymbolicListener
++symbolic.method=test(sym#con)
++jpf.report.console.finished=
+ExSymExe
+</pre>
+
+
+
+<br><br><br>
+<h2>A Simple but Complete Example</h2>
+The following is a very simple example of doing symbolic execution with JPF.
+It assumes that you are using Eclipse, but the instructions should be easily adapted to other IDEs or the command line.
+<br><br>
+Suppose you have the following method in your class that you want to generate tests for:
+
+<pre class="code">
+public class MyClass1 {
+    ... etc ...
+    public int myMethod(int x, int y) {
+        int z = x + y;
+        if (z > 0) {
+            z = 1;
+        } else {
+            z = z - x;
+        }
+        z = 2 * z;
+        return z;
+    }
+    ... etc ...
+}
+</pre>
+<br>
+You will need to create a driver that calls <code>myMethod()</code>.
+The driver could be a separate driver class or the <code>main()</code> method of one of your classes.
+For simplicity, we will write the driver as <code>MyClass1</code>'s <code>main()</code> method.
+
+
+
+<br><br>
+For this simple example, your driver just needs to call <code>myMethod()</code> with the right number and types of arguments and then print the path condition.
+Surprisingly, the exact arguments do not matter.
+Since you will be executing <code>myMethod()</code> symbolically, any concrete values you pass in will be replaced by symbolic values anyway.
+
+<br><br>
+At the moment the quickest way to see your test cases is to print out the path conditions by calling <code>gov.nasa.jpf.symbc.Debug.printPC()</code> in your driver.
+It's a bit primitive, but it is easy and we hope to have better facilities soon.
+
+<pre class="code">
+import gov.nasa.jpf.symbc.Debug;
+... etc ...
+
+public class MyClass1 {
+
+    ... etc ...
+
+    // The method you need tests for
+    public int myMethod(int x, int y) {
+        int z = x + y;
+        if (z > 0) {
+            z = 1;
+        } else {
+            z = z - x;
+        }
+        z = 2 * z;
+        return z;
+    }
+
+    ... etc ...
+
+    // The test driver
+    public static void main(String[] args) {
+        MyClass1 mc = new MyClass1();
+        int x = mc.myMethod(1, 2);
+        Debug.printPC("\nMyClass1.myMethod Path Condition: ");
+    }
+}
+</pre>
+<br>
+So let's run this symbolically.  The above code is in JPF's symbc examples directory, in the default package: <code>extensions/symbc/examples/MyClass1.java</code>.
+<br><br>
+In Eclipse, create a new run configuration for your JPF project:
+<ul>
+<li>Select <b>Run &rarr; Run...</b>
+<li>Click left on <b>Java Application</b>
+<li>Click left on the "new launch configuration" button
+<li>Enter a name for your run configuration
+<li>Use <code>gov.nasa.jpf.JPF</code> as your main class
+</ul>
+<img src="MyClass1_Run_P1.PNG" style="margin:5px"/>
+<br>
+Figure 2: Eclipse Run Configuration for <code>MyClass1</code>, Main Tab
+<br><br><br>
+
+On the <b>Arguments</b> config page, paste the following into the <b>Program Arguments</b> box:
+
+<pre class="code">
++vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory
++vm.classpath=.
++vm.storage.class=
++symbolic.method=myMethod(sym#sym)
++jpf.report.console.finished=
+MyClass1
+</pre>
+
+<br>
+For simple examples, most of these arguments will not change.
+The ones that will are <code>symbolic.method</code> and the class name (the last line).
+For larger examples, you may need to increase the memory, as shown here in the <b>VM Arguments</b> box.
+
+<br><br>
+The value for <code>symbolic.method</code> should be your method name followed by one "<code>sym</code>" for each of its arguments.
+<img src="MyClass1_Run_P2.PNG" style="margin:5px"/>
+<br>
+Figure 3: Eclipse Run Configuration for MyClass1, Program Arguments
+
+<br><br>
+And that's it for configuration.
+If you click on the <b>Run</b> button you will get something like this in the console window:
+
+<a name="Figure 4">
+<img src="MyClass1_Run_P4.PNG" style="margin:5px"/>
+<br>
+Figure 4: Eclipse Output for MyClass1
+
+<br><br>
+In the above output the path conditions (marked with brown arrows) show you the test cases:
+<pre class="code">
+Test Case 1:  y = -9999999,  x = 10000000
+Test Case 2:  y = -10000000, x = 10000000
+</pre>
+
+<br>
+Test Case 1 corresponds to the <code>z>0</code> branch of <code>myMethod</code>'s <code>if</code> statement.
+
+Test Case 2 corresponds to the <code>z&le;0</code> branch of the <code>if</code> statement.
+
+
+<br><br><br>
+<h2>Extending the Example: Filtering the Test Cases</h2>
+
+Let's modify the <code>MyClass1.myMethod()</code> example a bit.  Suppose you have another class with a slightly different method:
+
+<pre class="code">
+public class MyClass2 {
+    ... etc ...
+    private int myMethod2(int x, int y) {
+        int z = x + y;
+        if (z > 0) {
+            z = 1;
+        }
+        if (x < 5) {
+            z = -z;
+        }
+        return z;
+    }
+    ... etc ...
+}
+</pre>
+
+<br>
+To generate test cases for this method you create a new Eclipse run configuration and add a <code>main()</code> method to <code>MyClass2</code>, as before:
+
+<pre class="code">
++vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory
++vm.classpath=.
++vm.storage.class=
++symbolic.method=<b>myMethod2</b>(sym#sym)
++jpf.report.console.finished=
+<b>MyClass2</b>
+</pre>
+
+<br>
+The parts that have changed are in bold.  Here is the code with the new driver:
+
+<pre class="code">
+import gov.nasa.jpf.symbc.Debug;
+... etc ...
+
+public class MyClass2 {
+
+    ... etc ...
+    private int myMethod2(int x, int y) {
+        int z = x + y;
+        if (z > 0) {
+            z = 1;
+        }
+        if (x < 5) {
+            z = -z;
+        }
+        return z;
+    }
+
+    ... etc ...
+
+    // The test driver
+    public static void main(String[] args) {
+        MyClass2 mc = new MyClass2();
+        int x = mc.myMethod2(1, 2);
+        Debug.printPC("\nMyClass2.myMethod2 Path Condition: ");
+    }
+}
+</pre>
+
+
+<br>
+If you run this as in the previous example, you will get four test cases which test the four possible paths through the method:
+<pre class="code">
+Test Case 1:  y = 10000000,  x = -9999999
+Test Case 2:  y = -4,        x = 5
+Test Case 3:  y = -10000000, x = -10000000
+Test Case 4:  y = -10000000, x = 5
+</pre>
+
+<br>
+However, suppose that you are only interested in the test cases where exactly one of the <code>if</code> statements is executed.
+That is, you only care about Test Case 2 and Test Case 3.
+You could, of course, just run JPF as above and filter these out by hand.
+But that would be both tedious and inefficient if your <code>myMethod2()</code> had fifty consecutive <code>if</code> statements.
+
+<br><br>
+If you are allowed to annotate your method's code, there is another approach: use <code>Verify.ignoreIf()</code> to force JPF to backtrack when more than one <code>if</code> statement fires.
+For example, you can annotate <code>myMethod2()</code> as follows:
+
+<pre class="code">
+<b>import gov.nasa.jpf.jvm.Verify;</b>
+import gov.nasa.jpf.symbc.Debug;
+... etc ...
+
+public class MyClass2 {
+
+    ... etc ...
+    private int myMethod2(int x, int y) {
+        <b>int jpfIfCounter = 0;</b>
+        int z = x + y;
+        if (z > 0) {
+            <b>jpfIfCounter++;</b>
+            z = 1;
+        }
+        if (x < 5) {
+            <b>jpfIfCounter++;</b>
+            <b>Verify.ignoreIf(jpfIfCounter > 1);</b>
+            z = -z;
+        }
+        <b>Verify.ignoreIf(jpfIfCounter == 0);</b>
+        return z;
+  }
+
+    ... etc ...
+
+    // The test driver
+    public static void main(String[] args) {
+        MyClass2 mc = new MyClass2();
+        int x = mc.myMethod2(1, 2);
+        Debug.printPC("\nMyClass2.myMethod2 Path Condition: ");
+    }
+}
+</pre>
+<br>
+The added annotations are shown in bold.
+This code is in <code>extensions/symbc/examples/MyClass2.java</code>.
+
+<br><br>
+Now you can execute this symbolically and you will only get the two test cases you need:
+<pre class="code">
+Test Case 1:  y = -4,        x = 5
+Test Case 2:  y = -10000000, x = -10000000
+</pre>
+
+
+<br><br><br>
+<h2>Extending the Example: Adding Preconditions</h2>
+
+Suppose again that you want to restrict the test cases generated, but now the problem is that you believe that your method will only be called with certain ranges of parameters.
+For example, in <code>MyClass1.myMethod()</code> you believe that <code>x</code> and <code>y</code> are restricted to the ranges <code>-100 &le; x &le; 100</code> and  <code>1 &le; y &le; 3</code>.
+<br><br>
+Enforcing these requirements during symbolic execution is easy &mdash; you do not even need to modify <code>myMethod()</code>'s original code.
+Instead you can use preconditions implemented in the driver.
+<br><br>
+
+For the sake of variety we will use a separate class to implement the driver, <code>MyDriver1</code>.
+
+<pre class="code">
+import gov.nasa.jpf.symbc.Debug;
+
+public class MyDriver1 {
+
+    // The method whose parameters are marked as symbolic.
+    private static void imposePreconditions(int x, int y) {
+        MyClass1 mc = new MyClass1();
+
+        // The preconditions
+        if (-100 <= x  &&  x <= 100  &&  1 <= y  &&  y <= 3) {
+            mc.myMethod(x, y);
+            Debug.printPC("\nMyClass1.myMethod Path Condition: ");
+        }
+    }
+
+    // The test driver
+    public static void main(String[] args) {
+        // Actual arguments are ignored when doing symbolic execution.
+        imposePreconditions(1,2);
+    }
+}
+</pre>
+
+<br>
+Because you need preconditions and because you do not want to modify <code>MyClass1</code>,
+the method you call symbolically is <code>MyDriver1.imposePreconditions()</code>, not <code>MyClass1.myMethod()</code>.
+
+Note that <code>imposePreconditions()</code>'s parameters are <code>x</code> and <code>y</code>, the parameters to <code>myMethod()</code> that you want to be symbolic.
+
+This code is in <code>extensions/symbc/examples/MyDriver1.java</code>.
+
+<br><br>
+
+Create an Eclipse run configuration for <code>MyDriver1</code>, pasting the following into the <b>Program Arguments</b> box on the <b>Arguments</b> config page:
+
+<pre class="code">
++vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory
++vm.classpath=.
++vm.storage.class=
++symbolic.method=imposePreconditions(sym#sym)
++jpf.report.console.finished=
+MyDriver1
+</pre>
+
+<br>
+Running <code>MyDriver1</code> produces the test cases with the desired range restrictions:
+<pre class="code">
+Test Case 1:  y = 1,  x = 0
+Test Case 2:  y = 1,  x = -100
+</pre>
+
+
+<br><br><br>
+<h2>Floating Point Arguments</h2>
+
+Methods with <code>float</code> and <code>double</code> parameters are handled exactly the same as ones with <code>int</code> parameters, though the output is slightly different.
+
+Here is a quick illustration.
+<pre class="code">
+import gov.nasa.jpf.symbc.Debug;
+
+public class MyClassFP {
+    public double myMethodFP(double x, double y) {
+        double z = x + y;
+        if (z > 0.0) {
+            z = 1.0;
+        } else {
+            z = z - x;
+        }
+        z = 2.0 * z;
+        return z;
+    }
+
+    // The test driver
+    public static void main(String[] args) {
+        MyClassFP mc = new MyClassFP();
+        double x = mc.myMethodFP(1.0, 22.0);
+        Debug.printPC("\nMyClassFP.myMethodFP Path Condition: ");
+    }
+}
+</pre>
+
+<br>
+<code>MyClassFP.myMethodFP()</code> is the same as <code>MyClass1.myMethod()</code> except that everything is a <code>double</code>, not an <code>int</code>:
+
+Its code is in <code>extensions/symbc/examples/MyClassFP.java</code>.
+
+<br><br>
+
+The Eclipse run config parameters are:
+
+<pre class="code">
++vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory
++vm.classpath=.
++vm.storage.class=
++symbolic.method=myMethodFP(sym#sym)
++jpf.report.console.finished=
+MyClassFP
+</pre>
+
+<br>
+And the resulting test cases are:
+
+<pre class="code">
+Test Case 1:  y = -4.99999991632194E-7,  x = -50.00000025000001
+Test Case 2:  y = 0.0,                   x = 0.0
+Test Case 3:  y = -4.99999991632194E-7,  x = 50.00000025000001
+</pre>
+
+<br>
+At this point you might wonder why there are three test cases instead of the two you got when the parameters were integers.
+The answer is that JPF operates on the JVM bytecodes, not the Java source code.  When <code>z</code> is a floating point variable, the code
+<pre class="code">
+        if (z > 0.0) {
+            z = 1.0;
+        } else {
+            z = z - x;
+        }
+</pre>
+<br>
+is compiled to bytecodes that act as though the Java source was (conceptually, at least) something like
+<pre class="code">
+        if (z > 0.0) {
+            z = 1.0;
+        } else if (z == 0.0  ||  z < 0.0) {
+            z = z - x;
+        }
+</pre>
+<br>
+So you get one test case for <code>z > 0.0</code>, one for <code>z == 0.0</code>, and one for <code>z < 0.0</code>.
+
+
+
+<br><br><br>
+<h2>Object Fields</h2>
+
+Instead of doing symbolic evaluation of method parameters, you might need to do it with fields of objects.
+One way to do this is to have your driver assign symbolic method parameters to the object's fields:
+<pre class="code">
+public class MyClassWithFields {
+    public int field1;
+    public int field2;
+
+    public void myMethod1() {
+    ...etc...
+    }
+}
+
+public class MyDriverForFields {
+    private static void makeFieldsSymbolic(int x, int y) {
+        MyClassWithFields mc = new MyClassWithFields();
+
+        mc.field1 = x;
+        mc.field2 = y;
+        mc.myMethod1();
+        Debug.printPC("\nMyClassWithFields.myMethod1 Path Condition: ");
+    }
+
+    // The test driver
+    public static void main(String[] args) {
+        makeFieldsSymbolic(1,2);
+    }
+}
+</pre>
+<br>
+This, along with these Eclipse run config parameters:
+<pre class="code">
++vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory
++vm.classpath=.
++vm.storage.class=
++symbolic.method=makeFieldsSymbolic(sym#sym)
++jpf.report.console.finished=
+MyDriverForFields
+</pre>
+<br>
+will do the trick.
+
+<br><br>
+
+The other way to do this is with the <code>@Symbolic()</code> annotation:
+
+<pre class="code">
+public class MyClassWithFields {
+    @Symbolic("true")
+    public int field1;
+
+    @Symbolic("true")
+    public int field2;
+
+    public void myMethod1() {
+        int z = field1 + field2;
+        if (z > 0) {
+            z = 1;
+        } else {
+            z = z - field1;
+        }
+        z = field1 * z;
+        return z;
+    }
+}
+</pre>
+<br><br>
+<pre class="code">
+public class MyDriverForFields {
+    // The test driver
+    public static void main(String[] args) {
+        MyClassWithFields mc = new MyClassWithFields();
+
+        mc.myMethod1();
+        Debug.printPC("\nMyClassWithFields.myMethod1 Path Condition: ");
+    }
+}
+</pre>
+<br>
+and these Eclipse run config parameters:
+<pre class="code">
++vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory
++vm.classpath=.
++vm.storage.class=
++symbolic.method=myMethod1()
++jpf.report.console.finished=
+MyDriverForFields
+</pre>
+<br>
+will produce the same results as above, namely:
+
+<pre class="code">
+Test Case 1:  field2 = -9999999,  field2 = 10000000
+Test Case 2:  field2 = -10000000, field2 = -10000000
+</pre>
+<br>
+As usual, these classes are in <code>extensions/symbc/examples/MyClassWithFields.java</code> and
+<code>extensions/symbc/examples/MyDriverForFields.java</code>.
+
+
+
+<br><br><br>
+<h2>A Larger Example: Code Coverage and Validation</h2>
+
+Suppose you not only need test cases for each path through your code, but for each test case you also need to know which path it covers.
+This can be done easily enough by annotating your code.
+However, whenever you annotate your code (i.e. change it) you run the risk of introducing bugs.
+(We skipped over this problem in the earlier annotation example.)
+So we need a way of verifying that the test cases we generate have the same effect on the original code as they do on the annotated code.
+
+<br><br>
+
+To make all this happen we will do the following:
+<ul>
+  <li>Annotate each "path segment" in the code (typically, each clause of an <code>if</code> statement) with an identifier for that segment.
+  </li>
+  <li>Run the test case on the original code and verify that we get the same results</li>
+</ul>
+
+Our original code consists of a bunch of <code>if</code> statements.
+We will keep track of the path by assigning an ID to each branch of each <code>if</code> statement and appending that ID to a string variable when the segment is executed.
+
+<br><br>
+
+To verify that each test case produces the same result in both versions of the code we will extract the symbolic variable values from the path condition and run them through both versions, comparing the results.
+
+<br><br>
+
+Finally, we will print the path taken by each test case along with the input values.
+
+<br><br>
+This is the original code, in the package <code>coverage</code>:
+
+<pre class="code">
+package coverage;
+
+public class MyClassOriginal {
+    public int myMethod(int x, int y) {
+        int z = x + y;
+        if (z > 0) {
+            z = 1;
+        } else {
+            z = z - x;
+        }
+
+        if (x < 0) {
+            z = z * 2;
+        } else if (x < 10) {
+            z = z + 2;
+        } else {
+            z = -z;
+        }
+
+        if (y < 5) {
+            z = z - 12;
+        } else {
+            z = z - 30;
+        }
+        return z;
+    }
+}
+</pre>
+
+<br/>
+
+Now for the code with the annotations to identify the path taken.
+The variable <code>path</code> holds the string describing the path taken.
+For the "path segment" IDs, we use human-readable descriptions like <code>"z>0 "</code>.
+At the end of <code>myMethod()</code> we have also added a call that validates and prints the test case: <code>CheckCoverage.processTestCase()</code>.
+<code>CheckCoverage</code> is discussed in more detail later.
+
+<pre class="code">
+package coverage;
+
+public class MyClassWithPathAnnotations {
+    public int myMethod(int x, int y) {
+        StringBuilder path = new StringBuilder();
+        int z = x + y;
+        if (z > 0) {
+            path.append("z>0 ");
+            z = 1;
+        } else {
+            path.append("z<=0 ");
+            z = z - x;
+        }
+
+        if (x < 0) {
+            path.append("x<0 ");
+            z = z * 2;
+        } else if (x < 10) {
+            path.append("0<=x<10 ");
+            z = z + 2;
+        } else {
+            path.append("x>=10 ");
+            z = -z;
+        }
+
+        if (y < 5) {
+            path.append("y<5 ");
+            z = z - 12;
+        } else {
+            path.append("y>=5 ");
+            z = z - 30;
+        }
+        CheckCoverage.processTestCase(path.toString());
+        return z;
+    }
+}
+</pre>
+
+<br/>
+And this is the driver:
+
+<pre class="code">
+package coverage;
+
+public class MyDriverForPathAnnotations {
+    // The test driver
+    public static void main(String[] args) {
+        MyClassWithPathAnnotations mca = new MyClassWithPathAnnotations();
+        mca.myMethod(1, 2);
+    }
+}
+</pre>
+
+<br/>
+The trickiest part here is  <code>CheckCoverage.processTestCase()</code>.
+To understand this part, you will have to recall that when you run your programs under JPF, there are actually two VMs involved.
+Your code runs under JPF's VM, but JPF runs under a native JVM.
+You use JPF's "native interface", MJI, to comunicate between the two VMs.
+
+<br><br>
+You need to know this because we will need to get the current path condition, extract from it the current variables and their values, validate those values, and print the test cases.
+But the current path condition and its class (<code>gov.nasa.jpf.symbc.numeric.PathCondition</code>) do not exist in the JVM your code is running in.
+Your code runs in the JPF VM, but path conditions exist only in the base JVM, i.e. the Sun JVM in which JPF itself runs.
+
+<br><br>
+With that in mind, here is the code for <code>CheckCoverage</code>.
+As always with MJI, there are two parts: a declaration on the JPF VM side for the class <code>CheckCoverage</code> and an implementation on the base JVM side for the peer class <code>JPF_coverage_CheckCoverage</code>.
+
+
+<pre class="code">
+package coverage;
+
+public class CheckCoverage {
+    public static void processTestCase(String path) {}
+}
+
+</pre>
+
+<br><br>
+<pre class="code">
+package coverage;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import gov.nasa.jpf.jvm.MJIEnv;
+import gov.nasa.jpf.symbc.JPF_gov_nasa_jpf_symbc_Debug;
+import gov.nasa.jpf.symbc.numeric.PathCondition;
+
+public class JPF_coverage_CheckCoverage {
+    private static Set&lt;String&gt; paths = new HashSet&lt;String&gt;();
+    private static int caseNum = 0;
+
+    public static void processTestCase(MJIEnv env, int objRef, int pathRef) {
+        String path = env.getStringObject(pathRef);
+        if (! paths.contains(path)) {
+            paths.add(path);
+            Map&lt;String,Object&gt; varsVals = getPcVarsVals(env);
+            int x = (Integer)varsVals.get("x");
+            int y = (Integer)varsVals.get("y");
+            int origZ = new MyClassOriginal().myMethod(x, y);
+            int annoZ = new MyClassWithPathAnnotations().myMethod(x, y);
+
+            caseNum++;
+            if (origZ == annoZ) {
+                System.out.format("TestCase %s:  x = %s  y = %s\nPath: %s\n\n",
+                        caseNum, x, y, path);
+            } else {
+                System.out.format("Error for TestCase %s:  x = %s  y = %s\nPath: %s\n\n",
+                        caseNum, x, y, path);
+                System.out.format("The annotated and original code got different results.\n" +
+                        "Annotated Result: %s\n" +
+                        "Original Result: %s\n\n",
+                        annoZ, origZ);
+            }
+
+        } else {
+            System.out.println("Already saw '" + path + "'");
+        }
+    }
+
+    private static Map&lt;String,Object&gt; getPcVarsVals(MJIEnv env) {
+        Map&lt;String,Object&gt; varsVals = new HashMap&lt;String,Object&gt;();
+        PathCondition pc = JPF_gov_nasa_jpf_symbc_Debug.getPC(env);
+
+        if (pc != null) {
+            pc.solve();
+            pc.header.getVarVals(varsVals);
+        }
+        return varsVals;
+    }
+}
+</pre>
+
+<br>
+
+All of this code is in <code>extensions/symbc/examples/coverage</code>.
+Here is the Eclipse config data needed to run it:
+
+<pre class="code">
++vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory
++vm.classpath=.
++vm.storage.class=
++symbolic.method=myMethod(sym#sym)
++jpf.report.console.finished=
+coverage.MyDriverForPathAnnotations
+</pre>
+
+<br>
+
+And here is what you get for output when you run it:
+
+<br><br>
+<img src="PathAnnotations_Run.PNG" style="margin:5px"/>
+<br>
+Figure 5: Eclipse Output With Path Annotations
+<br><br>
+
+<br>
+
+One thing you might notice here is that there are only ten test cases.
+But if you do the math there should be <code>2*3*2=12</code>.
+The two missing test cases would have the paths <code>z<=0  0<=x<10  y>=5</code> and <code>z<=0  x>=10  y>=5</code>.
+It turns out these cannot happen: at the first <code>if</code> statement, <code>z = x + y</code>, so if you work out the inequalities you will find there are no values for <code>x</code> and <code>x</code> that will generate these paths.
+The cool thing is that JPF and Choco figure this out automatically.
+
+
+<br><br><br>
+<h2>Other Examples</h2>
+
+The test directory, <code>extensions/symbc/test/gov/nasa/jpf/symbc</code>, has lots of examples but they cover pretty much the same ground as the ones above.
+
+
+<br><br><br>
+<h2>Common Problems</h2>
+If you do not see a line at the start of your output similar to the one labeled <i style="color:blue">myMethod() is called symbolically</i> in
+<a href="#Figure 4">Figure 4</a>, then your method is not being called symbolically.
+That usually happens because you have the wrong value for <code>symbolic.method</code> in your program arguments.
+Make sure that you have both the right method name and the right number of arguments in your Eclipse run configuration.
+
+<br><br>
+If JPF seems to go into an infinite loop, it may be because the Choco constraint solver cannot find a solution for one of your path conditions.
+<!-- You will see this happen if you change the line <code>if (x < 5)</code> in <code>MyClass2.myMethod2()</code> above to <code>if (z < x)</code>. -->
+
+<br><br>
+Depending on when you last updated your copy of JPF from SourceForge, floating point symbolic execution may or may not work for you -- we are still working on it.
+
+</body>
+
+</html>

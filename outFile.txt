@@ -1,0 +1,10 @@
+METHOD: test(int,int),test(3,5),test(x_100_SYMINT,z_101_SYMINT)
+# = 2
+z_101_SYMINT[1] > CONST_0 &&
+(z_101_SYMINT[1] + CONST_1) > CONST_0
+# = 2
+z_101_SYMINT[0] <= CONST_0 &&
+(z_101_SYMINT[0] + CONST_1) > CONST_0
+# = 2
+z_101_SYMINT[-10000] <= CONST_0 &&
+(z_101_SYMINT[-10000] + CONST_1) <= CONST_0
