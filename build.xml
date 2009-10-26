@@ -196,8 +196,6 @@
   <target name="dist" depends="jar"
         description="pack together all required binaries" >
     <copy file="jpf-rt.properties" toFile="dist/jpf.properties"/>
-    <copy file="NOSA-1.3-JPF" toDir="dist"/>
-    <copy file="README" toDir="dist"/>
 
     <copy todir="dist">
       <fileset dir="lib">
