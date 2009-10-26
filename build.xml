@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Ant buildfile for the jpf-symbc project -->
+
+<project basedir="." default="build" name="jpf-symbc">
+    <property environment="env"/>
+    <property name="jpf-core.location" value="../jpf-core"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    <path id="jpf-core.classpath">
+        <pathelement location="${jpf-core.location}/build/examples"/>
+        <pathelement location="${jpf-core.location}/build/annotations"/>
+        <pathelement location="${jpf-core.location}/build/classes"/>
+        <pathelement location="${jpf-core.location}/build/main"/>
+        <pathelement location="${jpf-core.location}/build/tests"/>
+        <pathelement location="${jpf-core.location}/build/peers"/>
+        <pathelement location="${JRE_LIB}"/>
+        <pathelement location="${jpf-core.location}/lib/bcel.jar"/>
+        <pathelement location="${jpf-core.location}/lib/junit-4.6.jar"/>
+    </path>
+    <path id="jpf-symbc.classpath">
+        <pathelement location="bin"/>
+        <path refid="jpf-core.classpath"/>
+        <pathelement location="${jpf-core.location}/lib/bcel.jar"/>
+        <pathelement location="lib/automaton.jar"/>
+        <pathelement location="lib/choco-1_2_04.jar"/>
+        <pathelement location="lib/commons-lang-2.4.jar"/>
+        <pathelement location="lib/hampi.jar"/>
+        <pathelement location="lib/iasolver.jar"/>
+        <pathelement location="lib/libcvc3.jar"/>
+        <pathelement location="lib/scale.jar"/>
+        <pathelement location="lib/STPJNI.jar"/>
+        <pathelement location="lib/string.jar"/>
+        <pathelement location="cvc3.jar"/>
+        <pathelement location="cvc3test.jar"/>
+        <pathelement location="${jpf-core.location}/lib/junit-4.6.jar"/>
+    </path>
+    <target name="-init">
+        <mkdir dir="build"/>
+        <copy includeemptydirs="false" todir="build">
+            <fileset dir="src" excludes="**/*.launch, **/*.java"/>
+        </copy>
+        <copy includeemptydirs="false" todir="build">
+            <fileset dir="src/main" excludes="**/*.launch, **/*.java"/>
+        </copy>
+        <copy includeemptydirs="false" todir="build">
+            <fileset dir="src/examples" excludes="**/*.launch, **/*.java"/>
+        </copy>
+        <copy includeemptydirs="false" todir="build">
+            <fileset dir="src/peers" excludes="**/*.launch, **/*.java"/>
+        </copy>
+        <copy includeemptydirs="false" todir="build">
+            <fileset dir="src/tests" excludes="**/*.launch, **/*.java"/>
+        </copy>
+		<copy includeemptydirs="false" todir="build">
+            <fileset dir="src/annotations" excludes="**/*.launch, **/*.java"/>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+    <target depends="clean" name="cleanall">
+        <ant antfile="${jpf-core.location}/build.xml" inheritAll="false" target="clean"/>
+    </target>
+    <target depends="build-subprojects" name="build-allsubprojects"/>
+    <target name="build-subprojects">
+        <ant antfile="${jpf-core.location}/build.xml" inheritAll="false" target="build">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+    </target>
+    <target depends="-init,build-allsubprojects" name="build">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="build" source="${source}" target="${target}">
+            <src path="src"/>	
+			<exclude name="annotations/"/>
+            <exclude name="main/"/>
+            <exclude name="examples/"/>
+            <exclude name="peers/"/>
+            <exclude name="tests/"/>
+            <classpath refid="jpf-symbc.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="build" source="${source}" target="${target}">
+            <src path="src/main"/>
+            <classpath refid="jpf-symbc.classpath"/>
+        </javac>
+		<javac debug="true" debuglevel="${debuglevel}" destdir="build" source="${source}" target="${target}">
+            <src path="src/annotations"/>
+            <classpath refid="jpf-symbc.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="build" source="${source}" target="${target}">
+            <src path="src/examples"/>
+            <classpath refid="jpf-symbc.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="build" source="${source}" target="${target}">
+            <src path="src/peers"/>
+            <classpath refid="jpf-symbc.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="build" source="${source}" target="${target}">
+            <src path="src/tests"/>
+            <classpath refid="jpf-symbc.classpath"/>
+        </javac>
+    </target>
+</project>
+
