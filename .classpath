@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="main/|examples/|peers/|tests/" kind="src" path="src"/>
-	<classpathentry kind="src" path="src/main"/>
-	<classpathentry kind="src" path="src/examples"/>
-	<classpathentry kind="src" path="src/peers"/>
-	<classpathentry kind="src" path="src/tests"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jpf-core"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/bcel.jar"/>
@@ -20,5 +15,13 @@
 	<classpathentry kind="lib" path="cvc3.jar"/>
 	<classpathentry kind="lib" path="cvc3test.jar"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/junit-4.6.jar"/>
+	<classpathentry kind="lib" path="/jpf-core/build/RunJPF.jar"/>
+	<classpathentry kind="lib" path="/jpf-core/build/jpf.jar"/>
+	<classpathentry excluding="main/|examples/|peers/|tests/|annotations/" kind="src" path="src"/>
+	<classpathentry kind="src" path="src/main"/>
+	<classpathentry kind="src" path="src/examples"/>
+	<classpathentry kind="src" path="src/peers"/>
+	<classpathentry kind="src" path="src/tests"/>
+	<classpathentry kind="src" path="src/annotations"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
