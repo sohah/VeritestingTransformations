@@ -166,16 +166,16 @@
   </target>
 
   <target name="-jar-jvm" if="have_jvm_code">
-    <mkdir dir="dist"/>
-    <jar jarfile="dist/${ant.project.name}.jar">
+    <mkdir dir="build"/>
+    <jar jarfile="build/${ant.project.name}.jar">
       <fileset dir="build/main"/>
       <fileset dir="build/peers"/>
     </jar>
   </target>
 
   <target name="-jar-jpf" if="have_jpf_code">
-    <mkdir dir="dist"/>
-    <jar jarfile="dist/${ant.project.name}-classes.jar">
+    <mkdir dir="build"/>
+    <jar jarfile="build/${ant.project.name}-classes.jar">
       <fileset dir=".">
         <include name="build/classes"/>
         <include name="build/annotations"/>
@@ -184,31 +184,19 @@
   </target>
 
   <target name="-jar-annotations" if="have_annotations">
-    <mkdir dir="dist"/>
+    <mkdir dir="build"/>
     <!-- optional jar that contains annotations to be used in non-JPF dependent apps -->
-    <jar jarfile="dist/${ant.project.name}-annotations.jar">
+    <jar jarfile="build/${ant.project.name}-annotations.jar">
       <fileset dir="build/annotations"/>
     </jar>
   </target>
 
 
-  <!-- binary distribution -->
-  <target name="dist" depends="jar"
-        description="pack together all required binaries" >
-    <copy file="jpf-rt.properties" toFile="dist/jpf.properties"/>
-
-    <copy todir="dist">
-      <fileset dir="lib">
-        <include name="*.jar"/>
-      </fileset>
-    </copy>
-  </target>
-
 
   <!-- public clean: cleanup from previous tasks/builds -->
   <target name="clean">
     <delete dir="build" />
-    <delete dir="dist" />
+    <delete dir="build" />
     <delete>
       <fileset dir="." includes="**/*~" defaultexcludes="no" />
       <fileset dir="." includes="**/*.bak" defaultexcludes="no" />

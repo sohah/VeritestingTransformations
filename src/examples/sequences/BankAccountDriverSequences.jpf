@@ -1,0 +1,7 @@
+target = sequences.BankAccountDriverSequences
+
+classpath = ${jpf-symbc}/build/examples
+
+sourcepath = ${jpf-symbc}/src/examples 
+
+symbolic.method = depoist(sym), withdraw(sym) 
