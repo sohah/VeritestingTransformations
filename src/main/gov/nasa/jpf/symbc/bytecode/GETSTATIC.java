@@ -59,7 +59,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 		 Config conf = ti.getVM().getConfig();
 		  String[] lazy = conf.getStringArray("symbolic.lazy");
-		  if (lazy == null || !lazy[0].equalsIgnoreCase("on"))
+		  if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
 			  return super.execute(ss,ks,ti);
 
 		FieldInfo fi = getFieldInfo();

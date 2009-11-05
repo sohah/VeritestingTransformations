@@ -50,8 +50,9 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 	  Config conf = ti.getVM().getConfig();
 	  String[] lazy = conf.getStringArray("symbolic.lazy");
-	  if (lazy == null || !lazy[0].equalsIgnoreCase("on"))
+	  if (lazy == null || !lazy[0].equalsIgnoreCase("true")) 
 		  return super.execute(ss,ks,ti);
+	   
 
 	  //original GETFIELD code from super
 	 int objRef = ti.peek(); // don't pop yet, we might re-execute
