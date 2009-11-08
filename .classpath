@@ -15,8 +15,6 @@
 	<classpathentry kind="lib" path="cvc3.jar"/>
 	<classpathentry kind="lib" path="cvc3test.jar"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/junit-4.6.jar"/>
-	<classpathentry kind="lib" path="/jpf-core/build/RunJPF.jar"/>
-	<classpathentry kind="lib" path="/jpf-core/build/jpf.jar"/>
 	<classpathentry excluding="main/|examples/|peers/|tests/|annotations/|classes/" kind="src" path="src"/>
 	<classpathentry kind="src" path="src/main"/>
 	<classpathentry kind="src" path="src/examples"/>
@@ -24,5 +22,6 @@
 	<classpathentry kind="src" path="src/tests"/>
 	<classpathentry kind="src" path="src/annotations"/>
 	<classpathentry kind="src" path="src/classes"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="lib" path="tools/RunJPF.jar"/>
+	<classpathentry kind="output" path="build"/>
 </classpath>
