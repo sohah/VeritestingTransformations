@@ -40,8 +40,8 @@
     <!-- our own classes and libs come first -->
     <pathelement location="build/main"/>
     <pathelement location="build/peers"/>
+		<pathelement location="build/classes"/>
 	<pathelement location="build/annotations"/>
-	<pathelement location="build/classes"/>
     <fileset dir=".">
   	  <include name="lib/*.jar"/>
     </fileset>
@@ -116,7 +116,7 @@
            debug="${debug}" source="${src_level}" deprecation="${deprecation}" classpath=""/>
   </target>
 
-  <target name="-compile-main" if="have_main">
+  <target name="-compile-main" if="have_main" depends="-compile-classes">
     <mkdir dir="build/main"/>
     <javac srcdir="src/main" destdir="build/main"
            debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -130,7 +130,7 @@
            classpathref="lib.path"/>
   </target>
 
-  <target name="-compile-classes" if="have_classes" depends="-compile-annotations,-compile-main" >
+  <target name="-compile-classes" if="have_classes" depends="-compile-annotations" >
     <mkdir dir="build/classes"/>
     <javac srcdir="src/classes" destdir="build/classes"
            debug="${debug}" source="${src_level}" deprecation="${deprecation}">
