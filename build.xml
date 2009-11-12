@@ -42,7 +42,6 @@
     <pathelement location="build/peers"/>
 	<pathelement location="build/annotations"/>
 	<pathelement location="build/classes"/>
-
     <fileset dir=".">
   	  <include name="lib/*.jar"/>
     </fileset>
@@ -50,7 +49,8 @@
     <!-- add in what we need from the core -->
     <pathelement location="${jpf-core}/build/main"/>
     <pathelement location="${jpf-core}/build/peers"/>
-	
+	<pathelement location="${jpf-core}/build/classes"/>
+    <pathelement location="${jpf-core}/build/annotations"/>
 
     <fileset dir="${jpf-core}">
   	  <include name="lib/*.jar"/>
