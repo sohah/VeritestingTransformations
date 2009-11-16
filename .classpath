@@ -22,8 +22,5 @@
 	<classpathentry kind="src" path="src/annotations"/>
 	<classpathentry kind="src" path="src/classes"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jpf-core"/>
-	<classpathentry kind="lib" path="/Users/neha/Documents/workspace/jpf-core/build/jpf-annotations.jar"/>
-	<classpathentry kind="lib" path="/Users/neha/Documents/workspace/jpf-core/build/jpf-classes.jar"/>
-	<classpathentry kind="lib" path="/Users/neha/Documents/workspace/jpf-core/build/jpf.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
