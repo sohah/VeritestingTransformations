@@ -386,8 +386,9 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 						String fname = fi.getName();
 
 						StaticElementInfo sei = ci.getStaticElementInfo();
-						if (sei == null)
-							StaticArea.getStaticArea().addClass(ci, env.getVM().getCurrentThread());
+						if (sei == null) {
+							ci.registerClass(env.getVM().getCurrentThread());
+						}
 						Object attr = sei.getFieldAttr(staticFields[i]);
 
 						if (staticFields[i] instanceof ReferenceFieldInfo) {
