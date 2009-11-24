@@ -78,8 +78,9 @@ public class Helper {
 				sym_v = new SymbolicInteger(fullName);
 		}
 		StaticElementInfo sei = ci.getStaticElementInfo();
-		if (sei == null)
-			StaticArea.getStaticArea().addClass(ci, ti);
+		if (sei == null) {
+			ci.registerClass(ti);
+		}
 		if (sei.getFieldAttr(staticField) == null)
 			sei.setFieldAttr(staticField, sym_v);
 		return sym_v;

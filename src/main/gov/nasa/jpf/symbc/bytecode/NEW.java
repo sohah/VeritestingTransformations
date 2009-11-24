@@ -22,6 +22,7 @@ import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.KernelState;
+import gov.nasa.jpf.jvm.NoClassInfoException;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -51,17 +52,25 @@ public class NEW extends gov.nasa.jpf.jvm.bytecode.NEW {
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
     JVM vm = ti.getVM();
     DynamicArea da = vm.getDynamicArea();
-    ClassInfo ci = ClassInfo.getClassInfo(cname);
+    ClassInfo ci;
+    try {
+        ci = ClassInfo.getResolvedClassInfo(cname);
 
-    if (ci == null){
-      return ti.createAndThrowException("java.lang.NoClassDefFoundError", cname);
-    }
-
-    if (!ci.isInitialized()) {
-      if (ci.loadAndInitialize(ti, this) > 0) {
-        return ti.getPC();
+      } catch (NoClassInfoException cx){
+        // can be any inherited class or required interface
+        return ti.createAndThrowException("java.lang.NoClassDefFoundError", cx.getMessage());
       }
-    }
+
+      if (!ci.isRegistered()){
+        ci.registerClass(ti);
+      }
+
+      // since this is a NEW, we also have to pushClinit
+      if (!ci.isInitialized()) {
+        if (ci.initializeClass(ti, this)) {
+          return ti.getPC();
+        }
+      }
 
     if (da.getOutOfMemory()) { // simulate OutOfMemoryError
       return ti.createAndThrowException("java.lang.OutOfMemoryError",

@@ -42,6 +42,7 @@ import gov.nasa.jpf.jvm.FieldInfo;
 import gov.nasa.jpf.jvm.Fields;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
+import gov.nasa.jpf.jvm.NoClassInfoException;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
@@ -1513,7 +1514,7 @@ public class SymbolicStringHandler {
 		int objRef;
 		DynamicArea da = th.getVM().getDynamicArea();
 		MethodInfo mi = invInst.getInvokedMethod();
-		ClassInfo ci = ClassInfo.getClassInfo(mi.getReturnTypeName());
+		ClassInfo ci = ClassInfo.getResolvedClassInfo(mi.getReturnTypeName());	
 		objRef = da.newObject(ci, th);
 		return objRef;
 	}
