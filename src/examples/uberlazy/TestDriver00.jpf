@@ -1,0 +1,7 @@
+target = uberlazy.TestDriver00
+
+classpath = ${jpf-symbc}/build/examples
+
+sourcepath = ${jpf-symbc}/src/examples 
+
+symbolic.method = run(sym), swapNode(sym)
