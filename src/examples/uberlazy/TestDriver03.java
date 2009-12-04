@@ -18,6 +18,8 @@ public class TestDriver03{
 		if(n != null ) {
 			if(n instanceof intNode) {
 				System.out.println("it is an instance of intNode");
+			} else if (n instanceof Node) {
+				System.out.println("it is an instance of Node class");
 			}
 		}
 	}
