@@ -2,7 +2,7 @@ target=gov.nasa.jpf.symbc.ExSymExe
 
 classpath=${jpf-symbc}/build/tests
 
-sourcepath=${jpf-symbc}/src/tests 
+sourcepath=${jpf-symbc}/src/tests
 
 # To specify a mix of concrete and symbolic values
 # symbolic.method=test2(sym#conc), test(conc#sym)
@@ -15,4 +15,6 @@ sourcepath=${jpf-symbc}/src/tests
 
 # in this particular configuration all the input
 # parameters to methods test2 and test are symbolic
-symbolic.method= test2(sym#sym), test(sym#sym)
+symbolic.method= test(sym#sym)
+
+listener = gov.nasa.jpf.symbc.SymbolicListener

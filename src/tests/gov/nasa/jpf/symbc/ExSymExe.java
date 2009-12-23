@@ -15,12 +15,12 @@ public class ExSymExe {
   /* we want to let the user specify that this method should be symbolic */
 
   public void test (int x, int z) {
-	  int y = 3;
-	  x = z++ ;
+	  //int y = 3;
+	  //x = z++ ;
 	  //z=5;
 
 	  if (z > 0) {
-		  assert(false);
+		 // assert(false);
 		  System.out.println("branch FOO1");
 	  }
 	  else
@@ -38,7 +38,7 @@ public class ExSymExe {
 	  x = z++ ;
 	  //z=5;
 	  if (z > 0) {
-		  assert (false);
+		  //assert (false);
 		  System.out.println("branch2 FOO1");
 	  }
 	  else

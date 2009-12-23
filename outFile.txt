@@ -1,10 +1,17 @@
-METHOD: test(int,int),test(3,5),test(x_100_SYMINT,z_101_SYMINT)
+METHOD: test(int,int),test(3,9),test(x_1_SYMINT,z_2_SYMINT)
 # = 2
-z_101_SYMINT[1] > CONST_0 &&
-(z_101_SYMINT[1] + CONST_1) > CONST_0
+x_1_SYMINT[1] > CONST_0 &&
+z_2_SYMINT[1] > CONST_0
+SPC # = 0
 # = 2
-z_101_SYMINT[0] <= CONST_0 &&
-(z_101_SYMINT[0] + CONST_1) > CONST_0
+x_1_SYMINT[-10000] <= CONST_0 &&
+z_2_SYMINT[1] > CONST_0
+SPC # = 0
 # = 2
-z_101_SYMINT[-10000] <= CONST_0 &&
-(z_101_SYMINT[-10000] + CONST_1) <= CONST_0
+x_1_SYMINT[1] > CONST_0 &&
+z_2_SYMINT[-10000] <= CONST_0
+SPC # = 0
+# = 2
+x_1_SYMINT[-10000] <= CONST_0 &&
+z_2_SYMINT[-10000] <= CONST_0
+SPC # = 0
