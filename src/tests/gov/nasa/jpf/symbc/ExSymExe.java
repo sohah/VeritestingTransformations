@@ -16,7 +16,7 @@ public class ExSymExe {
 
   public void test (int x, int z) {
 	  //int y = 3;
-	  //x = z++ ;
+	  x = z++ ;
 	  //z=5;
 
 	  if (z > 0) {
