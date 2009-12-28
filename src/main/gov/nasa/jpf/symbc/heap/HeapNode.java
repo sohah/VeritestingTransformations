@@ -63,6 +63,10 @@ public class HeapNode {
 	  typeClassInfo = tClassInfo;
 	  sym_v = sym;
   }
+  
+  public void replaceType(ClassInfo tClassInfo) {
+	  typeClassInfo = tClassInfo;
+  }
 
   public String toString() {
 	    return "[ref=" + index + ", symName=" + sym_v.getName() + ", type=" + typeClassInfo.getName() + "]";

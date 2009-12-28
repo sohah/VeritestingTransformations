@@ -86,6 +86,16 @@ public class TypeHierarchy {
 		return 0;
 	}
 	
+	// get list of all sub-class names in the type heirarchy for the
+	// class of "typeInfo". 
+	public static ArrayList<String> getTypeElements(String typeInfo) {
+		if(TypeHierarchy.typeHierarchies.containsKey(typeInfo)) {
+			return TypeHierarchy.typeHierarchies.get(typeInfo);
+		}
+		// if there are no sub-classes then return an empty list
+		return new ArrayList<String>();
+	}
+	
 	public static ClassInfo getClassInfo(String typeInfo, int counter) {
 		String index = TypeHierarchy.typeHierarchies.get(typeInfo).get(counter);
 		for(int classIndex = 0; classIndex < TypeHierarchy.allClassInfos.size(); classIndex++) {
@@ -96,4 +106,5 @@ public class TypeHierarchy {
 		}
 		return null;
 	}
+	
 }

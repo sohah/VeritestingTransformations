@@ -16,10 +16,11 @@ public class TestDriver03{
 
 	public void run() {
 		if(n != null ) {
+			System.out.println("it is not null");
 			if(n instanceof intNode) {
 				System.out.println("it is an instance of intNode");
 			} else if (n instanceof Node) {
-				System.out.println("it is an instance of Node class");
+				System.out.println("it is an instance of Node class ********************************");
 			}
 		}
 	}

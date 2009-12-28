@@ -8,5 +8,7 @@ public class Node {
 	public Node () {
 		
 	}
-	
+	public boolean isNextObject (Object node) {
+		return this.next == node;
+	}
 }
