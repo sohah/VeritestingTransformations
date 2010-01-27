@@ -10,4 +10,4 @@ symbolic.lazy = true
 
 symbolic.lazy.subtypes = true
 
-symbolic.method = run()
+symbolic.method = uberlazy.TestDriver04.run()

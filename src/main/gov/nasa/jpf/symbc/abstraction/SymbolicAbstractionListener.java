@@ -288,7 +288,8 @@ public class SymbolicAbstractionListener extends PropertyListenerAdapter{
 		SystemState ss = vm.getSystemState();
 		ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
 		MethodInfo mi = insn.getMethodInfo();
-		String methodName = mi.getName();
+		//neha: changed to full name
+		String methodName = mi.getFullName();
 		int numberOfArgs = mi.getArgumentsSize() - 1;
 
 		Config conf = ti.getVM().getConfig(); // Corina: added fix
@@ -324,7 +325,8 @@ public class SymbolicAbstractionListener extends PropertyListenerAdapter{
 				int numberOfArgs = md.getArgumentValues(ti).length;
 				MethodInfo mi = md.getInvokedMethod();
 				Config conf = ti.getVM().getConfig(); // Corina: added fix
-				if ((BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null))){
+				//neha: changed invoked method to the full name
+				if ((BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 					// if it is InvokeInstruction, just keep track of what
 					// method got invoked in the SequenceChoiceGenerator.
 					// if it is the first time, record the initial state
@@ -391,7 +393,8 @@ public class SymbolicAbstractionListener extends PropertyListenerAdapter{
 				int numberOfArgs = mi.getNumberOfArguments();
 
 				Config conf = ti.getVM().getConfig(); // Corina: added fix
-				if (BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
+				//neha: changed invoked method to fullname
+				if (BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null)){
 
 					// get the abstracted state caused by method return
 					String abstractedState = null;

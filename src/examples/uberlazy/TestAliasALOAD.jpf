@@ -6,4 +6,4 @@ sourcepath = ${jpf-symbc}/src/examples
 
 symbolic.lazy = true
 
-symbolic.method = run(sym)
+symbolic.method = uberlazy.TestAliasALOAD.run(sym)

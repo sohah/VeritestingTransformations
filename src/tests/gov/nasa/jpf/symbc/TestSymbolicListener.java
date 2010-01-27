@@ -193,8 +193,9 @@ public class TestSymbolicListener extends SymbolicListener {
    */
   protected boolean checkSymbolicEntry(Config config, String methodName,
       int numArgs, MethodInfo mi, String className) {
+	  //neha: changed methodname to the full name
     return (BytecodeUtils.isClassSymbolic(config, className, mi, methodName))
-        || BytecodeUtils.isMethodSymbolic(config, methodName, numArgs, null);
+        || BytecodeUtils.isMethodSymbolic(config, mi.getFullName(), numArgs, null);
   }
 
   /**

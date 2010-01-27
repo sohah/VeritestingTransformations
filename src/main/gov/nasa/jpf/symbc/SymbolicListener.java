@@ -192,8 +192,9 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				MethodInfo mi = md.getInvokedMethod();
 				ClassInfo ci = mi.getClassInfo();
 				String className = ci.getName();
+				//neha:changed invoked method to full name method
 				if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
-						|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
+						|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null)){
 					//get the original values and save them for restoration after
 					//we are done with symbolic execution
 					retainVal = ss.getRetainAttributes();
@@ -293,8 +294,9 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 					String longName = mi.getLongName();
 					int numberOfArgs = mi.getNumberOfArguments();
 					//int numberOfArgs = mi.getArgumentsSize() - 1;
+					//neha: changed invoked method to full name
 					if (((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
-							|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null))){
+							|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 						//at the end of symbolic execution, set the values back
 						//to their original value
 						ss.retainAttributes(retainVal);
@@ -377,7 +379,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 		  ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
 		  MethodInfo mi = insn.getMethodInfo();
 		  String className = mi.getClassName();
-		  String methodName = mi.getName();
+		  //neha: changed the method name to full name
+		  String methodName = mi.getFullName();
 		  //this method returns the number of slots for the arguments, including "this"
 		  int numberOfArgs = mi.getNumberOfArguments();
 

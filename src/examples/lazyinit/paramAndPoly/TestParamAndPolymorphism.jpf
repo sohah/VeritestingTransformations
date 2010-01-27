@@ -10,4 +10,4 @@ symbolic.lazy = true
 #using this instruction factory ensures you use the uberlazy algorithm
 #vm.insn_factory.class=gov.nasa.jpf.symbc.uberlazy.UberLazyInstructionFactory
 
-symbolic.method = run(sym#sym), isNext(sym), isNextObject(sym)
+symbolic.method = lazyinit.paramAndPoly.TestParamAndPolymorphism.run(sym#sym), lazyinit.paramAndPoly.Node.isNext(sym), lazyinit.paramAndPoly.Node.isNextObject(sym)

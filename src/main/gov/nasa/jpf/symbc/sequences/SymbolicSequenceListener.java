@@ -178,7 +178,8 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				int numberOfArgs = md.getArgumentValues(ti).length;
 				MethodInfo mi = md.getInvokedMethod();
 				Config conf = ti.getVM().getConfig();
-				if ((BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null))){
+				//neha: full name for the method invoked symbolically
+				if ((BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 
 					// FIXME: get the object name?
 					// VirtualInvocation virtualInvocation = (VirtualInvocation)insn;
@@ -237,7 +238,8 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 		SystemState ss = vm.getSystemState();
 		ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
 		MethodInfo mi = insn.getMethodInfo();
-		String methodName = mi.getName();
+		//neha: changed methodName to FullName
+		String methodName = mi.getFullName();
 		int numberOfArgs = mi.getArgumentsSize() - 1;
 
 		Config conf = ti.getVM().getConfig(); // Corina: added fix

@@ -9,4 +9,4 @@ vm.insn_factory.class=gov.nasa.jpf.symbc.uberlazy.UberLazyInstructionFactory
 
 type_classpath = ${jpf-symbc}/build/examples/uberlazy
 
-symbolic.method = run()
+symbolic.method = uberlazy.TestDriver01.run()

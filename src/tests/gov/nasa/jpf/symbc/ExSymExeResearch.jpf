@@ -4,7 +4,7 @@ classpath=${jpf-symbc}/build/tests
 
 sourcepath=${jpf-symbc}/src/tests
 
-symbolic.method= test(sym#sym)
+symbolic.method= gov.nasa.jpf.symbc.ExSymExeResearch.test(sym#sym)
 
 listener = gov.nasa.jpf.symbc.SymbolicListener
 

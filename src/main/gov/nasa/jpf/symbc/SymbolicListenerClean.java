@@ -114,7 +114,8 @@ public class SymbolicListenerClean extends PropertyListenerAdapter implements Pu
 				Object [] args = md.getArgumentValues(ti);
 				int numberOfArgs = args.length;
 				MethodInfo mi = md.getInvokedMethod();
-				if ((BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null))){
+				//  neha: changed methodName to full name
+				if ((BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 					// here we should remember the method name and the arguments
 					// make sure we align concrete and symbolic arguments
 					if (mi.isMJI())

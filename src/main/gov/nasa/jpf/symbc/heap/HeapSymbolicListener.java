@@ -361,7 +361,8 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 		ThreadInfo ti = vm.getLastThreadInfo();
 		//ThreadInfo ti = vm.getCurrentThread();
 		MethodInfo mi = ti.getMethod();
-		String methodName = mi.getName();
+		//neha: changed to full name
+		String methodName = mi.getFullName();
 		int numberOfArgs = mi.getNumberOfArguments();
 		if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 				|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
@@ -442,8 +443,9 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 				MethodInfo mi = md.getInvokedMethod();
 				ClassInfo ci = mi.getClassInfo();
 				String className = ci.getName();
+				//neha: changed invoked method name to full name
 				if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
-						|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
+						|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null)){
 					//get the original values and save them for restoration after
 					//we are done with symbolic execution
 					retainVal = ss.getRetainAttributes();
@@ -547,8 +549,9 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 					String longName = mi.getLongName();
 					int numberOfArgs = mi.getNumberOfArguments();
 					//int numberOfArgs = mi.getArgumentsSize() - 1;
+					//neha: changed invoked method name to full name
 					if (((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
-							|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null))){
+							|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 						//at the end of symbolic execution, set the values back
 						//to their original value
 						ss.retainAttributes(retainVal);
@@ -679,7 +682,8 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 		  ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
 		  MethodInfo mi = insn.getMethodInfo();
 		  String className = mi.getClassName();
-		  String methodName = mi.getName();
+		  //neha: changed to full name
+		  String methodName = mi.getFullName();
 		  int numberOfArgs = mi.getArgumentsSize() - 1;
 		  if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 					|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){

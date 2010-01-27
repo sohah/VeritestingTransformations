@@ -63,13 +63,13 @@ public class BytecodeUtils {
 	 * Matched based on method name (short version) & number of params (if any)
 	 * For methods without arguments, all methods with this name will be treated
 	 * as symbolic methods since we cannot distinguish between them;
-	 * To do: use fully qualified name to identify the method
-	 * i.e. mi.getFullName()
+	 * neha: uses fully qualified name to identify the method
+	 * i.e. mi.getFullName() instead of mi.getName()
 	 */
 	public static boolean isMethodSymbolic(Config conf, String methodName, int numberOfArgs, Vector<String> args) {
 
 		String[] methods = conf.getStringArray("symbolic.method");
-		System.out.println("methodName" + methodName);
+		//System.out.println("methodName" + methodName);
 		if (methods != null) {
 			List<String> list = Arrays.asList(methods);
 			Iterator<String> it = list.iterator();
@@ -193,6 +193,7 @@ public class BytecodeUtils {
 		 *
 		 */
 		String shortName = mname.substring(0, mname.indexOf("("));
+		String longName = mi.getFullName();
 		String[] argTypes = mi.getArgumentTypeNames();
 		int argSize = argTypes.length; // does not contain "this"
 
@@ -210,7 +211,8 @@ public class BytecodeUtils {
 		// end from Fujitsu
 		// this will change when we will move all the native classes under env
 
-		boolean found = (BytecodeUtils.isMethodSymbolic(conf, shortName, argSize, args)
+		//neha: changed shortName to longName
+		boolean found = (BytecodeUtils.isMethodSymbolic(conf, longName, argSize, args)
 				|| BytecodeUtils.isClassSymbolic(conf, cname, mi, mname));
 
 		if (found) {
