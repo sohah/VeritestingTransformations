@@ -24,23 +24,17 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.AnnotationInfo;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DoubleFieldInfo;
 import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.FloatFieldInfo;
-import gov.nasa.jpf.jvm.IntegerFieldInfo;
 import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.LongFieldInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.ReferenceFieldInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.symbc.heap.Helper;
-import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
@@ -75,10 +69,10 @@ public class BytecodeUtils {
 	public static boolean isMethodSymbolic(Config conf, String methodName, int numberOfArgs, Vector<String> args) {
 
 		String[] methods = conf.getStringArray("symbolic.method");
-
+		System.out.println("methodName" + methodName);
 		if (methods != null) {
-			List list = Arrays.asList(methods);
-			Iterator it = list.iterator();
+			List<String> list = Arrays.asList(methods);
+			Iterator<String> it = list.iterator();
 
 			String shortName = methodName;
 			if (methodName.contains("("))
@@ -125,8 +119,8 @@ public class BytecodeUtils {
 			shortName = methodName.substring(1,methodName.indexOf('>'));
 		String[] classes = conf.getStringArray("symbolic.class");
 		if (classes != null) {
-			List list = Arrays.asList(classes);
-			Iterator it = list.iterator();
+			List<String> list = Arrays.asList(classes);
+			Iterator<String> it = list.iterator();
 			while (it.hasNext()) {
 				String cName = (String) it.next();
 				if (className.equalsIgnoreCase(cName) &&
@@ -317,7 +311,7 @@ public class BytecodeUtils {
 			boolean symStatic = false;
 			boolean symInstance = false;
 			if (symFields != null){
-				List symList = null;
+				List<String> symList = null;
 				symList = Arrays.asList(symFields);
 				for (int i=0; i<symList.size(); i++){
 					String s = (String)symList.get(i);
@@ -450,7 +444,7 @@ public class BytecodeUtils {
 	 * Get the path condition of a SystemState's most recent PCChoiceGenerator.
 	 */
 	public static PathCondition getPC(SystemState ss) {
-		ChoiceGenerator cg = ss.getChoiceGenerator();
+		ChoiceGenerator<?> cg = ss.getChoiceGenerator();
 		while (cg != null && !(cg instanceof PCChoiceGenerator)) {
 			cg = cg.getPreviousChoiceGenerator();
 		}

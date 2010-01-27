@@ -79,6 +79,11 @@ public class TypeHierarchy {
 	}
 	
 	public static int getNumOfElements(String typeInfo) {
+		if(TypeHierarchy.typeHierarchies == null) {
+			System.err.println("Warning: the type_classpath configuration parameter" +
+					" not set--the type hierarchies are empty");
+			return 0;
+		}
 		if(TypeHierarchy.typeHierarchies.containsKey(typeInfo)) {
 			return TypeHierarchy.typeHierarchies.get(typeInfo).size();
 		}

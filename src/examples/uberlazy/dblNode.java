@@ -9,4 +9,8 @@ public class dblNode extends Node {
 		
 	}
 	
+	public void print() {
+		System.out.println("I am a double Node");
+	}
+	
 }

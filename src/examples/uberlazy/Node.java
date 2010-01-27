@@ -11,4 +11,8 @@ public class Node {
 	public boolean isNextObject (Object node) {
 		return this.next == node;
 	}
+	
+	public void print() { 
+		System.out.println("I am a just a Node");
+	}
 }

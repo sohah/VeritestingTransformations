@@ -1,4 +1,4 @@
-target = uberlazy.TestDriver03
+target = uberlazy.TestDriver04
 
 classpath = ${jpf-symbc}/build/examples
 
@@ -6,6 +6,8 @@ sourcepath = ${jpf-symbc}/src/examples
 
 type_classpath = ${jpf-symbc}/build/examples/uberlazy
 
-vm.insn_factory.class=gov.nasa.jpf.symbc.uberlazy.UberLazyInstructionFactory
+symbolic.lazy = true
+
+symbolic.lazy.subtypes = true
 
 symbolic.method = run()

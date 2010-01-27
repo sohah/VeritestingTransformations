@@ -7,6 +7,7 @@ package uberlazy;
  *  values. 
  *  **/
 
+
 import gov.nasa.jpf.symbc.Symbolic;
 
 
@@ -19,9 +20,14 @@ public class TestDriver02 {
 	
 	public void run() {
 		if(m != null) {
+			// when a primitive field reference is "used"	
+			// and it differs in the value/type then the partition
+			// function separates the ones that are different
 			if(m.elem > 10) {
 				System.out.println("the value of m.elem is greater 10");
-				differentField();
+				m.print();
+			} else {
+				System.out.println("less than equal to 10");
 			}
 		}
 	}

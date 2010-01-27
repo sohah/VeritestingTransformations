@@ -21,46 +21,51 @@ package gov.nasa.jpf.symbc.bytecode;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DoubleFieldInfo;
 import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.FloatFieldInfo;
-import gov.nasa.jpf.jvm.IntegerFieldInfo;
 import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.LongFieldInfo;
-import gov.nasa.jpf.jvm.ReferenceFieldInfo;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.jvm.bytecode.StaticFieldInstruction;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 import gov.nasa.jpf.symbc.heap.HeapNode;
 import gov.nasa.jpf.symbc.heap.Helper;
 import gov.nasa.jpf.symbc.heap.SymbolicInputHeap;
 import gov.nasa.jpf.symbc.numeric.Comparator;
-import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
-import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
+import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 
 
 	private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
-	private int numSymRefs; // # of prev. initialized objects
+	private int numSymRefs = 0; // # of prev. initialized objects
+	private int numNewRefs = 0; // # of new reference objects to account for polymorphism (neha)
 	ChoiceGenerator<?> prevHeapCG;
 
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
-		 Config conf = ti.getVM().getConfig();
-		  String[] lazy = conf.getStringArray("symbolic.lazy");
-		  if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
-			  return super.execute(ss,ks,ti);
+		Config conf = ti.getVM().getConfig();
+		String[] lazy = conf.getStringArray("symbolic.lazy");
+		if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
+			return super.execute(ss,ks,ti);
+
+		//neha: check whether the subtypes from polymorphism need to added
+		// when instantiating "new" objects during lazy-initialization.
+		// the configuration allows to consider all subtypes during the 
+		// instantiation. In aliasing all subtypes are considered by default.
+		
+		String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
+		if(!subtypes.equals("false") && 
+				TypeHierarchy.typeHierarchies == null) {
+			TypeHierarchy.buildTypeHierarchy(ti);	
+		}
 
 		FieldInfo fi = getFieldInfo();
 		if (fi == null) {
@@ -131,8 +136,14 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 						  n = n.getNext();
 					  }
 			}
-
-			heapCG = new HeapChoiceGenerator(numSymRefs+2);
+			if(!subtypes.equals("false")) {
+				// get the number of subtypes that exist, and add the number in
+				// the choice generator in addition to the ones that were there
+				numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
+				heapCG = new HeapChoiceGenerator(numSymRefs+2+numNewRefs); // +null,new
+			} else {
+				heapCG = new HeapChoiceGenerator(numSymRefs+2);  //+null,new
+			}
 			ss.setNextChoiceGenerator(heapCG);
 			return this;
 		} else {  // this is what really returns results
@@ -170,25 +181,17 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		else if (currentChoice == numSymRefs) { //existing (null)
 			pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
 			daIndex = -1;
-		}
-		else { //return a new object
-			// need to create a new object with all fields symbolic and to add this object to SymbolicHeap
-
-			daIndex = ks.da.newObject(typeClassInfo, ti);
-			String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
-			SymbolicInteger newInt = new SymbolicInteger( refChain);
-			FieldInfo[] fields = typeClassInfo.getDeclaredInstanceFields();
-			ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
-			Helper.initializeInstanceFields(fields,eiRef,refChain);
-			FieldInfo[] staticFields = typeClassInfo.getDeclaredStaticFields();
-			Helper.initializeStaticFields(staticFields,typeClassInfo, ti);
-			// update associated symbolic input heap
-			// update associated heap PC
-			HeapNode n= new HeapNode(daIndex,typeClassInfo,newInt);
-			symInputHeap._add(n);
-			pcHeap._addDet(Comparator.NE, newInt, new IntegerConstant(-1));
-			pcHeap._addDet(Comparator.EQ, newInt,(SymbolicInteger) attr);
-		}
+		} else if (currentChoice == (numSymRefs + 1)) {
+			  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
+			  daIndex = addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap, symInputHeap);
+		  } else { 
+			  // neha: this creates new objects for the all sub-classes in the type hierarchy
+			  // the clause will only be invoked when the uberlazy flag is set 
+			  int counter = currentChoice - (numSymRefs+1) - 1; //index to the sub-class
+			  ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
+			  daIndex = addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap, symInputHeap);
+		  }
+			
 
 		ei.setReferenceField(fi,daIndex );
 		ei.setFieldAttr(fi, Helper.SymbolicNull); // was null
@@ -197,6 +200,28 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		((HeapChoiceGenerator)heapCG).setCurrentSymInputHeap(symInputHeap);
 		//System.out.println("GETSTATIC pcHeap: " + pcHeap.toString());
 		return getNext(ti);
+	}
+
+	private int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
+			KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap) {
+		daIndex = ks.da.newObject(typeClassInfo, ti);
+		String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
+		SymbolicInteger newInt = new SymbolicInteger( refChain);
+		FieldInfo[] fields = typeClassInfo.getDeclaredInstanceFields();
+		ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
+		Helper.initializeInstanceFields(fields,eiRef,refChain);
+		FieldInfo[] staticFields = typeClassInfo.getDeclaredStaticFields();
+		Helper.initializeStaticFields(staticFields,typeClassInfo, ti);
+		// update associated symbolic input heap
+		// update associated heap PC
+		HeapNode n= new HeapNode(daIndex,typeClassInfo,newInt);
+		symInputHeap._add(n);
+		pcHeap._addDet(Comparator.NE, newInt, new IntegerConstant(-1));
+		//pcHeap._addDet(Comparator.EQ, newSymRef, (SymbolicInteger) attr);
+		//neha: added the not equal relation to the different previous nodes
+		  for (int i=0; i< numSymRefs; i++)
+			  pcHeap._addDet(Comparator.NE, n.getSymbolic(), prevSymRefs[i].getSymbolic());
+		  return daIndex;
 	}
 }
 

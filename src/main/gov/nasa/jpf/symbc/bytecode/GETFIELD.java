@@ -44,8 +44,8 @@ import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
   private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
-  private int numSymRefs; // # of prev. initialized objects
-  private int numNewRefs; // # of new reference objects to account for polymorphism
+  private int numSymRefs = 0; // # of prev. initialized objects
+  private int numNewRefs = 0; // # of new reference objects to account for polymorphism (neha)
   ChoiceGenerator<?> prevHeapCG;
 
   @Override
@@ -55,10 +55,13 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  if (lazy == null || !lazy[0].equalsIgnoreCase("true")) 
 		  return super.execute(ss,ks,ti);
 
-	  //check for the uberlazy string 
+	  //neha: check whether the subtypes from polymorphism need to added
+	  // when instantiating "new" objects during lazy-initialization.
+	  // the configuration allows to consider all subtypes during the 
+	  // instantiation. In aliasing all subtypes are considered by default.
 	  
-	  String uberLazy = conf.getString("symbolic.uber_lazy", "false");
-	  if(!uberLazy.equals("false") && 
+	  String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
+	  if(!subtypes.equals("false") && 
 			  TypeHierarchy.typeHierarchies == null) {
 		  TypeHierarchy.buildTypeHierarchy(ti);	
 	  }
@@ -88,8 +91,9 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  // check if the field is of ref type & it is symbolic (i.e. it has an attribute)
 	  // if it is we need to do lazy initialization
 
-	  if (!(fi.isReference() && attr != null))
+	  if (!(fi.isReference() && attr != null)) {
 		  return super.execute(ss,ks,ti);
+	  }
 
 	  //System.out.println(">>>>>>>>>>>>> "+fi.getTypeClassInfo().getName() +" " +fi.getName());
 
@@ -142,8 +146,10 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 				  n = n.getNext();
 			  }
 		  }
-		  System.out.println(typeClassInfo.getName() + " this is the typeClassInfo");
-		  if(!uberLazy.equals("false")) {
+		  //neha: if subtypes are to be considered
+		  if(!subtypes.equals("false")) {
+			  // get the number of subtypes that exist, and add the number in
+			  // the choice generator inaddition to the ones that were there
 			  numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
 			  thisHeapCG = new HeapChoiceGenerator(numSymRefs+2+numNewRefs); // +null,new
 		  } else {
@@ -199,15 +205,12 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
 		  daIndex = -1;
 	  } 
-	  else if (currentChoice == (numSymRefs + 1)) { // need to create a new object with all fields symbolic and to add this object to SymbolicHeap
-		  //ClassInfo ci = ClassInfo.getClassInfo(fullType);
-		  // here again we should consider sub-classing and create a choice and a new object  in the class hierarchy, up to Object
-		  // but this will introduce probably too much non-determinism
-		  // so we do not do this for now
-
+	  else if (currentChoice == (numSymRefs + 1)) {
+		  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
 		  daIndex = addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap, symInputHeap);
-	  } else { // neha: this creates new objects for the all sub-classes in the type hierarchy
-		  		// the clause will only be invoked when the uberlazy flag is set 
+	  } else { 
+		  // neha: this creates new objects for the all sub-classes in the type hierarchy
+		  // the clause will only be invoked when the uberlazy flag is set 
 		  int counter = currentChoice - (numSymRefs+1) - 1; //index to the sub-class
 		  ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
 		  daIndex = addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap, symInputHeap);

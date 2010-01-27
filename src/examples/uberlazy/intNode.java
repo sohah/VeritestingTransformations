@@ -7,4 +7,8 @@ public class intNode extends Node {
 	public intNode() {
 		
 	}
+	
+	public void print() {
+		System.out.println("I am an intNode");
+	}
 }

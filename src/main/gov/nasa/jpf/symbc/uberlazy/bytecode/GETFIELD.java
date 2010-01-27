@@ -19,7 +19,12 @@
 package gov.nasa.jpf.symbc.uberlazy.bytecode;
 
 
-import gov.nasa.jpf.Config;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+
+import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DynamicArea;
@@ -37,24 +42,26 @@ import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
-import gov.nasa.jpf.symbc.string.StringExpression;
-import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
+import gov.nasa.jpf.symbc.uberlazy.EquivalenceClass;
 import gov.nasa.jpf.symbc.uberlazy.EquivalenceObjects;
 import gov.nasa.jpf.symbc.uberlazy.PartitionChoiceGenerator;
 import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
+import gov.nasa.jpf.symbc.uberlazy.UberLazyHelper;
 
 public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
-  private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
-  private int numSymRefs; // # of prev. initialized objects
-  private int numNewRefs; // # of new reference objects to account for polymorphism
   ChoiceGenerator<?> prevHeapCG;
+  private HashMap<String, Set<String>> primitivePartition;
+  private HashMap<Integer, EquivalenceClass> partitionForTypes;
+  private EquivalenceObjects equivObjs;
+  private boolean isReference = false;
 
+  
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+	  
 	  // if it is here then using the uberlazyInstructionfactory
-	  // check whether the class hierarchies need to be constructed
-
+	  // check whether the class hierarchies need to be constructed	  
 	  if(TypeHierarchy.typeHierarchies == null) {
 		  TypeHierarchy.buildTypeHierarchy(ti);
 	  }
@@ -84,43 +91,52 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  Object attr = ei.getFieldAttr(fi);
 	  // check if the field is of ref type & it is symbolic (i.e. it has an attribute)
 	  // if it is we need to do lazy initialization
+	  
+	  //System.out.println("the position number is:" + this.position);
 
-	  if (!(fi.isReference() && attr != null))
-		  return super.execute(ss,ks,ti);
-
-	  int currentChoice;
-	  ChoiceGenerator<?> thisHeapCG;
-
-	  // get the type of the field
-	  ClassInfo typeClassInfo = fi.getTypeClassInfo(); 
-
-
-	  // first time around, get previous heapCG (if any) 
-	  if (!ti.isFirstStepInsn()) {
-		  prevSymRefs = null;
-		  numSymRefs = 0;
-		  prevHeapCG = null;
-
-		  prevHeapCG = ss.getChoiceGenerator();
-		  while (!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
-			  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
-		  }
-
-		  numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
-		  thisHeapCG = new PartitionChoiceGenerator(2); // +null,new
-		  ss.setNextChoiceGenerator(thisHeapCG);
-		  return this;
-	  }  else {//this is what really returns results
-
-		  //from original GETFIELD bytecode
-		  ti.pop(); // Ok, now we can remove the object ref from the stack
-
-		  thisHeapCG = ss.getChoiceGenerator();
-		  assert (thisHeapCG instanceof HeapChoiceGenerator) :
-			  "expected HeapChoiceGenerator, got: " + thisHeapCG;
-		  currentChoice = ((HeapChoiceGenerator) thisHeapCG).getNextChoice();
+	  // the field is not symbolic return as is
+	  if(attr == null) {
+		  return super.execute(ss, ks, ti);
 	  }
 	  
+	  if(fi.isReference()) {
+		  //System.out.println("it is a reference");
+		  isReference = true;
+	  }
+	
+	  ChoiceGenerator<?> thisHeapCG;
+		
+	  if (!ti.isFirstStepInsn()) {
+		 
+		  if(isReference) {
+			  thisHeapCG = new PartitionChoiceGenerator(2); // +null,new
+			  ss.setNextChoiceGenerator(thisHeapCG);
+		  } else {
+			  prevHeapCG = ss.getChoiceGenerator();
+			  while (!((prevHeapCG == null) || (prevHeapCG instanceof PartitionChoiceGenerator))) {
+				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
+			  }
+			  if(prevHeapCG != null &&
+					  UberLazyHelper.symbolicVariableExists(prevHeapCG, objRef)) {
+				  equivObjs = ((PartitionChoiceGenerator) prevHeapCG).getCurrentEquivalenceObject(); 
+				  primitivePartition = 
+					  	UberLazyHelper.checkTypesForPrimitiveFields(prevHeapCG, objRef,fi);
+				  thisHeapCG = new PartitionChoiceGenerator(primitivePartition.size());
+				  partitionForTypes = UberLazyHelper.initializePartitionsWithData(objRef,
+						  													primitivePartition);
+				  ss.setNextChoiceGenerator(thisHeapCG);
+			  } 
+		  }
+		  return this;
+	  } 
+
+	  int currentChoice;
+	  thisHeapCG = ss.getChoiceGenerator();
+	  assert (thisHeapCG instanceof PartitionChoiceGenerator) :
+		  "expected PartitionChoiceGenerator, got: " + thisHeapCG;
+	  currentChoice = ((PartitionChoiceGenerator) thisHeapCG).getNextChoice();
+
+
 	  PathCondition pcHeap = null; //this pc contains only the constraints on the heap
 	  SymbolicInputHeap symInputHeap = null;
 	  EquivalenceObjects equivObjs = null;
@@ -135,14 +151,77 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  else {
 		  pcHeap = ((HeapChoiceGenerator)prevHeapCG).getCurrentPCheap();
 		  symInputHeap = ((HeapChoiceGenerator)prevHeapCG).getCurrentSymInputHeap();
-		 equivObjs = ((PartitionChoiceGenerator) prevHeapCG).getCurrentEquivalenceObject();
+		  equivObjs = ((PartitionChoiceGenerator) prevHeapCG).getCurrentEquivalenceObject();
 
 	  }
-	  
+
 	  assert pcHeap != null;
 	  assert symInputHeap != null;
 	  assert equivObjs != null;
-
+	 
+	  if(isReference) {
+		  handleReference(ss, ks, ti, attr, ei, pcHeap,
+				  symInputHeap, equivObjs, currentChoice);
+	  } else {
+		  handlePrimitive(ss, ks, ti, attr, ei, pcHeap,
+				  symInputHeap, equivObjs, currentChoice, objRef);
+	  }
+	  
+	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
+	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
+	  ((PartitionChoiceGenerator)thisHeapCG).setEquivalenceObj(equivObjs);
+	  
+	  if(isReference) {
+		  return getNext(ti);
+	  } else {
+		  return super.execute(ss, ks, ti);
+	  }
+	 
+  }
+  
+  private void handlePrimitive(SystemState ss, KernelState ks, ThreadInfo ti, Object attr, ElementInfo ei,
+		  PathCondition pcHeap, SymbolicInputHeap symInputHeap, EquivalenceObjects equivObjs, int currentChoice,
+		  																					int objref) {
+	  int counter = 0;
+	  Iterator<String> itr = primitivePartition.keySet().iterator();
+	  while(counter < currentChoice) {
+		  System.out.println("counter :" + counter);
+		  itr.next();
+		  counter++;
+	  }
+	  if(itr.hasNext()) {
+		  Set<String> vals = primitivePartition.get(itr.next());
+		  // case 1: if you are executing the concrete one
+		  String typeClassInfo = ei.getClassInfo().getName();
+		  System.out.println("The typeClassInfo is :" + typeClassInfo);
+		  if(vals.contains(typeClassInfo) || vals.size() <= 0) {
+			  System.out.println("found the type");
+			  // do nothing 
+			  return;
+		  } else if(vals.size() == 1) { //case 2 only a single
+			   EquivalenceObjects objs = new EquivalenceObjects();
+			   
+		  }
+		  Iterator<String> strItr = vals.iterator();
+		  while(strItr.hasNext()) {
+			  System.out.println(strItr.next() );
+		  }
+		  System.out.println();
+	  }
+	  //TODO update the EquivalenceObject and change the object on the heap 
+	  //look at the instanceof operator to check how the object can be updated
+	  
+	  
+  }
+  
+  private void handleReference(SystemState ss, KernelState ks, ThreadInfo ti, Object attr, 
+		  							ElementInfo ei, PathCondition pcHeap, SymbolicInputHeap symInputHeap,
+		  							EquivalenceObjects equivObjs, int currentChoice) {
+	
+	  // get the type of the field
+	  ClassInfo typeClassInfo = fi.getTypeClassInfo(); 
+	  //from original GETFIELD bytecode
+	  ti.pop(); // Ok, now we can remove the object ref from the stack
 	  int daIndex = 0; //index into JPF's dynamic area
 	 
 	  if (currentChoice == 0){ //null object
@@ -160,13 +239,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  ei.setReferenceField(fi,daIndex );
 	  ei.setFieldAttr(fi, null);
 	  ti.push( ei.getIntField(fi), fi.isReference());
-	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
-	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
-	  ((PartitionChoiceGenerator)thisHeapCG).setEquivalenceObj(equivObjs);
-		 
-	  return getNext(ti);
-
-
+	 
   }
   
   //TODO: Move this to a helper function where all sorts-of-lazy initialization
@@ -187,9 +260,9 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  symInputHeap._add(n);
 	  pcHeap._addDet(Comparator.NE, newSymRef, new IntegerConstant(-1));
 	  //pcHeap._addDet(Comparator.EQ, newSymRef, (SymbolicInteger) attr);
-	  //TODO: for uberlazy we can't add the NE right here 
-	  for (int i=0; i< numSymRefs; i++)
-		  pcHeap._addDet(Comparator.NE, n.getSymbolic(), prevSymRefs[i].getSymbolic());
+	  //TODO: for uberlazy we can't add the NE right here should be added later
+	  // for (int i=0; i< numSymRefs; i++)
+		//  pcHeap._addDet(Comparator.NE, n.getSymbolic(), prevSymRefs[i].getSymbolic());
 	  return daIndex;
   }
 

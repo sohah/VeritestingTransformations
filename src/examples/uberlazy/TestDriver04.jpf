@@ -4,6 +4,7 @@ classpath = ${jpf-symbc}/build/examples
 
 sourcepath = ${jpf-symbc}/src/examples 
 
-symbolic.lazy = true
+#using this instruction factory ensures you use the uberlazy algorithm
+vm.insn_factory.class=gov.nasa.jpf.symbc.uberlazy.UberLazyInstructionFactory
 
 symbolic.method = run()
