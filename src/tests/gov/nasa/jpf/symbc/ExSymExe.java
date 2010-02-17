@@ -11,9 +11,16 @@ public class ExSymExe {
 	  field = 9;
 	  inst.test(x, field);
 	  inst.test2(x,x);
+	  inst.test1(x,true);
   }
   /* we want to let the user specify that this method should be symbolic */
 
+  public void test1 (int x, boolean b) {
+	  if (x <= 1200)
+		  System.out.println("le 0");
+	  if(x >= 1200)
+		  System.out.println("ge 0");
+  }
   public void test (int x, int z) {
 	  //int y = 3;
 	  x = z++ ;
