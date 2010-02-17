@@ -24,6 +24,7 @@ import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.jvm.Fields;
 import gov.nasa.jpf.jvm.KernelState;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
@@ -78,16 +79,14 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		//	    if (!mi.isClinit(ci) && requiresClinitCalls(ti, ci))
 		//			  return ti.getPC();
 		// end: not sure if this code should stay here
-
+	
 		ElementInfo ei = ks.sa.get(ci.getName());
-
+	
 		//end GETSTATIC code from super
-
+	
 		Object attr = ei.getFieldAttr(fi);
-		// check if the field is of ref type & it is symbolic (i.e. it has an attribute)
-		// set using annotation for now
-		// if it is symbolic we need to do lazy initialization
-
+	
+	
 		if (!(fi.isReference() && attr != null && attr != Helper.SymbolicNull))
 			return super.execute(ss,ks,ti);
 
@@ -205,13 +204,33 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	private int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
 			KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap) {
 		daIndex = ks.da.newObject(typeClassInfo, ti);
+		ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
 		String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
 		SymbolicInteger newInt = new SymbolicInteger( refChain);
-		FieldInfo[] fields = typeClassInfo.getDeclaredInstanceFields();
-		ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
+		
+		// neha: this change allows all the fields in the class hierarchy of the
+		// object to be initialized as symbolic and not just its instance fields
+		Fields f = eiRef.getFields();
+		int numOfFields = f.getNumberOfFields();
+		FieldInfo[] fields = new FieldInfo[numOfFields];
+		for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
+			fields[fieldIndex] = f.getFieldInfo(fieldIndex);
+		}
+
+		
 		Helper.initializeInstanceFields(fields,eiRef,refChain);
-		FieldInfo[] staticFields = typeClassInfo.getDeclaredStaticFields();
-		Helper.initializeStaticFields(staticFields,typeClassInfo, ti);
+		
+		 //neha: this change allows all the static fields in the class hierarchy
+		 // of the object to be initialized as symbolic and not just its immediate
+		 // static fields
+		 
+		ClassInfo superClass = typeClassInfo;
+		while(superClass != null) {
+			FieldInfo[] staticFields = superClass.getDeclaredStaticFields();
+			Helper.initializeStaticFields(staticFields, superClass, ti);
+			superClass = superClass.getSuperClass();
+		}
+		
 		// update associated symbolic input heap
 		// update associated heap PC
 		HeapNode n= new HeapNode(daIndex,typeClassInfo,newInt);
