@@ -80,9 +80,11 @@ public class Helper {
 		StaticElementInfo sei = ci.getStaticElementInfo();
 		if (sei == null) {
 			ci.registerClass(ti);
+			sei = ci.getStaticElementInfo();
 		}
-		if (sei.getFieldAttr(staticField) == null)
+		if (sei.getFieldAttr(staticField) == null) {
 			sei.setFieldAttr(staticField, sym_v);
+		}
 		return sym_v;
 	}
 
