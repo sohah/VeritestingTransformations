@@ -216,7 +216,7 @@ public class BytecodeUtils {
 		boolean found = (BytecodeUtils.isMethodSymbolic(conf, longName, argSize, args)
 				|| BytecodeUtils.isClassSymbolic(conf, cname, mi, mname));
 		if (found) {
-			System.out.println("method is symbolic "+mname +" "+found + " long name " +longName);
+			//System.out.println("method is symbolic "+mname +" "+found + " long name " +longName);
 			// method is symbolic
 			// create a choice generator to associate the precondition with it
 			ChoiceGenerator<?> cg = null;
