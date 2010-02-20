@@ -4,6 +4,7 @@ public class Node {
 	
 	short elem;
 	Node next;
+	static int testElem;
 	
 	public Node () {
 		
