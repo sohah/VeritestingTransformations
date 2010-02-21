@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2006 United States Government as represented by the
+// Copyright (C) 2009 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration
 // (NASA).  All Rights Reserved.
 //
@@ -16,29 +16,26 @@
 // THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
-package gov.nasa.jpf.symbc.bytecode;
-
-// need to fix names
-
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 /**
- * Invoke instance method; special handling for superclass, private,
- * and instance initialization method invocations
- * ..., objectref, [arg1, [arg2 ...]] => ...
+ * example to demonstrate creation of tes suites for path coverage
  */
-public class INVOKESPECIAL extends gov.nasa.jpf.jvm.bytecode.INVOKESPECIAL {
-	@Override
-	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
+public class TestPaths {
 
-		BytecodeUtils.InstructionOrSuper nextInstr = BytecodeUtils.execute(this, ss, ks, th);
-        if (nextInstr.callSuper) {
-            return super.execute(ss, ks, th);
-        } else {
-            return nextInstr.inst;
-        }
+  public static void main (String[] args){
+    testMe(42, false);
+  }
+
+  // how many tests do we need to cover all paths?
+  public static void testMe (int x, boolean b) {
+    System.out.println("x = " + x);
+
+	  if (x <= 1200){
+		  System.out.println("  <= 1200");
     }
+	  if(x >= 1200){
+		  System.out.println("  >= 1200");
+    }
+  }
+
 }

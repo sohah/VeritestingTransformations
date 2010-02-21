@@ -82,7 +82,7 @@ public class JPF_java_lang_String {
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
 	  String str = env.getStringObject(strRef);
-	  if (attrs == null)  // concrete
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))  // concrete
 		  return env.newString(strThis.concat(str));
 
 	  // Symbolic
@@ -114,7 +114,7 @@ public class JPF_java_lang_String {
 
 	  System.out.println("String.equals");
 	  Object [] attrs = env.getArgAttributes();
-	  if (attrs == null)  // concrete
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))  // concrete
 		  return gov.nasa.jpf.jvm.JPF_java_lang_String.equals__Ljava_lang_Object_2__Z (env, objRef, argRef);
 
 	  Expression sym_v1 = (Expression) attrs[0];
@@ -222,7 +222,7 @@ public class JPF_java_lang_String {
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
 	  String str = env.getStringObject(argRef);
-	  if (attrs == null)  // concrete
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))  // concrete
 		  return strThis.equalsIgnoreCase(str);
 	  //else
 	  throw new RuntimeException("ERROR: symbolic case not handled: equalsIgnoreCase__Ljava_lang_Object_2__Z");
@@ -234,7 +234,7 @@ public class JPF_java_lang_String {
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
 	  String str = env.getStringObject(argRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return strThis.endsWith(str);
 	  // else
 	  throw new RuntimeException("ERROR: symbolic case not handled: endsWith__Ljava_lang_String_2__Z");
@@ -245,7 +245,7 @@ public class JPF_java_lang_String {
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
 	  String str = env.getStringObject(argRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return strThis.startsWith(str);
 	  // else
 	  throw new RuntimeException("ERROR: symbolic case not handled: startsWith__Ljava_lang_String_2__Z");
@@ -255,7 +255,7 @@ public class JPF_java_lang_String {
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
 	  String str = env.getStringObject(argRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return strThis.startsWith(str,offset);
 	  //else
 	  throw new RuntimeException("ERROR: symbolic case not handled: startsWith__Ljava_lang_String_2I__Z");
@@ -264,7 +264,7 @@ public class JPF_java_lang_String {
 	  System.out.println("String.length");
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return strThis.length();
 	  //else Symbolic
 	  assert (attrs.length == 1);
@@ -283,7 +283,7 @@ public class JPF_java_lang_String {
 	  System.out.println("String.indexOf");
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return strThis.indexOf(c);
 	  //else
 	  throw new RuntimeException("ERROR: symbolic string method not handled: indexOf__I__I");
@@ -292,7 +292,7 @@ public class JPF_java_lang_String {
 	  System.out.println("String.indexOf");
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return strThis.indexOf(c,from);
 	  //else
 	  throw new RuntimeException("ERROR: symbolic string method not handled: indexOf__II__I");
@@ -302,7 +302,7 @@ public class JPF_java_lang_String {
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
 	  String str = env.getStringObject(argRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return strThis.indexOf(str);
 	  //else
 	  throw new RuntimeException("ERROR: symbolic string method not handled: indexOf__Ljava_lang_String_2__I");
@@ -312,7 +312,7 @@ public class JPF_java_lang_String {
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
 	  String str = env.getStringObject(argRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return strThis.indexOf(str,from);
 	  //else
 	  throw new RuntimeException("ERROR: symbolic string method not handled: indexOf__Ljava_lang_String_2I__I");
@@ -321,7 +321,7 @@ public class JPF_java_lang_String {
 	  System.out.println("String.replace");
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(strThis.replace(oldC,newC));
 
 	  //else Symbolic
@@ -399,7 +399,7 @@ public class JPF_java_lang_String {
 	  String strThis = env.getStringObject(objRef);
 	  String regEx = env.getStringObject(regExRef);
 	  String replace = env.getStringObject(replaceRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(strThis.replaceAll(regEx,replace));
 	  // else
 	  return -1;
@@ -410,7 +410,7 @@ public class JPF_java_lang_String {
 	  String strThis = env.getStringObject(objRef);
 	  String regEx = env.getStringObject(regExRef);
 	  String replace = env.getStringObject(replaceRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(strThis.replaceFirst(regEx,replace));
 	  // else
 	  return -1;
@@ -419,7 +419,7 @@ public class JPF_java_lang_String {
 	  System.out.println("String.trim");
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(strThis.trim());
 	  // else
 	  return -1;
@@ -428,7 +428,7 @@ public class JPF_java_lang_String {
 	  System.out.println("String.substring");
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(strThis.substring(b));
 	  // else
 	  return -1;
@@ -437,65 +437,66 @@ public class JPF_java_lang_String {
 	  System.out.println("String.substring");
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(strThis.substring(b,e));
 	  // else
 	  return -1;
   }
   public static int valueOf__Z__Ljava_lang_String_2(MJIEnv env, int objRef, boolean b) {
-	  System.out.println("String.valueOf");
+	  System.out.println("String.valueOf1");
 	  Object [] attrs = env.getArgAttributes();
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(String.valueOf(b));
 	  // else
 	  return -1;
   }
   public static int valueOf__C__Ljava_lang_String_2(MJIEnv env, int objRef, char c) {
-	  System.out.println("String.valueOf");
+	  System.out.println("String.valueOf2");
 	  Object [] attrs = env.getArgAttributes();
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(String.valueOf(c));
 	  // else
 	  return -1;
   }
   public static int valueOf__D__Ljava_lang_String_2(MJIEnv env, int objRef, double d) {
-	  System.out.println("String.valueOf");
+	  System.out.println("String.valueOf3");
 	  Object [] attrs = env.getArgAttributes();
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(String.valueOf(d));
 	  // else
 	  return -1;
   }
   public static int valueOf__F__Ljava_lang_String_2(MJIEnv env, int objRef, float f) {
-	  System.out.println("String.valueOf");
+	  System.out.println("String.valueOf4");
 	  Object [] attrs = env.getArgAttributes();
-	  if (attrs == null)
+	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(String.valueOf(f));
 	  // else
 	  return -1;
   }
   public static int valueOf__I__Ljava_lang_String_2(MJIEnv env, int objRef, int i) {
-	  System.out.println("String.valueOf");
+	  System.out.println("String.valueOf5");
 	  Object [] attrs = env.getArgAttributes();
-	  if (attrs == null)
+	  if (attrs == null || attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(String.valueOf(i));
 	  // else
 	  return -1;
   }
   public static int valueOf__J__Ljava_lang_String_2(MJIEnv env, int objRef, long l) {
-	  System.out.println("String.valueOf");
+	  System.out.println("String.valueOf6");
 	  Object [] attrs = env.getArgAttributes();
-	  if (attrs == null)
+	  if (attrs == null || attrs.length==0 || (attrs.length==1 && attrs[0]==null))
 		  return env.newString(String.valueOf(l));
 	  // else
 	  return -1;
   }
   public static int valueOf__Ljava_lang_Object_2__Ljava_lang_String_2(MJIEnv env, int objRef, int argRef) {
-	  System.out.println("String.valueOf");
+	  System.out.println("String.valueOf7");
 	  Object [] attrs = env.getArgAttributes();
 	  Object o = env.getStringObject(argRef);
-	  if (attrs == null)
+	  if (attrs == null || attrs.length==0 || (attrs.length==1 && attrs[0]==null)) {
 		  return env.newString(String.valueOf(o));
+	  }
 	  // else
 	  return -1;
   }
