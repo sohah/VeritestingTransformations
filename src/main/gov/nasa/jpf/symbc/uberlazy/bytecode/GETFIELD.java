@@ -29,15 +29,12 @@ import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
-import gov.nasa.jpf.symbc.heap.HeapNode;
 import gov.nasa.jpf.symbc.heap.Helper;
 import gov.nasa.jpf.symbc.heap.SymbolicInputHeap;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
-import gov.nasa.jpf.symbc.string.StringExpression;
-import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
 import gov.nasa.jpf.symbc.uberlazy.EquivalenceObjects;
 import gov.nasa.jpf.symbc.uberlazy.PartitionChoiceGenerator;
 import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
@@ -84,14 +81,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  return super.execute(ss,ks,ti);
 	  }
 
-	  //System.out.println(">>>>>>>>>>>>> "+fi.getTypeClassInfo().getName() +" " +fi.getName());
-
-	  //if(fi.getTypeClassInfo().getName().equals("java.lang.String"))
-	  if(attr instanceof StringExpression || attr instanceof SymbolicStringBuilder)
-		  return super.execute(ss,ks,ti); // Strings are handled specially
-
-	  // else: lazy initialization
-
+	  //this is where the uberlazy initialization begins.
 	  int currentChoice;
 	  ChoiceGenerator<?> thisHeapCG;
 
@@ -141,7 +131,10 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  daIndex = -1;
 	  } 
 	  else if (currentChoice == 1) { 
-		  daIndex = addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap, symInputHeap);
+		  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
+				  symInputHeap, 0, null); // the last two args represent that the heap
+		  								  // constraint does not need to be updated for
+		  								  // any of the aliased objects
 		  equivObjs.addClass(typeClassInfo.getName(), daIndex);		  
 	  } 
 
@@ -157,29 +150,6 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
 
   
-  //TODO: Move this to a helper function where all sorts-of-lazy initialization
-  // can access this method. 
-  private int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
-		  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap) {
-	  daIndex = ks.da.newObject(typeClassInfo, ti);
-	  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
-	  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
-	  ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
-	  FieldInfo[] fields = typeClassInfo.getDeclaredInstanceFields();
-	  Helper.initializeInstanceFields(fields, eiRef,refChain);
-	  FieldInfo[] staticFields = typeClassInfo.getDeclaredStaticFields();
-	  Helper.initializeStaticFields(staticFields, typeClassInfo, ti);
-	  // create new HeapNode based on above info
-	  // update associated symbolic input heap
-	  HeapNode n= new HeapNode(daIndex,typeClassInfo,newSymRef);
-	  symInputHeap._add(n);
-	  pcHeap._addDet(Comparator.NE, newSymRef, new IntegerConstant(-1));
-	  //pcHeap._addDet(Comparator.EQ, newSymRef, (SymbolicInteger) attr);
-	  //TODO: for uberlazy we can't add the NE right here should be added later
-	  // for (int i=0; i< numSymRefs; i++)
-		//  pcHeap._addDet(Comparator.NE, n.getSymbolic(), prevSymRefs[i].getSymbolic());
-	  return daIndex;
-  }
-
+ 
   
 }

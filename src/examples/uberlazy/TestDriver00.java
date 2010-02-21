@@ -25,7 +25,7 @@ public class TestDriver00 {
 		}
 	}
 	
-	private Node swapNode() {
+	public Node swapNode() {
 		System.out.println("coming in swapNode");
 		if(n != null) {
 			System.out.println("\t n is not null");

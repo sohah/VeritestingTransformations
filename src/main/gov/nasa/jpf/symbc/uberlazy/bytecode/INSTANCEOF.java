@@ -118,8 +118,9 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 				 //no concretization found
 				 EquivalenceClass currPart = partitionForTypes.get(currentChoice);
 				 currEqObjs.replaceClass(objref,currPart);
-				 UberLazyHelper.generatingNewConcretization(objref, currEqObjs.getEquivClass(objref).
-						 getElementsInEquivClass().get(0), symInputHeap, ks, th);
+				 EquivalenceElem elem = UberLazyHelper.getSuperParentInClassHierarchy
+					(currEqObjs.getEquivClass(objref));
+				 UberLazyHelper.generatingNewConcretization(objref, elem, symInputHeap, ks, th);
 				 th.push(0,false);
 			 }
 		 } else {
@@ -135,8 +136,9 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 				 EquivalenceClass currPart = partitionForTypes.get(currentChoice);
 				 currEqObjs.replaceClass(objref,currPart);
 				 // currEqObjs.printAllEquivClasses();
-				 UberLazyHelper.generatingNewConcretization(objref, currEqObjs.getEquivClass(objref).
-						 getElementsInEquivClass().get(0), symInputHeap, ks, th);
+				 EquivalenceElem elem = UberLazyHelper.getSuperParentInClassHierarchy
+				 											(currEqObjs.getEquivClass(objref));
+				 UberLazyHelper.generatingNewConcretization(objref, elem, symInputHeap, ks, th);
 				 th.push(1,false);
 			 }
 		 }
