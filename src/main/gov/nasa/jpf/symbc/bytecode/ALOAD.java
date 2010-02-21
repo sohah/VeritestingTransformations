@@ -140,11 +140,13 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		} 
 		else if (currentChoice == (numSymRefs + 1)) {
 			//creates a new object with all fields symbolic
-			daIndex = addNewHeapNode(typeClassInfo, th, daIndex, attr, ks, pcHeap, symInputHeap);
+			daIndex = Helper.addNewHeapNode(typeClassInfo, th, daIndex, attr, ks, pcHeap,
+							symInputHeap, numSymRefs, prevSymRefs);
 		} else {
 			int counter = currentChoice - (numSymRefs+1) - 1; //index to the sub-class
 			ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
-			daIndex = addNewHeapNode(subClassInfo, th, daIndex, attr, ks, pcHeap, symInputHeap);
+			daIndex = Helper.addNewHeapNode(subClassInfo, th, daIndex, attr, ks, pcHeap,
+							symInputHeap, numSymRefs, prevSymRefs);
 
 		}
 
@@ -157,44 +159,5 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
 		return getNext(th);
 	}
-	
-	 private int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
-			  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap) {
-		  daIndex = ks.da.newObject(typeClassInfo, ti);
-		  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
-		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
-		  ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
-	
-		  // neha: this change allows all the fields in the class hierarchy of the
-		  // object to be initialized as symbolic and not just its instance fields
-		  Fields f = eiRef.getFields();
-		  int numOfFields = f.getNumberOfFields();
-		  FieldInfo[] fields = new FieldInfo[numOfFields];
-		  for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
-			  fields[fieldIndex] = f.getFieldInfo(fieldIndex);
-		  }
-		  
-		  Helper.initializeInstanceFields(fields, eiRef,refChain);
-		  
-		  //neha: this change allows all the static fields in the class hierarchy
-		  // of the object to be initialized as symbolic and not just its immediate
-		  // static fields
-		  ClassInfo superClass = typeClassInfo;
-		  while(superClass != null) {
-			  FieldInfo[] staticFields = superClass.getDeclaredStaticFields();
-			  Helper.initializeStaticFields(staticFields, superClass, ti);
-			  superClass = superClass.getSuperClass();
-		  }
-		  
-		  
-		  // create new HeapNode based on above info
-		  // update associated symbolic input heap
-		  HeapNode n= new HeapNode(daIndex,typeClassInfo,newSymRef);
-		  symInputHeap._add(n);
-		  pcHeap._addDet(Comparator.NE, newSymRef, new IntegerConstant(-1));
-		  // pcHeap._addDet(Comparator.EQ, newSymRef, (SymbolicInteger) attr);
-		  for (int i=0; i< numSymRefs; i++)
-			  pcHeap._addDet(Comparator.NE, n.getSymbolic(), prevSymRefs[i].getSymbolic());
-		  return daIndex;
-	  }
+
 }
