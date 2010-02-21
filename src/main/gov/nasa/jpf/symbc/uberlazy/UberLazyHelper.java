@@ -9,7 +9,6 @@ import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DynamicElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.Fields;
 import gov.nasa.jpf.jvm.KernelState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.symbc.heap.HeapNode;
@@ -111,11 +110,7 @@ public class UberLazyHelper {
 				 //replace in the concrete world
 				 DynamicElementInfo dei = ks.da.get(objref);
 				 dei.restoreFields(tClassInfo.createInstanceFields());
-				 //Fields f = dei.getFields();
-	
-				 tClassInfo.createInstanceFields();
-			
-				// tClassInfo.getinitializeInstanceData()
+				
 				 return;
 			 }
 			 n = n.getNext();
