@@ -107,11 +107,12 @@ public class UberLazyHelper {
 				 					getResolvedClassInfo(elem.getTypeOfElement());
 				 //replace in the symbolic world
 				 n.replaceType(tClassInfo);
-				 //replace in the concrete world 
-				 //ks.da.replaceObject(tClassInfo, th, objref);
 				 
-				 //DynamicElementInfo dei = ks.da.get(objref);
+				 //replace in the concrete world
+				 DynamicElementInfo dei = ks.da.get(objref);
+				 dei.restoreFields(tClassInfo.createInstanceFields());
 				 //Fields f = dei.getFields();
+	
 				 tClassInfo.createInstanceFields();
 			
 				// tClassInfo.getinitializeInstanceData()
