@@ -115,25 +115,102 @@ public class UberLazyHelper {
 		 return UberLazyHelper.initializePartitionDataStructs(objId, numPartitions);
 	 }
 	 
-	 //TODO: need to test this method
-	 public static EquivalenceElem getSuperParentInClassHierarchy(EquivalenceClass eqClass) {
+	 public static EquivalenceElem getSuperParentInClassHierarchy(EquivalenceClass eqClass, int objRef) {
 		 ArrayList<EquivalenceElem> eqElems = eqClass.getElementsInEquivClass();
+		 return UberLazyHelper.getSuperParentInClassHeirarchy(eqElems, objRef);
+	 }
+	 
+	 public static EquivalenceElem getSuperParentInClassHeirarchy(ArrayList<EquivalenceElem> eqElems, int objRef) {
 		 if(eqElems.size() <= 0) {
 			 return null;
 		 }
 		 EquivalenceElem elem = eqElems.get(0);
 		 ClassInfo parentClassInfo = ClassInfo.getResolvedClassInfo
-		 													(elem.getTypeOfElement());
-		 
-		 for(int eqIndex = 0; eqIndex < eqElems.size(); eqIndex++) {
+		 												(elem.getTypeOfElement());
+
+		 for(int eqIndex = 1; eqIndex < eqElems.size(); eqIndex++) {
 			 EquivalenceElem currElem = eqElems.get(eqIndex);
 			 if(parentClassInfo.isInstanceOf(currElem.getTypeOfElement())) {
 				 parentClassInfo = ClassInfo.getResolvedClassInfo
-				 								(currElem.getTypeOfElement());
-				 elem = eqElems.get(eqIndex);
-			 }
+				 										(currElem.getTypeOfElement());
+				 // found the parent again; might arise due to aliased equivalence elements
+				 if(elem.getTypeOfElement().equals(currElem.getTypeOfElement())) {   
+					 if(objRef != -1 && currElem.getAliasIdentifier().equals(String.valueOf(objRef))) {
+						 // replace only if the parent is from the current objRef, if anything
+						 // matches the objref that is given priority
+						 elem = currElem;
+					 } // otherwise do nothing
+				 } else { 
+					 elem = currElem;
+				 }
+			 } 	
+
 		 }
 		 return elem;
+	 }
+
+	 public static ChoiceGenerator<?> getPrevPartitionChoiceGenerator(ChoiceGenerator<?> currCG) {
+		 ChoiceGenerator<?> prevPartitionCG = currCG;
+		 while(!((prevPartitionCG == null) || (prevPartitionCG instanceof 
+				 PartitionChoiceGenerator))) {
+			 prevPartitionCG = prevPartitionCG.getPreviousChoiceGenerator();
+		 }
+		 return prevPartitionCG;
+
+	 }
+	 
+	 public static EquivalenceObjects getEquivalenceObjects(ChoiceGenerator<?> prevPartitionCG, int objRef) {
+		 if(prevPartitionCG != null && 
+				 UberLazyHelper.symbolicVariableExists(prevPartitionCG, objRef)) {
+			 return ((PartitionChoiceGenerator) prevPartitionCG).
+			 									getCurrentEquivalenceObject();
+		 }
+		 return null;
+	 }
+	 
+	 public static ArrayList<EquivalenceElem> getAllAliasedObjects(ChoiceGenerator<?> prevCG, String typeClassInfo) {
+
+		 ArrayList<EquivalenceElem> aliasedElem = new ArrayList<EquivalenceElem>();
+		 //get all the objects that were declared on the symbolic input heap
+		 if(prevCG == null) {
+			 return aliasedElem;
+		 }
+		// System.out.println("prevHeap is not null");
+		 SymbolicInputHeap symInputHeap = ((PartitionChoiceGenerator) prevCG).
+		 													getCurrentSymInputHeap();
+		 EquivalenceObjects equivObjs = ((PartitionChoiceGenerator) prevCG).
+		 													getCurrentEquivalenceObject();
+		 HeapNode n = symInputHeap.header();
+		 while(null != n) {
+			 ClassInfo tClassInfo = n.getType();
+			 int daIndex = n.getIndex();
+			 EquivalenceClass eqClass = null;
+			 if(equivObjs.containsEquivClassForRef(daIndex)) {
+					eqClass = equivObjs.getEquivClass(daIndex);
+					ArrayList<EquivalenceElem> elems = eqClass.
+														getElementsInEquivClass();
+				
+					// if the parent is an instance, all its subtypes will 
+					if(tClassInfo.isInstanceOf(typeClassInfo)){
+						aliasedElem.addAll(elems);
+					} else {
+						// if the parent is not an instanceof, one or more of
+						// subtypes maybe eligible to be put in the equivlance
+						// class
+						for(int elemIndex = 0; elemIndex < elems.size(); elemIndex++) {
+							EquivalenceElem anElem = elems.get(elemIndex);
+							ClassInfo elemClassInfo = ClassInfo.getResolvedClassInfo
+																		(anElem.typeOfElem);
+							if(elemClassInfo.isInstanceOf(typeClassInfo)) {
+								aliasedElem.add(anElem);
+							}
+						}
+					}
+			 }
+			 n = n.getNext();
+		 }
+		 //System.out.println(aliasedElem.toString());
+		 return aliasedElem;
 	 }
 	 
 	 //initializes a new concretization for object represented by EqivalenceElem -- "elem"

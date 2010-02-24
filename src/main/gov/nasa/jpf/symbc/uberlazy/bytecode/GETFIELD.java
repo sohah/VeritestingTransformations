@@ -19,6 +19,8 @@
 package gov.nasa.jpf.symbc.uberlazy.bytecode;
 
 
+import java.util.ArrayList;
+
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DynamicArea;
@@ -35,13 +37,16 @@ import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+import gov.nasa.jpf.symbc.uberlazy.EquivalenceElem;
 import gov.nasa.jpf.symbc.uberlazy.EquivalenceObjects;
 import gov.nasa.jpf.symbc.uberlazy.PartitionChoiceGenerator;
 import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
+import gov.nasa.jpf.symbc.uberlazy.UberLazyHelper;
 
 public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
   ChoiceGenerator<?> prevHeapCG;
+  ArrayList<EquivalenceElem> aliasedElems;
   
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
@@ -87,6 +92,11 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
 	  if (!ti.isFirstStepInsn()) {
 
+		  prevHeapCG = UberLazyHelper.getPrevPartitionChoiceGenerator
+		  												(ss.getChoiceGenerator());
+		  aliasedElems = UberLazyHelper.getAllAliasedObjects
+		  						(prevHeapCG, fi.getTypeClassInfo().getName());
+		  
 		  thisHeapCG = new PartitionChoiceGenerator(2); // +null,new
 		  ss.setNextChoiceGenerator(thisHeapCG);
 		  return this;
@@ -135,7 +145,8 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 				  symInputHeap, 0, null); // the last two args represent that the heap
 		  								  // constraint does not need to be updated for
 		  								  // any of the aliased objects
-		  equivObjs.addClass(typeClassInfo.getName(), daIndex);		  
+		  equivObjs.addClass(typeClassInfo.getName(), daIndex);		
+		  equivObjs.addAliasedObjects(daIndex, aliasedElems);
 	  } 
 
 	  ei.setReferenceField(fi,daIndex );

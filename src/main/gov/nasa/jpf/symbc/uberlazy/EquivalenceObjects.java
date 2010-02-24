@@ -32,6 +32,12 @@ public class EquivalenceObjects implements Cloneable{
 		allEquivClasses.put(objRef, equivClass);
 	}
 	
+	public void addAliasedObjects(int objref, ArrayList<EquivalenceElem> aliasedElems) {
+		if(allEquivClasses.containsKey(objref)) {
+			EquivalenceClass eqClass = allEquivClasses.get(objref);
+			eqClass.getElementsInEquivClass().addAll(aliasedElems);
+		}
+	}
 	
 	public void replaceClass(int objref, EquivalenceClass ec) {
 		if(allEquivClasses.containsKey(objref)) {
@@ -44,6 +50,13 @@ public class EquivalenceObjects implements Cloneable{
 			return allEquivClasses.get(objRef);
 		}
 		return null;
+	}
+	
+	public boolean containsEquivClassForRef(int objRef) {
+		if(allEquivClasses.containsKey(objRef)) {
+			return true;
+		}
+		return false;
 	}
 	
 	public void printAllEquivClasses(){

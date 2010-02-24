@@ -20,21 +20,24 @@ package uberlazy;
 
 import gov.nasa.jpf.symbc.Symbolic;
 
-public class TestDynamicDispatch {
+public class TestDiffClassAlias {
 	
 	@Symbolic("true")
-	Node n;
+	Node n; 
+	@Symbolic("true")
+	intNode m;
 	
-	public void run () {
+	public void run() {
 		if(n != null) {
-			n.print();;
+			if(m != null) {
+				System.out.println("both objects are not null");
+			}
 		}
 	}
 	
-	
 	public static void main(String[] args) {
-		TestDynamicDispatch dynamic = new TestDynamicDispatch();
-		dynamic.run();
+		TestDiffClassAlias test = new TestDiffClassAlias();
+		test.run();
 	}
 	
 }

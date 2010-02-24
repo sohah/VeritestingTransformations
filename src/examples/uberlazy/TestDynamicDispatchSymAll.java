@@ -16,25 +16,25 @@
 // THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
+
 package uberlazy;
 
 import gov.nasa.jpf.symbc.Symbolic;
 
-public class TestDynamicDispatch {
+public class TestDynamicDispatchSymAll {
 	
 	@Symbolic("true")
 	Node n;
 	
-	public void run () {
+	public void run() {
 		if(n != null) {
-			n.print();;
+			n.testAll();
 		}
 	}
 	
-	
 	public static void main(String[] args) {
-		TestDynamicDispatch dynamic = new TestDynamicDispatch();
-		dynamic.run();
+		TestDynamicDispatchSymAll test = new TestDynamicDispatchSymAll();
+		test.run();
 	}
 	
 }

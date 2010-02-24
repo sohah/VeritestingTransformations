@@ -20,20 +20,20 @@ package uberlazy;
 
 import gov.nasa.jpf.symbc.Symbolic;
 
-public class TestDynamicDispatch {
+public class TestDynamicDispatchOne {
 	
 	@Symbolic("true")
 	Node n;
 	
 	public void run () {
 		if(n != null) {
-			n.print();;
+			n.onePrint();
 		}
 	}
 	
 	
 	public static void main(String[] args) {
-		TestDynamicDispatch dynamic = new TestDynamicDispatch();
+		TestDynamicDispatchOne dynamic = new TestDynamicDispatchOne();
 		dynamic.run();
 	}
 	

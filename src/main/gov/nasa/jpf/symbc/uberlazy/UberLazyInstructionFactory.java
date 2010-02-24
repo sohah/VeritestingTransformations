@@ -35,6 +35,7 @@ public class UberLazyInstructionFactory extends SymbolicInstructionFactory {
 
 		    insnClass[GETFIELD] = gov.nasa.jpf.symbc.uberlazy.bytecode.GETFIELD.class;
 		    insnClass[INSTANCEOF] = gov.nasa.jpf.symbc.uberlazy.bytecode.INSTANCEOF.class;
+		    insnClass[INVOKEVIRTUAL] = gov.nasa.jpf.symbc.uberlazy.bytecode.INVOKEVIRTUAL.class;
 	}
 
 	InstructionFactoryFilter filter = new InstructionFactoryFilter(null, new String[] {"java.*", "javax.*" },

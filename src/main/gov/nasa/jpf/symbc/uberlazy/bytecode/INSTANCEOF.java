@@ -119,7 +119,7 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 				 EquivalenceClass currPart = partitionForTypes.get(currentChoice);
 				 currEqObjs.replaceClass(objref,currPart);
 				 EquivalenceElem elem = UberLazyHelper.getSuperParentInClassHierarchy
-					(currEqObjs.getEquivClass(objref));
+					(currEqObjs.getEquivClass(objref), objref);
 				 UberLazyHelper.generatingNewConcretization(objref, elem, symInputHeap, ks, th);
 				 th.push(0,false);
 			 }
@@ -137,7 +137,7 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 				 currEqObjs.replaceClass(objref,currPart);
 				 // currEqObjs.printAllEquivClasses();
 				 EquivalenceElem elem = UberLazyHelper.getSuperParentInClassHierarchy
-				 											(currEqObjs.getEquivClass(objref));
+				 											(currEqObjs.getEquivClass(objref), objref);
 				 UberLazyHelper.generatingNewConcretization(objref, elem, symInputHeap, ks, th);
 				 th.push(1,false);
 			 }
