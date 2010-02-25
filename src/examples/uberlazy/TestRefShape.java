@@ -10,7 +10,7 @@ import gov.nasa.jpf.symbc.Symbolic;
  **/
 
 
-public class TestDriver00 {
+public class TestRefShape {
 	@Symbolic("true")
 	Node m;
 	@Symbolic("true")
@@ -41,7 +41,7 @@ public class TestDriver00 {
 	}
 	
 	public static void main(String[] args) {
-		TestDriver00 tt = new TestDriver00();
+		TestRefShape tt = new TestRefShape();
 		tt.run();
 	}
 	

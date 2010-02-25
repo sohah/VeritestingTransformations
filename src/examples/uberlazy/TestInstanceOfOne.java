@@ -9,7 +9,7 @@ package uberlazy;
 import gov.nasa.jpf.symbc.Symbolic;
 
 
-public class TestDriver03{
+public class TestInstanceOfOne{
 
 	@Symbolic("true")
 	Node n;
@@ -26,7 +26,7 @@ public class TestDriver03{
 	}
 	
 	public static void main (String[] args) {
-		TestDriver03 tt = new TestDriver03();
+		TestInstanceOfOne tt = new TestInstanceOfOne();
 		tt.run();
 	}
 	

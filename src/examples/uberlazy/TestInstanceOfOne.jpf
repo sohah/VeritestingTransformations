@@ -1,4 +1,4 @@
-target = uberlazy.TestDriver03
+target = uberlazy.TestInstanceOfOne
 
 classpath = ${jpf-symbc}/build/examples
 
@@ -8,4 +8,4 @@ type_classpath = ${jpf-symbc}/build/examples/uberlazy
 
 vm.insn_factory.class=gov.nasa.jpf.symbc.uberlazy.UberLazyInstructionFactory
 
-symbolic.method = uberlazy.TestDriver03.run()
+symbolic.method = uberlazy.TestInstanceOfOne.run()

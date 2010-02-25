@@ -18,43 +18,42 @@
 //
 package uberlazy;
 
-/**
- * @author Neha Rungta
- * 
- * This class tests whether all the non-deterministic choices arising
- * from polymorphism are accounted for. The initialization of the 
- * data structure n is all the classes that Node is an instanceof
- * It also serves as a test case when for the partition function 
- * at the non-deterministic choice of the instanceof class
- * 
- * Without the polymorphism only the second print statement will 
- * be executed. With polymorphism the first statements prints twice
- * and the else prints once. With the correct partition function
- * each statement prints once. 
- **/
-
 import gov.nasa.jpf.symbc.Symbolic;
 
-
-public class TestDriver01 {
+public class TestRefCompareEq {
 	
 	@Symbolic("true")
 	Node n;
-
+	@Symbolic("true")
+	Node m;
 	
 	public void run () {
 		if(n != null) {
-			if(n instanceof dblNode) {
-				System.out.println("You can store reals in this data structure");
-			} else {
-				System.out.println("Don't store a Real in here");
+			if(m != null) {
+				testEquality();
 			}
 		}
 	}
 	
-	public static void main(String[] args) {
-		TestDriver01 tt = new TestDriver01();
-		tt.run();
+	public void testEquality() {
+		//   the bytecode sequences that the following code is
+		//   5:		getfield	#3; //Field m:Luberlazy/Node;
+	  	//   8:		if_acmpeq	22
+		//   11:	getstatic	#5; //Field java/lang/System.out:Ljava/io/PrintStream;
+		//   14:	ldc	#6; //String the objects are equal
+		// hence this example really is comparing equality
+
+		if(n != m) {
+			System.out.println("the objects are not equal");
+		} else {
+			System.out.println("They are equal");
+		}
+	}
+	
+	
+	public static void main (String[] args) {
+		TestRefCompareEq test = new TestRefCompareEq();
+		test.run();
 	}
 	
 }

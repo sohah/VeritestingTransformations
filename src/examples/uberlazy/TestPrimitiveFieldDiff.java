@@ -11,7 +11,7 @@ package uberlazy;
 import gov.nasa.jpf.symbc.Symbolic;
 
 
-public class TestDriver02 {
+public class TestPrimitiveFieldDiff {
 	
 	@Symbolic("true")
 	Node n;
@@ -24,27 +24,21 @@ public class TestDriver02 {
 			// and it differs in the value/type then the partition
 			// function separates the ones that are different
 			if(m.elem > 10) {
-				System.out.println("the value of m.elem is greater 10");
-				m.print();
+				if(n != null) {
+					if(n.elem < 10) {
+						System.out.println("m.elem is > 10 and n.elem < 10");
+					}
+				}
 			} else {
-				System.out.println("less than equal to 10");
+				System.out.println("m.elem <= 10");
 			}
 		}
 	}
 	
-	public void differentField() {
-		if(n != null) {
-			// when a primitive field reference is read	
-			// and it differs in the value then the partition
-			// function separates the ones that are different 
-			if(n.elem < 5) { 
-				System.out.println("the value of n.elem is less 5");
-			} 
-		}
-	}
+	
 	
 	public static void main(String[] args) {
-		TestDriver02 tt = new TestDriver02();
+		TestPrimitiveFieldDiff tt = new TestPrimitiveFieldDiff();
 		tt.run();
 	}
 	
