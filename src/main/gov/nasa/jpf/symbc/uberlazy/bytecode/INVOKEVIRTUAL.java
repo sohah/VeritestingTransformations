@@ -131,7 +131,8 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 
 				EquivalenceElem sParent = UberLazyHelper.getSuperParentInClassHeirarchy(invokedci, objRef);
 				UberLazyHelper.generatingNewConcretization(objRef, sParent, symInputHeap, ks, th);
-
+				equivObjs = UberLazyHelper.generateNewEquivalenceClass(equivObjs, objRef, invokedci);
+				 
 				((HeapChoiceGenerator)thisPartitionCG).setCurrentPCheap(pcHeap);
 				((HeapChoiceGenerator)thisPartitionCG).setCurrentSymInputHeap(symInputHeap);
 				((PartitionChoiceGenerator)thisPartitionCG).setEquivalenceObj(equivObjs);

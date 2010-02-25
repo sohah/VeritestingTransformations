@@ -176,6 +176,13 @@ public class UberLazyHelper {
 		 return null;
 	 }
 	 
+	 public static EquivalenceObjects generateNewEquivalenceClass(EquivalenceObjects currEquivObjs, int objref,
+			 													ArrayList<EquivalenceElem> equivElems) {
+		 EquivalenceClass eqClass = new EquivalenceClass(Integer.toString(objref), equivElems);
+		 currEquivObjs.replaceClass(objref, eqClass);
+		 return currEquivObjs;
+	 }
+	 
 	 public static ArrayList<EquivalenceElem> getAllAliasedObjects(ChoiceGenerator<?> prevCG, String typeClassInfo) {
 
 		 ArrayList<EquivalenceElem> aliasedElem = new ArrayList<EquivalenceElem>();

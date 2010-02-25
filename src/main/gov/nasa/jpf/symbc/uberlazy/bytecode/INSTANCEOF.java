@@ -23,15 +23,11 @@ import java.util.HashMap;
 
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DynamicElementInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.Fields;
 import gov.nasa.jpf.jvm.KernelState;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
-import gov.nasa.jpf.symbc.heap.HeapNode;
 import gov.nasa.jpf.symbc.heap.SymbolicInputHeap;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.uberlazy.EquivalenceClass;
@@ -46,7 +42,6 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 	private ChoiceGenerator<?> prevPartitionCG;
 	private HashMap<Integer, EquivalenceClass> partitionForTypes;
 	private EquivalenceObjects equivObjs;
-	private boolean concTypeMatch = false;
 	private int numPartitions = 1;
 	
 	 @Override
@@ -57,16 +52,11 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 
 		 if (!th.isFirstStepInsn()) {
 			 int objref = th.peek();
-			 prevPartitionCG = ss.getChoiceGenerator();
-			 while(!((prevPartitionCG == null) || (prevPartitionCG instanceof 
-					 PartitionChoiceGenerator))) {
-				 prevPartitionCG = prevPartitionCG.getPreviousChoiceGenerator();
-			 }
-
-			 if(prevPartitionCG != null && 
-					 UberLazyHelper.symbolicVariableExists(prevPartitionCG, objref)) {
-				 equivObjs = ((PartitionChoiceGenerator) prevPartitionCG).
-				 getCurrentEquivalenceObject();
+			 
+			 prevPartitionCG = UberLazyHelper.
+			 				getPrevPartitionChoiceGenerator(ss.getChoiceGenerator());
+			 equivObjs = UberLazyHelper.getEquivalenceObjects(prevPartitionCG, objref);
+			 if(equivObjs != null) {
 				 numPartitions = getNumberOfParititions(objref, ks);
 				 currPartitionCG = new PartitionChoiceGenerator(numPartitions);
 				 ss.setNextChoiceGenerator(currPartitionCG);
@@ -76,7 +66,7 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 
 		 int objref = th.pop(); 
 
-		 if(prevPartitionCG == null) {
+		 if(prevPartitionCG == null || numPartitions == 1) {
 			 if (objref == -1) {
 				 th.push(0, false);
 			 } else if (ks.da.get(objref).instanceOf(super.getType())) {
@@ -93,55 +83,22 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 			 "expected PartitionChoiceGenerator, got: " + currPartitionCG;
 		 currentChoice = ((PartitionChoiceGenerator) currPartitionCG).getNextChoice();
 
-		 // the currEqObjs cannot be null at this, use this function with extreme
-		 // caution this does a deep copy TODO:// add a function that does simply
-		 // a shallow copy.
 		 EquivalenceObjects currEqObjs = ((PartitionChoiceGenerator) prevPartitionCG).
-		 getCurrentEquivalenceObject();
+		 													getCurrentEquivalenceObject();
 		 PathCondition pcHeap = ((HeapChoiceGenerator) prevPartitionCG).getCurrentPCheap();
 		 SymbolicInputHeap symInputHeap = ((HeapChoiceGenerator) prevPartitionCG).
-		 getCurrentSymInputHeap();
+		 														getCurrentSymInputHeap();
 
-		 if(numPartitions == 1) {
-			 if (ks.da.get(objref).instanceOf(super.getType())) {
-				 th.push(1, false);
-			 } else {
-				 th.push(0, false);
-			 }
-		 } else if(currentChoice == 0) {
-			 // if there exists a concretization for the false case;
-			 if(!concTypeMatch) {
-				 EquivalenceClass currPart = partitionForTypes.get(currentChoice);
-				 currEqObjs.replaceClass(objref,currPart);
-				 th.push(0,false);
-			 } else {
-				 //no concretization found
-				 EquivalenceClass currPart = partitionForTypes.get(currentChoice);
-				 currEqObjs.replaceClass(objref,currPart);
-				 EquivalenceElem elem = UberLazyHelper.getSuperParentInClassHierarchy
-					(currEqObjs.getEquivClass(objref), objref);
-				 UberLazyHelper.generatingNewConcretization(objref, elem, symInputHeap, ks, th);
-				 th.push(0,false);
-			 }
-		 } else {
-			 if(concTypeMatch) {
-				 //found a concrete match
-				 EquivalenceClass currPart = partitionForTypes.get(currentChoice);
-				 currEqObjs.replaceClass(objref,currPart);
-				 th.push(1,false);
-				 //System.out.println("in the currentChoice 1 and if");
-			 } else {
-				 // no concretization found
-				 // System.out.println("no concretization");
-				 EquivalenceClass currPart = partitionForTypes.get(currentChoice);
-				 currEqObjs.replaceClass(objref,currPart);
-				 // currEqObjs.printAllEquivClasses();
-				 EquivalenceElem elem = UberLazyHelper.getSuperParentInClassHierarchy
-				 											(currEqObjs.getEquivClass(objref), objref);
-				 UberLazyHelper.generatingNewConcretization(objref, elem, symInputHeap, ks, th);
-				 th.push(1,false);
-			 }
-		 }
+
+
+		 EquivalenceClass currPart = partitionForTypes.get(currentChoice);
+		 currEqObjs.replaceClass(objref,currPart);
+		 // currEqObjs.printAllEquivClasses();
+		 EquivalenceElem elem = UberLazyHelper.getSuperParentInClassHierarchy
+		 										(currEqObjs.getEquivClass(objref), objref);
+		 UberLazyHelper.generatingNewConcretization(objref, elem, symInputHeap, ks, th);
+		 th.push(currentChoice,false);
+
 		 ((PartitionChoiceGenerator) currPartitionCG).setEquivalenceObj(currEqObjs);
 		 ((HeapChoiceGenerator)currPartitionCG).setCurrentPCheap(pcHeap);
 		 ((HeapChoiceGenerator)currPartitionCG).setCurrentSymInputHeap(symInputHeap);
@@ -157,13 +114,7 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 		 
 		 if(equivObjs.getEquivClass(objref) != null) {
 			 EquivalenceClass ec = equivObjs.getEquivClass(objref);
-			 //System.out.println("ec is :" + ec.toString());
-			 ElementInfo ei = ks.da.get(objref);
-			 // super.getType gets the class which we are comparing with
-			 if(ei.instanceOf(super.getType())) {
-				 //System.out.println("The current element is a type of it");
-				 concTypeMatch = true;
-			 }
+	
 			 ArrayList<EquivalenceElem> equivElements = 
 				 ec.getElementsInEquivClass();
 			 for(int eqIndex = 0; eqIndex < equivElements.size(); eqIndex++) {
