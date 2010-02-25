@@ -25,12 +25,20 @@ import java.util.Set;
 
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.DynamicElementInfo;
+import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.jvm.Fields;
 import gov.nasa.jpf.jvm.KernelState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.symbc.heap.HeapNode;
+import gov.nasa.jpf.symbc.heap.Helper;
 import gov.nasa.jpf.symbc.heap.SymbolicInputHeap;
+import gov.nasa.jpf.symbc.numeric.Comparator;
+import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
 public class UberLazyHelper {
 	
@@ -226,11 +234,78 @@ public class UberLazyHelper {
 				 
 				 //replace in the concrete world
 				 DynamicElementInfo dei = ks.da.get(objref);
-				 dei.restoreFields(tClassInfo.createInstanceFields());				 
+				 dei.restoreFields(tClassInfo.createInstanceFields());	
+				 int daIndex = objref; 
+				 ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
+				 
+				 //initialize the instance fields as symbolic 
+				 Fields f = eiRef.getFields();
+				 int numOfFields = f.getNumberOfFields();
+				 FieldInfo[] fields = new FieldInfo[numOfFields];
+				 for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
+					 fields[fieldIndex] = f.getFieldInfo(fieldIndex);
+				 }
+				 String refChain; 
+				 if(n instanceof UberLazyHeapNode) {
+					 UberLazyHeapNode hn  = (UberLazyHeapNode) n;
+					 refChain = hn.getRefChain();
+				 } else {
+					 refChain = "";
+				 }
+				 Helper.initializeInstanceFields(fields, eiRef,refChain);
+
+				 //initialize the static fields as symbolic 					
+				 ClassInfo superClass = tClassInfo;
+				 while(superClass != null) {
+					 FieldInfo[] staticFields = superClass.getDeclaredStaticFields();
+					 Helper.initializeStaticFields(staticFields, superClass, th);
+					 superClass = superClass.getSuperClass();
+				 }
+				 
+				 //TODO: Update the heap constraint based on what is split
+			
 				 return;
 			 }
 			 n = n.getNext();
 		 }
 
  }
+	 
+	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
+			  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap) {
+		  daIndex = ks.da.newObject(typeClassInfo, ti);
+		  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
+		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
+		  ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
+		  
+		  // neha: this change allows all the fields in the class hierarchy of the
+		  // object to be initialized as symbolic and not just its instance fields
+		  Fields f = eiRef.getFields();
+		  int numOfFields = f.getNumberOfFields();
+		  FieldInfo[] fields = new FieldInfo[numOfFields];
+		  for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
+			  fields[fieldIndex] = f.getFieldInfo(fieldIndex);
+		  }
+		  
+		  Helper.initializeInstanceFields(fields, eiRef,refChain);
+		  
+		  //neha: this change allows all the static fields in the class hierarchy
+		  // of the object to be initialized as symbolic and not just its immediate
+		  // static fields
+		  ClassInfo superClass = typeClassInfo;
+		  while(superClass != null) {
+			  FieldInfo[] staticFields = superClass.getDeclaredStaticFields();
+			  Helper.initializeStaticFields(staticFields, superClass, ti);
+			  superClass = superClass.getSuperClass();
+		  }
+		  	  
+		  // create new HeapNode based on above info
+		  // update associated symbolic input heap
+		  HeapNode n= new UberLazyHeapNode(daIndex,typeClassInfo,newSymRef,refChain);
+		  symInputHeap._add(n);
+		  pcHeap._addDet(Comparator.NE, newSymRef, new IntegerConstant(-1));
+		  return daIndex;
+	  }
+	  
+	  
 }

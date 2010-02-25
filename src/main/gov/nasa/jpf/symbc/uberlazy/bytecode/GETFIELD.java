@@ -141,8 +141,8 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  daIndex = -1;
 	  } 
 	  else if (currentChoice == 1) { 
-		  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
-				  symInputHeap, 0, null); // the last two args represent that the heap
+		  daIndex = UberLazyHelper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
+				  symInputHeap); // the last two args represent that the heap
 		  								  // constraint does not need to be updated for
 		  								  // any of the aliased objects
 		  equivObjs.addClass(typeClassInfo.getName(), daIndex);		

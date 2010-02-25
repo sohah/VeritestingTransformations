@@ -34,6 +34,7 @@ import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 import gov.nasa.jpf.symbc.heap.SymbolicInputHeap;
+import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.uberlazy.EquivalenceClass;
 import gov.nasa.jpf.symbc.uberlazy.EquivalenceElem;
@@ -53,16 +54,10 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 		
 		int currentChoice;
 		ChoiceGenerator<?> thisPartitionCG;
-		//BytecodeUtils.InstructionOrSuper nextInstr = BytecodeUtils.execute(this, ss, ks, th);
-
-		BytecodeUtils.InstructionOrSuper nextInstr; 
-
 		if (!th.isFirstStepInsn()) {
-			nextInstr = BytecodeUtils.execute(this, ss, ks, th);
-
 			int objRef = th.getCalleeThis( getArgSize());
 			prevPartitionCG = UberLazyHelper.
-			getPrevPartitionChoiceGenerator(ss.getChoiceGenerator());
+								getPrevPartitionChoiceGenerator(ss.getChoiceGenerator());
 			equivObjs = UberLazyHelper.getEquivalenceObjects(prevPartitionCG, objRef);
 
 			if(equivObjs != null && equivObjs.containsEquivClassForRef(objRef)) {
@@ -84,14 +79,18 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 					partitionMethods.put(uniqueId, lstOfClasses);
 				}
 
-				//System.out.println(partitionMethods.toString());
 				int numPartitions = partitionMethods.size();
 				thisPartitionCG = new PartitionChoiceGenerator(numPartitions);
 				ss.setNextChoiceGenerator(thisPartitionCG);
 				partition = true;
-			}
-		} else {
+				return this;
+			} 
+			
+
+		} 
+
 			// when the instruction is actually executed
+			//System.out.println("executing the instruction");
 			if(partition) {
 				thisPartitionCG = ss.getChoiceGenerator();
 				assert (thisPartitionCG instanceof PartitionChoiceGenerator) :
@@ -137,9 +136,8 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 				((HeapChoiceGenerator)thisPartitionCG).setCurrentSymInputHeap(symInputHeap);
 				((PartitionChoiceGenerator)thisPartitionCG).setEquivalenceObj(equivObjs);
 			}
-			nextInstr = BytecodeUtils.execute(this, ss, ks, th);
-
-		}
+			BytecodeUtils.InstructionOrSuper nextInstr = BytecodeUtils.execute(this, ss, ks, th, true);
+			
 		if (nextInstr.callSuper) {
 			return super.execute(ss, ks, th);
 		} else {
