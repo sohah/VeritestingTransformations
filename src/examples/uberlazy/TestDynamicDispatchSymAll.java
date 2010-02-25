@@ -24,7 +24,7 @@ import gov.nasa.jpf.symbc.Symbolic;
 public class TestDynamicDispatchSymAll {
 	
 	@Symbolic("true")
-	Node n;
+	dblNode n;
 	
 	public void run() {
 		if(n != null) {

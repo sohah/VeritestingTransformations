@@ -13,4 +13,4 @@ type_classpath = ${jpf-symbc}/build/examples/uberlazy
 #using this instruction factory ensures you use the uberlazy algorithm
 vm.insn_factory.class=gov.nasa.jpf.symbc.uberlazy.UberLazyInstructionFactory
 
-symbolic.method = uberlazy.TestDynamicDispatchSym.run(), uberlazy.Node.testVal()
+symbolic.method = uberlazy.TestDynamicDispatchSym.run(),uberlazy.Node.testVal()

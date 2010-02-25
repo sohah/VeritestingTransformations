@@ -2,7 +2,7 @@ package uberlazy;
 
 public class dblNode extends Node {
 	
-	double elem;
+	double otherElem;
 	Node next;
 	
 	public dblNode() {
@@ -14,7 +14,7 @@ public class dblNode extends Node {
 	}
 	
 	public void testAll() {
-		if(elem > 2) {
+		if(otherElem > 2) {
 			System.out.println("the value is greater than 2");
 		} else {
 			System.out.println("the value is less than or equal to 2");

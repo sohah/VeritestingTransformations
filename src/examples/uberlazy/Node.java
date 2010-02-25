@@ -30,7 +30,7 @@ public class Node {
 	}
 	
 	public void testAll() {
-		if(elem > 0) {
+		if(this.elem > 0) {
 			System.out.println("the value is greater than 0");
 		} else {
 			System.out.println("the value is less than or equal to 0");
