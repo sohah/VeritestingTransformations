@@ -275,44 +275,45 @@ public class UberLazyHelper {
 			 }
 			 n = n.getNext();
 		 }
-
- }
+	 }
 	 
-	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
-			  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap) {
-		  daIndex = ks.da.newObject(typeClassInfo, ti);
-		  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
-		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
-		  ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
-		  
-		  // neha: this change allows all the fields in the class hierarchy of the
-		  // object to be initialized as symbolic and not just its instance fields
-		  Fields f = eiRef.getFields();
-		  int numOfFields = f.getNumberOfFields();
-		  FieldInfo[] fields = new FieldInfo[numOfFields];
-		  for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
-			  fields[fieldIndex] = f.getFieldInfo(fieldIndex);
-		  }
-		  
-		  Helper.initializeInstanceFields(fields, eiRef,refChain);
-		  
-		  //neha: this change allows all the static fields in the class hierarchy
-		  // of the object to be initialized as symbolic and not just its immediate
-		  // static fields
-		  ClassInfo superClass = typeClassInfo;
-		  while(superClass != null) {
-			  FieldInfo[] staticFields = superClass.getDeclaredStaticFields();
-			  Helper.initializeStaticFields(staticFields, superClass, ti);
-			  superClass = superClass.getSuperClass();
-		  }
-		  	  
-		  // create new HeapNode based on above info
-		  // update associated symbolic input heap
-		  HeapNode n= new UberLazyHeapNode(daIndex,typeClassInfo,newSymRef,refChain);
-		  symInputHeap._add(n);
-		  pcHeap._addDet(Comparator.NE, newSymRef, new IntegerConstant(-1));
-		  return daIndex;
-	  }
+	 
+	 public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
+			 KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap) {
+		 daIndex = ks.da.newObject(typeClassInfo, ti);
+		 String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
+		 SymbolicInteger newSymRef = new SymbolicInteger( refChain);
+		 ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
+
+		 // neha: this change allows all the fields in the class hierarchy of the
+		 // object to be initialized as symbolic and not just its instance fields
+		 Fields f = eiRef.getFields();
+		 int numOfFields = f.getNumberOfFields();
+		 FieldInfo[] fields = new FieldInfo[numOfFields];
+		 for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
+			 fields[fieldIndex] = f.getFieldInfo(fieldIndex);
+		 }
+
+		 Helper.initializeInstanceFields(fields, eiRef,refChain);
+
+		 //neha: this change allows all the static fields in the class hierarchy
+		 // of the object to be initialized as symbolic and not just its immediate
+		 // static fields
+		 ClassInfo superClass = typeClassInfo;
+		 while(superClass != null) {
+			 FieldInfo[] staticFields = superClass.getDeclaredStaticFields();
+			 Helper.initializeStaticFields(staticFields, superClass, ti);
+			 superClass = superClass.getSuperClass();
+		 }
+
+		 // create new HeapNode based on above info
+		 // update associated symbolic input heap
+		 HeapNode n= new UberLazyHeapNode(daIndex,typeClassInfo,newSymRef,refChain);
+		 symInputHeap._add(n);
+		 pcHeap._addDet(Comparator.NE, newSymRef, new IntegerConstant(-1));
+		 return daIndex;
+
+	 }
 	  
 	  
 }

@@ -85,18 +85,19 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  if (!(fi.isReference() && attr != null)) {
 		  return super.execute(ss,ks,ti);
 	  }
-
+	  
 	  //this is where the uberlazy initialization begins.
 	  int currentChoice;
 	  ChoiceGenerator<?> thisHeapCG;
 
+	  
+	  
 	  if (!ti.isFirstStepInsn()) {
-
+		  
 		  prevHeapCG = UberLazyHelper.getPrevPartitionChoiceGenerator
-		  												(ss.getChoiceGenerator());
+		  								(ss.getChoiceGenerator()); 
 		  aliasedElems = UberLazyHelper.getAllAliasedObjects
 		  						(prevHeapCG, fi.getTypeClassInfo().getName());
-		  
 		  thisHeapCG = new PartitionChoiceGenerator(2); // +null,new
 		  ss.setNextChoiceGenerator(thisHeapCG);
 		  return this;
@@ -135,6 +136,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  //from original GETFIELD bytecode
 	  ti.pop(); // Ok, now we can remove the object ref from the stack
 	  int daIndex = 0; //index into JPF's dynamic area
+
 
 	  if (currentChoice == 0){ //null object
 		  pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));

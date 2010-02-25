@@ -85,10 +85,8 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 				partition = true;
 				return this;
 			} 
-			
-
 		} 
-
+		
 			// when the instruction is actually executed
 			//System.out.println("executing the instruction");
 			if(partition) {
