@@ -41,24 +41,15 @@ import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
 public class UberLazyHelper {
 	
-	public static boolean symbolicVariableExists(ChoiceGenerator<?> cg, int objref) {
+	public static boolean symbolicVariableExists(ChoiceGenerator<?> cg, String fieldIdentifier) {
 		EquivalenceObjects equivObjs = ((PartitionChoiceGenerator) cg).	
 															getCurrentEquivalenceObject();
-		if(equivObjs != null && equivObjs.getEquivClass(objref) != null) {
+		if(equivObjs != null && equivObjs.getEquivClass(fieldIdentifier) != null) {
 			return true;
 		}
 		return false;
 	}
 	
-	public static boolean uniqueFieldNameExists(ChoiceGenerator<?> cg, String fieldName) {
-		EquivalenceObjects equivObjs = ((PartitionChoiceGenerator) cg).
-														getCurrentEquivalenceObject();
-		if(equivObjs != null && equivObjs.fieldNames.containsKey(fieldName)) {
-			return true;
-		} else {
-			return false;
-		}
-	}
 
 	
 	 public static HashMap<Integer, EquivalenceClass> initializePartitionDataStructs
@@ -84,12 +75,12 @@ public class UberLazyHelper {
 		 return UberLazyHelper.initializePartitionDataStructs(objId, numPartitions);
 	 }
 	 
-	 public static EquivalenceElem getSuperParentInClassHierarchy(EquivalenceClass eqClass, int objRef) {
+	 public static EquivalenceElem getSuperParentInClassHierarchy(EquivalenceClass eqClass) {
 		 ArrayList<EquivalenceElem> eqElems = eqClass.getElementsInEquivClass();
-		 return UberLazyHelper.getSuperParentInClassHeirarchy(eqElems, objRef);
+		 return UberLazyHelper.getSuperParentInClassHeirarchy(eqElems);
 	 }
 	 
-	 public static EquivalenceElem getSuperParentInClassHeirarchy(ArrayList<EquivalenceElem> eqElems, int objRef) {
+	 public static EquivalenceElem getSuperParentInClassHeirarchy(ArrayList<EquivalenceElem> eqElems) {
 		 if(eqElems.size() <= 0) {
 			 return null;
 		 }
@@ -102,16 +93,7 @@ public class UberLazyHelper {
 			 if(parentClassInfo.isInstanceOf(currElem.getTypeOfElement())) {
 				 parentClassInfo = ClassInfo.getResolvedClassInfo
 				 										(currElem.getTypeOfElement());
-				 // found the parent again; might arise due to aliased equivalence elements
-				 if(elem.getTypeOfElement().equals(currElem.getTypeOfElement())) {   
-					 if(objRef != -1 && currElem.getAliasIdentifier().equals(String.valueOf(objRef))) {
-						 // replace only if the parent is from the current objRef, if anything
-						 // matches the objref that is given priority
-						 elem = currElem;
-					 } // otherwise do nothing
-				 } else { 
-					 elem = currElem;
-				 }
+				 	 elem = currElem;
 			 } 	
 
 		 }
@@ -128,7 +110,7 @@ public class UberLazyHelper {
 
 	 }
 	 
-	 public static EquivalenceObjects getEquivalenceObjects(ChoiceGenerator<?> prevPartitionCG, int objRef) {
+	 /**public static EquivalenceObjects getEquivalenceObjects(ChoiceGenerator<?> prevPartitionCG, int objRef) {
 		 if(prevPartitionCG != null && 
 				 UberLazyHelper.symbolicVariableExists(prevPartitionCG, objRef)) {
 			 return ((PartitionChoiceGenerator) prevPartitionCG).
@@ -136,20 +118,22 @@ public class UberLazyHelper {
 		 }
 		 return null;
 	 
-	 }
+	 }**/
 	 
-	 public static EquivalenceObjects getEquivalenceObjects(ChoiceGenerator<?> prevPartitionCG, String fieldName) {
-		 if(prevPartitionCG != null &&
-				 UberLazyHelper.uniqueFieldNameExists(prevPartitionCG, fieldName)) {
-			 return ((PartitionChoiceGenerator) prevPartitionCG).getCurrentEquivalenceObject();
+	 public static EquivalenceObjects getEquivalenceObjects(ChoiceGenerator<?> prevPartitionCG) {
+		 if(prevPartitionCG != null) {
+			 return ((PartitionChoiceGenerator) prevPartitionCG).
+			 									getCurrentEquivalenceObject();
 		 }
 		 return null;
+	 
 	 }
 	 
-	 public static EquivalenceObjects generateNewEquivalenceClass(EquivalenceObjects currEquivObjs, int objref,
-			 													ArrayList<EquivalenceElem> equivElems) {
-		 EquivalenceClass eqClass = new EquivalenceClass(Integer.toString(objref), equivElems);
-		 currEquivObjs.replaceClass(objref, eqClass);
+	 
+	 public static EquivalenceObjects generateNewEquivalenceClass(EquivalenceObjects currEquivObjs,
+			 String fieldIdentifier, ArrayList<EquivalenceElem> equivElems) {
+		 EquivalenceClass eqClass = new EquivalenceClass(fieldIdentifier, equivElems);
+		 currEquivObjs.replaceClass(fieldIdentifier, eqClass);
 		 return currEquivObjs;
 	 }
 	 
@@ -168,10 +152,16 @@ public class UberLazyHelper {
 		 HeapNode n = symInputHeap.header();
 		 while(null != n) {
 			 ClassInfo tClassInfo = n.getType();
-			 int daIndex = n.getIndex();
+			 //int daIndex = n.getIndex();
 			 EquivalenceClass eqClass = null;
-			 if(equivObjs.containsEquivClassForRef(daIndex)) {
-					eqClass = equivObjs.getEquivClass(daIndex);
+			 if(!(n instanceof UberLazyHeapNode)) {
+				 continue;
+			 }
+			 UberLazyHeapNode un = (UberLazyHeapNode) n;
+			 String fieldIdentifier = un.getFieldIdentifier();
+			 if(equivObjs.containsEquivClassForRef(fieldIdentifier)) {
+				 
+					eqClass = equivObjs.getEquivClass(fieldIdentifier);
 					ArrayList<EquivalenceElem> elems = eqClass.
 														getElementsInEquivClass();
 				
@@ -248,7 +238,8 @@ public class UberLazyHelper {
 	 }
 	 
 	 
-	 public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
+	 public static int addNewHeapNode(String fieldIdentifier, 
+			 ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
 			 KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap) {
 		 daIndex = ks.da.newObject(typeClassInfo, ti);
 		 String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
@@ -278,7 +269,8 @@ public class UberLazyHelper {
 
 		 // create new HeapNode based on above info
 		 // update associated symbolic input heap
-		 HeapNode n= new UberLazyHeapNode(daIndex,typeClassInfo,newSymRef,refChain);
+		 HeapNode n= new UberLazyHeapNode(daIndex,typeClassInfo,newSymRef,
+				 										refChain,fieldIdentifier);
 		 symInputHeap._add(n);
 		 pcHeap._addDet(Comparator.NE, newSymRef, new IntegerConstant(-1));
 		 return daIndex;

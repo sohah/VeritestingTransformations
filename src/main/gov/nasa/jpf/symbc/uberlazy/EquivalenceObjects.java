@@ -8,67 +8,62 @@ public class EquivalenceObjects implements Cloneable{
 	// the integer denotes the unique index of a symbolic variable
 	// that is a reference. the integer is the index of the reference
 	// in the dynamic area of the system state. 
-	protected HashMap<Integer, EquivalenceClass> allEquivClasses;
+	protected HashMap<String, EquivalenceClass> allEquivClasses;
 	//
-	protected HashMap<String, Integer> fieldNames;
 	
 	public EquivalenceObjects () { 
-		allEquivClasses = new HashMap<Integer, EquivalenceClass>();
-		fieldNames = new HashMap<String, Integer>(); 
+		allEquivClasses = new HashMap<String, EquivalenceClass>();
 	}
 	
-	public void addClass(String className, int objRef) {
+	public void addClass(String className, String fieldIdentifier, int objRef) {
 		// the objRef provides the unique index for recognizing a particular field
-		String uniqueObjectId = Integer.toString(objRef);
-		EquivalenceClass equivClass = new EquivalenceClass(uniqueObjectId);
+		EquivalenceClass equivClass = new EquivalenceClass(fieldIdentifier);
 		ArrayList<String> subClassTypeNames = TypeHierarchy.
 												getTypeElements(className);
 		int subClassSize = subClassTypeNames.size();
-		equivClass.addElementToClass(className,uniqueObjectId);
+		String objRefId = Integer.toString(objRef);
+		equivClass.addElementToClass(className,objRefId);
 		//System.out.println(className + " , "   + uniqueObjectId );
 		for(int subIndex = 0; subIndex < subClassSize; subIndex++) {
 			String subClassName = subClassTypeNames.get(subIndex);
 			//System.out.println(subClassName + " , " + uniqueObjectId );
-			EquivalenceElem equivElem = new EquivalenceElem(subClassName,uniqueObjectId);
+			EquivalenceElem equivElem = new EquivalenceElem(subClassName,objRefId);
 			equivClass.addElementToClass(equivElem);
 		}
-		allEquivClasses.put(objRef, equivClass);
+		allEquivClasses.put(fieldIdentifier, equivClass);
 	}
 	
-	public void addFieldName(String fieldName, int objRef) {		
-		fieldNames.put(fieldName, objRef);
-		//System.exit(1);
-	}
 	
-	public void addAliasedObjects(int objref, ArrayList<EquivalenceElem> aliasedElems) {
-		if(allEquivClasses.containsKey(objref)) {
-			EquivalenceClass eqClass = allEquivClasses.get(objref);
+	
+	public void addAliasedObjects(String fieldIdentifier, ArrayList<EquivalenceElem> aliasedElems) {
+		if(allEquivClasses.containsKey(fieldIdentifier)) {
+			EquivalenceClass eqClass = allEquivClasses.get(fieldIdentifier);
 			eqClass.getElementsInEquivClass().addAll(aliasedElems);
 		}
 	}
 	
-	public void replaceClass(int objref, EquivalenceClass ec) {
-		if(allEquivClasses.containsKey(objref)) {
-			allEquivClasses.put(objref, ec);
+	public void replaceClass(String fieldIdentifier, EquivalenceClass ec) {
+		if(allEquivClasses.containsKey(fieldIdentifier)) {
+			allEquivClasses.put(fieldIdentifier, ec);
 		}
 	}
 	
-	public EquivalenceClass getEquivClass(int objRef) {
-		if(allEquivClasses.containsKey(objRef)) {
-			return allEquivClasses.get(objRef);
+	public EquivalenceClass getEquivClass(String fieldIdentifier) {
+		if(allEquivClasses.containsKey(fieldIdentifier)) {
+			return allEquivClasses.get(fieldIdentifier);
 		}
 		return null;
 	}
 	
-	public boolean containsEquivClassForRef(int objRef) {
-		if(allEquivClasses.containsKey(objRef)) {
+	public boolean containsEquivClassForRef(String fieldIdentifier) {
+		if(allEquivClasses.containsKey(fieldIdentifier)) {
 			return true;
 		}
 		return false;
 	}
 	
 	public void printAllEquivClasses(){
-		Iterator<Integer> indxItr = allEquivClasses.keySet().iterator();
+		Iterator<String> indxItr = allEquivClasses.keySet().iterator();
 		while(indxItr.hasNext()) {
 			EquivalenceClass ec = allEquivClasses.get(indxItr.next());
 			System.out.println("Equivalence Classes \n" + ec.toString());
@@ -78,9 +73,9 @@ public class EquivalenceObjects implements Cloneable{
 	
 	 public EquivalenceObjects make_copy() {
 		EquivalenceObjects copy = new EquivalenceObjects();
-		Iterator<Integer> itr = this.allEquivClasses.keySet().iterator();
+		Iterator<String> itr = this.allEquivClasses.keySet().iterator();
 		while(itr.hasNext()) {
-			Integer key = itr.next();
+			String key = itr.next();
 			copy.allEquivClasses.put(key, this.allEquivClasses.get(key).
 														make_copy());
 		}

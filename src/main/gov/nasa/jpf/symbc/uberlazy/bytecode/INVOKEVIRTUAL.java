@@ -34,7 +34,6 @@ import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 import gov.nasa.jpf.symbc.heap.SymbolicInputHeap;
-import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.uberlazy.EquivalenceClass;
 import gov.nasa.jpf.symbc.uberlazy.EquivalenceElem;
@@ -48,6 +47,7 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 	private EquivalenceObjects equivObjs;
 	private HashMap<String, ArrayList<EquivalenceElem>> partitionMethods;
 	private boolean partition = false; 
+	private Object attr;
 
 	@Override
 	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
@@ -55,13 +55,14 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 		int currentChoice;
 		ChoiceGenerator<?> thisPartitionCG;
 		if (!th.isFirstStepInsn()) {
-			int objRef = th.getCalleeThis( getArgSize());
+			//int objRef = th.getCalleeThis( getArgSize());
 			prevPartitionCG = UberLazyHelper.
 								getPrevPartitionChoiceGenerator(ss.getChoiceGenerator());
-			equivObjs = UberLazyHelper.getEquivalenceObjects(prevPartitionCG, objRef);
-
-			if(equivObjs != null && equivObjs.containsEquivClassForRef(objRef)) {
-				EquivalenceClass eqClass = equivObjs.getEquivClass(objRef);
+			equivObjs = UberLazyHelper.getEquivalenceObjects(prevPartitionCG);
+			attr = th.getTopFrame().getOperandAttr();
+			//if(equivObjs != null && equivObjs.containsEquivClassForRef(objRef)) {
+			if(attr != null && equivObjs != null && equivObjs.containsEquivClassForRef(attr.toString())) {	
+				EquivalenceClass eqClass = equivObjs.getEquivClass(attr.toString());
 				// this where the partitioning logic occurs
 				ArrayList<EquivalenceElem> elems = eqClass.getElementsInEquivClass();
 				partitionMethods = new HashMap<String, ArrayList<EquivalenceElem>>();
@@ -78,7 +79,7 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 					lstOfClasses.add(elems.get(eqIndex));
 					partitionMethods.put(uniqueId, lstOfClasses);
 				}
-				th.getTopFrame().setOperandAttr(null);
+				//th.getTopFrame().setOperandAttr(null);
 
 				int numPartitions = partitionMethods.size();
 				thisPartitionCG = new PartitionChoiceGenerator(numPartitions);
@@ -128,9 +129,9 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 				ArrayList<EquivalenceElem> invokedci = partitionMethods.get(key);
 				int objRef = th.getCalleeThis( getArgSize());
 
-				EquivalenceElem sParent = UberLazyHelper.getSuperParentInClassHeirarchy(invokedci, objRef);
+				EquivalenceElem sParent = UberLazyHelper.getSuperParentInClassHeirarchy(invokedci);
 				UberLazyHelper.generatingNewConcretization(objRef, sParent, symInputHeap, ks, th);
-				equivObjs = UberLazyHelper.generateNewEquivalenceClass(equivObjs, objRef, invokedci);
+				equivObjs = UberLazyHelper.generateNewEquivalenceClass(equivObjs, attr.toString(), invokedci);
 				 
 				((HeapChoiceGenerator)thisPartitionCG).setCurrentPCheap(pcHeap);
 				((HeapChoiceGenerator)thisPartitionCG).setCurrentSymInputHeap(symInputHeap);

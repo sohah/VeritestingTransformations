@@ -28,8 +28,8 @@ import java.util.ArrayList;
 // arising from aliasing objects. 
 
 public class EquivalenceClass implements Cloneable{
+	
 	String uniqueIdentifier;
-	String nameOfVariable;
 	ArrayList<EquivalenceElem> elements;
 	
 	

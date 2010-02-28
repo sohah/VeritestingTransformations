@@ -43,6 +43,7 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 	private HashMap<Integer, EquivalenceClass> partitionForTypes;
 	private EquivalenceObjects equivObjs;
 	private int numPartitions = 1;
+	private Object attr; 
 	
 	 @Override
 	 public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
@@ -52,10 +53,11 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 
 		 if (!th.isFirstStepInsn()) {
 			 int objref = th.peek();
-			 
+			 attr = th.getTopFrame().getOperandAttr();
+		
 			 prevPartitionCG = UberLazyHelper.
 			 				getPrevPartitionChoiceGenerator(ss.getChoiceGenerator());
-			 equivObjs = UberLazyHelper.getEquivalenceObjects(prevPartitionCG, objref);
+			 equivObjs = UberLazyHelper.getEquivalenceObjects(prevPartitionCG);
 			 if(equivObjs != null) {
 				 numPartitions = getNumberOfParititions(objref, ks);
 				 currPartitionCG = new PartitionChoiceGenerator(numPartitions);
@@ -92,10 +94,10 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 
 
 		 EquivalenceClass currPart = partitionForTypes.get(currentChoice);
-		 currEqObjs.replaceClass(objref,currPart);
+		 currEqObjs.replaceClass(attr.toString(),currPart);
 		 // currEqObjs.printAllEquivClasses();
 		 EquivalenceElem elem = UberLazyHelper.getSuperParentInClassHierarchy
-		 										(currEqObjs.getEquivClass(objref), objref);
+		 										(currEqObjs.getEquivClass(attr.toString()));
 		 UberLazyHelper.generatingNewConcretization(objref, elem, symInputHeap, ks, th);
 		 th.push(currentChoice,false);
 
@@ -112,8 +114,8 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 		 partitionForTypes = UberLazyHelper.
 		 		initializePartitionDataStructs(objref,2);
 		 
-		 if(equivObjs.getEquivClass(objref) != null) {
-			 EquivalenceClass ec = equivObjs.getEquivClass(objref);
+		 if(equivObjs.getEquivClass(attr.toString()) != null) {
+			 EquivalenceClass ec = equivObjs.getEquivClass(attr.toString());
 	
 			 ArrayList<EquivalenceElem> equivElements = 
 				 ec.getElementsInEquivClass();

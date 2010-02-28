@@ -21,19 +21,16 @@ package gov.nasa.jpf.symbc.uberlazy.bytecode;
 
 import java.util.ArrayList;
 
-import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
 import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
-import gov.nasa.jpf.symbc.heap.Helper;
 import gov.nasa.jpf.symbc.heap.SymbolicInputHeap;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
@@ -138,7 +135,6 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  pcHeap = ((HeapChoiceGenerator)prevHeapCG).getCurrentPCheap();
 		  symInputHeap = ((HeapChoiceGenerator)prevHeapCG).getCurrentSymInputHeap();
 		  equivObjs = ((PartitionChoiceGenerator) prevHeapCG).getCurrentEquivalenceObject();
-
 	  }
 
 	  assert pcHeap != null;
@@ -157,19 +153,18 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  daIndex = -1;
 	  } 
 	  else if (currentChoice == 1) { 
-		  daIndex = UberLazyHelper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
-				  symInputHeap); // the last two args represent that the heap
+		  daIndex = UberLazyHelper.addNewHeapNode(fi.getFullName(), typeClassInfo, ti, 
+				  daIndex, attr, ks, pcHeap,symInputHeap); // the last two args represent that the heap
 		  								  // constraint does not need to be updated for
 		  								  // any of the aliased objects
-		  equivObjs.addClass(typeClassInfo.getName(), daIndex);	
-		  equivObjs.addFieldName(fi.getFullName(), daIndex);
-		  equivObjs.addAliasedObjects(daIndex, aliasedElems);
+		  equivObjs.addClass(typeClassInfo.getName(), fi.getFullName(), daIndex);	
+		  equivObjs.addAliasedObjects(fi.getFullName(), aliasedElems);
 	  } 
 
 	  ei.setReferenceField(fi,daIndex );
 	  ei.setFieldAttr(fi, null);
     } 
-    
+   
 	  ti.push( ei.getIntField(fi), fi.isReference());
 	  ti.setOperandAttrNoClone(new String(fi.getFullName()));
 	

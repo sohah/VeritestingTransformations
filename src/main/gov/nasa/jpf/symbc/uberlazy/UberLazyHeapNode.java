@@ -26,14 +26,21 @@ import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 public class UberLazyHeapNode extends HeapNode{
 	
 	String refChain;
+	String fieldIdentifier;
 
-	public UberLazyHeapNode(int idx, ClassInfo tClassInfo, SymbolicInteger sym, String refChain) {
+	public UberLazyHeapNode(int idx, ClassInfo tClassInfo, SymbolicInteger sym, 
+				String refChain, String fieldIdentifier) {
 		super(idx, tClassInfo, sym);
 		this.refChain = refChain;
+		this.fieldIdentifier = fieldIdentifier;
 	}
 	
 	public String getRefChain() {
 		return this.refChain;
+	}
+	
+	public String getFieldIdentifier() {
+		return this.fieldIdentifier;
 	}
 	
 }

@@ -39,27 +39,28 @@ public class IF_ACMPEQ extends gov.nasa.jpf.jvm.bytecode.IF_ACMPEQ {
 	
 	private boolean partition = false;
 	private ChoiceGenerator<?> prevPartitionCG;
-	private EquivalenceObjects equivObjs1;
-	private EquivalenceObjects equivObjs2;
+	private EquivalenceObjects equivObjs;
 	private HashMap<Integer, ArrayList<EquivalenceElem>> partitionMethods;
 	
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 		//System.out.println("coming to the IF_ACMPEQ bytecode in UberLazy");
-		int v1 = ti.peek();
-		int v2 = ti.peek(1);
+		//int v1 = ti.peek();
+		//int v2 = ti.peek(1);
 		//System.out.println("v1 is " + v1);
 		//System.out.println("v2 is " + v2);
 		if(!ti.isFirstStepInsn()) {
 			prevPartitionCG = UberLazyHelper.
 							getPrevPartitionChoiceGenerator(ss.getChoiceGenerator());
 			prevPartitionCG = (PartitionChoiceGenerator) prevPartitionCG;
-		 	equivObjs1 = UberLazyHelper.getEquivalenceObjects(prevPartitionCG, v1);
-			equivObjs2 = UberLazyHelper.getEquivalenceObjects(prevPartitionCG, v2);
-			if(equivObjs1 != null && equivObjs2 != null) {
-				 
-				EquivalenceClass eqClass1 = equivObjs1.getEquivClass(v1);
-				EquivalenceClass eqClass2 = equivObjs2.getEquivClass(v2);
+			Object attr1 = ti.getOperandAttr();
+			Object attr2 = ti.getOperandAttr(1);
+			
+		 	if(attr1 != null && attr2 != null) {
+			
+				equivObjs = UberLazyHelper.getEquivalenceObjects(prevPartitionCG);			
+				EquivalenceClass eqClass1 = equivObjs.getEquivClass(attr1.toString());
+				EquivalenceClass eqClass2 = equivObjs.getEquivClass(attr2.toString());
 				// this where the partitioning logic occurs
 				Object attr = ti.getTopFrame().getOperandAttr();
 				if(attr != null) {
