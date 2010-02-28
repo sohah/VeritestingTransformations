@@ -21,12 +21,14 @@ package gov.nasa.jpf.symbc.uberlazy.bytecode;
 
 import java.util.ArrayList;
 
+import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
 import gov.nasa.jpf.jvm.KernelState;
+import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -47,6 +49,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
   ChoiceGenerator<?> prevHeapCG;
   ArrayList<EquivalenceElem> aliasedElems;
+  private boolean partition = false;
   
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
@@ -82,23 +85,34 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  // check if the field is of ref type & it is symbolic (i.e. it has an attribute)
 	  // if it is we need to do lazy initialization
 
-	  if (!(fi.isReference() && attr != null)) {
+	//  if (!(fi.isReference() && attr != null)) {
+	//	  return super.execute(ss,ks,ti);
+	//  }
+	  
+	  if (!fi.isReference()) {
 		  return super.execute(ss,ks,ti);
 	  }
-	  
 	  //this is where the uberlazy initialization begins.
 	  int currentChoice;
 	  ChoiceGenerator<?> thisHeapCG;
 
 	  
+	 
 	  
 	  if (!ti.isFirstStepInsn()) {
-		  
 		  prevHeapCG = UberLazyHelper.getPrevPartitionChoiceGenerator
-		  								(ss.getChoiceGenerator()); 
-		  aliasedElems = UberLazyHelper.getAllAliasedObjects
-		  						(prevHeapCG, fi.getTypeClassInfo().getName());
-		  thisHeapCG = new PartitionChoiceGenerator(2); // +null,new
+			(ss.getChoiceGenerator()); 
+
+		  if(attr != null) {
+			  partition = true;
+				  aliasedElems = UberLazyHelper.getAllAliasedObjects
+			  						(prevHeapCG, fi.getTypeClassInfo().getName());
+			  thisHeapCG = new PartitionChoiceGenerator(2); // +null,new
+			 
+		  } else {
+			  thisHeapCG = new PartitionChoiceGenerator(1); // no real choice
+		  }
+		 
 		  ss.setNextChoiceGenerator(thisHeapCG);
 		  return this;
 	  } 
@@ -137,7 +151,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  ti.pop(); // Ok, now we can remove the object ref from the stack
 	  int daIndex = 0; //index into JPF's dynamic area
 
-
+	 if(partition) {
 	  if (currentChoice == 0){ //null object
 		  pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
 		  daIndex = -1;
@@ -147,13 +161,18 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 				  symInputHeap); // the last two args represent that the heap
 		  								  // constraint does not need to be updated for
 		  								  // any of the aliased objects
-		  equivObjs.addClass(typeClassInfo.getName(), daIndex);		
+		  equivObjs.addClass(typeClassInfo.getName(), daIndex);	
+		  equivObjs.addFieldName(fi.getFullName(), daIndex);
 		  equivObjs.addAliasedObjects(daIndex, aliasedElems);
 	  } 
 
 	  ei.setReferenceField(fi,daIndex );
 	  ei.setFieldAttr(fi, null);
+    } 
+    
 	  ti.push( ei.getIntField(fi), fi.isReference());
+	  ti.setOperandAttrNoClone(new String(fi.getFullName()));
+	
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
 	  ((PartitionChoiceGenerator)thisHeapCG).setEquivalenceObj(equivObjs);

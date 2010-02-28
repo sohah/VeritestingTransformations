@@ -20,7 +20,6 @@ package gov.nasa.jpf.symbc.uberlazy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 import gov.nasa.jpf.jvm.ChoiceGenerator;
@@ -43,62 +42,24 @@ import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 public class UberLazyHelper {
 	
 	public static boolean symbolicVariableExists(ChoiceGenerator<?> cg, int objref) {
-		EquivalenceObjects equivObjs = ((PartitionChoiceGenerator) cg).
-														getCurrentEquivalenceObject();
+		EquivalenceObjects equivObjs = ((PartitionChoiceGenerator) cg).	
+															getCurrentEquivalenceObject();
 		if(equivObjs != null && equivObjs.getEquivClass(objref) != null) {
 			return true;
 		}
 		return false;
 	}
 	
-	public static HashMap<String, Set<String>> checkTypesForPrimitiveFields
-									(ChoiceGenerator<?> cg, int objref, FieldInfo fi) {	
-		HashMap<String, Set<String>> newPartitions = 
-										new HashMap<String, Set<String>>();
+	public static boolean uniqueFieldNameExists(ChoiceGenerator<?> cg, String fieldName) {
 		EquivalenceObjects equivObjs = ((PartitionChoiceGenerator) cg).
 														getCurrentEquivalenceObject();
-		EquivalenceClass eqClass = equivObjs.getEquivClass(objref);
-		ArrayList<EquivalenceElem> elements = eqClass.getElementsInEquivClass();
-		for(int elemIndex = 0; elemIndex < elements.size(); elemIndex++) {
-			EquivalenceElem elem = elements.get(elemIndex);
-			ClassInfo orig = ClassInfo.getResolvedClassInfo(elem.getTypeOfElement());
-			boolean found = findMatchingFields(orig, orig, fi,newPartitions);
-			ClassInfo ci = orig;
-			// go up the class hierarchy to find the field 
-			// when it is not found in the current class in java
-			// since one class can inherit from a single class this works
-			while(!found) {
-				found = findMatchingFields(ci, orig, fi, newPartitions);
-				ci = ci.getSuperClass();
-			}
-			//System.out.println("=================================");
+		if(equivObjs != null && equivObjs.fieldNames.containsKey(fieldName)) {
+			return true;
+		} else {
+			return false;
 		}
-		//System.out.println(newPartitions.toString());
-		//System.exit(1);
-		return newPartitions;
 	}
-	
-	private static boolean findMatchingFields(ClassInfo ci, ClassInfo origCI, FieldInfo fi,
-										HashMap<String, Set<String>> newPartitions) {
-		boolean found = false;
-		FieldInfo[] fields = ci.getDeclaredInstanceFields();
-		for(int fieldIndex = 0; fieldIndex < fields.length; fieldIndex++) {
-			//System.out.println(fields[fieldIndex].getName() + "--- fieldName");
-			if(fields[fieldIndex].getName().equals(fi.getName())) {
-				found = true;
-				String typeKey = fields[fieldIndex].getType();
-				Set<String> partition;
-				if(newPartitions.containsKey(typeKey)) {
-					 partition = newPartitions.get(typeKey);
-				} else {
-					 partition = new HashSet<String>();
-				}
-				partition.add(origCI.getName());
-				newPartitions.put(typeKey, partition);
-			}
-		}
-		return found;
-	}
+
 	
 	 public static HashMap<Integer, EquivalenceClass> initializePartitionDataStructs
 	 									(String objIdentifier, int numPartitions) {
@@ -172,6 +133,15 @@ public class UberLazyHelper {
 				 UberLazyHelper.symbolicVariableExists(prevPartitionCG, objRef)) {
 			 return ((PartitionChoiceGenerator) prevPartitionCG).
 			 									getCurrentEquivalenceObject();
+		 }
+		 return null;
+	 
+	 }
+	 
+	 public static EquivalenceObjects getEquivalenceObjects(ChoiceGenerator<?> prevPartitionCG, String fieldName) {
+		 if(prevPartitionCG != null &&
+				 UberLazyHelper.uniqueFieldNameExists(prevPartitionCG, fieldName)) {
+			 return ((PartitionChoiceGenerator) prevPartitionCG).getCurrentEquivalenceObject();
 		 }
 		 return null;
 	 }

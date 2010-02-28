@@ -30,7 +30,18 @@ public class TestRefCompareEq {
 	public void run () {
 		if(n != null) {
 			if(m != null) {
-				testEquality();
+			//   the bytecode sequences that the following code is
+				//   5:		getfield	#3; //Field m:Luberlazy/Node;
+			  	//   8:		if_acmpeq	22
+				//   11:	getstatic	#5; //Field java/lang/System.out:Ljava/io/PrintStream;
+				//   14:	ldc	#6; //String the objects are equal
+				// hence this example really is comparing equality
+
+				if(n != m) {
+					System.out.println("the objects are not equal");
+				} else {
+					System.out.println("They are equal");
+				}
 			}
 		}
 	}

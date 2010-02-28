@@ -9,9 +9,12 @@ public class EquivalenceObjects implements Cloneable{
 	// that is a reference. the integer is the index of the reference
 	// in the dynamic area of the system state. 
 	protected HashMap<Integer, EquivalenceClass> allEquivClasses;
+	//
+	protected HashMap<String, Integer> fieldNames;
 	
 	public EquivalenceObjects () { 
 		allEquivClasses = new HashMap<Integer, EquivalenceClass>();
+		fieldNames = new HashMap<String, Integer>(); 
 	}
 	
 	public void addClass(String className, int objRef) {
@@ -30,6 +33,11 @@ public class EquivalenceObjects implements Cloneable{
 			equivClass.addElementToClass(equivElem);
 		}
 		allEquivClasses.put(objRef, equivClass);
+	}
+	
+	public void addFieldName(String fieldName, int objRef) {		
+		fieldNames.put(fieldName, objRef);
+		//System.exit(1);
 	}
 	
 	public void addAliasedObjects(int objref, ArrayList<EquivalenceElem> aliasedElems) {

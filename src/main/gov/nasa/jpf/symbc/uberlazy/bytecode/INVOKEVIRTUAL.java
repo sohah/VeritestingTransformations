@@ -78,6 +78,7 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 					lstOfClasses.add(elems.get(eqIndex));
 					partitionMethods.put(uniqueId, lstOfClasses);
 				}
+				th.getTopFrame().setOperandAttr(null);
 
 				int numPartitions = partitionMethods.size();
 				thisPartitionCG = new PartitionChoiceGenerator(numPartitions);
@@ -137,7 +138,7 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 			}
 			BytecodeUtils.InstructionOrSuper nextInstr = BytecodeUtils.execute(this, ss, ks, th, true);
 			
-		if (nextInstr.callSuper) {
+			if (nextInstr.callSuper) {
 			return super.execute(ss, ks, th);
 		} else {
 			return nextInstr.inst;
