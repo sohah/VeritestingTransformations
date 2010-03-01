@@ -5,9 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class EquivalenceObjects implements Cloneable{
-	// the integer denotes the unique index of a symbolic variable
-	// that is a reference. the integer is the index of the reference
-	// in the dynamic area of the system state. 
+	// the String denotes the unique identifier of a symbolic variable
+	// that is a reference. the string is the full name of the field
 	protected HashMap<String, EquivalenceClass> allEquivClasses;
 	//
 	

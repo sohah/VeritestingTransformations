@@ -110,15 +110,7 @@ public class UberLazyHelper {
 
 	 }
 	 
-	 /**public static EquivalenceObjects getEquivalenceObjects(ChoiceGenerator<?> prevPartitionCG, int objRef) {
-		 if(prevPartitionCG != null && 
-				 UberLazyHelper.symbolicVariableExists(prevPartitionCG, objRef)) {
-			 return ((PartitionChoiceGenerator) prevPartitionCG).
-			 									getCurrentEquivalenceObject();
-		 }
-		 return null;
-	 
-	 }**/
+	
 	 
 	 public static EquivalenceObjects getEquivalenceObjects(ChoiceGenerator<?> prevPartitionCG) {
 		 if(prevPartitionCG != null) {
@@ -136,6 +128,30 @@ public class UberLazyHelper {
 		 currEquivObjs.replaceClass(fieldIdentifier, eqClass);
 		 return currEquivObjs;
 	 }
+	 
+	 public static ArrayList<String> getUniqueObjReferences(ArrayList<EquivalenceElem> equivElems) {
+		 ArrayList<String> retVals = new ArrayList<String>();
+		 for(int eqIndex = 0; eqIndex < equivElems.size(); eqIndex++) {
+			 EquivalenceElem e = equivElems.get(eqIndex);
+			 String aliasId = e.getAliasIdentifier();
+			 if(!retVals.contains(aliasId)) {
+				 retVals.add(aliasId);
+			 }
+		 }
+		 return retVals;
+	 }
+	 
+	public static ArrayList<EquivalenceElem> getEquivalenceElemsGivenObjRef(String objRef,
+															ArrayList<EquivalenceElem> allElems) {
+		ArrayList<EquivalenceElem> retVals = new ArrayList<EquivalenceElem>();
+		for(int elemIndex = 0; elemIndex < allElems.size(); elemIndex++) {
+			EquivalenceElem e = allElems.get(elemIndex);
+			if(e.getAliasIdentifier().equals(objRef)) {
+				retVals.add(e);
+			}
+		}
+		return retVals;
+	}
 	 
 	 public static ArrayList<EquivalenceElem> getAllAliasedObjects(ChoiceGenerator<?> prevCG, String typeClassInfo) {
 
