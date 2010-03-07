@@ -7,7 +7,7 @@ public class TestSymbolicJPF extends TestJPF {
   
   static final String TEST_CLASS = "gov.nasa.jpf.numeric.TestSymbolic";
   static final String NO_TRACE = "+jpf.report.console.property_violation=error";
-  static final String INSN_FACTORY = "+vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactor";
+  static final String INSN_FACTORY = "+vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory";
   static final String STORAGE = "+vm.storage.class= ";
   
   public static void main(String args[]) {
