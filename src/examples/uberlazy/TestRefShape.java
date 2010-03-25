@@ -19,9 +19,12 @@ public class TestRefShape {
 	public void run() {
 		if(m != null) {
 			System.out.println("m is not null");
-			@SuppressWarnings("unused")
-			Node tmp = m.next;
-			tmp = swapNode();
+			if(m.next != null) {
+				System.out.println("one level nesting");
+			}
+			//@SuppressWarnings("unused")
+			//Node tmp = m.next;
+			//tmp = swapNode();
 		}
 	}
 	
