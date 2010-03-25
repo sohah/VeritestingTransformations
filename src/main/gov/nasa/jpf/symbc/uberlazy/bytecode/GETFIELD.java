@@ -47,6 +47,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
   ChoiceGenerator<?> prevHeapCG;
   ArrayList<EquivalenceElem> aliasedElems;
   private boolean partition = false;
+  ArrayList<String> partitions = new ArrayList<String>();
   
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
@@ -79,13 +80,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  //end GETFIELD code from super
 
 	  Object attr = ei.getFieldAttr(fi);
-	  // check if the field is of ref type & it is symbolic (i.e. it has an attribute)
-	  // if it is we need to do lazy initialization
-
-	//  if (!(fi.isReference() && attr != null)) {
-	//	  return super.execute(ss,ks,ti);
-	//  }
-	  
+	 
 	  if (!fi.isReference()) {
 		  return super.execute(ss,ks,ti);
 	  }
@@ -97,14 +92,31 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	 
 	  
 	  if (!ti.isFirstStepInsn()) {
+		  
 		  prevHeapCG = UberLazyHelper.getPrevPartitionChoiceGenerator
 			(ss.getChoiceGenerator()); 
 
+		  
 		  if(attr != null) {
 			  partition = true;
-				  aliasedElems = UberLazyHelper.getAllAliasedObjects
+			  aliasedElems = UberLazyHelper.getAllAliasedObjects
 			  						(prevHeapCG, fi.getTypeClassInfo().getName());
-			  thisHeapCG = new PartitionChoiceGenerator(2); // +null,new
+			  if(aliasedElems.size() > 0) {
+				 PartitionChoiceGenerator prevCG = (PartitionChoiceGenerator) prevHeapCG;
+				 EquivalenceObjects eObjs = prevCG.getCurrentEquivalenceObject();
+			
+				 ArrayList<String> eqElems = new ArrayList<String>();
+				// this is to represent a fake new object that could be instantiated
+			    // since all its fields are initialized, it does not matter what the
+			    // the real object structure will be like. 
+				 eqElems.add("-99"); 
+				 eqElems.addAll(UberLazyHelper.getUniqueObjReferences(aliasedElems));
+				 partitions = eObjs.checkDifferingShapes(objRef, fi.getName(), eqElems, ti);
+				 thisHeapCG = new PartitionChoiceGenerator(1 + partitions.size()); // +null,new
+			  } else {
+				  thisHeapCG = new PartitionChoiceGenerator(2); // +null,new
+			  }
+			 
 			 
 		  } else {
 			  thisHeapCG = new PartitionChoiceGenerator(1); // no real choice
@@ -144,29 +156,56 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  // get the type of the field
 	  ClassInfo typeClassInfo = fi.getTypeClassInfo(); 
 	  //from original GETFIELD bytecode
+	
 	  ti.pop(); // Ok, now we can remove the object ref from the stack
 	  int daIndex = 0; //index into JPF's dynamic area
 
 	 if(partition) {
-	  if (currentChoice == 0){ //null object
-		  pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
-		  daIndex = -1;
-	  } 
-	  else if (currentChoice == 1) { 
-		  daIndex = UberLazyHelper.addNewHeapNode(fi.getFullName(), typeClassInfo, ti, 
-				  daIndex, attr, ks, pcHeap,symInputHeap); // the last two args represent that the heap
-		  								  // constraint does not need to be updated for
-		  								  // any of the aliased objects
-		  equivObjs.addClass(typeClassInfo.getName(), fi.getFullName(), daIndex);	
-		  equivObjs.addAliasedObjects(fi.getFullName(), aliasedElems);
-	  } 
+		 if(partitions.size() > 0) {
+			 //System.out.println("the partitions is greater than 0");
+			 if(currentChoice < partitions.size()) {
+				 daIndex = Integer.valueOf(partitions.get(currentChoice));
+				 if(daIndex == -99) {
+					 daIndex = 0;
+					 daIndex = UberLazyHelper.addNewHeapNode(fi.getFullName(), typeClassInfo, ti, 
+							 daIndex, attr, ks, pcHeap,symInputHeap); // the last two args represent that the heap
+					 // constraint does not need to be updated for
+					 // any of the aliased objects
+					 equivObjs.addClass(typeClassInfo.getName(), fi.getFullName(), daIndex);	
+					 equivObjs.addAliasedObjects(fi.getFullName(), aliasedElems);
+				 } else {
+					//TODO: update the heapConstraint  
+				 }
+				 
+			 } else {
+				 pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
+				 daIndex = -1;
+			 }
+			// System.exit(1);
+		 }
+		 else{
+			 if (currentChoice == 0){ //null object
+				 pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
+				 daIndex = -1;
+			 } 
+			 else if (currentChoice == 1) { 
+				 daIndex = UberLazyHelper.addNewHeapNode(fi.getFullName(), typeClassInfo, ti, 
+						 daIndex, attr, ks, pcHeap,symInputHeap); // the last two args represent that the heap
+				 // constraint does not need to be updated for
+				 // any of the aliased objects
+				 equivObjs.addClass(typeClassInfo.getName(), fi.getFullName(), daIndex);	
+				 equivObjs.addAliasedObjects(fi.getFullName(), aliasedElems);
 
-	  ei.setReferenceField(fi,daIndex );
-	  ei.setFieldAttr(fi, null);
+			 } 
+		 }
+		 ei.setReferenceField(fi,daIndex );
+		 ei.setFieldAttr(fi, null);
+
     } 
-   
 	  ti.push( ei.getIntField(fi), fi.isReference());
-	  ti.setOperandAttrNoClone(new String(fi.getFullName()));
+	  
+	  //ti.setOperandAttrNoClone(new String(Integer.toString(ei.getIntField(fi)).concat("__" + fi.getName())));
+	  ti.setOperandAttrNoClone(new String(Integer.toString(ei.getIntField(fi))));
 	
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);

@@ -45,6 +45,4 @@ public class PartitionChoiceGenerator extends HeapChoiceGenerator {
 			return null;
 		}
 	}
-	
-	
 }

@@ -286,7 +286,7 @@ public class UberLazyHelper {
 		 // create new HeapNode based on above info
 		 // update associated symbolic input heap
 		 HeapNode n= new UberLazyHeapNode(daIndex,typeClassInfo,newSymRef,
-				 										refChain,fieldIdentifier);
+				 refChain,fieldIdentifier);
 		 symInputHeap._add(n);
 		 pcHeap._addDet(Comparator.NE, newSymRef, new IntegerConstant(-1));
 		 return daIndex;
