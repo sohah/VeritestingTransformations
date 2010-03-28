@@ -30,6 +30,8 @@ import cvc3.Expr;
 import cvc3.FlagsMut;
 import cvc3.QueryResult;
 import cvc3.Rational;
+import cvc3.SatResult;
+//import cvc3.SatResult;
 import cvc3.Type;
 import cvc3.ValidityChecker;
 
@@ -732,14 +734,14 @@ public class ProblemCVC3 extends ProblemGeneral {
 			//Expr ex = test();
 			//System.out.println("Query: " + pb.toString());
 			vc.push();
-			QueryResult result = vc.checkUnsat(pb);
+			SatResult result = vc.checkUnsat(pb);
 			//QueryResult result = vc.query(eq); //does not seem to work properly
-			if (result == QueryResult.UNSATISFIABLE) {
+			if (result == SatResult.UNSATISFIABLE) {
 	            //System.out.println("Unsatisfiable (Valid)\n");
 				vc.pop();
 	            return false;
 	        }
-	        else if (result == QueryResult.SATISFIABLE) {
+	        else if (result == SatResult.SATISFIABLE) {
 	        	model = vc.getConcreteModel();
 	        	vc.pop();
 	           // System.out.println("Satisfiable (Invalid)\n");
