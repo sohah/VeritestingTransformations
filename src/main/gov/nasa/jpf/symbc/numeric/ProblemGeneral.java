@@ -74,7 +74,13 @@ abstract class ProblemGeneral{
 	abstract Object div(Object exp1, Object exp2) ;
 	abstract Object div(double value, Object exp) ;
 	abstract Object div(Object exp, double value) ;
-
+	abstract Object and(int value, Object exp) ;
+	abstract Object and(Object exp, int value) ;
+	abstract Object and(Object exp1, Object exp2) ;
+		
+	Object makeBitVectorVar(String name, int N) {
+			throw new RuntimeException("## Error BitVectors not supported by current constraint solver");
+	}
 
 	Object sin(Object exp) {
 		throw new RuntimeException("## Error: Math.sin not supported");

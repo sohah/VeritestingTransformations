@@ -290,4 +290,17 @@ public class ProblemChoco extends ProblemGeneral {
 		pb.post((choco.Constraint)constraint);
 	}
 
+	Object and(int value, Object exp) {
+		throw new RuntimeException("## Error Choco does not support bitwise AND");
+	}
+
+	Object and(Object exp, int value) {
+		throw new RuntimeException("## Error Choco does not support bitwise AND");
+	}
+
+	Object and(Object exp1, Object exp2) {
+		throw new RuntimeException("## Error Choco does not support bitwise AND");
+	}
+
+	
 }

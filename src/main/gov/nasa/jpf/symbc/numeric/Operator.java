@@ -25,7 +25,9 @@ public enum Operator{
 	MUL(" * "), 
 	MINUS(" - "), 
 	PLUS(" + "),
-	CMP(" cmp ");
+	CMP(" cmp "),
+	AND(" & ");
+	
 	
 	private final String str;
 	
