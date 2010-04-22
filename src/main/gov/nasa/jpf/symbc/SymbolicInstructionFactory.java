@@ -33,7 +33,7 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	 static Class<? extends Instruction>[] insnClass;
 
 	  static {
-	    insnClass = createInsnClassArray(IFNONNULL+1); // our highest intercepted bytecode
+	    insnClass = createInsnClassArray(260); 
 
 	    insnClass[ALOAD_0]         = gov.nasa.jpf.symbc.bytecode.ALOAD.class;
 	    insnClass[ALOAD_1]         = gov.nasa.jpf.symbc.bytecode.ALOAD.class;

@@ -1,53 +1,95 @@
 package gov.nasa.jpf.symbc.uberlazy;
 
+import gov.nasa.jpf.jvm.MJIEnv;
+import gov.nasa.jpf.jvm.ThreadInfo;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
 public class EquivalenceObjects implements Cloneable{
-	// the integer denotes the unique index of a symbolic variable
-	// that is a reference. the integer is the index of the reference
-	// in the dynamic area of the system state. 
-	protected HashMap<Integer, EquivalenceClass> allEquivClasses;
+	// the String denotes the unique identifier of a symbolic variable
+	// that is a reference. the string is the full name of the field
+	protected HashMap<String, EquivalenceClass> allEquivClasses;
+	protected HeapShapeAnalysis shapeAnalyzer;
 	
 	public EquivalenceObjects () { 
-		allEquivClasses = new HashMap<Integer, EquivalenceClass>();
+		allEquivClasses = new HashMap<String, EquivalenceClass>();
+		shapeAnalyzer = new HeapShapeAnalysis();
 	}
 	
-	public void addClass(String className, int objRef) {
+	public void addClass(String className, String fieldIdentifier, int objRef) {
 		// the objRef provides the unique index for recognizing a particular field
-		String uniqueObjectId = Integer.toString(objRef);
-		EquivalenceClass equivClass = new EquivalenceClass(uniqueObjectId);
+		EquivalenceClass equivClass = new EquivalenceClass(fieldIdentifier);
 		ArrayList<String> subClassTypeNames = TypeHierarchy.
 												getTypeElements(className);
 		int subClassSize = subClassTypeNames.size();
-		equivClass.addElementToClass(className,uniqueObjectId);
+		String objRefId = Integer.toString(objRef);
+		equivClass.addElementToClass(className,objRefId);
 		//System.out.println(className + " , "   + uniqueObjectId );
 		for(int subIndex = 0; subIndex < subClassSize; subIndex++) {
 			String subClassName = subClassTypeNames.get(subIndex);
 			//System.out.println(subClassName + " , " + uniqueObjectId );
-			EquivalenceElem equivElem = new EquivalenceElem(subClassName,uniqueObjectId);
+			EquivalenceElem equivElem = new EquivalenceElem(subClassName,objRefId);
 			equivClass.addElementToClass(equivElem);
 		}
-		allEquivClasses.put(objRef, equivClass);
+		allEquivClasses.put(fieldIdentifier, equivClass);
 	}
 	
+
 	
-	public void replaceClass(int objref, EquivalenceClass ec) {
-		if(allEquivClasses.containsKey(objref)) {
-			allEquivClasses.put(objref, ec);
+	public void addAliasedObjects(String fieldIdentifier, ArrayList<EquivalenceElem> aliasedElems) {
+		if(allEquivClasses.containsKey(fieldIdentifier)) {
+			EquivalenceClass eqClass = allEquivClasses.get(fieldIdentifier);
+			eqClass.getElementsInEquivClass().addAll(aliasedElems);
 		}
 	}
 	
-	public EquivalenceClass getEquivClass(int objRef) {
-		if(allEquivClasses.containsKey(objRef)) {
-			return allEquivClasses.get(objRef);
+	public void replaceClass(String fieldIdentifier, EquivalenceClass ec) {
+		if(allEquivClasses.containsKey(fieldIdentifier)) {
+			allEquivClasses.put(fieldIdentifier, ec);
+		}
+	}
+	
+	public EquivalenceClass getEquivClass(String fieldIdentifier) {
+		if(allEquivClasses.containsKey(fieldIdentifier)) {
+			return allEquivClasses.get(fieldIdentifier);
 		}
 		return null;
 	}
 	
+	public boolean containsEquivClassForRef(String fieldIdentifier) {
+		if(allEquivClasses.containsKey(fieldIdentifier)) {
+			return true;
+		}
+		return false;
+	}
+	
+	
+	
+	public ArrayList<String> checkDifferingShapes(Integer rootRef, String fieldName, ArrayList<String> aliases,
+																						ThreadInfo ti) {
+		HashMap<String, String> partition = new HashMap<String, String>();
+		for(int aliasIndex = 0; aliasIndex < aliases.size(); aliasIndex++) {
+			String aliasSucc  = aliases.get(aliasIndex);
+			MJIEnv env = ti.getEnv();
+			String uniqueStr = shapeAnalyzer.linearizeRootedHeap(env, rootRef, 
+									Integer.valueOf(aliasSucc), fieldName);
+			if(!partition.containsKey(uniqueStr)) {
+				partition.put(uniqueStr, aliasSucc);
+			}
+		}
+		ArrayList<String> vals = new ArrayList<String>();
+		Iterator<String> strItr = partition.keySet().iterator();
+		while(strItr.hasNext()) {
+			String objRef = partition.get(strItr.next());
+			vals.add(objRef);
+		}
+		return vals;
+	}
+	
+	
 	public void printAllEquivClasses(){
-		Iterator<Integer> indxItr = allEquivClasses.keySet().iterator();
+		Iterator<String> indxItr = allEquivClasses.keySet().iterator();
 		while(indxItr.hasNext()) {
 			EquivalenceClass ec = allEquivClasses.get(indxItr.next());
 			System.out.println("Equivalence Classes \n" + ec.toString());
@@ -55,14 +97,22 @@ public class EquivalenceObjects implements Cloneable{
 		
 	}
 	
-	 public EquivalenceObjects make_copy() {
+	 @SuppressWarnings("unchecked")
+	public EquivalenceObjects make_copy() {
 		EquivalenceObjects copy = new EquivalenceObjects();
-		Iterator<Integer> itr = this.allEquivClasses.keySet().iterator();
+		Iterator<String> itr = this.allEquivClasses.keySet().iterator();
 		while(itr.hasNext()) {
-			Integer key = itr.next();
+			String key = itr.next();
 			copy.allEquivClasses.put(key, this.allEquivClasses.get(key).
 														make_copy());
 		}
+		copy.shapeAnalyzer = new HeapShapeAnalysis();
+		copy.shapeAnalyzer.nameToIndex = (HashMap<String, Integer>) this.shapeAnalyzer.
+												nameToIndex.clone();
+		copy.shapeAnalyzer.linearizeShape = (HashMap<Integer, Integer>) this.shapeAnalyzer.
+												linearizeShape.clone();
+		copy.shapeAnalyzer.roots = (ArrayList<String>) this.shapeAnalyzer.roots.clone();
+		copy.shapeAnalyzer.counter = this.shapeAnalyzer.counter;
 		return copy;
 		  
 	}

@@ -28,6 +28,7 @@ import java.util.ArrayList;
 // arising from aliasing objects. 
 
 public class EquivalenceClass implements Cloneable{
+	
 	String uniqueIdentifier;
 	ArrayList<EquivalenceElem> elements;
 	
@@ -43,8 +44,7 @@ public class EquivalenceClass implements Cloneable{
 		this.elements = new ArrayList<EquivalenceElem>();
 		this.elements.addAll(elements);
 	}
-	
-	
+
 
 	public boolean addElementToClass(String typeOfClass, String aliasInfo) {
 		EquivalenceElem e = new EquivalenceElem(typeOfClass, aliasInfo);
@@ -53,6 +53,10 @@ public class EquivalenceClass implements Cloneable{
 	
 	public boolean addElementToClass(EquivalenceElem e) {
 		return elements.add(e);
+	}
+	
+	public boolean addElementsToClass(ArrayList<EquivalenceElem> elems) {
+		return elements.addAll(elems);
 	}
 	
 	public String getUniqueIdOfEquivClass() {

@@ -45,6 +45,7 @@ class BinaryNonLinearIntegerExpression extends NonLinearIntegerExpression {
 		  case PLUS:       return l + r;
 		  case MINUS:      return l - r;
 		  case MUL: return l * r;
+		  case AND: return l & r;
 		  default: throw new RuntimeException("## Error: BinaryNonLinearSolution solution: l " + l + " op " + op + " r " + r);
 		}
 	}

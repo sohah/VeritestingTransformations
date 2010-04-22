@@ -31,10 +31,15 @@ public class UberLazyInstructionFactory extends SymbolicInstructionFactory {
 	static Class<? extends Instruction>[] insnClass;
 
 	static {
-		 insnClass = createInsnClassArray(INSTANCEOF+1); // our highest intercepted bytecode
-
-		    insnClass[GETFIELD] = gov.nasa.jpf.symbc.uberlazy.bytecode.GETFIELD.class;
-		    insnClass[INSTANCEOF] = gov.nasa.jpf.symbc.uberlazy.bytecode.INSTANCEOF.class;
+		insnClass = createInsnClassArray(260);
+		
+		
+		insnClass[GETFIELD] = gov.nasa.jpf.symbc.uberlazy.bytecode.GETFIELD.class;
+		insnClass[IF_ACMPEQ] = gov.nasa.jpf.symbc.uberlazy.bytecode.IF_ACMPEQ.class;
+		insnClass[IF_ACMPNE] = gov.nasa.jpf.symbc.uberlazy.bytecode.IF_ACMPNE.class;
+		insnClass[INSTANCEOF] = gov.nasa.jpf.symbc.uberlazy.bytecode.INSTANCEOF.class;
+		insnClass[IFNULL] = gov.nasa.jpf.symbc.uberlazy.bytecode.IFNULL.class;
+		insnClass[INVOKEVIRTUAL] = gov.nasa.jpf.symbc.uberlazy.bytecode.INVOKEVIRTUAL.class;
 	}
 
 	InstructionFactoryFilter filter = new InstructionFactoryFilter(null, new String[] {"java.*", "javax.*" },

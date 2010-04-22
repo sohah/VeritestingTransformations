@@ -14,13 +14,12 @@
 	<classpathentry kind="lib" path="cvc3.jar"/>
 	<classpathentry kind="lib" path="cvc3test.jar"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/junit-4.6.jar"/>
-	<classpathentry excluding="main/|examples/|peers/|tests/|annotations/|classes/" kind="src" path="src"/>
-	<classpathentry kind="src" path="src/main"/>
-	<classpathentry kind="src" path="src/examples"/>
-	<classpathentry kind="src" path="src/peers"/>
-	<classpathentry kind="src" path="src/tests"/>
-	<classpathentry kind="src" path="src/annotations"/>
-	<classpathentry kind="src" path="src/classes"/>
+	<classpathentry kind="src" output="build/main" path="src/main"/>
+	<classpathentry kind="src" output="build/examples" path="src/examples"/>
+	<classpathentry kind="src" output="build/peers" path="src/peers"/>
+	<classpathentry kind="src" output="build/tests" path="src/tests"/>
+	<classpathentry kind="src" output="build/annotations" path="src/annotations"/>
+	<classpathentry kind="src" output="build/classes" path="src/classes"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jpf-core"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

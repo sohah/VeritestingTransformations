@@ -129,10 +129,18 @@ public abstract class IntegerExpression extends Expression {
 		throw new RuntimeException( "## Error: Operation not supported!" );
 	}
 
-	public IntegerExpression _and(IntegerExpression i)
+	public IntegerExpression _and(IntegerExpression e)
 	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
-	}
+		//simplify
+		if (e instanceof IntegerConstant) {
+			IntegerConstant ic = (IntegerConstant)e;
+			if (ic.value == 0)
+				return new IntegerConstant(0);
+		}
+	
+		return new BinaryNonLinearIntegerExpression(this, AND, e);
+		
+}
 
 	public IntegerExpression _or(IntegerExpression i)
 	{
@@ -156,7 +164,9 @@ public abstract class IntegerExpression extends Expression {
 
 	public IntegerExpression _and(int i)
 	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+		if(i == 0) 
+			return new IntegerConstant(0);
+		return new BinaryNonLinearIntegerExpression(this, AND, new IntegerConstant((int)i));
 	}
 
 	public IntegerExpression _or(int i)
@@ -232,7 +242,9 @@ public abstract class IntegerExpression extends Expression {
 
 	public IntegerExpression _and(long i)
 	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+		if(i == 0) 
+			return new IntegerConstant(0);
+		return new BinaryNonLinearIntegerExpression(this, AND, new IntegerConstant((int)i));
 	}
 
 	public IntegerExpression _or(long i)

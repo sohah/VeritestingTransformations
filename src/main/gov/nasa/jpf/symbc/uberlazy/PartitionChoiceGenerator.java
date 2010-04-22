@@ -33,6 +33,7 @@ public class PartitionChoiceGenerator extends HeapChoiceGenerator {
 		eqObjsList[getNextChoice()] = equivObj;
 	}
 	
+	// creates a deep copy 
 	public EquivalenceObjects getCurrentEquivalenceObject() {
 
 		EquivalenceObjects eqObjs;
@@ -44,5 +45,4 @@ public class PartitionChoiceGenerator extends HeapChoiceGenerator {
 			return null;
 		}
 	}
-	
 }
