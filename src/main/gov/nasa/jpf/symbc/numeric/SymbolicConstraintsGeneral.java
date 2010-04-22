@@ -510,6 +510,7 @@ public class SymbolicConstraintsGeneral {
 		result = pb.solve();
 		if(result == null) {
 			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable)");
+			System.out.println("## PC: " + pc);
 			return false;
 		}
 		return (result == Boolean.TRUE ? true : false);

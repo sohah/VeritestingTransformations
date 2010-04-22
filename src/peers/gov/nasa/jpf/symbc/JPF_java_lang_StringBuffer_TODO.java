@@ -23,7 +23,7 @@ import gov.nasa.jpf.jvm.MJIEnv;
 /**
  * MJI NativePeer class for java.lang.StringBuffer library abstraction
  */
-public class JPF_java_lang_StringBuffer {
+public class JPF_java_lang_StringBuffer_TODO {
 
 
 

@@ -36,7 +36,7 @@ import gov.nasa.jpf.symbc.string.StringExpression;
 /**
  * MJI NativePeer class for java.lang.String library abstraction
  */
-public class JPF_java_lang_String {
+public class JPF_java_lang_String_TODO {
 
 // delegate to JPF's methods
   public static int intern____Ljava_lang_String_2 (MJIEnv env, int robj) {
@@ -112,7 +112,7 @@ public class JPF_java_lang_String {
 
   public static boolean equals__Ljava_lang_Object_2__Z (MJIEnv env, int objRef, int argRef) {
 
-	  System.out.println("String.equals");
+	  System.out.println("ERROR: String.equals");
 	  Object [] attrs = env.getArgAttributes();
 	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))  // concrete
 		  return gov.nasa.jpf.jvm.JPF_java_lang_String.equals__Ljava_lang_Object_2__Z (env, objRef, argRef);
@@ -261,7 +261,7 @@ public class JPF_java_lang_String {
 	  throw new RuntimeException("ERROR: symbolic case not handled: startsWith__Ljava_lang_String_2I__Z");
   }
   public static int length (MJIEnv env, int objRef) {
-	  System.out.println("String.length");
+	  System.out.println("ERROR: String.length");
 	  Object [] attrs = env.getArgAttributes();
 	  String strThis = env.getStringObject(objRef);
 	  if (attrs == null|| attrs.length==0 || (attrs.length==1 && attrs[0]==null))
