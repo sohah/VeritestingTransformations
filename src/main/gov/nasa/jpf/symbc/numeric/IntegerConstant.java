@@ -83,33 +83,8 @@ public class IntegerConstant extends LinearIntegerExpression {
     }
   }
 
-  public IntegerExpression _and (int i) {
-      //simplify
-      if (i == 0)
-          return new IntegerConstant(0);
+ 
 
-    return new IntegerConstant(value & i);
-  }
-  
-  public IntegerExpression _and (IntegerExpression e) {
-      // simplify
-      if (e instanceof IntegerConstant) {
-          IntegerConstant ic = (IntegerConstant) e;
-          if (ic.value == 0)
-              return new IntegerConstant(0);
-      }
-
-    if (e instanceof IntegerConstant) {
-      return new IntegerConstant(value & ((IntegerConstant) e).value);
-    } else if (e instanceof LinearIntegerExpression) {
-      return new BinaryLinearIntegerExpression(this, AND, e);
-    } else if(e instanceof NonLinearIntegerExpression) {
-      return new BinaryNonLinearIntegerExpression(this, AND, e);
-    }
-    else {
-      return super._and(e);
-    }
-  }
   
   public IntegerExpression _plus (int i) {
       //simplify
@@ -142,6 +117,23 @@ public class IntegerConstant extends LinearIntegerExpression {
 			return super._neg();
 	}
 
+	
+	public IntegerExpression _and (int i) {
+	   if (i == 0) {
+		   return new IntegerConstant(0);
+	   }
+	    return new IntegerConstant(value & i);
+	}
+	  
+	public IntegerExpression _and (IntegerExpression e) {
+	  	if (e instanceof IntegerConstant) {
+	  			if(((IntegerConstant) e).value == 0) {
+	  				return new IntegerConstant(0);
+	  			}
+		      return new IntegerConstant(value & ((IntegerConstant) e).value);
+		}
+	     return new BinaryLinearIntegerExpression(this, AND, e);
+	}
 
   public boolean equals (Object o) {
     if (!(o instanceof IntegerConstant)) {

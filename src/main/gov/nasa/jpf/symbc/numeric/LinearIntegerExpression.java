@@ -134,4 +134,25 @@ abstract class LinearIntegerExpression extends IntegerExpression
     {
 	return new BinaryLinearIntegerExpression(new IntegerConstant(0), MINUS, this);
     }
+    
+    public IntegerExpression _and(int i) {
+    	if(i == 0) {
+    		return new IntegerConstant(0);
+    	}
+    	return new BinaryLinearIntegerExpression(this, AND, new IntegerConstant(i));
+    }
+    
+    public IntegerExpression _and(IntegerExpression e) {
+    	if(e instanceof IntegerConstant) {
+    		IntegerConstant ic = (IntegerConstant) e;
+    		if(ic.value == 0) {
+    			return new IntegerConstant(0);
+    		}
+    		
+    	}
+    	if(e instanceof LinearIntegerExpression) {
+    		return new BinaryLinearIntegerExpression(this, AND, e);
+    	}
+    	return new BinaryNonLinearIntegerExpression(this, AND, e);
+    }
 }

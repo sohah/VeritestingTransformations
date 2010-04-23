@@ -68,10 +68,6 @@ public class SymbolicConstraintsGeneral {
 				opRef = ((BinaryLinearIntegerExpression)eRef).op;
 				e_leftRef = ((BinaryLinearIntegerExpression)eRef).left;
 				e_rightRef = ((BinaryLinearIntegerExpression)eRef).right;
-			} else if (eRef instanceof BinaryNonLinearIntegerExpression) {
-				opRef = ((BinaryNonLinearIntegerExpression)eRef).op;
-				e_leftRef = ((BinaryNonLinearIntegerExpression)eRef).left;
-				e_rightRef = ((BinaryNonLinearIntegerExpression)eRef).right;
 			} else {
 				throw new RuntimeException("## Error: Binary Non Linear Expression " + eRef);
 			}
@@ -526,10 +522,6 @@ public class SymbolicConstraintsGeneral {
 				constraintResult= createDPRealConstraint((RealConstraint)cRef);// create choco real constraint
 			else if (cRef instanceof LinearIntegerConstraint)
 				constraintResult= createDPLinearIntegerConstraint((LinearIntegerConstraint)cRef);// create choco linear integer constraint
-			else if (cRef instanceof NonLinearIntegerConstraint) {
-				//System.out.println("it is a non linear integer constraint");
-				constraintResult = createDPNonLinearIntegerConstraint((NonLinearIntegerConstraint)cRef);
-			}
 			else if (cRef instanceof MixedConstraint)
 				// System.out.println("Mixed Constraint");
 				constraintResult= createDPMixedConstraint((MixedConstraint)cRef);
@@ -552,117 +544,7 @@ public class SymbolicConstraintsGeneral {
 	}
 
 
-	private boolean createDPNonLinearIntegerConstraint(
-			NonLinearIntegerConstraint cRef) {
-		
-		Comparator c_compRef = cRef.getComparator();
-		
-		IntegerExpression c_leftRef = (IntegerExpression)cRef.getLeft();
-		IntegerExpression c_rightRef = (IntegerExpression)cRef.getRight();
-
-		switch(c_compRef){
-		case EQ:
-			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-				if (!(((IntegerConstant) c_leftRef).value == ((IntegerConstant) c_rightRef).value))
-					return false;
-				else
-					return true;
-			}
-			else if (c_leftRef instanceof IntegerConstant) {
-				pb.post(pb.eq(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
-			}
-			else if (c_rightRef instanceof IntegerConstant) {
-				pb.post(pb.eq(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
-				//System.exit(1);
-			}
-			else {
-				pb.post(pb.eq(getExpression(c_leftRef),getExpression(c_rightRef)));
-			}
-			
-			break;
-		case NE:
-			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-				if (!(((IntegerConstant) c_leftRef).value != ((IntegerConstant) c_rightRef).value))
-					return false;
-				else
-					return true;
-			}
-			else if (c_leftRef instanceof IntegerConstant) {
-				pb.post(pb.neq(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
-			}
-			else if (c_rightRef instanceof IntegerConstant) {
-				pb.post(pb.neq(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
-			}
-			else
-				pb.post(pb.neq(getExpression(c_leftRef),getExpression(c_rightRef)));
-			break;
-		case LT:
-			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-				if (!(((IntegerConstant) c_leftRef).value < ((IntegerConstant) c_rightRef).value))
-					return false;
-				else
-					return true;
-			}
-			else if (c_leftRef instanceof IntegerConstant) {
-				pb.post(pb.lt(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
-			}
-			else if (c_rightRef instanceof IntegerConstant) {
-				pb.post(pb.lt(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
-			}
-			else
-				pb.post(pb.lt(getExpression(c_leftRef),getExpression(c_rightRef)));
-			break;
-		case GE:
-			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-				if (!(((IntegerConstant) c_leftRef).value >= ((IntegerConstant) c_rightRef).value))
-					return false;
-				else
-					return true;
-			}
-			else if (c_leftRef instanceof IntegerConstant) {
-				pb.post(pb.geq(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
-			}
-			else if (c_rightRef instanceof IntegerConstant) {
-				pb.post(pb.geq(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
-			}
-			else
-				pb.post(pb.geq(getExpression(c_leftRef),getExpression(c_rightRef)));
-			break;
-		case LE:
-			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-				if (!(((IntegerConstant) c_leftRef).value <= ((IntegerConstant) c_rightRef).value))
-					return false;
-				else
-					return true;
-			}
-			else if (c_leftRef instanceof IntegerConstant) {
-				pb.post(pb.leq(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
-			}
-			else if (c_rightRef instanceof IntegerConstant) {
-				pb.post(pb.leq(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
-			}
-			else
-				pb.post(pb.leq(getExpression(c_leftRef),getExpression(c_rightRef)));
-			break;
-		case GT:
-			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-				if (!(((IntegerConstant) c_leftRef).value > ((IntegerConstant) c_rightRef).value))
-					return false;
-				else
-					return true;
-			}
-			else if (c_leftRef instanceof IntegerConstant) {
-				pb.post(pb.gt(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
-			}
-			else if (c_rightRef instanceof IntegerConstant) {
-				pb.post(pb.gt(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
-			}
-			else
-				pb.post(pb.gt(getExpression(c_leftRef),getExpression(c_rightRef)));
-			break;
-		}
-		return true;
-	}
+	
 
 
 	public void solve(PathCondition pc) {

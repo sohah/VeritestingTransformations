@@ -80,4 +80,5 @@ public class BinaryLinearIntegerExpression extends LinearIntegerExpression
 	            ((BinaryLinearIntegerExpression) o).op.equals(this.op) &&
 	            ((BinaryLinearIntegerExpression) o).right.equals(this.right));
 	}
+
 }
