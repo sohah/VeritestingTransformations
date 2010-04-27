@@ -22,7 +22,7 @@ package gov.nasa.jpf.symbc.numeric;
 import java.util.Map;
 
 public class SymbolicReal extends RealExpression {
-	public static final double UNDEFINED = Integer.MIN_VALUE+42;
+	public static double UNDEFINED = Integer.MIN_VALUE+42;
 	public double _min = MinMax.MINDOUBLE;
 	public double _max = MinMax.MAXDOUBLE;
 	public double solution = UNDEFINED; // C

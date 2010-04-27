@@ -193,8 +193,12 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				ClassInfo ci = mi.getClassInfo();
 				String className = ci.getName();
 				//neha:changed invoked method to full name method
+				//System.out.println("!!!!!!!!!! full name "+mi.getFullName());
 				if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 						|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null)){
+					//System.out.println("!!!!!!!!!! full name "+mi.getFullName());
+					assert(false);
+					//System.out.println("!!!!!!!!!! full name "+mi.getFullName());
 					//get the original values and save them for restoration after
 					//we are done with symbolic execution
 					retainVal = ss.getRetainAttributes();

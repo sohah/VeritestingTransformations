@@ -21,20 +21,20 @@ To run it, specify the following JPF configuration variables:
 
 You can specify multiple methods to be executed symbolically as follows:
 
-+symbolic.method=<list of methods to be executed symbolically separated by ",">
+symbolic.method=<list of methods to be executed symbolically separated by ",">
 
 If a method, "test", has three parameters, (e.g., test(arg1, arg2, arg3)) you can tell JPF to execute test symbolically, but only arg1 and arg2 as symbolic values by using the following property specification:
 
-+symbolic.method=test(sym#sym#con)
+symbolic.method=test(sym#sym#con)
 
 You can pick which decision procedure to choose (if unspecified, choco is used
 as default):
 
-+symbolic.dp=choco
+symbolic.dp=choco
 
 or
 
-+symbolic.dp=iasolver
+symbolic.dp=iasolver
 
 More information about choco and iasolver can be found here (other dp's will be incorporated soon):
 
@@ -54,7 +54,20 @@ M. Lowry, S. Person, M. Pape.
 
 A new option was added to implement lazy initialization (see [TACAS'03] paper)
 
-+symbolic.lazy=on
+symbolic.lazy=on
 
 (default is off)
 -- for now it is incompatible with Strings
+
+
+
+New options have been added, to specify min/max values for symbolic variables
+and also to give the default for don't care values.
+
+symbolic.minint=-100
+symbolic.maxint=100
+symbolic.minreal=-1000.0
+symbolic.maxreal=1000.0
+symbolic.undefined=0
+
+
