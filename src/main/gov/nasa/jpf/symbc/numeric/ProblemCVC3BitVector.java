@@ -63,23 +63,127 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	}
 
 	
+	Object or(int value, Object exp) {
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVOrExpr(vc.newBVConstExpr(val, 32), (Expr) exp);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
 
-	@Override
+
+	Object or(Object exp, int value) {
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVOrExpr((Expr) exp, vc.newBVConstExpr(val, 32));
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
+
+	
+	Object or(Object exp1, Object exp2) {
+		try {
+			return vc.newBVOrExpr((Expr) exp1,  (Expr) exp2);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
+
+	
+	Object shiftL(int value, Object exp) {
+		try {
+			return vc.newFixedLeftShiftExpr((Expr) exp, value);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
+
+	
+	Object shiftL(Object exp, int value) {
+		try {
+			return vc.newFixedLeftShiftExpr((Expr) exp, value);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
+
+	
+	Object shiftR(int value, Object exp) {
+		try {
+			return vc.newFixedRightShiftExpr((Expr) exp, value);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
+
+	
+	Object shiftR(Object exp, int value) {
+		try {
+			return vc.newFixedRightShiftExpr((Expr) exp, value);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
+
+	
+	Object xor(int value, Object exp) {
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVXorExpr(vc.newBVConstExpr(val, 32), (Expr) exp);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
+	
+	Object xor(Object exp, int value) {
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVXorExpr((Expr) exp, vc.newBVConstExpr(val, 32));
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
+
+	
+	Object xor(Object exp1, Object exp2) {
+		try {
+			return vc.newBVXorExpr((Expr) exp1,  (Expr) exp2);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
+
+	
 	Object div(int value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVSDivExpr(vc.newBVConstExpr(val, 32), (Expr) exp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
-	@Override
+	
 	Object div(Object exp, int value) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVSDivExpr((Expr) exp, vc.newBVConstExpr(val, 32));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
-	@Override
 	Object div(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			return vc.newBVSDivExpr((Expr) exp1, (Expr) exp2);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
 	@Override
@@ -94,13 +198,17 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		throw new RuntimeException("bit vector");
 	}
 
-	@Override
+	
 	Object eq(int value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.eqExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
-	@Override
+	
 	Object eq(Object exp, int value) {
 		try {
 			Rational val = new Rational(value, vc.embeddedManager());
@@ -112,8 +220,11 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 
 	@Override
 	Object eq(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			return vc.eqExpr((Expr)exp1, (Expr)exp2);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
 	@Override
@@ -128,22 +239,33 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		throw new RuntimeException("bit vector");
 	}
 
-	@Override
+	
 	Object geq(int value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.geExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
-	@Override
+	
 	Object geq(Object exp, int value) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.geExpr((Expr)exp, vc.newBVConstExpr(val, 32));
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
-	@Override
+	
 	Object geq(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			return vc.geExpr((Expr) exp1, (Expr) exp2);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
 	@Override
@@ -182,22 +304,31 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		return 0;
 	}
 
-	@Override
 	Object gt(int value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.gtExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
-	@Override
 	Object gt(Object exp, int value) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.gtExpr((Expr)exp, vc.newBVConstExpr(val, 32));
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
-	@Override
+	
 	Object gt(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			return vc.gtExpr((Expr) exp1, (Expr) exp2);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
 	@Override
@@ -212,25 +343,36 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		throw new RuntimeException("bit vector");
 	}
 
-	@Override
+	
 	Object leq(int value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVLEExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
-	@Override
+	
 	Object leq(Object exp, int value) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVLEExpr((Expr)exp, vc.newBVConstExpr(val, 32));
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
-	@Override
+	
 	Object leq(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			return vc.newBVLEExpr((Expr) exp1, (Expr) exp2);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
-	@Override
+	
 	Object leq(double value, Object exp) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("bit vector");
@@ -242,22 +384,33 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		throw new RuntimeException("bit vector");
 	}
 
-	@Override
+	
 	Object lt(int value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVLTExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
 	@Override
 	Object lt(Object exp, int value) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVLTExpr((Expr)exp, vc.newBVConstExpr(val, 32));
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
-	@Override
+	
 	Object lt(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			return vc.newBVLTExpr((Expr) exp1, (Expr) exp2);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
 	@Override
@@ -284,22 +437,36 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		throw new RuntimeException("bit vector");
 	}
 
-	@Override
+	
 	Object minus(int value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVSubExpr(vc.newBVConstExpr(val, 32), (Expr) exp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
-	@Override
+	
 	Object minus(Object exp, int value) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVSubExpr((Expr) exp, vc.newBVConstExpr(val, 32));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
 	@Override
 	Object minus(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			return vc.newBVSubExpr((Expr) exp1, (Expr) exp2);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
 	@Override
@@ -320,22 +487,36 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		throw new RuntimeException("bit vector");
 	}
 
-	@Override
+	
 	Object mult(int value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVMultExpr(32, vc.newBVConstExpr(val, 32), (Expr) exp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
-	@Override
+	
 	Object mult(Object exp, int value) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.newBVMultExpr(32, (Expr) exp, vc.newBVConstExpr(val, 32));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
-	@Override
+	
 	Object mult(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			return vc.newBVMultExpr(32, (Expr) exp1, (Expr) exp2);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
 	@Override
@@ -350,13 +531,17 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		throw new RuntimeException("bit vector");
 	}
 
-	@Override
+	
 	Object neq(int value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(value, vc.embeddedManager());
+			return vc.notExpr(vc.eqExpr(vc.newBVConstExpr(val, 32), (Expr) exp));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector");
+		}
 	}
 
-	@Override
 	Object neq(Object exp, int value) {
 		try {
 			Rational val = new Rational(value, vc.embeddedManager());
@@ -367,10 +552,14 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		}
 	}
 
-	@Override
+	
 	Object neq(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			return vc.notExpr(vc.eqExpr((Expr) exp1, (Expr) exp2));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector");
+		}
 	}
 
 	@Override
@@ -385,22 +574,44 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		throw new RuntimeException("bit vector");
 	}
 
-	@Override
 	Object plus(int value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			Rational val = new Rational(value, vc.embeddedManager());
+			List<Expr> exprs = new ArrayList<Expr>();
+			exprs.add(vc.newBVConstExpr(val, 32));
+			exprs.add((Expr) exp);
+			return vc.newBVPlusExpr(32, exprs);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
-	@Override
+	
 	Object plus(Object exp, int value) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			Rational val = new Rational(value, vc.embeddedManager());
+			List<Expr> exprs = new ArrayList<Expr>();
+			exprs.add((Expr) exp);
+			exprs.add(vc.newBVConstExpr(val, 32));
+			return vc.newBVPlusExpr(32, exprs);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
-	@Override
+	
 	Object plus(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try{
+			List<Expr> exprs = new ArrayList<Expr>();
+			exprs.add((Expr) exp1);
+			exprs.add((Expr) exp2);
+			return vc.newBVPlusExpr(32, exprs);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error CVC3BitVector" + e);
+		}
 	}
 
 	@Override
@@ -409,18 +620,10 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		throw new RuntimeException("bit vector");
 	}
 
-	@Override
+	
 	Object plus(Object exp, double value) {
-		try{
-			Rational val = new Rational(value, vc.embeddedManager());
-			List<Expr> exprs = new ArrayList<Expr>();
-			exprs.add((Expr) exp);
-			exprs.add(vc.newBVConstExpr(val, 64));
-			return vc.newBVPlusExpr(64, exprs);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-		}
+		// TODO Auto-generated method stub
+		throw new RuntimeException("bit vector");
 	}
 
 	

@@ -74,9 +74,25 @@ abstract class ProblemGeneral{
 	abstract Object div(Object exp1, Object exp2) ;
 	abstract Object div(double value, Object exp) ;
 	abstract Object div(Object exp, double value) ;
+	
 	abstract Object and(int value, Object exp) ;
 	abstract Object and(Object exp, int value) ;
 	abstract Object and(Object exp1, Object exp2) ;
+	
+	abstract Object or(int value, Object exp) ;
+	abstract Object or(Object exp, int value) ;
+	abstract Object or(Object exp1, Object exp2) ;
+	
+	abstract Object xor(int value, Object exp) ;
+	abstract Object xor(Object exp, int value) ;
+	abstract Object xor(Object exp1, Object exp2) ;
+	
+	abstract Object shiftL(int value, Object exp) ;
+	abstract Object shiftL(Object exp, int value) ;
+	
+	abstract Object shiftR(int value, Object exp) ;
+	abstract Object shiftR(Object exp, int value) ;
+	
 		
 	Object makeBitVectorVar(String name, int N) {
 			throw new RuntimeException("## Error BitVectors not supported by current constraint solver");

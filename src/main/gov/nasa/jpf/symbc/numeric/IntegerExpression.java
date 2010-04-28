@@ -240,18 +240,6 @@ public abstract class IntegerExpression extends Expression {
 		throw new RuntimeException( "## Error: Operation not supported!" );
 	}
 
-	public IntegerExpression _and(long i)
-	{
-		if(i == 0) 
-			return new IntegerConstant(0);
-		return new BinaryNonLinearIntegerExpression(this, AND, new IntegerConstant((int)i));
-	}
-
-	public IntegerExpression _or(long i)
-	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
-	}
-
 	public IntegerExpression _rem(long i)
 	{
 		throw new RuntimeException( "## Error: Operation not supported!" );
