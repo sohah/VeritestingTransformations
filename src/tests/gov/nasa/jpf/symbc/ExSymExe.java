@@ -10,8 +10,8 @@ public class ExSymExe {
 	  ExSymExe inst = new ExSymExe();
 	  field = 9;
 	  inst.test(x, field);
-	  inst.test2(x,x);
-	  inst.test1(x,true);
+	  //inst.test2(x,x);
+	  //inst.test1(x,true);
   }
   /* we want to let the user specify that this method should be symbolic */
 
@@ -23,11 +23,12 @@ public class ExSymExe {
   }
   public void test (int x, int z) {
 	  //int y = 3;
-	  x = z++ ;
+	  //x = z++ ;
 	  //z=5;
 
 	  if (z > 0) {
 		 // assert(false);
+		  z = x+1;
 		  System.out.println("branch FOO1");
 	  }
 	  else

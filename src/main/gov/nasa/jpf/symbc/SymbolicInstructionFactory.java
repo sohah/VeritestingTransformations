@@ -24,6 +24,9 @@ import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.jvm.DefaultInstructionFactory;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.symbc.numeric.MinMax;
+import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 import gov.nasa.jpf.util.InstructionFactoryFilter;
 
 /*
@@ -33,7 +36,7 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	 static Class<? extends Instruction>[] insnClass;
 
 	  static {
-	    insnClass = createInsnClassArray(260); 
+	    insnClass = createInsnClassArray(260);
 
 	    insnClass[ALOAD_0]         = gov.nasa.jpf.symbc.bytecode.ALOAD.class;
 	    insnClass[ALOAD_1]         = gov.nasa.jpf.symbc.bytecode.ALOAD.class;
@@ -117,10 +120,10 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 		insnClass[NEW] = gov.nasa.jpf.symbc.bytecode.NEW.class;
 		insnClass[IFNULL] = gov.nasa.jpf.symbc.bytecode.IFNULL.class;
 		insnClass[IFNONNULL] = gov.nasa.jpf.symbc.bytecode.IFNONNULL.class;
-		// IMPORTANT: if any new bytecodes are added make sure to update the 
+		// IMPORTANT: if any new bytecodes are added make sure to update the
 		// length of the array which is at the top of the function
 	  };
-	  
+
 	static public String[] dp;
 
 	//bytecodes replaced by our symbolic implementation
@@ -144,12 +147,14 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
         , "NEW", "IFNULL", "IFNONNULL"
 	};**/
 
-	
+
 	InstructionFactoryFilter filter = new InstructionFactoryFilter(null, new String[] {"java.*", "javax.*" },
 			null, null);
 
 
 	public  SymbolicInstructionFactory (Config conf){
+		System.out.println("Running Symbolic PathFinder ...");
+
 		if (dp==null) {
 			dp = conf.getStringArray("symbolic.dp");
 			if (dp == null) {
@@ -159,11 +164,34 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 			System.out.println("symbolic.dp="+dp[0]);
 		}
 
+		String[] intmin, intmax, realmin, realmax, dontcare;
+		intmin = conf.getStringArray("symbolic.minint");
+		intmax = conf.getStringArray("symbolic.maxint");
+		realmin = conf.getStringArray("symbolic.minreal");
+		realmax = conf.getStringArray("symbolic.maxreal");
+		dontcare = conf.getStringArray("symbolic.undefined");
 
-		System.out.println("Symbolic Execution Mode");
+		if (intmin != null && intmin[0] != null)
+			MinMax.MININT = new Integer(intmin[0]);
+		if (intmax != null && intmax[0] != null)
+			MinMax.MAXINT = new Integer(intmax[0]);
+		if (realmin != null && realmin[0] != null)
+			MinMax.MINDOUBLE = new Double(realmin[0]);
+		if (realmin != null && realmin[0] != null)
+			MinMax.MAXDOUBLE = new Double(realmax[0]);
+		if (dontcare != null && dontcare[0] != null) {
+			SymbolicInteger.UNDEFINED = new Integer(dontcare[0]);
+			SymbolicReal.UNDEFINED = new Double(dontcare[0]);
+		}
+
+		System.out.println("symbolic.minint="+MinMax.MININT);
+		System.out.println("symbolic.maxint="+MinMax.MAXINT);
+		System.out.println("symbolic.minreal="+MinMax.MINDOUBLE);
+		System.out.println("symbolic.maxreal="+MinMax.MAXDOUBLE);
+		System.out.println("symbolic.undefined="+SymbolicInteger.UNDEFINED);
 
 	}
-	
+
 	public Instruction create(ClassInfo ciMth, int opCode) {
 
 	    if (opCode < insnClass.length){

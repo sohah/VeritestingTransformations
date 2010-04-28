@@ -74,6 +74,7 @@ public class BytecodeUtils {
 			Iterator<String> it = list.iterator();
 
 			String shortName = methodName;
+
 			if (methodName.contains("("))
 				shortName = methodName.substring(0, methodName.indexOf("("));
 			while (it.hasNext()) {
@@ -84,8 +85,10 @@ public class BytecodeUtils {
 					argNum = 0;
 				else
 					argNum= m1.split("#").length; // number of args
+				//System.out.println("******************* shortName "+shortName);
+				//System.out.println("******************* configMethodName "+configMethodName);
 				if (configMethodName.equalsIgnoreCase(shortName)) {
-				
+
 					//if ((numberOfArgs == 0) || (argNum == numberOfArgs)) {
 					if(argNum == numberOfArgs) {
 						if (args != null) {
@@ -398,7 +401,7 @@ public class BytecodeUtils {
 				if (outputString.endsWith("("))
 					outputString = outputString.substring(0, outputString.length() - 1);
 			}
-			System.out.println(outputString);
+			//System.out.println(outputString);
 
 			//Now, set up the initial path condition for this method if the
 			//Annotation contains one
@@ -420,7 +423,7 @@ public class BytecodeUtils {
 				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
 
 			assert pc != null;
-		
+
 
 			if (invInst.getInvokedMethod().getAnnotation("gov.nasa.jpf.symbc.Preconditions") != null) {
 				ai = invInst.getInvokedMethod().getAnnotation("gov.nasa.jpf.symbc.Preconditions");
@@ -439,8 +442,8 @@ public class BytecodeUtils {
 				//pc.solve();
 				((PCChoiceGenerator) cg).setCurrentPC(pc);
 				//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
-			} 
-		} 
+			}
+		}
 		return new InstructionOrSuper(true, null);
 	}
 
@@ -487,7 +490,7 @@ public class BytecodeUtils {
 		}
 		return name + "_" + (symVarCounter++) + suffix;
 	}
-	
+
 	//TODO: neha: FIX THIS. This is just the execute method above duplicated without the choice generator
 	// for the pre-conditions. This is just a temp hack, need to have so that at a given point multiple
 	// choices are possible.
@@ -742,7 +745,7 @@ public class BytecodeUtils {
 				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
 
 			assert pc != null;
-		
+
 
 			if (invInst.getInvokedMethod().getAnnotation("gov.nasa.jpf.symbc.Preconditions") != null) {
 				ai = invInst.getInvokedMethod().getAnnotation("gov.nasa.jpf.symbc.Preconditions");
@@ -762,7 +765,7 @@ public class BytecodeUtils {
 				((PCChoiceGenerator) cg).setCurrentPC(pc);
 				//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
 			} **/
-		} 
+		}
 		return new InstructionOrSuper(true, null);
 	}
 }

@@ -20,7 +20,7 @@ package gov.nasa.jpf.symbc;
 
 import gov.nasa.jpf.jvm.MJIEnv;
 
-public class JPF_java_lang_StringBuilder {
+public class JPF_java_lang_StringBuilder_TODO {
 
 
   public static int append__Ljava_lang_String_2__Ljava_lang_StringBuilder_2 (MJIEnv env, int objref, int sref) {

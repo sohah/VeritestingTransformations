@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class SymbolicInteger extends LinearIntegerExpression
 {
-	public static final int UNDEFINED = Integer.MIN_VALUE+42;
+	public static int UNDEFINED = 0;//Integer.MIN_VALUE+42;
 	public int _min = MinMax.MININT;
 	public int _max = MinMax.MAXINT;
 	public int solution = UNDEFINED; // C
@@ -102,22 +102,22 @@ public class SymbolicInteger extends LinearIntegerExpression
     	}
     	return name;
     }
-    
+
     public boolean equals (Object o) {
-        return (o instanceof SymbolicInteger) && 
+        return (o instanceof SymbolicInteger) &&
                (this.equals((SymbolicInteger) o));
     }
-    
+
     private boolean equals (SymbolicInteger s) {
         if (name != null)
-            return (this.name.equals(s.name)) && 
+            return (this.name.equals(s.name)) &&
                    (this._max == s._max) &&
                    (this._min == s._min);
-        else 
+        else
             return (this._max == s._max) &&
                    (this._min == s._min);
     }
-    
+
     public int hashCode() {
         return Integer.toHexString(_min ^ _max).hashCode();
     }
