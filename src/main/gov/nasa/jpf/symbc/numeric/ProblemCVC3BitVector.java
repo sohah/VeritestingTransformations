@@ -243,7 +243,7 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	Object geq(int value, Object exp) {
 		try {
 			Rational val = new Rational(value, vc.embeddedManager());
-			return vc.geExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
+			return vc.notExpr(vc.newBVLTExpr(vc.newBVConstExpr(val, 32), (Expr)exp));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
 		}
@@ -253,7 +253,7 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	Object geq(Object exp, int value) {
 		try {
 			Rational val = new Rational(value, vc.embeddedManager());
-			return vc.geExpr((Expr)exp, vc.newBVConstExpr(val, 32));
+			return vc.notExpr(vc.newBVLTExpr((Expr)exp, vc.newBVConstExpr(val, 32)));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
 		}
@@ -262,7 +262,7 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object geq(Object exp1, Object exp2) {
 		try {
-			return vc.geExpr((Expr) exp1, (Expr) exp2);
+			return vc.notExpr(vc.newBVLTExpr((Expr) exp1, (Expr) exp2));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
 		}
@@ -307,7 +307,7 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	Object gt(int value, Object exp) {
 		try {
 			Rational val = new Rational(value, vc.embeddedManager());
-			return vc.gtExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
+			return vc.notExpr(vc.newBVLEExpr(vc.newBVConstExpr(val, 32), (Expr)exp));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
 		}
@@ -316,7 +316,7 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	Object gt(Object exp, int value) {
 		try {
 			Rational val = new Rational(value, vc.embeddedManager());
-			return vc.gtExpr((Expr)exp, vc.newBVConstExpr(val, 32));
+			return vc.notExpr(vc.newBVLEExpr((Expr)exp, vc.newBVConstExpr(val, 32)));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
 		}
@@ -325,7 +325,7 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object gt(Object exp1, Object exp2) {
 		try {
-			return vc.gtExpr((Expr) exp1, (Expr) exp2);
+			return vc.notExpr(vc.newBVLEExpr((Expr) exp1, (Expr) exp2));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
 		}
