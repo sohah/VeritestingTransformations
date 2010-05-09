@@ -124,15 +124,61 @@ public class IntegerConstant extends LinearIntegerExpression {
 	   }
 	    return new IntegerConstant(value & i);
 	}
+	
+	public IntegerExpression _and (long i) {
+		   if (i == 0) {
+			   return new IntegerConstant(0);
+		   }
+		    return new IntegerConstant(value & ((int) i));
+		}
 	  
 	public IntegerExpression _and (IntegerExpression e) {
-	  	if (e instanceof IntegerConstant) {
-	  			if(((IntegerConstant) e).value == 0) {
-	  				return new IntegerConstant(0);
-	  			}
-		      return new IntegerConstant(value & ((IntegerConstant) e).value);
+		if (e instanceof IntegerConstant) {
+			if(((IntegerConstant) e).value == 0) {
+				return new IntegerConstant(0);
+			}
+			return new IntegerConstant(value & ((IntegerConstant) e).value);
 		}
-	     return new BinaryLinearIntegerExpression(this, AND, e);
+		return new BinaryLinearIntegerExpression(this, AND, e);
+	}
+	
+	public IntegerExpression _or (int i) {
+		if (i == 0) {
+			return this;
+		}
+		return new IntegerConstant(value | i);
+	}
+	
+	public IntegerExpression _or (long i) {
+		if (i == 0) {
+			return this;
+		}
+		return new IntegerConstant(value | ((int) i));
+	}
+
+	public IntegerExpression _or (IntegerExpression e) {
+		if (e instanceof IntegerConstant) {
+			if(((IntegerConstant) e).value == 0) {
+				return this;
+			}
+			return new IntegerConstant(value | ((IntegerConstant) e).value);
+		}
+		return new BinaryLinearIntegerExpression(this, OR, e);
+	}
+	
+	public IntegerExpression _xor (int i) {
+		    return new IntegerConstant(value ^ i);
+	}
+	
+	public IntegerExpression _xor (long i) {
+	    return new IntegerConstant(value ^ ((int) i));
+	}
+
+	public IntegerExpression _xor (IntegerExpression e) {
+		if (e instanceof IntegerConstant) {
+			return new IntegerConstant(value ^ ((IntegerConstant) e).value);
+		}
+		return new BinaryLinearIntegerExpression(this, XOR, e);
 	}
 
   public boolean equals (Object o) {

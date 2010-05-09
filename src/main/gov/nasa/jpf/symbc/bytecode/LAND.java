@@ -34,7 +34,7 @@ public class LAND extends gov.nasa.jpf.jvm.bytecode.LAND {
 
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-	  	StackFrame sf = th.getTopFrame();
+	  StackFrame sf = th.getTopFrame();
 	  
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1);
 		IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(3);
@@ -42,22 +42,26 @@ public class LAND extends gov.nasa.jpf.jvm.bytecode.LAND {
 	    if(sym_v1==null && sym_v2==null)
 	        return super.execute(ss, ks, th);// we'll still do the concrete execution
 	    else {
-	    	throw new RuntimeException("## Error: SYMBOLIC LAND not supported");
-	    }
-//  IntegerExpression result = null;
-    /*
-    if(sym_v1!=null) {
-        if (sym_v2!=null)
-            result = sym_v1._plus(sym_v2);
-        else // v2 is concrete
-            result = sym_v1._plus(v2);
-    }
-    else if (sym_v2!=null)
-        result = sym_v2._plus(v1);
-        */
-    //sf.setLongOperandAttr(result);
-    
-    //System.out.println("Execute LAND: "+result);
+	    	long v1 = th.longPop();
+	    	long v2 = th.longPop();
+	    	th.longPush(0); // for symbolic expressions, the concrete value does not matter
 
+	    	IntegerExpression result = null;
+	    	if(sym_v1!=null) {
+	    		if (sym_v2!=null)
+	    			result = sym_v1._and(sym_v2);
+	    		else // v2 is concrete
+	    			result = sym_v1._and(v2);
+	    	}
+	    	else if (sym_v2!=null) {
+	    		result = sym_v2._and(v1);
+
+	    	}
+	    	sf.setLongOperandAttr(result);
+
+	    	//System.out.println("Execute LADD: "+sf.getLongOperandAttr());
+
+	    	return getNext(th);
+	    }
   }
 }

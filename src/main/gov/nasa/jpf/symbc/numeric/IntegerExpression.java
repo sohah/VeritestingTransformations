@@ -138,13 +138,21 @@ public abstract class IntegerExpression extends Expression {
 				return new IntegerConstant(0);
 		}
 	
-		return new BinaryNonLinearIntegerExpression(this, AND, e);
-		
-}
+		return new BinaryNonLinearIntegerExpression(this, AND, e);	
+	}
 
-	public IntegerExpression _or(IntegerExpression i)
-	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+	public IntegerExpression _or(IntegerExpression e) {
+		if(e instanceof IntegerConstant) {
+			IntegerConstant ic = (IntegerConstant) e;
+			if(ic.value == 0) {
+				return this;
+			}
+		}
+		return new BinaryNonLinearIntegerExpression(this, OR, e);	
+	}
+	
+	public IntegerExpression _xor(IntegerExpression e) {
+		return new BinaryNonLinearIntegerExpression(this, XOR, e);
 	}
 
 	public IntegerExpression _shiftR(int i)
@@ -171,7 +179,14 @@ public abstract class IntegerExpression extends Expression {
 
 	public IntegerExpression _or(int i)
 	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+		if(i == 0) 
+			return this;
+		return new BinaryNonLinearIntegerExpression(this, OR, new IntegerConstant((int) i));
+	}
+	
+	public IntegerExpression _xor(int i)
+	{
+		return new BinaryNonLinearIntegerExpression(this, XOR, new IntegerConstant((int) i));
 	}
 
 	public IntegerExpression _rem(int i)
@@ -225,6 +240,24 @@ public abstract class IntegerExpression extends Expression {
 		return new BinaryNonLinearIntegerExpression(this, PLUS, new IntegerConstant((int)i));
 	}
 
+	public IntegerExpression _and(long i) {
+		if (i == 0)
+			return new IntegerConstant(0);
+
+		return new BinaryNonLinearIntegerExpression(this, AND, new IntegerConstant((int)i));
+	}
+	
+	public IntegerExpression _or(long i) {
+		if (i == 0)
+			return this;
+
+		return new BinaryNonLinearIntegerExpression(this, OR, new IntegerConstant((int)i));
+	}
+	
+	public IntegerExpression _xor(long i) {
+		return new BinaryNonLinearIntegerExpression(this, XOR, new IntegerConstant((int)i));
+	}
+	
 	public IntegerExpression _shiftR(long i)
 	{
 		throw new RuntimeException( "## Error: Operation not supported!" );

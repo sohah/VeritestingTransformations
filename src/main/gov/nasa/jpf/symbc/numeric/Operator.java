@@ -26,7 +26,10 @@ public enum Operator{
 	MINUS(" - "), 
 	PLUS(" + "),
 	CMP(" cmp "),
-	AND(" & ");
+	AND(" & "),
+	OR(" | "),
+	XOR(" ^ ");
+	
 	
 	
 	private final String str;

@@ -142,17 +142,70 @@ abstract class LinearIntegerExpression extends IntegerExpression
     	return new BinaryLinearIntegerExpression(this, AND, new IntegerConstant(i));
     }
     
+    public IntegerExpression _and(long i) {
+    	if(i == 0) {
+    		return new IntegerConstant(0);
+    	}
+    	return new BinaryLinearIntegerExpression(this, AND, new IntegerConstant((int)i));
+    }
+    
     public IntegerExpression _and(IntegerExpression e) {
     	if(e instanceof IntegerConstant) {
     		IntegerConstant ic = (IntegerConstant) e;
     		if(ic.value == 0) {
     			return new IntegerConstant(0);
     		}
-    		
+    		return new BinaryLinearIntegerExpression(this, AND, e);
     	}
     	if(e instanceof LinearIntegerExpression) {
     		return new BinaryLinearIntegerExpression(this, AND, e);
     	}
     	return new BinaryNonLinearIntegerExpression(this, AND, e);
+    }
+    
+    public IntegerExpression _or(int i) {
+    	if(i == 0) {
+    		return this;
+    	} 
+    	return new BinaryLinearIntegerExpression(this, OR, new IntegerConstant(i));
+    }
+    
+    public IntegerExpression _or(long i) {
+    	if(i == 0) {
+    		return this;
+    	} 
+    	return new BinaryLinearIntegerExpression(this, OR, new IntegerConstant((int)i));
+    }
+    
+    public IntegerExpression _or(IntegerExpression e) {
+    	if(e instanceof IntegerConstant) {
+    		IntegerConstant ic = (IntegerConstant) e;
+    		if(ic.value == 0) {
+    			return this;
+    		} 
+    		return new BinaryLinearIntegerExpression(this, OR, e);
+    	}
+    	if(e instanceof LinearIntegerExpression) {
+    		return new BinaryLinearIntegerExpression(this, OR, e);
+    	}
+    	return new BinaryNonLinearIntegerExpression(this, OR, e);
+    }
+    
+    public IntegerExpression _xor(int i) {
+    	return new BinaryLinearIntegerExpression(this, XOR, new IntegerConstant(i));
+    }
+    
+    public IntegerExpression _xor(long i) {
+    	return new BinaryLinearIntegerExpression(this, XOR, new IntegerConstant((int)i));
+    }
+    
+    public IntegerExpression _xor(IntegerExpression e) {
+    	if(e instanceof IntegerConstant) {
+    		return new BinaryLinearIntegerExpression(this, XOR, e);
+    	}
+    	if(e instanceof LinearIntegerExpression) {
+    		return new BinaryLinearIntegerExpression(this, XOR, e);
+    	}
+    	return new BinaryNonLinearIntegerExpression(this, XOR, e);
     }
 }

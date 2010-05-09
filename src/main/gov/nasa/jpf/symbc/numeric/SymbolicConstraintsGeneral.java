@@ -110,6 +110,24 @@ public class SymbolicConstraintsGeneral {
 					return pb.and(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
 				else
 					return pb.and(getExpression(e_leftRef),getExpression(e_rightRef));
+			case OR:
+				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+				else if (e_leftRef instanceof IntegerConstant)
+					return pb.or(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+				else if (e_rightRef instanceof IntegerConstant)
+					return pb.or(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
+				else
+					return pb.or(getExpression(e_leftRef),getExpression(e_rightRef));
+			case XOR:
+				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+				else if (e_leftRef instanceof IntegerConstant)
+					return pb.xor(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+				else if (e_rightRef instanceof IntegerConstant)
+					return pb.xor(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
+				else
+					return pb.xor(getExpression(e_leftRef),getExpression(e_rightRef));
 			default:
 				throw new RuntimeException("## Error: Binary Non Linear Operation");
 			}

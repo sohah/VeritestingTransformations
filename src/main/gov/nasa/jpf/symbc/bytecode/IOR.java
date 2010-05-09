@@ -34,19 +34,26 @@ public class IOR extends gov.nasa.jpf.jvm.bytecode.IOR {
 		
 		if(sym_v1==null && sym_v2==null)
 			return super.execute(ss, ks, th); // we'll still do the concrete execution
-		else 
-			throw new RuntimeException("## Error: SYMBOLIC IOR not supported");
+		else {
+			int v1 = th.pop();
+			int v2 = th.pop();
+			th.push(0, false); // for symbolic expressions, the concrete value does not matter
 		
-		/*
-		if(sym_v1!=null) {
-			if (sym_v2!=null)
-				result = sym_v1._plus(sym_v2);
-			else // v2 is concrete
-				result = sym_v1._plus(v2);
+			IntegerExpression result = null;
+			if(sym_v1!=null) {
+				if (sym_v2!=null)
+					result = sym_v1._or(sym_v2);
+				else // v2 is concrete
+					result = sym_v1._or(v2);
+			}
+			else if (sym_v2!=null)
+				result = sym_v2._or(v1);
+			sf.setOperandAttr(result);
+		
+			//System.out.println("Execute IADD: "+result);
+		
+			return getNext(th);
 		}
-		else if (sym_v2!=null)
-			result = sym_v2._plus(v1);
-			*/
 		
 	}
 }

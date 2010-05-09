@@ -43,6 +43,8 @@ public class BinaryLinearIntegerExpression extends LinearIntegerExpression
 		  case MINUS:      return l - r;
 		  case MUL: return l * r;
 		  case AND: return l & r;
+		  case OR: return l | r;
+		  case XOR: return l ^ r;
 		  default: throw new RuntimeException("## Error: BinaryLinearSolution solution: l " + l + " op " + op + " r " + r);
 		}
 	}
