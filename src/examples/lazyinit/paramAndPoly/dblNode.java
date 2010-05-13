@@ -20,17 +20,6 @@
 package lazyinit.paramAndPoly;
 
 
-public class Node {
-
-	Node next;
-	
-	public boolean isNext(ExtendedNode node) {
-		return this.next == node;
-		
-	}
-	
-	public boolean isNextObject(Object node) {
-		return this.next == node;
-	}
-	
+public class dblNode extends Node {
+	double elem;
 }
