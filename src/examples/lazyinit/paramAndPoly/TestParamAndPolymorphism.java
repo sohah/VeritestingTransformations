@@ -39,6 +39,19 @@
 
 package lazyinit.paramAndPoly;
 
+/**
+ * Example is taken from a technical report:
+ * http://people.cis.ksu.edu/~robby/SAnToS-TR2009-09-25.pdf
+ * "Efficient Symbolic Execution Algorithms for Programs
+ *  Manipulating Dyanmic Heap Objects" by Xianghua Deng,
+ *  Jooyong Lee, and Robby. 
+ *  
+ *  The example is used to demonstrate that the tool can 
+ *  handle non-determinism from initializing subtypes 
+ *  and also handle objects that are not a field references.
+ *  
+ **/
+
 public class TestParamAndPolymorphism {
 	
 	public void run(Node n1, ExtendedNode en) {
