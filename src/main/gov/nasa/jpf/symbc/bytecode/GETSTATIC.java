@@ -49,7 +49,9 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	private int numSymRefs = 0; // # of prev. initialized objects
 	private int numNewRefs = 0; // # of new reference objects to account for polymorphism (neha)
 	ChoiceGenerator<?> prevHeapCG;
+	 boolean abstractClass = false;
 
+	
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 		Config conf = ti.getVM().getConfig();
@@ -135,11 +137,16 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 						  n = n.getNext();
 					  }
 			}
+			int increment = 2;
+			if(typeClassInfo.isAbstract()) {
+				abstractClass = true;
+				increment = 1; // only null
+			}
 			if(!subtypes.equals("false")) {
 				// get the number of subtypes that exist, and add the number in
 				// the choice generator in addition to the ones that were there
 				numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
-				heapCG = new HeapChoiceGenerator(numSymRefs+2+numNewRefs); // +null,new
+				heapCG = new HeapChoiceGenerator(numSymRefs+increment+numNewRefs); // +null,new
 			} else {
 				heapCG = new HeapChoiceGenerator(numSymRefs+2);  //+null,new
 			}
@@ -180,14 +187,17 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		else if (currentChoice == numSymRefs) { //existing (null)
 			pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
 			daIndex = -1;
-		} else if (currentChoice == (numSymRefs + 1)) {
+		} else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 			  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
 			  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
 					  		symInputHeap, numSymRefs, prevSymRefs);
 		  } else { 
-			  // neha: this creates new objects for the all sub-classes in the type hierarchy
-			  // the clause will only be invoked when the uberlazy flag is set 
-			  int counter = currentChoice - (numSymRefs+1) - 1; //index to the sub-class
+			  int counter;
+			  if(abstractClass) {
+					counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
+			  } else {
+					counter = currentChoice - (numSymRefs+1) - 1;
+			  }
 			  ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
 			  daIndex = Helper.addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap,
 					  		symInputHeap, numSymRefs, prevSymRefs);

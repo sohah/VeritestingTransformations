@@ -57,9 +57,9 @@ public class TypeHierarchy {
 				ClassInfo one = TypeHierarchy.allClassInfos.get(firstIndex);
 				ClassInfo two = TypeHierarchy.allClassInfos.get(secondIndex);
 				
-				if(one.isInstanceOf(two)) {
+				if(one.isInstanceOf(two) && !one.isAbstract()) {
 					addElement(typeHierarchies,two.getName(),one.getName());
-				} else if (two.isInstanceOf(one)) {
+				} else if (two.isInstanceOf(one) && !two.isAbstract()) {
 					addElement(typeHierarchies,one.getName(),two.getName());
 				}
 			}

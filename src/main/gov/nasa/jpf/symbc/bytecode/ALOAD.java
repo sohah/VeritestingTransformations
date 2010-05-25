@@ -27,7 +27,7 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 	private ChoiceGenerator<?> prevHeapCG;
 	private int numSymRefs = 0;
     private int numNewRefs = 0; // # of new reference objects to account for polymorphism (neha)
-
+    boolean abstractClass = false;
 	
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
 	
@@ -93,14 +93,19 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 					n = n.getNext();
 				}
 			}
+			int increment = 2;
+			if(typeClassInfo.isAbstract()) {
+				 abstractClass = true;
+				 increment = 1; // only null
+			}
 			//neha: if subtypes are to be considered
 			if(!subtypes.equals("false")) {
 				// get the number of subtypes that exist, and add the number in
 				// the choice generator in addition to the ones that were there
 				numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
-				thisHeapCG = new HeapChoiceGenerator(numSymRefs+2+numNewRefs); // +null,new
+				thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment+numNewRefs); // +null,new
 			} else {
-				thisHeapCG = new HeapChoiceGenerator(numSymRefs+2);  //+null,new
+				thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment);  //+null,new
 			}
 			ss.setNextChoiceGenerator(thisHeapCG);
 			return this;
@@ -138,12 +143,17 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 			pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
 			daIndex = -1;
 		} 
-		else if (currentChoice == (numSymRefs + 1)) {
+		else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 			//creates a new object with all fields symbolic
 			daIndex = Helper.addNewHeapNode(typeClassInfo, th, daIndex, attr, ks, pcHeap,
 							symInputHeap, numSymRefs, prevSymRefs);
 		} else {
-			int counter = currentChoice - (numSymRefs+1) - 1; //index to the sub-class
+			int counter;
+			if(abstractClass) {
+				counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
+			} else {
+				counter = currentChoice - (numSymRefs+1) - 1;
+			}
 			ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
 			daIndex = Helper.addNewHeapNode(subClassInfo, th, daIndex, attr, ks, pcHeap,
 							symInputHeap, numSymRefs, prevSymRefs);
