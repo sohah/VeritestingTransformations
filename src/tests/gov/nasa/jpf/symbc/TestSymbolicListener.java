@@ -72,13 +72,13 @@ public class TestSymbolicListener extends SymbolicListener {
 
   @Override
   public void stateAdvanced(Search search) {
-    stateMap.put(search.getStateNumber(), currentBuffer.toString());
+    stateMap.put(search.getStateId(), currentBuffer.toString());
 
   }
 
   @Override
   public void stateBacktracked(Search search) {
-    int state = search.getStateNumber();
+    int state = search.getStateId();
     if(state != -1)
       currentBuffer = new StringBuffer(stateMap.get(state));
   }
