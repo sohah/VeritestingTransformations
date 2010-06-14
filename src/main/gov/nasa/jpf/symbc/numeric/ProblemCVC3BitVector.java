@@ -38,7 +38,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object and(int value, Object exp) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVAndExpr(vc.newBVConstExpr(val, 32), (Expr) exp); 
 		} catch (Exception e) {
 			throw new RuntimeException("## Error CVC3BitVector ");
@@ -47,7 +48,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 
 	Object and(Object exp, int value) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVAndExpr((Expr) exp, vc.newBVConstExpr(val, 32)); 
 		} catch (Exception e) {
 			throw new RuntimeException("## Error CVC3BitVector ");
@@ -65,7 +67,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object or(int value, Object exp) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVOrExpr(vc.newBVConstExpr(val, 32), (Expr) exp);
 		} catch (Exception e) {
 			throw new RuntimeException("## Error CVC3BitVector ");
@@ -75,7 +78,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 
 	Object or(Object exp, int value) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVOrExpr((Expr) exp, vc.newBVConstExpr(val, 32));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error CVC3BitVector ");
@@ -130,7 +134,9 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object xor(int value, Object exp) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			//Integer.toString(value);
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVXorExpr(vc.newBVConstExpr(val, 32), (Expr) exp);
 		} catch (Exception e) {
 			throw new RuntimeException("## Error CVC3BitVector ");
@@ -139,7 +145,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object xor(Object exp, int value) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVXorExpr((Expr) exp, vc.newBVConstExpr(val, 32));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error CVC3BitVector ");
@@ -158,7 +165,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object div(int value, Object exp) {
 		try{
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVSDivExpr(vc.newBVConstExpr(val, 32), (Expr) exp);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -169,7 +177,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object div(Object exp, int value) {
 		try{
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVSDivExpr((Expr) exp, vc.newBVConstExpr(val, 32));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -201,7 +210,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object eq(int value, Object exp) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.eqExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
@@ -211,14 +221,15 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object eq(Object exp, int value) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.eqExpr((Expr)exp, vc.newBVConstExpr(val, 32));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
 		}
 	}
 
-	@Override
+	
 	Object eq(Object exp1, Object exp2) {
 		try {
 			return vc.eqExpr((Expr)exp1, (Expr)exp2);
@@ -227,22 +238,33 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		}
 	}
 
-	@Override
+	
 	Object eq(double value, Object exp) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(Long.toString( (long)value &
+										0xffffffffffffffffL ), vc.embeddedManager());
+			return vc.eqExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
-	@Override
+	
 	Object eq(Object exp, double value) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("bit vector");
+		try {
+			Rational val = new Rational(Long.toString( (long)value &
+										0xffffffffffffffffL ), vc.embeddedManager());
+			return vc.eqExpr((Expr)exp, vc.newBVConstExpr(val, 32));
+		} catch (Exception e) {
+			throw new RuntimeException("## Error: CVC3 BitVector");
+		}
 	}
 
 	
 	Object geq(int value, Object exp) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.notExpr(vc.newBVLTExpr(vc.newBVConstExpr(val, 32), (Expr)exp));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
@@ -252,7 +274,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object geq(Object exp, int value) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.notExpr(vc.newBVLTExpr((Expr)exp, vc.newBVConstExpr(val, 32)));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
@@ -306,7 +329,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 
 	Object gt(int value, Object exp) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.notExpr(vc.newBVLEExpr(vc.newBVConstExpr(val, 32), (Expr)exp));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
@@ -315,7 +339,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 
 	Object gt(Object exp, int value) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.notExpr(vc.newBVLEExpr((Expr)exp, vc.newBVConstExpr(val, 32)));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
@@ -346,7 +371,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object leq(int value, Object exp) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVLEExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
@@ -356,7 +382,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object leq(Object exp, int value) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVLEExpr((Expr)exp, vc.newBVConstExpr(val, 32));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
@@ -387,7 +414,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object lt(int value, Object exp) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVLTExpr(vc.newBVConstExpr(val, 32), (Expr)exp);
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
@@ -397,7 +425,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	@Override
 	Object lt(Object exp, int value) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVLTExpr((Expr)exp, vc.newBVConstExpr(val, 32));
 		} catch (Exception e) {
 			throw new RuntimeException("## Error: CVC3 BitVector");
@@ -440,7 +469,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object minus(int value, Object exp) {
 		try{
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVSubExpr(vc.newBVConstExpr(val, 32), (Expr) exp);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -451,7 +481,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object minus(Object exp, int value) {
 		try{
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVSubExpr((Expr) exp, vc.newBVConstExpr(val, 32));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -490,7 +521,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object mult(int value, Object exp) {
 		try{
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),	
+																vc.embeddedManager());
 			return vc.newBVMultExpr(32, vc.newBVConstExpr(val, 32), (Expr) exp);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -501,7 +533,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object mult(Object exp, int value) {
 		try{
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.newBVMultExpr(32, (Expr) exp, vc.newBVConstExpr(val, 32));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -534,7 +567,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object neq(int value, Object exp) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.notExpr(vc.eqExpr(vc.newBVConstExpr(val, 32), (Expr) exp));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -544,7 +578,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 
 	Object neq(Object exp, int value) {
 		try {
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			return vc.notExpr(vc.eqExpr((Expr) exp, vc.newBVConstExpr(val, 32)));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -576,7 +611,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 
 	Object plus(int value, Object exp) {
 		try{
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			List<Expr> exprs = new ArrayList<Expr>();
 			exprs.add(vc.newBVConstExpr(val, 32));
 			exprs.add((Expr) exp);
@@ -590,7 +626,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	
 	Object plus(Object exp, int value) {
 		try{
-			Rational val = new Rational(value, vc.embeddedManager());
+			Rational val = new Rational(Long.toString( value & 0xffffffffL ),
+																vc.embeddedManager());
 			List<Expr> exprs = new ArrayList<Expr>();
 			exprs.add((Expr) exp);
 			exprs.add(vc.newBVConstExpr(val, 32));

@@ -172,6 +172,21 @@
       <fileset dir="build/peers" erroronmissingdir="false"/>
       <fileset dir="build/annotations" erroronmissingdir="false"/>
     </jar>
+	
+	<jar jarfile="build/RunSPF.jar">
+     <fileset dir="build/main" erroronmissingdir="false"/>
+      <fileset dir="build/peers" erroronmissingdir="false"/>
+      <fileset dir="build/annotations" erroronmissingdir="false"/>
+	<manifest>
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Implementation-Vendor" value="NASA Ames Research Center"/>
+        <attribute name="Implementation-Title" value="Symbolic Pathfinder launch system"/>
+        <attribute name="Implementation-Version" value="${jpf.version}"/>
+		<attribute name="Class-Path" value="bin/RunJPF.jar"/>
+        <attribute name="Main-Class" value="gov.nasa.jpf.Main"/>
+      </manifest>
+    </jar>
+	
   </target>
 
   <target name="-jar-jpf" if="have_jpf_code">
