@@ -21,7 +21,7 @@ package gov.nasa.jpf.symbc.numeric;
 
 import java.util.Map;
 
-class BinaryRealExpression extends RealExpression 
+public class BinaryRealExpression extends RealExpression 
 {
 	RealExpression left;
 	Operator   op;
@@ -60,5 +60,17 @@ class BinaryRealExpression extends RealExpression
 	public String toString () 
 	{
 		return "(" + left.toString() + op.toString() + right.toString() + ")";
+	}
+
+	public Operator getOp() {
+		return op;
+	}
+
+	public RealExpression getLeft() {
+		return left;
+	}
+
+	public RealExpression getRight() {
+		return right;
 	}
 }

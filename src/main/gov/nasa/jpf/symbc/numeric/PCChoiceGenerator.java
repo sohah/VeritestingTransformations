@@ -18,16 +18,19 @@
 //
 package gov.nasa.jpf.symbc.numeric;
 
+import gov.nasa.jpf.jvm.IntChoiceGenerator;
 import gov.nasa.jpf.jvm.choice.IntIntervalGenerator;
 import gov.nasa.jpf.symbc.numeric.*;
 
 public class PCChoiceGenerator extends IntIntervalGenerator {
 
 	PathCondition[] PC;
-
+	boolean isReverseOrder;
+	
 	public PCChoiceGenerator(int size) {
 		super(0, size - 1);
 		PC = new PathCondition[size];
+		isReverseOrder = false;
 	}
 	
 	/*
@@ -39,6 +42,11 @@ public class PCChoiceGenerator extends IntIntervalGenerator {
 	public PCChoiceGenerator(int size, boolean reverseOrder) {
 		super(0, size - 1, reverseOrder ? -1 : 1);
 		PC = new PathCondition[size];
+		isReverseOrder = reverseOrder;
+	}
+	
+	public boolean isReverseOrder() {
+		return isReverseOrder;
 	}
 
 	// sets the PC constraints for the current choice
@@ -46,7 +54,6 @@ public class PCChoiceGenerator extends IntIntervalGenerator {
 		PC[getNextChoice()] = pc;
 		
 	}
-	
 	
 	// returns the PC constraints for the current choice
 	public PathCondition getCurrentPC() {
@@ -58,5 +65,9 @@ public class PCChoiceGenerator extends IntIntervalGenerator {
 		} else {
 			return null;
 		}
+	}
+	
+	public IntChoiceGenerator randomize() {
+		return new PCChoiceGenerator(2, random.nextBoolean()); 
 	}
 }

@@ -61,6 +61,9 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	    insnClass[IF_ICMPLE] = gov.nasa.jpf.symbc.bytecode.IF_ICMPLE.class;
 	    insnClass[IF_ICMPLT] = gov.nasa.jpf.symbc.bytecode.IF_ICMPLT.class;
 	    insnClass[IDIV] = gov.nasa.jpf.symbc.bytecode.IDIV.class;
+	    insnClass[ISHL] = gov.nasa.jpf.symbc.bytecode.ISHL.class;
+	    insnClass[ISHR] = gov.nasa.jpf.symbc.bytecode.ISHR.class;
+	    insnClass[IUSHR] = gov.nasa.jpf.symbc.bytecode.IUSHR.class;
 	    insnClass[IXOR] = gov.nasa.jpf.symbc.bytecode.IXOR.class;
 	    insnClass[IOR] = gov.nasa.jpf.symbc.bytecode.IOR.class;
 	    insnClass[IREM] = gov.nasa.jpf.symbc.bytecode.IREM.class;
