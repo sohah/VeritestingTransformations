@@ -60,6 +60,10 @@ import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.symbc.numeric.ProblemCVC3;
+import gov.nasa.jpf.symbc.numeric.ProblemCVC3BitVector;
+import gov.nasa.jpf.symbc.numeric.ProblemChoco;
+import gov.nasa.jpf.symbc.numeric.ProblemIAsolver;
 import gov.nasa.jpf.symbc.numeric.RealConstant;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
@@ -133,6 +137,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	//not yet tested
 	public void propertyViolated (Search search){
 		//System.out.println("--------->property violated");
+
 		JVM vm = search.getVM();
 		Config conf = vm.getConfig();
 		SystemState ss = vm.getSystemState();
@@ -375,8 +380,9 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	}
 
 	  public void stateBacktracked(Search search) {
+
 		  JVM vm = search.getVM();
-		Config conf = vm.getConfig();
+		  Config conf = vm.getConfig();
 
 		  Instruction insn = vm.getChoiceGenerator().getInsn();
 		  SystemState ss = vm.getSystemState();
@@ -565,6 +571,10 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
       //	-------- the publisher interface
 	  public void publishFinished (Publisher publisher) {
+		String[] dp = SymbolicInstructionFactory.dp;
+		if (dp[0].equalsIgnoreCase("no_solver"))
+				return;
+
 	    PrintWriter pw = publisher.getOut();
 
 	    publisher.publishTopicStart("Method Summaries");

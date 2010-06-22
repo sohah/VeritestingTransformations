@@ -15,6 +15,8 @@ sourcepath=${jpf-symbc}/src/tests
 
 # in this particular configuration all the input
 # parameters to methods test2 and test are symbolic
-symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test(sym#sym)
+symbolic.dp=no_solver
+
+symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test1(sym#sym)
 
 listener = gov.nasa.jpf.symbc.SymbolicListener

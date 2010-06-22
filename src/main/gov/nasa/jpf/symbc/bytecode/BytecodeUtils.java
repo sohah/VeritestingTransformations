@@ -68,7 +68,7 @@ public class BytecodeUtils {
 	 */
 	public static boolean isMethodSymbolic(Config conf, String methodName, int numberOfArgs, Vector<String> args) {
 		String[] methods = conf.getStringArray("symbolic.method");
-		//System.out.println("methodName" + methodName);
+		//System.out.println(">>>>>>>>>>>>.methodName " + methodName);
 		if (methods != null) {
 			List<String> list = Arrays.asList(methods);
 			Iterator<String> it = list.iterator();
@@ -85,8 +85,13 @@ public class BytecodeUtils {
 					argNum = 0;
 				else
 					argNum= m1.split("#").length; // number of args
-				//System.out.println("******************* shortName "+shortName);
-				//System.out.println("******************* configMethodName "+configMethodName);
+
+//				System.out.println("argNum "+argNum);
+//				System.out.println("numberOfArgs "+numberOfArgs);
+//
+//
+//				System.out.println("******************* shortName "+shortName);
+//				System.out.println("******************* configMethodName "+configMethodName);
 				if (configMethodName.equalsIgnoreCase(shortName)) {
 
 					//if ((numberOfArgs == 0) || (argNum == numberOfArgs)) {
@@ -200,7 +205,6 @@ public class BytecodeUtils {
 		String longName = mi.getFullName();
 		String[] argTypes = mi.getArgumentTypeNames();
 		int argSize = argTypes.length; // does not contain "this"
-
 
 		Vector<String> args = new Vector<String>();
 		Config conf = th.getVM().getConfig();

@@ -46,7 +46,7 @@ public class SymbolicConstraintsGeneral {
 			assert !(eRef instanceof IntegerConstant);
 
 			if (eRef instanceof SymbolicInteger) {
-				
+
 				Object dp_var = symIntegerVar.get(eRef);
 				if (dp_var == null) {
 					if(!bitVec) {
@@ -59,7 +59,7 @@ public class SymbolicConstraintsGeneral {
 				}
 				return dp_var;
 			}
-			
+
 			Operator    opRef;
 			IntegerExpression	e_leftRef;
 			IntegerExpression	e_rightRef;
@@ -132,7 +132,7 @@ public class SymbolicConstraintsGeneral {
 				throw new RuntimeException("## Error: Binary Non Linear Operation");
 			}
 
-			
+
 		}
 
 
@@ -205,7 +205,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.and(((RealConstant)e_rightRef).value,getExpression(e_leftRef));
 				else
 					return pb.and(getExpression(e_leftRef),getExpression(e_rightRef));
-	
+
 			default:
 				throw new RuntimeException("## Error: Expression " + eRef);
 			}
@@ -516,6 +516,12 @@ public class SymbolicConstraintsGeneral {
 			pb = new ProblemCVC3BitVector();
 			bitVec = true;
 		}
+		// added option to have no-solving
+		// as a result symbolic execution will explore an over-approximation of the program paths
+		// equivalent to a CFG analysis
+		  else if (dp[0].equalsIgnoreCase("no_solver")) {
+			return true;
+		}
 		else
 			throw new RuntimeException("## Error: unknown decision procedure symbolic.dp="+dp[0]+
 					"\n(use choco or IAsolver or CVC3)");
@@ -552,7 +558,7 @@ public class SymbolicConstraintsGeneral {
 		}
 
 		//pb.getSolver().setTimeLimit(30000);
-		
+
 		result = pb.solve();
 		if(result == null) {
 			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable)");
@@ -562,10 +568,13 @@ public class SymbolicConstraintsGeneral {
 	}
 
 
-	
+
 
 
 	public void solve(PathCondition pc) {
+		String[] dp = SymbolicInstructionFactory.dp;
+		if (dp[0].equalsIgnoreCase("no_solver"))
+			return;
 
 		if(isSatisfiable(pc)) {
 
@@ -628,7 +637,7 @@ public class SymbolicConstraintsGeneral {
 				while(i_int.hasNext()) {
 					Entry<SymbolicInteger,Object> e =  i_int.next();
 					e.getKey().solution=pb.getIntValue(e.getValue());
-					
+
 				}
 			}
 			catch (Exception exp) {

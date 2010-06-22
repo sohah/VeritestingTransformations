@@ -9,9 +9,9 @@ public class ExSymExe {
 
 	  ExSymExe inst = new ExSymExe();
 	  field = 9;
-	  inst.test(x, field);
+	  //inst.test(x, field);
 	  //inst.test2(x,x);
-	  //inst.test1(x,true);
+	  inst.test1(x,true);
   }
   /* we want to let the user specify that this method should be symbolic */
 
@@ -20,6 +20,11 @@ public class ExSymExe {
 		  System.out.println("le 0");
 	  if(x >= 1200)
 		  System.out.println("ge 0");
+	  if(b)
+		  System.out.println("b true");
+	  else
+		  System.out.println("b false");
+	  assert (false);
   }
   public void test (int x, int z) {
 	  //int y = 3;
