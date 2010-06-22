@@ -37,7 +37,7 @@ public class StackDriverSequences {
 				break;
 			}
 			Verify.endAtomic();
-			//Verify.ignoreIf(Debug.matchAbstractState(s));
+			Verify.ignoreIf(Debug.matchAbstractState(s));
 		}
 
 	}
