@@ -138,6 +138,10 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	public void propertyViolated (Search search){
 		//System.out.println("--------->property violated");
 
+//		String[] dp = SymbolicInstructionFactory.dp;
+//		if (dp[0].equalsIgnoreCase("no_solver"))
+//			return;
+
 		JVM vm = search.getVM();
 		Config conf = vm.getConfig();
 		SystemState ss = vm.getSystemState();
