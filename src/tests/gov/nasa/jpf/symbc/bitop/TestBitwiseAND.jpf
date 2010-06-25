@@ -6,5 +6,7 @@ sourcepath=${jpf-symbc}/src/tests
 
 symbolic.method= gov.nasa.jpf.symbc.bitop.TestBitwiseAND.test(sym#sym)
 
+listener = gov.nasa.jpf.symbc.SymbolicListener
+
 symbolic.dp = cvc3bitvec
 
