@@ -28,6 +28,9 @@ import gov.nasa.jpf.symbc.string.StringPathCondition;
 
 public class PathCondition {
     static boolean flagSolved = false;
+    //neha: additional check to control when
+    // constraints need to be solve
+    public static boolean flagCheck = true;
 
     public Constraint header;
     int count = 0;
@@ -209,6 +212,12 @@ public class PathCondition {
 	}
 
 	public boolean simplify() {
+		//neha: Added this to control solving the path constraint
+		// contingent on the variable being set.
+		if (!PathCondition.flagCheck){
+			return true;
+		}
+		
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 		boolean result1 = solver.isSatisfiable(this);
 		if (! result1) return false;
