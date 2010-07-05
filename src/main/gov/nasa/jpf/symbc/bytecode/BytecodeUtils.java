@@ -68,12 +68,13 @@ public class BytecodeUtils {
 	 */
 	public static boolean isMethodSymbolic(Config conf, String methodName, int numberOfArgs, Vector<String> args) {
 		String[] methods = conf.getStringArray("symbolic.method");
-		//System.out.println(">>>>>>>>>>>>.methodName " + methodName);
+		boolean misMatchedArgs = false;
+		String shortName = ""; 
 		if (methods != null) {
 			List<String> list = Arrays.asList(methods);
 			Iterator<String> it = list.iterator();
 
-			String shortName = methodName;
+			shortName = methodName;
 
 			if (methodName.contains("("))
 				shortName = methodName.substring(0, methodName.indexOf("("));
@@ -86,15 +87,8 @@ public class BytecodeUtils {
 				else
 					argNum= m1.split("#").length; // number of args
 
-//				System.out.println("argNum "+argNum);
-//				System.out.println("numberOfArgs "+numberOfArgs);
-//
-//
-//				System.out.println("******************* shortName "+shortName);
-//				System.out.println("******************* configMethodName "+configMethodName);
 				if (configMethodName.equalsIgnoreCase(shortName)) {
 
-					//if ((numberOfArgs == 0) || (argNum == numberOfArgs)) {
 					if(argNum == numberOfArgs) {
 						if (args != null) {
 							String argString = m1.substring(m1.indexOf("(") + 1, m1.indexOf(")"));
@@ -105,11 +99,14 @@ public class BytecodeUtils {
 						return true;
 					}
 					else
-						throw new RuntimeException("ERROR: method arguments do not match with JPF's symbolic.method configuration: "+shortName);
+						misMatchedArgs = true;
 				}
 
 			}
 
+		}
+		if(misMatchedArgs) {
+			throw new RuntimeException("ERROR: method arguments do not match with JPF's symbolic.method configuration: "+shortName);
 		}
 		return false;
 	}

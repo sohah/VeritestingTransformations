@@ -4,7 +4,7 @@ classpath=${jpf-symbc}/build/tests
 
 sourcepath=${jpf-symbc}/src/tests
 
-symbolic.method= gov.nasa.jpf.symbc.bitop.TestBitwiseADD.test(sym#sym)
+symbolic.method= gov.nasa.jpf.symbc.bitop.TestBitwiseADD.test(sym#sym),gov.nasa.jpf.symbc.bitop.TestBitwiseADD.test(sym)
 
 symbolic.dp = cvc3bitvec
 
