@@ -24,8 +24,8 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 
 public class HeapChoiceGenerator extends IntIntervalGenerator {
 
-	PathCondition [] PCheap; // maintains constraints on the heap: one PC per choice 
-    SymbolicInputHeap [] symInputHeap; // maintains list of input symbolic nodes; one list per choice
+	protected PathCondition [] PCheap; // maintains constraints on the heap: one PC per choice 
+    protected SymbolicInputHeap [] symInputHeap; // maintains list of input symbolic nodes; one list per choice
 	
 	public HeapChoiceGenerator(int size) {
 		super(0, size - 1);
