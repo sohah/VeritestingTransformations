@@ -28,6 +28,7 @@ import choco.real.constraint.MixedEqXY;
 
 public class ProblemChoco extends ProblemGeneral {
 	RealProblem pb;
+	public static int timeBound;// = 30000;
 	public ProblemChoco() {
 		pb = new RealProblem();
 		//pb.setPrecision(1e-8);// need to check this
@@ -283,7 +284,7 @@ public class ProblemChoco extends ProblemGeneral {
 	}
 
 	Boolean solve() {
-        pb.getSolver().setTimeLimit(30000);
+        pb.getSolver().setTimeLimit(ProblemChoco.timeBound);
 		return pb.solve();
 	}
 	void post(Object constraint) {

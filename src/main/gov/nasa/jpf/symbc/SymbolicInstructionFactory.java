@@ -25,6 +25,7 @@ import gov.nasa.jpf.jvm.DefaultInstructionFactory;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.numeric.MinMax;
+import gov.nasa.jpf.symbc.numeric.ProblemChoco;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 import gov.nasa.jpf.util.InstructionFactoryFilter;
@@ -167,6 +168,10 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 			System.out.println("symbolic.dp="+dp[0]);
 		}
 
+		if(dp[0].equalsIgnoreCase("choco")) {
+		  ProblemChoco.timeBound = conf.getInt("choco.time_bound", 30000);
+		}
+		
 		String[] intmin, intmax, realmin, realmax, dontcare;
 		intmin = conf.getStringArray("symbolic.minint");
 		intmax = conf.getStringArray("symbolic.maxint");
