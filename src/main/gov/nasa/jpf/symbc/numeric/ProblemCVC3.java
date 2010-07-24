@@ -605,6 +605,8 @@ public class ProblemCVC3 extends ProblemGeneral {
 			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
 		}
 	}
+	
+	
 
 	// not yet done for CVC3
 //	Object sin(Object exp) {
@@ -796,62 +798,64 @@ public class ProblemCVC3 extends ProblemGeneral {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	@Override
 	Object or(int value, Object exp) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	@Override
 	Object or(Object exp, int value) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	@Override
 	Object or(Object exp1, Object exp2) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	@Override
 	Object shiftL(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	@Override
 	Object shiftL(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	@Override
 	Object shiftR(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	@Override
 	Object shiftR(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	@Override
 	Object xor(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	@Override
 	Object xor(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	@Override
 	Object xor(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
+	Object shiftL(Object exp1, Object exp2) {
+		throw new RuntimeException("## Switch to CVC3BitVec");
+	}
+
+	Object shiftR(Object exp1, Object exp2) {
+		throw new RuntimeException("## Switch to CVC3BitVec");
+	}
+
+	Object shiftUR(int value, Object exp) {
+		throw new RuntimeException("## Switch to CVC3BitVec");
+	}
+
+	Object shiftUR(Object exp, int value) {
+		throw new RuntimeException("## Switch to CVC3BitVec");
+	}
+
+	Object shiftUR(Object exp1, Object exp2) {
+		throw new RuntimeException("## Switch to CVC3BitVec");
+	}
 
 }

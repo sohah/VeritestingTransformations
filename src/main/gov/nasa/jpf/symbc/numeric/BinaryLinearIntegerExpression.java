@@ -45,6 +45,9 @@ public class BinaryLinearIntegerExpression extends LinearIntegerExpression
 		  case AND: return l & r;
 		  case OR: return l | r;
 		  case XOR: return l ^ r;
+		  case SHIFTL: return l << r;
+		  case SHIFTR: return l >> r;
+		  case SHIFTUR: return l >>> r;
 		  default: throw new RuntimeException("## Error: BinaryLinearSolution solution: l " + l + " op " + op + " r " + r);
 		}
 	}

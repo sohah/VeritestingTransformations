@@ -128,6 +128,33 @@ public class SymbolicConstraintsGeneral {
 					return pb.xor(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
 				else
 					return pb.xor(getExpression(e_leftRef),getExpression(e_rightRef));
+			case SHIFTR:
+				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+				else if (e_leftRef instanceof IntegerConstant)
+					return pb.shiftR(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+				else if (e_rightRef instanceof IntegerConstant)
+					return pb.shiftR(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
+				else
+					return pb.shiftR(getExpression(e_leftRef),getExpression(e_rightRef));
+			case SHIFTUR:
+				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+				else if (e_leftRef instanceof IntegerConstant)
+					return pb.shiftUR(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+				else if (e_rightRef instanceof IntegerConstant)
+					return pb.shiftUR(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
+				else
+					return pb.shiftUR(getExpression(e_leftRef),getExpression(e_rightRef));
+			case SHIFTL:
+				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+				else if (e_leftRef instanceof IntegerConstant)
+					return pb.shiftL(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+				else if (e_rightRef instanceof IntegerConstant)
+					return pb.shiftL(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
+				else
+					return pb.shiftL(getExpression(e_leftRef),getExpression(e_rightRef));
 			default:
 				throw new RuntimeException("## Error: Binary Non Linear Operation");
 			}

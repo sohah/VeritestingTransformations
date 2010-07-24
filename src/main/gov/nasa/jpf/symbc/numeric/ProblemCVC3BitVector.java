@@ -113,6 +113,10 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 		}
 	}
 
+
+	Object shiftL(Object exp1, Object exp2) {
+		throw new RuntimeException("## Shifting by an expression not supported by CVC3");
+	}
 	
 	Object shiftR(int value, Object exp) {
 		try {
@@ -130,7 +134,45 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 			throw new RuntimeException("## Error CVC3BitVector ");
 		}
 	}
+	
+	Object shiftR(Object exp1, Object exp2) {
+		throw new RuntimeException("## Shifting by an expression not supported by CVC3");
+	}
 
+	Object shiftUR(int value, Object exp) {
+		try {
+			Rational val = new Rational(Long.toString(
+					(0xffffffffL << (32 - value)) ^
+					(0xffffffffL << (32 - value))),
+					vc.embeddedManager());
+			
+			return vc.newBVAndExpr(vc.newFixedRightShiftExpr((Expr) exp, value),
+					vc.newBVConstExpr(val, 32));
+			
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	
+	}
+
+	Object shiftUR(Object exp, int value) {
+		try {
+			Rational val = new Rational(Long.toString(
+					(0xffffffffL << (32 - value)) ^
+					(0xffffffffL << (32 - value))),
+					vc.embeddedManager());
+			
+			return vc.newBVAndExpr(vc.newFixedRightShiftExpr((Expr) exp, value),
+					vc.newBVConstExpr(val, 32));
+			
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
+	}
+
+	Object shiftUR(Object exp1, Object exp2) {
+		throw new RuntimeException("## Shifting by an expression not supported by CVC3");
+	}
 	
 	Object xor(int value, Object exp) {
 		try {

@@ -28,7 +28,10 @@ public enum Operator{
 	CMP(" cmp "),
 	AND(" & "),
 	OR(" | "),
-	XOR(" ^ ");
+	XOR(" ^ "),
+	SHIFTL("<<"),
+	SHIFTR(">>"),
+	SHIFTUR(">>>");
 	
 	
 	

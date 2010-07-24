@@ -276,49 +276,55 @@ public class ProblemIAsolver extends ProblemGeneral {
 	Object or(Object exp1, Object exp2) {
 		throw new RuntimeException("## Error IASolver does not support bitwise OR");
 	}
-
-	@Override
+	
 	Object shiftL(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
 	}
 
-	@Override
 	Object shiftL(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
 	}
 
-	@Override
 	Object shiftR(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
 	}
 
-	@Override
 	Object shiftR(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
 	}
 
-	@Override
 	Object xor(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error IASolver does not support bitwise XOR");
 	}
 
-	@Override
 	Object xor(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error IASolver does not support bitwise XOR");
 	}
 
-	@Override
 	Object xor(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error IASolver does not support bitwise XOR");
 	}
 
+	Object shiftL(Object exp1, Object exp2) {
+		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
+	}
+
+	Object shiftR(Object exp1, Object exp2) {
+		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
+	}
+
+	Object shiftUR(int value, Object exp) {
+		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
+		
+	}
+
+	Object shiftUR(Object exp, int value) {
+		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
+	}
+
+	Object shiftUR(Object exp1, Object exp2) {
+		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
+	}
 	
 
 }

@@ -41,7 +41,24 @@ public class LUSHR extends gov.nasa.jpf.jvm.bytecode.LUSHR {
 	    if(sym_v1==null && sym_v2==null)
 	        return super.execute(ss, ks, th);// we'll still do the concrete execution
 	    else {
-	    	throw new RuntimeException("## Error: SYMBOLIC LUSHR not supported");
-	    }    
+	    	long v1 = th.longPop();
+	    	long v2 = th.longPop();
+	    	th.longPush(0); // for symbolic expressions, the concrete value does not matter
+
+	    	IntegerExpression result = null;
+	    	if(sym_v1!=null) {
+	    		if (sym_v2!=null)
+	    			result = sym_v1._shiftUR(sym_v2);
+	    		else // v2 is concrete
+	    			result = sym_v1._shiftUR(v2);
+	    	}
+	    	else if (sym_v2!=null) {
+	    		result = sym_v2._shiftUR(v1);
+
+	    	}
+	    	sf.setLongOperandAttr(result);
+
+	    	return getNext(th);
+	    }     
   }
 }

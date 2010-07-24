@@ -180,6 +180,52 @@ public class IntegerConstant extends LinearIntegerExpression {
 		}
 		return new BinaryLinearIntegerExpression(this, XOR, e);
 	}
+	
+	
+	public IntegerExpression _shiftL (int i) {
+	    return new IntegerConstant(value << i);
+	}
+
+	public IntegerExpression _shiftL (long i) {
+		return new IntegerConstant(value << ((int) i));
+	}
+
+	public IntegerExpression _shiftL (IntegerExpression e) {
+		if (e instanceof IntegerConstant) {
+			return new IntegerConstant(value << ((IntegerConstant) e).value);
+		}
+		return new BinaryLinearIntegerExpression(this, SHIFTL, e);
+	}
+	
+	public IntegerExpression _shiftR (int i) {
+	    return new IntegerConstant(value >> i);
+	}
+
+	public IntegerExpression _shiftR (long i) {
+		return new IntegerConstant(value >> ((int) i));
+	}
+
+	public IntegerExpression _shiftR (IntegerExpression e) {
+		if (e instanceof IntegerConstant) {
+			return new IntegerConstant(value >> ((IntegerConstant) e).value);
+		}
+		return new BinaryLinearIntegerExpression(this, SHIFTR, e);
+	}
+
+	public IntegerExpression _shiftUR (int i) {
+	    return new IntegerConstant(value >>> i);
+	}
+
+	public IntegerExpression _shiftUR (long i) {
+		return new IntegerConstant(value >>> ((int) i));
+	}
+
+	public IntegerExpression _shiftUR (IntegerExpression e) {
+		if (e instanceof IntegerConstant) {
+			return new IntegerConstant(value >>> ((IntegerConstant) e).value);
+		}
+		return new BinaryLinearIntegerExpression(this, SHIFTUR, e);
+	}
 
   public boolean equals (Object o) {
     if (!(o instanceof IntegerConstant)) {

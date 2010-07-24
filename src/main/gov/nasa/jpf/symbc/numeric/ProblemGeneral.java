@@ -89,10 +89,17 @@ abstract class ProblemGeneral{
 	
 	abstract Object shiftL(int value, Object exp) ;
 	abstract Object shiftL(Object exp, int value) ;
+	abstract Object shiftL(Object exp1, Object exp2) ;
 	
 	abstract Object shiftR(int value, Object exp) ;
 	abstract Object shiftR(Object exp, int value) ;
+	abstract Object shiftR(Object exp1, Object exp2) ;
+
 	
+	abstract Object shiftUR(int value, Object exp) ;
+	abstract Object shiftUR(Object exp, int value) ;
+	abstract Object shiftUR(Object exp1, Object exp2) ;
+
 		
 	Object makeBitVectorVar(String name, int N) {
 			throw new RuntimeException("## Error BitVectors not supported by current constraint solver");

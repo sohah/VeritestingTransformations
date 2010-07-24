@@ -41,8 +41,25 @@ public class LSHL extends gov.nasa.jpf.jvm.bytecode.LSHL {
 	    if(sym_v1==null && sym_v2==null)
 	        return super.execute(ss, ks, th);// we'll still do the concrete execution
 	    else {
-	    	throw new RuntimeException("## Error: SYMBOLIC LSHL not supported");
-	    }  
+	    	long v1 = th.longPop();
+	    	long v2 = th.longPop();
+	    	th.longPush(0); // for symbolic expressions, the concrete value does not matter
+
+	    	IntegerExpression result = null;
+	    	if(sym_v1!=null) {
+	    		if (sym_v2!=null)
+	    			result = sym_v1._shiftL(sym_v2);
+	    		else // v2 is concrete
+	    			result = sym_v1._shiftL(v2);
+	    	}
+	    	else if (sym_v2!=null) {
+	    		result = sym_v2._shiftL(v1);
+
+	    	}
+	    	sf.setLongOperandAttr(result);
+
+	    	return getNext(th);
+	    }   
   }
 
 }

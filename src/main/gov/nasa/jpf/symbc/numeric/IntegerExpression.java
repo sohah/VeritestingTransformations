@@ -114,19 +114,35 @@ public abstract class IntegerExpression extends Expression {
 		return new BinaryNonLinearIntegerExpression(this, PLUS, e);
 	}
 
-	public IntegerExpression _shiftR(IntegerExpression i)
-	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+	public IntegerExpression _shiftR(IntegerExpression i) {
+		//simplify
+		if (i instanceof IntegerConstant) {
+			IntegerConstant ic = (IntegerConstant)i;
+			if (ic.value == 0)
+				return this;
+		}
+		
+		return new BinaryNonLinearIntegerExpression(this, SHIFTR, i);
 	}
 
-	public IntegerExpression _shiftL(IntegerExpression i)
-	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+	public IntegerExpression _shiftL(IntegerExpression i) {
+		if (i instanceof IntegerConstant) {
+			IntegerConstant ic = (IntegerConstant)i;
+			if (ic.value == 0)
+				return this;
+		}
+		
+		return new BinaryNonLinearIntegerExpression(this, SHIFTL, i);
 	}
 
-	public IntegerExpression _shiftUR(IntegerExpression i)
-	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+	public IntegerExpression _shiftUR(IntegerExpression i) {
+		if (i instanceof IntegerConstant) {
+			IntegerConstant ic = (IntegerConstant)i;
+			if (ic.value == 0)
+				return this;
+		}
+		
+		return new BinaryNonLinearIntegerExpression(this, SHIFTUR, i);
 	}
 
 	public IntegerExpression _and(IntegerExpression e)
@@ -157,17 +173,25 @@ public abstract class IntegerExpression extends Expression {
 
 	public IntegerExpression _shiftR(int i)
 	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+		if(i == 0) 
+			return this;
+		return new BinaryNonLinearIntegerExpression(this, SHIFTR,
+											new IntegerConstant((int) i));
+
 	}
 
-	public IntegerExpression _shiftL(int i)
-	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+	public IntegerExpression _shiftL(int i) {
+		if(i == 0) 
+			return this;
+		return new BinaryNonLinearIntegerExpression(this, SHIFTL,
+											new IntegerConstant((int) i));
 	}
 
-	public IntegerExpression _shiftUR(int i)
-	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+	public IntegerExpression _shiftUR(int i) {
+		if(i == 0) 
+			return this;
+		return new BinaryNonLinearIntegerExpression(this, SHIFTUR,
+											new IntegerConstant((int) i));
 	}
 
 	public IntegerExpression _and(int i)
@@ -258,19 +282,29 @@ public abstract class IntegerExpression extends Expression {
 		return new BinaryNonLinearIntegerExpression(this, XOR, new IntegerConstant((int)i));
 	}
 	
-	public IntegerExpression _shiftR(long i)
-	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+	public IntegerExpression _shiftR(long i) {
+		if (i == 0)
+			return this;
+
+		return new BinaryNonLinearIntegerExpression(this, SHIFTR,
+										new IntegerConstant((int)i));
 	}
 
-	public IntegerExpression _shiftL(long i)
-	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+	public IntegerExpression _shiftL(long i) {
+		if (i == 0)
+			return this;
+
+		return new BinaryNonLinearIntegerExpression(this, SHIFTL,
+										new IntegerConstant((int)i));
 	}
 
-	public IntegerExpression _shiftUR(long i)
-	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+	public IntegerExpression _shiftUR(long i)	{
+		if (i == 0)
+			return this;
+
+		return new BinaryNonLinearIntegerExpression(this, SHIFTUR,
+										new IntegerConstant((int)i));
+
 	}
 
 	public IntegerExpression _rem(long i)
