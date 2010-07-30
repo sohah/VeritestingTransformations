@@ -115,7 +115,11 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 
 
 	Object shiftL(Object exp1, Object exp2) {
-		throw new RuntimeException("## Shifting by an expression not supported by CVC3");
+		try {
+			return vc.newBVSHL((Expr) exp1, (Expr) exp2);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}
 	}
 	
 	Object shiftR(int value, Object exp) {
@@ -136,8 +140,11 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 	}
 	
 	Object shiftR(Object exp1, Object exp2) {
-		throw new RuntimeException("## Shifting by an expression not supported by CVC3");
-	}
+		try {
+			return vc.newBVASHR((Expr) exp1, (Expr) exp2);
+		} catch (Exception e) {
+			throw new RuntimeException("## Error CVC3BitVector ");
+		}	}
 
 	Object shiftUR(int value, Object exp) {
 		try {
