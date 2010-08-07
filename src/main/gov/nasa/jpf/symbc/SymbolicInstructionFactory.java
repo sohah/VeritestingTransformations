@@ -159,14 +159,14 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	public  SymbolicInstructionFactory (Config conf){
 		System.out.println("Running Symbolic PathFinder ...");
 
-		if (dp==null) {
+		//if (dp==null) {
 			dp = conf.getStringArray("symbolic.dp");
 			if (dp == null) {
 				dp = new String[1];
 				dp[0] = "choco";
 			}
 			System.out.println("symbolic.dp="+dp[0]);
-		}
+		//}
 
 		if(dp[0].equalsIgnoreCase("choco")) {
 		  ProblemChoco.timeBound = conf.getInt("choco.time_bound", 30000);

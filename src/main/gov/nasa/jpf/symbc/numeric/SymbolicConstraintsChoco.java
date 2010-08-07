@@ -467,7 +467,7 @@ public class SymbolicConstraintsChoco {
 		
 		result = pb.solve();
 		if(result == null) {
-			System.out.println("## Warning: don't know (returned PC not-satisfiable)");
+			//System.out.println("## Warning: don't know (returned PC not-satisfiable)");
 			return false;
 		}
 		

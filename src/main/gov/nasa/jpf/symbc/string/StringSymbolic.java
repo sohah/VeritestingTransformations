@@ -52,7 +52,7 @@ public class StringSymbolic extends StringExpression {
     super();
     name = n;
     length = new SymbolicInteger(name + ".length");
-	trackedSymVars.add(fixName(name));
+	//trackedSymVars.add(fixName(name));
 	StringPathCondition.flagSolved=false;
   }
 

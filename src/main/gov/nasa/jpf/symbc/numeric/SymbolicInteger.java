@@ -40,7 +40,7 @@ public class SymbolicInteger extends LinearIntegerExpression
 		super();
 		PathCondition.flagSolved=false;
 		name = s;
-		trackedSymVars.add(fixName(name));
+		//trackedSymVars.add(fixName(name));
 
 	}
 
@@ -57,7 +57,7 @@ public class SymbolicInteger extends LinearIntegerExpression
 		_max = u;
 		name = s;
 		PathCondition.flagSolved=false;
-		trackedSymVars.add(fixName(name));
+		//trackedSymVars.add(fixName(name));
 
 	}
 

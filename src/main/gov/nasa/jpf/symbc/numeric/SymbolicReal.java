@@ -41,7 +41,7 @@ public class SymbolicReal extends RealExpression {
 		super();
 		PathCondition.flagSolved = false;
 		name = s;
-		trackedSymVars.add(fixName(name));
+		//trackedSymVars.add(fixName(name));
 	}
 
 	public SymbolicReal (double l, double u) {
@@ -57,7 +57,7 @@ public class SymbolicReal extends RealExpression {
 		_max = u;
 		name = s;
 		PathCondition.flagSolved = false;
-		trackedSymVars.add(fixName(name));
+		//trackedSymVars.add(fixName(name));
 	}
 
 	public String getName() {

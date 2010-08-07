@@ -534,6 +534,18 @@ public class SymbolicConstraintsGeneral {
 			//System.out.println("dp "+dp[0]);
 			pb = new ProblemChoco();
 		}
+		else if(dp[0].equalsIgnoreCase("choco2")){
+			//System.out.println("dp "+dp[0]);
+			pb = new ProblemChoco2();
+		}
+		else if(dp[0].equalsIgnoreCase("coral")){
+			//System.out.println("dp "+dp[0]);
+			pb = new ProblemCoral();
+		}
+		else if(dp[0].equalsIgnoreCase("choco2coral")){
+			//System.out.println("dp "+dp[0]);
+			pb = new ProblemChoco2Coral();
+		}		
 		else if(dp[0].equalsIgnoreCase("iasolver")){
 			//System.out.println("dp "+dp[0]);
 			pb = new ProblemIAsolver();
@@ -588,15 +600,11 @@ public class SymbolicConstraintsGeneral {
 
 		result = pb.solve();
 		if(result == null) {
-			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable)");
+			//System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable)" + pc.toString());
 			return false;
 		}
 		return (result == Boolean.TRUE ? true : false);
 	}
-
-
-
-
 
 	public void solve(PathCondition pc) {
 		String[] dp = SymbolicInstructionFactory.dp;
