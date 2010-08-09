@@ -285,7 +285,12 @@ public class ProblemChoco extends ProblemGeneral {
 
 	Boolean solve() {
         pb.getSolver().setTimeLimit(ProblemChoco.timeBound);
-		return pb.solve();
+
+        Boolean result = pb.solve();
+        if (result == null)
+        	System.out.println("Choco PC"+pb.pretty());
+
+		return result;
 	}
 	void post(Object constraint) {
 		pb.post((choco.Constraint)constraint);
@@ -313,12 +318,12 @@ public class ProblemChoco extends ProblemGeneral {
 		throw new RuntimeException("## Error Choco does not support bitwise OR");
 	}
 
-	
+
 	Object or(Object exp1, Object exp2) {
 		throw new RuntimeException("## Error Choco does not support bitwise OR");
 	}
 
-	
+
 	Object shiftL(int value, Object exp) {
 		throw new RuntimeException("## Error Choco does not support bitwise SHIFT");
 	}
@@ -357,7 +362,7 @@ public class ProblemChoco extends ProblemGeneral {
 
 	Object shiftUR(int value, Object exp) {
 		throw new RuntimeException("## Error Choco does not support bitwise SHIFT");
-		
+
 	}
 
 	Object shiftUR(Object exp, int value) {
@@ -367,5 +372,5 @@ public class ProblemChoco extends ProblemGeneral {
 	Object shiftUR(Object exp1, Object exp2) {
 		throw new RuntimeException("## Error Choco does not support bitwise SHIFT");
 	}
-	
+
 }

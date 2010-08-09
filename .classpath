@@ -3,6 +3,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/bcel.jar"/>
 	<classpathentry kind="lib" path="lib/automaton.jar"/>
+	<classpathentry kind="lib" path="lib/choco-1_2_04.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/hampi.jar"/>
 	<classpathentry kind="lib" path="lib/iasolver.jar"/>
@@ -13,9 +14,6 @@
 	<classpathentry kind="lib" path="cvc3.jar"/>
 	<classpathentry kind="lib" path="cvc3test.jar"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/junit-4.6.jar"/>
-	<classpathentry kind="lib" path="lib/commons-math-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/coral.jar"/>
-	<classpathentry kind="lib" path="lib/opt4j-2.2.jar"/>
 	<classpathentry kind="src" output="build/main" path="src/main"/>
 	<classpathentry kind="src" output="build/examples" path="src/examples"/>
 	<classpathentry kind="src" output="build/peers" path="src/peers"/>
@@ -23,7 +21,11 @@
 	<classpathentry kind="src" output="build/annotations" path="src/annotations"/>
 	<classpathentry kind="src" output="build/classes" path="src/classes"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jpf-core"/>
+	<classpathentry kind="lib" path="lib/coral.jar"/>
+	<classpathentry kind="lib" path="lib/opt4j-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/solver.jar"/>
 	<classpathentry kind="lib" path="lib/choco-solver-2.1.1-20100709.142532-2.jar"/>
-	<classpathentry kind="lib" path="lib/choco-1_2_04.jar"/>
+	<classpathentry kind="lib" path="lib/yicesapijava.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

@@ -18,7 +18,7 @@
 //
 
 /**
- * example to demonstrate creation of tes suites for path coverage
+ * example to demonstrate creation of test suites for path coverage
  */
 public class TestPaths {
 

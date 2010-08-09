@@ -9,3 +9,5 @@ sourcepath=${jpf-symbc}/src/examples
 symbolic.method= TestPaths.testMe(sym#con)
 
 listener = .symbc.SymbolicListener
+
+vm.storage.class=nil

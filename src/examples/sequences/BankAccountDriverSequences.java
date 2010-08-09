@@ -30,7 +30,7 @@ public class BankAccountDriverSequences {
 	}
 
 	public static void main(String[] args){
-		testDriver(5);
+		testDriver(3);
 		Debug.printPC("Path Condition: ");
 		System.out.println();
 	}

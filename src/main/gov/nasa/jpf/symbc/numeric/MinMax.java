@@ -24,4 +24,8 @@ public class MinMax {
 	public static int MAXINT = 1000000;// Integer.MAX_VALUE;//10000;
 	public static double MINDOUBLE = -10000.0;//-1.0e8;//Double.MIN_VALUE;
 	public static double MAXDOUBLE = 10000.0;//1.0e8; //Double.MAX_VALUE;
+
+	public static int Debug_no_path_constraints = 0;
+	public static int Debug_no_path_constraints_sat = 0;
+	public static int Debug_no_path_constraints_unsat = 0;
 }

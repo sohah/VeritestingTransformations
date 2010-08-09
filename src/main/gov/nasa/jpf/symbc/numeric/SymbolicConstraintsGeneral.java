@@ -526,6 +526,9 @@ public class SymbolicConstraintsGeneral {
 
 	public boolean isSatisfiable(PathCondition pc) {
 
+		System.out.println("pc "+pc);
+		MinMax.Debug_no_path_constraints ++;
+
 		String[] dp = SymbolicInstructionFactory.dp;
 		if(dp == null) { // default: use choco
 			pb = new ProblemChoco();
@@ -545,7 +548,7 @@ public class SymbolicConstraintsGeneral {
 		else if(dp[0].equalsIgnoreCase("choco2coral")){
 			//System.out.println("dp "+dp[0]);
 			pb = new ProblemChoco2Coral();
-		}		
+		}
 		else if(dp[0].equalsIgnoreCase("iasolver")){
 			//System.out.println("dp "+dp[0]);
 			pb = new ProblemIAsolver();
@@ -554,11 +557,13 @@ public class SymbolicConstraintsGeneral {
 		} else if (dp[0].equalsIgnoreCase("cvc3bitvec")) {
 			pb = new ProblemCVC3BitVector();
 			bitVec = true;
-		}
+	    } else if (dp[0].equalsIgnoreCase("yices")) {
+	    	pb = new ProblemYices();
+	    }
 		// added option to have no-solving
 		// as a result symbolic execution will explore an over-approximation of the program paths
 		// equivalent to a CFG analysis
-		  else if (dp[0].equalsIgnoreCase("no_solver")) {
+		else if (dp[0].equalsIgnoreCase("no_solver")) {
 			return true;
 		}
 		else
@@ -600,13 +605,28 @@ public class SymbolicConstraintsGeneral {
 
 		result = pb.solve();
 		if(result == null) {
-			//System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable)" + pc.toString());
+
+			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) "+pc);
+			MinMax.Debug_no_path_constraints_unsat ++;
+			return false;
+
+		}
+		if (result == Boolean.TRUE) {
+			MinMax.Debug_no_path_constraints_sat ++;
+			return true;
+		}
+		else {
+			MinMax.Debug_no_path_constraints_unsat ++;
 			return false;
 		}
-		return (result == Boolean.TRUE ? true : false);
 	}
 
+
+
+
+
 	public void solve(PathCondition pc) {
+		if (pc == null || pc.header == null) return;
 		String[] dp = SymbolicInstructionFactory.dp;
 		if (dp[0].equalsIgnoreCase("no_solver"))
 			return;
@@ -668,13 +688,14 @@ public class SymbolicConstraintsGeneral {
 			// compute solutions for integer variables
 			Set<Entry<SymbolicInteger,Object>> sym_intvar_mappings = symIntegerVar.entrySet();
 			Iterator<Entry<SymbolicInteger,Object>> i_int = sym_intvar_mappings.iterator();
-			try {
+			//try {
 				while(i_int.hasNext()) {
 					Entry<SymbolicInteger,Object> e =  i_int.next();
 					e.getKey().solution=pb.getIntValue(e.getValue());
 
 				}
-			}
+			//}
+				/*
 			catch (Exception exp) {
 				Boolean isSolvable = true;
 				sym_intvar_mappings = symIntegerVar.entrySet();
@@ -696,7 +717,7 @@ public class SymbolicConstraintsGeneral {
 				if(!isSolvable)
 					System.err.println("# Warning: PC "+pc.stringPC()+" is solvable but could not find the solution!");
 			} // end catch
-
+*/
 		}
 
 		}

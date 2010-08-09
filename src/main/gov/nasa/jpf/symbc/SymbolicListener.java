@@ -83,6 +83,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import gov.nasa.jpf.symbc.numeric.MinMax;
+
 public class SymbolicListener extends PropertyListenerAdapter implements PublisherExtension {
 
 	/* Locals to preserve the value that was held by JPF prior to changing it
@@ -428,6 +430,12 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 	  //TODO:  needs to be changed not to use String representations
 	  private void printMethodSummary(PrintWriter pw, MethodSummary methodSummary){
+		  System.out.println("###################################");
+		  System.out.println("# PCs " +MinMax.Debug_no_path_constraints);
+		  System.out.println("# PCs sat " +MinMax.Debug_no_path_constraints_sat);
+		  System.out.println("# PCs unsat " +MinMax.Debug_no_path_constraints_unsat);
+		  System.out.println("###################################");
+
 		  System.out.println("Symbolic values: " +methodSummary.getSymValues());
 		  Vector<Pair> pathConditions = methodSummary.getPathConditions();
 		  if (pathConditions.size() > 0){

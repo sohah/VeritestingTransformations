@@ -39,33 +39,33 @@ import coral.util.Range;
 /**
  * Interface of SPF with the randomized solvers from CORAL
  * (http://pan.cin.ufpe.br/coral).
- * 
+ *
  * Four kinds of methods in this implementation:
- * 
+ *
  * (1) factory methods: create objects from the symbolic library of
  * CORAL to correspond to the symbolic expressions from JPF's symbolic
  * execution
- * 
+ *
  * (2) post(): every time a constraint is created (i.e., a boolean
  * expression in the context of a branching decision) this method will
  * be called.
- * 
+ *
  * (3) solve(): this is the actual call to the solver.
- * 
+ *
  * (4) get*Value(): this method retrieves the solutions associated
  * with each variables if they exist.
- * 
- * 
+ *
+ *
  * @author damorim
  *
  */
 public class ProblemCoral extends ProblemGeneral {
-	
+
 	private static final long timeout = -1; //Config.timeout; // 1s default
 	SolverKind solverKind = SolverKind.PSO_OPT4J;
 	coral.PC pc = new coral.PC();
 	Map<String, SymLiteral> variables = new HashMap<String, SymLiteral>();
-	Map<SymLiteral, Range> ranges = new HashMap<SymLiteral, Range>(); 
+	Map<SymLiteral, Range> ranges = new HashMap<SymLiteral, Range>();
 
 	//TODO: using min and max. try inferring value ranges...
 	@Override
@@ -103,11 +103,11 @@ public class ProblemCoral extends ProblemGeneral {
 	@Override
 	Object eq(Object exp1, Object exp2) {
 		if (exp1 instanceof SymDouble) {
-			return Util.eq((SymDouble)exp1, (SymDouble)exp2);	
+			return Util.eq((SymDouble)exp1, (SymDouble)exp2);
 		} else if (exp1 instanceof SymInt) {
-			return Util.eq((SymInt)exp1, (SymInt)exp2);	
+			return Util.eq((SymInt)exp1, (SymInt)exp2);
 		} else {
-			throw new UnsupportedOperationException();	
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -134,11 +134,11 @@ public class ProblemCoral extends ProblemGeneral {
 	@Override
 	Object neq(Object exp1, Object exp2) {
 		if (exp1 instanceof SymDouble) {
-			return Util.ne((SymDouble)exp1, (SymDouble)exp2);	
+			return Util.ne((SymDouble)exp1, (SymDouble)exp2);
 		} else if (exp1 instanceof SymInt) {
 			return Util.ne((SymInt)exp1, (SymInt)exp2);
 		} else {
-			throw new UnsupportedOperationException();	
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -165,11 +165,11 @@ public class ProblemCoral extends ProblemGeneral {
 	@Override
 	Object leq(Object exp1, Object exp2) {
 		if (exp1 instanceof SymDouble) {
-			return Util.le((SymDouble)exp1, (SymDouble)exp2);	
+			return Util.le((SymDouble)exp1, (SymDouble)exp2);
 		} else if (exp1 instanceof SymInt) {
-			return Util.le((SymInt)exp1, (SymInt)exp2);	
+			return Util.le((SymInt)exp1, (SymInt)exp2);
 		} else {
-			throw new UnsupportedOperationException();	
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -196,11 +196,11 @@ public class ProblemCoral extends ProblemGeneral {
 	@Override
 	Object geq(Object exp1, Object exp2) {
 		if (exp1 instanceof SymDouble) {
-			return Util.ge((SymDouble)exp1, (SymDouble)exp2);	
+			return Util.ge((SymDouble)exp1, (SymDouble)exp2);
 		} else if (exp1 instanceof SymInt) {
-			return Util.ge((SymInt)exp1, (SymInt)exp2);	
+			return Util.ge((SymInt)exp1, (SymInt)exp2);
 		} else {
-			throw new UnsupportedOperationException();	
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -227,11 +227,11 @@ public class ProblemCoral extends ProblemGeneral {
 	@Override
 	Object lt(Object exp1, Object exp2) {
 		if (exp1 instanceof SymDouble) {
-			return Util.lt((SymDouble)exp1, (SymDouble)exp2);	
+			return Util.lt((SymDouble)exp1, (SymDouble)exp2);
 		} if (exp1 instanceof SymInt) {
-			return Util.lt((SymInt)exp1, (SymInt)exp2);	
+			return Util.lt((SymInt)exp1, (SymInt)exp2);
 		} else {
-			throw new UnsupportedOperationException();	
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -275,7 +275,7 @@ public class ProblemCoral extends ProblemGeneral {
 	Object gt(Object exp, double value) {
 		return Util.gt((SymDouble)exp, Util.createConstant(value));
 	}
-	
+
 	@Override
 	Object plus(int value, Object exp) {
 		return Util.add(Util.createConstant(value), (SymInt)exp);
@@ -324,7 +324,7 @@ public class ProblemCoral extends ProblemGeneral {
 		} else if (exp1 instanceof SymInt) {
 			return Util.sub((SymInt)exp1, (SymInt)exp2);
 		} else {
-			throw new UnsupportedOperationException();	
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -351,11 +351,11 @@ public class ProblemCoral extends ProblemGeneral {
 	@Override
 	Object mult(Object exp1, Object exp2) {
 		if (exp1 instanceof SymDouble) {
-			return Util.mul((SymDouble)exp1, (SymDouble)exp2);			
+			return Util.mul((SymDouble)exp1, (SymDouble)exp2);
 		} else if (exp1 instanceof SymInt) {
-			return Util.mul((SymInt)exp1, (SymInt)exp2);			
+			return Util.mul((SymInt)exp1, (SymInt)exp2);
 		} else {
-			throw new UnsupportedOperationException();	
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -412,7 +412,7 @@ public class ProblemCoral extends ProblemGeneral {
 
 	@Override
 	Object and(Object exp1, Object exp2) {
-		return Util.and((SymBool)exp1, (SymBool)exp2);		
+		return Util.and((SymBool)exp1, (SymBool)exp2);
 	}
 
 	@Override
@@ -494,11 +494,11 @@ public class ProblemCoral extends ProblemGeneral {
 	Object mixed(Object exp1, Object exp2) {
 		throw new UnsupportedOperationException("WHAT IS IT?");
 	}
-	
+
 	Object sin(Object exp) {
 		return Util.sin((SymDouble)exp);
 	}
-	
+
 	Object cos(Object exp) {
 		return Util.cos((SymDouble)exp);
 	}
@@ -506,43 +506,43 @@ public class ProblemCoral extends ProblemGeneral {
 	Object round(Object exp) {
 		return Util.round((SymDouble)exp);
 	}
-	
+
 	Object exp(Object exp) {
 		return Util.exp((SymDouble)exp);
 	}
-	
+
 	Object asin(Object exp) {
 		return Util.asin((SymDouble)exp);
 	}
-	
+
 	Object acos(Object exp) {
 		return Util.acos((SymDouble)exp);
 	}
-	
+
 	Object atan(Object exp) {
 		return Util.atan((SymDouble)exp);
 	}
-	
+
 	Object log(Object exp) {
 		return Util.log((SymDouble)exp);
 	}
-	
+
 	Object tan(Object exp) {
 		return Util.tan((SymDouble)exp);
 	}
-	
+
 	Object sqrt(Object exp) {
 		return Util.sqrt((SymDouble)exp);
 	}
-	
+
 	Object power(Object exp1, Object exp2) {
 		return Util.pow((SymDouble)exp1, (SymDouble)exp2);
 	}
-	
+
 	Object power(Object exp1, double exp2) {
 		return Util.pow((SymDouble)exp1, Util.createConstant(exp2));
 	}
-	
+
 	Object power(double exp1, Object exp2) {
 		return Util.pow(Util.createConstant(exp1), (SymDouble)exp2);
 	}
@@ -550,15 +550,15 @@ public class ProblemCoral extends ProblemGeneral {
 	Object atan2(Object exp1, Object exp2) {
 		return Util.atan2((SymDouble)exp1, (SymDouble)exp2);
 	}
-	
+
 	Object atan2(Object exp1, double exp2) {
 		return Util.atan2((SymDouble)exp1, Util.createConstant(exp2));
 	}
-	
+
 	Object atan2(double exp1, Object exp2) {
-		return Util.atan2(Util.createConstant(exp1), (SymDouble)exp2);		
+		return Util.atan2(Util.createConstant(exp1), (SymDouble)exp2);
 	}
-	
+
 	Env sol = null;
 	@Override
 	/**
@@ -570,26 +570,26 @@ public class ProblemCoral extends ProblemGeneral {
 		try {
 			sol = solveIt(pc, solver);
 			/**
-			 * this is to comply with the assumption 
+			 * this is to comply with the assumption
 			 * of the calling method
 			 */
 			if (sol.getResult() == Result.SAT) {
 				result = true;
 			}
 		} catch (Exception _) {
-		} 
+		}
 		finally {
 //			System.out.printf(">>> %s %s %s\n", pc.toString(), sol, result);
 		}
 		return result;
 	}
-	
-	
+
+
 
 	@SuppressWarnings("unused")
 	private Env solveIt(final PC pc, final Solver solver) throws InterruptedException {
 		final Env[] env = new Env[1];
-		Config.nIterationsPSO = 400;
+		Config.nIterationsPSO = 400; // number of iterations
 		Runnable solverJob = new Runnable() {
 			@Override
 			public void run() {
@@ -599,8 +599,9 @@ public class ProblemCoral extends ProblemGeneral {
 					e.printStackTrace();
 				}
 			}
-		};		
-		if (timeout > 0) {
+		};
+
+		if (timeout > 0) { // old code; not executed
 			Thread t = new Thread(solverJob);
 			t.start();
 			t.join(timeout);
@@ -611,7 +612,7 @@ public class ProblemCoral extends ProblemGeneral {
 		}
 		return env[0];
 	}
-	
+
 	@Override
 	double getRealValueInf(Object dpvar) {
 		return ranges.get((SymLiteral)dpvar).getLo();
@@ -637,7 +638,7 @@ public class ProblemCoral extends ProblemGeneral {
 	@Override
 	/**
 	 * JPF calls this method to add a new boolean expression
-	 * to the path condition 
+	 * to the path condition
 	 */
 	void post(Object constraint) {
 		pc.addConstraint((SymBool)constraint);

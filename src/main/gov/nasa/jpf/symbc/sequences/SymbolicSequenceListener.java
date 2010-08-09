@@ -243,7 +243,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 		MethodInfo mi = insn.getMethodInfo();
 		//neha: changed methodName to FullName
 		String methodName = mi.getFullName();
-		int numberOfArgs = mi.getArgumentsSize();//-1;// corina: problem here? - 1;
+		int numberOfArgs = mi.getArgumentsSize()-1;// corina: problem here? - 1;
 
 		Config conf = ti.getVM().getConfig(); // Corina: added fix
 
@@ -344,6 +344,8 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 
       //	-------- the publisher interface
 	public void publishFinished (Publisher publisher) {
+
+
 		PrintWriter pw = publisher.getOut();
 		// here just print the method sequences
 		publisher.publishTopicStart("Method Sequences");

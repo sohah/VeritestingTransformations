@@ -23,6 +23,7 @@ import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
@@ -43,10 +44,18 @@ public class IFNE extends gov.nasa.jpf.jvm.bytecode.IFNE {
 			return super.execute(ss, ks, ti);
 		}
 		else { // the condition is symbolic
+
+			String[] dp = SymbolicInstructionFactory.dp;
+
 			ChoiceGenerator<?> cg;
 
 			if (!ti.isFirstStepInsn()) { // first time around
-				cg = new PCChoiceGenerator(2);
+
+				if (dp[0].equalsIgnoreCase("omega")) // hack because omega does not handle not or or correctly
+					cg = new PCChoiceGenerator(3);
+				else
+					cg = new PCChoiceGenerator(2);
+
 				ss.setNextChoiceGenerator(cg);
 				return this;
 			} else {  // this is what really returns results
@@ -76,7 +85,16 @@ public class IFNE extends gov.nasa.jpf.jvm.bytecode.IFNE {
 			assert pc != null;
 
 			if (conditionValue) {
-				pc._addDet(Comparator.NE, sym_v, 0);
+				if (dp[0].equalsIgnoreCase("omega")) {// hack
+					if((Integer)cg.getNextChoice()==1)
+						pc._addDet(Comparator.GT, sym_v, 0);
+					else {// 2
+						assert((Integer)cg.getNextChoice()==2);
+						pc._addDet(Comparator.LT, sym_v, 0);
+					}
+				}
+				else
+					pc._addDet(Comparator.NE, sym_v, 0);
 				if(!pc.simplify())  {// not satisfiable
 					ss.setIgnored(true);
 				}else{

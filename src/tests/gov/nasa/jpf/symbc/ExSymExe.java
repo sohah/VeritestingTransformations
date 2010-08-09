@@ -24,7 +24,7 @@ public class ExSymExe {
 		  System.out.println("b true");
 	  else
 		  System.out.println("b false");
-	  assert (false);
+	 //assert (false);
   }
   public void test (int x, int z) {
 	  //int y = 3;

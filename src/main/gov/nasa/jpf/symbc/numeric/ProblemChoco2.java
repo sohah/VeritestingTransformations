@@ -9,9 +9,9 @@ import choco.kernel.model.variables.integer.IntegerExpressionVariable;
 import choco.kernel.model.variables.integer.IntegerVariable;
 
 /**
- * Integration of the Choco CP library version 2 (2.1.1, specifically). 
+ * Integration of the Choco CP library version 2 (2.1.1, specifically).
  * Currently only supports integer operations.
- * 
+ *
  * @author staats
  *
  */
@@ -19,16 +19,16 @@ import choco.kernel.model.variables.integer.IntegerVariable;
 public class ProblemChoco2 extends ProblemGeneral {
 	private CPSolver solver;
 	private Model model;
-	
+
 	public ProblemChoco2() {
 		model = new CPModel();
 		solver = new CPSolver();
 	}
-	
+
 	Object and(int value, Object exp) {	throw new RuntimeException("## Unsupported and "); }
 	Object and(Object exp, int value) {	throw new RuntimeException("## Unsupported and "); }
 	Object and(Object exp1, Object exp2) {	throw new RuntimeException("## Unsupported and "); }
-	
+
 	Object div(int value, Object exp) { return Choco.div(value, (IntegerExpressionVariable) exp); }
 	Object div(Object exp, int value) { return Choco.div((IntegerExpressionVariable) exp, value); }
 	Object div(Object exp1, Object exp2) { return Choco.div((IntegerExpressionVariable) exp1, (IntegerExpressionVariable) exp2); }
@@ -40,9 +40,9 @@ public class ProblemChoco2 extends ProblemGeneral {
 	Object eq(Object exp, int value) { return Choco.eq((IntegerExpressionVariable) exp, value);	}
 	Object eq(Object exp1, Object exp2) { return Choco.eq((IntegerExpressionVariable) exp1, (IntegerExpressionVariable) exp1);	}
 
-	Object eq(double value, Object exp) {	throw new RuntimeException("## Unsupported eq "); }	
+	Object eq(double value, Object exp) {	throw new RuntimeException("## Unsupported eq "); }
 	Object eq(Object exp, double value) {	throw new RuntimeException("## Unsupported eq "); }
-	
+
 	Object geq(int value, Object exp) { return Choco.geq(value, (IntegerExpressionVariable) exp);	}
 	Object geq(Object exp, int value) { return Choco.geq((IntegerExpressionVariable) exp, value);	}
 	Object geq(Object exp1, Object exp2) { return Choco.geq((IntegerExpressionVariable) exp1, (IntegerExpressionVariable) exp1);	}
@@ -51,7 +51,7 @@ public class ProblemChoco2 extends ProblemGeneral {
 	Object geq(Object exp, double value) {	throw new RuntimeException("## Unsupported geq "); }
 
 	int getIntValue(Object dpVar) {
-		return solver.getVar((IntegerVariable) dpVar).getVal();		
+		return solver.getVar((IntegerVariable) dpVar).getVal();
 	}
 
 	double getRealValue(Object dpVar) {	throw new RuntimeException("## Unsupported get real value "); }
@@ -78,7 +78,7 @@ public class ProblemChoco2 extends ProblemGeneral {
 
 	Object lt(double value, Object exp) {	throw new RuntimeException("## Unsupported double lt "); }
 	Object lt(Object exp, double value) {	throw new RuntimeException("## Unsupported double lt "); }
-	
+
 	Object makeIntVar(String name, int min, int max) {
 		return Choco.makeIntVar(name, min, max);
 	}
@@ -96,14 +96,14 @@ public class ProblemChoco2 extends ProblemGeneral {
 	Object mult(int value, Object exp) { return Choco.mult(value, (IntegerExpressionVariable) exp); }
 	Object mult(Object exp, int value) { return Choco.mult((IntegerExpressionVariable) exp, value); }
 	Object mult(Object exp1, Object exp2)  { return Choco.mult((IntegerExpressionVariable) exp1, (IntegerExpressionVariable) exp2); }
-	
+
 	Object mult(double value, Object exp) {	throw new RuntimeException("## Unsupported double mult "); }
 	Object mult(Object exp, double value) {	throw new RuntimeException("## Unsupported double mult "); }
 
 	Object neq(int value, Object exp) { return Choco.neq(value, (IntegerExpressionVariable) exp); }
 	Object neq(Object exp, int value) { return Choco.neq((IntegerExpressionVariable) exp, value); }
 	Object neq(Object exp1, Object exp2)  { return Choco.neq((IntegerExpressionVariable) exp1, (IntegerExpressionVariable) exp2); }
-	
+
 	Object neq(double value, Object exp) {	throw new RuntimeException("## Unsupported double NEQ "); }
 	Object neq(Object exp, double value) {	throw new RuntimeException("## Unsupported double NEQ "); }
 
@@ -128,8 +128,8 @@ public class ProblemChoco2 extends ProblemGeneral {
 
 	Object shiftR(int value, Object exp) {	throw new RuntimeException("## Unsupported shiftR"); }
 	Object shiftR(Object exp, int value) {	throw new RuntimeException("## Unsupported shiftR"); }
-	Object shiftR(Object exp1, Object exp2) {	throw new RuntimeException("## Unsupported shiftR"); } 	
-	
+	Object shiftR(Object exp1, Object exp2) {	throw new RuntimeException("## Unsupported shiftR"); }
+
 	Object shiftUR(int value, Object exp) {	throw new RuntimeException("## Unsupported shiftUR"); }
 	Object shiftUR(Object exp, int value) {	throw new RuntimeException("## Unsupported shiftUR"); }
 	Object shiftUR(Object exp1, Object exp2) {	throw new RuntimeException("## Unsupported shiftUR"); }
@@ -141,14 +141,14 @@ public class ProblemChoco2 extends ProblemGeneral {
 	 * We could alternatively pop constraints when backtracking,
 	 * though this would require some changes to how ProblemGeneral
 	 * is interfaced.
-	 * 
+	 *
 	 */
 	Boolean solve() {
 		solver.read(model);
-		
+
 		solver.solve();
-		boolean feasible = solver.isFeasible();		
-		
+		boolean feasible = solver.isFeasible();
+
 		return feasible;
 	}
 
