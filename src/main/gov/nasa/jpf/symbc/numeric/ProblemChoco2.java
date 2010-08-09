@@ -50,8 +50,16 @@ public class ProblemChoco2 extends ProblemGeneral {
 	Object geq(double value, Object exp) {	throw new RuntimeException("## Unsupported geq "); }
 	Object geq(Object exp, double value) {	throw new RuntimeException("## Unsupported geq "); }
 
+	/**
+	 * Returns an integer value for the object. If no value
+	 * exists, it returns the lower bound for the integer.
+	 */
 	int getIntValue(Object dpVar) {
-		return solver.getVar((IntegerVariable) dpVar).getVal();		
+		try {
+			return solver.getVar((IntegerVariable) dpVar).getVal(); 
+		} catch (Throwable t) {
+			return ((IntegerVariable) dpVar).getLowB();
+		}
 	}
 
 	double getRealValue(Object dpVar) {	throw new RuntimeException("## Unsupported get real value "); }
