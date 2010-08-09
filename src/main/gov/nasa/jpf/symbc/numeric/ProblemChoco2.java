@@ -51,7 +51,11 @@ public class ProblemChoco2 extends ProblemGeneral {
 	Object geq(Object exp, double value) {	throw new RuntimeException("## Unsupported geq "); }
 
 	int getIntValue(Object dpVar) {
-		return solver.getVar((IntegerVariable) dpVar).getVal();
+		try {
+			return solver.getVar((IntegerVariable) dpVar).getVal(); 
+		} catch (Throwable t) {
+			return ((IntegerVariable) dpVar).getLowB();
+		}
 	}
 
 	double getRealValue(Object dpVar) {	throw new RuntimeException("## Unsupported get real value "); }
