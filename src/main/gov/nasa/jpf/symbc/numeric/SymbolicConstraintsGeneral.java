@@ -527,8 +527,6 @@ public class SymbolicConstraintsGeneral {
 	public boolean isSatisfiable(PathCondition pc) {
 
 		System.out.println("pc "+pc);
-		MinMax.Debug_no_path_constraints ++;
-		System.out.println("### PCs: " + MinMax.Debug_no_path_constraints + " " +MinMax.Debug_no_path_constraints_sat + " " + MinMax.Debug_no_path_constraints_unsat);
 
 		String[] dp = SymbolicInstructionFactory.dp;
 		if(dp == null) { // default: use choco
@@ -606,25 +604,20 @@ public class SymbolicConstraintsGeneral {
 
 		result = pb.solve();
 
-		boolean res_bool;
+
 
 		if(result == null) {
 			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) "+pc);
-			MinMax.Debug_no_path_constraints_unsat ++;
-			res_bool = false;
-
+			return false;
 		}
 		if (result == Boolean.TRUE) {
-			MinMax.Debug_no_path_constraints_sat ++;
-			res_bool = true;
+			return true;
 		}
 		else {
-			MinMax.Debug_no_path_constraints_unsat ++;
-			res_bool = false;
+			return false;
 		}
 
-		System.out.println("### PCs: " + MinMax.Debug_no_path_constraints + " " +MinMax.Debug_no_path_constraints_sat + " " + MinMax.Debug_no_path_constraints_unsat);
-		return res_bool;
+
 	}
 
 

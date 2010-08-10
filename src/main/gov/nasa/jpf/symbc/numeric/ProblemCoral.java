@@ -75,6 +75,7 @@ public class ProblemCoral extends ProblemGeneral {
 			result = Util.createSymLiteral(0/*default value*/);
 			variables.put(name, result);
 			ranges.put(result, new Range(min, max));
+			Config.RANGE = new Range(min,max);
 		}
 		return result;
 	}

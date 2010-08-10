@@ -214,12 +214,20 @@ public class PathCondition {
 	public boolean simplify() {
 		//neha: Added this to control solving the path constraint
 		// contingent on the variable being set.
-		if (!PathCondition.flagCheck){
-			return true;
-		}
-		
+//		if (!PathCondition.flagCheck){
+//			return true;
+//		}
+
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 		boolean result1 = solver.isSatisfiable(this);
+		MinMax.Debug_no_path_constraints ++;
+		if (result1)
+			MinMax.Debug_no_path_constraints_sat ++;
+		else
+			MinMax.Debug_no_path_constraints_unsat ++;
+
+		System.out.println("### PCs: " + MinMax.Debug_no_path_constraints + " " +MinMax.Debug_no_path_constraints_sat + " " + MinMax.Debug_no_path_constraints_unsat);
+
 		if (! result1) return false;
 		boolean result2 = spc.simplify(); // TODO to review
 		return result1  && result2;
