@@ -528,6 +528,7 @@ public class SymbolicConstraintsGeneral {
 
 		System.out.println("pc "+pc);
 		MinMax.Debug_no_path_constraints ++;
+		System.out.println("### PCs: " + MinMax.Debug_no_path_constraints + " " +MinMax.Debug_no_path_constraints_sat + " " + MinMax.Debug_no_path_constraints_unsat);
 
 		String[] dp = SymbolicInstructionFactory.dp;
 		if(dp == null) { // default: use choco
@@ -604,21 +605,26 @@ public class SymbolicConstraintsGeneral {
 		//pb.getSolver().setTimeLimit(30000);
 
 		result = pb.solve();
-		if(result == null) {
 
+		boolean res_bool;
+
+		if(result == null) {
 			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) "+pc);
 			MinMax.Debug_no_path_constraints_unsat ++;
-			return false;
+			res_bool = false;
 
 		}
 		if (result == Boolean.TRUE) {
 			MinMax.Debug_no_path_constraints_sat ++;
-			return true;
+			res_bool = true;
 		}
 		else {
 			MinMax.Debug_no_path_constraints_unsat ++;
-			return false;
+			res_bool = false;
 		}
+
+		System.out.println("### PCs: " + MinMax.Debug_no_path_constraints + " " +MinMax.Debug_no_path_constraints_sat + " " + MinMax.Debug_no_path_constraints_unsat);
+		return res_bool;
 	}
 
 
