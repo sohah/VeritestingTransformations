@@ -24,7 +24,6 @@
 	<classpathentry kind="lib" path="lib/coral.jar"/>
 	<classpathentry kind="lib" path="lib/opt4j-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/solver.jar"/>
 	<classpathentry kind="lib" path="lib/choco-solver-2.1.1-20100709.142532-2.jar"/>
 	<classpathentry kind="lib" path="lib/yicesapijava.jar"/>
 	<classpathentry kind="output" path="build"/>
