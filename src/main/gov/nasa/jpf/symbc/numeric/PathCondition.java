@@ -229,7 +229,7 @@ public class PathCondition {
 		System.out.println("### PCs: " + MinMax.Debug_no_path_constraints + " " +MinMax.Debug_no_path_constraints_sat + " " + MinMax.Debug_no_path_constraints_unsat);
 
 		if (! result1) return false;
-		boolean result2 = spc.simplify(); // TODO to review
+		boolean result2 = spc.simplify(); // TODO to review: used for strings
 		return result1  && result2;
 	}
 
