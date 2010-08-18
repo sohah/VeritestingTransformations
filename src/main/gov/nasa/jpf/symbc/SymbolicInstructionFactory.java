@@ -25,9 +25,9 @@ import gov.nasa.jpf.jvm.DefaultInstructionFactory;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.numeric.MinMax;
-import gov.nasa.jpf.symbc.numeric.ProblemChoco;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemChoco;
 import gov.nasa.jpf.util.InstructionFactoryFilter;
 
 /*
@@ -129,6 +129,13 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	  };
 
 	static public String[] dp;
+	
+	/* 
+	 * This is intended to serve as a catchall debug flag.
+	 * If there's some debug printing/outputing, conditionally print using 
+	 * this flag.
+	 */
+	static public boolean debugMode;
 
 	//bytecodes replaced by our symbolic implementation
 	/** This is not needed anymore with the new implementation --neha
@@ -159,15 +166,21 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	public  SymbolicInstructionFactory (Config conf){
 		System.out.println("Running Symbolic PathFinder ...");
 
-		//if (dp==null) {
-			dp = conf.getStringArray("symbolic.dp");
-			if (dp == null) {
-				dp = new String[1];
-				dp[0] = "choco";
-			}
-			System.out.println("symbolic.dp="+dp[0]);
-		//}
+		dp = conf.getStringArray("symbolic.dp");
+		if (dp == null) {
+			dp = new String[1];
+			dp[0] = "choco";
+		}
+		System.out.println("symbolic.dp="+dp[0]);
 
+		//Just checking if set, don't care about any values
+		String[] dummy = conf.getStringArray("symbolic.debug");
+		if (dummy != null) {
+			debugMode = true;
+		} else {
+			debugMode = false;
+		}
+		
 		if(dp[0].equalsIgnoreCase("choco")) {
 		  ProblemChoco.timeBound = conf.getInt("choco.time_bound", 30000);
 		}

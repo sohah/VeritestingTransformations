@@ -20,6 +20,16 @@
 package gov.nasa.jpf.symbc.numeric;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+import gov.nasa.jpf.symbc.numeric.solver.DebugSolvers;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemCVC3;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemCVC3BitVector;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemChoco;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemChoco2;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemCoral;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemGeneral;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemIAsolver;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemJacop;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemYices;
 
 
 import java.util.HashMap;
@@ -526,30 +536,20 @@ public class SymbolicConstraintsGeneral {
 
 	public boolean isSatisfiable(PathCondition pc) {
 
-		System.out.println("pc "+pc);
+		if (SymbolicInstructionFactory.debugMode)
+			System.out.println("isSatisfiable: PC "+pc);
 
 		String[] dp = SymbolicInstructionFactory.dp;
 		if(dp == null) { // default: use choco
 			pb = new ProblemChoco();
-		}
-		else if(dp[0].equalsIgnoreCase("choco")){
-			//System.out.println("dp "+dp[0]);
+		} else if(dp[0].equalsIgnoreCase("choco")){
 			pb = new ProblemChoco();
-		}
-		else if(dp[0].equalsIgnoreCase("choco2")){
-			//System.out.println("dp "+dp[0]);
+		} else if(dp[0].equalsIgnoreCase("choco2")){
 			pb = new ProblemChoco2();
-		}
-		else if(dp[0].equalsIgnoreCase("coral")){
-			//System.out.println("dp "+dp[0]);
+		} else if(dp[0].equalsIgnoreCase("coral")){
 			pb = new ProblemCoral();
 		}
-		else if(dp[0].equalsIgnoreCase("choco2coral")){
-			//System.out.println("dp "+dp[0]);
-			pb = new ProblemChoco2Coral();
-		}
 		else if(dp[0].equalsIgnoreCase("iasolver")){
-			//System.out.println("dp "+dp[0]);
 			pb = new ProblemIAsolver();
 		} else if(dp[0].equalsIgnoreCase("cvc3")){
 			pb = new ProblemCVC3();
@@ -558,7 +558,11 @@ public class SymbolicConstraintsGeneral {
 			bitVec = true;
 	    } else if (dp[0].equalsIgnoreCase("yices")) {
 	    	pb = new ProblemYices();
-	    }
+	    } else if (dp[0].equalsIgnoreCase("jacop")) {
+	    	pb = new ProblemJacop();
+		} else if (dp[0].equalsIgnoreCase("debug")) {
+			pb = new DebugSolvers(pc);
+		}
 		// added option to have no-solving
 		// as a result symbolic execution will explore an over-approximation of the program paths
 		// equivalent to a CFG analysis

@@ -22,6 +22,7 @@ package gov.nasa.jpf.symbc.numeric;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.MJIEnv;
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.string.StringPathCondition;
 
 // path condition contains mixed constraints of integers and reals
@@ -220,13 +221,15 @@ public class PathCondition {
 
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 		boolean result1 = solver.isSatisfiable(this);
-		MinMax.Debug_no_path_constraints ++;
-		if (result1)
-			MinMax.Debug_no_path_constraints_sat ++;
-		else
-			MinMax.Debug_no_path_constraints_unsat ++;
-
-		System.out.println("### PCs: " + MinMax.Debug_no_path_constraints + " " +MinMax.Debug_no_path_constraints_sat + " " + MinMax.Debug_no_path_constraints_unsat);
+		
+		if (SymbolicInstructionFactory.debugMode) {
+			MinMax.Debug_no_path_constraints ++;
+			if (result1)
+				MinMax.Debug_no_path_constraints_sat ++;
+			else
+				MinMax.Debug_no_path_constraints_unsat ++;
+			System.out.println("### PCs: " + MinMax.Debug_no_path_constraints + " " +MinMax.Debug_no_path_constraints_sat + " " + MinMax.Debug_no_path_constraints_unsat);
+		}
 
 		if (! result1) return false;
 		boolean result2 = spc.simplify(); // TODO to review: used for strings

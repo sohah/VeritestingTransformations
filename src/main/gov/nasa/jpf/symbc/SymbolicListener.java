@@ -60,10 +60,6 @@ import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
-import gov.nasa.jpf.symbc.numeric.ProblemCVC3;
-import gov.nasa.jpf.symbc.numeric.ProblemCVC3BitVector;
-import gov.nasa.jpf.symbc.numeric.ProblemChoco;
-import gov.nasa.jpf.symbc.numeric.ProblemIAsolver;
 import gov.nasa.jpf.symbc.numeric.RealConstant;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
@@ -84,6 +80,10 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import gov.nasa.jpf.symbc.numeric.MinMax;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemCVC3;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemCVC3BitVector;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemChoco;
+import gov.nasa.jpf.symbc.numeric.solver.ProblemIAsolver;
 
 public class SymbolicListener extends PropertyListenerAdapter implements PublisherExtension {
 

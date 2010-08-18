@@ -17,7 +17,7 @@
 //DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 
-package gov.nasa.jpf.symbc.numeric;
+package gov.nasa.jpf.symbc.numeric.solver;
 
 //TODO: problem: we do not distinguish between ints and reals?
 // still needs a lot of work: do not use!
@@ -70,7 +70,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 
 	//if min or max are passed in as null objects to the vc
 	//it will use minus and plus infinity
-	Object makeIntVar(String name, int min, int max) {
+	public Object makeIntVar(String name, int min, int max) {
 		try{
 			Type sType = vc.subrangeType(vc.ratExpr(min),
                     vc.ratExpr(max));
@@ -84,7 +84,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	
 	
 
-	Object makeRealVar(String name, double min, double max) {
+	public Object makeRealVar(String name, double min, double max) {
 
 		//WARNING: need to downcast double to int - I don't see
 		// a way in CVC3 to create a sub-range for real types
@@ -104,7 +104,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object eq(int value, Object exp){
+	public Object eq(int value, Object exp){
 		try{
 			return  vc.eqExpr(vc.ratExpr(value), (Expr)exp);
 		} catch (Exception e) {
@@ -114,7 +114,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object eq(Object exp, int value){
+	public Object eq(Object exp, int value){
 		try{
 			return  vc.eqExpr((Expr)exp, vc.ratExpr(value));
 		} catch (Exception e) {
@@ -124,7 +124,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object eq(Object exp1, Object exp2){
+	public Object eq(Object exp1, Object exp2){
 		try{
 			return  vc.eqExpr((Expr)exp1, (Expr)exp2);
 		} catch (Exception e) {
@@ -134,7 +134,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object eq(double value, Object exp){
+	public Object eq(double value, Object exp){
 		try{
 			return  vc.eqExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
 		} catch (Exception e) {
@@ -144,7 +144,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object eq(Object exp, double value){
+	public Object eq(Object exp, double value){
 		try{
 			return  vc.eqExpr((Expr)exp, vc.ratExpr(Double.toString(value), base));
 		} catch (Exception e) {
@@ -154,7 +154,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object neq(int value, Object exp){
+	public Object neq(int value, Object exp){
 		try{
 			return  vc.notExpr(vc. eqExpr(vc.ratExpr(value), (Expr)exp));
 		} catch (Exception e) {
@@ -164,7 +164,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object neq(Object exp, int value){
+	public Object neq(Object exp, int value){
 		try{
 			return  vc.notExpr(vc.eqExpr((Expr)exp, vc.ratExpr(value)));
 		} catch (Exception e) {
@@ -174,7 +174,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object neq(Object exp1, Object exp2){
+	public Object neq(Object exp1, Object exp2){
 		try{
 			return  vc.notExpr(vc.eqExpr((Expr)exp1, (Expr)exp2));
 		} catch (Exception e) {
@@ -194,7 +194,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object neq(double value, Object exp){
+	public Object neq(double value, Object exp){
 		try{
 			return  vc.notExpr(vc.eqExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp));
 		} catch (Exception e) {
@@ -204,7 +204,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object neq(Object exp, double value){
+	public Object neq(Object exp, double value){
 		try{
 			return  vc.notExpr(vc.eqExpr((Expr)exp, vc.ratExpr(Double.toString(value), base)));
 		} catch (Exception e) {
@@ -214,7 +214,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object leq(int value, Object exp){
+	public Object leq(int value, Object exp){
 		try{
 			return  vc.leExpr(vc.ratExpr(value), (Expr)exp);
 		} catch (Exception e) {
@@ -224,7 +224,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object leq(Object exp, int value){
+	public Object leq(Object exp, int value){
 		try{
 			return  vc.leExpr((Expr)exp, vc.ratExpr(value));
 		} catch (Exception e) {
@@ -234,7 +234,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object leq(Object exp1, Object exp2){
+	public Object leq(Object exp1, Object exp2){
 		try{
 			return  vc.leExpr((Expr)exp1, (Expr)exp2);
 		} catch (Exception e) {
@@ -244,7 +244,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object leq(double value, Object exp){
+	public Object leq(double value, Object exp){
 		try{
 			return  vc.leExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
 		} catch (Exception e) {
@@ -254,7 +254,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object leq(Object exp, double value){
+	public Object leq(Object exp, double value){
 		try{
 			return  vc.leExpr((Expr)exp, vc.ratExpr(Double.toString(value), base));
 		} catch (Exception e) {
@@ -264,7 +264,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object geq(int value, Object exp){
+	public Object geq(int value, Object exp){
 		try{
 			return  vc.geExpr(vc.ratExpr(value), (Expr)exp);
 		} catch (Exception e) {
@@ -274,7 +274,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object geq(Object exp, int value){
+	public Object geq(Object exp, int value){
 		try{
 			return  vc.geExpr((Expr)exp, vc.ratExpr(value));
 		} catch (Exception e) {
@@ -284,7 +284,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object geq(Object exp1, Object exp2){
+	public Object geq(Object exp1, Object exp2){
 		try{
 			return  vc.geExpr((Expr)exp1, (Expr)exp2);
 		} catch (Exception e) {
@@ -294,7 +294,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object geq(double value, Object exp){
+	public Object geq(double value, Object exp){
 		try{
 			return  vc.geExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
 		} catch (Exception e) {
@@ -304,7 +304,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object geq(Object exp, double value){
+	public Object geq(Object exp, double value){
 		try{
 			return  vc.geExpr((Expr)exp, vc.ratExpr(Double.toString(value), base));
 		} catch (Exception e) {
@@ -314,7 +314,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object lt(int value, Object exp){
+	public Object lt(int value, Object exp){
 		try{
 			return  vc.ltExpr(vc.ratExpr(value), (Expr)exp);
 		} catch (Exception e) {
@@ -324,7 +324,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object lt(Object exp, int value){
+	public Object lt(Object exp, int value){
 		try{
 			return  vc.ltExpr((Expr)exp, vc.ratExpr(value));
 		} catch (Exception e) {
@@ -334,7 +334,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object lt(Object exp1, Object exp2){
+	public Object lt(Object exp1, Object exp2){
 		try{
 			return  vc.ltExpr((Expr)exp1, (Expr)exp2);
 		} catch (Exception e) {
@@ -344,7 +344,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object lt(double value, Object exp){
+	public Object lt(double value, Object exp){
 		try{
 			return  vc.ltExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
 		} catch (Exception e) {
@@ -354,7 +354,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object lt(Object exp, double value){
+	public Object lt(Object exp, double value){
 		try{
 			return  vc.ltExpr((Expr)exp, vc.ratExpr(Double.toString(value), base));
 		} catch (Exception e) {
@@ -365,7 +365,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	}
 
 
-	Object gt(int value, Object exp){
+	public Object gt(int value, Object exp){
 		try{
 			return  vc.gtExpr(vc.ratExpr(value), (Expr)exp);
 		} catch (Exception e) {
@@ -375,7 +375,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object gt(Object exp, int value){
+	public Object gt(Object exp, int value){
 		try{
 			return  vc.gtExpr((Expr)exp, vc.ratExpr(value));
 		} catch (Exception e) {
@@ -385,7 +385,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object gt(Object exp1, Object exp2){
+	public Object gt(Object exp1, Object exp2){
 		try{
 			return  vc.gtExpr((Expr)exp1, (Expr)exp2);
 		} catch (Exception e) {
@@ -395,7 +395,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object implies(Object exp1, Object exp2){
+	public Object implies(Object exp1, Object exp2){
 		try{
 			return  vc.impliesExpr((Expr)exp1, (Expr)exp2);
 		} catch (Exception e) {
@@ -405,7 +405,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object gt(double value, Object exp){
+	public Object gt(double value, Object exp){
 		try{
 			return  vc.gtExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
 		} catch (Exception e) {
@@ -415,7 +415,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object gt(Object exp, double value){
+	public Object gt(Object exp, double value){
 		try{
 			return  vc.gtExpr((Expr)exp, vc.ratExpr(Double.toString(value), base));
 		} catch (Exception e) {
@@ -428,7 +428,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 
 
 
-	Object plus(int value, Object exp) {
+	public Object plus(int value, Object exp) {
 		try{
 			return  vc.plusExpr(vc.ratExpr(value), (Expr)exp);
 		} catch (Exception e) {
@@ -437,7 +437,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object plus(Object exp, int value) {
+	public Object plus(Object exp, int value) {
 		try{
 			return  vc.plusExpr((Expr)exp, vc.ratExpr(value));
 		} catch (Exception e) {
@@ -446,7 +446,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object plus(Object exp1, Object exp2) {
+	public Object plus(Object exp1, Object exp2) {
 		try{
 			return  vc.plusExpr((Expr)exp1, (Expr)exp1);
 		} catch (Exception e) {
@@ -455,7 +455,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object plus(double value, Object exp) {
+	public Object plus(double value, Object exp) {
 		try{
 			return  vc.plusExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
 		} catch (Exception e) {
@@ -464,7 +464,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object plus(Object exp, double value) {
+	public Object plus(Object exp, double value) {
 		try{
 			return  vc.plusExpr((Expr)exp, vc.ratExpr(Double.toString(value), base));
 		} catch (Exception e) {
@@ -473,7 +473,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object minus(int value, Object exp) {
+	public Object minus(int value, Object exp) {
 		try{
 			return  vc.minusExpr(vc.ratExpr(value), (Expr)exp);
 		} catch (Exception e) {
@@ -482,7 +482,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object minus(Object exp, int value) {
+	public Object minus(Object exp, int value) {
 		try{
 			return  vc.minusExpr((Expr)exp, vc.ratExpr(value));
 		} catch (Exception e) {
@@ -491,7 +491,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object minus(Object exp1, Object exp2) {
+	public Object minus(Object exp1, Object exp2) {
 		try{
 			return  vc.minusExpr((Expr)exp1, (Expr)exp2);
 		} catch (Exception e) {
@@ -500,7 +500,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object minus(double value, Object exp) {
+	public Object minus(double value, Object exp) {
 		try{
 			return  vc.minusExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
 		} catch (Exception e) {
@@ -509,7 +509,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object minus(Object exp, double value) {
+	public Object minus(Object exp, double value) {
 		try{
 			return  vc.minusExpr((Expr)exp, vc.ratExpr(Double.toString(value), base));
 		} catch (Exception e) {
@@ -518,7 +518,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object mult(int value, Object exp) {
+	public Object mult(int value, Object exp) {
 		try{
 			return  vc.multExpr(vc.ratExpr(value), (Expr)exp);
 		} catch (Exception e) {
@@ -527,7 +527,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object mult(Object exp, int value) {
+	public Object mult(Object exp, int value) {
 		try{
 			return  vc.multExpr((Expr)exp, vc.ratExpr(value));
 		} catch (Exception e) {
@@ -536,7 +536,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object mult(Object exp1, Object exp2) {
+	public Object mult(Object exp1, Object exp2) {
 		try{
 			return  vc.multExpr((Expr)exp1, (Expr)exp2);
 		} catch (Exception e) {
@@ -544,7 +544,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
 		}
 	}
-	Object mult(double value, Object exp) {
+	public Object mult(double value, Object exp) {
 		try{
 			return  vc.multExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
 		} catch (Exception e) {
@@ -552,7 +552,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
 		}
 	}
-	Object mult(Object exp, double value) {
+	public Object mult(Object exp, double value) {
 		try{
 			return  vc.multExpr((Expr)exp, vc.ratExpr(Double.toString(value), base));
 		} catch (Exception e) {
@@ -563,7 +563,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 
 	//TODO
 
-	Object div(int value, Object exp) {
+	public Object div(int value, Object exp) {
 		try{
 			return  vc.divideExpr(vc.ratExpr(value), (Expr)exp);
 		} catch (Exception e) {
@@ -572,7 +572,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object div(Object exp, int value) {
+	public Object div(Object exp, int value) {
 		try{
 			return  vc.divideExpr((Expr)exp, vc.ratExpr(value));
 		} catch (Exception e) {
@@ -581,7 +581,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	Object div(Object exp1, Object exp2) {
+	public Object div(Object exp1, Object exp2) {
 		try{
 			return  vc.divideExpr((Expr)exp1, (Expr)exp2);
 		} catch (Exception e) {
@@ -589,7 +589,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
 		}
 	}
-	Object div(double value, Object exp) {
+	public Object div(double value, Object exp) {
 		try{
 			return  vc.divideExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
 		} catch (Exception e) {
@@ -597,7 +597,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
 		}
 	}
-	Object div(Object exp, double value) {
+	public Object div(Object exp, double value) {
 		try{
 			return  vc.divideExpr((Expr)exp, vc.ratExpr(Double.toString(value), base));
 		} catch (Exception e) {
@@ -609,70 +609,70 @@ public class ProblemCVC3 extends ProblemGeneral {
 	
 
 	// not yet done for CVC3
-//	Object sin(Object exp) {
+//	public Object sin(Object exp) {
 //		throw new RuntimeException("## Error: Math.sin not supported");
 //	}
-//	Object cos(Object exp) {
+//	public Object cos(Object exp) {
 //		throw new RuntimeException("## Error: Math.cos not supported");
 //	}
 //
-//	Object round(Object exp) {
+//	public Object round(Object exp) {
 //		throw new RuntimeException("## Error: Math.round not supported");
 //	}
-//	Object exp(Object exp) {
+//	public Object exp(Object exp) {
 //		throw new RuntimeException("## Error: Math.exp not supported");
 //	}
-//	Object asin(Object exp) {
+//	public Object asin(Object exp) {
 //		throw new RuntimeException("## Error: Math.asin not supported");
 //
 //	}
-//	Object acos(Object exp) {
+//	public Object acos(Object exp) {
 //		throw new RuntimeException("## Error: Math.acos not supported");
 //
 //	}
-//	Object atan(Object exp) {
+//	public Object atan(Object exp) {
 //		throw new RuntimeException("## Error: Math.atan not supported");
 //
 //	}
-//	Object log(Object exp) {
+//	public Object log(Object exp) {
 //		throw new RuntimeException("## Error: Math.log not supported");
 //
 //	}
-//	Object tan(Object exp) {
+//	public Object tan(Object exp) {
 //		throw new RuntimeException("## Error: Math.tan not supported");
 //
 //	}
-//	Object sqrt(Object exp) {
+//	public Object sqrt(Object exp) {
 //		throw new RuntimeException("## Error: Math.sqrt not supported");
 //
 //	}
-//	Object power(Object exp1, Object exp2) {
+//	public Object power(Object exp1, Object exp2) {
 //		throw new RuntimeException("## Error: Math.power not supported");
 //	}
-//	Object power(Object exp1, double exp2) {
+//	public Object power(Object exp1, double exp2) {
 //		throw new RuntimeException("## Error: Math.power not supported");
 //	}
-//	Object power(double exp1, Object exp2) {
+//	public Object power(double exp1, Object exp2) {
 //		throw new RuntimeException("## Error: Math.power not supported");
 //	}
 //
-//	Object atan2(Object exp1, Object exp2) {
+//	public Object atan2(Object exp1, Object exp2) {
 //		throw new RuntimeException("## Error: Math.atan2 not supported");
 //	}
-//	Object atan2(Object exp1, double exp2) {
+//	public Object atan2(Object exp1, double exp2) {
 //		throw new RuntimeException("## Error: Math.atan2 not supported");
 //	}
-//	Object atan2(double exp1, Object exp2) {
+//	public Object atan2(double exp1, Object exp2) {
 //		throw new RuntimeException("## Error: Math.atan2 not supported");
 //	}
 
-	Object mixed(Object exp1, Object exp2) {  //not done yet for cvc3
+	public Object mixed(Object exp1, Object exp2) {  //not done yet for cvc3
 		throw new RuntimeException("## Error CVC3: mixed integer/real constraint not yet implemented");
 	}
 
 	//there must be a better way to do this
 	//returns the upper bound on the range
-	double getRealValueInf(Object dpVar) {
+	public double getRealValueInf(Object dpVar) {
 		try{
 			Expr exp = (Expr)dpVar;
 			Type t = exp.getType();
@@ -685,7 +685,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	double getRealValue(Object dpVar) { //not done yet for cvc3
+	public double getRealValue(Object dpVar) { //not done yet for cvc3
 		try{
 			Expr exp = (Expr)model.get((Expr)dpVar);
 			Rational val = exp.getRational();
@@ -698,7 +698,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 		}
 	}
 
-	int getIntValue(Object dpVar) { //not done yet for cvc3
+	public int getIntValue(Object dpVar) { //not done yet for cvc3
 		try{
 		Expr exp = (Expr)model.get((Expr)dpVar);
 		Rational val = exp.getRational();
@@ -711,7 +711,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 
 	//there must be a better way to do this
 	//returns the upper bound on the range
-	double getRealValueSup(Object dpVar) {
+	public double getRealValueSup(Object dpVar) {
 		try{
 			Expr exp = (Expr)dpVar;
 			Type t = exp.getType();
@@ -786,75 +786,75 @@ public class ProblemCVC3 extends ProblemGeneral {
 	    }
 	}
 
-	Object and(int value, Object exp) {
+	public Object and(int value, Object exp) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object and(Object exp, int value) {
+	public Object and(Object exp, int value) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object and(Object exp1, Object exp2) {
+	public Object and(Object exp1, Object exp2) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object or(int value, Object exp) {
+	public Object or(int value, Object exp) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object or(Object exp, int value) {
+	public Object or(Object exp, int value) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object or(Object exp1, Object exp2) {
+	public Object or(Object exp1, Object exp2) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object shiftL(int value, Object exp) {
+	public Object shiftL(int value, Object exp) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object shiftL(Object exp, int value) {
+	public Object shiftL(Object exp, int value) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object shiftR(int value, Object exp) {
+	public Object shiftR(int value, Object exp) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object shiftR(Object exp, int value) {
+	public Object shiftR(Object exp, int value) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object xor(int value, Object exp) {
+	public Object xor(int value, Object exp) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object xor(Object exp, int value) {
+	public Object xor(Object exp, int value) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object xor(Object exp1, Object exp2) {
+	public Object xor(Object exp1, Object exp2) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object shiftL(Object exp1, Object exp2) {
+	public Object shiftL(Object exp1, Object exp2) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object shiftR(Object exp1, Object exp2) {
+	public Object shiftR(Object exp1, Object exp2) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object shiftUR(int value, Object exp) {
+	public Object shiftUR(int value, Object exp) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object shiftUR(Object exp, int value) {
+	public Object shiftUR(Object exp, int value) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 
-	Object shiftUR(Object exp1, Object exp2) {
+	public Object shiftUR(Object exp1, Object exp2) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
 	}
 

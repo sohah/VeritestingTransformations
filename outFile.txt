@@ -1,0 +1,7 @@
+METHOD: test(int,int),test(0,1),test(x_1_SYMINT,y_2_SYMINT)
+# = 1
+(y_2_SYMINT[0] & x_1_SYMINT[0]) == CONST_0
+SPC # = 0
+# = 1
+(y_2_SYMINT[0] & x_1_SYMINT[0]) != CONST_0
+SPC # = 0

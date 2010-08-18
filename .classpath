@@ -14,6 +14,8 @@
 	<classpathentry kind="lib" path="cvc3.jar"/>
 	<classpathentry kind="lib" path="cvc3test.jar"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/junit-4.6.jar"/>
+	<classpathentry kind="lib" path="lib/jacop.jar"/>
+	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="src" output="build/main" path="src/main"/>
 	<classpathentry kind="src" output="build/examples" path="src/examples"/>
 	<classpathentry kind="src" output="build/peers" path="src/peers"/>
@@ -26,5 +28,6 @@
 	<classpathentry kind="lib" path="lib/commons-math-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/choco-solver-2.1.1-20100709.142532-2.jar"/>
 	<classpathentry kind="lib" path="lib/yicesapijava.jar"/>
+	<classpathentry kind="lib" path="lib/sugar-v1-14-7.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

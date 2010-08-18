@@ -20,6 +20,9 @@
 package gov.nasa.jpf.symbc.numeric;
 
 
+
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -437,9 +440,10 @@ public class SymbolicConstraintsChoco {
 		symRealVar = new HashMap<SymbolicReal,RealVar>();
 		symIntegerVar = new HashMap<SymbolicInteger,IntDomainVar>();
 		//result = null;
-		
+				
 		if (pc == null) {
-			System.out.println("## Warning: empty path condition");
+			if (SymbolicInstructionFactory.debugMode) 
+				System.out.println("## Warning: empty path condition");
 			return true;
 		}
 
@@ -467,7 +471,8 @@ public class SymbolicConstraintsChoco {
 		
 		result = pb.solve();
 		if(result == null) {
-			//System.out.println("## Warning: don't know (returned PC not-satisfiable)");
+			if (SymbolicInstructionFactory.debugMode)
+				System.out.println("## Warning: don't know (returned PC not-satisfiable)");
 			return false;
 		}
 		
@@ -502,7 +507,7 @@ public class SymbolicConstraintsChoco {
 					isSolvable = Boolean.FALSE;
 			}
 			
-//				// compute solutions for integer variables
+				// compute solutions for integer variables
 				Set<Entry<SymbolicInteger,IntDomainVar>> sym_intvar_mappings = symIntegerVar.entrySet();
 				Iterator<Entry<SymbolicInteger,IntDomainVar>> i_int = sym_intvar_mappings.iterator();
 				while(i_int.hasNext()) {
