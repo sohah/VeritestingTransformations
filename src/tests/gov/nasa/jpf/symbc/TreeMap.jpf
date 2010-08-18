@@ -18,11 +18,11 @@ symbolic.maxint=100
 
 #symbolic.dp=choco2
 
-symbolic.dp=yices
+#symbolic.dp=yices
 
 #symbolic.dp=cvc3
 
-#symbolic.dp=no_solver
+symbolic.dp=no_solver
 
 vm.storage.class=nil
 

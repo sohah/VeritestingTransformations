@@ -59,35 +59,32 @@ import coral.util.Range;
  * @author damorim
  *
  */
+
+// assumes ranges are -100 and 100
+
 public class ProblemCoral extends ProblemGeneral {
 
 	private static final long timeout = -1; //Config.timeout; // 1s default
 	SolverKind solverKind = SolverKind.PSO_OPT4J;
 	coral.PC pc = new coral.PC();
-	Map<String, SymLiteral> variables = new HashMap<String, SymLiteral>();
 	Map<SymLiteral, Range> ranges = new HashMap<SymLiteral, Range>();
 
 	//TODO: using min and max. try inferring value ranges...
 	@Override
 	Object makeIntVar(String name, int min, int max) {
-		SymLiteral result = variables.get(name);
-		if (result == null) {
-			result = Util.createSymLiteral(0/*default value*/);
-			variables.put(name, result);
-			ranges.put(result, new Range(min, max));
-			Config.RANGE = new Range(min,max);
-		}
+		SymLiteral result = Util.createSymLiteral(0/*default value*/);
+		ranges.put(result, new Range(min, max));
+		//FIXME: this is a hack.  please update solving to deal with this
+		//Config.RANGE = new Range(min,max);
 		return result;
 	}
 
 	@Override
 	Object makeRealVar(String name, double min, double max) {
-		SymLiteral result = variables.get(name);
-		if (result == null) {
-			result = Util.createSymLiteral(0d/*default value*/);
-			variables.put(name, result);
-			ranges.put(result, new Range((int)min, (int)max));
-		}
+		SymLiteral result = Util.createSymLiteral(0d/*default value*/);
+		ranges.put(result, new Range((int)min, (int)max));
+		//FIXME: this is a hack.  please update solving to deal with this
+		//Config.RANGE = new Range((int)min, (int)max);
 		return result;
 	}
 
@@ -579,9 +576,9 @@ public class ProblemCoral extends ProblemGeneral {
 			}
 		} catch (Exception _) {
 		}
-		finally {
+//		finally {
 //			System.out.printf(">>> %s %s %s\n", pc.toString(), sol, result);
-		}
+//		}
 		return result;
 	}
 
