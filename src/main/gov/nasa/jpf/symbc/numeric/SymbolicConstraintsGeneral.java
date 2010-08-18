@@ -28,7 +28,6 @@ import gov.nasa.jpf.symbc.numeric.solver.ProblemChoco2;
 import gov.nasa.jpf.symbc.numeric.solver.ProblemCoral;
 import gov.nasa.jpf.symbc.numeric.solver.ProblemGeneral;
 import gov.nasa.jpf.symbc.numeric.solver.ProblemIAsolver;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemJacop;
 import gov.nasa.jpf.symbc.numeric.solver.ProblemYices;
 
 
@@ -558,8 +557,6 @@ public class SymbolicConstraintsGeneral {
 			bitVec = true;
 	    } else if (dp[0].equalsIgnoreCase("yices")) {
 	    	pb = new ProblemYices();
-	    } else if (dp[0].equalsIgnoreCase("jacop")) {
-	    	pb = new ProblemJacop();
 		} else if (dp[0].equalsIgnoreCase("debug")) {
 			pb = new DebugSolvers(pc);
 		}

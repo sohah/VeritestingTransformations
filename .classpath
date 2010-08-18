@@ -14,8 +14,6 @@
 	<classpathentry kind="lib" path="cvc3.jar"/>
 	<classpathentry kind="lib" path="cvc3test.jar"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/junit-4.6.jar"/>
-	<classpathentry kind="lib" path="lib/jacop.jar"/>
-	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="src" output="build/main" path="src/main"/>
 	<classpathentry kind="src" output="build/examples" path="src/examples"/>
 	<classpathentry kind="src" output="build/peers" path="src/peers"/>

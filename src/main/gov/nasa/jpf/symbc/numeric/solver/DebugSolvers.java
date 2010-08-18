@@ -16,11 +16,9 @@ public class DebugSolvers extends ProblemGeneral {
 		numSolvers = 3;
 		probs = new ProblemGeneral[numSolvers];
 		
-		//probs[1] = new ProblemChoco();
-		probs[0] = new ProblemChoco2();
-		//probs[2] = new ProblemYices();
-		probs[1] = new ProblemCoral();
-		probs[2] = new ProblemJacop();				
+		probs[0] = new ProblemChoco();
+		probs[1] = new ProblemChoco2();
+		probs[2] = new ProblemCoral();			
 	}
 	
 	public class SolverObjects {
