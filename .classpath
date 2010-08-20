@@ -26,6 +26,5 @@
 	<classpathentry kind="lib" path="lib/commons-math-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/choco-solver-2.1.1-20100709.142532-2.jar"/>
 	<classpathentry kind="lib" path="lib/yicesapijava.jar"/>
-	<classpathentry kind="lib" path="lib/sugar-v1-14-7.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
