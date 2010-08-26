@@ -19,9 +19,6 @@
 
 package gov.nasa.jpf.symbc.numeric.solver;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import symlib.SymBool;
 import symlib.SymDouble;
 import symlib.SymInt;
@@ -34,7 +31,6 @@ import coral.solvers.Result;
 import coral.solvers.Solver;
 import coral.solvers.SolverKind;
 import coral.util.Config;
-import coral.util.Range;
 
 /**
  * Interface of SPF with the randomized solvers from CORAL
@@ -56,36 +52,48 @@ import coral.util.Range;
  * with each variables if they exist.
  *
  *
- * @author damorim
+ * @author Mateus Arrais (mabs@cin.ufpe.br)
+ * @author Marcelo Borges (mab@cin.ufpe.br)
+ * @author Marcelo d'Amorim (damorim@cin.ufpe.br)
  *
  */
-
-// assumes ranges are -100 and 100
 
 public class ProblemCoral extends ProblemGeneral {
 
 	private static final long timeout = -1; //Config.timeout; // 1s default
-	SolverKind solverKind = SolverKind.PSO_OPT4J;
-	coral.PC pc = new coral.PC();
-	Map<SymLiteral, Range> ranges = new HashMap<SymLiteral, Range>();
+	private SolverKind solverKind = SolverKind.PSO_OPT4J;
+	private coral.PC pc = new coral.PC();
+	
+	{
+		/**
+		 * setting maximum number of iterations allowed.
+		 * the solver return with no solution in that 
+		 * case.  note that the constraint may still be
+		 * satisfiable.
+		 */
+		Config.nIterationsPSO = 500;
+		/**
+		 * random seed used to generate random numbers. 
+		 */
+		Config.seed = 464655;
+	}
+	
+	/**************************************************
+	 * ignoring ranges passed from JPF.  We use a short 
+	 * range as default but that is dynamically reset
+	 * based on relational constraints involving 
+	 * constants.  for example, x > 10 && x < 20 
+	 * redefines the initial range of x to [10,20]. 
+	 **************************************************/
 
-	//TODO: using min and max. try inferring value ranges...
 	@Override
 	public Object makeIntVar(String name, int min, int max) {
-		SymLiteral result = Util.createSymLiteral(0/*default value*/);
-		ranges.put(result, new Range(min, max));
-		//FIXME: this is a hack.  please update solving to deal with this
-		//Config.RANGE = new Range(min,max);
-		return result;
+		return Util.createSymLiteral(0/*default value*/);
 	}
 
 	@Override
 	public Object makeRealVar(String name, double min, double max) {
-		SymLiteral result = Util.createSymLiteral(0d/*default value*/);
-		ranges.put(result, new Range((int)min, (int)max));
-		//FIXME: this is a hack.  please update solving to deal with this
-		//Config.RANGE = new Range((int)min, (int)max);
-		return result;
+		return Util.createSymLiteral(0d/*default value*/);
 	}
 
 	@Override
@@ -613,12 +621,12 @@ public class ProblemCoral extends ProblemGeneral {
 
 	@Override
 	public double getRealValueInf(Object dpvar) {
-		return ranges.get((SymLiteral)dpvar).getLo();
+		return -1;
 	}
 
 	@Override
 	public double getRealValueSup(Object dpVar) {
-		return ranges.get((SymLiteral)dpVar).getHi();
+		return -1;
 	}
 
 	@Override
