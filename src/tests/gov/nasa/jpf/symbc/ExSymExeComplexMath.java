@@ -9,13 +9,12 @@ public class ExSymExeComplexMath {
 
 	  ExSymExeComplexMath inst = new ExSymExeComplexMath();
 	  field = 9;
-	  inst.test(0.0, 0.0, 0.0, 0, 0, 0, 0.0, 0.0);
-	  //inst.test2(x,x);
-	  //inst.test1(x,true);
+	  inst.test1(0.0, 0.0, 0.0, 0, 0, 0, 0.0, 0.0);
+	  inst.angleXY_(0.0, 0.0);
   }
   /* we want to let the user specify that this method should be symbolic */
 
-  public void test(double C_v, double A_v, double bank_ang, int Cdir, int Cturn, int Aturn, double A_Psi0_deg, double C_Psi0_deg) {
+  public void test1(double C_v, double A_v, double bank_ang, int Cdir, int Cturn, int Aturn, double A_Psi0_deg, double C_Psi0_deg) {
 
 
 	  if(C_v > 0.0 && A_v > 0.0 && bank_ang < 90.0 &&
@@ -49,8 +48,22 @@ public class ExSymExeComplexMath {
 
 	  System.out.println("Solved!");
 
-
-
   }
+
+  public void angleXY_(double x1, double y1) {
+		double x = x1;
+		double y = y1;
+		if (x == 0 && y != 0) {
+			System.out.println(">>>>>>>>>>>> 1");
+		} else {
+			System.out.println(">>>>>>>>>>>> LOOK!");
+			if (x < 0) {
+				System.out.println(">>>>>>>>>>>>>>> ???");
+			} else if (x > 0) {
+				System.out.println(">>>>>>>>>>>>>>> !!!1");
+			}
+		}
+	}
+
 }
 
