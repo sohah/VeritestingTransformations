@@ -30,7 +30,22 @@ public class Node {
 	}
 	
 	public boolean isNextObject(Object node) {
-		return this.next == node;
+		if( this.next == node )
+			return true;
+		else  {
+			nextObjectTypeHierarchy(node);
+			return false;
+		}
+	}
+	
+	void nextObjectTypeHierarchy(Object node) {
+		if(!(node instanceof Node)) {
+			if(this.next != node) {
+				System.out.println("this.next != node");
+			} else{
+				System.out.println("===equal====: assert failed");
+			}
+		}
 	}
 	
 }
