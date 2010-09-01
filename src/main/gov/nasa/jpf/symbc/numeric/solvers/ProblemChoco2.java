@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.numeric.solver;
+package gov.nasa.jpf.symbc.numeric.solvers;
 
 import choco.Choco;
 import choco.cp.model.CPModel;

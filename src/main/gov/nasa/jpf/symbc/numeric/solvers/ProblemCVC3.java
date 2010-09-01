@@ -17,7 +17,7 @@
 //DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 
-package gov.nasa.jpf.symbc.numeric.solver;
+package gov.nasa.jpf.symbc.numeric.solvers;
 
 //TODO: problem: we do not distinguish between ints and reals?
 // still needs a lot of work: do not use!

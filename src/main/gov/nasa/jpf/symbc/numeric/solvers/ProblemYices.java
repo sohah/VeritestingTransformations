@@ -19,7 +19,7 @@
 
 // author Pingyu Zhang pzhang@cse.unl.edu
 
-package gov.nasa.jpf.symbc.numeric.solver;
+package gov.nasa.jpf.symbc.numeric.solvers;
 
 import yices.*;
 

@@ -31,7 +31,7 @@ public class PathCondition {
     public static boolean flagSolved = false;
     //neha: additional check to control when
     // constraints need to be solve
-    public static boolean flagCheck = true;
+    //public static boolean flagCheck = true;
 
     public Constraint header;
     int count = 0;
@@ -230,7 +230,7 @@ public class PathCondition {
 
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 		boolean result1 = solver.isSatisfiable(this);
-		
+
 		if (SymbolicInstructionFactory.debugMode) {
 			MinMax.Debug_no_path_constraints ++;
 			if (result1)

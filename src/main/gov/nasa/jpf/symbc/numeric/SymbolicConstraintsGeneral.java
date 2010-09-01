@@ -20,15 +20,15 @@
 package gov.nasa.jpf.symbc.numeric;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
-import gov.nasa.jpf.symbc.numeric.solver.DebugSolvers;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemCVC3;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemCVC3BitVector;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemChoco;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemChoco2;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemCoral;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemGeneral;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemIAsolver;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemYices;
+import gov.nasa.jpf.symbc.numeric.solvers.DebugSolvers;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3BitVector;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco2;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemGeneral;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemIAsolver;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemYices;
 
 
 import java.util.ArrayList;
@@ -434,14 +434,14 @@ public class SymbolicConstraintsGeneral {
 	boolean createDPLinearOrIntegerConstraint (LinearOrIntegerConstraints c) {
 		List<Object> orList = new ArrayList<Object>();
 		ProblemChoco pc_pb = (ProblemChoco) pb;
-		
+
 		for (LinearIntegerConstraint cRef: c.getList()) {
 			Comparator c_compRef = cRef.getComparator();
 			IntegerExpression c_leftRef = (IntegerExpression)cRef.getLeft();
 			IntegerExpression c_rightRef = (IntegerExpression)cRef.getRight();
 			//Removed all return false
 			switch(c_compRef){
-			case EQ: 
+			case EQ:
 				if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
 					if (!(((IntegerConstant) c_leftRef).value == ((IntegerConstant) c_rightRef).value)) {
 						//return false;
@@ -625,7 +625,7 @@ public class SymbolicConstraintsGeneral {
 					pb.post(pb.eq(tempVar1, part1));
 					pb.post(pb.eq(tempVar2, part2));
 					orList.add(pb.gt(tempVar1,tempVar2));
-				}			
+				}
 				break;
 			}
 		}
@@ -643,7 +643,7 @@ public class SymbolicConstraintsGeneral {
 			System.out.println("[SymbolicConstraintsGeneral] pc_pb = " + resultboo);
 		}*/
 		return true;
-		
+
 	}
 
 	boolean createDPLinearIntegerConstraint(LinearIntegerConstraint cRef) {

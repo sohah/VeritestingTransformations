@@ -22,9 +22,11 @@ symbolic.maxint=100
 
 #symbolic.dp=cvc3
 
-symbolic.dp=no_solver
+#symbolic.dp=no_solver
 
 vm.storage.class=nil
+
+symbolic.debug=true
 
 #listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
 

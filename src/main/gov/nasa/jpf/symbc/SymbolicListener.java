@@ -80,10 +80,10 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import gov.nasa.jpf.symbc.numeric.MinMax;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemCVC3;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemCVC3BitVector;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemChoco;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemIAsolver;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3BitVector;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemIAsolver;
 
 public class SymbolicListener extends PropertyListenerAdapter implements PublisherExtension {
 

@@ -17,7 +17,7 @@
 //DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 
-package gov.nasa.jpf.symbc.numeric.solver;
+package gov.nasa.jpf.symbc.numeric.solvers;
 
 import ia_math.RealInterval;
 import ia_parser.Exp;

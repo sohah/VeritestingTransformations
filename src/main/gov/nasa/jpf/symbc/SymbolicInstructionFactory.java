@@ -27,7 +27,7 @@ import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.numeric.MinMax;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
-import gov.nasa.jpf.symbc.numeric.solver.ProblemChoco;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco;
 import gov.nasa.jpf.util.InstructionFactoryFilter;
 
 /*
@@ -130,10 +130,10 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 
 	static public String[] dp;
 	static public String[] string_dp;
-	
-	/* 
+
+	/*
 	 * This is intended to serve as a catchall debug flag.
-	 * If there's some debug printing/outputing, conditionally print using 
+	 * If there's some debug printing/outputing, conditionally print using
 	 * this flag.
 	 */
 	static public boolean debugMode;
@@ -173,7 +173,7 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 			dp[0] = "choco";
 		}
 		System.out.println("symbolic.dp="+dp[0]);
-		
+
 		string_dp = conf.getStringArray("symbolic.string_dp");
 		if (string_dp == null) {
 			string_dp = new String[1];
@@ -188,11 +188,12 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 		} else {
 			debugMode = false;
 		}
-		
-		if(dp[0].equalsIgnoreCase("choco")) {
-		  ProblemChoco.timeBound = conf.getInt("choco.time_bound", 30000);
+
+		if(dp[0].equalsIgnoreCase("choco") || dp == null) { // default is choco
+		  ProblemChoco.timeBound = conf.getInt("symbolic.choco_time_bound", 30000);
 		}
-		
+		System.out.println("symbolic.choco_time_bound="+ProblemChoco.timeBound);
+
 		String[] intmin, intmax, realmin, realmax, dontcare;
 		intmin = conf.getStringArray("symbolic.minint");
 		intmax = conf.getStringArray("symbolic.maxint");
