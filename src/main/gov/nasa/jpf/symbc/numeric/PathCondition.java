@@ -28,7 +28,7 @@ import gov.nasa.jpf.symbc.string.StringPathCondition;
 // path condition contains mixed constraints of integers and reals
 
 public class PathCondition {
-    static boolean flagSolved = false;
+    public static boolean flagSolved = false;
     //neha: additional check to control when
     // constraints need to be solve
     public static boolean flagCheck = true;
@@ -51,6 +51,15 @@ public class PathCondition {
 		return pc_new;
 	}
 
+	//Added by Gideon
+	public void _addDet (LinearOrIntegerConstraints loic) {
+		//throw new RuntimeException ("Not being used right now");
+		flagSolved = false;
+		Constraint t = (Constraint) loic;
+		t.and = header;
+		header = t;
+		count++;
+	}
 
 	public void _addDet(Comparator c, Expression l, Expression r) {
 		if (l instanceof IntegerExpression && r instanceof IntegerExpression)

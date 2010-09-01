@@ -50,6 +50,7 @@ import gov.nasa.jpf.jvm.Types;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.symbc.mixednumstrg.SpecialRealExpression;
+import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.Comparator;
@@ -157,12 +158,24 @@ public class SymbolicStringHandler {
 					handleStartsWith(invInst, ss, th);
 					return invInst.getNext(th);
 				}
+			} else if (shortName.equals ("contains")) {
+				ChoiceGenerator<?> cg;
+				if (!th.isFirstStepInsn()) { // first time around
+					cg = new PCChoiceGenerator(2);
+					ss.setNextChoiceGenerator(cg);
+					return invInst;
+				} else {
+					handleContains(invInst, ss, th);
+					return invInst.getNext(th);
+				}
 			} else if (shortName.equals("append")) {
 				handleAppend(invInst, th);
 			} else if (shortName.equals("length")) {
 				handleLength(invInst, th);
 			} else if (shortName.equals("indexOf")) {
 				handleIndexOf(invInst, th);
+			} else if (shortName.equals("charAt")) {
+				handleCharAt (invInst, th);
 			} else if (shortName.equals("replace")) {
 				Instruction handled = handleReplace(invInst, th);
 				if (handled != null) {
@@ -271,6 +284,43 @@ public class SymbolicStringHandler {
 		}
 
 	}
+	
+	private Instruction handleCharAt (InvokeInstruction invInst, ThreadInfo th) {
+		StackFrame sf = th.getTopFrame();
+		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0);
+		StringExpression sym_v2 = (StringExpression) sf.getOperandAttr(1);
+
+		if ((sym_v1 == null) & (sym_v2 == null)) {
+			System.err.println("ERROR: symbolic string method must have one symbolic operand: HandleSubString1");
+		} else {
+			int s1 = th.pop();
+			int s2 = th.pop();
+
+			IntegerExpression result = null;
+			if (sym_v1 == null) { // operand 0 is concrete
+				int val = s1;
+				result = sym_v2._charAt(new IntegerConstant(val));
+			} else {
+				if (sym_v2 == null) {
+					ElementInfo e1 = DynamicArea.getHeap().get(s2);
+					String val2 = e1.asString();
+					sym_v2 = new StringConstant(val2);
+					result = sym_v2._charAt(sym_v1);
+				} else {
+					result = sym_v2._charAt(sym_v1);
+				}
+			}
+			int objRef = th.getVM().getDynamicArea().newString("", th); /*
+																																	 * dummy
+																																	 * String
+																																	 * Object
+																																	 */
+			th.push(objRef, true);
+			sf.setOperandAttr(result);
+		}
+		return null;
+
+	}
 
 	public void handleLength(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
@@ -286,7 +336,7 @@ public class SymbolicStringHandler {
 
 	}
 
-	public void handleIndexOf(InvokeInstruction invInst, ThreadInfo th) {
+	public void handleIndexOf(InvokeInstruction invInst, ThreadInfo th) { 
 		int numStackSlots = invInst.getArgSize();
 		if (numStackSlots == 2) {
 			handleIndexOf1(invInst, th);
@@ -300,15 +350,85 @@ public class SymbolicStringHandler {
 	/* currently symbolic values in parameters are ignored */
 	public void handleIndexOf1(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
-		StringExpression sym_v1 = (StringExpression) sf.getOperandAttr(1);
-		if (sym_v1 == null) {
+		/* Added by Gideon */
+		//StringExpression argument = (StringExpression) sf.getOperandAttr(0);
+		//boolean castException = false;
+		StringExpression sym_v1 = null;
+		StringExpression sym_v2 = null;
+		sym_v1 = (StringExpression) sf.getOperandAttr(1);
+		/*	*/
+		sym_v2 = (StringExpression) sf.getOperandAttr(0);
+		if (sym_v1 == null && sym_v2 == null) {
 			System.err.println("ERROR: symbolic method must have symbolic string operand: hanldeLength");
 		} else {
-			th.pop();
-			th.pop();
-			th.push(0, false); /* dont care value for index */
+			/*int x1 = th.pop();
+			int x2 = th.pop();
+			System.out.printf("[SymbolicStringHandler] [handleIndexOf1] %d %d\n", x1, x2);
+			th.push(0, false);
 			IntegerExpression sym_v2 = sym_v1._indexOf();
-			sf.setOperandAttr(sym_v2);
+			sf.setOperandAttr(sym_v2);*/
+			// System.out.println("conditionValue: " + conditionValue);
+
+
+			int s1 = th.pop();
+			int s2 = th.pop();
+
+			IntegerExpression result = null;
+			//if (conditionValue) {
+				if (sym_v1 != null) {
+					if (sym_v2 != null) { // both are symbolic values
+						result = sym_v1._indexOf(sym_v2);
+					} else {
+						ElementInfo e2 = DynamicArea.getHeap().get(s1);
+						String val = e2.asString();
+						result = sym_v1._indexOf(new StringConstant(val));
+					}
+					//pc._addDet(Comparator.EQ, result, -1);
+				} else {
+					ElementInfo e1 = DynamicArea.getHeap().get(s2);
+					String val = e1.asString();
+					
+					if (sym_v2 != null) { // both are symbolic values
+						result = new StringConstant(val)._indexOf(sym_v2);
+					} else {
+						ElementInfo e2 = DynamicArea.getHeap().get(s1);
+						String val2 = e2.asString();
+						result = sym_v1._indexOf(new StringConstant(val2));
+					}
+					//pc.spc._addDet(comp, val, sym_v2);
+				}
+			/*} else {
+				if (sym_v1 != null) {
+					if (sym_v2 != null) { // both are symbolic values
+						result = sym_v1._indexOf(sym_v2);
+					} else {
+						ElementInfo e2 = DynamicArea.getHeap().get(s1);
+						String val = e2.asString();
+						result = sym_v1._indexOf(new StringConstant(val));
+					}
+					//pc._addDet(Comparator.GE, result, 0);
+				} else {
+					ElementInfo e1 = DynamicArea.getHeap().get(s2);
+					String val = e1.asString();
+					throw new RuntimeException("Not supported yet");
+					//pc.spc._addDet(comp, val, sym_v2);
+				}
+			}*/
+			th.push(0, false);
+			sf.setOperandAttr(result);
+			/*if (!pc.simplify()) {// not satisfiable
+				System.out.println("Not sat");
+				ss.setIgnored(true);
+			} else {
+				System.out.println("Is sat");
+				((PCChoiceGenerator) cg).setCurrentPC(pc);
+			}*/
+
+
+			//assert result != null;
+			//th.push(conditionValue ? 1 : 0, true);
+	
+			
 		}
 	}
 
@@ -316,7 +436,7 @@ public class SymbolicStringHandler {
 	/* currently symbolic values in parameters are ignored */
 	public void handleIndexOf2(InvokeInstruction invInst, ThreadInfo th) {
 
-		StackFrame sf = th.getTopFrame();
+		/*StackFrame sf = th.getTopFrame();
 		StringExpression sym_v1 = (StringExpression) sf.getOperandAttr(2);
 		if (sym_v1 == null) {
 			System.err.println("ERROR: symbolic method must have symbolic string operand: hanldeLength");
@@ -325,9 +445,9 @@ public class SymbolicStringHandler {
 			th.pop();
 			th.pop();
 			th.push(0, false); /* dont care value for index */
-			IntegerExpression sym_v2 = sym_v1._indexOf();
+			/*IntegerExpression sym_v2 = sym_v1._indexOf();
 			sf.setOperandAttr(sym_v2);
-		}
+		}*/
 	}
 
 	public void handlebooleanValue(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
@@ -555,6 +675,10 @@ public class SymbolicStringHandler {
 	public void handleEndsWith(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
 		//System.err.println("ERROR: symbolic string method not Implemented - EndsWith");
 		handleBooleanStringInstructions(invInst, ss, th, StringComparator.ENDSWITH);
+	}
+	
+	public void handleContains (InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+		handleBooleanStringInstructions(invInst, ss, th, StringComparator.CONTAINS);
 	}
 
 

@@ -129,6 +129,7 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	  };
 
 	static public String[] dp;
+	static public String[] string_dp;
 	
 	/* 
 	 * This is intended to serve as a catchall debug flag.
@@ -172,6 +173,13 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 			dp[0] = "choco";
 		}
 		System.out.println("symbolic.dp="+dp[0]);
+		
+		string_dp = conf.getStringArray("symbolic.string_dp");
+		if (string_dp == null) {
+			string_dp = new String[1];
+			string_dp[0] = "none";
+		}
+		System.out.println("symbolic.string_dp="+string_dp[0]);
 
 		//Just checking if set, don't care about any values
 		String[] dummy = conf.getStringArray("symbolic.debug");

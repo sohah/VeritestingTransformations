@@ -83,7 +83,7 @@ public class StringPathCondition {
 
 	    flagSolved = false; // C
 
-	    t = new StringConstraint(l, c, r);
+	    t = new StringConstraint(r, c, l);
 
 	    if (!hasConstraint(t)) {
 	      t.and = header;

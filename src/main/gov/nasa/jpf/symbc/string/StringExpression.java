@@ -32,36 +32,65 @@ TERMINATION OF THIS AGREEMENT.
 
 package gov.nasa.jpf.symbc.string;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import gov.nasa.jpf.symbc.mixednumstrg.*;
 
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.numeric.MinMax;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
+import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
 
 public abstract class StringExpression extends Expression {
 
-  SpecialIntegerExpression length = null;
-  SpecialIntegerExpression indexOf = null;
+  SymbolicInteger length = null;
+  Map<String, SymbolicCharAtInteger> charAt = null;
+  Map<StringExpression, SymbolicIndexOfInteger> indexOf = null;
 
 //   protected StringDependentNode dependentsHead = null;
 //   protected StringRelationshipNode relationshipsHead = null;
 
 /* length */
+  static int lengthcount = 0;
+  
+  public IntegerExpression _charAt (IntegerExpression ie) {
+	  if (charAt == null) {
+		  charAt = new HashMap<String, SymbolicCharAtInteger>();
+	  }
+	  SymbolicCharAtInteger result = charAt.get(ie.toString());
+	  if (result == null) {
+		  result = new SymbolicCharAtInteger("CharAt(" + ie.toString() + ")_" + lengthcount + "_", 0, MinMax.MAXINT, this, ie);
+		  lengthcount++;
+		  charAt.put(ie.toString(), result);
+	  }
+	  return result;
+  }
+  
   public IntegerExpression _length() {
     if (length == null) {
-      length = new SpecialIntegerExpression(this, SpecialOperator.LENGTH);
+      length = new SymbolicLengthInteger("Length_" + lengthcount + "_", 1, MinMax.MAXINT, this);
+      lengthcount++;
     }
     return length;
   }
 
 /* indexOf */
-  public IntegerExpression _indexOf() {
+  public IntegerExpression _indexOf(StringExpression exp) {
 	    if (indexOf == null) {
-	      indexOf = new SpecialIntegerExpression(this, SpecialOperator.INDEXOF);
+	      indexOf = new HashMap<StringExpression, SymbolicIndexOfInteger>();
 	    }
-	    return indexOf;
+	    SymbolicIndexOfInteger sioi = indexOf.get(exp);
+	    if (sioi == null) {
+	    	//-1 Should make our lifes much easier
+	    	sioi = new SymbolicIndexOfInteger("IndexOf_" + lengthcount + "_", -1, MinMax.MAXINT, this, exp);
+	    	lengthcount++;
+	    	indexOf.put(exp, sioi);
+	    }
+	    return sioi;
 	  }
 
   /* trim */

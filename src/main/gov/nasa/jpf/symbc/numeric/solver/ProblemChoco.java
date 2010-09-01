@@ -43,6 +43,15 @@ public class ProblemChoco extends ProblemGeneral {
 		return pb.makeRealVar(name,min,max);
 	}
 
+	//Added by Gideon
+	public Object logicOr (choco.Constraint[] arr) {
+		/*System.out.println("orring...");
+		for (choco.Constraint c: arr) {
+			System.out.println(c.pretty());
+		}*/
+		return pb.or(arr); 
+	}
+
 	public Object eq(int value, Object exp){return pb.eq(value, (IntExp)exp);}
 	public Object eq(Object exp, int value){return pb.eq((IntExp) exp, value);}
 	public Object eq(Object exp1, Object exp2){
