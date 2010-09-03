@@ -70,4 +70,8 @@ public class PCChoiceGenerator extends IntIntervalGenerator {
 	public IntChoiceGenerator randomize() {
 		return new PCChoiceGenerator(PC.length, random.nextBoolean()); 
 	}
+	
+	public void setNextChoice(int nextChoice){
+		super.next = nextChoice;
+	}
 }

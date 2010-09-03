@@ -534,7 +534,7 @@ public class TreeMap {
 	public static void main(String[] Argv) {
 		TreeMap tree = new TreeMap();
 
-		for (int i=0; i < 4; i++){
+		for (int i=0; i < 5; i++){
 			Verify.beginAtomic();
 try {
 			switch (Verify.random(4)){

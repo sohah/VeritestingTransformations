@@ -17,34 +17,48 @@
 //DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 
-// author Pingyu Zhang pzhang@cse.unl.edu
-
 package gov.nasa.jpf.symbc.numeric.solvers;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Vector;
 
 import yices.*;
 
 public class ProblemYices extends ProblemGeneral {
 	YicesLite yices;
 	int ctx;
+	static YicesLite oldYices;
+	static int oldCtx;
+	
 	public ProblemYices() {
+		//reset the old context
+		if(oldYices!=null)
+			oldYices.yicesl_del_context(oldCtx);
+		
 		yices = new YicesLite();
-		ctx = yices.yicesl_mk_context();
-//		yices.yicesl_read(ctx,"(set-evidence! true)");
+		ctx = yices.yicesl_mk_context(); 
+//		yices.yicesl_read(ctx,"(set-evidence! true)"); 
 //		yices.yicesl_read(ctx,"(set-arith-only! true)");
 		yices.yicesl_set_verbosity((short)0);
 		//pb.setPrecision(1e-8);// need to check this
+//		workingDir = System.getProperty("user.dir");
 	}
 
 	public String makeIntVar(String name, int min, int max) {
 		yices.yicesl_read(ctx,"(define "+name+"::int)");
-//		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
-//		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
+		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))"); 
+		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))"); 
+//		yices.yicesl_read(ctx,"(assert (> "+ name + " 0))"); 
 		return name;
 	}
 
 	public String makeRealVar(String name, double min, double max) {
 		yices.yicesl_read(ctx,"(define "+name+"::real)");
-//		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
+//		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))"); 
 //		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
 		return name;
 	}
@@ -174,14 +188,14 @@ public class ProblemYices extends ProblemGeneral {
 	public Object div(Object exp, double value) {
 		return "(/ " + (String)exp + " " + value + ")";
 	}
-//	public Object sin(Object exp) {
+//	Object sin(Object exp) {
 //		return pb.sin((RealExp) exp);
 //	}
-//	public Object cos(Object exp) {
+//	Object cos(Object exp) {
 //		return pb.cos((RealExp) exp);
 //	}
 //
-//	public Object power(Object exp, double value) {
+//	Object power(Object exp, double value) {
 //		return pb.power((RealExp) exp, (int)value);
 //	}
 	public Object mixed(Object exp1, Object exp2) { // TODO:check !!!
@@ -197,27 +211,122 @@ public class ProblemYices extends ProblemGeneral {
 		throw new RuntimeException("# Error: Yices can not compute realValueSup!");
 	}
 	public double getRealValue(Object dpVar) {
-//		throw new RuntimeException("# Error: Choco can not compute real solution!");
-		throw new RuntimeException("# Error: Yices can not compute real solution!");
+//		return ((IntDomainVar) dpVar).getVal();
+//		System.out.println("lookup variable "+(String)dpVar);
+		String vname = (String) dpVar;
+		
+		int sat = yices.yicesl_inconsistent(ctx);
+		if(sat == 0){
+			//dump solution
+//			System.out.println(System.getProperty("user.dir"));
+			String workingDir = System.getProperty("user.dir");
+
+			yices.yicesl_set_output_file(workingDir+"/yicesOutput/out.txt");
+			yices.yicesl_read(ctx,"(set-evidence! true)"); 
+			yices.yicesl_read(ctx, "(check)");
+			yices.yicesl_read(ctx,"(set-evidence! false)");
+			
+			//read in solution and look up the value to return
+			BufferedReader bufferedReader = null;
+			try {
+				bufferedReader =  new BufferedReader(new FileReader(new File(workingDir+"/yicesOutput/out.txt")));
+				String new_line;
+				String delims = "[ ]+";
+				 while((new_line = bufferedReader.readLine()) != null) {
+					  String[] tokens = new_line.split(delims);
+					  if(tokens.length == 3){
+						  if(tokens[1].compareTo(vname) == 0){
+							  int value = Integer.parseInt(tokens[2].substring(0, tokens[2].length()-1));
+//							  System.out.println(vname+" = "+value);
+							  return value;
+						  }
+					  }
+		  		 }
+			} catch (FileNotFoundException ex) {
+		        ex.printStackTrace();
+		    } catch (IOException ex) {
+		        ex.printStackTrace();
+		    } finally {
+		        //Close the BufferedWriter
+		        try {
+		            if (bufferedReader != null) {
+		                bufferedReader.close();
+		            }
+		        } catch (IOException ex) {
+		            ex.printStackTrace();
+		        }
+		    }
+		}
+		throw new RuntimeException("# Error: Yices didn't find real solution for variable "+vname);
 	}
 	public int getIntValue(Object dpVar) {
-		return 0;
-		//return yices.yicesl_read(ctx, (String) dpVar);//((IntDomainVar) dpVar).getVal();
-		//throw new RuntimeException("# Error: Yices can not compute int solution!");
+//		return ((IntDomainVar) dpVar).getVal();
+//		System.out.println("lookup variable "+(String)dpVar);
+		String vname = (String) dpVar;
+		
+		int sat = yices.yicesl_inconsistent(ctx);
+		if(sat == 0){
+			//dump solution
+//			System.out.println(System.getProperty("user.dir"));
+			String workingDir = System.getProperty("user.dir");
+
+			yices.yicesl_set_output_file(workingDir+"/yicesOutput/out.txt");
+			yices.yicesl_read(ctx,"(set-evidence! true)"); 
+			yices.yicesl_read(ctx, "(check)");
+			yices.yicesl_read(ctx,"(set-evidence! false)");
+			
+			//read in solution and look up the value to return
+			BufferedReader bufferedReader = null;
+			try {
+				bufferedReader =  new BufferedReader(new FileReader(new File(workingDir+"/yicesOutput/out.txt")));
+				String new_line;
+				String delims = "[ ]+";
+				 while((new_line = bufferedReader.readLine()) != null) {
+					  String[] tokens = new_line.split(delims);
+					  if(tokens.length == 3){
+						  if(tokens[1].compareTo(vname) == 0){
+							  int value = Integer.parseInt(tokens[2].substring(0, tokens[2].length()-1));
+//							  System.out.println(vname+" = "+value);
+							  return value;
+						  }
+					  }
+		  		 }
+			} catch (FileNotFoundException ex) {
+		        ex.printStackTrace();
+		    } catch (IOException ex) {
+		        ex.printStackTrace();
+		    } finally {
+		        //Close the BufferedWriter
+		        try {
+		            if (bufferedReader != null) {
+		                bufferedReader.close();
+		            }
+		        } catch (IOException ex) {
+		            ex.printStackTrace();
+		        }
+		    }
+		}
+		throw new RuntimeException("# Error: Yices didn't find int solution for variable "+vname);
 	}
 
 	public Boolean solve() {
-//      pb.getSolver().setTimeLimit(30000);
-//		yices.yicesl_read(ctx,"(dump-context)");
-//		yices.yicesl_read(ctx,"(check)");
+//        pb.getSolver().setTimeLimit(30000);
+//		yices.yicesl_read(ctx,"(dump-context)"); 
 		int sat = yices.yicesl_inconsistent(ctx);
-//		yices.yicesl_read(ctx,"(dump-context)");
-		yices.yicesl_del_context(ctx);
-//		System.out.println("Yices Solver Returns SAT="+sat);
+
+//		if(sat == 0){
+//			yices.yicesl_read(ctx,"(set-evidence! true)"); 
+//			yices.yicesl_read(ctx, "(check)");
+//			yices.yicesl_read(ctx,"(set-evidence! false)");
+//		}
+		
+//		yices.yicesl_del_context(ctx);
+		oldYices = yices;
+		oldCtx = ctx;
 		return sat == 0 ? true : false;
 	}
 	public void post(Object constraint) {
-		yices.yicesl_read(ctx,"(assert " + (String)constraint + ")");
+		yices.yicesl_read(ctx,"(assert " + (String)constraint + ")"); 
 	}
 
 	public Object and(int value, Object exp) {
@@ -233,91 +342,101 @@ public class ProblemYices extends ProblemGeneral {
 	}
 
 	@Override
-	public Object or(int value, Object exp) {
+	public
+	Object or(int value, Object exp) {
 		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
-	public Object or(Object exp, int value) {
+	public
+	Object or(Object exp, int value) {
 		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
-	public Object or(Object exp1, Object exp2) {
+	public
+	Object or(Object exp1, Object exp2) {
 		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
-	public Object shiftL(int value, Object exp) {
+	public
+	Object shiftL(int value, Object exp) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise ShiftL");
+		return null;
 	}
 
 	@Override
-	public Object shiftL(Object exp, int value) {
+	public
+	Object shiftL(Object exp, int value) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise ShiftL");
+		return null;
 	}
 
 	@Override
-	public Object shiftR(int value, Object exp) {
+	public
+	Object shiftR(int value, Object exp) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise ShiftR");
+		return null;
 	}
 
 	@Override
-	public Object shiftR(Object exp, int value) {
+	public
+	Object shiftR(Object exp, int value) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise ShiftR");
+		return null;
 	}
 
 	@Override
-	public Object xor(int value, Object exp) {
+	public
+	Object xor(int value, Object exp) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise XOR");
+		return null;
 	}
 
 	@Override
-	public Object xor(Object exp, int value) {
+	public
+	Object xor(Object exp, int value) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise XOR");
+		return null;
 	}
 
 	@Override
-	public Object xor(Object exp1, Object exp2) {
+	public
+	Object xor(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise XOR");
+		return null;
 	}
 
 	@Override
 	public Object shiftL(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise ShiftL");
+		return null;
 	}
 
 	@Override
 	public Object shiftR(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise ShiftR");
+		return null;
 	}
 
 	@Override
 	public Object shiftUR(int value, Object exp) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise ShiftUR");
+		return null;
 	}
 
 	@Override
 	public Object shiftUR(Object exp, int value) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise ShiftUR");
+		return null;
 	}
 
 	@Override
 	public Object shiftUR(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support bitwise ShiftUR");
+		return null;
 	}
 
-
+	
 }
