@@ -22,7 +22,7 @@
   -->
   <property file="local.properties"/>
   
-  <!-- this is where we get the 'jpf-core' location from -->
+  <!-- this is where we get the 'jpf.core' location from -->
   <property file="${user.home}/.jpf/site.properties"/>
 
   <!-- if there is none, default to a 'jpf-core' peer dir -->
@@ -30,6 +30,7 @@
 
   <!-- get the jpf-core path properties -->
   <property file="${jpf-core}/jpf.properties"/>
+
 
   <!-- compiler settings -->
   <property name="src_level"     value="6"/>
@@ -42,10 +43,11 @@
 
     <!-- our own classes and libs come first -->
     <pathelement location="build/main"/>
+    <!-- we don't have these
     <pathelement location="build/peers"/>
-    <pathelement location="build/annotations"/>
+    -->
     <fileset dir=".">
-  	  <include name="lib/*.jar"/>
+  	    <include name="lib/*.jar"/>
     </fileset>
 
     <!-- add in what we need from the core -->
@@ -111,7 +113,7 @@
            debug="${debug}" source="${src_level}" deprecation="${deprecation}" classpath=""/>
   </target>
 
-  <target name="-compile-main" if="have_main" depends="-compile-classes">
+  <target name="-compile-main" if="have_main">
     <mkdir dir="build/main"/>
     <javac srcdir="src/main" destdir="build/main"
            debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -125,7 +127,7 @@
            classpathref="lib.path"/>
   </target>
 
-  <target name="-compile-classes" if="have_classes" depends="-compile-annotations" >
+  <target name="-compile-classes" if="have_classes" depends="-compile-annotations,-compile-main" >
     <mkdir dir="build/classes"/>
     <javac srcdir="src/classes" destdir="build/classes"
            debug="${debug}" source="${src_level}" deprecation="${deprecation}">
@@ -138,59 +140,41 @@
 
   <target name="-compile-tests" if="have_tests" depends="-compile-annotations,-compile-main">
     <mkdir dir="build/tests"/>
-      <javac srcdir="src/tests" destdir="build/tests"
-  	     debug="${debug}" source="${src_level}" deprecation="${deprecation}">
-         <classpath>
-           <path refid="lib.path"/>
-           <pathelement location="build/classes"/>
-         </classpath>
-      </javac>
+    <javac srcdir="src/tests" destdir="build/tests"
+           debug="${debug}" source="${src_level}" deprecation="${deprecation}">
+      <classpath>
+        <path refid="lib.path"/>
+        <pathelement location="build/classes"/>
+        <pathelement location="build/annotations"/>
+      </classpath>
+    </javac>
   </target>
 
   <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main">
     <mkdir dir="build/examples" />
     <javac srcdir="src/examples" destdir="build/examples"
            debug="${debug}" source="${src_level}" deprecation="${deprecation}">
-       <classpath>
-         <path refid="lib.path"/>
-         <pathelement location="build/classes"/>
-       </classpath>
+    <classpath>
+        <path refid="lib.path"/>
+        <pathelement location="build/classes"/>
+      <pathelement location="build/annotations"/>
+     </classpath>
     </javac>
-  </target>
+    </target>
 
   
   <!-- ======================= MISC SECTION ================================ -->
- 
+  
   <!-- build jars -->
   <target name="build" depends="compile,-jar-jvm,-jar-jpf,-jar-annotations"
-          description="generate the ${ant.project.name} jar files" >
+        description="generate the ${ant.project.name} jar files" >
   </target>
 
   <target name="-jar-jvm" if="have_jvm_code">
     <jar jarfile="build/${ant.project.name}.jar">
       <fileset dir="build/main" erroronmissingdir="false"/>
       <fileset dir="build/peers" erroronmissingdir="false"/>
-      <fileset dir="build/annotations" erroronmissingdir="false"/>
     </jar>
-	
-	<jar jarfile="build/RunSPF.jar">
-     <fileset dir="${jpf-core}/build/main">
-		<include name="gov/nasa/jpf/Main.class"/>
-        <include name="gov/nasa/jpf/JPFSite.class"/>
-        <include name="gov/nasa/jpf/JPFClassLoader*.class"/>
-	 </fileset>
-      <fileset dir="${jpf-core}/build/peers" erroronmissingdir="false"/>
-      <fileset dir="${jpf-core}/build/annotations" erroronmissingdir="false"/>
-	<manifest>
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Implementation-Vendor" value="NASA Ames Research Center"/>
-        <attribute name="Implementation-Title" value="Symbolic Pathfinder launch system"/>
-        <attribute name="Implementation-Version" value="${jpf.version}"/>
-		<attribute name="Class-Path" value="build/jpf-symbc.jar"/>
-        <attribute name="Main-Class" value="gov.nasa.jpf.Main"/>
-      </manifest>
-    </jar>
-	
   </target>
 
   <target name="-jar-jpf" if="have_jpf_code">
@@ -201,11 +185,26 @@
   </target>
 
   <target name="-jar-annotations" if="have_annotations">
+    <!-- optional jar that contains annotations to be used in non-JPF dependent apps -->
     <jar jarfile="build/${ant.project.name}-annotations.jar">
       <fileset dir="build/annotations" erroronmissingdir="false"/>
     </jar>
   </target>
 
+
+  <target name="dist" description="build binary distribution">
+    <delete file="build/${ant.project.name}.zip"/>
+    <!-- 2do this seems stupid - there needs to be a better way to re-base (zip basedir fails miserably) -->
+    <zip destfile="build/${ant.project.name}.zip" update="false" excludes="*">
+      <zipfileset file="jpf.properties"  prefix="${ant.project.name}"/>
+      <!-- don't have one
+      <zipfileset dir="lib"  prefix="${ant.project.name}/lib"/>
+      -->
+      <zipfileset dir="bin"  prefix="${ant.project.name}/bin"/>
+      <zipfileset dir="build" includes="*.jar" prefix="${ant.project.name}/build"/>
+      <zipfileset dir="tools" includes="Run*.jar" prefix="${ant.project.name}/tools"/>
+    </zip>
+  </target>
 
   <!-- public clean: cleanup from previous tasks/builds -->
   <target name="clean">
@@ -224,9 +223,9 @@
   <target name="test" depends="build"
           description="compile and run core regression tests" if="have_tests">
 
-    <property name="junit.usefile" value="false"/>
+    <property name="junit.usefile" value="true"/>
 
-    <junit printsummary="withOutAndErr" showoutput="on" haltonfailure="yes" 
+    <junit printsummary="withOutAndErr" showoutput="off" haltonfailure="yes"
            fork="yes" forkmode="perTest" maxmemory="1024m">
       <formatter type="plain" usefile="${junit.usefile}"/>
 
@@ -242,7 +241,7 @@
       <batchtest todir="build/tests">
         <fileset dir="build/tests">
           <exclude name="**/JPF_*.class"/>
-          <include name="**/*Test.class"/>
+          <include name="**/Test*.class"/>
         </fileset>
       </batchtest>
 
