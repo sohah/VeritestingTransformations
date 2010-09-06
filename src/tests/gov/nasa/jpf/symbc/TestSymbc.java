@@ -1,5 +1,8 @@
 package gov.nasa.jpf.symbc;
 
+import gov.nasa.jpf.util.test.TestJPF;
+import org.junit.Test;
+
 class S_E_test {
 	public O_S_test[] s;
 	S_E_test() {
@@ -23,7 +26,7 @@ class P_test {
 	int v_M;
 }
 
-public class Test {
+public class TestSymbc extends TestJPF {
     S_E_test e = new S_E_test();
     O_S_test x;
 
@@ -34,9 +37,14 @@ public class Test {
         las = l_j_c;
         x.c_p.v_M = c_v_M;
     }
+  
+   public static void main(String[] args) {
+        runTestsOfThisClass(args);
+   }
 
-    public static void main(String[] args) {
-        Test frd = new Test();
+    @Test
+    public void testSymbcDriver() {
+        TestSymbc frd = new TestSymbc();
         frd.x = frd.e.s[0];
         frd.setSYMINPUTS_JPF(0, 0);
         if (frd.las == 1) {
