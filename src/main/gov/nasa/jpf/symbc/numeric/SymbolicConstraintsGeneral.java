@@ -755,9 +755,13 @@ public class SymbolicConstraintsGeneral {
 	}
 
 	public boolean isSatisfiable(PathCondition pc) {
+		if (pc == null || pc.count == 0) {
+			System.out.println("## Warning: empty path condition");
+			return true;
+		}
 
-		if (SymbolicInstructionFactory.debugMode)
-			System.out.println("isSatisfiable: PC "+pc);
+//		if (SymbolicInstructionFactory.debugMode)
+//			System.out.println("checking: PC "+pc);
 
 		String[] dp = SymbolicInstructionFactory.dp;
 		if(dp == null) { // default: use choco
@@ -797,10 +801,7 @@ public class SymbolicConstraintsGeneral {
 		symIntegerVar = new HashMap<SymbolicInteger,Object>();
 		//result = null;
 
-		if (pc == null) {
-			System.out.println("## Warning: empty path condition");
-			return true;
-		}
+
 
 		Constraint cRef = pc.header;
 
@@ -855,7 +856,11 @@ public class SymbolicConstraintsGeneral {
 
 
 	public void solve(PathCondition pc) {
-		if (pc == null || pc.header == null) return;
+		if (SymbolicInstructionFactory.debugMode)
+			System.out.println("solving: PC " + pc);
+
+		if (pc == null || pc.count == 0) return;
+
 		String[] dp = SymbolicInstructionFactory.dp;
 		if (dp[0].equalsIgnoreCase("no_solver"))
 			return;

@@ -11,8 +11,6 @@
 	<classpathentry kind="lib" path="lib/scale.jar"/>
 	<classpathentry kind="lib" path="lib/STPJNI.jar"/>
 	<classpathentry kind="lib" path="lib/string.jar"/>
-	<classpathentry kind="lib" path="cvc3.jar"/>
-	<classpathentry kind="lib" path="cvc3test.jar"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/junit-4.6.jar"/>
 	<classpathentry kind="src" output="build/main" path="src/main"/>
 	<classpathentry kind="src" output="build/examples" path="src/examples"/>

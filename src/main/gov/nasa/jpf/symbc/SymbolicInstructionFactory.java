@@ -191,9 +191,8 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 
 		if(dp[0].equalsIgnoreCase("choco") || dp == null) { // default is choco
 		  ProblemChoco.timeBound = conf.getInt("symbolic.choco_time_bound", 30000);
+		  System.out.println("symbolic.choco_time_bound="+ProblemChoco.timeBound);
 		}
-		System.out.println("symbolic.choco_time_bound="+ProblemChoco.timeBound);
-
 		String[] intmin, intmax, realmin, realmax, dontcare;
 		intmin = conf.getStringArray("symbolic.minint");
 		intmax = conf.getStringArray("symbolic.maxint");

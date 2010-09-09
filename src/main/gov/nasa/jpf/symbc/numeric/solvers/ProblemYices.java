@@ -19,6 +19,8 @@
 
 package gov.nasa.jpf.symbc.numeric.solvers;
 
+import gov.nasa.jpf.symbc.numeric.MinMax;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,15 +35,15 @@ public class ProblemYices extends ProblemGeneral {
 	int ctx;
 	static YicesLite oldYices;
 	static int oldCtx;
-	
+
 	public ProblemYices() {
 		//reset the old context
 		if(oldYices!=null)
 			oldYices.yicesl_del_context(oldCtx);
-		
+
 		yices = new YicesLite();
-		ctx = yices.yicesl_mk_context(); 
-//		yices.yicesl_read(ctx,"(set-evidence! true)"); 
+		ctx = yices.yicesl_mk_context();
+//		yices.yicesl_read(ctx,"(set-evidence! true)");
 //		yices.yicesl_read(ctx,"(set-arith-only! true)");
 		yices.yicesl_set_verbosity((short)0);
 		//pb.setPrecision(1e-8);// need to check this
@@ -50,15 +52,15 @@ public class ProblemYices extends ProblemGeneral {
 
 	public String makeIntVar(String name, int min, int max) {
 		yices.yicesl_read(ctx,"(define "+name+"::int)");
-		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))"); 
-		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))"); 
-//		yices.yicesl_read(ctx,"(assert (> "+ name + " 0))"); 
+		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
+		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
+//		yices.yicesl_read(ctx,"(assert (> "+ name + " 0))");
 		return name;
 	}
 
 	public String makeRealVar(String name, double min, double max) {
 		yices.yicesl_read(ctx,"(define "+name+"::real)");
-//		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))"); 
+//		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
 //		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
 		return name;
 	}
@@ -214,7 +216,7 @@ public class ProblemYices extends ProblemGeneral {
 //		return ((IntDomainVar) dpVar).getVal();
 //		System.out.println("lookup variable "+(String)dpVar);
 		String vname = (String) dpVar;
-		
+
 		int sat = yices.yicesl_inconsistent(ctx);
 		if(sat == 0){
 			//dump solution
@@ -222,10 +224,10 @@ public class ProblemYices extends ProblemGeneral {
 			String workingDir = System.getProperty("user.dir");
 
 			yices.yicesl_set_output_file(workingDir+"/yicesOutput/out.txt");
-			yices.yicesl_read(ctx,"(set-evidence! true)"); 
+			yices.yicesl_read(ctx,"(set-evidence! true)");
 			yices.yicesl_read(ctx, "(check)");
 			yices.yicesl_read(ctx,"(set-evidence! false)");
-			
+
 			//read in solution and look up the value to return
 			BufferedReader bufferedReader = null;
 			try {
@@ -259,51 +261,63 @@ public class ProblemYices extends ProblemGeneral {
 		}
 		throw new RuntimeException("# Error: Yices didn't find real solution for variable "+vname);
 	}
+	static java.io.File f;
+	static java.io.FileReader fr;
+
+
 	public int getIntValue(Object dpVar) {
-//		return ((IntDomainVar) dpVar).getVal();
-//		System.out.println("lookup variable "+(String)dpVar);
+
 		String vname = (String) dpVar;
-		
+
 		int sat = yices.yicesl_inconsistent(ctx);
+
 		if(sat == 0){
 			//dump solution
-//			System.out.println(System.getProperty("user.dir"));
+
 			String workingDir = System.getProperty("user.dir");
 
 			yices.yicesl_set_output_file(workingDir+"/yicesOutput/out.txt");
-			yices.yicesl_read(ctx,"(set-evidence! true)"); 
+			yices.yicesl_read(ctx,"(set-evidence! true)");
 			yices.yicesl_read(ctx, "(check)");
 			yices.yicesl_read(ctx,"(set-evidence! false)");
-			
+
 			//read in solution and look up the value to return
 			BufferedReader bufferedReader = null;
+
 			try {
-				bufferedReader =  new BufferedReader(new FileReader(new File(workingDir+"/yicesOutput/out.txt")));
+
+				f = new File(workingDir+"/yicesOutput/out.txt");
+				fr = new FileReader(f);
+
+				bufferedReader =  new BufferedReader(fr);//=new FileReader(f));//new File(workingDir+"/yicesOutput/out.txt")));//fr);
 				String new_line;
 				String delims = "[ ]+";
-				 while((new_line = bufferedReader.readLine()) != null) {
+
+				while((new_line = bufferedReader.readLine()) != null) {
+
 					  String[] tokens = new_line.split(delims);
-					  if(tokens.length == 3){
-						  if(tokens[1].compareTo(vname) == 0){
-							  int value = Integer.parseInt(tokens[2].substring(0, tokens[2].length()-1));
+					  for (int i =1; i < tokens.length; i=i+3) {
+
+					  //if(tokens.length == 3){
+						  if(tokens[i].compareTo(vname) == 0){
+							  int value = Integer.parseInt(tokens[i+1].substring(0, tokens[i+1].length()-1));
 //							  System.out.println(vname+" = "+value);
+							  bufferedReader.close();
+							  fr.close();
+							  f = null;
+							  fr = null;
 							  return value;
 						  }
 					  }
-		  		 }
-			} catch (FileNotFoundException ex) {
+				 }
+				 bufferedReader.close();
+				 fr.close();
+				 f = null;
+				 fr = null;
+
+
+			} catch (Exception ex) {
 		        ex.printStackTrace();
-		    } catch (IOException ex) {
-		        ex.printStackTrace();
-		    } finally {
-		        //Close the BufferedWriter
-		        try {
-		            if (bufferedReader != null) {
-		                bufferedReader.close();
-		            }
-		        } catch (IOException ex) {
-		            ex.printStackTrace();
-		        }
 		    }
 		}
 		throw new RuntimeException("# Error: Yices didn't find int solution for variable "+vname);
@@ -311,23 +325,25 @@ public class ProblemYices extends ProblemGeneral {
 
 	public Boolean solve() {
 //        pb.getSolver().setTimeLimit(30000);
-//		yices.yicesl_read(ctx,"(dump-context)"); 
+//		yices.yicesl_read(ctx,"(dump-context)");
 		int sat = yices.yicesl_inconsistent(ctx);
 
 //		if(sat == 0){
-//			yices.yicesl_read(ctx,"(set-evidence! true)"); 
+//			yices.yicesl_read(ctx,"(set-evidence! true)");
 //			yices.yicesl_read(ctx, "(check)");
 //			yices.yicesl_read(ctx,"(set-evidence! false)");
 //		}
-		
+
 //		yices.yicesl_del_context(ctx);
 		oldYices = yices;
 		oldCtx = ctx;
 		return sat == 0 ? true : false;
 	}
 	public void post(Object constraint) {
-		yices.yicesl_read(ctx,"(assert " + (String)constraint + ")"); 
+		yices.yicesl_read(ctx,"(assert " + (String)constraint + ")");
 	}
+
+
 
 	public Object and(int value, Object exp) {
 		throw new RuntimeException("## Error Yices does not support bitwise AND");
@@ -438,5 +454,7 @@ public class ProblemYices extends ProblemGeneral {
 		return null;
 	}
 
-	
+
+
+
 }
