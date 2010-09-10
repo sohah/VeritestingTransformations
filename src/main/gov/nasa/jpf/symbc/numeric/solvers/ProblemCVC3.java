@@ -47,6 +47,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	public ProblemCVC3() {
 		pb = null;
 		try{
+			if(vc != null) vc.delete();
 	        flags = ValidityChecker.createFlags(null);
 	        flags.setFlag("dagify-exprs",false);
 	        vc = ValidityChecker.create(flags);
@@ -58,7 +59,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 	}
 
 	//To Do: need to call this at some point;
-	private void cleanup(){
+	public void cleanup(){
 		try{
 	        if (vc != null) vc.delete();
 	        if (flags != null) flags.delete();

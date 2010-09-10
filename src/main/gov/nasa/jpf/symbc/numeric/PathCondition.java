@@ -230,6 +230,7 @@ public class PathCondition {
 
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 		boolean result1 = solver.isSatisfiable(this);
+		solver.cleanup();
 
 		if (SymbolicInstructionFactory.debugMode) {
 			MinMax.Debug_no_path_constraints ++;

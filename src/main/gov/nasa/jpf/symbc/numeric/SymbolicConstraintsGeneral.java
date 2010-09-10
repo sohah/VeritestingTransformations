@@ -852,7 +852,11 @@ public class SymbolicConstraintsGeneral {
 	}
 
 
-
+   public void cleanup () {
+	   if(pb instanceof ProblemCVC3) {
+		   ((ProblemCVC3) pb).cleanup();
+	   }
+   }
 
 
 	public void solve(PathCondition pc) {
@@ -952,6 +956,7 @@ public class SymbolicConstraintsGeneral {
 					System.err.println("# Warning: PC "+pc.stringPC()+" is solvable but could not find the solution!");
 			} // end catch
 */
+			cleanup();
 		}
 
 		}
