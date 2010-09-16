@@ -43,6 +43,7 @@ import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.MinMax;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+import gov.nasa.jpf.symbc.string.graph.PreProcessGraph;
 
 
 public abstract class StringExpression extends Expression {
@@ -50,6 +51,9 @@ public abstract class StringExpression extends Expression {
   SymbolicInteger length = null;
   Map<String, SymbolicCharAtInteger> charAt = null;
   Map<StringExpression, SymbolicIndexOfInteger> indexOf = null;
+  Map<StringExpression, SymbolicIndexOf2Integer> indexOf2 = null;
+  Map<IntegerExpression, SymbolicIndexOfCharInteger> indexOfChar = null;
+  Map<IntegerExpression, SymbolicIndexOfChar2Integer> indexOfChar2 = null;
 
 //   protected StringDependentNode dependentsHead = null;
 //   protected StringRelationshipNode relationshipsHead = null;
@@ -72,13 +76,27 @@ public abstract class StringExpression extends Expression {
   
   public IntegerExpression _length() {
     if (length == null) {
-      length = new SymbolicLengthInteger("Length_" + lengthcount + "_", 1, MinMax.MAXINT, this);
+      length = new SymbolicLengthInteger("Length_" + lengthcount + "_", 1, PreProcessGraph.MAXIMUM_LENGTH, this);
       lengthcount++;
     }
     return length;
   }
 
 /* indexOf */
+  public IntegerExpression _indexOf(StringExpression exp, IntegerExpression ie) {
+	    if (indexOf2 == null) {
+	      indexOf2 = new HashMap<StringExpression, SymbolicIndexOf2Integer>();
+	    }
+	    SymbolicIndexOf2Integer sioi = indexOf2.get(exp);
+	    if (sioi == null) {
+	    	//-1 Should make our lifes much easier
+	    	sioi = new SymbolicIndexOf2Integer("IndexOf2_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp, ie);
+	    	lengthcount++;
+	    	indexOf2.put(exp, sioi);
+	    }
+	    return sioi;
+	  }
+  
   public IntegerExpression _indexOf(StringExpression exp) {
 	    if (indexOf == null) {
 	      indexOf = new HashMap<StringExpression, SymbolicIndexOfInteger>();
@@ -86,9 +104,39 @@ public abstract class StringExpression extends Expression {
 	    SymbolicIndexOfInteger sioi = indexOf.get(exp);
 	    if (sioi == null) {
 	    	//-1 Should make our lifes much easier
-	    	sioi = new SymbolicIndexOfInteger("IndexOf_" + lengthcount + "_", -1, MinMax.MAXINT, this, exp);
+	    	sioi = new SymbolicIndexOfInteger("IndexOf_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp);
 	    	lengthcount++;
 	    	indexOf.put(exp, sioi);
+	    }
+	    return sioi;
+	  }
+  
+  /* indexof (char) */
+  public IntegerExpression _indexOf(IntegerExpression exp) {
+	    if (indexOfChar == null) {
+	    	indexOfChar = new HashMap<IntegerExpression, SymbolicIndexOfCharInteger>();
+	    }
+	    SymbolicIndexOfCharInteger sioi = indexOfChar.get(exp);
+	    if (sioi == null) {
+	    	//-1 Should make our lifes much easier
+	    	sioi = new SymbolicIndexOfCharInteger("IndexOf_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp);
+	    	lengthcount++;
+	    	indexOfChar.put(exp, sioi);
+	    }
+	    return sioi;
+	  }
+  
+  /* indexof (char, int) */
+  public IntegerExpression _indexOf(IntegerExpression exp, IntegerExpression minIndex) {
+	    if (indexOfChar2 == null) {
+	    	indexOfChar2 = new HashMap<IntegerExpression, SymbolicIndexOfChar2Integer>();
+	    }
+	    SymbolicIndexOfChar2Integer sioi = indexOfChar2.get(exp);
+	    if (sioi == null) {
+	    	//-1 Should make our lifes much easier
+	    	sioi = new SymbolicIndexOfChar2Integer("IndexOf_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp, minIndex);
+	    	lengthcount++;
+	    	indexOfChar2.put(exp, sioi);
 	    }
 	    return sioi;
 	  }

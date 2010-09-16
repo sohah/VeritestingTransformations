@@ -5,12 +5,15 @@ import java.util.List;
 
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
 import gov.nasa.jpf.symbc.numeric.LinearOrIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.string.StringConstant;
+import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.StringUtility;
+import gov.nasa.jpf.symbc.string.SymbolicCharAtInteger;
 import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
 
 /**
@@ -18,7 +21,7 @@ import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
  */
 public class PreProcessGraph {
 	private static boolean logging = true;
-	private static final int MAXIMUM_LENGTH = 10;
+	public static final int MAXIMUM_LENGTH = 20;
 	
 	/**
 	 * Preprocess given graph, and adds appropriate integer constraints to
@@ -247,7 +250,7 @@ public class PreProcessGraph {
 			}
 		}
 		
-		//Concrete startswith for indexOf
+		//Concrete startswith, endswith, substring and charAt for indexOf (needs update for the newer indexOf constraints)
 		for (Edge e1: g.getEdges()) {
 			for (Edge e2: g.getEdges()) {
 				if (e1.equals(e2)) continue;
@@ -333,11 +336,134 @@ public class PreProcessGraph {
 						pc._addDet(loic);
 					}
 				}
-				
+				else if (e1 instanceof EdgeCharAt && e2 instanceof EdgeIndexOf) {
+					//println ("[preprocess] Path followed 1");
+					EdgeIndexOf eio = (EdgeIndexOf) e2;
+					EdgeCharAt eca = (EdgeCharAt) e1;
+					StringExpression se = eio.getIndex().getExpression();
+					if (se instanceof StringConstant) {
+						//println ("[preprocess] Path followed 2");
+						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) se.solution().charAt(0)), Comparator.EQ, eca.getValue()) );
+						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
+						if (!pc.hasConstraint(loic)) pc._addDet(loic);
+					}
+				}
+				else if (e1 instanceof EdgeCharAt && e2 instanceof EdgeIndexOf2) {
+					//println ("[preprocess] Path followed 1");
+					EdgeIndexOf2 eio = (EdgeIndexOf2) e2;
+					EdgeCharAt eca = (EdgeCharAt) e1;
+					StringExpression se = eio.getIndex().getExpression();
+					if (se instanceof StringConstant) {
+						//println ("[preprocess] Path followed 2");
+						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) se.solution().charAt(0)), Comparator.EQ, eca.getValue()) );
+						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
+						if (!pc.hasConstraint(loic)) pc._addDet(loic);
+					}
+				}
+				else if (e1 instanceof EdgeCharAt && e2 instanceof EdgeIndexOfChar) {
+					EdgeIndexOfChar eio = (EdgeIndexOfChar) e2;
+					EdgeCharAt eca = (EdgeCharAt) e1;
+					IntegerExpression se = eio.getIndex().getExpression();
+					if (se instanceof IntegerConstant) {
+						//println ("[preprocess] Path followed 2");
+						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(se, Comparator.EQ, eca.getValue()) );
+						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
+						if (!pc.hasConstraint(loic)) pc._addDet(loic);
+					}
+				}
+				else if (e1 instanceof EdgeCharAt && e2 instanceof EdgeIndexOfChar2) {
+					EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e2;
+					EdgeCharAt eca = (EdgeCharAt) e1;
+					IntegerExpression se = eio.getIndex().getExpression();
+					if (se instanceof IntegerConstant) {
+						//println ("[preprocess] Path followed 2");
+						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(se, Comparator.EQ, eca.getValue()) );
+						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
+						if (!pc.hasConstraint(loic)) pc._addDet(loic);
+					}
+				}
 			}
 		}
 		
-		
+		//Speedup dependencies between indexOf's
+		for (Edge e1: g.getEdges()) {
+			for (Edge e2: g.getEdges()) {
+				if (e1.equals(e2)) continue;
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
+				if (!e1.getSource().equals(e2.getSource())) continue;
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeIndexOfChar) {
+					EdgeIndexOf eio = (EdgeIndexOf) e1;
+					EdgeIndexOfChar eioc = (EdgeIndexOfChar) e2;
+					if (eio.getIndex().getExpression() instanceof StringConstant) {
+						String constant = eio.getIndex().getExpression().solution();
+						for (int i = 0; i < constant.length(); i++) {
+							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
+							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
+							if (!pc.hasConstraint(loic)) pc._addDet(loic);
+						}
+					}
+				}
+				else if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOfChar2) {
+					EdgeIndexOf2 eio = (EdgeIndexOf2) e1;
+					EdgeIndexOfChar2 eioc = (EdgeIndexOfChar2) e2;
+					if (eio.getIndex().getExpression() instanceof StringConstant) {
+						String constant = eio.getIndex().getExpression().solution();
+						for (int i = 0; i < constant.length(); i++) {
+							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
+							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
+							if (!pc.hasConstraint(loic)) pc._addDet(loic);
+						}
+					}
+				}
+				else if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOfChar) {
+					EdgeIndexOf2 eio = (EdgeIndexOf2) e1;
+					EdgeIndexOfChar eioc = (EdgeIndexOfChar) e2;
+					if (eio.getIndex().getExpression() instanceof StringConstant) {
+						String constant = eio.getIndex().getExpression().solution();
+						for (int i = 0; i < constant.length(); i++) {
+							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
+							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
+							if (!pc.hasConstraint(loic)) pc._addDet(loic);
+						}
+					}
+				}
+				else if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeIndexOfChar2) {
+					EdgeIndexOf eio = (EdgeIndexOf) e1;
+					EdgeIndexOfChar2 eioc = (EdgeIndexOfChar2) e2;
+					if (eio.getIndex().getExpression() instanceof StringConstant) {
+						String constant = eio.getIndex().getExpression().solution();
+						for (int i = 0; i < constant.length(); i++) {
+							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
+							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
+							if (!pc.hasConstraint(loic)) pc._addDet(loic);
+						}
+					}
+				}
+				else if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOf2) {
+					EdgeIndexOf2 eio1 = (EdgeIndexOf2) e1;
+					EdgeIndexOf2 eio2 = (EdgeIndexOf2) e2;
+					if (eio1.getIndex().getExpression() instanceof StringConstant && eio2.getIndex().getExpression() instanceof StringConstant) {
+						String constant1 = eio1.getIndex().getExpression().solution();
+						String constant2 = eio2.getIndex().getExpression().solution();
+						for (int i = 0; i < constant1.length(); i++) {
+							for (int j = i; j < constant2.length(); j++) {
+								if (constant1.charAt(i) != constant2.charAt(j)) {
+									pc._addDet(Comparator.NE, eio1.getIndex()._plus(i), eio2.getIndex()._plus(j));
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		
 		
 		//Determine size of vertecis
@@ -397,6 +523,38 @@ public class PreProcessGraph {
 					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
+					if (!pc.hasConstraint(loic)) pc._addDet(loic);
+				}
+				else if (e instanceof EdgeIndexOfChar) {
+					EdgeIndexOfChar eio = (EdgeIndexOfChar) e;
+					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
+					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
+					if (!pc.hasConstraint(loic)) pc._addDet(loic);
+				}
+				else if (e instanceof EdgeIndexOf2) {
+					EdgeIndexOf2 eio = (EdgeIndexOf2) e;
+					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
+					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
+					if (!pc.hasConstraint(loic)) pc._addDet(loic);
+					loic = new LinearOrIntegerConstraints();
+					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinIndex()));
+					if (!pc.hasConstraint(loic)) pc._addDet(loic);
+				}
+				else if (e instanceof EdgeIndexOfChar2) {
+					EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e;
+					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
+					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
+					if (!pc.hasConstraint(loic)) pc._addDet(loic);
+					loic = new LinearOrIntegerConstraints();
+					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinDist()));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
 				}
 				else if (e instanceof EdgeCharAt) {

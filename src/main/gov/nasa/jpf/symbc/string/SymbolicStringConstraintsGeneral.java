@@ -17,6 +17,9 @@ import gov.nasa.jpf.symbc.string.graph.EdgeContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeEqual;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf;
+import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf2;
+import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar;
+import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar2;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
@@ -143,7 +146,7 @@ public class SymbolicStringConstraintsGeneral {
 						a2 = ((IntegerConstant) temp.oprlist[2]).solution();
 						//a1 > a2 ????
 						v2 = createVertex (temp, a1 - a2);
-						//println ("[convertToGraph, SUBSTRING] a1 = " + a1 + ", a2 = " + a2);
+						println ("[convertToGraph, SUBSTRING] a1 = " + a1 + ", a2 = " + a2);
 						graphBefore.addEdge(v1, v2, new EdgeSubstring2Equal("EdgeSubstring2Equal_" + v1.getName() + "_" + v2.getName() + "_(" + a2+ "," + a1 +")", a2, a1, v1, v2));
 					}
 					else {
@@ -159,7 +162,7 @@ public class SymbolicStringConstraintsGeneral {
 					graphBefore.addEdge(v1, v2, new EdgeSubstring1Equal("EdgeSubstring1Equal_" + v1.getName() + "_" + v2.getName() + "_(" + ie.toString() + ")", ie, v1, v2));
 				}
 				else {
-					//println ("[convertToGraph, SUBSTRING] Symbolic integers not handled yet!");
+					println ("[convertToGraph, SUBSTRING] Symbolic integers not handled yet!");
 				}
 				result = graphBefore;
 				break;
@@ -170,13 +173,13 @@ public class SymbolicStringConstraintsGeneral {
 				result.mergeIn(graphRight);
 				v1 = result.findVertex(((StringExpression) temp.left).getName());
 				v2 = result.findVertex(((StringExpression) temp.right).getName());
-				//println ("[convertToAutomaton] [CONCAT] v1: " + v1.getName() + ", v2: " + v2.getName());
+				println ("[convertToAutomaton] [CONCAT] v1: " + v1.getName() + ", v2: " + v2.getName());
 				v3 = createVertex (se);
 				e = new EdgeConcat(v3.getName(), v1, v2, v3);
 				result.addEdge(v1, v2, v3, (EdgeConcat) e);
 				break;
 			default:
-				//println ("[WARNING] [convertToAutomaton] Did not understand " + temp.op);
+				println ("[WARNING] [convertToAutomaton] Did not understand " + temp.op);
 			}
 		}
 		return result;
@@ -207,7 +210,7 @@ public class SymbolicStringConstraintsGeneral {
 		}
 		StringConstraint sc;
 		if (pc == null) {
-			//println ("[isSatisfiable] PC is null");
+			println ("[isSatisfiable] PC is null");
 			return true;
 		}
 		else {sc = pc.header;}
@@ -236,8 +239,13 @@ public class SymbolicStringConstraintsGeneral {
 		 */
 		
 		Constraint constraint = pc.npc.header;
-		//println ("[isSatisfiable] Int cons given:" + pc.npc.header);
+		println ("[isSatisfiable] Int cons given:" + pc.npc.header);
 		while (constraint != null) {
+			//First solve any previous integer constriants
+			SymbolicConstraintsGeneral scg = new SymbolicConstraintsGeneral();
+			scg.solve(pc.npc);
+			PathCondition.flagSolved = true;
+			
 			processIntegerConstraint(constraint.getLeft());
 			processIntegerConstraint(constraint.getRight());
 			constraint = constraint.getTail();
@@ -248,12 +256,13 @@ public class SymbolicStringConstraintsGeneral {
 		scg.solve(pc.npc);
 		PathCondition.flagSolved = true;
 		
+		
 		//Start solving
-		//println(global_graph.toDot());
+		println(global_graph.toDot());
 		/* Preprocess the graph */
 		boolean resultOfPp = PreProcessGraph.preprocess(global_graph, pc.npc);
 		if (!resultOfPp) {
-			//println ("[isSat] Preprocessor gave Unsat");
+			println ("[isSat] Preprocessor gave Unsat");
 			return false;
 		}
 		
@@ -261,23 +270,23 @@ public class SymbolicStringConstraintsGeneral {
 		 * options are exhuasted or a satisfiable solution has turned up
 		 */
 		if (solver.equals(SAT)) {
-			//println ("[isSatisfiable] Using SAT Solver");
+			println ("[isSatisfiable] Using SAT Solver");
 			boolean sat4jresult = TranslateToSAT.isSat(global_graph, pc.npc);
 			if (!sat4jresult) return false;
 		}
 		else if (solver.equals(AUTOMATA)) {
-			//println ("[isSatisfiable] Using Automata's");
+			println ("[isSatisfiable] Using Automata's");
 			boolean sat4jresult = TranslateToAutomata.isSat(global_graph, pc.npc);
 			if (!sat4jresult) {
-				//println ("[isSatisfiable] automata's returned unsat");
+				println ("[isSatisfiable] automata's returned unsat");
 				return false;
 			}
 		}
 		else if (solver.equals(CVC)) {
-			//println ("[isSatisfiable] Using Bitvector's");
+			println ("[isSatisfiable] Using Bitvector's");
 			boolean sat4jresult = TranslateToCVC.isSat(global_graph, pc.npc);
 			if (!sat4jresult) {
-				//println ("[isSatisfiable] bitvector's returned unsat");
+				println ("[isSatisfiable] bitvector's returned unsat");
 				return false;
 			}
 			
@@ -285,18 +294,18 @@ public class SymbolicStringConstraintsGeneral {
 		else {
 			throw new RuntimeException("Unknown string solver!!!");
 		}
-		//println ("[isSatisfiable] Solution: " + global_graph.toString());
+		println ("[isSatisfiable] Solution: " + global_graph.toString());
 		
 		//Get the solutions from graph and place back into symbolic strings
 		Vertex temp;
 		for (Edge e: global_graph.getEdges()) {
 			if (!(e instanceof EdgeConcat)) {
-				//println ("[isSatisfiable] edge: " + e.getSource().uniqueName() + " - "+ e.getDest().uniqueName());
+				println ("[isSatisfiable] edge: " + e.getSource().uniqueName() + " - "+ e.getDest().uniqueName());
 				List<StringSymbolic> represents = e.getSource().getRepresents();
 				if (represents != null) {
 					for (StringSymbolic ss: represents) {
 						temp = global_graph.findVertex(e.getSource().getName());
-						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
+						println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
 						ss.solution = temp.getSolution();
 					}
 				}
@@ -304,7 +313,7 @@ public class SymbolicStringConstraintsGeneral {
 				if (represents != null) {
 					for (StringSymbolic ss: represents) {
 						temp = global_graph.findVertex(e.getDest().getName());
-						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");						
+						println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");						
 						ss.solution = temp.getSolution();
 					}
 				}
@@ -314,7 +323,7 @@ public class SymbolicStringConstraintsGeneral {
 				if (represents != null) {
 					for (StringSymbolic ss: represents) {
 						temp = global_graph.findVertex(e.getSources().get(0).getName());
-						//println ("[isSatisfiable] 1. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
+						println ("[isSatisfiable] 1. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
 						ss.solution = temp.getSolution();
 					}
 				}
@@ -322,7 +331,7 @@ public class SymbolicStringConstraintsGeneral {
 				if (represents != null) {
 					for (StringSymbolic ss: represents) {
 						temp = global_graph.findVertex(e.getSources().get(1).getName());
-						//println ("[isSatisfiable] 2. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
+						println ("[isSatisfiable] 2. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
 						ss.solution = temp.getSolution();
 					}
 				}
@@ -330,7 +339,7 @@ public class SymbolicStringConstraintsGeneral {
 				if (represents != null) {
 					for (StringSymbolic ss: represents) {
 						temp = global_graph.findVertex(e.getDest().getName());
-						//println ("[isSatisfiable] 3. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
+						println ("[isSatisfiable] 3. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
 						ss.solution = temp.getSolution();
 					}
 				}
@@ -341,7 +350,7 @@ public class SymbolicStringConstraintsGeneral {
 			for (Vertex v: global_graph.getVertices()) {
 				List<StringSymbolic> represents = v.getRepresents();
 				for (StringSymbolic ss: represents) {
-					//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
+					println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
 					ss.solution = v.getSolution();
 				}
 			}
@@ -358,7 +367,7 @@ public class SymbolicStringConstraintsGeneral {
 		if (e instanceof SymbolicCharAtInteger) {
 			//foundStringIntegerConstraint = true;
 			SymbolicCharAtInteger scai = (SymbolicCharAtInteger) e;
-			//println ("[processIntegerConstraint] Found charAt constraint with " + scai.se.getName());
+			println ("[processIntegerConstraint] Found charAt constraint with " + scai.se.getName());
 			StringGraph sg = convertToGraph(scai.se);
 			global_graph.mergeIn(sg);
 			PathCondition.flagSolved = true;
@@ -369,7 +378,7 @@ public class SymbolicStringConstraintsGeneral {
 		}
 		else if (e instanceof SymbolicIndexOfInteger) {
 			SymbolicIndexOfInteger sioi = (SymbolicIndexOfInteger) e;
-			//println ("[processIntegerConstraint] Found indexOf constraint with " + sioi.getName());
+			println ("[processIntegerConstraint] Found indexOf constraint with " + sioi.getName());
 			StringGraph expression = convertToGraph (sioi.expression);
 			StringGraph source = convertToGraph (sioi.source);
 			global_graph.mergeIn(expression);
@@ -380,19 +389,58 @@ public class SymbolicStringConstraintsGeneral {
 			PathCondition.flagSolved = true; //TODO: Review
 			
 		}
+		else if (e instanceof SymbolicIndexOfCharInteger) {
+			SymbolicIndexOfCharInteger sioi = (SymbolicIndexOfCharInteger) e;
+			println ("[processIntegerConstraint] Found indexOf (char) constraint with " + sioi.getName());
+			StringGraph source = convertToGraph (sioi.source);
+			Vertex v1 = new Vertex ("CHAR_" + sioi.getExpression().solution(), symbolicIntegerGenerator);
+			global_graph.addVertex(v1);
+			global_graph.mergeIn(source);
+			Vertex v2 = global_graph.findVertex(sioi.source.getName());
+			global_graph.addEdge(v2, v1, new EdgeIndexOfChar("EdgeIndexOfChar_" + v2.getName () + "_" + v1.getName(), v2, v1, sioi));
+			PathCondition.flagSolved = true; //TODO: Review
+			
+		}
+		else if (e instanceof SymbolicIndexOfChar2Integer) {
+			SymbolicIndexOfChar2Integer sioi = (SymbolicIndexOfChar2Integer) e;
+			println ("[processIntegerConstraint] Found indexOf (char) constraint with " + sioi.getName());
+			StringGraph source = convertToGraph (sioi.source);
+			Vertex v1 = new Vertex ("CHAR_" + sioi.getExpression().solution(), symbolicIntegerGenerator);
+			global_graph.addVertex(v1);
+			global_graph.mergeIn(source);
+			Vertex v2 = global_graph.findVertex(sioi.source.getName());
+			global_graph.addEdge(v2, v1, new EdgeIndexOfChar2("EdgeIndexOfChar_" + v2.getName () + "_" + v1.getName(), v2, v1, sioi));
+			processIntegerConstraint(sioi.getMinDist());
+			PathCondition.flagSolved = true; //TODO: Review
+			
+		}
+		else if (e instanceof SymbolicIndexOf2Integer) {
+			SymbolicIndexOf2Integer sioi = (SymbolicIndexOf2Integer) e;
+			println ("[processIntegerConstraint] Found indexOf2 constraint with " + sioi.getName() + " and min dist: " + sioi.getMinIndex().solution());
+			StringGraph expression = convertToGraph (sioi.expression);
+			StringGraph source = convertToGraph (sioi.source);
+			global_graph.mergeIn(expression);
+			global_graph.mergeIn(source);
+			Vertex v1 = global_graph.findVertex(sioi.expression.getName());
+			Vertex v2 = global_graph.findVertex(sioi.source.getName());
+			global_graph.addEdge(v2, v1, new EdgeIndexOf2("EdgeIndexOf2_" + v2.getName () + "_" + v1.getName(), v2, v1, sioi));
+			processIntegerConstraint(sioi.getMinIndex());
+			PathCondition.flagSolved = true; //TODO: Review
+			
+		}
 		else if (e instanceof SymbolicLengthInteger) {
 			SymbolicLengthInteger sli = (SymbolicLengthInteger) e;
-			//println ("[processIntegerConstraint] Found length constraint with " + sli.getName());
+			println ("[processIntegerConstraint] Found length constraint with " + sli.getName());
 			StringGraph parent = convertToGraph(sli.parent);
 			global_graph.mergeIn(parent);
 			Vertex v1 = global_graph.findVertex(sli.parent.getName());
 			global_spc.npc._addDet(Comparator.EQ, v1.getSymbolicLength(), sli);
 		}
-		else {
+		/*else {
 			if (e != null) {
-				//println ("[processIntegerConstraint] Ignoring: " + e.getClass());
+				println ("[processIntegerConstraint] Ignoring: " + e.getClass());
 			}
-		}
+		}*/
 	}
 	
 	/*
@@ -421,7 +469,7 @@ public class SymbolicStringConstraintsGeneral {
 			global_graph.mergeIn(leftGraph);
 			global_graph.mergeIn(rightGraph);
 			v1 = global_graph.findVertex(se_left.getName());
-			//println ("[process] should be name: " + se_left.getName());
+			println ("[process] should be name: " + se_left.getName());
 			v2 = global_graph.findVertex(se_right.getName());
 			global_graph.addEdge(v1, v2, new EdgeNotEqual("EdgeNotEqual_" + v1.getName() + "=" + v2.getName(), v1, v2));
 			break;

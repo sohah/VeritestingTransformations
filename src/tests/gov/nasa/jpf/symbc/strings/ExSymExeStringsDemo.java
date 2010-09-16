@@ -16,10 +16,11 @@ public class ExSymExeStringsDemo {
 	  //test02a(a, b, 1);
 	  //test03(a,b,1);
 	  //test04(a,b,1);
-	  test05(a,b,1);
+	  //test05(a,b,1);
 	  //test06(a,b,1);
 	  //test07(a,b,1);
 	  //test08(a,b,1);
+	  test08a(a,b,1);
 	  //test09(a,b,1);
 	  //test10(a,b,1);
 	  Debug.printPC("This is the PC at the end:");
@@ -143,6 +144,26 @@ public class ExSymExeStringsDemo {
 			  /* some code */
 			  if (a.charAt(i) == 'c' && a.charAt(i+1) == 'd') {
 				  i = a.indexOf("/cd");
+			  }
+			  /* some code */
+			  if (i <= old) {
+				  throw new RuntimeException("Does not work");
+			  }
+		  }
+	  }
+  }
+  
+  public static void test08a (String a, String b, int x) {
+	  if (a.equals(b)) {
+		  for (int i = 0; i < a.length(); i++) {
+			  int old = i;
+			  /* some code */
+			  if (	a.charAt(i) == '<' && 
+					a.charAt(i+1) == 'c' &&
+					a.charAt(i + 2) == 'd' &&
+					a.charAt(i + 3) == '>') {
+				  
+				  i = a.indexOf("</cd>");
 			  }
 			  /* some code */
 			  if (i <= old) {

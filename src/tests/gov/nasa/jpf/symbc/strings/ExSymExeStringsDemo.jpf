@@ -1,4 +1,4 @@
-target=gov.nasa.jpf.symbc.strings.ExSymExeStringsDemo
+target=gov.nasa.jpf.symbc.strings.MysteryQuestionMin
 
 classpath=${jpf-symbc}/build/tests
 
@@ -28,6 +28,6 @@ symbolic.string_dp=cvc
 # "Verify..." does not work. In order to run cvc3 
 # you need to go through "Run Configuration"
 
-symbolic.method= gov.nasa.jpf.symbc.strings.ExSymExeStringsDemo.test05(sym#sym#sym) 
+symbolic.method= gov.nasa.jpf.symbc.strings.MysteryQuestionMin.preserveSomeHtmlTagsAndRemoveWhitespaces(sym) 
 
-listener = gov.nasa.jpf.symbc.SymbolicListener
+listener = gov.nasa.jpf.symbc.SymbolicListenerClean

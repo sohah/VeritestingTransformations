@@ -145,6 +145,9 @@ public class StringGraph {
 				else if (e instanceof EdgeIndexOf) {
 					sb.append ("EdgeIndexOf");
 				}
+				else if (e instanceof EdgeIndexOf2) {
+					sb.append ("EdgeIndexOf2");
+				}
 				else if (e instanceof EdgeContains) {
 					sb.append ("EdgeContains");
 				}
@@ -152,7 +155,7 @@ public class StringGraph {
 					sb.append ("EdgeNotContains");
 				}
 				else {
-					sb.append ("Unknown");
+					sb.append (e.getClass().toString());
 				}
 				sb.append("\"");
 				if (!e.isDirected()) {

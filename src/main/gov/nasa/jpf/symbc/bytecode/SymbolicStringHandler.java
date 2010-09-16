@@ -370,6 +370,10 @@ public class SymbolicStringHandler {
 			// System.out.println("conditionValue: " + conditionValue);
 
 
+			boolean s1char = true; //argument is char
+			if (th.isOperandRef()) {
+				s1char = false; //argument is string
+			}
 			int s1 = th.pop();
 			int s2 = th.pop();
 
@@ -379,9 +383,14 @@ public class SymbolicStringHandler {
 					if (sym_v2 != null) { // both are symbolic values
 						result = sym_v1._indexOf(sym_v2);
 					} else {
-						ElementInfo e2 = DynamicArea.getHeap().get(s1);
-						String val = e2.asString();
-						result = sym_v1._indexOf(new StringConstant(val));
+						if (s1char) {
+							result = sym_v1._indexOf(new IntegerConstant(s1));
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s1);
+							String val = e2.asString();
+							result = sym_v1._indexOf(new StringConstant(val));
+						}
 					}
 					//pc._addDet(Comparator.EQ, result, -1);
 				} else {
@@ -391,9 +400,14 @@ public class SymbolicStringHandler {
 					if (sym_v2 != null) { // both are symbolic values
 						result = new StringConstant(val)._indexOf(sym_v2);
 					} else {
-						ElementInfo e2 = DynamicArea.getHeap().get(s1);
-						String val2 = e2.asString();
-						result = sym_v1._indexOf(new StringConstant(val2));
+						if (s1char) {
+							result = new StringConstant(val)._indexOf(new IntegerConstant(s1));
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s1);
+							String val2 = e2.asString();
+							result = new StringConstant(val)._indexOf(new StringConstant(val2));
+						}
 					}
 					//pc.spc._addDet(comp, val, sym_v2);
 				}
@@ -435,8 +449,9 @@ public class SymbolicStringHandler {
 	/* two possibilities int, int or int, String in parameters */
 	/* currently symbolic values in parameters are ignored */
 	public void handleIndexOf2(InvokeInstruction invInst, ThreadInfo th) {
-
-		/*StackFrame sf = th.getTopFrame();
+		//This was the Fjitsu way
+		/*
+		StackFrame sf = th.getTopFrame();
 		StringExpression sym_v1 = (StringExpression) sf.getOperandAttr(2);
 		if (sym_v1 == null) {
 			System.err.println("ERROR: symbolic method must have symbolic string operand: hanldeLength");
@@ -444,10 +459,131 @@ public class SymbolicStringHandler {
 			th.pop();
 			th.pop();
 			th.pop();
-			th.push(0, false); /* dont care value for index */
-			/*IntegerExpression sym_v2 = sym_v1._indexOf();
-			sf.setOperandAttr(sym_v2);
-		}*/
+			th.push(0, false);
+			//IntegerExpression sym_v2 = sym_v1._indexOf();
+			sf.setOperandAttr(new IntegerConstant(1));
+		}
+		 */
+		
+		//My way
+		StackFrame sf = th.getTopFrame();
+
+		StringExpression sym_v1 = null;
+		StringExpression sym_v2 = null;
+		IntegerExpression intExp = null;
+		System.out.print("[handleIndexOf2] arguments: ");
+		if (sf.getOperandAttr(0) == null) {System.out.print("null");} else {System.out.print(sf.getOperandAttr(0).toString());}
+		System.out.print(" ");
+		if (sf.getOperandAttr(1) == null) {System.out.print("null");} else {System.out.print(sf.getOperandAttr(1).toString());}
+		System.out.print(" ");
+		if (sf.getOperandAttr(2) == null) {System.out.print("null");} else {System.out.print(sf.getOperandAttr(2).toString());}
+		System.out.println();
+		sym_v1 = (StringExpression) sf.getOperandAttr(2);
+		intExp = (IntegerExpression) sf.getOperandAttr(0);
+		sym_v2 = (StringExpression) sf.getOperandAttr(1);
+		
+		if (sym_v1 == null && sym_v2 == null && intExp == null) {
+			System.err.println("ERROR: symbolic method must have symbolic string operand: hanldeLength");
+		} else {
+
+
+			int i1 = th.pop();
+			boolean s2char = true;
+			if (th.isOperandRef()) {
+				System.out.println("[handleIndexOf2] string detected");
+				s2char = false;
+			}
+			else {
+				System.out.println("[handleIndexOf2] char detected");
+			}
+			int s2 = th.pop();
+			int s1 = th.pop();
+			
+			IntegerExpression result = null;
+			if (intExp != null) {
+				System.out.println("[handleIndexOf2] int exp: " + intExp.getClass());
+				if (intExp instanceof SymbolicIndexOf2Integer) {
+					SymbolicIndexOf2Integer temp = (SymbolicIndexOf2Integer) intExp;
+					System.out.println("[handleIndexOf2] further on: " + temp.getMinIndex().getClass());
+				}
+				else if (intExp instanceof SymbolicIndexOfChar2Integer) {
+					SymbolicIndexOfChar2Integer temp = (SymbolicIndexOfChar2Integer) intExp;
+					System.out.println("[handleIndexOf2] further on: " + temp.getMinDist().getClass());
+				}
+				if (sym_v1 != null) {
+					if (sym_v2 != null) { // both are symbolic values
+						result = sym_v1._indexOf(sym_v2, intExp);
+					} else {
+						if (s2char) {
+							result = sym_v1._indexOf(new IntegerConstant(s2), intExp);
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val = e2.asString();
+							result = sym_v1._indexOf(new StringConstant(val), intExp);
+						}
+					}
+				} else {
+					ElementInfo e1 = DynamicArea.getHeap().get(s1);
+					String val = e1.asString();
+					
+					if (sym_v2 != null) { // both are symbolic values
+						result = new StringConstant(val)._indexOf(sym_v2, intExp);
+					} else {
+						if (s2char) {
+							result = new StringConstant(val)._indexOf(new IntegerConstant(s2), intExp);
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val2 = e2.asString();
+							result = new StringConstant(val)._indexOf(new StringConstant(val2), intExp);
+						}
+					}
+				}
+			}
+			else {
+				if (sym_v1 != null) {
+					if (sym_v2 != null) { // both are symbolic values
+						result = sym_v1._indexOf(sym_v2, new IntegerConstant(i1));
+					} else {
+						if (s2char) {
+							result = sym_v1._indexOf(new IntegerConstant(s2), new IntegerConstant(i1));
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val = e2.asString();
+							result = sym_v1._indexOf(new StringConstant(val), new IntegerConstant(i1));
+							//System.out.println("[handleIndexOf2] Special push");
+							//Special push?
+							//th.push(s1, true);
+						}
+					}
+				} else {
+					ElementInfo e1 = DynamicArea.getHeap().get(s1);
+					String val = e1.asString();
+					
+					if (sym_v2 != null) { // both are symbolic values
+						result = new StringConstant(val)._indexOf(sym_v2, new IntegerConstant(i1));
+					} else {
+						if (s2char) {
+							result = new StringConstant(val)._indexOf(new IntegerConstant(s2), new IntegerConstant(i1));
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val2 = e2.asString();
+							result = new StringConstant(val)._indexOf(new StringConstant(val2), new IntegerConstant(i1));
+						}
+					}
+				}
+			}
+			/* Not quite sure yet why this works */
+			//int objRef = th.getVM().getDynamicArea().newString("", th);
+			//th.push(objRef, true);
+			th.push(0, false);
+			assert result != null;
+			sf.setOperandAttr(result);
+			
+		}
 	}
 
 	public void handlebooleanValue(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
@@ -800,6 +936,7 @@ public class SymbolicStringHandler {
 	}
 
 	public Instruction handleSubString2(InvokeInstruction invInst, ThreadInfo th) {
+		//System.out.println("[SymbolicStringHandler] doing");
 		StackFrame sf = th.getTopFrame();
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0);
 		IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(1);
@@ -811,13 +948,17 @@ public class SymbolicStringHandler {
 			int s1 = th.pop();
 			int s2 = th.pop();
 			int s3 = th.pop();
-
+			//System.out.printf("[SymbolicStringHandler] popped %d %d %d\n", s1, s2, s3);
 			StringExpression result = null;
 			if (sym_v1 == null) { // operand 0 is concrete
 				int val = s1;
 				if (sym_v2 == null) { // sym_v3 has to be symbolic
 					int val1 = s2;
 					result = sym_v3._subString(val, val1);
+					System.out.println("[SymbolicStringHandler] special push");
+					/* Only if both arguments are concrete, something else needs
+					 * to be pushed?
+					 */
 					th.push(s3, true); /* symbolic string element */
 				} else {
 					if (sym_v3 == null) { // only sym_v2 is symbolic
@@ -852,14 +993,13 @@ public class SymbolicStringHandler {
 					}
 				}
 			}
-			int objRef = th.getVM().getDynamicArea().newString("", th);/*
-																																	 * dummy
-																																	 * String
-																																	 * Object
-																																	 */
+			int objRef = th.getVM().getDynamicArea().newString("", th);
+			System.out.println("[SymbolicStringHandler] " + sf.toString());																														 
 			th.push(objRef, true);
+			System.out.println("[SymbolicStringHandler] " + sf.toString());
 			sf.setOperandAttr(result);
 		}
+		
 		return null;
 	}
 
