@@ -498,7 +498,10 @@ public class ProblemCoral extends ProblemGeneral {
 
 	@Override
 	public Object mixed(Object exp1, Object exp2) {
-		throw new UnsupportedOperationException("WHAT IS IT?");
+        if (exp1 instanceof SymDouble && exp2 instanceof SymInt)
+            return Util.eq((SymDouble)exp1, Util.createASDouble((SymInt)exp2));
+        else
+            throw new RuntimeException("## Error CORAL: unsupported mixed case");
 	}
 
 	public Object sin(Object exp) {
