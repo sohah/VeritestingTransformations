@@ -11,7 +11,7 @@ public class ExSymExeStringsDemo {
 	  String b = "bbb";
 	  String c = "ccc";
 	  String d = "ddd";
-	  //test01 (a,b, 1);
+	  test01 (a,b, 1);
 	  //test02(a,b,1);
 	  //test02a(a, b, 1);
 	  //test03(a,b,1);
@@ -20,7 +20,7 @@ public class ExSymExeStringsDemo {
 	  //test06(a,b,1);
 	  //test07(a,b,1);
 	  //test08(a,b,1);
-	  test08a(a,b,1);
+	  //test08a(a,b,1);
 	  //test09(a,b,1);
 	  //test10(a,b,1);
 	  Debug.printPC("This is the PC at the end:");

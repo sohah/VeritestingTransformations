@@ -13,7 +13,6 @@ import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.string.StringConstant;
 import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.StringUtility;
-import gov.nasa.jpf.symbc.string.SymbolicCharAtInteger;
 import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
 
 /**
@@ -37,6 +36,16 @@ public class PreProcessGraph {
 		//println ("[preprocess] Preprocessor running...");
 		
 		PathCondition pc = currentPC;
+		
+		//Remove duplicates
+		List<Edge> temp = g.getEdges();
+		for (int i = 0; i < temp.size(); i++) {
+			for (int j = i + 1; j < temp.size(); j++) {
+				if (temp.get(i).equals(temp.get(j))) {
+					throw new RuntimeException("o oo " + temp.get(i).toString());
+				}
+			}
+		}
 		
 		//Populate with equality and merge
 		boolean change = true;
@@ -450,6 +459,21 @@ public class PreProcessGraph {
 				else if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOf2) {
 					EdgeIndexOf2 eio1 = (EdgeIndexOf2) e1;
 					EdgeIndexOf2 eio2 = (EdgeIndexOf2) e2;
+					if (eio1.getIndex().getExpression() instanceof StringConstant && eio2.getIndex().getExpression() instanceof StringConstant) {
+						String constant1 = eio1.getIndex().getExpression().solution();
+						String constant2 = eio2.getIndex().getExpression().solution();
+						for (int i = 0; i < constant1.length(); i++) {
+							for (int j = i; j < constant2.length(); j++) {
+								if (constant1.charAt(i) != constant2.charAt(j)) {
+									pc._addDet(Comparator.NE, eio1.getIndex()._plus(i), eio2.getIndex()._plus(j));
+								}
+							}
+						}
+					}
+				}
+				else if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeIndexOf) {
+					EdgeIndexOf eio1 = (EdgeIndexOf) e1;
+					EdgeIndexOf eio2 = (EdgeIndexOf) e2;
 					if (eio1.getIndex().getExpression() instanceof StringConstant && eio2.getIndex().getExpression() instanceof StringConstant) {
 						String constant1 = eio1.getIndex().getExpression().solution();
 						String constant2 = eio2.getIndex().getExpression().solution();

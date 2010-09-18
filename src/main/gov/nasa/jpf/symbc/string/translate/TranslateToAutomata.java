@@ -23,6 +23,9 @@ import gov.nasa.jpf.symbc.string.graph.EdgeConcat;
 import gov.nasa.jpf.symbc.string.graph.EdgeContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf;
+import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf2;
+import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar;
+import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar2;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
@@ -583,6 +586,15 @@ public class TranslateToAutomata {
 		else if (e instanceof EdgeIndexOf) {
 			return handleEdgeIndexOf((EdgeIndexOf) e);
 		}
+		else if (e instanceof EdgeIndexOf2) {
+			return handleEdgeIndexOf2((EdgeIndexOf2) e);
+		}
+		else if (e instanceof EdgeIndexOfChar) {
+			return handleEdgeIndexOfChar((EdgeIndexOfChar) e);
+		}
+		else if (e instanceof EdgeIndexOfChar2) {
+			return handleEdgeIndexOfChar2((EdgeIndexOfChar2) e);
+		}
 		else if (e instanceof EdgeContains) {
 			return handleEdgeContains((EdgeContains) e);
 		}
@@ -947,6 +959,267 @@ public class TranslateToAutomata {
 		}
 		//return true;
 	}
+	
+	private static boolean handleEdgeIndexOf2 (EdgeIndexOf2 e) {
+		//println ("[handleEdgeIndexOf] entered");
+		Automaton a1 = mapAutomaton.get(e.getSource());
+		Automaton a2 = mapAutomaton.get(e.getDest());
+		int index = e.getIndex().solution();
+		//First check if it is possible
+		if (index > -1) {
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton intersection = AutomatonExtra.intersection(a1, temp);
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
+				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
+				global_pc._addDet(loic);
+				return false;
+			}
+			temp = AutomatonExtra.lengthAutomaton(index);
+			temp = temp.concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
+			intersection = AutomatonExtra.intersection(a1, temp);
+			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] 1. indexof could not be applyied at the current place");
+				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				global_pc._addDet(loic);
+				return false;
+			}
+			else {
+				boolean a1Changed, a2Changed;
+				a1Changed = false; a2Changed = false;
+				if (!a1.equals(intersection)) a1Changed = true;
+				
+				Automaton temp2 = AutomatonExtra.substring(intersection, index, index + e.getDest().getLength());
+				//println ("[handleEdgeIndexOf] temp2 example: '" + temp2.getShortestExample(true) + "'");
+				Automaton intersection2 = AutomatonExtra.intersection(a2, temp2);
+				if (intersection2.isEmpty()) {
+					//println ("[handleEdgeIndexOf] 2. indexof could not be applyied at the current place");
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+					return false;
+				}
+				if (!a2.equals(intersection2)) a2Changed = true;
+				mapAutomaton.put(e.getSource(), intersection);
+				mapAutomaton.put(e.getDest(), intersection2);
+				if (!e.getSource().isConstant()) e.getSource().setSolution(intersection.getShortestExample(true));
+				if (!e.getDest().isConstant()) e.getDest().setSolution(intersection2.getShortestExample(true));
+				boolean propResult = true;
+				if (a1Changed) propResult = propagateChange(e.getSource(), e.getDest());
+				if (a2Changed) propResult = propResult && propagateChange(e.getDest(), e.getSource());
+				return propResult;
+			}
+		}
+		else {
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton intersection = AutomatonExtra.minus(a1, temp);
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
+				global_pc._addDet (Comparator.GT, e.getIndex(), -1);
+				return false;
+			}
+			boolean a1Changed = false;
+			if (!a1.equals(intersection)) a1Changed = true;
+			mapAutomaton.put(e.getSource(), a1);
+			if (!e.getSource().isConstant()) e.getSource().setSolution(a1.getShortestExample(true));
+			
+			temp = new Substring().op(a1);
+			Automaton intersection2 = AutomatonExtra.minus(a2, temp);
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
+				global_pc._addDet (Comparator.GT, e.getIndex(), -1);
+				return false;
+			}
+			boolean a2Changed = false;
+			if (!a2.equals(intersection2)) a2Changed = true;
+			mapAutomaton.put(e.getDest(), a2);
+			if (!e.getDest().isConstant()) e.getDest().setSolution(a2.getShortestExample(true));
+			
+			boolean propResult = true;
+			if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
+			if (a2Changed) {propResult = propResult && propagateChange(e.getDest(), e.getSource());}
+			return propResult;
+		}
+		//return true;
+	}
+	
+	private static boolean handleEdgeIndexOfChar (EdgeIndexOfChar e) {
+		//println ("[handleEdgeIndexOf] entered");
+		Automaton a1 = mapAutomaton.get(e.getSource());
+		//Automaton a2 = mapAutomaton.get(e.getDest());
+		int index = e.getIndex().solution();
+		String character = String.valueOf((char) e.getIndex().getExpression().solution());
+		//First check if it is possible
+		if (index > -1) {
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton intersection = AutomatonExtra.intersection(a1, temp);
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
+				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
+				global_pc._addDet(loic);
+				return false;
+			}
+			temp = AutomatonExtra.lengthAutomaton(index);
+			temp = temp.concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
+			intersection = AutomatonExtra.intersection(a1, temp);
+			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] 1. indexof could not be applyied at the current place");
+				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				global_pc._addDet(loic);
+				return false;
+			}
+			else {
+				boolean a1Changed, a2Changed;
+				a1Changed = false; a2Changed = false;
+				if (!a1.equals(intersection)) a1Changed = true;
+				
+				Automaton temp2 = AutomatonExtra.substring(intersection, index, index + e.getDest().getLength());
+				//println ("[handleEdgeIndexOf] temp2 example: '" + temp2.getShortestExample(true) + "'");
+				Automaton intersection2 = AutomatonExtra.intersection(Automaton.makeString(character), temp2);
+				if (intersection2.isEmpty()) {
+					//println ("[handleEdgeIndexOf] 2. indexof could not be applyied at the current place");
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+					return false;
+				}
+				if (!Automaton.makeString(character).equals(intersection2)) a2Changed = true;
+				mapAutomaton.put(e.getSource(), intersection);
+				mapAutomaton.put(e.getDest(), intersection2);
+				if (!e.getSource().isConstant()) e.getSource().setSolution(intersection.getShortestExample(true));
+				if (!e.getDest().isConstant()) e.getDest().setSolution(intersection2.getShortestExample(true));
+				boolean propResult = true;
+				if (a1Changed) propResult = propagateChange(e.getSource(), e.getDest());
+				if (a2Changed) propResult = propResult && propagateChange(e.getDest(), e.getSource());
+				return propResult;
+			}
+		}
+		else {
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton intersection = AutomatonExtra.minus(a1, temp);
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
+				global_pc._addDet (Comparator.GT, e.getIndex(), -1);
+				return false;
+			}
+			boolean a1Changed = false;
+			if (!a1.equals(intersection)) a1Changed = true;
+			mapAutomaton.put(e.getSource(), a1);
+			if (!e.getSource().isConstant()) e.getSource().setSolution(a1.getShortestExample(true));
+			
+			temp = new Substring().op(a1);
+			Automaton intersection2 = AutomatonExtra.minus(Automaton.makeString(character), temp);
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
+				global_pc._addDet (Comparator.GT, e.getIndex(), -1);
+				return false;
+			}
+			boolean a2Changed = false;
+			if (!Automaton.makeString(character).equals(intersection2)) a2Changed = true;
+			mapAutomaton.put(e.getDest(), Automaton.makeString(character));
+			if (!e.getDest().isConstant()) e.getDest().setSolution(Automaton.makeString(character).getShortestExample(true));
+			
+			boolean propResult = true;
+			if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
+			if (a2Changed) {propResult = propResult && propagateChange(e.getDest(), e.getSource());}
+			return propResult;
+		}
+		//return true;
+	}
+	
+	private static boolean handleEdgeIndexOfChar2 (EdgeIndexOfChar2 e) {
+		//println ("[handleEdgeIndexOf] entered");
+		Automaton a1 = mapAutomaton.get(e.getSource());
+		//Automaton a2 = mapAutomaton.get(e.getDest());
+		int index = e.getIndex().solution();
+		String character = String.valueOf((char) e.getIndex().getExpression().solution());
+		//First check if it is possible
+		if (index > -1) {
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton intersection = AutomatonExtra.intersection(a1, temp);
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
+				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
+				global_pc._addDet(loic);
+				return false;
+			}
+			temp = AutomatonExtra.lengthAutomaton(index);
+			temp = temp.concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
+			intersection = AutomatonExtra.intersection(a1, temp);
+			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] 1. indexof could not be applyied at the current place");
+				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				global_pc._addDet(loic);
+				return false;
+			}
+			else {
+				boolean a1Changed, a2Changed;
+				a1Changed = false; a2Changed = false;
+				if (!a1.equals(intersection)) a1Changed = true;
+				
+				Automaton temp2 = AutomatonExtra.substring(intersection, index, index + e.getDest().getLength());
+				//println ("[handleEdgeIndexOf] temp2 example: '" + temp2.getShortestExample(true) + "'");
+				Automaton intersection2 = AutomatonExtra.intersection(Automaton.makeString(character), temp2);
+				if (intersection2.isEmpty()) {
+					//println ("[handleEdgeIndexOf] 2. indexof could not be applyied at the current place");
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+					return false;
+				}
+				if (!Automaton.makeString(character).equals(intersection2)) a2Changed = true;
+				mapAutomaton.put(e.getSource(), intersection);
+				mapAutomaton.put(e.getDest(), intersection2);
+				if (!e.getSource().isConstant()) e.getSource().setSolution(intersection.getShortestExample(true));
+				if (!e.getDest().isConstant()) e.getDest().setSolution(intersection2.getShortestExample(true));
+				boolean propResult = true;
+				if (a1Changed) propResult = propagateChange(e.getSource(), e.getDest());
+				if (a2Changed) propResult = propResult && propagateChange(e.getDest(), e.getSource());
+				return propResult;
+			}
+		}
+		else {
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton intersection = AutomatonExtra.minus(a1, temp);
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
+				global_pc._addDet (Comparator.GT, e.getIndex(), -1);
+				return false;
+			}
+			boolean a1Changed = false;
+			if (!a1.equals(intersection)) a1Changed = true;
+			mapAutomaton.put(e.getSource(), a1);
+			if (!e.getSource().isConstant()) e.getSource().setSolution(a1.getShortestExample(true));
+			
+			temp = new Substring().op(a1);
+			Automaton intersection2 = AutomatonExtra.minus(Automaton.makeString(character), temp);
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
+				global_pc._addDet (Comparator.GT, e.getIndex(), -1);
+				return false;
+			}
+			boolean a2Changed = false;
+			if (!Automaton.makeString(character).equals(intersection2)) a2Changed = true;
+			mapAutomaton.put(e.getDest(), Automaton.makeString(character));
+			if (!e.getDest().isConstant()) e.getDest().setSolution(Automaton.makeString(character).getShortestExample(true));
+			
+			boolean propResult = true;
+			if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
+			if (a2Changed) {propResult = propResult && propagateChange(e.getDest(), e.getSource());}
+			return propResult;
+		}
+		//return true;
+	}
+
 	
 	private static boolean handleEdgeNotContains (EdgeNotContains e) {
 		//println ("[handleEdgeNotContains] entered");

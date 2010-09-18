@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.strings;
+package strings;
 
 public class MysteryQuestionMin {
 	
@@ -10,7 +10,6 @@ public class MysteryQuestionMin {
 		System.out.println("start");
 		if (body == null)
 			return body;
-		//int i = 0;
 		int len = body.length();
 		int old = i - 1;
 		if (i >= 0) {
@@ -19,7 +18,6 @@ public class MysteryQuestionMin {
 					throw new RuntimeException("Problem found");
 				}
 				old = i;
-				//char c = 
 				if (body.charAt(i) == '<') {
 					if (i + 14 < len &&
 					(body.charAt(i + 8) == '\"')
@@ -38,15 +36,18 @@ public class MysteryQuestionMin {
 					&&
 					(body.charAt(i + 1) == 'a' || body.charAt(i + 1) == 'A')
 					) {
-						//System.out.println("in here");
 						int idx = i + 9;
 						int idx2 = body.indexOf("\"", idx);
 						int idxStart = body.indexOf('>', idx2);
 						int idxEnd = body.indexOf("</a>", idxStart);
 						if (idxEnd == -1)
 							idxEnd = body.indexOf("</A>", idxStart);
+						//if (idxEnd == -1) {
+						//	i = i + 4;
+						//}
+						//else {
 						i = idxEnd + 4;
-						//System.out.println("uniquei: " + i);
+						//}
 						continue;
 					}
 				}

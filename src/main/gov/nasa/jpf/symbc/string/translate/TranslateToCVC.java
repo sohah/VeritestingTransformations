@@ -87,7 +87,7 @@ public class TranslateToCVC {
 			e.printStackTrace();
 			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
 	    }
-		println ("[isSat] Walking through the edges");
+		//println ("[isSat] Walking through the edges");
 		for (Edge e: g.getEdges()) {
 			if (e instanceof EdgeStartsWith) {
 				handleEdgeStartsWith ((EdgeStartsWith) e);
@@ -146,7 +146,7 @@ public class TranslateToCVC {
 				//println ("[isSat] expr: " + expr.toString());
 			}
 		}
-		println ("[isSat] Done walking through the edges");
+		//println ("[isSat] Done walking through the edges");
 		/* TODO: Remove*/		
 		if (expr == null) return true;
 		//println(expr.toString());
@@ -190,10 +190,10 @@ public class TranslateToCVC {
             pc._addDet(loic);
             println ("[isSat] firing up integer constraint solver");
             if (scg.isSatisfiable(pc)) {
-            	println ("[isSat] integer constriant solver found it to be sat, solving...");
+            	//println ("[isSat] integer constriant solver found it to be sat, solving...");
 				scg.solve(pc);
 				pc.flagSolved = true;
-				println ("[isSat] solved PC: " + pc.header); 
+				//println ("[isSat] solved PC: " + pc.header); 
 				vc.delete();
 				return isSat (g, pc); //TODO: Prevent infinite looping
 			}

@@ -35,6 +35,8 @@ package gov.nasa.jpf.symbc.bytecode;
 
 import java.math.BigDecimal;
 
+import javax.management.RuntimeErrorException;
+
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.ElementInfo;
@@ -301,6 +303,7 @@ public class SymbolicStringHandler {
 				int val = s1;
 				result = sym_v2._charAt(new IntegerConstant(val));
 			} else {
+				//throw new RuntimeException(sym_v1.toString());
 				if (sym_v2 == null) {
 					ElementInfo e1 = DynamicArea.getHeap().get(s2);
 					String val2 = e1.asString();
@@ -315,7 +318,8 @@ public class SymbolicStringHandler {
 																																	 * String
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			//th.push(objRef, true);
+			th.push(0, false);
 			sf.setOperandAttr(result);
 		}
 		return null;
@@ -471,13 +475,13 @@ public class SymbolicStringHandler {
 		StringExpression sym_v1 = null;
 		StringExpression sym_v2 = null;
 		IntegerExpression intExp = null;
-		System.out.print("[handleIndexOf2] arguments: ");
+		/*System.out.print("[handleIndexOf2] arguments: ");
 		if (sf.getOperandAttr(0) == null) {System.out.print("null");} else {System.out.print(sf.getOperandAttr(0).toString());}
 		System.out.print(" ");
 		if (sf.getOperandAttr(1) == null) {System.out.print("null");} else {System.out.print(sf.getOperandAttr(1).toString());}
 		System.out.print(" ");
 		if (sf.getOperandAttr(2) == null) {System.out.print("null");} else {System.out.print(sf.getOperandAttr(2).toString());}
-		System.out.println();
+		System.out.println();*/
 		sym_v1 = (StringExpression) sf.getOperandAttr(2);
 		intExp = (IntegerExpression) sf.getOperandAttr(0);
 		sym_v2 = (StringExpression) sf.getOperandAttr(1);
@@ -490,25 +494,25 @@ public class SymbolicStringHandler {
 			int i1 = th.pop();
 			boolean s2char = true;
 			if (th.isOperandRef()) {
-				System.out.println("[handleIndexOf2] string detected");
+				//System.out.println("[handleIndexOf2] string detected");
 				s2char = false;
 			}
 			else {
-				System.out.println("[handleIndexOf2] char detected");
+				//System.out.println("[handleIndexOf2] char detected");
 			}
 			int s2 = th.pop();
 			int s1 = th.pop();
 			
 			IntegerExpression result = null;
 			if (intExp != null) {
-				System.out.println("[handleIndexOf2] int exp: " + intExp.getClass());
+				//System.out.println("[handleIndexOf2] int exp: " + intExp.getClass());
 				if (intExp instanceof SymbolicIndexOf2Integer) {
 					SymbolicIndexOf2Integer temp = (SymbolicIndexOf2Integer) intExp;
-					System.out.println("[handleIndexOf2] further on: " + temp.getMinIndex().getClass());
+					//System.out.println("[handleIndexOf2] further on: " + temp.getMinIndex().getClass());
 				}
 				else if (intExp instanceof SymbolicIndexOfChar2Integer) {
 					SymbolicIndexOfChar2Integer temp = (SymbolicIndexOfChar2Integer) intExp;
-					System.out.println("[handleIndexOf2] further on: " + temp.getMinDist().getClass());
+					//System.out.println("[handleIndexOf2] further on: " + temp.getMinDist().getClass());
 				}
 				if (sym_v1 != null) {
 					if (sym_v2 != null) { // both are symbolic values
