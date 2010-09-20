@@ -42,6 +42,7 @@ import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
 import gov.nasa.jpf.util.Pair;
 
 import java.io.BufferedWriter;
@@ -98,6 +99,7 @@ public class SymbolicListenerClean extends PropertyListenerAdapter implements Pu
             //e.solution();
             test_sequences.add(sequence);
 			System.out.println("PC "+pc.toString());
+			System.out.println("String PC:\n" + SymbolicStringConstraintsGeneral.getSolution());
 		}
 	}
 

@@ -1,8 +1,8 @@
 target=strings.MysteryQuestionMin
 
-classpath=${jpf-symbc}/build/tests
+classpath=${jpf-symbc}/build/examples
 
-sourcepath=${jpf-symbc}/src/tests
+sourcepath=${jpf-symbc}/src/examples
 
 # To specify a mix of concrete and symbolic values
 # symbolic.method=test2(sym#conc), test(conc#sym)

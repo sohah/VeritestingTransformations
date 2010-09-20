@@ -1,6 +1,9 @@
 package gov.nasa.jpf.symbc.string;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.Comparator;
@@ -81,6 +84,9 @@ public class SymbolicStringConstraintsGeneral {
 	
 	/* Default solver */
 	public static String solver = AUTOMATA;
+	
+	/* Map of the solutions */
+	private static Set<StringSymbolic> setOfSolution;
 	
 	public SymbolicStringConstraintsGeneral () {
 		
@@ -208,6 +214,7 @@ public class SymbolicStringConstraintsGeneral {
 			/* No solver, return true */
 			return true;
 		}
+		setOfSolution = new HashSet<StringSymbolic>();
 		StringConstraint sc;
 		if (pc == null) {
 			//println ("[isSatisfiable] PC is null");
@@ -305,6 +312,7 @@ public class SymbolicStringConstraintsGeneral {
 						temp = global_graph.findVertex(e.getSource().getName());
 						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
 						ss.solution = temp.getSolution();
+						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
 					}
 				}
 				represents = e.getDest().getRepresents();
@@ -313,6 +321,7 @@ public class SymbolicStringConstraintsGeneral {
 						temp = global_graph.findVertex(e.getDest().getName());
 						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");						
 						ss.solution = temp.getSolution();
+						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
 					}
 				}
 			}
@@ -323,6 +332,7 @@ public class SymbolicStringConstraintsGeneral {
 						temp = global_graph.findVertex(e.getSources().get(0).getName());
 						//println ("[isSatisfiable] 1. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
 						ss.solution = temp.getSolution();
+						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
 					}
 				}
 				represents = e.getSources().get(1).getRepresents();
@@ -331,6 +341,7 @@ public class SymbolicStringConstraintsGeneral {
 						temp = global_graph.findVertex(e.getSources().get(1).getName());
 						//println ("[isSatisfiable] 2. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
 						ss.solution = temp.getSolution();
+						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
 					}
 				}
 				represents = e.getDest().getRepresents();
@@ -339,6 +350,7 @@ public class SymbolicStringConstraintsGeneral {
 						temp = global_graph.findVertex(e.getDest().getName());
 						//println ("[isSatisfiable] 3. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
 						ss.solution = temp.getSolution();
+						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
 					}
 				}
 			}
@@ -350,11 +362,23 @@ public class SymbolicStringConstraintsGeneral {
 				for (StringSymbolic ss: represents) {
 					//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
 					ss.solution = v.getSolution();
+					if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
 				}
 			}
 		}
 		StringPathCondition.flagSolved = true;
 		return true;
+	}
+	
+	public static String getSolution () {
+		StringBuilder sb = new StringBuilder();
+		for (StringSymbolic ss: setOfSolution) {
+			sb.append(ss.getName());
+			sb.append ('[');
+			sb.append(ss.solution());
+			sb.append("]\n");
+		}
+		return sb.toString();
 	}
 	
 	/*

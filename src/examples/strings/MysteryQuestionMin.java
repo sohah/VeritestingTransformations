@@ -3,7 +3,7 @@ package strings;
 public class MysteryQuestionMin {
 	
 	public static void main (String[] args) {
-		preserveSomeHtmlTagsAndRemoveWhitespaces("   <a href=\"      ", 1);
+		preserveSomeHtmlTagsAndRemoveWhitespaces("   <A HREF=\"\">    ", 1);
 	}
 	
 	public static String preserveSomeHtmlTagsAndRemoveWhitespaces(String body, int i) {
