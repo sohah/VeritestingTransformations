@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import choco.Constraint;
-
 import dk.brics.automaton.Automaton;
 import dk.brics.string.stringoperations.Substring;
 import dk.brics.string.stringoperations.Trim;
@@ -19,7 +17,6 @@ import gov.nasa.jpf.symbc.numeric.LinearOrIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.string.AutomatonExtra;
-import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
 import gov.nasa.jpf.symbc.string.graph.Edge;
 import gov.nasa.jpf.symbc.string.graph.EdgeCharAt;
 import gov.nasa.jpf.symbc.string.graph.EdgeConcat;
@@ -29,8 +26,6 @@ import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf2;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar2;
-import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOf;
-import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
@@ -42,7 +37,7 @@ import gov.nasa.jpf.symbc.string.graph.EdgeTrimEqual;
 import gov.nasa.jpf.symbc.string.graph.StringGraph;
 import gov.nasa.jpf.symbc.string.graph.Vertex;
 
-public class TranslateToAutomata {
+public class TranslateToAutomataSpeedUp {
 	private static Map<Vertex, Integer> mapSolved;
 	private static Map<Vertex, Automaton> mapAutomaton;
 	private static Map<Vertex, Integer> mapEdgeCount;
@@ -50,7 +45,7 @@ public class TranslateToAutomata {
 	
 	private static StringGraph global_graph;
 	private static PathCondition global_pc;
-	private static Map<List<gov.nasa.jpf.symbc.numeric.Constraint>, Map<Vertex, Automaton>> memo;
+	
 	private static int concatCount = 128;
 	
 	private static boolean logging = true;
@@ -60,34 +55,24 @@ public class TranslateToAutomata {
 	 * The trim operation from JSA does not work with length of 1 characters!!
 	 */
 	public static boolean isSat (StringGraph g, PathCondition pc) {
-		/*mapAutomaton = null;
-		if (memo == null) {
-			memo = new HashMap<List<gov.nasa.jpf.symbc.numeric.Constraint>, Map<Vertex,Automaton>>();
-		}
-		List<gov.nasa.jpf.symbc.numeric.Constraint> listOfConstraints = new ArrayList<gov.nasa.jpf.symbc.numeric.Constraint>();
-		if (pc.header != null) {
-			gov.nasa.jpf.symbc.numeric.Constraint constraint = pc.header.and;
-			while (constraint != null) {
-				listOfConstraints.add(constraint);
-				constraint = constraint.and;
-			}
-			Map<Vertex, Automaton> tempMemo = memo.get(listOfConstraints);
-			if (tempMemo != null) {
-				//println ("[isSat] remembered");
-				mapAutomaton = new HashMap<Vertex, Automaton>(tempMemo);
-			}
-		}*/
-		mapAutomaton = null;
-		
 		boolean restart = true;
 		while (restart) {
 			restart = false;
 			global_graph = g;
 			global_pc  = pc;
 			mapSolved = new HashMap<Vertex, Integer>();
-			
+			mapAutomaton = new HashMap<Vertex, Automaton>();
 			mapConcat = new HashMap<EdgeConcat, Integer>();
-			
+			for (Vertex v: g.getVertices()) {
+				mapSolved.put(v, new Integer(0));
+				Automaton length = AutomatonExtra.lengthAutomaton(v.getLength());
+				if (!v.isConstant()) {
+					mapAutomaton.put(v, AutomatonExtra.makeAnyStringFixed().intersection(length));
+				}
+				else {
+					mapAutomaton.put(v, Automaton.makeString(v.getSolution()).intersection(length));
+				}
+			}
 			
 			//Find the leaves (all vertecis with only one edge)
 			mapEdgeCount = new HashMap<Vertex, Integer>();
@@ -147,28 +132,7 @@ public class TranslateToAutomata {
 			//Take the leaves, and intersect with sources
 			boolean result = false;
 			while (!result && g.getEdges().size() > 0) {
-				//if (mapAutomaton == null) {
-					mapAutomaton = new HashMap<Vertex, Automaton>();
-					for (Vertex v: g.getVertices()) {
-						mapSolved.put(v, new Integer(0));						
-						Automaton length = AutomatonExtra.lengthAutomaton(v.getLength());
-						Automaton toput;
-						if (!v.isConstant()) {
-							toput = AutomatonExtra.makeAnyStringFixed().intersection(length);
-							//mapAutomaton.put(v, );
-						}
-						else {
-							toput = Automaton.makeString(v.getSolution()).intersection(length);
-							//mapAutomaton.put(v, );
-						}
-						//println ("[isSat] resetting " + v.getName() + " to '" + toput.getShortestExample(true) + "'");
-						mapAutomaton.put(v, toput);
-						if (!v.isConstant()) v.setSolution(toput.getShortestExample(true));
-					}
-					
-				//}
-				/*for (Vertex v: g.getVertices()) {
-					//println ("here");
+				for (Vertex v: g.getVertices()) {
 					mapSolved.put(v, new Integer(0));
 					Automaton length = AutomatonExtra.lengthAutomaton(v.getLength());
 					Automaton toput;
@@ -183,8 +147,7 @@ public class TranslateToAutomata {
 					//println ("[isSat] resetting " + v.getName() + " to '" + toput.getShortestExample(true) + "'");
 					mapAutomaton.put(v, toput);
 					if (!v.isConstant()) v.setSolution(toput.getShortestExample(true));
-				}*/
-				
+				}
 				result = true;
 				//println ("[isSat] mapEdgeCount: " + mapEdgeCount);
 				//println ("[isSat] max: " + max);
@@ -252,7 +215,6 @@ public class TranslateToAutomata {
 					if (scg.isSatisfiable(global_pc)) {
 						scg.solve(global_pc);
 						PathCondition.flagSolved = true;
-						mapAutomaton = null;
 						restart = true;
 					}
 					else {
@@ -270,11 +232,7 @@ public class TranslateToAutomata {
 			for (Vertex v: g.getVertices()) {
 				//println (v.getName() + ": '" + v.getSolution() + "'");
 			}*/
-		}
-		/*if (pc.header != null) {
-			listOfConstraints.add(0, pc.header);
-			memo.put(listOfConstraints, mapAutomaton);
-		}*/
+		}	
 		return true;
 	}
 	
@@ -601,266 +559,6 @@ public class TranslateToAutomata {
 						change = true;
 					}
 				}
-				else if (e instanceof EdgeIndexOf) {
-					EdgeIndexOf eio = (EdgeIndexOf) e;
-					if (eio.getIndex().solution() == -1 && eio.getSource().getSolution().contains(eio.getDest().getSolution())) {
-						//println ("'" + eio.getSource().getSolution() + "' contains '" + eio.getDest().getSolution() + "' and it should not");
-						if (!eio.getSource().isConstant() && !eio.getDest().isConstant()) {
-							if (nonequalityFlipFlop == 0) {
-								Automaton a1 = mapAutomaton.get(eio.getSource());
-								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return false;
-								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
-								mapAutomaton.put(eio.getSource(), temp);
-								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-								if (!propResult) return false;
-								nonequalityFlipFlop = (nonequalityFlipFlop + 1) % 2;
-							}
-							else {
-								Automaton a1 = mapAutomaton.get(eio.getDest());
-								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-								if (temp.isEmpty()) return false;
-								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
-								mapAutomaton.put(eio.getDest(), temp);
-								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-								if (!propResult) return false;
-								nonequalityFlipFlop = (nonequalityFlipFlop + 1) % 2;
-							}
-						}
-						else if (!eio.getSource().isConstant()) {
-							Automaton a1 = mapAutomaton.get(eio.getSource());
-							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-							if (temp.isEmpty()) return false;
-							if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
-							mapAutomaton.put(eio.getSource(), temp);
-							boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-							if (!propResult) return false;
-						}
-						else if (!eio.getDest().isConstant()) {
-							Automaton a1 = mapAutomaton.get(eio.getDest());
-							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-							if (temp.isEmpty()) return false;
-							if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
-							mapAutomaton.put(eio.getDest(), temp);
-							boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-							if (!propResult) return false;
-						}
-						else {
-							//Everything is constant
-							return false;
-						}
-						
-						change = true;
-					}
-				}
-				else if (e instanceof EdgeIndexOf2) {
-					EdgeIndexOf2 eio = (EdgeIndexOf2) e;
-					if (eio.getIndex().solution() == -1 && eio.getSource().getSolution().indexOf(eio.getDest().getSolution(), eio.getIndex().getMinIndex().solution()) > -1) {
-						//println ("'" + eio.getSource().getSolution() + "' contains '" + eio.getDest().getSolution() + "' and it should not from " + eio.getIndex().getMinIndex().solution());
-						if (!eio.getSource().isConstant() && !eio.getDest().isConstant()) {
-							if (nonequalityFlipFlop == 0) {
-								Automaton a1 = mapAutomaton.get(eio.getSource());
-								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return false;
-								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
-								mapAutomaton.put(eio.getSource(), temp);
-								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-								if (!propResult) return false;
-								nonequalityFlipFlop = (nonequalityFlipFlop + 1) % 2;
-							}
-							else {
-								Automaton a1 = mapAutomaton.get(eio.getDest());
-								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-								if (temp.isEmpty()) return false;
-								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
-								mapAutomaton.put(eio.getDest(), temp);
-								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-								if (!propResult) return false;
-								nonequalityFlipFlop = (nonequalityFlipFlop + 1) % 2;
-							}
-						}
-						else if (!eio.getSource().isConstant()) {
-							Automaton a1 = mapAutomaton.get(eio.getSource());
-							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-							if (temp.isEmpty()) return false;
-							if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
-							mapAutomaton.put(eio.getSource(), temp);
-							boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-							if (!propResult) return false;
-						}
-						else if (!eio.getDest().isConstant()) {
-							Automaton a1 = mapAutomaton.get(eio.getDest());
-							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-							if (temp.isEmpty()) return false;
-							if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
-							mapAutomaton.put(eio.getDest(), temp);
-							boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-							if (!propResult) return false;
-						}
-						else {
-							//Everything is constant
-							return false;
-						}
-						
-						change = true;
-					}
-				}
-				else if (e instanceof EdgeIndexOfChar) {
-					EdgeIndexOfChar eio = (EdgeIndexOfChar) e;
-					if (eio.getIndex().solution() == -1 && eio.getSource().getSolution().contains(eio.getDest().getSolution())) {
-						//println ("'" + eio.getSource().getSolution() + "' contains '" + eio.getDest().getSolution() + "' and it should not");
-						if (!eio.getSource().isConstant() && !eio.getDest().isConstant()) {
-							if (nonequalityFlipFlop == 0) {
-								Automaton a1 = mapAutomaton.get(eio.getSource());
-								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return false;
-								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
-								mapAutomaton.put(eio.getSource(), temp);
-								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-								if (!propResult) return false;
-								nonequalityFlipFlop = (nonequalityFlipFlop + 1) % 2;
-							}
-							else {
-								Automaton a1 = mapAutomaton.get(eio.getDest());
-								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-								if (temp.isEmpty()) return false;
-								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
-								mapAutomaton.put(eio.getDest(), temp);
-								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-								if (!propResult) return false;
-								nonequalityFlipFlop = (nonequalityFlipFlop + 1) % 2;
-							}
-						}
-						else if (!eio.getSource().isConstant()) {
-							Automaton a1 = mapAutomaton.get(eio.getSource());
-							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-							if (temp.isEmpty()) return false;
-							if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
-							mapAutomaton.put(eio.getSource(), temp);
-							boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-							if (!propResult) return false;
-						}
-						else if (!eio.getDest().isConstant()) {
-							Automaton a1 = mapAutomaton.get(eio.getDest());
-							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-							if (temp.isEmpty()) return false;
-							if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
-							mapAutomaton.put(eio.getDest(), temp);
-							boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-							if (!propResult) return false;
-						}
-						else {
-							//Everything is constant
-							return false;
-						}
-						
-						change = true;
-					}
-				}
-				else if (e instanceof EdgeLastIndexOfChar) {
-					EdgeLastIndexOfChar eio = (EdgeLastIndexOfChar) e;
-					if (eio.getIndex().solution() == -1 && eio.getSource().getSolution().contains(eio.getDest().getSolution())) {
-						//println ("'" + eio.getSource().getSolution() + "' contains '" + eio.getDest().getSolution() + "' and it should not");
-						if (!eio.getSource().isConstant() && !eio.getDest().isConstant()) {
-							if (nonequalityFlipFlop == 0) {
-								Automaton a1 = mapAutomaton.get(eio.getSource());
-								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return false;
-								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
-								mapAutomaton.put(eio.getSource(), temp);
-								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-								if (!propResult) return false;
-								nonequalityFlipFlop = (nonequalityFlipFlop + 1) % 2;
-							}
-							else {
-								Automaton a1 = mapAutomaton.get(eio.getDest());
-								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-								if (temp.isEmpty()) return false;
-								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
-								mapAutomaton.put(eio.getDest(), temp);
-								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-								if (!propResult) return false;
-								nonequalityFlipFlop = (nonequalityFlipFlop + 1) % 2;
-							}
-						}
-						else if (!eio.getSource().isConstant()) {
-							Automaton a1 = mapAutomaton.get(eio.getSource());
-							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-							if (temp.isEmpty()) return false;
-							if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
-							mapAutomaton.put(eio.getSource(), temp);
-							boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-							if (!propResult) return false;
-						}
-						else if (!eio.getDest().isConstant()) {
-							Automaton a1 = mapAutomaton.get(eio.getDest());
-							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-							if (temp.isEmpty()) return false;
-							if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
-							mapAutomaton.put(eio.getDest(), temp);
-							boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-							if (!propResult) return false;
-						}
-						else {
-							//Everything is constant
-							return false;
-						}
-						
-						change = true;
-					}
-				}
-				else if (e instanceof EdgeIndexOfChar2) {
-					EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e;
-					if (eio.getIndex().solution() == -1 && eio.getSource().getSolution().indexOf(eio.getDest().getSolution(), eio.getIndex().getMinDist().solution()) > -1) {
-						//println ("'" + eio.getSource().getSolution() + "' contains '" + eio.getDest().getSolution() + "' and it should not");
-						if (!eio.getSource().isConstant() && !eio.getDest().isConstant()) {
-							if (nonequalityFlipFlop == 0) {
-								Automaton a1 = mapAutomaton.get(eio.getSource());
-								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return false;
-								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
-								mapAutomaton.put(eio.getSource(), temp);
-								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-								if (!propResult) return false;
-								nonequalityFlipFlop = (nonequalityFlipFlop + 1) % 2;
-							}
-							else {
-								Automaton a1 = mapAutomaton.get(eio.getDest());
-								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-								if (temp.isEmpty()) return false;
-								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
-								mapAutomaton.put(eio.getDest(), temp);
-								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-								if (!propResult) return false;
-								nonequalityFlipFlop = (nonequalityFlipFlop + 1) % 2;
-							}
-						}
-						else if (!eio.getSource().isConstant()) {
-							Automaton a1 = mapAutomaton.get(eio.getSource());
-							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-							if (temp.isEmpty()) return false;
-							if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
-							mapAutomaton.put(eio.getSource(), temp);
-							boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-							if (!propResult) return false;
-						}
-						else if (!eio.getDest().isConstant()) {
-							Automaton a1 = mapAutomaton.get(eio.getDest());
-							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-							if (temp.isEmpty()) return false;
-							if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
-							mapAutomaton.put(eio.getDest(), temp);
-							boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-							if (!propResult) return false;
-						}
-						else {
-							//Everything is constant
-							return false;
-						}
-						
-						change = true;
-					}
-				}
 			}
 		}
 		return true;
@@ -896,12 +594,6 @@ public class TranslateToAutomata {
 		}
 		else if (e instanceof EdgeIndexOfChar2) {
 			return handleEdgeIndexOfChar2((EdgeIndexOfChar2) e);
-		}
-		else if (e instanceof EdgeLastIndexOf) {
-			return handleEdgeLastIndexOf((EdgeLastIndexOf) e);
-		}
-		else if (e instanceof EdgeLastIndexOfChar) {
-			return handleEdgeLastIndexOfChar((EdgeLastIndexOfChar) e);
 		}
 		else if (e instanceof EdgeContains) {
 			return handleEdgeContains((EdgeContains) e);
@@ -1236,7 +928,7 @@ public class TranslateToAutomata {
 			}
 		}
 		else {
-			/*Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
 			Automaton intersection = AutomatonExtra.minus(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
@@ -1263,16 +955,12 @@ public class TranslateToAutomata {
 			boolean propResult = true;
 			if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
 			if (a2Changed) {propResult = propResult && propagateChange(e.getDest(), e.getSource());}
-			return propResult;*/
-			
-			//handle in handleNots
-			return true;
+			return propResult;
 		}
 		//return true;
 	}
 	
-	//TODO: Finish properly
-	private static boolean handleEdgeLastIndexOf (EdgeLastIndexOf e) {
+	private static boolean handleEdgeIndexOf2 (EdgeIndexOf2 e) {
 		//println ("[handleEdgeIndexOf] entered");
 		Automaton a1 = mapAutomaton.get(e.getSource());
 		Automaton a2 = mapAutomaton.get(e.getDest());
@@ -1283,10 +971,10 @@ public class TranslateToAutomata {
 			Automaton intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
-				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
-				global_pc._addDet(loic);
+				//LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				//loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+				global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
+				//global_pc._addDet(loic);
 				return false;
 			}
 			temp = AutomatonExtra.lengthAutomaton(index);
@@ -1295,10 +983,10 @@ public class TranslateToAutomata {
 			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] 1. indexof could not be applyied at the current place");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
-				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
-				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
-				global_pc._addDet(loic);
+				//LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				//loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+				global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				//global_pc._addDet(loic);
 				return false;
 			}
 			else {
@@ -1326,7 +1014,7 @@ public class TranslateToAutomata {
 			}
 		}
 		else {
-			/*Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
 			Automaton intersection = AutomatonExtra.minus(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
@@ -1353,22 +1041,20 @@ public class TranslateToAutomata {
 			boolean propResult = true;
 			if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
 			if (a2Changed) {propResult = propResult && propagateChange(e.getDest(), e.getSource());}
-			return propResult;*/
-			
-			//handle in handleNots
-			return true;
+			return propResult;
 		}
 		//return true;
 	}
 	
-	private static boolean handleEdgeIndexOf2 (EdgeIndexOf2 e) {
-		//println ("[handleEdgeIndexOf2] entered: " + e.getName());
+	private static boolean handleEdgeIndexOfChar (EdgeIndexOfChar e) {
+		//println ("[handleEdgeIndexOf] entered");
 		Automaton a1 = mapAutomaton.get(e.getSource());
-		Automaton a2 = mapAutomaton.get(e.getDest());
+		//Automaton a2 = mapAutomaton.get(e.getDest());
 		int index = e.getIndex().solution();
+		String character = String.valueOf((char) e.getIndex().getExpression().solution());
 		//First check if it is possible
 		if (index > -1) {
-			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
 			Automaton intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
@@ -1379,107 +1065,11 @@ public class TranslateToAutomata {
 				return false;
 			}
 			temp = AutomatonExtra.lengthAutomaton(index);
-			temp = temp.concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
-			intersection = AutomatonExtra.intersection(a1, temp);
-			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
-			if (intersection.isEmpty()) {
-				//println ("[handleEdgeIndexOf] 1. indexof could not be applyied at the current place");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
-				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
-				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
-				global_pc._addDet(loic);
-				return false;
-			}
-			else {
-				boolean a1Changed, a2Changed;
-				a1Changed = false; a2Changed = false;
-				if (!a1.equals(intersection)) a1Changed = true;
-				
-				Automaton temp2 = AutomatonExtra.substring(intersection, index, index + e.getDest().getLength());
-				//println ("[handleEdgeIndexOf] temp2 example: '" + temp2.getShortestExample(true) + "'");
-				Automaton intersection2 = AutomatonExtra.intersection(a2, temp2);
-				if (intersection2.isEmpty()) {
-					//println ("[handleEdgeIndexOf] 2. indexof could not be applyied at the current place");
-					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
-					return false;
-				}
-				if (!a2.equals(intersection2)) a2Changed = true;
-				mapAutomaton.put(e.getSource(), intersection);
-				mapAutomaton.put(e.getDest(), intersection2);
-				if (!e.getSource().isConstant()) e.getSource().setSolution(intersection.getShortestExample(true));
-				if (!e.getDest().isConstant()) e.getDest().setSolution(intersection2.getShortestExample(true));
-				boolean propResult = true;
-				if (a1Changed) propResult = propagateChange(e.getSource(), e.getDest());
-				if (a2Changed) propResult = propResult && propagateChange(e.getDest(), e.getSource());
-				return propResult;
-			}
-		}
-		else {
-			/*Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
-			Automaton intersection = AutomatonExtra.minus(a1, temp);
-			//println ("[handleEdgeIndexOf2] temp example: '" + temp.getShortestExample(true) + "'");
-			//println ("[handleEdgeIndexOf2] intersection example: '" + intersection.getShortestExample(true) + "'");
-			if (intersection.isEmpty()) {
-				//println ("[handleEdgeIndexOf2] 1. indexof == -1 could not be enforced");
-				global_pc._addDet (Comparator.GT, e.getIndex(), -1);
-				return false;
-			}
-			boolean a1Changed = false;
-			//println ("[handleEdgeIndexOf2]\n" + a1.toDot() +"\n" + intersection.toDot());
-			if (!a1.equals(intersection)) a1Changed = true;
-			mapAutomaton.put(e.getSource(), intersection);
-			if (!e.getSource().isConstant()) e.getSource().setSolution(a1.getShortestExample(true));
-			
-			temp = new Substring().op(a1);
-			Automaton intersection2 = AutomatonExtra.minus(a2, temp);
-			if (intersection2.isEmpty()) {
-				//println ("[handleEdgeIndexOf2] 2. indexof == -1 could not be enforced");
-				global_pc._addDet (Comparator.GT, e.getIndex(), -1);
-				return false;
-			}
-			boolean a2Changed = false;
-			if (!a2.equals(intersection2)) a2Changed = true;
-			mapAutomaton.put(e.getDest(), intersection2);
-			if (!e.getDest().isConstant()) e.getDest().setSolution(a2.getShortestExample(true));
-			
-			boolean propResult = true;
-			if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
-			if (a2Changed) {propResult = propResult && propagateChange(e.getDest(), e.getSource());}
-			return propResult;*/
-			
-			//handle in handleNots
-			return true;
-		}
-		//return true;
-	}
-	
-	private static boolean handleEdgeIndexOfChar (EdgeIndexOfChar e) {
-		//println ("[handleEdgeIndexOfChar] entered");
-		Automaton a1 = mapAutomaton.get(e.getSource());
-		//Automaton a2 = mapAutomaton.get(e.getDest());
-		int index = e.getIndex().solution();
-		String character = String.valueOf((char) e.getIndex().getExpression().solution());
-		//First check if it is possible
-		if (index > -1) {
-			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
-			//println ("[handleEdgeIndexOfChar] temp example: '" + temp.getShortestExample(true) + "'");
-			//println ("[handleEdgeIndexOfChar] a1 example: '" + a1.getShortestExample(true) + "'");
-			Automaton intersection = AutomatonExtra.intersection(a1, temp);
-			if (intersection.isEmpty()) {
-				//println ("[handleEdgeIndexOfChar] 1. indexof '" + character + "' could not be found anywhere, forcing index == -1 or longer lengths");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
-				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
-				global_pc._addDet(loic);
-				//println ("[handleEdgeIndexOfChar] " + global_pc.toString());
-				return false;
-			}
-			temp = AutomatonExtra.lengthAutomaton(index);
 			temp = temp.concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
 			intersection = AutomatonExtra.intersection(a1, temp);
 			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
 			if (intersection.isEmpty()) {
-				//println ("[handleEdgeIndexOf] 2. indexof could not be applyied at the current place");
+				//println ("[handleEdgeIndexOf] 1. indexof could not be applyied at the current place");
 				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
@@ -1495,7 +1085,7 @@ public class TranslateToAutomata {
 				//println ("[handleEdgeIndexOf] temp2 example: '" + temp2.getShortestExample(true) + "'");
 				Automaton intersection2 = AutomatonExtra.intersection(Automaton.makeString(character), temp2);
 				if (intersection2.isEmpty()) {
-					//println ("[handleEdgeIndexOf] 3. indexof could not be applyied at the current place");
+					//println ("[handleEdgeIndexOf] 2. indexof could not be applyied at the current place");
 					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
 					return false;
 				}
@@ -1511,7 +1101,7 @@ public class TranslateToAutomata {
 			}
 		}
 		else {
-			/*Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
 			Automaton intersection = AutomatonExtra.minus(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
@@ -1538,84 +1128,13 @@ public class TranslateToAutomata {
 			boolean propResult = true;
 			if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
 			if (a2Changed) {propResult = propResult && propagateChange(e.getDest(), e.getSource());}
-			return propResult;*/
-			
-			//handle in handleNots
-			return true;
-		}
-		//return true;
-	}
-	
-	private static boolean handleEdgeLastIndexOfChar (EdgeLastIndexOfChar e) {
-		//println ("[handleEdgeLastIndexOfChar] entered");
-		Automaton a1 = mapAutomaton.get(e.getSource());
-		//Automaton a2 = mapAutomaton.get(e.getDest());
-		int index = e.getIndex().solution();
-		String character = String.valueOf((char) e.getIndex().getExpression().solution());
-		//First check if it is possible
-		if (index > -1) {
-			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
-			Automaton intersection = AutomatonExtra.intersection(a1, temp);
-			if (intersection.isEmpty()) {
-				//println ("[handleEdgeLastIndexOfChar] 1.indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
-				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
-				global_pc._addDet(loic);
-				//println ("[handleEdgeLastIndexOfChar] " + global_pc.toString());
-				
-				return false;
-			}
-			temp = AutomatonExtra.lengthAutomaton(index);
-			Automaton lastPieceOfString = Automaton.makeCharRange((char) SymbolicStringConstraintsGeneral.MIN_CHAR, (char) SymbolicStringConstraintsGeneral.MAX_CHAR);
-			lastPieceOfString = lastPieceOfString.minus(Automaton.makeChar(character.charAt(0)));
-			lastPieceOfString = AutomatonExtra.star(lastPieceOfString);
-			//Need to concatenate with any string that does not contain this character.
-			temp = temp.concatenate(Automaton.makeString(character)).concatenate(lastPieceOfString);
-			intersection = AutomatonExtra.intersection(a1, temp);
-			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
-			if (intersection.isEmpty()) {
-				//println ("[handleEdgeLastIndexOfChar] 2. indexof could not be applyied at the current place");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
-				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
-				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
-				global_pc._addDet(loic);
-				return false;
-			}
-			else {
-				boolean a1Changed, a2Changed;
-				a1Changed = false; a2Changed = false;
-				if (!a1.equals(intersection)) a1Changed = true;
-				
-				Automaton temp2 = AutomatonExtra.substring(intersection, index, index + e.getDest().getLength());
-				//println ("[handleEdgeIndexOf] temp2 example: '" + temp2.getShortestExample(true) + "'");
-				Automaton intersection2 = AutomatonExtra.intersection(Automaton.makeString(character), temp2);
-				if (intersection2.isEmpty()) {
-					//println ("[handleEdgeLastIndexOfChar] 3. indexof could not be applyied at the current place");
-					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
-					return false;
-				}
-				if (!Automaton.makeString(character).equals(intersection2)) a2Changed = true;
-				mapAutomaton.put(e.getSource(), intersection);
-				mapAutomaton.put(e.getDest(), intersection2);
-				if (!e.getSource().isConstant()) e.getSource().setSolution(intersection.getShortestExample(true));
-				if (!e.getDest().isConstant()) e.getDest().setSolution(intersection2.getShortestExample(true));
-				boolean propResult = true;
-				if (a1Changed) propResult = propagateChange(e.getSource(), e.getDest());
-				if (a2Changed) propResult = propResult && propagateChange(e.getDest(), e.getSource());
-				return propResult;
-			}
-		}
-		else {
-			
-			//handle in handleNots
-			return true;
+			return propResult;
 		}
 		//return true;
 	}
 	
 	private static boolean handleEdgeIndexOfChar2 (EdgeIndexOfChar2 e) {
-		//println ("[handleEdgeIndexOfChar2] entered");
+		//println ("[handleEdgeIndexOf] entered");
 		Automaton a1 = mapAutomaton.get(e.getSource());
 		//Automaton a2 = mapAutomaton.get(e.getDest());
 		int index = e.getIndex().solution();
@@ -1669,40 +1188,34 @@ public class TranslateToAutomata {
 			}
 		}
 		else {
-			/*Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
-			//println ("[handleEdgeIndexOfChar2] temp example: '" + temp.getShortestExample(true) + "'");
-			//println ("[handleEdgeIndexOfChar2] a1 example: '" + a1.getShortestExample(true) + "'");
+			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
 			Automaton intersection = AutomatonExtra.minus(a1, temp);
 			if (intersection.isEmpty()) {
-				//println ("[handleEdgeIndexOfChar2] 1. indexof == -1 could not be enforced");
+				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
 				global_pc._addDet (Comparator.GT, e.getIndex(), -1);
 				return false;
 			}
 			boolean a1Changed = false;
-			//println ("[handleEdgeIndexOfChar2]\n" + a1.toDot() +"\n" + intersection.toDot());
 			if (!a1.equals(intersection)) a1Changed = true;
-			mapAutomaton.put(e.getSource(), intersection);
+			mapAutomaton.put(e.getSource(), a1);
 			if (!e.getSource().isConstant()) e.getSource().setSolution(a1.getShortestExample(true));
 			
 			temp = new Substring().op(a1);
 			Automaton intersection2 = AutomatonExtra.minus(Automaton.makeString(character), temp);
-			if (intersection2.isEmpty()) {
-				//println ("[handleEdgeIndexOfChar2] 2. indexof == -1 could not be enforced");
+			if (intersection.isEmpty()) {
+				//println ("[handleEdgeIndexOf] indexof == -1 could not be enforced");
 				global_pc._addDet (Comparator.GT, e.getIndex(), -1);
 				return false;
 			}
 			boolean a2Changed = false;
 			if (!Automaton.makeString(character).equals(intersection2)) a2Changed = true;
-			mapAutomaton.put(e.getDest(), intersection2);
+			mapAutomaton.put(e.getDest(), Automaton.makeString(character));
 			if (!e.getDest().isConstant()) e.getDest().setSolution(Automaton.makeString(character).getShortestExample(true));
 			
 			boolean propResult = true;
 			if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
 			if (a2Changed) {propResult = propResult && propagateChange(e.getDest(), e.getSource());}
-			return propResult;*/
-			
-			//handle in handleNots
-			return true;
+			return propResult;
 		}
 		//return true;
 	}
@@ -1764,85 +1277,40 @@ public class TranslateToAutomata {
 		//println ("[handleEdgeSubstring2Equal] entered");
 		Automaton a1 = mapAutomaton.get(e.getSource());
 		Automaton a2 = mapAutomaton.get(e.getDest());
-		if (!e.hasSymbolicArgs()) {
-			
-			Automaton temp = AutomatonExtra.substring(a1, e.getArgument1(), e.getArgument2());
-			Automaton intersection = AutomatonExtra.intersection(temp, a2);
-			if (intersection.isEmpty()) {
-				//println ("[handleEdgeSubstring2Equal] intersection empty");
-				elimanateCurrentLengths();
-				return false;
-			}
-			boolean a2Changed = false;
-			if (!a2.equals(intersection)) a2Changed = true;
-			mapAutomaton.put(e.getDest(), intersection);
-			if (!e.getDest().isConstant()) e.getDest().setSolution(intersection.getShortestExample(true));
-			
-			Automaton temp2 = Automaton.makeEmptyString();
-			for (int i = 0; i < e.getArgument1(); i++) {
-				temp2 = temp2.concatenate(Automaton.makeCharRange((char) 32 , (char) 127)); 
-			}
-			temp2 = temp2.concatenate(intersection).concatenate(AutomatonExtra.makeAnyStringFixed());
-			Automaton intersection2 = AutomatonExtra.intersection(a1, temp2);
-			if (intersection2.isEmpty()) {
-				//println ("[handleEdgeSubstring2Equal] intersection empty");
-				elimanateCurrentLengths();
-				return false;
-			}
-			boolean a1Changed = false;
-			if (!a1.equals(intersection2)) a1Changed = true;
-			mapAutomaton.put(e.getSource(), intersection2);
-			if (!e.getSource().isConstant()) e.getSource().setSolution(intersection2.getShortestExample(true));
-			
-			boolean propResult = true;
-			if (a2Changed) {propResult = propagateChange(e.getDest(), e.getSource());}
-			if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
-			
-			return propResult;
+		
+		Automaton temp = AutomatonExtra.substring(a1, e.getArgument1(), e.getArgument2());
+		Automaton intersection = AutomatonExtra.intersection(temp, a2);
+		if (intersection.isEmpty()) {
+			//println ("[handleEdgeSubstring2Equal] intersection empty");
+			elimanateCurrentLengths();
+			return false;
 		}
-		else if (e.getSymbolicArgument2() != null && e.getSymbolicArgument1() == null) {
-			int arg2 = e.getSymbolicArgument2().solution();
-			Automaton temp = AutomatonExtra.substring(a1, e.getArgument1(), arg2);
-			Automaton intersection = AutomatonExtra.intersection(temp, a2);
-			if (intersection.isEmpty()) {
-				//println ("[handleEdgeSubstring2Equal] intersection empty");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
-				loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(arg2)));
-				global_pc._addDet(loic);
-				return false;
-			}
-			boolean a2Changed = false;
-			if (!a2.equals(intersection)) a2Changed = true;
-			mapAutomaton.put(e.getDest(), intersection);
-			if (!e.getDest().isConstant()) e.getDest().setSolution(intersection.getShortestExample(true));
-			
-			Automaton temp2 = Automaton.makeEmptyString();
-			for (int i = 0; i < e.getArgument1(); i++) {
-				temp2 = temp2.concatenate(Automaton.makeCharRange((char) 32 , (char) 127)); 
-			}
-			temp2 = temp2.concatenate(intersection).concatenate(AutomatonExtra.makeAnyStringFixed());
-			Automaton intersection2 = AutomatonExtra.intersection(a1, temp2);
-			if (intersection2.isEmpty()) {
-				//println ("[handleEdgeSubstring2Equal] intersection empty");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
-				loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(arg2)));
-				global_pc._addDet(loic);
-				return false;
-			}
-			boolean a1Changed = false;
-			if (!a1.equals(intersection2)) a1Changed = true;
-			mapAutomaton.put(e.getSource(), intersection2);
-			if (!e.getSource().isConstant()) e.getSource().setSolution(intersection2.getShortestExample(true));
-			
-			boolean propResult = true;
-			if (a2Changed) {propResult = propagateChange(e.getDest(), e.getSource());}
-			if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
-			
-			return propResult;
+		boolean a2Changed = false;
+		if (!a2.equals(intersection)) a2Changed = true;
+		mapAutomaton.put(e.getDest(), intersection);
+		if (!e.getDest().isConstant()) e.getDest().setSolution(intersection.getShortestExample(true));
+		
+		Automaton temp2 = Automaton.makeEmptyString();
+		for (int i = 0; i < e.getArgument1(); i++) {
+			temp2 = temp2.concatenate(Automaton.makeCharRange((char) 32 , (char) 127)); 
 		}
-		else {
-			throw new RuntimeException ("Not supported, yet");
+		temp2 = temp2.concatenate(intersection).concatenate(AutomatonExtra.makeAnyStringFixed());
+		Automaton intersection2 = AutomatonExtra.intersection(a1, temp2);
+		if (intersection2.isEmpty()) {
+			//println ("[handleEdgeSubstring2Equal] intersection empty");
+			elimanateCurrentLengths();
+			return false;
 		}
+		boolean a1Changed = false;
+		if (!a1.equals(intersection2)) a1Changed = true;
+		mapAutomaton.put(e.getSource(), intersection2);
+		if (!e.getSource().isConstant()) e.getSource().setSolution(intersection2.getShortestExample(true));
+		
+		boolean propResult = true;
+		if (a2Changed) {propResult = propagateChange(e.getDest(), e.getSource());}
+		if (a1Changed) {propResult = propResult && propagateChange(e.getSource(), e.getDest());}
+		
+		return propResult;
 	}
 	
 	private static boolean handleEdgeTrimEqual (EdgeTrimEqual e) {

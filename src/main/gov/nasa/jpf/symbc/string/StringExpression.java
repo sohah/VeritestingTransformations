@@ -51,8 +51,10 @@ public abstract class StringExpression extends Expression {
   SymbolicInteger length = null;
   Map<String, SymbolicCharAtInteger> charAt = null;
   Map<StringExpression, SymbolicIndexOfInteger> indexOf = null;
+  Map<StringExpression, SymbolicLastIndexOfInteger> lastIndexOf = null;
   Map<StringExpression, SymbolicIndexOf2Integer> indexOf2 = null;
   Map<IntegerExpression, SymbolicIndexOfCharInteger> indexOfChar = null;
+  Map<IntegerExpression, SymbolicLastIndexOfCharInteger> lastIndexOfChar = null;
   Map<IntegerExpression, SymbolicIndexOfChar2Integer> indexOfChar2 = null;
 
 //   protected StringDependentNode dependentsHead = null;
@@ -111,6 +113,20 @@ public abstract class StringExpression extends Expression {
 	    return sioi;
 	  }
   
+  public IntegerExpression _lastIndexOf(StringExpression exp) { 
+	    if (lastIndexOf == null) {
+	      lastIndexOf = new HashMap<StringExpression, SymbolicLastIndexOfInteger>();
+	    }
+	    SymbolicLastIndexOfInteger sioi = lastIndexOf.get(exp);
+	    if (sioi == null) {
+	    	//-1 Should make our lifes much easier
+	    	sioi = new SymbolicLastIndexOfInteger("LastIndexOf_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp);
+	    	lengthcount++;
+	    	lastIndexOf.put(exp, sioi);
+	    }
+	    return sioi;
+  }
+  
   /* indexof (char) */
   public IntegerExpression _indexOf(IntegerExpression exp) {
 	    if (indexOfChar == null) {
@@ -122,6 +138,21 @@ public abstract class StringExpression extends Expression {
 	    	sioi = new SymbolicIndexOfCharInteger("IndexOf_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp);
 	    	lengthcount++;
 	    	indexOfChar.put(exp, sioi);
+	    }
+	    return sioi;
+	  }
+  
+  /* lastIndexof (char) */
+  public IntegerExpression _lastIndexOf(IntegerExpression exp) {
+	    if (lastIndexOfChar == null) {
+	    	lastIndexOfChar = new HashMap<IntegerExpression, SymbolicLastIndexOfCharInteger>();
+	    }
+	    SymbolicLastIndexOfCharInteger sioi = lastIndexOfChar.get(exp);
+	    if (sioi == null) {
+	    	//-1 Should make our lifes much easier
+	    	sioi = new SymbolicLastIndexOfCharInteger("lastIndexOfChar_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp);
+	    	lengthcount++;
+	    	lastIndexOfChar.put(exp, sioi);
 	    }
 	    return sioi;
 	  }

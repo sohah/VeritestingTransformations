@@ -20,7 +20,8 @@ import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
  */
 public class PreProcessGraph {
 	private static boolean logging = true;
-	public static final int MAXIMUM_LENGTH = 20;
+	public static final int MAXIMUM_LENGTH = 30;
+	private static SymbolicConstraintsGeneral scg;
 	
 	/**
 	 * Preprocess given graph, and adds appropriate integer constraints to
@@ -34,7 +35,7 @@ public class PreProcessGraph {
 	 */
 	public static boolean preprocess (StringGraph g, PathCondition currentPC) { 
 		//println ("[preprocess] Preprocessor running...");
-		
+		scg = new SymbolicConstraintsGeneral();
 		PathCondition pc = currentPC;
 		
 		//Remove duplicates
@@ -265,6 +266,14 @@ public class PreProcessGraph {
 				if (e1.equals(e2)) continue;
 				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
 				if (!e1.getSource().equals(e2.getSource())) continue;
+				if (PathCondition.flagSolved == false && scg.isSatisfiable(pc)) {
+					scg.solve(pc);
+					PathCondition.flagSolved = true;
+				}
+				else if (PathCondition.flagSolved == false){
+					//println ("[preprocess] Intermediate solving failed");
+					return false;
+				}
 				if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeIndexOf) {
 					EdgeIndexOf eio = (EdgeIndexOf) e2;
 					if (eio.getIndex().getExpression() instanceof StringConstant && e1.getDest().isConstant()) {
@@ -339,9 +348,9 @@ public class PreProcessGraph {
 						 * 
 						 * 0 < i < c.length -> i == j  
 						 */
-						loic.addToList(new LinearIntegerConstraint(new IntegerConstant(es2e.a1), Comparator.GE, eio.getIndex()));
-						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.GE, new IntegerConstant(es2e.a2)));
-						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.EQ, new IntegerConstant(es2e.a1)._plus(new IntegerConstant (possiblePos))));
+						loic.addToList(new LinearIntegerConstraint(new IntegerConstant(es2e.getArgument1()), Comparator.GE, eio.getIndex()));
+						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.GE, new IntegerConstant(es2e.getArgument2())));
+						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.EQ, new IntegerConstant(es2e.getArgument1())._plus(new IntegerConstant (possiblePos))));
 						pc._addDet(loic);
 					}
 				}
@@ -392,6 +401,25 @@ public class PreProcessGraph {
 						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
 						loic.addToList(new LinearIntegerConstraint(se, Comparator.EQ, eca.getValue()) );
 						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
+						if (!pc.hasConstraint(loic)) pc._addDet(loic);
+					}
+				}
+				else if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeLastIndexOfChar) {
+					EdgeStartsWith esw = (EdgeStartsWith) e1;
+					EdgeLastIndexOfChar elio = (EdgeLastIndexOfChar) e2;
+					IntegerExpression ie = elio.getIndex().getExpression();
+					if (esw.getDest().isConstant() && ie instanceof IntegerConstant) {
+						String startsWith = esw.getDest().getSolution();
+						char character = (char) ie.solution();
+						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						if (startsWith.lastIndexOf(character) == -1) {
+							loic.addToList(new LinearIntegerConstraint(elio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+							loic.addToList(new LinearIntegerConstraint(elio.getIndex(), Comparator.GE, new IntegerConstant(startsWith.length())));
+						}
+						else {
+							loic.addToList(new LinearIntegerConstraint(elio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+							loic.addToList(new LinearIntegerConstraint(elio.getIndex(), Comparator.GE, new IntegerConstant(startsWith.lastIndexOf(character))));
+						}
 						if (!pc.hasConstraint(loic)) pc._addDet(loic);
 					}
 				}
@@ -465,7 +493,12 @@ public class PreProcessGraph {
 						for (int i = 0; i < constant1.length(); i++) {
 							for (int j = i; j < constant2.length(); j++) {
 								if (constant1.charAt(i) != constant2.charAt(j)) {
-									pc._addDet(Comparator.NE, eio1.getIndex()._plus(i), eio2.getIndex()._plus(j));
+									LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+									loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+									loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+									loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(i), Comparator.NE, eio2.getIndex()._plus(j)));
+									pc._addDet(loic);
+									//pc._addDet(Comparator.NE, eio1.getIndex()._plus(i), eio2.getIndex()._plus(j));
 								}
 							}
 						}
@@ -480,10 +513,94 @@ public class PreProcessGraph {
 						for (int i = 0; i < constant1.length(); i++) {
 							for (int j = i; j < constant2.length(); j++) {
 								if (constant1.charAt(i) != constant2.charAt(j)) {
-									pc._addDet(Comparator.NE, eio1.getIndex()._plus(i), eio2.getIndex()._plus(j));
+									LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+									loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+									loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+									loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(i), Comparator.NE, eio2.getIndex()._plus(j)));
+									pc._addDet(loic);
 								}
 							}
 						}
+					}
+				}
+			}
+		}
+		
+		
+		
+		//Speedup between charAt and indexOf
+		for (Edge e1: g.getEdges()) {
+			for (Edge e2: g.getEdges()) {
+				if (PathCondition.flagSolved == false && scg.isSatisfiable(pc)) {
+					scg.solve(pc);
+					PathCondition.flagSolved = true;
+				}
+				else if (PathCondition.flagSolved == false){
+					//println ("[preprocess] Intermediate solving failed");
+					return false;
+				}
+				if (e1.equals(e2)) continue;
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
+				if (!e1.getSource().equals(e2.getSource())) continue;
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeCharAt) {
+					EdgeIndexOf eio = (EdgeIndexOf) e1;
+					EdgeCharAt eca = (EdgeCharAt) e2;
+					if (e1.getDest().isConstant()) {
+						String solution = e1.getDest().getSolution();
+						char character = (char) eca.getValue().solution();
+						int indexOf = solution.indexOf(String.valueOf(character));
+						if (indexOf > -1) {
+							//throw new RuntimeException("reached");
+							pc._addDet(Comparator.NE,eio.getIndex(), new IntegerConstant(-1));
+						}
+						
+					}
+				}
+				else if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeCharAt) {
+					EdgeIndexOf2 eio = (EdgeIndexOf2) e1;
+					EdgeCharAt eca = (EdgeCharAt) e2;
+					if (e1.getDest().isConstant()) {
+						String solution = e1.getDest().getSolution();
+						char character = (char) eca.getValue().solution();
+						int indexOf = solution.indexOf(String.valueOf(character));
+						if (indexOf > -1) {
+							//throw new RuntimeException("reached");
+							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.LT, eio.getIndex().getMinIndex()));
+							loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE,new IntegerConstant(-1)));
+							pc._addDet(loic);
+						}
+						
+					}
+				}
+				else if (e1 instanceof EdgeIndexOfChar && e2 instanceof EdgeCharAt) {
+					EdgeIndexOfChar eio = (EdgeIndexOfChar) e1;
+					EdgeCharAt eca = (EdgeCharAt) e2;
+					if (e1.getDest().isConstant()) {
+						String solution = e1.getDest().getSolution();
+						char character = (char) eca.getValue().solution();
+						int indexOf = solution.indexOf(String.valueOf(character));
+						if (indexOf > -1) {
+							//throw new RuntimeException("reached");
+							pc._addDet(Comparator.NE,eio.getIndex(), new IntegerConstant(-1));
+						}
+						
+					}
+				}
+				else if (e1 instanceof EdgeIndexOfChar2 && e2 instanceof EdgeCharAt) {
+					EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e1;
+					EdgeCharAt eca = (EdgeCharAt) e2;
+					if (e1.getDest().isConstant()) {
+						String solution = e1.getDest().getSolution();
+						char character = (char) eca.getValue().solution();
+						int indexOf = solution.indexOf(String.valueOf(character));
+						if (indexOf> -1) {
+							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.LT, eio.getIndex().getMinDist()));
+							loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE,new IntegerConstant(-1)));
+							pc._addDet(loic);
+						}
+						
 					}
 				}
 			}
@@ -524,9 +641,20 @@ public class PreProcessGraph {
 				}
 				else if (e instanceof EdgeSubstring2Equal) {
 					EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e;
-					pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
-					pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), new IntegerConstant(es2e.a2));
-					pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.a2 - es2e.a1));
+					if (!es2e.hasSymbolicArgs()) {
+						pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
+						pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), new IntegerConstant(es2e.getArgument2()));
+						pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.getArgument2() - es2e.getArgument1()));
+					}
+					else if (es2e.getSymbolicArgument1() == null && es2e.getSymbolicArgument2() != null){
+						pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
+						pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), es2e.getSymbolicArgument2());
+						pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), 0);
+						//pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.a2 - es2e.a1));
+					}
+					else {
+						throw new RuntimeException ("Not supported, yet");
+					}
 				}
 				else if (e instanceof EdgeTrimEqual) {
 					pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
@@ -595,7 +723,7 @@ public class PreProcessGraph {
 			}
 		}
 		//println ("Done with loop");
-		SymbolicConstraintsGeneral scg = new SymbolicConstraintsGeneral();
+		
 		if (scg.isSatisfiable(pc)) {
 			//println ("is Sat");
 			scg.solve(pc);
@@ -607,6 +735,43 @@ public class PreProcessGraph {
 		else {
 			//println ("[preprocess] Some constraints could not be resolved");
 			//println(pc.header.toString());
+			/*pc.header = pc.header.and;
+			while (!scg.isSatisfiable(pc) && pc.header != null) {
+				pc.header = pc.header.and;
+			}
+			if (scg.isSatisfiable(pc)) {
+				//println ("[preprocess] This was last sat:");
+				
+				//println ("is Sat");
+				scg.solve(pc);
+				PathCondition.flagSolved = true;
+				if (pc.header != null) {
+					//println(pc.header.toString());
+				}
+				for (Vertex v: g.getVertices()) {
+					if (v.getName().equals("str_1_SYMSTRING")) {
+						//println ("Forcing str_1_SYMSTRING = 21");
+						while (pc.header != null) {
+							pc._addDet(Comparator.EQ, v.getSymbolicLength(), 21);
+							if (scg.isSatisfiable(pc)) {
+								//println ("Solvable:");
+								
+								//println ("is Sat");
+								scg.solve(pc);
+								PathCondition.flagSolved = true;
+								if (pc.header != null) {
+									//println(pc.header.toString());
+								}
+							}
+							else {
+								//println ("Not solvable " + v.getSymbolicLength());
+							}
+							pc.header = pc.header.and.and;
+						}
+						throw new RuntimeException("done");
+					}
+				}
+			}*/
 			return false;
 		}
 		//println ("[preprocess] Preprocessor done");

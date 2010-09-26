@@ -1,12 +1,15 @@
 package gov.nasa.jpf.symbc.string.graph;
 
+import gov.nasa.jpf.symbc.numeric.IntegerExpression;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class EdgeSubstring2Equal implements Edge{
 	Vertex v1, v2;
 	final String name;
-	int a1, a2;
+	private int a1, a2;
+	private IntegerExpression ie_a1, ie_a2;
 	
 	public EdgeSubstring2Equal (String name, int a1, int a2, Vertex v1, Vertex v2) {
 		this.v1 = v1;
@@ -16,11 +19,33 @@ public class EdgeSubstring2Equal implements Edge{
 		this.a2 = a2;
 	}
 	
+	public EdgeSubstring2Equal (String name, int a1, IntegerExpression a2, Vertex v1, Vertex v2) {
+		this.v1 = v1;
+		this.v2 = v2;
+		this.name = name;
+		this.a1 = a1;
+		this.ie_a2 = a2;
+	}
+	
+	public EdgeSubstring2Equal (String name, IntegerExpression a1, int a2, Vertex v1, Vertex v2) {
+		this.v1 = v1;
+		this.v2 = v2;
+		this.name = name;
+		this.ie_a1 = a1;
+		this.a2 = a2;
+	}
+	
 	public int getArgument1 () {
+		if (ie_a1 != null) {
+			throw new RuntimeException ("Not availible");
+		}
 		return a1;
 	}
 	
 	public int getArgument2 () {
+		if (ie_a2 != null) {
+			throw new RuntimeException ("Not availible");
+		}
 		return a2;
 	}
 	
@@ -107,6 +132,18 @@ public class EdgeSubstring2Equal implements Edge{
 	@Override
 	public boolean allVertecisAreConstant() {
 		return v1.isConstant() && v2.isConstant();
+	}
+	
+	public boolean hasSymbolicArgs () {
+		return ie_a1 != null || ie_a2 != null;
+	}
+	
+	public IntegerExpression getSymbolicArgument1() {
+		return ie_a1;
+	}
+	
+	public IntegerExpression getSymbolicArgument2() {
+		return ie_a2;
 	}
 	
 	

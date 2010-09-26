@@ -176,6 +176,8 @@ public class SymbolicStringHandler {
 				handleLength(invInst, th);
 			} else if (shortName.equals("indexOf")) {
 				handleIndexOf(invInst, th);
+			} else if (shortName.equals("lastIndexOf")) {
+				handleLastIndexOf(invInst, th);
 			} else if (shortName.equals("charAt")) {
 				handleCharAt (invInst, th);
 			} else if (shortName.equals("replace")) {
@@ -449,6 +451,105 @@ public class SymbolicStringHandler {
 			
 		}
 	}
+	
+	public void handleLastIndexOf(InvokeInstruction invInst, ThreadInfo th) {
+		StackFrame sf = th.getTopFrame();
+		/* Added by Gideon */
+		//StringExpression argument = (StringExpression) sf.getOperandAttr(0);
+		//boolean castException = false;
+		StringExpression sym_v1 = null;
+		StringExpression sym_v2 = null;
+		sym_v1 = (StringExpression) sf.getOperandAttr(1);
+		/*	*/
+		sym_v2 = (StringExpression) sf.getOperandAttr(0);
+		if (sym_v1 == null && sym_v2 == null) {
+			System.err.println("ERROR: symbolic method must have symbolic string operand: hanldeLength");
+		} else {
+			/*int x1 = th.pop();
+			int x2 = th.pop();
+			System.out.printf("[SymbolicStringHandler] [handleIndexOf1] %d %d\n", x1, x2);
+			th.push(0, false);
+			IntegerExpression sym_v2 = sym_v1._indexOf();
+			sf.setOperandAttr(sym_v2);*/
+			// System.out.println("conditionValue: " + conditionValue);
+
+
+			boolean s1char = true; //argument is char
+			if (th.isOperandRef()) {
+				s1char = false; //argument is string
+			}
+			int s1 = th.pop();
+			int s2 = th.pop();
+
+			IntegerExpression result = null;
+			//if (conditionValue) {
+				if (sym_v1 != null) {
+					if (sym_v2 != null) { // both are symbolic values
+						result = sym_v1._lastIndexOf(sym_v2);
+					} else {
+						if (s1char) {
+							result = sym_v1._lastIndexOf(new IntegerConstant(s1));
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s1);
+							String val = e2.asString();
+							result = sym_v1._lastIndexOf(new StringConstant(val));
+						}
+					}
+					//pc._addDet(Comparator.EQ, result, -1);
+				} else {
+					ElementInfo e1 = DynamicArea.getHeap().get(s2);
+					String val = e1.asString();
+					
+					if (sym_v2 != null) { // both are symbolic values
+						result = new StringConstant(val)._lastIndexOf(sym_v2);
+					} else {
+						if (s1char) {
+							result = new StringConstant(val)._lastIndexOf(new IntegerConstant(s1));
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s1);
+							String val2 = e2.asString();
+							result = new StringConstant(val)._lastIndexOf(new StringConstant(val2));
+						}
+					}
+					//pc.spc._addDet(comp, val, sym_v2);
+				}
+			/*} else {
+				if (sym_v1 != null) {
+					if (sym_v2 != null) { // both are symbolic values
+						result = sym_v1._indexOf(sym_v2);
+					} else {
+						ElementInfo e2 = DynamicArea.getHeap().get(s1);
+						String val = e2.asString();
+						result = sym_v1._indexOf(new StringConstant(val));
+					}
+					//pc._addDet(Comparator.GE, result, 0);
+				} else {
+					ElementInfo e1 = DynamicArea.getHeap().get(s2);
+					String val = e1.asString();
+					throw new RuntimeException("Not supported yet");
+					//pc.spc._addDet(comp, val, sym_v2);
+				}
+			}*/
+			th.push(0, false);
+			sf.setOperandAttr(result);
+			/*if (!pc.simplify()) {// not satisfiable
+				System.out.println("Not sat");
+				ss.setIgnored(true);
+			} else {
+				System.out.println("Is sat");
+				((PCChoiceGenerator) cg).setCurrentPC(pc);
+			}*/
+
+
+			//assert result != null;
+			//th.push(conditionValue ? 1 : 0, true);
+	
+			
+		}
+	}
+
 
 	/* two possibilities int, int or int, String in parameters */
 	/* currently symbolic values in parameters are ignored */
@@ -959,7 +1060,7 @@ public class SymbolicStringHandler {
 				if (sym_v2 == null) { // sym_v3 has to be symbolic
 					int val1 = s2;
 					result = sym_v3._subString(val, val1);
-					System.out.println("[SymbolicStringHandler] special push");
+					//System.out.println("[SymbolicStringHandler] special push");
 					/* Only if both arguments are concrete, something else needs
 					 * to be pushed?
 					 */
@@ -998,9 +1099,9 @@ public class SymbolicStringHandler {
 				}
 			}
 			int objRef = th.getVM().getDynamicArea().newString("", th);
-			System.out.println("[SymbolicStringHandler] " + sf.toString());																														 
+			//System.out.println("[SymbolicStringHandler] " + sf.toString());																														 
 			th.push(objRef, true);
-			System.out.println("[SymbolicStringHandler] " + sf.toString());
+			//System.out.println("[SymbolicStringHandler] " + sf.toString());
 			sf.setOperandAttr(result);
 		}
 		

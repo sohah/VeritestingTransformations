@@ -1,17 +1,17 @@
 package gov.nasa.jpf.symbc.string.graph;
 
-import gov.nasa.jpf.symbc.string.SymbolicIndexOfInteger;
+import gov.nasa.jpf.symbc.string.SymbolicLastIndexOfInteger;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EdgeIndexOf implements Edge {
+public class EdgeLastIndexOf implements Edge {
 
 	Vertex source, dest;
-	SymbolicIndexOfInteger sioi;
+	SymbolicLastIndexOfInteger sioi;
 	String name;
 	
-	public EdgeIndexOf (String name, Vertex source, Vertex dest, SymbolicIndexOfInteger sioi) {
+	public EdgeLastIndexOf (String name, Vertex source, Vertex dest, SymbolicLastIndexOfInteger sioi) {
 		this.name = name;
 		this.source = source;
 		this.dest = dest;
@@ -65,7 +65,7 @@ public class EdgeIndexOf implements Edge {
 		this.source= v;
 	}
 	
-	public SymbolicIndexOfInteger getIndex () {
+	public SymbolicLastIndexOfInteger getIndex () {
 		return sioi;
 	}
 
@@ -86,7 +86,7 @@ public class EdgeIndexOf implements Edge {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		EdgeIndexOf other = (EdgeIndexOf) obj;
+		EdgeLastIndexOf other = (EdgeLastIndexOf) obj;
 		if (dest == null) {
 			if (other.dest != null)
 				return false;
@@ -99,7 +99,5 @@ public class EdgeIndexOf implements Edge {
 			return false;
 		return true;
 	}
-	
-	
-	
+
 }

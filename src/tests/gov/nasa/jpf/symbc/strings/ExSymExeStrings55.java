@@ -11,13 +11,14 @@ public class ExSymExeStrings55 {
 	  String b = "bbb";
 	  String c = "ccc";
 	  String d = "ddd";
-	  test (a);
-	  Debug.printPC("This is the PC at the end:");
+	  test ("aaa", 1);
+	  //Debug.printPC("This is the PC at the end:");
 	  //a=a.concat(b);
 	  
   }
   
-  public static void test (String a) {
+  public static void test (String a, int d) { 
+	  System.out.println("start");
 	  int i = 0;
 	  int len = a.length();
 	  char c = a.charAt(i);
@@ -39,19 +40,22 @@ public class ExSymExeStrings55 {
 					&&
 					(a.charAt(i + 1) == 'a' || a.charAt(i + 1) == 'A')
 					) {
+			  
 		  	int idx = 0 + 9;
 			int x = a.indexOf("\"", idx);
 			int y = a.indexOf('>', x);
 			int z = a.indexOf("</a>", y);
 			if (z == -1) {
-				z = a.indexOf("</A>", y);
+				d = a.indexOf("</A>", y);
+				if (d == -1) {
+					throw new RuntimeException("aaa!");
+				}
 			}
-			/*if (z == -1) {
-				throw new RuntimeException("aaa!");
-			}*/
+			
 			//i = idxEnd + 4;
 		  }
 	  }
+	  System.out.println("end");
   }
 
 }

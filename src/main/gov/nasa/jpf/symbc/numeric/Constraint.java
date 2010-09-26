@@ -28,7 +28,7 @@ public abstract class Constraint {
 
   private final Expression right;
 
-  Constraint and;
+  public Constraint and;
 
   Constraint(Expression l, Comparator c, Expression r) {
     left = l;
@@ -93,7 +93,18 @@ public abstract class Constraint {
   }
 
   public int hashCode() {
-	  return left.hashCode() ^ comp.hashCode() ^ right.hashCode();
+	  int result = Integer.MAX_VALUE;
+	  if (left != null) {
+		  result = result ^ left.hashCode();
+	  }
+	  if (comp != null) {
+		  result = result ^ comp.hashCode();
+	  }
+	  if (right != null) {
+		  result = result ^ right.hashCode();
+	  }
+	  return result;
+	  //return left.hashCode() ^ comp.hashCode() ^ right.hashCode();
   }
 
   public String toString() {
