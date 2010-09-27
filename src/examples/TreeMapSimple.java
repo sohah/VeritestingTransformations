@@ -532,7 +532,7 @@ public class TreeMapSimple {
 		for (int i = 0; i < 4; i++) {
 			Verify.beginAtomic();
 			try {
-				switch (Verify.random(4)) {
+				switch (Verify.getInt(0,4)) {
 				case 0:
 					tree.containsKey(0);
 					break;
