@@ -20,6 +20,7 @@
 package gov.nasa.jpf.symbc.numeric;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemCompare;
 import gov.nasa.jpf.symbc.numeric.solvers.DebugSolvers;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3BitVector;
@@ -38,8 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-
 import choco.integer.IntExp;
+import coral.solvers.Env;
+import coral.solvers.SolverKind;
 
 // generalized to use different constraint solvers/decision procedures
 // Warning: should never use / modify the types from pb:
@@ -47,8 +49,8 @@ import choco.integer.IntExp;
 
 public class SymbolicConstraintsGeneral {
 	  ProblemGeneral pb;
-	  Map<SymbolicReal, Object>	symRealVar; // a map between symbolic real variables and DP variables
-	  Map<SymbolicInteger,Object>	symIntegerVar; // a map between symbolic variables and DP variables
+	  private Map<SymbolicReal, Object>	symRealVar; // a map between symbolic real variables and DP variables
+	  private Map<SymbolicInteger,Object>	symIntegerVar; // a map between symbolic variables and DP variables
 	  Boolean result; // tells whether result is satisfiable or not
 	  boolean bitVec = false; //tells whether we are running in the bit vector mode
 	  private static int tempVars = 0; //Used for choco to construct "or" clauses
@@ -292,6 +294,16 @@ public class SymbolicConstraintsGeneral {
 
 		throw new RuntimeException("## Error: Expression " + eRef);
 	}
+
+	public Map<SymbolicReal, Object> getSymRealVar() {
+		return symRealVar;
+	}
+
+
+	public Map<SymbolicInteger, Object> getSymIntegerVar() {
+		return symIntegerVar;
+	}
+
 
 	boolean createDPMixedConstraint(MixedConstraint cRef) { // TODO
 
@@ -776,7 +788,7 @@ public class SymbolicConstraintsGeneral {
 		else if(dp[0].equalsIgnoreCase("iasolver")){
 			pb = new ProblemIAsolver();
 		} else if(dp[0].equalsIgnoreCase("cvc3")){
-			pb = new ProblemCVC3();
+			pb = new ProblemCVC3(); 
 		} else if (dp[0].equalsIgnoreCase("cvc3bitvec")) {
 			pb = new ProblemCVC3BitVector();
 			bitVec = true;
@@ -784,6 +796,8 @@ public class SymbolicConstraintsGeneral {
 	    	pb = new ProblemYices();
 		} else if (dp[0].equalsIgnoreCase("debug")) {
 			pb = new DebugSolvers(pc);
+		} else if (dp[0].equalsIgnoreCase("compare")){
+			pb = new ProblemCompare(pc, this);
 		}
 		// added option to have no-solving
 		// as a result symbolic execution will explore an over-approximation of the program paths
@@ -893,33 +907,7 @@ public class SymbolicConstraintsGeneral {
 					pcVar.solution=pb.getRealValue(dpVar); // may be undefined: throws an exception
 				}
 			} catch (Exception exp) {
-				//    For each variable Xi:
-				//       Choose a value Vi for Xi from its range
-				//       Add "Xi == Vi" to the Choco problem
-				//       Solve the problem to get new ranges of values for the remaining variables.
-
-				Boolean isSolvable = true;
-				sym_realvar_mappings = symRealVar.entrySet();
-				i_real = sym_realvar_mappings.iterator();
-
-				while(i_real.hasNext() && isSolvable) {
-					Entry<SymbolicReal,Object> e = i_real.next();
-					SymbolicReal pcVar = e.getKey();
-					Object dpVar = e.getValue();
-
-					// Note: using solution_inf or solution_sup alone sometimes fails
-					// because of floating point inaccuracies
-					// trick to get a better value: cast to float?
-					pcVar.solution=(pb.getRealValueInf(dpVar) + pb.getRealValueSup(dpVar)) / 2;
-					//(float)pcVar.solution_inf;
-					pb.post(pb.eq(dpVar, pcVar.solution));
-					isSolvable = pb.solve();
-					if (isSolvable == null)
-						isSolvable = Boolean.FALSE;
-
-				}
-				if(!isSolvable)
-					System.err.println("# Warning: PC "+pc.stringPC()+" is solvable but could not find the solution!");
+				this.catchBody(symRealVar, pb, pc);
 			} // end catch
 
 
@@ -960,4 +948,49 @@ public class SymbolicConstraintsGeneral {
 		}
 
 		}
+	
+	/**
+	 * The "ProblemCompare" solver calls this to
+	 * deal with yices and choco refinements of 
+	 * solution ranges.
+	 */
+	public Map<SymbolicReal, Object> catchBody(Map<SymbolicReal, Object> realVars, ProblemGeneral prob, PathCondition pc) {
+		Set<Entry<SymbolicReal, Object>> sym_realvar_mappings;
+		Iterator<Entry<SymbolicReal, Object>> i_real;
+
+		// For each variable Xi:
+		// Choose a value Vi for Xi from its range
+		// Add "Xi == Vi" to the Choco problem
+		// Solve the problem to get new ranges of values for the remaining
+		// variables.
+
+		Boolean isSolvable = true;
+		sym_realvar_mappings = realVars.entrySet();
+		i_real = sym_realvar_mappings.iterator();
+
+		while (i_real.hasNext() && isSolvable) {
+			Entry<SymbolicReal, Object> e = i_real.next();
+			SymbolicReal pcVar = e.getKey();
+			Object dpVar = e.getValue();
+
+			// Note: using solution_inf or solution_sup alone sometimes fails
+			// because of floating point inaccuracies
+			// trick to get a better value: cast to float?
+			pcVar.solution = (prob.getRealValueInf(dpVar) + prob
+					.getRealValueSup(dpVar)) / 2;
+			// (float)pcVar.solution_inf;
+			prob.post(prob.eq(dpVar, pcVar.solution));
+			isSolvable = prob.solve();
+			if (isSolvable == null)
+				isSolvable = Boolean.FALSE;
+
+		}
+		if (!isSolvable) {
+			System.err.println("# Warning: PC " + pc.stringPC()
+					+ " is solvable but could not find the solution!");
+			return null; // alert debugSolver to not bother checking this result
+		} else {
+			return realVars;
+		}
 	}
+}

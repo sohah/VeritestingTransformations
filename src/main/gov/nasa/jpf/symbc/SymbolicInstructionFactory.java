@@ -189,7 +189,7 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 			debugMode = false;
 		}
 
-		if(dp[0].equalsIgnoreCase("choco") || dp == null) { // default is choco
+		if(dp[0].equalsIgnoreCase("choco") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare") || dp == null) { // default is choco
 		  ProblemChoco.timeBound = conf.getInt("symbolic.choco_time_bound", 30000);
 		  System.out.println("symbolic.choco_time_bound="+ProblemChoco.timeBound);
 		}
@@ -211,14 +211,13 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 		if (dontcare != null && dontcare[0] != null) {
 			SymbolicInteger.UNDEFINED = new Integer(dontcare[0]);
 			SymbolicReal.UNDEFINED = new Double(dontcare[0]);
-		}
 
 		System.out.println("symbolic.minint="+MinMax.MININT);
 		System.out.println("symbolic.maxint="+MinMax.MAXINT);
 		System.out.println("symbolic.minreal="+MinMax.MINDOUBLE);
 		System.out.println("symbolic.maxreal="+MinMax.MAXDOUBLE);
 		System.out.println("symbolic.undefined="+SymbolicInteger.UNDEFINED);
-
+		}
 	}
 
 	public Instruction create(ClassInfo ciMth, int opCode) {
