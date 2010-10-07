@@ -26,7 +26,7 @@ symbolic.dp=yices
 
 vm.storage.class=nil
 
-#symbolic.debug=true
+symbolic.debug=true
 
 listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
 
