@@ -28,4 +28,6 @@ public class MinMax {
 	public static int Debug_no_path_constraints = 0;
 	public static int Debug_no_path_constraints_sat = 0;
 	public static int Debug_no_path_constraints_unsat = 0;
+
+	public static int UniqueId = 0; // Unique id for each SymbolicInteger or SymbolicReal created
 }

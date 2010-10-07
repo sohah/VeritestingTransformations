@@ -768,7 +768,8 @@ public class SymbolicConstraintsGeneral {
 
 	public boolean isSatisfiable(PathCondition pc) {
 		if (pc == null || pc.count == 0) {
-			System.out.println("## Warning: empty path condition");
+			if (SymbolicInstructionFactory.debugMode)
+				System.out.println("## Warning: empty path condition");
 			return true;
 		}
 
@@ -788,7 +789,7 @@ public class SymbolicConstraintsGeneral {
 		else if(dp[0].equalsIgnoreCase("iasolver")){
 			pb = new ProblemIAsolver();
 		} else if(dp[0].equalsIgnoreCase("cvc3")){
-			pb = new ProblemCVC3(); 
+			pb = new ProblemCVC3();
 		} else if (dp[0].equalsIgnoreCase("cvc3bitvec")) {
 			pb = new ProblemCVC3BitVector();
 			bitVec = true;
@@ -948,10 +949,10 @@ public class SymbolicConstraintsGeneral {
 		}
 
 		}
-	
+
 	/**
 	 * The "ProblemCompare" solver calls this to
-	 * deal with yices and choco refinements of 
+	 * deal with yices and choco refinements of
 	 * solution ranges.
 	 */
 	public Map<SymbolicReal, Object> catchBody(Map<SymbolicReal, Object> realVars, ProblemGeneral prob, PathCondition pc) {
