@@ -422,9 +422,9 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	   */
 	  public void searchFinished(Search search) {
 		  //writeTable();
-		  if (search.getConfig().getStringArray("symbolic.dp")[0].equalsIgnoreCase("compare")) {
-			  ProblemCompare.dump(search);
-		  }
+//		  if (search.getConfig().getStringArray("symbolic.dp")[0].equalsIgnoreCase("compare")) {
+//			  ProblemCompare.dump(search);
+//		  }
 	  }
 
 	  /*
