@@ -180,6 +180,7 @@ public class SymbolicStringHandler {
 				handleLastIndexOf(invInst, th);
 			} else if (shortName.equals("charAt")) {
 				handleCharAt (invInst, th);
+				//return invInst;
 			} else if (shortName.equals("replace")) {
 				Instruction handled = handleReplace(invInst, th);
 				if (handled != null) {
@@ -289,11 +290,11 @@ public class SymbolicStringHandler {
 
 	}
 	
-	private Instruction handleCharAt (InvokeInstruction invInst, ThreadInfo th) {
+	private boolean handleCharAt (InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0);
 		StringExpression sym_v2 = (StringExpression) sf.getOperandAttr(1);
-
+		boolean bresult = false;
 		if ((sym_v1 == null) & (sym_v2 == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: HandleSubString1");
 		} else {
@@ -302,10 +303,14 @@ public class SymbolicStringHandler {
 
 			IntegerExpression result = null;
 			if (sym_v1 == null) { // operand 0 is concrete
+				
 				int val = s1;
+				//System.out.println("[handleCharAt] Mmm...! " + val);
 				result = sym_v2._charAt(new IntegerConstant(val));
 			} else {
-				//throw new RuntimeException(sym_v1.toString());
+				//System.out.println("[handleCharAt] YES! " + sym_v1.getClass() + " " + sym_v1.toString());
+				
+				
 				if (sym_v2 == null) {
 					ElementInfo e1 = DynamicArea.getHeap().get(s2);
 					String val2 = e1.asString();
@@ -314,17 +319,15 @@ public class SymbolicStringHandler {
 				} else {
 					result = sym_v2._charAt(sym_v1);
 				}
+				bresult = true;
+				//System.out.println("[handleCharAt] Ignoring: " + result.toString());
+				//th.push(0, false);
 			}
-			int objRef = th.getVM().getDynamicArea().newString("", th); /*
-																																	 * dummy
-																																	 * String
-																																	 * Object
-																																	 */
 			//th.push(objRef, true);
 			th.push(0, false);
 			sf.setOperandAttr(result);
 		}
-		return null;
+		return bresult;
 
 	}
 

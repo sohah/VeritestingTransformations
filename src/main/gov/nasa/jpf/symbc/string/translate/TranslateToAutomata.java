@@ -78,7 +78,7 @@ public class TranslateToAutomata {
 			}
 		}*/
 		mapAutomaton = null;
-		
+		//println ("[isSat] integer constraints: " + pc.header);
 		boolean restart = true;
 		while (restart) {
 			restart = false;
@@ -661,7 +661,7 @@ public class TranslateToAutomata {
 							if (nonequalityFlipFlop == 0) {
 								Automaton a1 = mapAutomaton.get(eio.getSource());
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return false;
+								if (temp.isEmpty()) return false; //Maybe remove the possibility of -1?
 								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getSource(), temp);
 								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
@@ -953,7 +953,7 @@ public class TranslateToAutomata {
 	}
 	
 	private static boolean handleEdgeStartsWith (EdgeStartsWith e) {
-		//println ("[handleEdgeStartsWith] entered");
+		//println ("[handleEdgeStartsWith] entered: " + e.toString());
 		//println ("[handleEdgeStartsWith] " + e.getSource().getName() + " and " + e.getDest().getName());
 		boolean a1Changed, a2Changed;
 		a1Changed = false; a2Changed = false;
@@ -964,8 +964,8 @@ public class TranslateToAutomata {
 		
 		Automaton intersection = AutomatonExtra.intersection(a1, a2);
 		if (intersection.isEmpty()) {
+			//println ("[handleEdgeStartsWith] 1. intersection empty");
 			elimanateCurrentLengths();
-			//println ("[handleEdgeStartsWith] intersection empty");
 			return false;
 		}
 		
@@ -1007,7 +1007,7 @@ public class TranslateToAutomata {
 	}
 	
 	private static boolean handleEdgeEndsWith (EdgeEndsWith e) {
-		//println ("[handleEdgeEndsWith] entered");
+		//println ("[handleEdgeEndsWith] entered: " + e.toString());
 		boolean a1Changed, a2Changed;
 		a1Changed = false; a2Changed = false;
 		Automaton a1 = mapAutomaton.get(e.getSource());
@@ -1018,17 +1018,23 @@ public class TranslateToAutomata {
 			elimanateCurrentLengths();
 			return false;
 		}
-		
+		//println ("[handleEdgeEndsWith] 1");
 		if (!a1.equals(intersection)) {a1Changed = true;}
+		//println ("[handleEdgeEndsWith] 1 done");
 		mapAutomaton.put(e.getSource(), intersection);
 		if (!e.getSource().isConstant()) e.getSource().setSolution(intersection.getShortestExample(true));
 		
+		//println ("[handleEdgeEndsWith] 2"); 
 		
 		Automaton temp = AutomatonExtra.endingSubstrings(intersection);
 		Automaton intersection2 = AutomatonExtra.intersection(temp, a2);
+		//println ("[handleEdgeEndsWith] 3");
 		if (!a2.equals(intersection2)) {a2Changed = true;}
+		//println ("[handleEdgeEndsWith] 3 done");
 		mapAutomaton.put(e.getDest(), intersection2);
 		if (!e.getDest().isConstant()) e.getDest().setSolution(intersection2.getShortestExample(true));
+		
+		//println ("[handleEdgeEndsWith] 4"); 
 		
 		boolean result1, result2;
 		result1 = true; result2 = true;
@@ -1065,8 +1071,13 @@ public class TranslateToAutomata {
 		Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
 		Automaton intersection = AutomatonExtra.intersection(a1, temp);
 		if (intersection.isEmpty()) {
-			//println ("[handleEdgeCharAt] intersection empty, making index == -1 because the character could not be found anywhere");
-			global_pc._addDet(Comparator.EQ, e.getIndex(), new IntegerConstant(-1));
+			//println ("[handleEdgeCharAt] 1. intersection empty, making index == -1 because the character could not be found anywhere");
+			//Done: Test performance, looks good
+			LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant (e.getIndex().solution())));
+			loic.addToList(new LinearIntegerConstraint(e.getValue(), Comparator.NE, new IntegerConstant (e.getValue().solution())));				
+			global_pc._addDet(loic);			
+
 			return false;
 		}
 		else {
@@ -1074,7 +1085,7 @@ public class TranslateToAutomata {
 			temp = temp.concatenate(Automaton.makeChar((char) e.getValue().solution()).concatenate(AutomatonExtra.makeAnyStringFixed()));
 			intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
-				//println ("[handleEdgeCharAt] intersection empty, current index or value is not valid");
+				//println ("[handleEdgeCharAt] 2. intersection empty, current index or value is not valid");
 				LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant (e.getIndex().solution())));
 				loic.addToList(new LinearIntegerConstraint(e.getValue(), Comparator.NE, new IntegerConstant (e.getValue().solution())));				
@@ -1846,7 +1857,7 @@ public class TranslateToAutomata {
 	}
 	
 	private static boolean handleEdgeTrimEqual (EdgeTrimEqual e) {
-		//println ("[handleEdgeTrimEqual] entered");
+		//println ("[handleEdgeTrimEqual] entered " + e.toString());
 		Automaton a1 = mapAutomaton.get(e.getSource());
 		Automaton a2 = mapAutomaton.get(e.getDest());
 		//println ("[handleEdgeTrimEqual] " + e.getSource().getName() + " and " + e.getDest().getName());

@@ -41,11 +41,12 @@ import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.MinMax;
+import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.string.graph.PreProcessGraph;
 
-
+//TODO: Repeat the fix found in _charAt in other constraints
 public abstract class StringExpression extends Expression {
 
   SymbolicInteger length = null;
@@ -64,15 +65,20 @@ public abstract class StringExpression extends Expression {
   static int lengthcount = 0;
   
   public IntegerExpression _charAt (IntegerExpression ie) {
+	  boolean quickSwitch = false;
 	  if (charAt == null) {
 		  charAt = new HashMap<String, SymbolicCharAtInteger>();
 	  }
+	  quickSwitch = PathCondition.flagSolved;
+	  PathCondition.flagSolved = false;
 	  SymbolicCharAtInteger result = charAt.get(ie.toString());
 	  if (result == null) {
+		  //System.out.println ("[StringExpression] [_charAt] could not find: '" + ie.toString() + "' in: " + charAt);
 		  result = new SymbolicCharAtInteger("CharAt(" + ie.toString() + ")_" + lengthcount + "_", 0, MinMax.MAXINT, this, ie);
 		  lengthcount++;
 		  charAt.put(ie.toString(), result);
 	  }
+	  //PathCondition.flagSolved = quickSwitch;
 	  return result;
   }
   

@@ -54,11 +54,13 @@ public class PathCondition {
 	//Added by Gideon
 	public void _addDet (LinearOrIntegerConstraints loic) {
 		//throw new RuntimeException ("Not being used right now");
-		flagSolved = false;
-		Constraint t = (Constraint) loic;
-		t.and = header;
-		header = t;
-		count++;
+		if (!this.hasConstraint(loic)) {
+			flagSolved = false;
+			Constraint t = (Constraint) loic;
+			t.and = header;
+			header = t;
+			count++;
+		}
 	}
 
 	public void _addDet(Comparator c, Expression l, Expression r) {

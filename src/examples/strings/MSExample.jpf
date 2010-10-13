@@ -31,3 +31,5 @@ symbolic.string_dp=automata
 symbolic.method= strings.MSExample.IsEasyChairQuery(sym) 
 
 listener = gov.nasa.jpf.symbc.SymbolicListenerClean
+
+vm.storage.class=nil

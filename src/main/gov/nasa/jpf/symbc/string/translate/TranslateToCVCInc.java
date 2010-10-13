@@ -19,6 +19,8 @@ import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf2;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar2;
+import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOf;
+import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
@@ -73,20 +75,28 @@ public class TranslateToCVCInc {
 	private static StringGraph global_graph;
 	private static PathCondition global_pc;
 	
+	private static boolean CVCEverCalled;
+	
 	private static SymbolicConstraintsGeneral scg;
 	
 	//most sign, first letter
 	public static boolean isSat (StringGraph g, PathCondition pc) {
 		if (scg == null) scg = new SymbolicConstraintsGeneral();
+		CVCEverCalled = false;
 		global_graph = g;
 		global_pc = pc;
 		expr = null;
 		//println ("[isSat] Bitvector: PC passed on: " + pc.header);
 		map = new HashMap<Vertex, ExprMut>();
 		try{
-	        flags = ValidityChecker.createFlags(null);
-	        flags.setFlag("dagify-exprs",false);
-	        vc = ValidityChecker.create(flags);
+			//if (vc == null) {
+		        flags = ValidityChecker.createFlags(null);
+		        flags.setFlag("dagify-exprs",false);
+		        vc = ValidityChecker.create(flags);
+			//}
+			//else {
+				//Do nothing
+			//}
 	       // System.out.//println("validity checker is initialized");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -94,145 +104,115 @@ public class TranslateToCVCInc {
 	    }
 		//println ("[isSat] Walking through the edges");
 		for (Edge e: g.getEdges()) {
-			if (e instanceof EdgeStartsWith) {
-				handleEdgeStartsWith ((EdgeStartsWith) e);
-			}
-			else if (e instanceof EdgeNotStartsWith) {
-				handleEdgeNotStartsWith((EdgeNotStartsWith) e);
-			}
-			else if (e instanceof EdgeEqual) {
-				handleEdgeEqual ((EdgeEqual) e);
-			}
-			else if (e instanceof EdgeNotEqual) {
-				handleEdgeNotEqual((EdgeNotEqual) e);
-			}
-			else if (e instanceof EdgeTrimEqual) {
-				handleEdgeTrim((EdgeTrimEqual) e);
-			}
-			else if (e instanceof EdgeCharAt) {
-				handleEdgeCharAt((EdgeCharAt) e);
-			}
-			else if (e instanceof EdgeConcat) {
-				handleEdgeConcat((EdgeConcat) e);
-			}
-			else if (e instanceof EdgeContains) {
-				handleEdgeContains((EdgeContains) e);
-			}
-			else if (e instanceof EdgeEndsWith) {
-				handleEdgeEndsWith((EdgeEndsWith) e);
-			}
-			else if (e instanceof EdgeIndexOf) {
-				handleEdgeIndexOf((EdgeIndexOf) e);
-			}
-			else if (e instanceof EdgeIndexOfChar) {
-				handleEdgeIndexOfChar((EdgeIndexOfChar) e);
-			}
-			else if (e instanceof EdgeIndexOf2) {
-				//println ("[isSat] EdgeIndexOf2");
-				handleEdgeIndexOf2((EdgeIndexOf2) e);
-			}
-			else if (e instanceof EdgeIndexOfChar2) {
-				//println ("[isSat] EdgeIndexOfChar2");
-				handleEdgeIndexOfChar2((EdgeIndexOfChar2) e);
-			}
-			else if (e instanceof EdgeNotContains) {
-				handleEdgeNotContains((EdgeNotContains) e);
-			}
-			else if (e instanceof EdgeNotEndsWith) {
-				handleEdgeNotEndsWith((EdgeNotEndsWith) e);
-			}
-			else if (e instanceof EdgeSubstring1Equal) {
-				handleEdgeSubstring1Equal((EdgeSubstring1Equal) e);
-			}
-			else if (e instanceof EdgeSubstring2Equal) {
-				handleEdgeSubstring2Equal((EdgeSubstring2Equal) e);
-			}
-			if(expr != null) {
-				//println ("[isSat] expr: " + expr.toString());
+			boolean result = handle(e);
+			if (result == false) {
+				if (PathCondition.flagSolved == false) {
+					//println ("[isSat] Path Condition changed, starting integer solver...");
+					if (scg.isSatisfiable(pc)) {
+						//println ("[isSat] Found to be sat, solving...");
+						scg.solve(pc);
+						PathCondition.flagSolved = true;
+						//println ("[isSat] solved " + global_pc.header.toString());
+						vc.delete();
+						return isSat (g, pc); //remove recursion
+					}
+					else {
+						//println ("[isSat] integer solver could not solve");
+						//println ("[isSat] string expr: " + expr.toString());
+						//println ("[isSat] constraints: " + global_pc.header.toString());
+						return false;
+					}
+				}
+				else {
+					return false;
+				}
 			}
 		}
-		//println ("[isSat] Done walking through the edges");
-		/* TODO: Remove*/		
-		if (expr == null) return true;
-		//println(expr.toString());
-		//vc.loadFile(fileName);
-		vc.push();
-		SatResult result = vc.checkUnsat(vc.trueExpr());
-		if (result == SatResult.UNSATISFIABLE) {
-			vc.pop();
-            println ("[isSat] Current solutions is unsat, extending lengts");
-            LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
-            for (Vertex v: g.getVertices()) {
-            	if (!v.getName().startsWith("CHAR"))
-            		loic.addToList(new LinearIntegerConstraint(v.getSymbolicLength(), Comparator.NE, new IntegerConstant(v.getSymbolicLength().solution())));
-            }
-            for (Edge e: g.getEdges()) {
-            	if (e instanceof EdgeCharAt) {
-            		EdgeCharAt eca = (EdgeCharAt) e;
-            		loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.NE, new IntegerConstant(eca.getIndex().solution())));
-            		loic.addToList(new LinearIntegerConstraint(eca.getValue(), Comparator.NE, new IntegerConstant(eca.getValue().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOf) {
-            		EdgeIndexOf eio = (EdgeIndexOf) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOfChar) {
-            		EdgeIndexOfChar eio = (EdgeIndexOfChar) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOf2) {
-            		EdgeIndexOf2 eio = (EdgeIndexOf2) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().getMinIndex().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOfChar2) {
-            		EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(eio.getIndex().getMinDist().solution())));
-            	}
-            }
-            //println ("[isSat] loic: " + loic);
-            pc._addDet(loic);
-            println ("[isSat] firing up integer constraint solver");
-            if (scg.isSatisfiable(pc)) {
-            	//println ("[isSat] integer constriant solver found it to be sat, solving...");
-				scg.solve(pc);
-				pc.flagSolved = true;
-				//println ("[isSat] solved PC: " + pc.header); 
-				vc.delete();
-				return isSat (g, pc); //TODO: Prevent infinite looping
-			}
-			else {
-				//println ("[isSat] With the added constraint, could not be solved");
-				vc.delete();
-				return false;
-			}
-        }
-        else if (result == SatResult.SATISFIABLE) {
-        	HashMap model = vc.getConcreteModel();
-        	//println(model.toString());
-        	
-        	for (Object e: model.entrySet()) {
-        		Entry entry = (Entry) e;
-        		String vertexName = entry.getKey().toString();
-        		String rawData = entry.getValue().toString();
-        		rawData = fromRawData(rawData);
-        		////println (vertexName + " = " + rawData);
-        		Vertex v = g.findVertex(vertexName);
-        		v.setSolution(rawData);
-        	}
-        	
-        	vc.pop();
-        	vc.delete();
-           // System.out.//println("Satisfiable (Invalid)\n");
-            return true;
-        }else{
-        	vc.pop();
-        	vc.delete();
-        	return false;
-        }
+		if (!CVCEverCalled) {
+			return true;
+		}
 		
-		//return true;
+		//println ("[post] Formula to check: " + vc.trueExpr());
+		//println ("[post] On top of       : " + vc.getAssumptions());
+		SatResult satResult = vc.checkUnsat(vc.trueExpr());
+		if (satResult == SatResult.SATISFIABLE) {
+			HashMap model = vc.getConcreteModel();
+	    	//println(model.toString());
+	    	
+	    	for (Object e: model.entrySet()) {
+	    		Entry entry = (Entry) e;
+	    		String vertexName = entry.getKey().toString();
+	    		String rawData = entry.getValue().toString();
+	    		rawData = fromRawData(rawData);
+	    		////println (vertexName + " = " + rawData);
+	    		Vertex v = g.findVertex(vertexName);
+	    		v.setSolution(rawData);
+	    	}
+			//println ("[isSat] Done walking through the edges");
+			/* TODO: Remove*/
+			vc.delete();
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	private static boolean handle (Edge e) {
+		if (e instanceof EdgeStartsWith) {
+			return handleEdgeStartsWith ((EdgeStartsWith) e);
+		}
+		else if (e instanceof EdgeNotStartsWith) {
+			return handleEdgeNotStartsWith((EdgeNotStartsWith) e);
+		}
+		else if (e instanceof EdgeEndsWith) {
+			return handleEdgeEndsWith ((EdgeEndsWith) e);
+		}
+		else if (e instanceof EdgeNotEndsWith) {
+			return handleEdgeNotEndsWith((EdgeNotEndsWith) e);
+		}
+		else if (e instanceof EdgeNotEqual) {
+			return handleEdgeNotEqual((EdgeNotEqual) e);
+		}
+		else if (e instanceof EdgeTrimEqual) {
+			return handleEdgeTrim((EdgeTrimEqual) e);
+		}
+		else if (e instanceof EdgeSubstring1Equal) {
+			return handleEdgeSubstring1Equal((EdgeSubstring1Equal) e);
+		}
+		else if (e instanceof EdgeSubstring2Equal) {
+			return handleEdgeSubstring2Equal((EdgeSubstring2Equal) e);
+		}
+		else if (e instanceof EdgeConcat) {
+			return handleEdgeConcat((EdgeConcat) e);
+		}
+		else if (e instanceof EdgeCharAt) {
+			return handleEdgeCharAt((EdgeCharAt) e);
+		}
+		else if (e instanceof EdgeIndexOf) {
+			return handleEdgeIndexOf((EdgeIndexOf) e);
+		}
+		else if (e instanceof EdgeIndexOf2) {
+			return handleEdgeIndexOf2((EdgeIndexOf2) e);
+		}
+		else if (e instanceof EdgeIndexOfChar) {
+			return handleEdgeIndexOfChar((EdgeIndexOfChar) e);
+		}
+		else if (e instanceof EdgeIndexOfChar2) {
+			return handleEdgeIndexOfChar2((EdgeIndexOfChar2) e);
+		}
+		else if (e instanceof EdgeContains) {
+			return handleEdgeContains((EdgeContains) e);
+		}
+		else if (e instanceof EdgeNotContains) {
+			return handleEdgeNotContains((EdgeNotContains) e);
+		}
+		else if (e instanceof EdgeLastIndexOfChar) {
+			return handleEdgeLastIndexOfChar((EdgeLastIndexOfChar) e);
+		}
+		else {
+			throw new RuntimeException("Not handled: " + e.getClass());
+		}
 	}
 	
 	private static String fromRawData (String data) {
@@ -253,14 +233,14 @@ public class TranslateToCVCInc {
 		return result.toString();
 	}
 	
-	private static Expr startsWith (Edge e) {
+	private static boolean handleEdgeStartsWith (EdgeStartsWith e) {
+		//println ("[handleEdgeStartsWith] entered: " + e.toString());
+		boolean result = false;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			ExprMut source = getExprMut (e.getSource());
 			ExprMut dest = getExprMut (e.getDest());
-			
 			ExprMut temp = vc.newBVExtractExpr(source, e.getSource().getLength() * 8 - 1, (e.getSource().getLength() - e.getDest().getLength() + 1) * 8 - 8);
-			return (vc.eqExpr(temp, dest));
-			
+			result = post(vc.eqExpr(temp, dest));
 		}
 		else if (!e.getSource().isConstant()) {
 			ExprMut source = getExprMut(e.getSource());
@@ -279,7 +259,7 @@ public class TranslateToCVCInc {
 				}
 			}
 			//println ("[startsWith] returning: " + lit);
-			return (lit);
+			result = post (lit);
 		}
 		else if (!e.getDest().isConstant()) {
 			ExprMut dest = getExprMut(e.getDest());
@@ -305,18 +285,79 @@ public class TranslateToCVCInc {
 					listOfLit = vc.orExpr(listOfLit, lit);
 				}
 			}
-			return (listOfLit);
+			result = post (listOfLit);
 		}
-		return null;
+		else {
+			throw new RuntimeException("This should not be reached");
+		}
+		if (result == false) {
+			//println ("[handleEdgeStartsWith] eliminate lengths");
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+			//println ("[handleEdgeStartsWith] " + global_pc.header.toString());
+		}
+		//println ("[handleEdgeStartsWith] returning true");
+		return result;
 	}
 	
-	private static void handleEdgeStartsWith (EdgeStartsWith e) {
-		post (startsWith(e));
-	}
-	
-	private static void handleEdgeNotStartsWith (EdgeNotStartsWith e) {
-		if (e.getSource().getLength() < e.getDest().getLength()) return;
-		post (vc.notExpr(startsWith(e)));
+	private static boolean handleEdgeNotStartsWith (EdgeNotStartsWith e) {
+		//println ("[handleEdgeNotStartsWith] entered");
+		if (e.getSource().getLength() < e.getDest().getLength()) return true;
+		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			ExprMut source = getExprMut (e.getSource());
+			ExprMut dest = getExprMut (e.getDest());
+			ExprMut temp = vc.newBVExtractExpr(source, e.getSource().getLength() * 8 - 1, (e.getSource().getLength() - e.getDest().getLength() + 1) * 8 - 8);
+			return post(vc.notExpr(vc.eqExpr(temp, dest)));
+		}
+		else if (!e.getSource().isConstant()) {
+			ExprMut source = getExprMut(e.getSource());
+			String constant = e.getDest().getSolution();
+			//println ("[startsWith] constant: " + constant);
+			Expr lit = null;
+			for (int i = 0; i < constant.length(); i++) {
+				ExprMut temp = vc.newBVExtractExpr(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+				char character = constant.charAt(i);
+				boolean[] bits = toBits (character);
+				if (lit == null) {
+					lit = vc.eqExpr(temp, vc.newBVConstExpr(bits));
+				}
+				else {
+					lit = vc.andExpr(lit, vc.eqExpr(temp, vc.newBVConstExpr(bits)));
+				}
+			}
+			//println ("[startsWith] returning: " + lit);
+			return post (vc.notExpr(lit));
+		}
+		else if (!e.getDest().isConstant()) {
+			ExprMut dest = getExprMut(e.getDest());
+			String constant = e.getSource().getSolution();
+			Expr listOfLit = null;
+			for (int j = 0; j < constant.length(); j++) {
+				Expr lit = null;
+				for (int i = 0; i <= j; i++) {
+					ExprMut temp = vc.newBVExtractExpr(dest, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					char character = constant.charAt(i);
+					boolean[] bits = toBits (character);
+					if (lit == null) {
+						lit = vc.eqExpr(temp, vc.newBVConstExpr(bits));
+					}
+					else {
+						lit = vc.andExpr(lit, vc.eqExpr(temp, vc.newBVConstExpr(bits)));
+					}
+				}
+				if (listOfLit == null) {
+					listOfLit = lit;
+				}
+				else {
+					listOfLit = vc.orExpr(listOfLit, lit);
+				}
+			}
+			return post (vc.notExpr((listOfLit)));
+		}
+		else {
+			String destConstant = e.getDest().getSolution();
+			String sourceConstant = e.getSource().getSolution();
+			return !sourceConstant.startsWith(destConstant);
+		}
 	}
 	
 	private static Expr endsWith (Edge e) {
@@ -376,15 +417,23 @@ public class TranslateToCVCInc {
 		return null;
 	}
 	
-	private static void handleEdgeEndsWith (EdgeEndsWith e) {
-		post (endsWith(e));
+	private static boolean handleEdgeEndsWith (EdgeEndsWith e) {
+		boolean result = post (endsWith(e));
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
-	private static void handleEdgeNotEndsWith (EdgeNotEndsWith e) {
+	private static boolean handleEdgeNotEndsWith (EdgeNotEndsWith e) {
 		if (e.getDest().getLength() > e.getSource().getLength()) {
-			return;
+			return true;
 		}
-		post (vc.notExpr(endsWith(e)));
+		boolean result = post (vc.notExpr(endsWith(e)));
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
 	private static Expr equal (Edge e) {
@@ -424,24 +473,21 @@ public class TranslateToCVCInc {
 	}
 	
 	
-	private static void handleEdgeNotEqual (EdgeNotEqual e) {
+	private static boolean handleEdgeNotEqual (EdgeNotEqual e) {
+		//println ("[handleEdgeNotEqual] entered");
 		if (e.getSource().getLength() != e.getDest().getLength()) {
-			return;
+			return true;
 		}
 		
-		post (vc.notExpr(equal(e)));
+		return post (vc.notExpr(equal(e)));
 	}
 	
-	private static void handleEdgeEqual (EdgeEqual e) {
-		post (equal(e));
-	}
-	
-	private static void handleEdgeTrim (EdgeTrimEqual e) {
+	private static boolean handleEdgeTrim (EdgeTrimEqual e) {
+		//println ("[handleEdgeTrim] entered");
 		if (e.getSource().getLength() == e.getDest().getLength()) {
-			post (equal(e));
-			return;
+			return post (equal(e));
 		}
-		
+		boolean result = false;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			ExprMut source = getExprMut(e.getSource());
 			ExprMut dest = getExprMut(e.getDest());
@@ -465,7 +511,7 @@ public class TranslateToCVCInc {
 				}
 				listOflit = or (listOflit, lit);
 			}
-			post (listOflit);
+			result = post (listOflit);
 			
 		}
 		else if (!e.getSource().isConstant()) {
@@ -506,7 +552,7 @@ public class TranslateToCVCInc {
 					listOfLit = vc.orExpr(listOfLit, lit);
 				}
 			}
-			post (listOfLit);
+			result = post (listOfLit);
 		}
 		else if (!e.getDest().isConstant()) {
 			Expr dest = getExprMut(e.getDest());
@@ -519,19 +565,28 @@ public class TranslateToCVCInc {
 				Expr temp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
 				lit = and (lit, vc.eqExpr(temp, vc.newBVConstExpr(toBits(constant.charAt(i)))));
 			}
-			post (lit);
+			result = post (lit);
 		}
+		else {
+			throw new RuntimeException("This should not be reached");
+		}
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
-	public static void handleEdgeCharAt (EdgeCharAt e) {
+	private static boolean handleEdgeCharAt (EdgeCharAt e) {
+		boolean result = true;
 		if (!e.getSource().isConstant()) {
 			ExprMut source = getExprMut(e.getSource());
 			char c = (char) e.getValue().solution();
 			int index = e.getIndex().solution();
-			println ("[handleEdgeCharAt] " + c + " " + index);
+			//println ("[handleEdgeCharAt] " + c + " " + index);
 			Expr temp = vc.newBVExtractExpr(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
 			Expr cons = vc.newBVConstExpr(toBits(c));
-			post (vc.eqExpr(temp, cons));
+			//println ("[handleEdgeCharAt] posting: " + vc.eqExpr(temp, cons));
+			result = post (vc.eqExpr(temp, cons));
 		}
 		else {
 			String constant = e.getSource().getSolution();
@@ -540,19 +595,36 @@ public class TranslateToCVCInc {
 			if (index > -1) {
 				ExprMut temp1 = vc.newBVConstExpr(toBits(constant.charAt(index)));
 				ExprMut temp2 = vc.newBVConstExpr(toBits(c));
-				post (vc.eqExpr(temp1, temp2));
+				//println ("[handleEdgeCharAt] posting: " + vc.eqExpr(temp1, temp2));
+				result = post (vc.eqExpr(temp1, temp2));
 			}
 			else {
+				Expr lit = null;
 				for (int i = 0; i < constant.length(); i++) {
 					ExprMut temp1 = vc.newBVConstExpr(toBits(constant.charAt(i)));
 					ExprMut temp2 = vc.newBVConstExpr(toBits(c));
-					post (vc.notExpr(vc.eqExpr(temp1, temp2)));
+					lit = and (lit, vc.notExpr(vc.eqExpr(temp1, temp2)));
 				}
+				//println ("[handleEdgeCharAt] posting: " + lit.toString());
+				result = post (lit);
 			}
 		}
+		if (result == false) {
+			//println ("[handleEdgeCharAt] returning false");
+			//LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			//println ("[handleEdgeCharAt] e.getSource().getLength(): " + e.getSource().getLength());
+			//println ("[handleEdgeCharAt] index: " + e.getIndex().solution());
+			LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			loic.addToList(new LinearIntegerConstraint(e.getValue(), Comparator.NE, new IntegerConstant(e.getValue().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
 	}
 	
-	private static void handleEdgeConcat (EdgeConcat e) {
+	private static boolean handleEdgeConcat (EdgeConcat e) {
+		//println ("[handleEdgeConcat] entered");
+		boolean result = false;
 		if (e.getDest().isConstant()) {
 			//println ("[handleEdgeConcat] dest is constant");
 			if (!e.getSources().get(0).isConstant() && !e.getSources().get(1).isConstant()) {
@@ -571,7 +643,7 @@ public class TranslateToCVCInc {
 					Expr cons = vc.newBVConstExpr(toBits(constant.charAt(i + e.getSources().get(0).getLength())));
 					lit = and (lit, vc.eqExpr(temp, cons));
 				}
-				post(lit);
+				result = post(lit);
 			}
 			else if (!e.getSources().get(0).isConstant()) {
 				String destConstant = e.getDest().getSolution();
@@ -584,7 +656,7 @@ public class TranslateToCVCInc {
 					ExprMut cons = vc.newBVConstExpr(toBits(destConstant.charAt(i)));
 					lit = and (lit, vc.eqExpr(temp, cons));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else if (!e.getSources().get(1).isConstant()) {
 				String destConstant = e.getDest().getSolution();
@@ -597,9 +669,17 @@ public class TranslateToCVCInc {
 					ExprMut cons = vc.newBVConstExpr(toBits(destConstant.charAt(i)));
 					lit = and (lit, vc.eqExpr(temp, cons));
 				}
-				post (lit);
+				result = post (lit);
 			}
-			
+			else {
+				//System.out.println(e.getDest().isConstant() + " " + e.getSources().get(1).isConstant() + " " + e.getSources().get(0).isConstant());
+				String destConstant = e.getDest().getSolution();
+				String source1Constant = e.getSources().get(0).getSolution();
+				String source2Constant = e.getSources().get(1).getSolution();
+				result = (destConstant.equals(source1Constant.concat(source2Constant)));
+
+				//throw new RuntimeException ("Should not be reached");
+			}
 		}
 		else {
 			//println ("[handleEdgeConcat] dest is NOT constant");
@@ -615,7 +695,7 @@ public class TranslateToCVCInc {
 				//println ("[handleEdgeConcat] " + e.getDest().getLength() + " - " + e.getSources().get(0).getLength());
 				temp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - e.getSources().get(0).getLength()) * 8 - 1, 0);
 				lit = and (lit, vc.eqExpr(temp, source2));
-				post(lit);
+				result = post(lit);
 			}
 			else if (!e.getSources().get(0).isConstant()) {
 				ExprMut source1 = getExprMut(e.getSources().get(0));
@@ -633,7 +713,7 @@ public class TranslateToCVCInc {
 					Expr cons = vc.newBVConstExpr(toBits (character));
 					lit = and (lit, vc.eqExpr(temp, cons));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else if (!e.getSources().get(1).isConstant()) {
 				String source1Cons = e.getSources().get(0).getSolution();
@@ -651,18 +731,27 @@ public class TranslateToCVCInc {
 					Expr source2Temp = vc.newBVExtractExpr(source2, (e.getSources().get(1).getLength() - i) * 8 - 1, (e.getSources().get(1).getLength() - i) * 8 - 8);
 					lit = and (lit, vc.eqExpr(destTemp, source2Temp));
 				}
-				post (lit);
+				result = post (lit);
 			}
 		}
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
 	private static Expr contains (Edge e) {
+		return contains (e, 0);
+	}
+	
+	private static Expr contains (Edge e, int startIndex) {
+		if (startIndex < 0) startIndex = 0;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			ExprMut source = getExprMut(e.getSource());
 			ExprMut dest = getExprMut(e.getDest());
 			int diff = e.getSource().getLength() - e.getDest().getLength();
 			Expr listOfLit = null;
-			for (int i = 0; i <= diff; i++) {
+			for (int i = startIndex; i <= diff; i++) {
 				Expr lit = null;
 				for (int j = i; j < i + e.getDest().getLength(); j++) {
 					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - j) * 8 - 1, (e.getSource().getLength() - j) * 8 - 8);
@@ -680,7 +769,7 @@ public class TranslateToCVCInc {
 			int diff = e.getSource().getLength() - destCons.length();
 			//println ("[contains] diff: " + diff);
 			Expr listOfLit = null;
-			for (int i = 0; i <= diff; i++) {
+			for (int i = startIndex; i <= diff; i++) {
 				Expr lit = null;
 				for (int j = i; j < i + destCons.length(); j++) {
 					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - j) * 8 - 1, (e.getSource().getLength() - j) * 8 - 8);
@@ -694,8 +783,8 @@ public class TranslateToCVCInc {
 		else if (!e.getDest().isConstant()) {
 			ExprMut dest = getExprMut(e.getDest());
 			String sourceCons = e.getSource().getSolution();
-			String[] possibleSolutions = new String [e.getSource().getLength() - e.getDest().getLength() + 1];
-			for (int i = 0; i <= e.getSource().getLength() - e.getDest().getLength(); i++) {
+			String[] possibleSolutions = new String [e.getSource().getLength() - e.getDest().getLength() + 1 - startIndex];
+			for (int i = startIndex; i <= e.getSource().getLength() - e.getDest().getLength(); i++) {
 				possibleSolutions[i] = sourceCons.substring(i, i+e.getDest().getLength());
 			}
 			Expr listOfLit = null;
@@ -713,16 +802,25 @@ public class TranslateToCVCInc {
 		return null;
 	}
 	
-	private static void handleEdgeContains (EdgeContains e) {
+	private static boolean handleEdgeContains (EdgeContains e) {
+		//println ("[handleEdgeContains] entered");
+		boolean result = true;
 		if (e.getSource().getLength() == e.getDest().getLength()) {
 			//println ("[handleEdgeContains] handing over to equals");
-			post (equal(e));
-			return;
+			result = post (equal(e));
 		}
-		post (contains(e));
+		else {
+			result = post (contains(e));
+		}
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
-	private static void handleEdgeIndexOf2 (EdgeIndexOf2 e) {
+	private static boolean handleEdgeIndexOf2 (EdgeIndexOf2 e) {
+		//println ("[handleEdgeIndexOf2] entered: " + e.toString());
+		boolean result = true;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			ExprMut source = getExprMut (e.getSource());
 			ExprMut dest = getExprMut (e.getDest());
@@ -734,18 +832,20 @@ public class TranslateToCVCInc {
 					ExprMut destTemp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - (i - index)) * 8 - 1, (e.getDest().getLength() - (i - index)) * 8 - 8);
 					lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
 				}
-				post (lit);
+				//println ("[handleEdgeIndexOf2] posting: " + lit.toString());
+				result = post (lit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (vc.notExpr(equal(e)));
-					return;
+					//println ("[handleEdgeIndexOf2] posting: " + vc.notExpr(equal(e)));
+					result = post (vc.notExpr(equal(e)));
 				}
 				else {
-					post (vc.notExpr(contains(e)));
+					//println ("[handleEdgeIndexOf2] posting: " + vc.notExpr(contains(e, e.getIndex().getMinIndex().solution())));
+					result = post (vc.notExpr(contains(e, e.getIndex().getMinIndex().solution())));
 				}
 			}
 		}
@@ -760,18 +860,20 @@ public class TranslateToCVCInc {
 					ExprMut cons = vc.newBVConstExpr(toBits(destCons.charAt(i - index)));
 					lit = and (lit, vc.eqExpr(sourceTemp, cons));
 				}
-				post (lit);
+				//println ("[handleEdgeIndexOf2] posting: " + lit.toString());
+				result = post (lit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (vc.notExpr(equal(e)));
-					return;
+					//println ("[handleEdgeIndexof2] posting: " + vc.notExpr(equal(e)));
+					result = post (vc.notExpr(equal(e)));
 				}
 				else {
-					post (vc.notExpr(contains(e)));
+					//println ("[handleEdgeIndexof2] posting: " + vc.notExpr(contains(e, e.getIndex().getMinIndex().solution())));
+					result = post (vc.notExpr(contains(e, e.getIndex().getMinIndex().solution())));
 				}
 			}
 		}
@@ -789,25 +891,36 @@ public class TranslateToCVCInc {
 					ExprMut cons = vc.newBVConstExpr(toBits(realSolution.charAt(i)));
 					lit = and (lit, vc.eqExpr(destExpr, cons));
 				}
-				post (lit);
+				//println ("[handleEdgeIndexOf2] posting: " + lit.toString());
+				result = post (lit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (vc.notExpr(equal(e)));
-					return;
+					//println ("[handleEdgeIndexOf2] posting: " + vc.notExpr(equal(e)));
+					result = post (vc.notExpr(equal(e)));
 				}
 				else {
-					post (vc.notExpr(contains(e)));
+					//println ("[handleEdgeIndexOf2] posting: " + vc.notExpr(contains(e, e.getIndex().getMinIndex().solution())));
+					result = post (vc.notExpr(contains(e, e.getIndex().getMinIndex().solution())));
 				}
 			}
 		}
+		if (result == false) {
+			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
 	}
 	
-	private static void handleEdgeIndexOf (EdgeIndexOf e) {
+	private static boolean handleEdgeIndexOf (EdgeIndexOf e) {
+		//println ("[handleEdgeIndexOf] entered");
+		boolean result = true;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			//println ("[handleEdgeIndexOf] branch 1");
 			ExprMut source = getExprMut (e.getSource());
 			ExprMut dest = getExprMut (e.getDest());
 			int index = e.getIndex().solution();
@@ -818,48 +931,61 @@ public class TranslateToCVCInc {
 					ExprMut destTemp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - (i - index)) * 8 - 1, (e.getDest().getLength() - (i - index)) * 8 - 8);
 					lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (vc.notExpr(equal(e)));
-					return;
+					result = post (vc.notExpr(equal(e)));
 				}
 				else {
-					post (vc.notExpr(contains(e)));
+					result = post (vc.notExpr(contains(e)));
 				}
+				if (result == false) {
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				}
+				return result;
 			}
 		}
 		else if (!e.getSource().isConstant()) {
+			//println ("[handleEdgeIndexOf] branch 2");
 			ExprMut source = getExprMut (e.getSource());
 			String destCons = e.getDest().getSolution();
 			int index = e.getIndex().solution();
 			if (index > -1) {
+				//println ("[handleEdgeIndexOf] branch 2.1");
 				Expr lit = null;
 				for (int i = index; i < index + e.getDest().getLength(); i++) {
 					ExprMut sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
 					ExprMut cons = vc.newBVConstExpr(toBits(destCons.charAt(i - index)));
 					lit = and (lit, vc.eqExpr(sourceTemp, cons));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else {
+				//println ("[handleEdgeIndexOf] branch 2.2");
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (vc.notExpr(equal(e)));
-					return;
+					result = post (vc.notExpr(equal(e)));
 				}
 				else {
-					post (vc.notExpr(contains(e)));
+					//Check if it is at all possible
+					//println ("[handleEdgeIndexOf] branch 2.2.3");
+					result = post (vc.notExpr(contains(e)));
+					//no matter if it is false, can't fix it
 				}
+				if (result == false) {
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				}
+				return result;
 			}
 		}
 		else if (!e.getDest().isConstant()) {
+			//println ("[handleEdgeIndexOf] branch 3");
 			String sourceCons = e.getSource().getSolution();
 			
 			ExprMut dest = getExprMut(e.getDest());
@@ -873,24 +999,38 @@ public class TranslateToCVCInc {
 					ExprMut cons = vc.newBVConstExpr(toBits(realSolution.charAt(i)));
 					lit = and (lit, vc.eqExpr(destExpr, cons));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (vc.notExpr(equal(e)));
-					return;
+					result = post (vc.notExpr(equal(e)));
 				}
 				else {
-					post (vc.notExpr(contains(e)));
+					result = post (vc.notExpr(contains(e)));
 				}
+				if (result == false) {
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				}
+				return result;
 			}
 		}
+		else {
+			throw new RuntimeException("Should not be reached");
+		}
+		if (result == false) {
+			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
+		
 	}
 	
-	private static void handleEdgeIndexOfChar (EdgeIndexOfChar e) {
+	private static boolean handleEdgeIndexOfChar (EdgeIndexOfChar e) {
+		boolean result = true;
 		if (!e.getSource().isConstant()) {
 			ExprMut source = getExprMut(e.getSource());
 			int index = e.getIndex().solution();
@@ -906,7 +1046,7 @@ public class TranslateToCVCInc {
 				Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
 				Expr constant = vc.newBVConstExpr(toBits(character));
 				lit = and (lit, vc.eqExpr(sourceTemp, constant));
-				post (lit);
+				result = post (lit);
 				//println ("[handleEdgeIndexOfChar] lit: " + lit.toString());
 			}
 			else {
@@ -916,7 +1056,11 @@ public class TranslateToCVCInc {
 					Expr constant = vc.newBVConstExpr(toBits(character));
 					lit = and (lit, vc.notExpr(vc.eqExpr(sourceTemp, constant)));
 				}
-				post (lit);
+				result = post (lit);
+				if (result == false) {
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				}
+				return result;
 			}
 		}
 		else {
@@ -924,11 +1068,19 @@ public class TranslateToCVCInc {
 			int index = e.getIndex().solution();
 			char character = (char) e.getIndex().getExpression().solution();
 			int actualAns = source.indexOf(character);
-			post (vc.eqExpr(vc.ratExpr(actualAns), vc.ratExpr(index)));
+			result = post (vc.eqExpr(vc.ratExpr(actualAns), vc.ratExpr(index)));
 		}
+		if (result == false) {
+			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
 	}
 	
-	private static void handleEdgeIndexOfChar2 (EdgeIndexOfChar2 e) {
+	private static boolean handleEdgeIndexOfChar2 (EdgeIndexOfChar2 e) {
+		//println ("[handleEdgeIndexOfChar2] entered: " + e.toString());
+		boolean result = true;
 		if (!e.getSource().isConstant()) {
 			ExprMut source = getExprMut(e.getSource());
 			int index = e.getIndex().solution();
@@ -942,6 +1094,7 @@ public class TranslateToCVCInc {
 				if (e.getIndex().getMinDist().solution() < 0) {
 					i = 0;
 				}
+				//println ("[handleEdgeIndexOfChar2] min dist: " + i);
 				for (; i < index; i++) {
 					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
 					Expr constant = vc.newBVConstExpr(toBits(character));
@@ -950,7 +1103,102 @@ public class TranslateToCVCInc {
 				Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
 				Expr constant = vc.newBVConstExpr(toBits(character));
 				lit = and (lit, vc.eqExpr(sourceTemp, constant));
-				post (lit);
+				//println ("[handleEdgeIndexOfChar2] posting: " + lit.toString());
+				result = post (lit);
+			}
+			else {
+				Expr lit = null;
+				int i = e.getIndex().getMinDist().solution();
+				if (i < 0) i = 0;
+				for (; i < e.getSource().getLength(); i++) {
+					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					Expr constant = vc.newBVConstExpr(toBits(character));
+					lit = and (lit, vc.notExpr(vc.eqExpr(sourceTemp, constant)));
+				}
+				result = post (lit);
+			}
+		}
+		else {
+			String source = e.getSource().getSolution();
+			int index = e.getIndex().solution();
+			char character = (char) e.getIndex().getExpression().solution();
+			int actualAns = source.indexOf(character, e.getIndex().getMinDist().solution());
+			result = post (vc.eqExpr(vc.ratExpr(actualAns), vc.ratExpr(index)));
+		}
+		if (result == false) {
+			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
+	}
+	
+	private static boolean handleEdgeNotContains (EdgeNotContains e) {
+		if (e.getSource().getLength() < e.getDest().getLength()) {
+			return true;
+		}
+		boolean result = post (vc.notExpr(contains(e)));
+		if (result == false) {
+			//In my automata approach this never happens
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
+	}
+	
+	private static boolean handleEdgeSubstring1Equal (EdgeSubstring1Equal e) {
+		boolean result = false;
+		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			ExprMut source = getExprMut(e.getSource());
+			ExprMut dest = getExprMut(e.getDest());
+			int arg1 = e.getArgument1();
+			Expr lit = null;
+			for (int i = 0; i < e.getDest().getLength(); i++) {
+				Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
+				Expr destTemp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
+				lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
+			}
+			result = post (lit);
+		}
+		else if (!e.getSource().isConstant()) {
+			ExprMut source = getExprMut(e.getSource());
+			String destCons = e.getDest().getSolution();
+			int arg1 = e.getArgument1();
+			Expr lit = null;
+			for (int i = 0; i < e.getDest().getLength(); i++) {
+				Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
+				Expr destTemp = vc.newBVConstExpr(toBits(destCons.charAt(i)));
+				lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
+			}
+			result = post (lit);
+		}
+		else {
+			throw new RuntimeException("Preprocessor should handle this");
+		}
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
+	}
+	
+	private static boolean handleEdgeLastIndexOfChar (EdgeLastIndexOfChar e) {
+		boolean result = true;
+		if (!e.getSource().isConstant()) {
+			ExprMut source = getExprMut(e.getSource());
+			int index = e.getIndex().solution();
+			char character = (char) e.getIndex().getExpression().solution();
+			if (index > -1) {
+				Expr lit = null;
+				/* no other occurences of the character may come after */
+				for (int i = index+1; i < e.getSource().getLength(); i++) {
+					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					Expr constant = vc.newBVConstExpr(toBits(character));
+					lit = and (lit, vc.notExpr(vc.eqExpr(sourceTemp, constant)));
+				}
+				Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
+				Expr constant = vc.newBVConstExpr(toBits(character));
+				lit = and (lit, vc.eqExpr(sourceTemp, constant));
+				result = post (lit);
+				//println ("[handleEdgeIndexOfChar] lit: " + lit.toString());
 			}
 			else {
 				Expr lit = null;
@@ -959,84 +1207,108 @@ public class TranslateToCVCInc {
 					Expr constant = vc.newBVConstExpr(toBits(character));
 					lit = and (lit, vc.notExpr(vc.eqExpr(sourceTemp, constant)));
 				}
-				post (lit);
+				result = post (lit);
 			}
 		}
 		else {
 			String source = e.getSource().getSolution();
 			int index = e.getIndex().solution();
 			char character = (char) e.getIndex().getExpression().solution();
-			int actualAns = source.indexOf(character, e.getIndex().getMinDist().solution());
-			post (vc.eqExpr(vc.ratExpr(actualAns), vc.ratExpr(index)));
+			int actualAns = source.indexOf(character);
+			result = post (vc.eqExpr(vc.ratExpr(actualAns), vc.ratExpr(index)));
 		}
+		if (result == false) {
+			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
 	}
 	
-	private static void handleEdgeNotContains (EdgeNotContains e) {
-		if (e.getSource().getLength() < e.getDest().getLength()) {
-			return;
-		}
-		post (vc.notExpr(contains(e)));
-	}
-	
-	private static void handleEdgeSubstring1Equal (EdgeSubstring1Equal e) {
-		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
-			ExprMut source = getExprMut(e.getSource());
-			ExprMut dest = getExprMut(e.getDest());
-			int arg1 = e.getArgument1();
-			Expr lit = null;
-			for (int i = 0; i < e.getDest().getLength(); i++) {
-				Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
-				Expr destTemp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
-				lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
+	private static boolean handleEdgeSubstring2Equal (EdgeSubstring2Equal e) {
+		boolean result = true;
+		if (!e.hasSymbolicArgs()) {
+			if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+				ExprMut source = getExprMut(e.getSource());
+				ExprMut dest = getExprMut(e.getDest());
+				int arg1 = e.getArgument1();
+				int arg2 = e.getArgument2();
+				Expr lit = null;
+				for (int i = 0; i < arg2 - arg1; i++) {
+					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
+					Expr destTemp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
+					lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
+				}
+				result = post (lit);
 			}
-			post (lit);
-		}
-		else if (!e.getSource().isConstant()) {
-			ExprMut source = getExprMut(e.getSource());
-			String destCons = e.getDest().getSolution();
-			int arg1 = e.getArgument1();
-			Expr lit = null;
-			for (int i = 0; i < e.getDest().getLength(); i++) {
-				Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
-				Expr destTemp = vc.newBVConstExpr(toBits(destCons.charAt(i)));
-				lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
+			else if (!e.getSource().isConstant()) {
+				ExprMut source = getExprMut(e.getSource());
+				String destCons = e.getDest().getSolution();
+				int arg1 = e.getArgument1();
+				int arg2 = e.getArgument2();
+				Expr lit = null;
+				for (int i = 0; i < arg2 - arg1; i++) {
+					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
+					Expr destTemp = vc.newBVConstExpr(toBits(destCons.charAt(i)));
+					lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
+				}
+				result = post (lit);
 			}
-			post (lit);
+			else {
+				throw new RuntimeException("Preprocessor should handle this");
+			}
+			if (result == false) {
+				global_pc._addDet(elimanateCurrentLengthsConstraints());
+			}
+			return result;
+		}
+		else if (e.getSymbolicArgument1() == null && e.getSymbolicArgument2() != null) {
+			if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+				ExprMut source = getExprMut(e.getSource());
+				ExprMut dest = getExprMut(e.getDest());
+				int arg1 = e.getArgument1();
+				int arg2 = e.getSymbolicArgument2().solution();
+				Expr lit = null;
+				for (int i = 0; i < arg2 - arg1; i++) {
+					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
+					Expr destTemp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
+					lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
+				}
+				result = post (lit);
+			}
+			else if (!e.getSource().isConstant()) {
+				ExprMut source = getExprMut(e.getSource());
+				String destCons = e.getDest().getSolution();
+				int arg1 = e.getArgument1();
+				int arg2 = e.getSymbolicArgument2().solution();
+				if (arg2 - arg1 != destCons.length()) {
+					//TODO: Can definitly improve here
+					LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+					loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(arg2)));
+					global_pc._addDet(loic);
+					return false;
+					//throw new RuntimeException((arg2 - arg1) + " is not equal to '" + destCons + "' length of " + destCons.length());
+				}
+				Expr lit = null;
+				for (int i = 0; i < arg2 - arg1; i++) {
+					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
+					Expr destTemp = vc.newBVConstExpr(toBits(destCons.charAt(i)));
+					lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
+				}
+				result = post (lit);
+			}
+			else {
+				throw new RuntimeException("Preprocessor should handle this");
+			}
+			if (result == false) {
+				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(e.getSymbolicArgument2().solution())));
+				global_pc._addDet(loic);
+			}
+			return result;
 		}
 		else {
-			throw new RuntimeException("Preprocessor should handle this");
-		}
-	}
-	
-	private static void handleEdgeSubstring2Equal (EdgeSubstring2Equal e) {
-		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
-			ExprMut source = getExprMut(e.getSource());
-			ExprMut dest = getExprMut(e.getDest());
-			int arg1 = e.getArgument1();
-			int arg2 = e.getArgument2();
-			Expr lit = null;
-			for (int i = 0; i < arg2 - arg1; i++) {
-				Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
-				Expr destTemp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
-				lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
-			}
-			post (lit);
-		}
-		else if (!e.getSource().isConstant()) {
-			ExprMut source = getExprMut(e.getSource());
-			String destCons = e.getDest().getSolution();
-			int arg1 = e.getArgument1();
-			int arg2 = e.getArgument2();
-			Expr lit = null;
-			for (int i = 0; i < arg2 - arg1; i++) {
-				Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
-				Expr destTemp = vc.newBVConstExpr(toBits(destCons.charAt(i)));
-				lit = and (lit, vc.eqExpr(sourceTemp, destTemp));
-			}
-			post (lit);
-		}
-		else {
-			throw new RuntimeException("Preprocessor should handle this");
+			throw new RuntimeException ("not supported, yet");
 		}
 	}
 	
@@ -1058,7 +1330,7 @@ public class TranslateToCVCInc {
 		}
 	}
 	
-	private static void post (Expr ee) {
+	private static boolean post (Expr ee) {
 		if (expr == null) {
 			expr = ee;
 		}
@@ -1066,63 +1338,23 @@ public class TranslateToCVCInc {
 			expr = vc.andExpr(ee, expr);
 		}
 		
-		vc.push();
-		vc.assertFormula(ee);
-		SatResult satResult = vc.checkUnsat(vc.trueExpr());
+		vc.push();	
+		//println ("[post] Formula to check: " + ee);
+		//println ("[post] On top of       : " + vc.getAssumptions());
+		SatResult satResult = vc.checkUnsat(ee);
+		CVCEverCalled = true;
 		if (satResult == SatResult.SATISFIABLE) {
 			//println ("[post]: " + vc.);
 			//vc.pop();
-			
+			//println ("[post] returned true");
+			vc.pop();
+			vc.assertFormula(ee);
+			return true;
 		}
 		else {
 			vc.pop();
-            println ("[isSat] Current solutions is unsat, extending lengts");
-            LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
-            for (Vertex v: global_graph.getVertices()) {
-            	if (!v.getName().startsWith("CHAR"))
-            		loic.addToList(new LinearIntegerConstraint(v.getSymbolicLength(), Comparator.NE, new IntegerConstant(v.getSymbolicLength().solution())));
-            }
-            for (Edge e: global_graph.getEdges()) {
-            	if (e instanceof EdgeCharAt) {
-            		EdgeCharAt eca = (EdgeCharAt) e;
-            		loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.NE, new IntegerConstant(eca.getIndex().solution())));
-            		loic.addToList(new LinearIntegerConstraint(eca.getValue(), Comparator.NE, new IntegerConstant(eca.getValue().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOf) {
-            		EdgeIndexOf eio = (EdgeIndexOf) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOfChar) {
-            		EdgeIndexOfChar eio = (EdgeIndexOfChar) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOf2) {
-            		EdgeIndexOf2 eio = (EdgeIndexOf2) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().getMinIndex().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOfChar2) {
-            		EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(eio.getIndex().getMinDist().solution())));
-            	}
-            }
-            //println ("[isSat] loic: " + loic);
-            global_pc._addDet(loic);
-            println ("[isSat] firing up integer constraint solver");
-            if (scg.isSatisfiable(global_pc)) {
-            	//println ("[isSat] integer constriant solver found it to be sat, solving...");
-				scg.solve(global_pc);
-				global_pc.flagSolved = true;
-				//println ("[isSat] solved PC: " + pc.header); 
-				vc.delete();
-				isSat (global_graph, global_pc); //TODO: Prevent infinite looping
-			}
-			else {
-				//println ("[isSat] With the added constraint, could not be solved");
-				vc.delete();
-				//return false;
-			}
+			//println ("[post] returned false");
+			return false;
 		}
 	}
 	
@@ -1168,7 +1400,16 @@ public class TranslateToCVCInc {
 	}
 	
 	private static void println (String msg) {
-		System.out.println("[TranslateToCVC] " + msg);
+		System.out.println("[TranslateToCVCInc] " + msg);
+	}
+	
+	private static LinearOrIntegerConstraints elimanateCurrentLengthsConstraints() {
+		LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+		for (Vertex v: global_graph.getVertices()) {
+			if (v.isConstant() || v.getName().startsWith("CHAR")) continue;
+			loic.addToList(new LinearIntegerConstraint(v.getSymbolicLength(), Comparator.NE, new IntegerConstant(v.getLength())));
+		}
+		return loic;
 	}
 
 }

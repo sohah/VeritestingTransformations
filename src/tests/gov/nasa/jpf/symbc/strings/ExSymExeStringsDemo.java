@@ -10,20 +10,20 @@ public class ExSymExeStringsDemo {
 	  String a="aaa";
 	  String b = "bbb";
 	  String c = "ccc";
-	  String d = "ddd";
-	  test01 (a,b, 1);
+	  String d = "ddd"; 
+	  //test01 (a,b, 1);
 	  //test02(a,b,1);
-	  //test02a(a, b, 1);
+	  test02a(a, b, 1);
 	  //test03(a,b,1);
 	  //test04(a,b,1);
 	  //test05(a,b,1);
 	  //test06(a,b,1);
 	  //test07(a,b,1);
-	  //test08(a,b,1);
+	  //test08("c  ","c",0);
 	  //test08a(a,b,1);
 	  //test09(a,b,1);
 	  //test10(a,b,1);
-	  Debug.printPC("This is the PC at the end:");
+	  //Debug.printPC("This is the PC at the end:");
 	  //a=a.concat(b);
 	  
   }
@@ -52,6 +52,7 @@ public class ExSymExeStringsDemo {
   }
   
   public static void test02a (String a, String b, int x) {
+	  //cvc_inc has difficulty with this one
 	  String c = a.concat("ab");
 	  if (c.startsWith("c")) {
 		  if (c.contains("d")) {
@@ -121,6 +122,7 @@ public class ExSymExeStringsDemo {
   }
   
   public static void test07 (String a, String b, int x) {
+	  //this seems to give some good variance in performance
 	  if (b.startsWith("c") && a.length() < 4) { 
 		  for (int i = 0; i < a.length(); i++) {
 			  if (a.charAt(i) == 'h') {
@@ -136,18 +138,21 @@ public class ExSymExeStringsDemo {
 	  }
   }
   
-  public static void test08 (String a, String b, int x) {
+  public static void test08 (String a, String b, int i) { 
 	  if (b.startsWith("c") && a.length() > 2 
-			  && a.length() < 5 && b.length() < 2) { 
-		  for (int i = 0; i < a.length(); i++) {
-			  int old = i;
-			  /* some code */
-			  if (a.charAt(i) == 'c' && a.charAt(i+1) == 'd') {
-				  i = a.indexOf("/cd");
-			  }
-			  /* some code */
-			  if (i <= old) {
-				  throw new RuntimeException("Does not work");
+			  && a.length() < 5 && b.length() < 2) {
+		  if (i >= 0) {
+			  for (; i < a.length(); i++) {
+				  System.out.println(i);
+				  int old = i;
+				  /* some code */
+				  if (a.charAt(i) == 'c' && a.charAt(i+1) == 'd') {
+					  i = a.indexOf("/cd");
+				  }
+				  /* some code */
+				  if (i <= old) {
+					  throw new RuntimeException("Does not work");
+				  }
 			  }
 		  }
 	  }
@@ -174,6 +179,7 @@ public class ExSymExeStringsDemo {
   }
   
   public static void test09 (String a, String b, int x) {
+	  //this causes automata's equality to crawl, needs to be investigated
 	  if (b.startsWith(" ") && a.startsWith(b) && a.endsWith("c")) {
 		  if (b.trim().equals("ab"));
 	  }

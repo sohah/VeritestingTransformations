@@ -3,7 +3,7 @@ package strings;
 public class MSExample {
 
   //@Symbolic("true")
-  public static String s = "http://google.com/EasyChair";
+  public static String s = "http://www./EasyChair";
 
   private static boolean IsEasyChairQuery(String str) {
     // (1) check that str contains "/" followed by anything not
@@ -25,6 +25,7 @@ public class MSExample {
     String t =
         str.substring("http://".length(), lastSlash);
     if (t.startsWith("www.")) {
+    	
       t = t.substring("www.".length());
     }
     // (4) Check that after stripping we have either "live.com"
@@ -33,7 +34,7 @@ public class MSExample {
       return false;
     }
     // s survived all checks
-   // throw new RuntimeException("Give string that satisfies this");
+    //throw new RuntimeException("Give string that satisfies this");
     return true;
   }
 

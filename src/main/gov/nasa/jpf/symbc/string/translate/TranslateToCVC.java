@@ -163,7 +163,7 @@ public class TranslateToCVC {
 		SatResult result = vc.checkUnsat(expr);
 		if (result == SatResult.UNSATISFIABLE) {
 			vc.pop();
-            println ("[isSat] Current solutions is unsat, extending lengts");
+            //println ("[isSat] Current solutions is unsat, extending lengts");
             LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
             for (Vertex v: g.getVertices()) {
             	if (!v.getName().startsWith("CHAR"))
@@ -215,7 +215,7 @@ public class TranslateToCVC {
             }
             //println ("[isSat] loic: " + loic);
             pc._addDet(loic);
-            println ("[isSat] firing up integer constraint solver");
+            //println ("[isSat] firing up integer constraint solver");
             if (scg.isSatisfiable(pc)) {
             	//println ("[isSat] integer constriant solver found it to be sat, solving...");
 				scg.solve(pc);
@@ -785,7 +785,7 @@ public class TranslateToCVC {
 					return;
 				}
 				else {
-					post (vc.notExpr(contains(e)));
+					post (vc.notExpr(contains(e))); //TODO: fix this, it should take into account the minimal distance
 				}
 			}
 		}
@@ -1138,7 +1138,7 @@ public class TranslateToCVC {
 				int arg1 = e.getArgument1();
 				int arg2 = e.getSymbolicArgument2().solution();
 				if (arg2 - arg1 != destCons.length()) {
-					//Can definitly improve here
+					//TODO: Can definitly improve here
 					//global_pc._addDet(Comparator.EQ, e.getSymbolicArgument2(), destCons.length() + arg1);
 					post(vc.falseExpr());
 					return;

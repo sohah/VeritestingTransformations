@@ -18,7 +18,7 @@ sourcepath=${jpf-symbc}/src/examples
 symbolic.dp=choco
 
 # settings for the symbolic string support, either
-# "none" (default), "cvc" (recommended), "automata" or 
+# "none" (default), "cvc", "automata" (recommended) or 
 # "sat". At the moment symbolic.dp must be equal to 
 # "choco" for it to work.
 symbolic.string_dp=automata
@@ -28,6 +28,8 @@ symbolic.string_dp=automata
 # "Verify..." does not work. In order to run cvc3 
 # you need to go through "Run Configuration"
 
-symbolic.method= strings.MysteryQuestionMin.preserveSomeHtmlTagsAndRemoveWhitespaces(sym#sym) 
+symbolic.method= strings.MysteryQuestionMin.preserveSomeHtmlTagsAndRemoveWhitespaces(sym) 
 
 listener = gov.nasa.jpf.symbc.SymbolicListenerClean
+
+vm.storage.class=nil

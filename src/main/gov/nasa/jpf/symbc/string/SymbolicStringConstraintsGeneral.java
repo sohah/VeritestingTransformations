@@ -85,6 +85,7 @@ public class SymbolicStringConstraintsGeneral {
 	public static final String AUTOMATA = "Automata";
 	public static final String SAT = "Sat";
 	public static final String CVC = "CVC";
+	public static final String CVC_INC = "CVC_Inc";
 	
 	/* Default solver */
 	public static String solver = AUTOMATA;
@@ -214,6 +215,7 @@ public class SymbolicStringConstraintsGeneral {
 	 * @return
 	 */
 	public boolean isSatisfiable(StringPathCondition pc) {
+		//println ("[isSatisfiable] String PC: " + pc.header);
 		String string_dp[] = SymbolicInstructionFactory.string_dp;
 		/* Set up solver */
 		if (string_dp[0].equals("automata")) {
@@ -224,6 +226,9 @@ public class SymbolicStringConstraintsGeneral {
 		}
 		else if (string_dp[0].equals("cvc")) {
 			solver = CVC;
+		}
+		else if (string_dp[0].equals("cvc_inc")) {
+			solver = CVC_INC;
 		}
 		else {
 			/* No solver, return true */
@@ -286,34 +291,33 @@ public class SymbolicStringConstraintsGeneral {
 			//println ("[isSat] Preprocessor gave Unsat");
 			return false;
 		}
-		
+		//println(global_graph.toDot());
 		/* Call the string solver, it will in turn churn away until all
 		 * options are exhuasted or a satisfiable solution has turned up
 		 */
+		boolean decisionProcedure = false;
 		if (solver.equals(SAT)) {
 			//println ("[isSatisfiable] Using SAT Solver");
-			boolean sat4jresult = TranslateToSAT.isSat(global_graph, pc.npc);
-			if (!sat4jresult) return false;
+			decisionProcedure = TranslateToSAT.isSat(global_graph, pc.npc);
 		}
 		else if (solver.equals(AUTOMATA)) {
 			//println ("[isSatisfiable] Using Automata's");
-			boolean sat4jresult = TranslateToAutomata.isSat(global_graph, pc.npc);
-			if (!sat4jresult) {
-				//println ("[isSatisfiable] automata's returned unsat");
-				return false;
-			}
+			decisionProcedure = TranslateToAutomata.isSat(global_graph, pc.npc);
 		}
 		else if (solver.equals(CVC)) {
 			//println ("[isSatisfiable] Using Bitvector's");
-			boolean sat4jresult = TranslateToCVC.isSat(global_graph, pc.npc); 
-			if (!sat4jresult) {
-				//println ("[isSatisfiable] bitvector's returned unsat");
-				return false;
-			}
-			
+			decisionProcedure = TranslateToCVC.isSat(global_graph, pc.npc); 
+		}
+		else if (solver.equals(CVC_INC)) {
+			//println ("[isSatisfiable] Using Bitvector's");
+			decisionProcedure = TranslateToCVCInc.isSat(global_graph, pc.npc); 
 		}
 		else {
 			throw new RuntimeException("Unknown string solver!!!");
+		}
+		if (!decisionProcedure) {
+			//println ("[isSatisfiable] Decision procedure gave unsat");
+			return false;
 		}
 		//println ("[isSatisfiable] Solution: " + global_graph.toString());
 		
@@ -415,6 +419,12 @@ public class SymbolicStringConstraintsGeneral {
 			StringGraph sg = convertToGraph(scai.se);
 			global_graph.mergeIn(sg);
 			PathCondition.flagSolved = true;
+			/*if (!(scai.index instanceof IntegerConstant)) {
+				throw new RuntimeException("OOPS! " + scai.index.toString());
+			}
+			else {
+				//println ("[processIntegerConstraint] scai.index.getClass(): " + scai.index.getClass());
+			}*/
 			Vertex v1 = new Vertex ("CharAt_" + scai.index.solution() + "_" + scai.solution(), String.valueOf((char) scai.solution()), true);
 			Vertex v2 = global_graph.findVertex(scai.se.getName());
 			global_graph.addEdge(v2, v1, new EdgeCharAt("CharAt_" + scai.index.solution() + "_" + scai.solution(), v2, v1, scai.index, scai));

@@ -18,6 +18,7 @@ public class ExSymExeStrings41 {
   }
   
   public static void test (String a, String b, int x) {
+	  //Produces interesting result between cvc and cvc_inc
 	  if (a.substring(2).equals("hello")) {
 		  System.out.println("abc");
 	  }
