@@ -9,10 +9,18 @@ public class ExSymExeComplexMath {
 
 	  ExSymExeComplexMath inst = new ExSymExeComplexMath();
 	  field = 9;
-	  inst.test1(0.0, 0.0, 0.0, 0, 0, 0, 0.0, 0.0);
-	  inst.angleXY_(0.0, 0.0);
+	  //inst.test1(0.0, 0.0, 0.0, 0, 0, 0, 0.0, 0.0);
+	  //inst.angleXY_(0.0, 0.0);
+	  inst.test2(0.0);
   }
+
   /* we want to let the user specify that this method should be symbolic */
+  public void test2(double in) {
+  if (Math.pow (in,2.0) > 16.0)
+	  System.out.println("do1()");
+	else
+	  System.out.println("do2()");
+  }
 
   public void test1(double C_v, double A_v, double bank_ang, int Cdir, int Cturn, int Aturn, double A_Psi0_deg, double C_Psi0_deg) {
 

@@ -19,9 +19,9 @@ sourcepath=${jpf-symbc}/src/tests
 symbolic.dp=coral
 #symbolic.dp=choco2
 
-symbolic.method= gov.nasa.jpf.symbc.ExSymExeComplexMath.angleXY_(sym#sym)
+symbolic.method= gov.nasa.jpf.symbc.ExSymExeComplexMath.test2(sym)
 
-#listener = gov.nasa.jpf.symbc.SymbolicListener
+listener = gov.nasa.jpf.symbc.SymbolicListener
 
 vm.storage.class=nil
 
