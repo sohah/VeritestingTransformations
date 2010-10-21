@@ -3,20 +3,19 @@ package strings;
 public class MysteryQuestionMin {
 	
 	public static void main (String[] args) {
-		preserveSomeHtmlTagsAndRemoveWhitespaces("<< HREF=\"\"<A HREF=\">     ");
+		System.out.println("start");
+		preserveSomeHtmlTagsAndRemoveWhitespaces("");
+		System.out.println ("end");
 	}
 	
 	public static String preserveSomeHtmlTagsAndRemoveWhitespaces(String body) {
-		System.out.println("start");
 		if (body == null)
 			return body;
 		int len = body.length();
 		int i = 0;
 		int old = i - 1;
 		while (i < len) {
-			if (i <= old) {
-				throw new RuntimeException("Problem found");
-			}
+			assert i >= old: "Infinite loop";
 			old = i;
 			if (body.charAt(i) == '<') {
 				if (i + 14 < len &&
@@ -42,12 +41,7 @@ public class MysteryQuestionMin {
 					int idxEnd = body.indexOf("</a>", idxStart);
 					if (idxEnd == -1)
 						idxEnd = body.indexOf("</A>", idxStart);
-					//if (idxEnd == -1) {
-					//	i = i + 4;
-					//}
-					//else {
 					i = idxEnd + 4;
-					//}
 					continue;
 				}
 			}
