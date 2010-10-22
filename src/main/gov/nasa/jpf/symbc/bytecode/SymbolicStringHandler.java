@@ -456,6 +456,15 @@ public class SymbolicStringHandler {
 	}
 	
 	public void handleLastIndexOf(InvokeInstruction invInst, ThreadInfo th) {
+		int numStackSlots = invInst.getArgSize();
+		if (numStackSlots == 2) {
+			handleLastIndexOf1(invInst, th);
+		} else {
+			handleLastIndexOf2(invInst, th);
+		}
+	}
+	
+	public void handleLastIndexOf1(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		/* Added by Gideon */
 		//StringExpression argument = (StringExpression) sf.getOperandAttr(0);
@@ -549,6 +558,110 @@ public class SymbolicStringHandler {
 			//assert result != null;
 			//th.push(conditionValue ? 1 : 0, true);
 	
+			
+		}
+	}
+	
+	public void handleLastIndexOf2(InvokeInstruction invInst, ThreadInfo th) {
+		StackFrame sf = th.getTopFrame();
+
+		StringExpression sym_v1 = null;
+		StringExpression sym_v2 = null;
+		IntegerExpression intExp = null;
+		sym_v1 = (StringExpression) sf.getOperandAttr(2);
+		intExp = (IntegerExpression) sf.getOperandAttr(0);
+		sym_v2 = (StringExpression) sf.getOperandAttr(1);
+		
+		if (sym_v1 == null && sym_v2 == null && intExp == null) {
+			System.err.println("ERROR: symbolic method must have symbolic string operand: hanldeLength");
+		} else {
+			int i1 = th.pop();
+			boolean s2char = true;
+			if (th.isOperandRef()) {
+				//System.out.println("[handleIndexOf2] string detected");
+				s2char = false;
+			}
+			else {
+				//System.out.println("[handleIndexOf2] char detected");
+			}
+			int s2 = th.pop();
+			int s1 = th.pop();
+			
+			IntegerExpression result = null;
+			if (intExp != null) {
+				//System.out.println("[handleIndexOf2] int exp: " + intExp.getClass());
+				if (sym_v1 != null) {
+					if (sym_v2 != null) { // both are symbolic values
+						result = sym_v1._lastIndexOf(sym_v2, intExp);
+					} else {
+						if (s2char) {
+							result = sym_v1._lastIndexOf(new IntegerConstant(s2), intExp);
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val = e2.asString();
+							result = sym_v1._lastIndexOf(new StringConstant(val), intExp);
+						}
+					}
+				} else {
+					ElementInfo e1 = DynamicArea.getHeap().get(s1);
+					String val = e1.asString();
+					
+					if (sym_v2 != null) { // both are symbolic values
+						result = new StringConstant(val)._lastIndexOf(sym_v2, intExp);
+					} else {
+						if (s2char) {
+							result = new StringConstant(val)._lastIndexOf(new IntegerConstant(s2), intExp);
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val2 = e2.asString();
+							result = new StringConstant(val)._lastIndexOf(new StringConstant(val2), intExp);
+						}
+					}
+				}
+			}
+			else {
+				if (sym_v1 != null) {
+					if (sym_v2 != null) { // both are symbolic values
+						result = sym_v1._lastIndexOf(sym_v2, new IntegerConstant(i1));
+					} else {
+						if (s2char) {
+							result = sym_v1._lastIndexOf(new IntegerConstant(s2), new IntegerConstant(i1));
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val = e2.asString();
+							result = sym_v1._lastIndexOf(new StringConstant(val), new IntegerConstant(i1));
+							//System.out.println("[handleIndexOf2] Special push");
+							//Special push?
+							//th.push(s1, true);
+						}
+					}
+				} else {
+					ElementInfo e1 = DynamicArea.getHeap().get(s1);
+					String val = e1.asString();
+					
+					if (sym_v2 != null) { // both are symbolic values
+						result = new StringConstant(val)._lastIndexOf(sym_v2, new IntegerConstant(i1));
+					} else {
+						if (s2char) {
+							result = new StringConstant(val)._lastIndexOf(new IntegerConstant(s2), new IntegerConstant(i1));
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val2 = e2.asString();
+							result = new StringConstant(val)._lastIndexOf(new StringConstant(val2), new IntegerConstant(i1));
+						}
+					}
+				}
+			}
+			/* Not quite sure yet why this works */
+			//int objRef = th.getVM().getDynamicArea().newString("", th);
+			//th.push(objRef, true);
+			th.push(0, false);
+			assert result != null;
+			sf.setOperandAttr(result);
 			
 		}
 	}

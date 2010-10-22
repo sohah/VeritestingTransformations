@@ -24,7 +24,9 @@ import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf2;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar2;
 import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOf;
+import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOf2;
 import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar;
+import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar2;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
@@ -167,10 +169,14 @@ public class SymbolicStringConstraintsGeneral {
 					}
 				}
 				else if (temp.oprlist[1] instanceof IntegerExpression && temp.oprlist.length == 2) {
+					//throw new RuntimeException ("Reached");
 					v2 = createVertex (temp);
 					IntegerExpression ie = (IntegerExpression) temp.oprlist[1];
+					//throw new RuntimeException (ie.getClass().toString());
+					processIntegerConstraint(ie);
 					global_spc.npc._addDet(Comparator.EQ, v2.getSymbolicLength(), v1.getSymbolicLength()._minus(ie));
 					graphBefore.addEdge(v1, v2, new EdgeSubstring1Equal("EdgeSubstring1Equal_" + v1.getName() + "_" + v2.getName() + "_(" + ie.toString() + ")", ie, v1, v2));
+					
 				}
 				else {
 					//System.err.println ("Substring with symbolic integers not yet supported");
@@ -453,6 +459,33 @@ public class SymbolicStringConstraintsGeneral {
 			Vertex v2 = global_graph.findVertex(sioi.source.getName());
 			global_graph.addEdge(v2, v1, new EdgeLastIndexOf("EdgeLastIndexOf_" + v2.getName () + "_" + v1.getName(), v2, v1, sioi));
 			PathCondition.flagSolved = true; //TODO: Review			
+		}
+		else if (e instanceof SymbolicLastIndexOf2Integer) {
+			SymbolicLastIndexOf2Integer sioi = (SymbolicLastIndexOf2Integer) e;
+			//println ("[processIntegerConstraint] Found indexOf2 constraint with " + sioi.getName() + " and min dist: " + sioi.getMinIndex().solution());
+			StringGraph expression = convertToGraph (sioi.expression);
+			StringGraph source = convertToGraph (sioi.source);
+			global_graph.mergeIn(expression);
+			global_graph.mergeIn(source);
+			Vertex v1 = global_graph.findVertex(sioi.expression.getName());
+			Vertex v2 = global_graph.findVertex(sioi.source.getName());
+			global_graph.addEdge(v2, v1, new EdgeLastIndexOf2("EdgeIndexOf2_" + v2.getName () + "_" + v1.getName(), v2, v1, sioi));
+			processIntegerConstraint(sioi.getMinIndex());
+			PathCondition.flagSolved = true; //TODO: Review
+			
+		}
+		else if (e instanceof SymbolicLastIndexOfChar2Integer) {
+			SymbolicLastIndexOfChar2Integer sioi = (SymbolicLastIndexOfChar2Integer) e;
+			//println ("[processIntegerConstraint] Found indexOf (char) constraint with " + sioi.getName());
+			StringGraph source = convertToGraph (sioi.source);
+			Vertex v1 = new Vertex ("CHAR_" + sioi.getExpression().solution(), symbolicIntegerGenerator);
+			global_graph.addVertex(v1);
+			global_graph.mergeIn(source);
+			Vertex v2 = global_graph.findVertex(sioi.source.getName());
+			global_graph.addEdge(v2, v1, new EdgeLastIndexOfChar2("EdgeIndexOfChar_" + v2.getName () + "_" + v1.getName(), v2, v1, sioi));
+			processIntegerConstraint(sioi.getMinDist());
+			PathCondition.flagSolved = true; //TODO: Review
+			
 		}
 		else if (e instanceof SymbolicIndexOfCharInteger) {
 			SymbolicIndexOfCharInteger sioi = (SymbolicIndexOfCharInteger) e;

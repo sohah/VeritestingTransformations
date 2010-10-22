@@ -20,6 +20,7 @@ import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf2;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar2;
 import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar;
+import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar2;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
@@ -130,6 +131,9 @@ public class TranslateToCVC {
 			else if (e instanceof EdgeLastIndexOfChar) {
 				handleEdgeLastIndexOfChar((EdgeLastIndexOfChar) e);
 			}
+			else if (e instanceof EdgeLastIndexOfChar2) {
+				handleEdgeLastIndexOfChar2((EdgeLastIndexOfChar2) e);
+			}
 			else if (e instanceof EdgeIndexOf2) {
 				//println ("[isSat] EdgeIndexOf2");
 				handleEdgeIndexOf2((EdgeIndexOf2) e);
@@ -149,6 +153,9 @@ public class TranslateToCVC {
 			}
 			else if (e instanceof EdgeSubstring2Equal) {
 				handleEdgeSubstring2Equal((EdgeSubstring2Equal) e);
+			}
+			else {
+				throw new RuntimeException("Edge not supported: " + e.getClass().toString());
 			}
 			if(expr != null) {
 				//println ("[isSat] expr: " + expr.toString());
@@ -186,6 +193,11 @@ public class TranslateToCVC {
             	else if (e instanceof EdgeLastIndexOfChar) {
             		EdgeLastIndexOfChar eio = (EdgeLastIndexOfChar) e;
 					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
+            	}
+            	else if (e instanceof EdgeLastIndexOfChar2) {
+            		EdgeLastIndexOfChar2 eio = (EdgeLastIndexOfChar2) e;
+					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
+					loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(eio.getIndex().getMinDist().solution())));
             	}
             	else if (e instanceof EdgeIndexOf2) {
             		EdgeIndexOf2 eio = (EdgeIndexOf2) e;
@@ -1002,6 +1014,45 @@ public class TranslateToCVC {
 			int index = e.getIndex().solution();
 			char character = (char) e.getIndex().getExpression().solution();
 			int actualAns = source.indexOf(character);
+			post (vc.eqExpr(vc.ratExpr(actualAns), vc.ratExpr(index)));
+		}
+	}
+	
+	private static void handleEdgeLastIndexOfChar2 (EdgeLastIndexOfChar2 e) {
+		if (!e.getSource().isConstant()) {
+			ExprMut source = getExprMut(e.getSource());
+			int index = e.getIndex().solution();
+			char character = (char) e.getIndex().getExpression().solution();
+			if (index > -1) {
+				Expr lit = null;
+				/* no other occurences of the character may come after up till second argument*/
+				for (int i = index+1; i < e.getIndex().getMinDist().solution(); i++) {
+					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					Expr constant = vc.newBVConstExpr(toBits(character));
+					lit = and (lit, vc.notExpr(vc.eqExpr(sourceTemp, constant)));
+				}
+				Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
+				Expr constant = vc.newBVConstExpr(toBits(character));
+				lit = and (lit, vc.eqExpr(sourceTemp, constant));
+				post (lit);
+				//println ("[handleEdgeIndexOfChar] lit: " + lit.toString());
+			}
+			else {
+				Expr lit = null;
+				//Can not feature uptil the second argument
+				for (int i = 0; i < e.getIndex().getMinDist().solution(); i++) {
+					Expr sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					Expr constant = vc.newBVConstExpr(toBits(character));
+					lit = and (lit, vc.notExpr(vc.eqExpr(sourceTemp, constant)));
+				}
+				post (lit);
+			}
+		}
+		else {
+			String source = e.getSource().getSolution();
+			int index = e.getIndex().solution();
+			char character = (char) e.getIndex().getExpression().solution();
+			int actualAns = source.lastIndexOf(character, e.getIndex().getMinDist().solution());
 			post (vc.eqExpr(vc.ratExpr(actualAns), vc.ratExpr(index)));
 		}
 	}
