@@ -21,20 +21,20 @@ package gov.nasa.jpf.symbc.numeric;
 
 import java.util.Map;
 
-public class BinaryLinearIntegerExpression extends LinearIntegerExpression 
+public class BinaryLinearIntegerExpression extends LinearIntegerExpression
 {
 	IntegerExpression left;
 	Operator   op;
 	IntegerExpression right;
 
-	public BinaryLinearIntegerExpression (IntegerExpression l, Operator o, IntegerExpression r) 
+	public BinaryLinearIntegerExpression (IntegerExpression l, Operator o, IntegerExpression r)
 	{
 		left = l;
 		op = o;
 		right = r;
 	}
 
-	public int solution() 
+	public int solution()
 	{
 		int l = left.solution();
 		int r = right.solution();
@@ -42,6 +42,7 @@ public class BinaryLinearIntegerExpression extends LinearIntegerExpression
  		  case PLUS:       return l + r;
 		  case MINUS:      return l - r;
 		  case MUL: return l * r;
+		  case DIV: return l / r;
 		  case AND: return l & r;
 		  case OR: return l | r;
 		  case XOR: return l ^ r;
@@ -57,28 +58,28 @@ public class BinaryLinearIntegerExpression extends LinearIntegerExpression
     	right.getVarsVals(varsVals);
     }
 
-	public String toString () 
+	public String toString ()
 	{
 		return "(" + left.toString() + op.toString() + right.toString() + ")";
 	}
 
-	public String stringPC () 
+	public String stringPC ()
 	{
 		return "(" + left.stringPC() + op.toString() + right.stringPC() + ")";
 	}
-	
+
 	public IntegerExpression getLeft() {
 	    return left;
 	}
-	
+
 	public IntegerExpression getRight() {
 	    return right;
 	}
-	
+
 	public Operator getOp() {
 	    return op;
 	}
-	
+
 	public boolean equals(Object o) {
 	    return ((o instanceof BinaryLinearIntegerExpression) &&
 	            ((BinaryLinearIntegerExpression) o).left.equals(this.left) &&

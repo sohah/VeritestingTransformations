@@ -29,29 +29,32 @@ public class IDIV extends gov.nasa.jpf.jvm.bytecode.IDIV {
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
-		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0); 
+		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0);
 		IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(1);
-		
+
 		if(sym_v1==null && sym_v2==null)
 			return super.execute(ss, ks, th); // we'll still do the concrete execution
-		else 
-			throw new RuntimeException("## Error: SYMBOLIC IDIV not supported");
-		
-		//IntegerExpression result = null;
+		else {
+			//throw new RuntimeException("## Error: SYMBOLIC IDIV not supported");
 
-		/*
-		if(sym_v1!=null) {
-			if (sym_v2!=null)
-				result = sym_v1._plus(sym_v2);
-			else // v2 is concrete
-				result = sym_v1._plus(v2);
+			int v1 = th.pop();
+			int v2 = th.pop();
+			th.push(0, false); // for symbolic expressions, the concrete value does not matter
+
+			IntegerExpression result = null;
+			if(sym_v2!=null) {
+				if (sym_v1!=null)
+					result = sym_v2._div(sym_v1);
+				else // v1 is concrete
+					result = sym_v2._div(v1);
+			}
+			else if (sym_v1!=null)
+				result = sym_v1._div_reverse(v2);
+			sf.setOperandAttr(result);
+
+			//System.out.println("Execute IDIV: "+result);
+
+			return getNext(th);
 		}
-		else if (sym_v2!=null)
-			result = sym_v2._plus(v1);
-			*/
-		//sf.setOperandAttr(result);
-		
-		//System.out.println("Execute IDIV: "+result);
-		
 	}
 }

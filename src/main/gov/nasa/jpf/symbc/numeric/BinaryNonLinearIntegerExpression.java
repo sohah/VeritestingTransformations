@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  * @author Sarfraz Khurshid (khurshid@lcs.mit.edu)
- * 
+ *
  */
 class BinaryNonLinearIntegerExpression extends NonLinearIntegerExpression {
 	IntegerExpression left;
@@ -45,6 +45,7 @@ class BinaryNonLinearIntegerExpression extends NonLinearIntegerExpression {
 		  case PLUS:       return l + r;
 		  case MINUS:      return l - r;
 		  case MUL: return l * r;
+		  case DIV: return l / r;
 		  case AND: return l & r;
 		  case OR: return l | r;
 		  case XOR: return l ^ r;

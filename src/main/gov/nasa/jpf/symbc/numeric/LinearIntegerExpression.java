@@ -20,13 +20,18 @@
 package gov.nasa.jpf.symbc.numeric;
 import static gov.nasa.jpf.symbc.numeric.Operator.*;
 
-abstract class LinearIntegerExpression extends IntegerExpression 
+abstract class LinearIntegerExpression extends IntegerExpression
 {
-   public IntegerExpression _minus_reverse (int i) 
+   public IntegerExpression _minus_reverse (int i)
    {
 	return new BinaryLinearIntegerExpression(new IntegerConstant(i), MINUS, this);
    }
-	
+
+   public IntegerExpression _minus_reverse (long i)
+   {
+	return new BinaryLinearIntegerExpression(new IntegerConstant((int)i), MINUS, this);
+   }
+
     public IntegerExpression _minus (int i) {
 		//simplify
 		if (i == 0)
@@ -34,7 +39,7 @@ abstract class LinearIntegerExpression extends IntegerExpression
 
     	return new BinaryLinearIntegerExpression(this, MINUS, new IntegerConstant(i));
     }
-    
+
     public IntegerExpression _minus (long i) {
 		//simplify
 		if (i == 0)
@@ -42,7 +47,7 @@ abstract class LinearIntegerExpression extends IntegerExpression
 
 		return new BinaryLinearIntegerExpression(this, MINUS, new IntegerConstant((int)i));
     }
-    
+
     public IntegerExpression _minus (IntegerExpression e) {
 		//simplify
 		if (e instanceof IntegerConstant) {
@@ -59,7 +64,7 @@ abstract class LinearIntegerExpression extends IntegerExpression
 	    return super._minus(e);
 	}
     }
-    
+
     public IntegerExpression _mul (int i) {
 		//simplify
 		if (i == 1)
@@ -69,7 +74,7 @@ abstract class LinearIntegerExpression extends IntegerExpression
 
 	return new BinaryLinearIntegerExpression(this, MUL, new IntegerConstant(i));
     }
-    
+
     public IntegerExpression _mul (long i) {
 		//simplify
 		if (i == 1)
@@ -79,10 +84,10 @@ abstract class LinearIntegerExpression extends IntegerExpression
 
     	return new BinaryLinearIntegerExpression(this, MUL, new IntegerConstant((int)i));
     }
-    
-    public IntegerExpression _mul (IntegerExpression e) 
+
+    public IntegerExpression _mul (IntegerExpression e)
     {
-    	
+
 		//simplify
 		if (e instanceof IntegerConstant) {
 			IntegerConstant ic = (IntegerConstant)e;
@@ -99,6 +104,57 @@ abstract class LinearIntegerExpression extends IntegerExpression
 	}
     }
 
+
+	public IntegerExpression _div (int i)
+	{
+		// simplify
+		assert (i != 0);
+		if (i == 1)
+			return this;
+		return new BinaryLinearIntegerExpression(this, DIV, new IntegerConstant(i));
+	}
+
+	public IntegerExpression _div (IntegerExpression e)
+	{
+		//simplify
+		if (e instanceof IntegerConstant) {
+			IntegerConstant ic = (IntegerConstant)e;
+			assert (ic.value != 0);
+			if (ic.value == 1)
+				return this;
+			else
+				new BinaryLinearIntegerExpression(this, MUL, e);
+		}
+		if (e == this)
+			return new IntegerConstant(1);
+
+		return super._div(e);
+	}
+
+	public IntegerExpression _div_reverse (int i)
+	{
+		if (i == 0)
+			return new IntegerConstant(0);
+		return super._div(i);
+	}
+
+	public IntegerExpression _div (long i)
+	{
+		// simplify
+		assert (i != 0);
+		if (i == 1)
+			return this;
+
+		return new BinaryLinearIntegerExpression(this, DIV, new IntegerConstant((int)i));
+	}
+
+	public IntegerExpression _div_reverse (long i)
+	{
+		if (i == 0)
+			return new IntegerConstant(0);
+		return super._div(i);
+	}
+
     public IntegerExpression _plus (int i) {
 		//simplify
 		if (i == 0)
@@ -106,7 +162,7 @@ abstract class LinearIntegerExpression extends IntegerExpression
 
 	return new BinaryLinearIntegerExpression(this, PLUS, new IntegerConstant(i));
     }
-    
+
     public IntegerExpression _plus (long i) {
 		//simplify
 		if (i == 0)
@@ -114,7 +170,7 @@ abstract class LinearIntegerExpression extends IntegerExpression
 
     	return new BinaryLinearIntegerExpression(this, PLUS, new IntegerConstant((int)i));
     }
-    
+
     public IntegerExpression _plus (IntegerExpression e) {
 		//simplify
 		if (e instanceof IntegerConstant) {
@@ -129,26 +185,26 @@ abstract class LinearIntegerExpression extends IntegerExpression
 	    return super._plus(e);
 	}
     }
-    
+
     public IntegerExpression _neg()
     {
 	return new BinaryLinearIntegerExpression(new IntegerConstant(0), MINUS, this);
     }
-    
+
     public IntegerExpression _and(int i) {
     	if(i == 0) {
     		return new IntegerConstant(0);
     	}
     	return new BinaryLinearIntegerExpression(this, AND, new IntegerConstant(i));
     }
-    
+
     public IntegerExpression _and(long i) {
     	if(i == 0) {
     		return new IntegerConstant(0);
     	}
     	return new BinaryLinearIntegerExpression(this, AND, new IntegerConstant((int)i));
     }
-    
+
     public IntegerExpression _and(IntegerExpression e) {
     	if(e instanceof IntegerConstant) {
     		IntegerConstant ic = (IntegerConstant) e;
@@ -162,27 +218,27 @@ abstract class LinearIntegerExpression extends IntegerExpression
     	}
     	return new BinaryNonLinearIntegerExpression(this, AND, e);
     }
-    
+
     public IntegerExpression _or(int i) {
     	if(i == 0) {
     		return this;
-    	} 
+    	}
     	return new BinaryLinearIntegerExpression(this, OR, new IntegerConstant(i));
     }
-    
+
     public IntegerExpression _or(long i) {
     	if(i == 0) {
     		return this;
-    	} 
+    	}
     	return new BinaryLinearIntegerExpression(this, OR, new IntegerConstant((int)i));
     }
-    
+
     public IntegerExpression _or(IntegerExpression e) {
     	if(e instanceof IntegerConstant) {
     		IntegerConstant ic = (IntegerConstant) e;
     		if(ic.value == 0) {
     			return this;
-    		} 
+    		}
     		return new BinaryLinearIntegerExpression(this, OR, e);
     	}
     	if(e instanceof LinearIntegerExpression) {
@@ -190,15 +246,15 @@ abstract class LinearIntegerExpression extends IntegerExpression
     	}
     	return new BinaryNonLinearIntegerExpression(this, OR, e);
     }
-    
+
     public IntegerExpression _xor(int i) {
     	return new BinaryLinearIntegerExpression(this, XOR, new IntegerConstant(i));
     }
-    
+
     public IntegerExpression _xor(long i) {
     	return new BinaryLinearIntegerExpression(this, XOR, new IntegerConstant((int)i));
     }
-    
+
     public IntegerExpression _xor(IntegerExpression e) {
     	if(e instanceof IntegerConstant) {
     		return new BinaryLinearIntegerExpression(this, XOR, e);
@@ -208,27 +264,27 @@ abstract class LinearIntegerExpression extends IntegerExpression
     	}
     	return new BinaryNonLinearIntegerExpression(this, XOR, e);
     }
-    
+
     public IntegerExpression _shiftR(int i) {
     	if(i == 0) {
     		return this;
-    	} 
+    	}
     	return new BinaryLinearIntegerExpression(this, SHIFTR, new IntegerConstant(i));
     }
-    
+
     public IntegerExpression _shiftR(long i) {
     	if(i == 0) {
     		return this;
-    	} 
+    	}
     	return new BinaryLinearIntegerExpression(this, SHIFTR, new IntegerConstant((int)i));
     }
-    
+
     public IntegerExpression _shiftR(IntegerExpression e) {
     	if(e instanceof IntegerConstant) {
     		IntegerConstant ic = (IntegerConstant) e;
     		if(ic.value == 0) {
     			return this;
-    		} 
+    		}
     		return new BinaryLinearIntegerExpression(this, SHIFTR, e);
     	}
     	if(e instanceof LinearIntegerExpression) {
@@ -236,27 +292,27 @@ abstract class LinearIntegerExpression extends IntegerExpression
     	}
     	return new BinaryNonLinearIntegerExpression(this, SHIFTR, e);
     }
-    
+
     public IntegerExpression _shiftUR(int i) {
     	if(i == 0) {
     		return this;
-    	} 
+    	}
     	return new BinaryLinearIntegerExpression(this, SHIFTUR, new IntegerConstant(i));
     }
-    
+
     public IntegerExpression _shiftUR(long i) {
     	if(i == 0) {
     		return this;
-    	} 
+    	}
     	return new BinaryLinearIntegerExpression(this, SHIFTUR, new IntegerConstant((int)i));
     }
-    
+
     public IntegerExpression _shiftUR(IntegerExpression e) {
     	if(e instanceof IntegerConstant) {
     		IntegerConstant ic = (IntegerConstant) e;
     		if(ic.value == 0) {
     			return this;
-    		} 
+    		}
     		return new BinaryLinearIntegerExpression(this, SHIFTUR, e);
     	}
     	if(e instanceof LinearIntegerExpression) {
@@ -264,27 +320,27 @@ abstract class LinearIntegerExpression extends IntegerExpression
     	}
     	return new BinaryNonLinearIntegerExpression(this, SHIFTUR, e);
     }
-    
+
     public IntegerExpression _shiftL(int i) {
     	if(i == 0) {
     		return this;
-    	} 
+    	}
     	return new BinaryLinearIntegerExpression(this, SHIFTL, new IntegerConstant(i));
     }
-    
+
     public IntegerExpression _shiftL(long i) {
     	if(i == 0) {
     		return this;
-    	} 
+    	}
     	return new BinaryLinearIntegerExpression(this, SHIFTL, new IntegerConstant((int)i));
     }
-    
+
     public IntegerExpression _shiftL(IntegerExpression e) {
     	if(e instanceof IntegerConstant) {
     		IntegerConstant ic = (IntegerConstant) e;
     		if(ic.value == 0) {
     			return this;
-    		} 
+    		}
     		return new BinaryLinearIntegerExpression(this, SHIFTL, e);
     	}
     	if(e instanceof LinearIntegerExpression) {

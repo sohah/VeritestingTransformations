@@ -37,6 +37,13 @@ public class IntegerConstant extends LinearIntegerExpression {
     return new IntegerConstant(value - i);
   }
 
+  public IntegerExpression _minus_reverse (int i) {
+    return new IntegerConstant(i - value);
+  }
+  public IntegerExpression _minus_reverse (long i) {
+	    return new IntegerConstant((int) i - value);
+	  }
+
   public IntegerExpression _minus (IntegerExpression e) {
       //simplify
       if (e instanceof IntegerConstant) {
@@ -52,6 +59,42 @@ public class IntegerConstant extends LinearIntegerExpression {
     } else {
       return super._minus(e);
     }
+  }
+
+  public IntegerExpression _div (int i) {
+      //simplify
+      if (i == 1)
+          return this;
+      assert (i != 0);
+    return new IntegerConstant(value / i);
+  }
+
+  public IntegerExpression _div_reverse (int i) {
+      //simplify
+	  assert  (value !=0);
+    return new IntegerConstant(i / value);
+  }
+
+  public IntegerExpression _div_reverse (long i) {
+      //simplify
+	  assert  (value !=0);
+    return new IntegerConstant((int) i / value);
+  }
+
+  public IntegerExpression _div (IntegerExpression e) {
+	  // simplify
+	  if (e instanceof IntegerConstant) {
+		  IntegerConstant ic = (IntegerConstant) e;
+		  assert (ic.value != 0);
+		  if (ic.value == 1)
+			  return this;
+		  else
+			  return new IntegerConstant(value / ic.value);
+	  }
+	  if (e == this)
+		  return new IntegerConstant(1);
+
+	 return super._div(e);
   }
 
   public IntegerExpression _mul (int i) {
@@ -83,9 +126,7 @@ public class IntegerConstant extends LinearIntegerExpression {
     }
   }
 
- 
 
-  
   public IntegerExpression _plus (int i) {
       //simplify
       if (i == 0)
@@ -117,21 +158,21 @@ public class IntegerConstant extends LinearIntegerExpression {
 			return super._neg();
 	}
 
-	
+
 	public IntegerExpression _and (int i) {
 	   if (i == 0) {
 		   return new IntegerConstant(0);
 	   }
 	    return new IntegerConstant(value & i);
 	}
-	
+
 	public IntegerExpression _and (long i) {
 		   if (i == 0) {
 			   return new IntegerConstant(0);
 		   }
 		    return new IntegerConstant(value & ((int) i));
 		}
-	  
+
 	public IntegerExpression _and (IntegerExpression e) {
 		if (e instanceof IntegerConstant) {
 			if(((IntegerConstant) e).value == 0) {
@@ -141,14 +182,14 @@ public class IntegerConstant extends LinearIntegerExpression {
 		}
 		return new BinaryLinearIntegerExpression(this, AND, e);
 	}
-	
+
 	public IntegerExpression _or (int i) {
 		if (i == 0) {
 			return this;
 		}
 		return new IntegerConstant(value | i);
 	}
-	
+
 	public IntegerExpression _or (long i) {
 		if (i == 0) {
 			return this;
@@ -165,11 +206,11 @@ public class IntegerConstant extends LinearIntegerExpression {
 		}
 		return new BinaryLinearIntegerExpression(this, OR, e);
 	}
-	
+
 	public IntegerExpression _xor (int i) {
 		    return new IntegerConstant(value ^ i);
 	}
-	
+
 	public IntegerExpression _xor (long i) {
 	    return new IntegerConstant(value ^ ((int) i));
 	}
@@ -180,8 +221,8 @@ public class IntegerConstant extends LinearIntegerExpression {
 		}
 		return new BinaryLinearIntegerExpression(this, XOR, e);
 	}
-	
-	
+
+
 	public IntegerExpression _shiftL (int i) {
 	    return new IntegerConstant(value << i);
 	}
@@ -196,7 +237,7 @@ public class IntegerConstant extends LinearIntegerExpression {
 		}
 		return new BinaryLinearIntegerExpression(this, SHIFTL, e);
 	}
-	
+
 	public IntegerExpression _shiftR (int i) {
 	    return new IntegerConstant(value >> i);
 	}
