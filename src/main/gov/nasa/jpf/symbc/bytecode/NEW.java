@@ -42,24 +42,24 @@ import org.apache.bcel.classfile.ConstantPool;
  * ... => ..., objectref
  */
 public class NEW extends gov.nasa.jpf.jvm.bytecode.NEW {
-  protected String cname;
 
-  public void setPeer (org.apache.bcel.generic.Instruction i, ConstantPool cp) {
-    cname = cp.constantToString(cp.getConstant(
-                                      ((org.apache.bcel.generic.NEW) i).getIndex()));
-  }
-
+  @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
     JVM vm = ti.getVM();
     DynamicArea da = vm.getDynamicArea();
     ClassInfo ci;
-    try {
-        ci = ClassInfo.getResolvedClassInfo(cname);
 
+     try {
+        ci = ClassInfo.getResolvedClassInfo(cname);
       } catch (NoClassInfoException cx){
         // can be any inherited class or required interface
         return ti.createAndThrowException("java.lang.NoClassDefFoundError", cx.getMessage());
       }
+
+      String className = ci.getName();
+      if(!(className.equals("java.lang.StringBuilder") || className.equals("java.lang.StringBuffer")))
+    	  return super.execute(ss, ks, ti);
+
 
       if (!ci.isRegistered()){
         ci.registerClass(ti);
@@ -83,7 +83,7 @@ public class NEW extends gov.nasa.jpf.jvm.bytecode.NEW {
     ti.push(objRef, true);
 // TODO: to review
     //insert dummy expressions for StringBuilder and StringBuffer
-    String className = ci.getName();
+    //String className = ci.getName();
     if(className.equals("java.lang.StringBuilder") || className.equals("java.lang.StringBuffer")){
     	SymbolicStringBuilder t = new SymbolicStringBuilder();
     	StackFrame sf = ti.getTopFrame();
@@ -95,11 +95,4 @@ public class NEW extends gov.nasa.jpf.jvm.bytecode.NEW {
     return getNext(ti);
   }
 
-  public int getLength() {
-    return 3; // opcode, index1, index2
-  }
-
-  public int getByteCode () {
-    return 0xBB;
-  }
 }
