@@ -116,7 +116,14 @@ public class SymbolicConstraintsGeneral {
 				else
 					throw new RuntimeException("## Error: Binary Non Linear Operation");
 			case DIV:
-				throw new RuntimeException("## Error: Binary Non Linear Operation");
+				if (e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+				else if (e_leftRef instanceof IntegerConstant)
+					return pb.mult(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+				else if (e_rightRef instanceof IntegerConstant)
+					return pb.div(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
+				else
+				    throw new RuntimeException("## Error: Binary Non Linear Operation");
 			case AND:
 				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
 					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix

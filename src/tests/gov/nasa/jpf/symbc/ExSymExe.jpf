@@ -16,7 +16,7 @@ sourcepath=${jpf-symbc}/src/tests
 # in this particular configuration all the input
 # parameters to methods test2 and test are symbolic
 #symbolic.dp=no_solver
-symbolic.dp=coral
+#symbolic.dp=coral
 #symbolic.dp=choco2
 #symbolic.dp=yices
 

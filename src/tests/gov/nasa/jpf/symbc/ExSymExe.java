@@ -30,7 +30,7 @@ public class ExSymExe {
 	  if (x > z)
 		  if (z > x)
 			  System.out.println("unreachable");
-	  if (x/z > 0)
+	  if (x/6 > 0)
 		  System.out.println("br1");
 	  else
 		  System.out.println("br2");
