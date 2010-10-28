@@ -67,7 +67,7 @@ public class NEW extends gov.nasa.jpf.jvm.bytecode.NEW {
 
       // since this is a NEW, we also have to pushClinit
       if (!ci.isInitialized()) {
-        if (ci.initializeClass(ti, this)) {
+        if (ci.initializeClass(ti)) {
           return ti.getPC();
         }
       }

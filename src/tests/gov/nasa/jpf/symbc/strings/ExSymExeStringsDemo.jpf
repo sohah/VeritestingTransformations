@@ -1,4 +1,4 @@
-target=gov.nasa.jpf.symbc.strings.ExSymExeStrings61
+target=gov.nasa.jpf.symbc.strings.ExSymExeStrings55
 
 classpath=${jpf-symbc}/build/tests
 
@@ -21,13 +21,13 @@ symbolic.dp=choco
 # "none" (default), "cvc" (recommended), "automata" or 
 # "sat". At the moment symbolic.dp must be equal to 
 # "choco" for it to work.
-symbolic.string_dp=cvc
+symbolic.string_dp=cvc_inc
 # As a side note for eclipse users, to run cvc3 
 # enabled programs, the eclipse plugin which allows 
 # you to right click on a .jpf test file and click 
 # "Verify..." does not work. In order to run cvc3 
 # you need to go through "Run Configuration"
 
-symbolic.method=gov.nasa.jpf.symbc.strings.ExSymExeStrings61.test(sym) 
+symbolic.method=gov.nasa.jpf.symbc.strings.ExSymExeStrings55.test(sym#sym) 
 
 listener = gov.nasa.jpf.symbc.SymbolicListenerClean

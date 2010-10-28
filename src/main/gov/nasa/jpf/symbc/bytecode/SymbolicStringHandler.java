@@ -180,6 +180,7 @@ public class SymbolicStringHandler {
 				handleLastIndexOf(invInst, th);
 			} else if (shortName.equals("charAt")) {
 				handleCharAt (invInst, th);
+				//return invInst;
 			} else if (shortName.equals("replace")) {
 				Instruction handled = handleReplace(invInst, th);
 				if (handled != null) {
@@ -289,11 +290,11 @@ public class SymbolicStringHandler {
 
 	}
 	
-	private Instruction handleCharAt (InvokeInstruction invInst, ThreadInfo th) {
+	private boolean handleCharAt (InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0);
 		StringExpression sym_v2 = (StringExpression) sf.getOperandAttr(1);
-
+		boolean bresult = false;
 		if ((sym_v1 == null) & (sym_v2 == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: HandleSubString1");
 		} else {
@@ -302,10 +303,14 @@ public class SymbolicStringHandler {
 
 			IntegerExpression result = null;
 			if (sym_v1 == null) { // operand 0 is concrete
+				
 				int val = s1;
+				//System.out.println("[handleCharAt] Mmm...! " + val);
 				result = sym_v2._charAt(new IntegerConstant(val));
 			} else {
-				//throw new RuntimeException(sym_v1.toString());
+				//System.out.println("[handleCharAt] YES! " + sym_v1.getClass() + " " + sym_v1.toString());
+				
+				
 				if (sym_v2 == null) {
 					ElementInfo e1 = DynamicArea.getHeap().get(s2);
 					String val2 = e1.asString();
@@ -314,17 +319,15 @@ public class SymbolicStringHandler {
 				} else {
 					result = sym_v2._charAt(sym_v1);
 				}
+				bresult = true;
+				//System.out.println("[handleCharAt] Ignoring: " + result.toString());
+				//th.push(0, false);
 			}
-			int objRef = th.getVM().getDynamicArea().newString("", th); /*
-																																	 * dummy
-																																	 * String
-																																	 * Object
-																																	 */
 			//th.push(objRef, true);
 			th.push(0, false);
 			sf.setOperandAttr(result);
 		}
-		return null;
+		return bresult;
 
 	}
 
@@ -453,6 +456,15 @@ public class SymbolicStringHandler {
 	}
 	
 	public void handleLastIndexOf(InvokeInstruction invInst, ThreadInfo th) {
+		int numStackSlots = invInst.getArgSize();
+		if (numStackSlots == 2) {
+			handleLastIndexOf1(invInst, th);
+		} else {
+			handleLastIndexOf2(invInst, th);
+		}
+	}
+	
+	public void handleLastIndexOf1(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		/* Added by Gideon */
 		//StringExpression argument = (StringExpression) sf.getOperandAttr(0);
@@ -546,6 +558,110 @@ public class SymbolicStringHandler {
 			//assert result != null;
 			//th.push(conditionValue ? 1 : 0, true);
 	
+			
+		}
+	}
+	
+	public void handleLastIndexOf2(InvokeInstruction invInst, ThreadInfo th) {
+		StackFrame sf = th.getTopFrame();
+
+		StringExpression sym_v1 = null;
+		StringExpression sym_v2 = null;
+		IntegerExpression intExp = null;
+		sym_v1 = (StringExpression) sf.getOperandAttr(2);
+		intExp = (IntegerExpression) sf.getOperandAttr(0);
+		sym_v2 = (StringExpression) sf.getOperandAttr(1);
+		
+		if (sym_v1 == null && sym_v2 == null && intExp == null) {
+			System.err.println("ERROR: symbolic method must have symbolic string operand: hanldeLength");
+		} else {
+			int i1 = th.pop();
+			boolean s2char = true;
+			if (th.isOperandRef()) {
+				//System.out.println("[handleIndexOf2] string detected");
+				s2char = false;
+			}
+			else {
+				//System.out.println("[handleIndexOf2] char detected");
+			}
+			int s2 = th.pop();
+			int s1 = th.pop();
+			
+			IntegerExpression result = null;
+			if (intExp != null) {
+				//System.out.println("[handleIndexOf2] int exp: " + intExp.getClass());
+				if (sym_v1 != null) {
+					if (sym_v2 != null) { // both are symbolic values
+						result = sym_v1._lastIndexOf(sym_v2, intExp);
+					} else {
+						if (s2char) {
+							result = sym_v1._lastIndexOf(new IntegerConstant(s2), intExp);
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val = e2.asString();
+							result = sym_v1._lastIndexOf(new StringConstant(val), intExp);
+						}
+					}
+				} else {
+					ElementInfo e1 = DynamicArea.getHeap().get(s1);
+					String val = e1.asString();
+					
+					if (sym_v2 != null) { // both are symbolic values
+						result = new StringConstant(val)._lastIndexOf(sym_v2, intExp);
+					} else {
+						if (s2char) {
+							result = new StringConstant(val)._lastIndexOf(new IntegerConstant(s2), intExp);
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val2 = e2.asString();
+							result = new StringConstant(val)._lastIndexOf(new StringConstant(val2), intExp);
+						}
+					}
+				}
+			}
+			else {
+				if (sym_v1 != null) {
+					if (sym_v2 != null) { // both are symbolic values
+						result = sym_v1._lastIndexOf(sym_v2, new IntegerConstant(i1));
+					} else {
+						if (s2char) {
+							result = sym_v1._lastIndexOf(new IntegerConstant(s2), new IntegerConstant(i1));
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val = e2.asString();
+							result = sym_v1._lastIndexOf(new StringConstant(val), new IntegerConstant(i1));
+							//System.out.println("[handleIndexOf2] Special push");
+							//Special push?
+							//th.push(s1, true);
+						}
+					}
+				} else {
+					ElementInfo e1 = DynamicArea.getHeap().get(s1);
+					String val = e1.asString();
+					
+					if (sym_v2 != null) { // both are symbolic values
+						result = new StringConstant(val)._lastIndexOf(sym_v2, new IntegerConstant(i1));
+					} else {
+						if (s2char) {
+							result = new StringConstant(val)._lastIndexOf(new IntegerConstant(s2), new IntegerConstant(i1));
+						}
+						else {
+							ElementInfo e2 = DynamicArea.getHeap().get(s2);
+							String val2 = e2.asString();
+							result = new StringConstant(val)._lastIndexOf(new StringConstant(val2), new IntegerConstant(i1));
+						}
+					}
+				}
+			}
+			/* Not quite sure yet why this works */
+			//int objRef = th.getVM().getDynamicArea().newString("", th);
+			//th.push(objRef, true);
+			th.push(0, false);
+			assert result != null;
+			sf.setOperandAttr(result);
 			
 		}
 	}
