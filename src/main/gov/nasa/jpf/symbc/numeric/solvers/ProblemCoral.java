@@ -64,15 +64,15 @@ public class ProblemCoral extends ProblemGeneral {
 	private SolverKind solverKind;
 	private coral.PC pc = new coral.PC();
 	private boolean optmize;
-	
+
 	public ProblemCoral() {
 		this(SolverKind.PSO_OPT4J, true);
 	}
-	
+
 	public ProblemCoral(SolverKind solverKind, boolean preprocOptimizations){
 		/**
 		 * setting maximum number of iterations allowed.
-		 * the solver return with no solution in that 
+		 * the solver return with no solution in that
 		 * case.  note that the constraint may still be
 		 * satisfiable.
 		 */
@@ -80,21 +80,21 @@ public class ProblemCoral extends ProblemGeneral {
 		this.optmize = preprocOptimizations;
 		Config.nIterationsPSO = 500;
 		/**
-		 * random seed used to generate random numbers. 
+		 * random seed used to generate random numbers.
 		 */
 		Config.seed = 464655;
 	}
-	
+
 	public coral.PC getPc() {
 		return pc;
 	}
-	
+
 	/**************************************************
-	 * ignoring ranges passed from JPF.  We use a short 
+	 * ignoring ranges passed from JPF.  We use a short
 	 * range as default but that is dynamically reset
-	 * based on relational constraints involving 
-	 * constants.  for example, x > 10 && x < 20 
-	 * redefines the initial range of x to [10,20]. 
+	 * based on relational constraints involving
+	 * constants.  for example, x > 10 && x < 20
+	 * redefines the initial range of x to [10,20].
 	 **************************************************/
 
 	@Override
@@ -595,7 +595,7 @@ public class ProblemCoral extends ProblemGeneral {
 			 * this is to comply with the assumption
 			 * of the calling method
 			 */
-			
+
 			if (sol.getResult() == Result.SAT) {
 				result = true;
 			}
@@ -623,7 +623,7 @@ public class ProblemCoral extends ProblemGeneral {
 			}
 		};
 		/**
-		 * If solving is based on timeouts (value > 0) 
+		 * If solving is based on timeouts (value > 0)
 		 * the code spawns a timer thread.  otherwise,
 		 * it calls the run() method directly.
 		 */
@@ -672,6 +672,12 @@ public class ProblemCoral extends ProblemGeneral {
 	 */
 	public void post(Object constraint) {
 		pc.addConstraint((SymBool)constraint);
+	}
+
+	@Override
+	public void postLogicalOR(Object[] constraint) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("## Error Coral does not support LogicalOR");
 	}
 
 }

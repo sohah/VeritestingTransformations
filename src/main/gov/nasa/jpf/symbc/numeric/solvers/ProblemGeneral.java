@@ -74,33 +74,33 @@ public abstract class ProblemGeneral{
 	public abstract Object div(Object exp1, Object exp2) ;
 	public abstract Object div(double value, Object exp) ;
 	public abstract Object div(Object exp, double value) ;
-	
+
 	public abstract Object and(int value, Object exp) ;
 	public abstract Object and(Object exp, int value) ;
 	public abstract Object and(Object exp1, Object exp2) ;
-	
+
 	public abstract Object or(int value, Object exp) ;
 	public abstract Object or(Object exp, int value) ;
 	public abstract Object or(Object exp1, Object exp2) ;
-	
+
 	public abstract Object xor(int value, Object exp) ;
 	public abstract Object xor(Object exp, int value) ;
 	public abstract Object xor(Object exp1, Object exp2) ;
-	
+
 	public abstract Object shiftL(int value, Object exp) ;
 	public abstract Object shiftL(Object exp, int value) ;
 	public abstract Object shiftL(Object exp1, Object exp2) ;
-	
+
 	public abstract Object shiftR(int value, Object exp) ;
 	public abstract Object shiftR(Object exp, int value) ;
 	public abstract Object shiftR(Object exp1, Object exp2) ;
 
-	
+
 	public abstract Object shiftUR(int value, Object exp) ;
 	public abstract Object shiftUR(Object exp, int value) ;
 	public abstract Object shiftUR(Object exp1, Object exp2) ;
 
-		
+
 	public Object makeBitVectorVar(String name, int N) {
 			throw new RuntimeException("## Error BitVectors not supported by current constraint solver");
 	}
@@ -172,5 +172,7 @@ public abstract class ProblemGeneral{
 	public abstract int getIntValue(Object dpVar);
 
 	public abstract void post(Object constraint);
+
+	public abstract void postLogicalOR(Object [] constraint);
 
 }

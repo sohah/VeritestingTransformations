@@ -23,7 +23,7 @@ import aima.core.logic.propositional.visitors.CNFTransformer;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
-import gov.nasa.jpf.symbc.numeric.LinearOrIntegerConstraints;
+import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
@@ -335,7 +335,7 @@ public class TranslateToSAT {
 				//Continue finding the solution...
 				scg.solve(pc);
 				PathCondition.flagSolved = true;
-				LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 				for (Entry<Vertex, Integer> e: map.entrySet()) {
 					loic.addToList(new LinearIntegerConstraint(e.getKey().getSymbolicLength(), Comparator.NE, new IntegerConstant (e.getKey().getLength())));
 				}

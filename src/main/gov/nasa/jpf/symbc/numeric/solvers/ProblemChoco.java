@@ -44,13 +44,13 @@ public class ProblemChoco extends ProblemGeneral {
 	}
 
 	//Added by Gideon
-	public Object logicOr (choco.Constraint[] arr) {
-		/*System.out.println("orring...");
-		for (choco.Constraint c: arr) {
-			System.out.println(c.pretty());
-		}*/
-		return pb.or(arr); 
-	}
+//	public Object logicOr (choco.Constraint[] arr) {
+//		/*System.out.println("orring...");
+//		for (choco.Constraint c: arr) {
+//			System.out.println(c.pretty());
+//		}*/
+//		return pb.or(arr);
+//	}
 
 	public Object eq(int value, Object exp){return pb.eq(value, (IntExp)exp);}
 	public Object eq(Object exp, int value){return pb.eq((IntExp) exp, value);}
@@ -210,6 +210,7 @@ public class ProblemChoco extends ProblemGeneral {
 	public Object mult(Object exp, int value) {
 		if (exp instanceof IntVar)
 			return pb.mult(value, (IntExp) exp);
+
 		else if (exp instanceof IntTerm) {
 			// distribute value over exp
 			//return pb.mult(value, (IntExp) exp);
@@ -381,6 +382,24 @@ public class ProblemChoco extends ProblemGeneral {
 
 	public Object shiftUR(Object exp1, Object exp2) {
 		throw new RuntimeException("## Error Choco does not support bitwise SHIFT");
+	}
+
+	@Override
+	public void postLogicalOR(Object[] constraints) {
+
+		choco.Constraint [] choco_constraints = new choco.Constraint[constraints.length];
+		for (int i =0; i<constraints.length; i++)
+			choco_constraints[i] = (choco.Constraint) constraints[i];
+		Object orCon = ((RealProblem) pb).or(choco_constraints);
+		choco.Constraint temp = (choco.Constraint) orCon;
+		//System.out.println("[SymbolicConstraintsGeneral] orCon: " + temp);
+		//pb.post(orCon);
+		pb.post(temp);
+		/*Boolean result = pc_pb.solve();
+		if (result != null) {
+			boolean resultboo = (boolean) result;
+			System.out.println("[SymbolicConstraintsGeneral] pc_pb = " + resultboo);
+		}*/
 	}
 
 }

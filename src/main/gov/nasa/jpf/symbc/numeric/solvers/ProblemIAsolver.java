@@ -276,7 +276,7 @@ public class ProblemIAsolver extends ProblemGeneral {
 	public Object or(Object exp1, Object exp2) {
 		throw new RuntimeException("## Error IASolver does not support bitwise OR");
 	}
-	
+
 	public Object shiftL(int value, Object exp) {
 		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
 	}
@@ -315,7 +315,7 @@ public class ProblemIAsolver extends ProblemGeneral {
 
 	public Object shiftUR(int value, Object exp) {
 		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
-		
+
 	}
 
 	public Object shiftUR(Object exp, int value) {
@@ -325,6 +325,12 @@ public class ProblemIAsolver extends ProblemGeneral {
 	public Object shiftUR(Object exp1, Object exp2) {
 		throw new RuntimeException("## Error IASolver does not support bitwise SHIFT");
 	}
-	
+
+	@Override
+	public void postLogicalOR(Object[] constraint) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("## Error IASolver does not support LogicalOR");
+	}
+
 
 }

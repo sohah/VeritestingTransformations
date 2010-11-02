@@ -8,19 +8,19 @@ public class DebugSolvers extends ProblemGeneral {
 	private int numSolvers;
 	private boolean alwaysPrint;
 	private PathCondition p;
-	
+
 	public DebugSolvers(PathCondition pc) {
 		p = pc;
-		
+
 		alwaysPrint = false;
 		numSolvers = 3;
 		probs = new ProblemGeneral[numSolvers];
-		
+
 		probs[0] = new ProblemChoco();
 		probs[1] = new ProblemChoco2();
-		probs[2] = new ProblemCoral();			
+		probs[2] = new ProblemCoral();
 	}
-	
+
 	public class SolverObjects {
 		private Object[] cons;
 
@@ -784,12 +784,12 @@ public class DebugSolvers extends ProblemGeneral {
 			} else {
 				solved[i] = s;
 			}
-			
+
 			if (alwaysPrint) {
 				System.out.println("Solver " + Integer.toString(i) + ": " + Boolean.toString(solved[i]));
-			}						
+			}
 		}
-		
+
 		if (!alwaysPrint) {
 			boolean first = solved[0];
 			boolean print = false;
@@ -808,7 +808,7 @@ public class DebugSolvers extends ProblemGeneral {
 				}
 			}
 		}
-		
+
 		return solved[0];
 	}
 
@@ -839,6 +839,12 @@ public class DebugSolvers extends ProblemGeneral {
 			so.setConstraint(i, probs[i].xor(((SolverObjects) exp1).getConstraint(i), ((SolverObjects) exp2).getConstraint(i)));
 		}
 		return so;
+	}
+
+	@Override
+	public void postLogicalOR(Object[] constraint) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("## Error LogicalOR not implemented");
 	}
 
 }

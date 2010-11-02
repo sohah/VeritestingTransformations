@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import symlib.SymLiteral;
-import symlib.SymNumber; 
+import symlib.SymNumber;
 import symlib.Util;
 import coral.PC;
 import coral.solvers.Env;
@@ -38,23 +38,23 @@ import coral.solvers.Result;
 import coral.solvers.SolverKind;
 
 /**
- * 
+ *
  * This class runs all solvers for each query.  Please,
- * keep in mind that, for some queries, some solvers can 
- * break (for example, yices and cvc3 does not support 
+ * keep in mind that, for some queries, some solvers can
+ * break (for example, yices and cvc3 does not support
  * trigonometric functions and cvc cannot handle mixed
  * int and float equality constraint).  In those cases,
- * we try to continue execution assigning that query to 
- * that solver as unsolved.  The goal of this class is to 
+ * we try to continue execution assigning that query to
+ * that solver as unsolved.  The goal of this class is to
  * generate a matrix M where each cell M[i,j] denotes the
- * number of queries that solver i could solve and j    
+ * number of queries that solver i could solve and j
  * could not.
- * 
+ *
  * We also noted that some solutions reported by choco and
  * yices where incorrect.  To handle those cases, we check
  * whether the answer is actually sat with CORAL.  If not,
  * we mark that query as unsolved to that solver.
- * 
+ *
  * @author Matheus Arrais (mbas@cin.ufpe.br)
  * @author Mateus Araujo (mab@cin.ufpe.br)
  * @author Marcelo d'Amorim damorim
@@ -70,20 +70,20 @@ public class ProblemCompare extends ProblemGeneral {
 	private boolean[] solutions;
 	private int selected = 0;
 	private static SolvingDiff solvingDiff = new SolvingDiff();
-	private Map<String, SolverObjects> intVars; // JPF symbolicInteger varname -> SolverObjects var list 
+	private Map<String, SolverObjects> intVars; // JPF symbolicInteger varname -> SolverObjects var list
 	private Map<String, SolverObjects> realVars; // JPF symbolicReal varname -> SolverObjects var list
-	private boolean[] ignoredSolvers; //marks solvers that don't support an operation present in the pc (like exp for choco) 
-		
-	
+	private boolean[] ignoredSolvers; //marks solvers that don't support an operation present in the pc (like exp for choco)
+
+
 	public ProblemCompare(PathCondition pc,SymbolicConstraintsGeneral scg) {
 		p = pc;
 		this.scg = scg;
-		
+
 		alwaysPrint = false;
 		numSolvers = 7;
 		solutions = new boolean[numSolvers];
 		probs = new ProblemGeneral[numSolvers];
-		intVars = new HashMap<String, SolverObjects>(); 
+		intVars = new HashMap<String, SolverObjects>();
 		realVars = new HashMap<String, SolverObjects>();
 
 		probs[0] = new ProblemCoral(SolverKind.PSO_OPT4J, true);
@@ -97,7 +97,7 @@ public class ProblemCompare extends ProblemGeneral {
 		solvingDiff.init(numSolvers);
 		ignoredSolvers = new boolean[numSolvers];
 	}
-	
+
 	public class SolverObjects {
 		private Object[] cons;
 
@@ -113,7 +113,7 @@ public class ProblemCompare extends ProblemGeneral {
 			cons[i] = o;
 		}
 	}
-	
+
 	@Override
 	public Object and(int value, Object exp) {
 		SolverObjects so = new SolverObjects();
@@ -1369,12 +1369,12 @@ public class ProblemCompare extends ProblemGeneral {
 
 	//pbToCheck >= 1 (posicao 0 reservada para coral)
 	public Env check(Map<String, SolverObjects> intVars, Map<String, SolverObjects> realVars, int pbToCheck) {
-		
+
 		ProblemGeneral pb = probs[pbToCheck];
 		Map<SymLiteral,SymNumber> coralMap = new HashMap<SymLiteral,SymNumber>();
 		Env env = new Env(coralMap, Result.UNK, SolverKind.RANDOM);
 		boolean validSolution = true;
-		
+
 		//extracting int values
 		for(Entry<String,SolverObjects> entry : intVars.entrySet()) {
 			SolverObjects valueList = entry.getValue();
@@ -1382,9 +1382,9 @@ public class ProblemCompare extends ProblemGeneral {
 			Object otherLiteral = valueList.getConstraint(pbToCheck);
 			int val = pb.getIntValue(otherLiteral);
 			coralMap.put((SymLiteral) coralLiteral, Util.createConstant(val));
-			//System.out.println(literal + " : " + val);			
+			//System.out.println(literal + " : " + val);
 		}
-		
+
 		//extract real values
 		try {
 			for(Entry<String,SolverObjects> entry : realVars.entrySet()) {
@@ -1393,36 +1393,36 @@ public class ProblemCompare extends ProblemGeneral {
 				Object otherLiteral = valueList.getConstraint(pbToCheck);
 					double val = pb.getRealValue(otherLiteral);
 					coralMap.put((SymLiteral) coralLiteral, Util.createConstant(val));
-				//System.out.println(literal + " : " + val);			
+				//System.out.println(literal + " : " + val);
 			}
 		} catch(Exception exp) { //reproducing hack to get the value of undefined variables in choco (and possibly others)
 			//if constraint contains real variables, use choco hack to find them
-			if(realVars.size() > 0) { 
-				Map<SymbolicReal,Object> realVarsChoco = extractProblemVars(scg.getSymRealVar(),pbToCheck); 
+			if(realVars.size() > 0) {
+				Map<SymbolicReal,Object> realVarsChoco = extractProblemVars(scg.getSymRealVar(),pbToCheck);
 				Map<SymbolicReal,Object> reprocessedRealVarsChoco = scg.catchBody(realVarsChoco,pb,p);
-			
+
 				if(reprocessedRealVarsChoco != null) {
 					Map<String,Double> realValuesChoco = extractValues(reprocessedRealVarsChoco);
 					for(Entry<String,Double> entry : realValuesChoco.entrySet()) {
 						Object coralLiteral = realVars.get(entry.getKey()).getConstraint(0);
 						double val = entry.getValue();
 						coralMap.put((SymLiteral) coralLiteral, Util.createConstant(val));
-						//System.out.println(literal + " : " + val);			
+						//System.out.println(literal + " : " + val);
 					}
 				} else { //pb could not find a solution
 					validSolution = false;
 				}
 			}
 		}
-			
+
 		if(validSolution) {
 	    PC pcTmp = ((ProblemCoral) probs[0]).getPc().replaceVars(env);
 	    if (pcTmp.eval()) {
 	      env.setResult(Result.SAT);
 	      System.out.println("### Check - SAT");
-	    }		
+	    }
 		}
-	    
+
 		return env;
 	}
 
@@ -1431,7 +1431,7 @@ public class ProblemCompare extends ProblemGeneral {
 	private Map<String, Double> extractValues(
 			Map<SymbolicReal, Object> vars) {
 		Map<String, Double> vals = new HashMap<String,Double>();
-		
+
 		for(SymbolicReal entry : vars.keySet()) {
 			String name = entry.getName();
 			Double val = entry.solution;
@@ -1442,21 +1442,21 @@ public class ProblemCompare extends ProblemGeneral {
 
 	private Map<SymbolicReal, Object> extractProblemVars(Map<SymbolicReal, Object> symRealVar, int pbToCheck) {
 		Map<SymbolicReal, Object> extractedVars = new HashMap<SymbolicReal, Object>();
-		
+
 		for(Entry<SymbolicReal, Object> entry : symRealVar.entrySet()) {
 			Object var = ((SolverObjects)entry.getValue()).getConstraint(pbToCheck);
 			extractedVars.put(entry.getKey(), var);
 		}
-		
+
 		return extractedVars;
 	}
 
 	@Override
-	public Boolean solve() {		
-		
+	public Boolean solve() {
+
 		for (int i = 0; i < numSolvers; i++) {
 			try{
-				if (ignoredSolvers[i]) { 
+				if (ignoredSolvers[i]) {
 					System.out.println("ignoring solver " + probs[i].toString() + ": unsupported operation");
 				} else {
 					Boolean s = probs[i].solve();
@@ -1485,10 +1485,10 @@ public class ProblemCompare extends ProblemGeneral {
 				System.out.println("Solver " + i + " threw an exception");
 				_.printStackTrace();
 			}
-			
+
 			if (alwaysPrint) {
 				System.out.println("Solver " + Integer.toString(i) + ": " + Boolean.toString(solutions[i]));
-			}						
+			}
 		}
 
 		// matrix update
@@ -1532,5 +1532,12 @@ public class ProblemCompare extends ProblemGeneral {
 		} catch (IOException _) {
 			throw new RuntimeException(TablePrinter.ERR_MSG);
 		}
+	}
+
+	@Override
+	public void postLogicalOR(Object[] constraint) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("## Error Choco2 does not support LogicalOR");
+
 	}
 }

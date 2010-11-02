@@ -52,7 +52,7 @@ public class PathCondition {
 	}
 
 	//Added by Gideon
-	public void _addDet (LinearOrIntegerConstraints loic) {
+	public void _addDet (LogicalORLinearIntegerConstraints loic) {
 		//throw new RuntimeException ("Not being used right now");
 		if (!this.hasConstraint(loic)) {
 			flagSolved = false;
