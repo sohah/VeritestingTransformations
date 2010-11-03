@@ -452,7 +452,7 @@ public class ProblemCVC3 extends ProblemGeneral {
 
 	public Object plus(Object exp1, Object exp2) {
 		try{
-			return  vc.plusExpr((Expr)exp1, (Expr)exp1);
+			return  vc.plusExpr((Expr)exp1, (Expr)exp2);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
