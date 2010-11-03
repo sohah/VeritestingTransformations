@@ -118,8 +118,8 @@ public class SymbolicConstraintsGeneral {
 			case DIV:
 				if (e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
 					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
-				else if (e_leftRef instanceof IntegerConstant)
-					return pb.mult(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+				else if (e_leftRef instanceof IntegerConstant) // TODO: this might not be linear
+					return pb.div(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
 					return pb.div(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
 				else
