@@ -169,6 +169,194 @@ public class StringGraph {
 		return sb.toString();
 	}
 	
+	public String toPlainText () {
+		StringBuilder sb = new StringBuilder("\n--- --- --- ---\n");
+		int concatTemp = 0;
+		for (Edge e: edges) {
+			if (e instanceof EdgeCharAt) {
+				sb.append("charAt ");
+				sb.append(e.getSource());
+				sb.append (", ");
+				sb.append(e.getDest());
+				sb.append (", ");
+				sb.append(((EdgeCharAt) e).getIndex());
+			}
+			else if (e instanceof EdgeConcat) {
+				sb.append ("equal ");
+				sb.append(e.getSources().get(0));
+				sb.append (", ");
+				sb.append ("concatTemp" + concatTemp);
+				sb.append ("\nequal ");
+				sb.append(e.getSources().get(1));
+				sb.append (", ");
+				sb.append ("concatTemp" + concatTemp);
+				sb.append ("\nequal ");
+				sb.append("concatTemp" + concatTemp);
+				sb.append (", ");
+				sb.append (e.getDest());
+			}
+			else if (e instanceof EdgeContains) {
+				sb.append ("contains ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+			}
+			else if (e instanceof EdgeEndsWith) {
+				sb.append ("endsWith ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+			}
+			else if (e instanceof EdgeIndexOf) {
+				sb.append ("indexOf ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+				sb.append (", ");
+				sb.append (((EdgeIndexOf) e).getIndex());
+			}
+			else if (e instanceof EdgeIndexOfChar) {
+				sb.append ("indexOf ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+				sb.append (", ");
+				sb.append (((EdgeIndexOfChar) e).getIndex());
+			}
+			else if (e instanceof EdgeIndexOf2) {
+				sb.append ("indexOf ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+				sb.append (", ");
+				sb.append (((EdgeIndexOf2) e).getIndex());
+				sb.append (", ");
+				sb.append (((EdgeIndexOf2) e).getIndex().getMinIndex());
+			}
+			else if (e instanceof EdgeIndexOfChar2) {
+				sb.append ("lastindexOf ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+				sb.append (", ");
+				sb.append (((EdgeIndexOfChar2) e).getIndex());
+				sb.append (", ");
+				sb.append (((EdgeIndexOfChar2) e).getIndex().getMinDist());
+			}
+			else if (e instanceof EdgeLastIndexOf) {
+				sb.append ("lastindexOf ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+				sb.append (", ");
+				sb.append (((EdgeLastIndexOf) e).getIndex());
+			}
+			else if (e instanceof EdgeLastIndexOfChar) {
+				sb.append ("lastindexOf ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+				sb.append (", ");
+				sb.append (((EdgeLastIndexOfChar) e).getIndex());
+			}
+			else if (e instanceof EdgeLastIndexOf2) {
+				sb.append ("lastindexOf ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+				sb.append (", ");
+				sb.append (((EdgeLastIndexOf2) e).getIndex());
+				sb.append (", ");
+				sb.append (((EdgeLastIndexOf2) e).getIndex().getMinIndex());
+			}
+			else if (e instanceof EdgeLastIndexOfChar2) {
+				sb.append ("lastindexOf ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+				sb.append (", ");
+				sb.append (((EdgeLastIndexOfChar2) e).getIndex());
+				sb.append (", ");
+				sb.append (((EdgeLastIndexOfChar2) e).getIndex().getMinDist());
+			}
+			else if (e instanceof EdgeNotContains) {
+				sb.append ("notcontains ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+			}
+			else if (e instanceof EdgeNotEndsWith) {
+				sb.append ("notendsWith ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+			}
+			else if (e instanceof EdgeNotEqual) {
+				sb.append ("notequal ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+			}
+			else if (e instanceof EdgeNotStartsWith) {
+				sb.append ("notstartsWith ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+			}
+			else if (e instanceof EdgeStartsWith) {
+				sb.append ("startsWith ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+			}
+			else if (e instanceof EdgeSubstring1Equal) {
+				sb.append ("substring ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+				sb.append (", ");
+				if (((EdgeSubstring1Equal) e).getArgument1Symbolic() == null) {
+					sb.append (((EdgeSubstring1Equal) e).getArgument1());
+				}
+				else {
+					sb.append (((EdgeSubstring1Equal) e).getArgument1Symbolic());
+				}
+			}
+			else if (e instanceof EdgeSubstring2Equal) {
+				sb.append ("substring ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+				sb.append (", ");
+				if (((EdgeSubstring2Equal) e).getSymbolicArgument1() == null) {
+					sb.append (((EdgeSubstring2Equal) e).getArgument1());
+				}
+				else {
+					sb.append (((EdgeSubstring2Equal) e).getSymbolicArgument1());
+				}
+				sb.append (", ");
+				if (((EdgeSubstring2Equal) e).getSymbolicArgument2() == null) {
+					sb.append (((EdgeSubstring2Equal) e).getArgument2());
+				}
+				else {
+					sb.append (((EdgeSubstring2Equal) e).getSymbolicArgument2());
+				}
+			}
+			else if (e instanceof EdgeTrimEqual) {
+				sb.append ("trim ");
+				sb.append (e.getSource());
+				sb.append (", ");
+				sb.append (e.getDest());
+			}
+			else {
+				throw new RuntimeException ("Not recognised: " + e.getClass());
+			}
+			sb.append("\n");
+		}
+		sb.append ("\n--- --- --- ---\n");
+		return sb.toString();
+	}
+	
 	public List<Edge> getEdges () {
 		return edges;
 	}
