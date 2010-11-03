@@ -61,7 +61,7 @@ import gov.nasa.jpf.symbc.string.translate.TranslateToSAT;
  * @author GJ Redelinghuys
  *
  */
-public class SymbolicStringConstraintsGeneral {
+public class SymbolicStringConstraintsGeneralToText {
 
 	/* Useless from now on */
 	public static boolean logging = true;
@@ -95,10 +95,7 @@ public class SymbolicStringConstraintsGeneral {
 	/* Map of the solutions */
 	private static Set<StringSymbolic> setOfSolution;
 	
-	/*Something added for research into other solving techniques */
-	private static final boolean EJECT_TEXT = false;
-	
-	public SymbolicStringConstraintsGeneral () {
+	public SymbolicStringConstraintsGeneralToText () {
 		
 	}
 	
@@ -224,10 +221,6 @@ public class SymbolicStringConstraintsGeneral {
 	 * @return
 	 */
 	public boolean isSatisfiable(StringPathCondition pc) {
-		if (EJECT_TEXT) { /* For research into other solving techniques */
-			SymbolicStringConstraintsGeneralToText temp = new SymbolicStringConstraintsGeneralToText();
-			return temp.isSatisfiable(pc);
-		}
 		//println ("[isSatisfiable] String PC: " + pc.header);
 		String string_dp[] = SymbolicInstructionFactory.string_dp;
 		/* Set up solver */
@@ -304,103 +297,12 @@ public class SymbolicStringConstraintsGeneral {
 			//println ("[isSat] Preprocessor gave Unsat");
 			return false;
 		}
-		//println(global_graph.toDot());
-		/* Call the string solver, it will in turn churn away until all
-		 * options are exhuasted or a satisfiable solution has turned up
-		 */
-		boolean decisionProcedure = false;
-		if (solver.equals(SAT)) {
-			//println ("[isSatisfiable] Using SAT Solver");
-			decisionProcedure = TranslateToSAT.isSat(global_graph, pc.npc);
+		println(global_graph.toPlainText());
+		if (pc.npc.header != null) {
+			println ("\nvvv vvv vvv vvv\n");
+			System.out.println(pc.npc.header);
+			System.out.println("\n^^^ ^^^ ^^^ ^^^\n");
 		}
-		else if (solver.equals(AUTOMATA)) {
-			//println ("[isSatisfiable] Using Automata's");
-			decisionProcedure = TranslateToAutomata.isSat(global_graph, pc.npc);
-		}
-		else if (solver.equals(CVC)) {
-			//println ("[isSatisfiable] Using Bitvector's");
-			decisionProcedure = TranslateToCVC.isSat(global_graph, pc.npc); 
-		}
-		else if (solver.equals(CVC_INC)) {
-			//println ("[isSatisfiable] Using Bitvector's");
-			decisionProcedure = TranslateToCVCInc.isSat(global_graph, pc.npc); 
-		}
-		else {
-			throw new RuntimeException("Unknown string solver!!!");
-		}
-		if (!decisionProcedure) {
-			//println ("[isSatisfiable] Decision procedure gave unsat");
-			return false;
-		}
-		//println ("[isSatisfiable] Solution: " + global_graph.toString());
-		
-		//Get the solutions from graph and place back into symbolic strings
-		Vertex temp;
-		for (Edge e: global_graph.getEdges()) {
-			if (!(e instanceof EdgeConcat)) {
-				//println ("[isSatisfiable] edge: " + e.getSource().uniqueName() + " - "+ e.getDest().uniqueName());
-				List<StringSymbolic> represents = e.getSource().getRepresents();
-				if (represents != null) {
-					for (StringSymbolic ss: represents) {
-						temp = global_graph.findVertex(e.getSource().getName());
-						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
-						ss.solution = temp.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-					}
-				}
-				represents = e.getDest().getRepresents();
-				if (represents != null) {
-					for (StringSymbolic ss: represents) {
-						temp = global_graph.findVertex(e.getDest().getName());
-						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");						
-						ss.solution = temp.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-					}
-				}
-			}
-			else {
-				List<StringSymbolic> represents = e.getSources().get(0).getRepresents();
-				if (represents != null) {
-					for (StringSymbolic ss: represents) {
-						temp = global_graph.findVertex(e.getSources().get(0).getName());
-						//println ("[isSatisfiable] 1. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
-						ss.solution = temp.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-					}
-				}
-				represents = e.getSources().get(1).getRepresents();
-				if (represents != null) {
-					for (StringSymbolic ss: represents) {
-						temp = global_graph.findVertex(e.getSources().get(1).getName());
-						//println ("[isSatisfiable] 2. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
-						ss.solution = temp.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-					}
-				}
-				represents = e.getDest().getRepresents();
-				if (represents != null) {
-					for (StringSymbolic ss: represents) {
-						temp = global_graph.findVertex(e.getDest().getName());
-						//println ("[isSatisfiable] 3. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
-						ss.solution = temp.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-					}
-				}
-			}
-		}
-		
-		if (global_graph.getEdges().size() == 0) {
-			for (Vertex v: global_graph.getVertices()) {
-				List<StringSymbolic> represents = v.getRepresents();
-				for (StringSymbolic ss: represents) {
-					//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
-					ss.solution = v.getSolution();
-					if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-				}
-			}
-		}
-		StringPathCondition.flagSolved = true;
-		//println ("StringPC: " + getSolution());
 		return true;
 	}
 	
