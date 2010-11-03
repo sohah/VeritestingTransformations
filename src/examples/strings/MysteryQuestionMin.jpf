@@ -15,7 +15,7 @@ sourcepath=${jpf-symbc}/src/examples
 
 # in this particular configuration all the input
 # parameters to methods test2 and test are symbolic
-symbolic.dp=choco
+symbolic.dp=coral
 
 # settings for the symbolic string support, either
 # "none" (default), "cvc", "automata" (recommended) or

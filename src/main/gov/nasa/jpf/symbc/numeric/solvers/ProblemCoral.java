@@ -675,9 +675,17 @@ public class ProblemCoral extends ProblemGeneral {
 	}
 
 	@Override
-	public void postLogicalOR(Object[] constraint) {
+	public void postLogicalOR(Object[] constraints) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Coral does not support LogicalOR");
+
+		SymBool orResult = Util.FALSE;
+		for (int i =0; i<constraints.length; i++) {
+			System.out.println("****** orResult"+ orResult + "************ " +i);
+			orResult = Util.or(orResult, (SymBool) ( constraints[i]));
+		}
+
+		post(orResult);
+
 	}
 
 }

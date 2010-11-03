@@ -28,6 +28,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
+import cvc3.Expr;
+
 import yices.*;
 
 public class ProblemYices extends ProblemGeneral {
@@ -378,86 +380,83 @@ public class ProblemYices extends ProblemGeneral {
 	@Override
 	public
 	Object shiftL(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public
 	Object shiftL(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public
 	Object shiftR(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public
 	Object shiftR(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public
 	Object xor(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public
 	Object xor(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public
 	Object xor(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public Object shiftL(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public Object shiftR(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public Object shiftUR(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public Object shiftUR(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise OR");
 	}
 
 	@Override
 	public Object shiftUR(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Yices does not support bitwise shiftUR");
 	}
 
 	@Override
-	public void postLogicalOR(Object[] constraint) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error Yices does not support LogicalOR");
+	public void postLogicalOR(Object[] constraints) {
+		assert(constraints != null && constraints.length >=1);
+		String orResult = "";
+		for (int i = 0; i<constraints.length; i++) {
+			//System.out.println("****** orResult"+ orResult + "************ " +i);
+			orResult += (String)constraints[i] + " ";
+		}
+
+		orResult = "(or " + orResult+ ")";
+		System.out.println("****** orResult"+ orResult+ "************ ");
+
+		post(orResult);
 	}
 
 

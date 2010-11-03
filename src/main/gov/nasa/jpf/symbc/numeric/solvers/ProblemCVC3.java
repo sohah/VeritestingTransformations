@@ -26,6 +26,9 @@ package gov.nasa.jpf.symbc.numeric.solvers;
 import java.util.HashMap;
 import java.util.List;
 
+import symlib.SymBool;
+import symlib.Util;
+
 import cvc3.Expr;
 import cvc3.ExprMut;
 import cvc3.FlagsMut;
@@ -860,9 +863,16 @@ public class ProblemCVC3 extends ProblemGeneral {
 	}
 
 	@Override
-	public void postLogicalOR(Object[] constraint) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("## Error CVC3 does not support LogicalOR");
+	public void postLogicalOR(Object[] constraints) {
+		assert(constraints != null && constraints.length >=1);
+		Expr orResult = (Expr) ( constraints[0]);
+		for (int i =1; i<constraints.length; i++) {
+			//System.out.println("****** orResult"+ orResult + "************ " +i);
+			orResult = vc.orExpr(orResult, (Expr)constraints[i]);
+		}
+
+		post(orResult);
+
 	}
 
 }

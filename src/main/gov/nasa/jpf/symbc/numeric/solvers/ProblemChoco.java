@@ -392,14 +392,8 @@ public class ProblemChoco extends ProblemGeneral {
 			choco_constraints[i] = (choco.Constraint) constraints[i];
 		Object orCon = ((RealProblem) pb).or(choco_constraints);
 		choco.Constraint temp = (choco.Constraint) orCon;
-		//System.out.println("[SymbolicConstraintsGeneral] orCon: " + temp);
-		//pb.post(orCon);
 		pb.post(temp);
-		/*Boolean result = pc_pb.solve();
-		if (result != null) {
-			boolean resultboo = (boolean) result;
-			System.out.println("[SymbolicConstraintsGeneral] pc_pb = " + resultboo);
-		}*/
+
 	}
 
 }

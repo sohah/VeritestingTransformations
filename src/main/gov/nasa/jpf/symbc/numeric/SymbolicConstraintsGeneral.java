@@ -40,8 +40,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 //import choco.integer.IntExp;
-import coral.solvers.Env;
-import coral.solvers.SolverKind;
+//import coral.solvers.Env;
+//import coral.solvers.SolverKind;
 
 // generalized to use different constraint solvers/decision procedures
 // Warning: should never use / modify the types from pb:
@@ -452,7 +452,6 @@ public class SymbolicConstraintsGeneral {
 	//Added by Gideon, to handle CNF style constraints
 	boolean createDPLinearOrIntegerConstraint (LogicalORLinearIntegerConstraints c) {
 		List<Object> orList = new ArrayList<Object>();
-		//ProblemChoco pc_pb = (ProblemChoco) pb;
 
 		for (LinearIntegerConstraint cRef: c.getList()) {
 			Comparator c_compRef = cRef.getComparator();
