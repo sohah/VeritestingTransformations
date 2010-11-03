@@ -3,7 +3,7 @@ package gov.nasa.jpf.symbc.string.translate;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
-import gov.nasa.jpf.symbc.numeric.LinearOrIntegerConstraints;
+import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
@@ -618,7 +618,7 @@ public class TranslateToCVCInc {
 			//LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			//println ("[handleEdgeCharAt] e.getSource().getLength(): " + e.getSource().getLength());
 			//println ("[handleEdgeCharAt] index: " + e.getIndex().solution());
-			LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+			LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			loic.addToList(new LinearIntegerConstraint(e.getValue(), Comparator.NE, new IntegerConstant(e.getValue().solution())));
 			global_pc._addDet(loic);
@@ -913,7 +913,7 @@ public class TranslateToCVCInc {
 			}
 		}
 		if (result == false) {
-			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			global_pc._addDet(loic);
 		}
@@ -1025,7 +1025,7 @@ public class TranslateToCVCInc {
 			throw new RuntimeException("Should not be reached");
 		}
 		if (result == false) {
-			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			global_pc._addDet(loic);
 		}
@@ -1075,7 +1075,7 @@ public class TranslateToCVCInc {
 			result = post (vc.eqExpr(vc.ratExpr(actualAns), vc.ratExpr(index)));
 		}
 		if (result == false) {
-			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			global_pc._addDet(loic);
 		}
@@ -1130,7 +1130,7 @@ public class TranslateToCVCInc {
 			result = post (vc.eqExpr(vc.ratExpr(actualAns), vc.ratExpr(index)));
 		}
 		if (result == false) {
-			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			global_pc._addDet(loic);
 		}
@@ -1222,7 +1222,7 @@ public class TranslateToCVCInc {
 			result = post (vc.eqExpr(vc.ratExpr(actualAns), vc.ratExpr(index)));
 		}
 		if (result == false) {
-			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			global_pc._addDet(loic);
 		}
@@ -1268,7 +1268,7 @@ public class TranslateToCVCInc {
 			result = (index == actualAns);
 		}
 		if (result == false) {
-			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			loic.addToList(new LinearIntegerConstraint(e.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(e.getIndex().getMinDist().solution())));
 			global_pc._addDet(loic);
@@ -1335,7 +1335,7 @@ public class TranslateToCVCInc {
 				int arg2 = e.getSymbolicArgument2().solution();
 				if (arg2 - arg1 != destCons.length()) {
 					//TODO: Can definitly improve here
-					LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+					LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 					loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(arg2)));
 					global_pc._addDet(loic);
 					return false;
@@ -1353,7 +1353,7 @@ public class TranslateToCVCInc {
 				throw new RuntimeException("Preprocessor should handle this");
 			}
 			if (result == false) {
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(e.getSymbolicArgument2().solution())));
 				global_pc._addDet(loic);
 			}
@@ -1455,8 +1455,8 @@ public class TranslateToCVCInc {
 		System.out.println("[TranslateToCVCInc] " + msg);
 	}
 	
-	private static LinearOrIntegerConstraints elimanateCurrentLengthsConstraints() {
-		LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+	private static LogicalORLinearIntegerConstraints elimanateCurrentLengthsConstraints() {
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 		for (Vertex v: global_graph.getVertices()) {
 			if (v.isConstant() || v.getName().startsWith("CHAR")) continue;
 			loic.addToList(new LinearIntegerConstraint(v.getSymbolicLength(), Comparator.NE, new IntegerConstant(v.getLength())));

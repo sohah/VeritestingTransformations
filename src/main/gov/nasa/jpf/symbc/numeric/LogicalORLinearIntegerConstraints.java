@@ -3,11 +3,11 @@ package gov.nasa.jpf.symbc.numeric;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LinearOrIntegerConstraints extends Constraint{
+public class LogicalORLinearIntegerConstraints extends Constraint{
 	
 	private List<LinearIntegerConstraint> list;
 	
-	public LinearOrIntegerConstraints () {
+	public LogicalORLinearIntegerConstraints () {
 		super (null, null, null);
 		list = new ArrayList<LinearIntegerConstraint>();
 	}
@@ -50,9 +50,9 @@ public class LinearOrIntegerConstraints extends Constraint{
 	}
 	
 	public boolean equals (Object o) {
-		if (!(o instanceof LinearOrIntegerConstraints))
+		if (!(o instanceof LogicalORLinearIntegerConstraints))
 			return false;
-		LinearOrIntegerConstraints other = (LinearOrIntegerConstraints) o;
+		LogicalORLinearIntegerConstraints other = (LogicalORLinearIntegerConstraints) o;
 		if (this.list.size() != other.list.size()) {
 			return false;
 		}

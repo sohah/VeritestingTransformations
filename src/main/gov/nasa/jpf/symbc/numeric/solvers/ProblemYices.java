@@ -454,6 +454,12 @@ public class ProblemYices extends ProblemGeneral {
 		return null;
 	}
 
+	@Override
+	public void postLogicalOR(Object[] constraint) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("## Error Yices does not support LogicalOR");
+	}
+
 
 
 

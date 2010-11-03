@@ -82,8 +82,8 @@ public class ProblemCVC3 extends ProblemGeneral {
 
 	    }
 	}
-	
-	
+
+
 
 	public Object makeRealVar(String name, double min, double max) {
 
@@ -606,8 +606,8 @@ public class ProblemCVC3 extends ProblemGeneral {
 			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
 		}
 	}
-	
-	
+
+
 
 	// not yet done for CVC3
 //	public Object sin(Object exp) {
@@ -857,6 +857,12 @@ public class ProblemCVC3 extends ProblemGeneral {
 
 	public Object shiftUR(Object exp1, Object exp2) {
 		throw new RuntimeException("## Switch to CVC3BitVec");
+	}
+
+	@Override
+	public void postLogicalOR(Object[] constraint) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("## Error CVC3 does not support LogicalOR");
 	}
 
 }

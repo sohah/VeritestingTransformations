@@ -15,7 +15,7 @@ import dk.brics.string.stringoperations.Trim;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
-import gov.nasa.jpf.symbc.numeric.LinearOrIntegerConstraints;
+import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.string.AutomatonExtra;
@@ -1096,7 +1096,7 @@ public class TranslateToAutomata {
 		if (intersection.isEmpty()) {
 			//println ("[handleEdgeCharAt] 1. intersection empty, making index == -1 because the character could not be found anywhere");
 			//Done: Test performance, looks good
-			LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+			LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant (e.getIndex().solution())));
 			loic.addToList(new LinearIntegerConstraint(e.getValue(), Comparator.NE, new IntegerConstant (e.getValue().solution())));				
 			global_pc._addDet(loic);			
@@ -1109,7 +1109,7 @@ public class TranslateToAutomata {
 			intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeCharAt] 2. intersection empty, current index or value is not valid");
-				LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant (e.getIndex().solution())));
 				loic.addToList(new LinearIntegerConstraint(e.getValue(), Comparator.NE, new IntegerConstant (e.getValue().solution())));				
 				global_pc._addDet(loic);
@@ -1227,7 +1227,7 @@ public class TranslateToAutomata {
 			Automaton intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
 				global_pc._addDet(loic);
@@ -1239,7 +1239,7 @@ public class TranslateToAutomata {
 			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] 1. indexof could not be applyied at the current place");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
 				global_pc._addDet(loic);
@@ -1317,7 +1317,7 @@ public class TranslateToAutomata {
 			Automaton intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
 				global_pc._addDet(loic);
@@ -1329,7 +1329,7 @@ public class TranslateToAutomata {
 			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] 1. indexof could not be applyied at the current place");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
 				global_pc._addDet(loic);
@@ -1406,7 +1406,7 @@ public class TranslateToAutomata {
 			Automaton intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
 				global_pc._addDet(loic);
@@ -1418,7 +1418,7 @@ public class TranslateToAutomata {
 			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOf] 1. indexof could not be applyied at the current place");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
 				global_pc._addDet(loic);
@@ -1501,7 +1501,7 @@ public class TranslateToAutomata {
 			Automaton intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOfChar] 1. indexof '" + character + "' could not be found anywhere, forcing index == -1 or longer lengths");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
 				global_pc._addDet(loic);
@@ -1514,7 +1514,7 @@ public class TranslateToAutomata {
 			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOfChar] 2. indexof at " + index + " could not be applyied at the current place ('" + e.getSource().getSolution() + "', '" + e.getDest().getSolution()+ "')");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
 				global_pc._addDet(loic);
@@ -1592,7 +1592,7 @@ public class TranslateToAutomata {
 			Automaton intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeLastIndexOfChar] 1.indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
 				global_pc._addDet(loic);
@@ -1610,7 +1610,7 @@ public class TranslateToAutomata {
 			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeLastIndexOfChar] 2. indexof could not be applyied at the current place");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
 				global_pc._addDet(loic);
@@ -1660,7 +1660,7 @@ public class TranslateToAutomata {
 			Automaton intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeLastIndexOfChar] 1.indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
 				global_pc._addDet(loic);
@@ -1679,7 +1679,7 @@ public class TranslateToAutomata {
 			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeLastIndexOfChar] 2. indexof could not be applyied at the current place");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				loic.addToList(new LinearIntegerConstraint(e.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(e.getIndex().getMinDist().solution())));
 				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
@@ -1697,7 +1697,7 @@ public class TranslateToAutomata {
 				if (intersection2.isEmpty()) {
 					//println ("[handleEdgeLastIndexOfChar] 3. indexof could not be applyied at the current place");
 					//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
-					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 					loic.addToList(new LinearIntegerConstraint(e.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(e.getIndex().getMinDist().solution())));
 					global_pc._addDet(loic);
@@ -1734,7 +1734,7 @@ public class TranslateToAutomata {
 			Automaton intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOfChar2] indexof could not be found anywhere, forcing index == -1 or longer length for " + e.getSource().getName());
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
 				global_pc._addDet(loic);
@@ -1746,7 +1746,7 @@ public class TranslateToAutomata {
 			//println ("[handleEdgeIndexOf] intersection example: " + intersection.getShortestExample(true));
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeIndexOfChar2] 1. indexof could not be applyied at the current place");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
 				global_pc._addDet(loic);
@@ -1853,7 +1853,7 @@ public class TranslateToAutomata {
 		Automaton intersection2 = AutomatonExtra.intersection(a1, temp2);
 		if (intersection2.isEmpty()) {
 			//println ("[handleEdgeSubstring1Equal] intersection empty");
-			LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getArgument1Symbolic(), Comparator.NE, new IntegerConstant(e.getArgument1Symbolic().solution())));
 			global_pc._addDet(loic);
 			return false;
@@ -1916,7 +1916,7 @@ public class TranslateToAutomata {
 			Automaton intersection = AutomatonExtra.intersection(temp, a2);
 			if (intersection.isEmpty()) {
 				//println ("[handleEdgeSubstring2Equal] intersection empty");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(arg2)));
 				global_pc._addDet(loic);
 				return false;
@@ -1934,7 +1934,7 @@ public class TranslateToAutomata {
 			Automaton intersection2 = AutomatonExtra.intersection(a1, temp2);
 			if (intersection2.isEmpty()) {
 				//println ("[handleEdgeSubstring2Equal] intersection empty");
-				LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(arg2)));
 				global_pc._addDet(loic);
 				return false;
@@ -1999,7 +1999,7 @@ public class TranslateToAutomata {
 	}
 	
 	private static void elimanateCurrentLengths () {
-		LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 		for (Vertex v: global_graph.getVertices()) {
 			if (v.isConstant()) continue;
 			loic.addToList(new LinearIntegerConstraint(v.getSymbolicLength(), Comparator.NE, new IntegerConstant(v.getLength())));
@@ -2007,8 +2007,8 @@ public class TranslateToAutomata {
 		global_pc._addDet(loic);
 	}
 	
-	private static LinearOrIntegerConstraints elimanateCurrentLengthsConstraints() {
-		LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+	private static LogicalORLinearIntegerConstraints elimanateCurrentLengthsConstraints() {
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 		for (Vertex v: global_graph.getVertices()) {
 			if (v.isConstant()) continue;
 			if (v.getName().startsWith("CHAR")) continue;

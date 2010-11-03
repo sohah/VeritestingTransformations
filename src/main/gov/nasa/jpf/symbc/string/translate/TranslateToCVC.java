@@ -3,7 +3,7 @@ package gov.nasa.jpf.symbc.string.translate;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
-import gov.nasa.jpf.symbc.numeric.LinearOrIntegerConstraints;
+import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
@@ -171,7 +171,7 @@ public class TranslateToCVC {
 		if (result == SatResult.UNSATISFIABLE) {
 			vc.pop();
             //println ("[isSat] Current solutions is unsat, extending lengts");
-            LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+            LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
             for (Vertex v: g.getVertices()) {
             	if (!v.getName().startsWith("CHAR"))
             		loic.addToList(new LinearIntegerConstraint(v.getSymbolicLength(), Comparator.NE, new IntegerConstant(v.getSymbolicLength().solution())));

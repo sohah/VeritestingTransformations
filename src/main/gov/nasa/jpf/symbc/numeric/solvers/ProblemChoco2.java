@@ -53,7 +53,7 @@ public class ProblemChoco2 extends ProblemGeneral {
 
 	public int getIntValue(Object dpVar) {
 		try {
-			return solver.getVar((IntegerVariable) dpVar).getVal(); 
+			return solver.getVar((IntegerVariable) dpVar).getVal();
 		} catch (Throwable t) {
 			return ((IntegerVariable) dpVar).getLowB();
 		}
@@ -152,19 +152,25 @@ public class ProblemChoco2 extends ProblemGeneral {
 		solver.read(model);
 
 		System.out.println("Model:" + model.constraintsToString());
-		
+
 		solver.setTimeLimit(timeBound);
 		Boolean solved = solver.solve();
 		boolean feasible = solver.isFeasible();
 
 		System.out.println("Solved: " + solved);
 		System.out.println("Feasible: " + feasible);
-		
+
 		return solved;
 	}
 
 	public Object xor(int value, Object exp) { throw new RuntimeException("## Unsupported XOR "); }
 	public Object xor(Object exp, int value) { throw new RuntimeException("## Unsupported XOR"); }
 	public Object xor(Object exp1, Object exp2) {	throw new RuntimeException("## Unsupported XOR"); }
+
+	@Override
+	public void postLogicalOR(Object[] constraint) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("## Error Choco2 does not support LogicalOR");
+	}
 
 }

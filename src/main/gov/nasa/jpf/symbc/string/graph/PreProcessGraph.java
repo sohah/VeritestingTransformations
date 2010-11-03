@@ -7,7 +7,7 @@ import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
-import gov.nasa.jpf.symbc.numeric.LinearOrIntegerConstraints;
+import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.string.StringConstant;
@@ -212,7 +212,7 @@ public class PreProcessGraph {
 						EdgeCharAt eca = (EdgeCharAt) e2;
 						String solution = e1.getDest().getSolution();
 						for (int i = 0; i < solution.length(); i++) {
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, new IntegerConstant(i)));
 							loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(i))));
 							pc._addDet(loic);
@@ -224,7 +224,7 @@ public class PreProcessGraph {
 						EdgeCharAt eca = (EdgeCharAt) e2;
 						String solution = e1.getDest().getSolution();
 						for (int i = 0; i < solution.length(); i++) {
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, e1.getSource().getSymbolicLength()._minus(solution.length() - i)));
 							loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(i))));
 							pc._addDet(loic);
@@ -237,7 +237,7 @@ public class PreProcessGraph {
 						EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) e1;
 						String solution = e1.getDest().getSolution();
 						for (int i = 0; i < solution.length(); i++) {
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, new IntegerConstant(es1e.getArgument1() + i)));
 							loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(i))));
 							pc._addDet(loic);
@@ -250,7 +250,7 @@ public class PreProcessGraph {
 						EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e1;
 						String solution = e1.getDest().getSolution();
 						for (int i = 0; i < solution.length(); i++) {
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, new IntegerConstant(es2e.getArgument1() + i)));
 							loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(i))));
 							pc._addDet(loic);
@@ -278,7 +278,7 @@ public class PreProcessGraph {
 					EdgeIndexOf eio = (EdgeIndexOf) e2;
 					if (eio.getIndex().getExpression() instanceof StringConstant && e1.getDest().isConstant()) {
 						int possiblePos = e1.getDest().getSolution().indexOf(eio.getIndex().getExpression().solution());
-						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 						int lengthOfExpression = eio.getIndex().getExpression().solution().length();
 						/* a.sw(c).indexOf(b) == j
 						 * a.indexof(b) == i
@@ -300,7 +300,7 @@ public class PreProcessGraph {
 					if (eio.getIndex().getExpression() instanceof StringConstant && e1.getDest().isConstant()) {
 						int possiblePos = e1.getDest().getSolution().indexOf(eio.getIndex().getExpression().solution());
 						int lastPossiblePos = e1.getDest().getSolution().lastIndexOf(eio.getIndex().getExpression().solution());
-						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 						int lengthOfExpression = eio.getIndex().getExpression().solution().length();
 						/* a.sw(c).indexOf(b) == j
 						 * a.indexof(b) == i
@@ -321,7 +321,7 @@ public class PreProcessGraph {
 					EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) e1;
 					if (eio.getIndex().getExpression() instanceof StringConstant && e1.getDest().isConstant()) {
 						int possiblePos = e1.getDest().getSolution().indexOf(eio.getIndex().getExpression().solution());
-						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 						/* a.sw(c).indexOf(b) == j
 						 * a.indexof(b) == i
 						 * 
@@ -340,7 +340,7 @@ public class PreProcessGraph {
 					EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e1;
 					if (eio.getIndex().getExpression() instanceof StringConstant && e1.getDest().isConstant()) {
 						int possiblePos = e1.getDest().getSolution().indexOf(eio.getIndex().getExpression().solution());
-						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 						/* a.sw(c).indexOf(b) == j
 						 * a.indexof(b) == i
 						 * 
@@ -361,7 +361,7 @@ public class PreProcessGraph {
 					StringExpression se = eio.getIndex().getExpression();
 					if (se instanceof StringConstant) {
 						//println ("[preprocess] Path followed 2");
-						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 						loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) se.solution().charAt(0)), Comparator.EQ, eca.getValue()) );
 						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
 						if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -374,7 +374,7 @@ public class PreProcessGraph {
 					StringExpression se = eio.getIndex().getExpression();
 					if (se instanceof StringConstant) {
 						//println ("[preprocess] Path followed 2");
-						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 						loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) se.solution().charAt(0)), Comparator.EQ, eca.getValue()) );
 						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
 						if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -386,7 +386,7 @@ public class PreProcessGraph {
 					IntegerExpression se = eio.getIndex().getExpression();
 					if (se instanceof IntegerConstant) {
 						//println ("[preprocess] Path followed 2");
-						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 						loic.addToList(new LinearIntegerConstraint(se, Comparator.EQ, eca.getValue()) );
 						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
 						if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -398,7 +398,7 @@ public class PreProcessGraph {
 					IntegerExpression se = eio.getIndex().getExpression();
 					if (se instanceof IntegerConstant) {
 						//println ("[preprocess] Path followed 2");
-						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 						loic.addToList(new LinearIntegerConstraint(se, Comparator.EQ, eca.getValue()) );
 						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
 						if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -411,7 +411,7 @@ public class PreProcessGraph {
 					if (esw.getDest().isConstant() && ie instanceof IntegerConstant) {
 						String startsWith = esw.getDest().getSolution();
 						char character = (char) ie.solution();
-						LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 						if (startsWith.lastIndexOf(character) == -1) {
 							loic.addToList(new LinearIntegerConstraint(elio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 							loic.addToList(new LinearIntegerConstraint(elio.getIndex(), Comparator.GE, new IntegerConstant(startsWith.length())));
@@ -438,7 +438,7 @@ public class PreProcessGraph {
 					if (eio.getIndex().getExpression() instanceof StringConstant) {
 						String constant = eio.getIndex().getExpression().solution();
 						for (int i = 0; i < constant.length(); i++) {
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
 							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
 							if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -451,7 +451,7 @@ public class PreProcessGraph {
 					if (eio.getIndex().getExpression() instanceof StringConstant) {
 						String constant = eio.getIndex().getExpression().solution();
 						for (int i = 0; i < constant.length(); i++) {
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
 							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
 							if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -464,7 +464,7 @@ public class PreProcessGraph {
 					if (eio.getIndex().getExpression() instanceof StringConstant) {
 						String constant = eio.getIndex().getExpression().solution();
 						for (int i = 0; i < constant.length(); i++) {
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
 							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
 							if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -477,7 +477,7 @@ public class PreProcessGraph {
 					if (eio.getIndex().getExpression() instanceof StringConstant) {
 						String constant = eio.getIndex().getExpression().solution();
 						for (int i = 0; i < constant.length(); i++) {
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
 							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
 							if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -493,7 +493,7 @@ public class PreProcessGraph {
 						for (int i = 0; i < constant1.length(); i++) {
 							for (int j = i; j < constant2.length(); j++) {
 								if (constant1.charAt(i) != constant2.charAt(j)) {
-									LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+									LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 									loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 									loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 									loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(i), Comparator.NE, eio2.getIndex()._plus(j)));
@@ -513,7 +513,7 @@ public class PreProcessGraph {
 						for (int i = 0; i < constant1.length(); i++) {
 							for (int j = i; j < constant2.length(); j++) {
 								if (constant1.charAt(i) != constant2.charAt(j)) {
-									LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+									LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 									loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 									loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 									loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(i), Comparator.NE, eio2.getIndex()._plus(j)));
@@ -530,7 +530,7 @@ public class PreProcessGraph {
 						int sol1 = eioc.getIndex().getExpression().solution();
 						int sol2 = eioc2.getIndex().getExpression().solution();
 						if (sol1 != sol2) {
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 							loic.addToList(new LinearIntegerConstraint(eioc2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 							loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, eioc2.getIndex()));
@@ -580,7 +580,7 @@ public class PreProcessGraph {
 						int indexOf = solution.indexOf(String.valueOf(character));
 						if (indexOf > -1) {
 							//throw new RuntimeException("reached");
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.LT, eio.getIndex().getMinIndex()));
 							loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE,new IntegerConstant(-1)));
 							pc._addDet(loic);
@@ -610,7 +610,7 @@ public class PreProcessGraph {
 						char character = (char) eca.getValue().solution();
 						int indexOf = solution.indexOf(String.valueOf(character));
 						if (indexOf> -1) {
-							LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 							loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.LT, eio.getIndex().getMinDist()));
 							loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE,new IntegerConstant(-1)));
 							pc._addDet(loic);
@@ -690,7 +690,7 @@ public class PreProcessGraph {
 				else if (e instanceof EdgeIndexOf) {
 					EdgeIndexOf eio = (EdgeIndexOf) e;
 					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -698,7 +698,7 @@ public class PreProcessGraph {
 				else if (e instanceof EdgeLastIndexOf) {
 					EdgeLastIndexOf eio = (EdgeLastIndexOf) e;
 					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -706,7 +706,7 @@ public class PreProcessGraph {
 				else if (e instanceof EdgeIndexOfChar) {
 					EdgeIndexOfChar eio = (EdgeIndexOfChar) e;
 					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -714,7 +714,7 @@ public class PreProcessGraph {
 				else if (e instanceof EdgeLastIndexOfChar) {
 					EdgeLastIndexOfChar eio = (EdgeLastIndexOfChar) e;
 					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -722,11 +722,11 @@ public class PreProcessGraph {
 				else if (e instanceof EdgeIndexOf2) {
 					EdgeIndexOf2 eio = (EdgeIndexOf2) e;
 					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					loic = new LinearOrIntegerConstraints();
+					loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinIndex()));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -734,11 +734,11 @@ public class PreProcessGraph {
 				else if (e instanceof EdgeLastIndexOf2) {
 					EdgeLastIndexOf2 eio = (EdgeLastIndexOf2) e;
 					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					loic = new LinearOrIntegerConstraints();
+					loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.LE, eio.getIndex().getMinIndex()));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -746,11 +746,11 @@ public class PreProcessGraph {
 				else if (e instanceof EdgeIndexOfChar2) {
 					EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e;
 					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					loic = new LinearOrIntegerConstraints();
+					loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinDist()));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
@@ -758,11 +758,11 @@ public class PreProcessGraph {
 				else if (e instanceof EdgeLastIndexOfChar2) {
 					EdgeLastIndexOfChar2 eio = (EdgeLastIndexOfChar2) e;
 					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LinearOrIntegerConstraints loic = new LinearOrIntegerConstraints();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					loic = new LinearOrIntegerConstraints();
+					loic = new LogicalORLinearIntegerConstraints();
 					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
 					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.LE, eio.getIndex().getMinDist()));
 					if (!pc.hasConstraint(loic)) pc._addDet(loic);
