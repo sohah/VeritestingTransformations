@@ -39,9 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-//import choco.integer.IntExp;
-//import coral.solvers.Env;
-//import coral.solvers.SolverKind;
+
 
 // generalized to use different constraint solvers/decision procedures
 // Warning: should never use / modify the types from pb:
@@ -52,7 +50,7 @@ public class SymbolicConstraintsGeneral {
 	  private Map<SymbolicReal, Object>	symRealVar; // a map between symbolic real variables and DP variables
 	  private Map<SymbolicInteger,Object>	symIntegerVar; // a map between symbolic variables and DP variables
 	  Boolean result; // tells whether result is satisfiable or not
-	  private static int tempVars = 0; //Used for choco to construct "or" clauses
+	  private static int tempVars = 0; //Used to construct "or" clauses
 
 
 	  //	 Converts IntegerExpression's into DP's IntExp's
@@ -85,7 +83,7 @@ public class SymbolicConstraintsGeneral {
 			switch(opRef){
 			case PLUS:
 				if (e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.plus(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
@@ -94,7 +92,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.plus(getExpression(e_leftRef),getExpression(e_rightRef));
 			case MINUS:
 				if (e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.minus(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
@@ -103,7 +101,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.minus(getExpression(e_leftRef),getExpression(e_rightRef));
 			case MUL:
 				if (e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.mult(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
@@ -112,7 +110,7 @@ public class SymbolicConstraintsGeneral {
 					throw new RuntimeException("## Error: Binary Non Linear Operation");
 			case DIV:
 				if (e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof IntegerConstant) // TODO: this might not be linear
 					return pb.div(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
@@ -121,7 +119,7 @@ public class SymbolicConstraintsGeneral {
 				    throw new RuntimeException("## Error: Binary Non Linear Operation");
 			case AND:
 				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.and(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
@@ -130,7 +128,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.and(getExpression(e_leftRef),getExpression(e_rightRef));
 			case OR:
 				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.or(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
@@ -139,7 +137,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.or(getExpression(e_leftRef),getExpression(e_rightRef));
 			case XOR:
 				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.xor(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
@@ -148,7 +146,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.xor(getExpression(e_leftRef),getExpression(e_rightRef));
 			case SHIFTR:
 				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.shiftR(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
@@ -157,7 +155,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.shiftR(getExpression(e_leftRef),getExpression(e_rightRef));
 			case SHIFTUR:
 				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.shiftUR(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
@@ -166,7 +164,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.shiftUR(getExpression(e_leftRef),getExpression(e_rightRef));
 			case SHIFTL:
 				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.shiftL(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
@@ -207,7 +205,7 @@ public class SymbolicConstraintsGeneral {
 			switch(opRef){
 			case PLUS:
 				if (e_leftRef instanceof RealConstant && e_rightRef instanceof RealConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof RealConstant)
 					return pb.plus(((RealConstant)e_leftRef).value, getExpression(e_rightRef));
 				else if (e_rightRef instanceof RealConstant)
@@ -216,7 +214,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.plus(getExpression(e_leftRef),getExpression(e_rightRef));
 			case MINUS:
 				if (e_leftRef instanceof RealConstant && e_rightRef instanceof RealConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof RealConstant)
 					return pb.minus(((RealConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof RealConstant)
@@ -225,7 +223,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.minus(getExpression(e_leftRef),getExpression(e_rightRef));
 			case MUL:
 				if (e_leftRef instanceof RealConstant && e_rightRef instanceof RealConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof RealConstant)
 					return pb.mult(((RealConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof RealConstant)
@@ -234,7 +232,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.mult(getExpression(e_leftRef),getExpression(e_rightRef));
 			case DIV:
 				if (e_leftRef instanceof RealConstant && e_rightRef instanceof RealConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof RealConstant)
 					return pb.div(((RealConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof RealConstant)
@@ -243,7 +241,7 @@ public class SymbolicConstraintsGeneral {
 					return pb.div(getExpression(e_leftRef),getExpression(e_rightRef));
 			case AND:
 				if (e_leftRef instanceof RealConstant && e_rightRef instanceof RealConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); // TODO: fix
+					throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof RealConstant)
 					return pb.and(((RealConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof RealConstant)

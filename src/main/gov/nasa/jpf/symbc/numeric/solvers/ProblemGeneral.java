@@ -101,10 +101,6 @@ public abstract class ProblemGeneral{
 	public abstract Object shiftUR(Object exp1, Object exp2) ;
 
 
-	public Object makeBitVectorVar(String name, int N) {
-			throw new RuntimeException("## Error BitVectors not supported by current constraint solver");
-	}
-
 	public Object sin(Object exp) {
 		throw new RuntimeException("## Error: Math.sin not supported");
 	}

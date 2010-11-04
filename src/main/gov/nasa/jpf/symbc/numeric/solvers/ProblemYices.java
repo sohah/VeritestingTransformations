@@ -19,16 +19,14 @@
 
 package gov.nasa.jpf.symbc.numeric.solvers;
 
-import gov.nasa.jpf.symbc.numeric.MinMax;
+
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Vector;
 
-import cvc3.Expr;
 
 import yices.*;
 
@@ -380,63 +378,63 @@ public class ProblemYices extends ProblemGeneral {
 	@Override
 	public
 	Object shiftL(int value, Object exp) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise shiftL");
 	}
 
 	@Override
 	public
 	Object shiftL(Object exp, int value) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise shiftL");
 	}
 
 	@Override
 	public
 	Object shiftR(int value, Object exp) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise shiftR");
 	}
 
 	@Override
 	public
 	Object shiftR(Object exp, int value) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise shiftR");
 	}
 
 	@Override
 	public
 	Object xor(int value, Object exp) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise XOR");
 	}
 
 	@Override
 	public
 	Object xor(Object exp, int value) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise XOR");
 	}
 
 	@Override
 	public
 	Object xor(Object exp1, Object exp2) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise XOR");
 	}
 
 	@Override
 	public Object shiftL(Object exp1, Object exp2) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise shifL");
 	}
 
 	@Override
 	public Object shiftR(Object exp1, Object exp2) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise shifR");
 	}
 
 	@Override
 	public Object shiftUR(int value, Object exp) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise shiftUR");
 	}
 
 	@Override
 	public Object shiftUR(Object exp, int value) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
+		throw new RuntimeException("## Error Yices does not support bitwise shiftUR");
 	}
 
 	@Override
@@ -449,17 +447,10 @@ public class ProblemYices extends ProblemGeneral {
 		assert(constraints != null && constraints.length >=1);
 		String orResult = "";
 		for (int i = 0; i<constraints.length; i++) {
-			//System.out.println("****** orResult"+ orResult + "************ " +i);
 			orResult += (String)constraints[i] + " ";
 		}
-
 		orResult = "(or " + orResult+ ")";
-		System.out.println("****** orResult"+ orResult+ "************ ");
-
 		post(orResult);
 	}
-
-
-
 
 }
