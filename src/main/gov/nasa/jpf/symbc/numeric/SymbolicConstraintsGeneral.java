@@ -52,7 +52,6 @@ public class SymbolicConstraintsGeneral {
 	  private Map<SymbolicReal, Object>	symRealVar; // a map between symbolic real variables and DP variables
 	  private Map<SymbolicInteger,Object>	symIntegerVar; // a map between symbolic variables and DP variables
 	  Boolean result; // tells whether result is satisfiable or not
-	  boolean bitVec = false; //tells whether we are running in the bit vector mode
 	  private static int tempVars = 0; //Used for choco to construct "or" clauses
 
 
@@ -65,12 +64,8 @@ public class SymbolicConstraintsGeneral {
 
 				Object dp_var = symIntegerVar.get(eRef);
 				if (dp_var == null) {
-					if(!bitVec) {
-						dp_var = pb.makeIntVar(((SymbolicInteger)eRef).getName(),
-							((SymbolicInteger)eRef)._min, ((SymbolicInteger)eRef)._max);
-					} else {
-						dp_var = pb.makeBitVectorVar(((SymbolicInteger) eRef).getName(), 32);
-					}
+					dp_var = pb.makeIntVar(((SymbolicInteger)eRef).getName(),
+						((SymbolicInteger)eRef)._min, ((SymbolicInteger)eRef)._max);
 					symIntegerVar.put((SymbolicInteger)eRef, dp_var);
 				}
 				return dp_var;
@@ -792,8 +787,7 @@ public class SymbolicConstraintsGeneral {
 			pb = new ProblemCVC3();
 		} else if (dp[0].equalsIgnoreCase("cvc3bitvec")) {
 			pb = new ProblemCVC3BitVector();
-			bitVec = true;
-	    } else if (dp[0].equalsIgnoreCase("yices")) {
+		 } else if (dp[0].equalsIgnoreCase("yices")) {
 	    	pb = new ProblemYices();
 		} else if (dp[0].equalsIgnoreCase("debug")) {
 			pb = new DebugSolvers(pc);

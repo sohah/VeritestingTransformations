@@ -19,11 +19,14 @@
 
 package gov.nasa.jpf.symbc.numeric.solvers;
 
+import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import cvc3.Expr;
 import cvc3.Rational;
+import cvc3.Type;
 
 public class ProblemCVC3BitVector extends ProblemCVC3 {
 
@@ -35,6 +38,8 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 			throw new RuntimeException("## Error CVC3BitVec: Could not create a bitvector var" + e);
 		}
 	}
+	
+	
 
 	public Object and(int value, Object exp) {
 		try {
@@ -505,9 +510,7 @@ public class ProblemCVC3BitVector extends ProblemCVC3 {
 
 	@Override
 	public Object makeIntVar(String name, int min, int max) {
-		// TODO Auto-generated method stub
-		//return makeBitVectorVar(name, 32);
-		throw new RuntimeException("bit vector");
+		return makeBitVectorVar(name, 32);
 	}
 
 	@Override
