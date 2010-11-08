@@ -48,12 +48,12 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
   ArrayList<EquivalenceElem> aliasedElems;
   private boolean partition = false;
   ArrayList<String> partitions = new ArrayList<String>();
-  
+
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 
 	  // if it is here then using the uberlazyInstructionfactory
-	  // check whether the class hierarchies need to be constructed	  
+	  // check whether the class hierarchies need to be constructed
 	  if(TypeHierarchy.typeHierarchies == null) {
 		  TypeHierarchy.buildTypeHierarchy(ti);
 	  }
@@ -65,7 +65,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  return ti.createAndThrowException("java.lang.NullPointerException",
 				  "referencing field '" + fname + "' on null object");
 	  }
-	  ElementInfo ei = DynamicArea.getHeap().get(objRef);
+	  ElementInfo ei = ti.getElementInfo(objRef);
 	  FieldInfo fi = getFieldInfo();
 	  if (fi == null) {
 		  return ti.createAndThrowException("java.lang.NoSuchFieldError",
@@ -80,7 +80,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  //end GETFIELD code from super
 
 	  Object attr = ei.getFieldAttr(fi);
-	 
+
 	  if (!fi.isReference()) {
 		  return super.execute(ss,ks,ti);
 	  }
@@ -88,15 +88,15 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  int currentChoice;
 	  ChoiceGenerator<?> thisHeapCG;
 
-	  
-	 
-	  
-	  if (!ti.isFirstStepInsn()) {
-		  
-		  prevHeapCG = UberLazyHelper.getPrevPartitionChoiceGenerator
-			(ss.getChoiceGenerator()); 
 
-		  
+
+
+	  if (!ti.isFirstStepInsn()) {
+
+		  prevHeapCG = UberLazyHelper.getPrevPartitionChoiceGenerator
+			(ss.getChoiceGenerator());
+
+
 		  if(attr != null) {
 			  partition = true;
 			  aliasedElems = UberLazyHelper.getAllAliasedObjects
@@ -104,27 +104,27 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 			  if(aliasedElems.size() > 0) {
 				 PartitionChoiceGenerator prevCG = (PartitionChoiceGenerator) prevHeapCG;
 				 EquivalenceObjects eObjs = prevCG.getCurrentEquivalenceObject();
-			
+
 				 ArrayList<String> eqElems = new ArrayList<String>();
 				// this is to represent a fake new object that could be instantiated
 			    // since all its fields are initialized, it does not matter what the
-			    // the real object structure will be like. 
-				 eqElems.add("-99"); 
+			    // the real object structure will be like.
+				 eqElems.add("-99");
 				 eqElems.addAll(UberLazyHelper.getUniqueObjReferences(aliasedElems));
 				 partitions = eObjs.checkDifferingShapes(objRef, fi.getName(), eqElems, ti);
 				 thisHeapCG = new PartitionChoiceGenerator(1 + partitions.size()); // +null,new
 			  } else {
 				  thisHeapCG = new PartitionChoiceGenerator(2); // +null,new
 			  }
-			 
-			 
+
+
 		  } else {
 			  thisHeapCG = new PartitionChoiceGenerator(1); // no real choice
 		  }
-		 
+
 		  ss.setNextChoiceGenerator(thisHeapCG);
 		  return this;
-	  } 
+	  }
 
 	  thisHeapCG = ss.getChoiceGenerator();
 	  assert (thisHeapCG instanceof PartitionChoiceGenerator) :
@@ -141,7 +141,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  if (prevHeapCG == null){
 		  pcHeap = new PathCondition();
 		  symInputHeap = new SymbolicInputHeap();
-		  equivObjs = new EquivalenceObjects();	 
+		  equivObjs = new EquivalenceObjects();
 	  }
 	  else {
 		  pcHeap = ((HeapChoiceGenerator)prevHeapCG).getCurrentPCheap();
@@ -154,9 +154,9 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  assert equivObjs != null;
 
 	  // get the type of the field
-	  ClassInfo typeClassInfo = fi.getTypeClassInfo(); 
+	  ClassInfo typeClassInfo = fi.getTypeClassInfo();
 	  //from original GETFIELD bytecode
-	
+
 	  ti.pop(); // Ok, now we can remove the object ref from the stack
 	  int daIndex = 0; //index into JPF's dynamic area
 
@@ -167,16 +167,16 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 				 daIndex = Integer.valueOf(partitions.get(currentChoice));
 				 if(daIndex == -99) {
 					 daIndex = 0;
-					 daIndex = UberLazyHelper.addNewHeapNode(fi.getFullName(), typeClassInfo, ti, 
+					 daIndex = UberLazyHelper.addNewHeapNode(fi.getFullName(), typeClassInfo, ti,
 							 daIndex, attr, ks, pcHeap,symInputHeap); // the last two args represent that the heap
 					 // constraint does not need to be updated for
 					 // any of the aliased objects
-					 equivObjs.addClass(typeClassInfo.getName(), fi.getFullName(), daIndex);	
+					 equivObjs.addClass(typeClassInfo.getName(), fi.getFullName(), daIndex);
 					 equivObjs.addAliasedObjects(fi.getFullName(), aliasedElems);
 				 } else {
-					//TODO: update the heapConstraint  
+					//TODO: update the heapConstraint
 				 }
-				 
+
 			 } else {
 				 pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
 				 daIndex = -1;
@@ -187,26 +187,26 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 			 if (currentChoice == 0){ //null object
 				 pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
 				 daIndex = -1;
-			 } 
-			 else if (currentChoice == 1) { 
-				 daIndex = UberLazyHelper.addNewHeapNode(fi.getFullName(), typeClassInfo, ti, 
+			 }
+			 else if (currentChoice == 1) {
+				 daIndex = UberLazyHelper.addNewHeapNode(fi.getFullName(), typeClassInfo, ti,
 						 daIndex, attr, ks, pcHeap,symInputHeap); // the last two args represent that the heap
 				 // constraint does not need to be updated for
 				 // any of the aliased objects
-				 equivObjs.addClass(typeClassInfo.getName(), fi.getFullName(), daIndex);	
+				 equivObjs.addClass(typeClassInfo.getName(), fi.getFullName(), daIndex);
 				 equivObjs.addAliasedObjects(fi.getFullName(), aliasedElems);
 
-			 } 
+			 }
 		 }
 		 ei.setReferenceField(fi,daIndex );
 		 ei.setFieldAttr(fi, null);
 
-    } 
+    }
 	  ti.push( ei.getIntField(fi), fi.isReference());
-	  
+
 	  //ti.setOperandAttrNoClone(new String(Integer.toString(ei.getIntField(fi)).concat("__" + fi.getName())));
 	  ti.setOperandAttrNoClone(new String(Integer.toString(ei.getIntField(fi))));
-	
+
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
 	  ((PartitionChoiceGenerator)thisHeapCG).setEquivalenceObj(equivObjs);
@@ -215,7 +215,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
   }
 
 
-  
- 
-  
+
+
+
 }

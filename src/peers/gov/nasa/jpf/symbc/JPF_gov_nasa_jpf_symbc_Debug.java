@@ -233,8 +233,8 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 		String refChain = name + "["+objvRef+"]"; // why is the type used here? should use the name of the field instead
 
 		SymbolicInteger newSymRef = new SymbolicInteger( refChain);
-		ElementInfo eiRef = DynamicArea.getHeap().get(objvRef);
-
+		//ElementInfo eiRef = DynamicArea.getHeap().get(objvRef);
+		ElementInfo eiRef = JVM.getVM().getHeap().get(objvRef);
 		Helper.initializeInstanceFields(fields, eiRef, refChain);
 		Helper.initializeStaticFields(staticFields, ci, ti);
 
@@ -331,7 +331,8 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 		}
 		else{
 			ClassInfo ci = env.getClassInfo(objvRef);
-			ElementInfo ei = DynamicArea.getHeap().get(objvRef);
+			//ElementInfo ei = DynamicArea.getHeap().get(objvRef);
+			ElementInfo ei = JVM.getVM().getHeap().get(objvRef);
 			sequence += "["+objvRef+"]";
 			if (!discovered.contains(new Integer(objvRef))){
 				discovered.add(new Integer(objvRef));

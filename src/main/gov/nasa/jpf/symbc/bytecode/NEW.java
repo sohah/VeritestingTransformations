@@ -20,6 +20,7 @@ package gov.nasa.jpf.symbc.bytecode;
 
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DynamicArea;
+import gov.nasa.jpf.jvm.Heap;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.KernelState;
 import gov.nasa.jpf.jvm.NoClassInfoException;
@@ -45,54 +46,61 @@ public class NEW extends gov.nasa.jpf.jvm.bytecode.NEW {
 
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
-    JVM vm = ti.getVM();
-    DynamicArea da = vm.getDynamicArea();
-    ClassInfo ci;
+	  Heap da = ti.getHeap();
+	    ClassInfo ci;
 
-     try {
-        ci = ClassInfo.getResolvedClassInfo(cname);
-      } catch (NoClassInfoException cx){
-        // can be any inherited class or required interface
-        return ti.createAndThrowException("java.lang.NoClassDefFoundError", cx.getMessage());
-      }
+	    try {
+	      ci = ClassInfo.getResolvedClassInfo(cname);
 
-      String className = ci.getName();
-      if(!(className.equals("java.lang.StringBuilder") || className.equals("java.lang.StringBuffer")))
-    	  return super.execute(ss, ks, ti);
+	    } catch (NoClassInfoException cx){
+	      // can be any inherited class or required interface
+	      return ti.createAndThrowException("java.lang.NoClassDefFoundError", cx.getMessage());
+	    }
+
+	    String className = ci.getName();
+	      if(!(className.equals("java.lang.StringBuilder") || className.equals("java.lang.StringBuffer")))
+	    	  return super.execute(ss, ks, ti);
+
+	    if (!ci.isRegistered()){
+	      ci.registerClass(ti);
+	    }
+
+	    // since this is a NEW, we also have to pushClinit
+	    if (!ci.isInitialized()) {
+	      if (ci.initializeClass(ti)) {
+	        return ti.getPC();  // reexecute this instruction once we return from the clinits
+	      }
+	    }
+
+	    if (da.isOutOfMemory()) { // simulate OutOfMemoryError
+	      return ti.createAndThrowException("java.lang.OutOfMemoryError",
+	                                        "trying to allocate new " + cname);
+	    }
+
+	    int objRef = da.newObject(ci, ti);
+
+	    // pushes the return value onto the stack
+	    ti.push(objRef, true);
 
 
-      if (!ci.isRegistered()){
-        ci.registerClass(ti);
-      }
 
-      // since this is a NEW, we also have to pushClinit
-      if (!ci.isInitialized()) {
-        if (ci.initializeClass(ti)) {
-          return ti.getPC();
-        }
-      }
+	    // pushes the return value onto the stack
+	    ti.push(objRef, true);
+	// TODO: to review
+	    //insert dummy expressions for StringBuilder and StringBuffer
+	    //String className = ci.getName();
+	    if(className.equals("java.lang.StringBuilder") || className.equals("java.lang.StringBuffer")){
+	    	SymbolicStringBuilder t = new SymbolicStringBuilder();
+	    	StackFrame sf = ti.getTopFrame();
+	    	sf.setOperandAttr(t);
+	    }
 
-    if (da.getOutOfMemory()) { // simulate OutOfMemoryError
-      return ti.createAndThrowException("java.lang.OutOfMemoryError",
-                                        "trying to allocate new " + cname);
-    }
 
-    int objRef = da.newObject(ci, ti);
+	    ss.checkGC(); // has to happen after we push the new object ref
 
-    // pushes the return value onto the stack
-    ti.push(objRef, true);
-// TODO: to review
-    //insert dummy expressions for StringBuilder and StringBuffer
-    //String className = ci.getName();
-    if(className.equals("java.lang.StringBuilder") || className.equals("java.lang.StringBuffer")){
-    	SymbolicStringBuilder t = new SymbolicStringBuilder();
-    	StackFrame sf = ti.getTopFrame();
-    	sf.setOperandAttr(t);
-    }
+	    return getNext(ti);
 
-    ss.checkGC(); // has to happen after we push the new object ref
 
-    return getNext(ti);
   }
 
 }

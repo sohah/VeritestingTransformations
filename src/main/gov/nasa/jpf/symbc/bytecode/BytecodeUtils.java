@@ -69,7 +69,7 @@ public class BytecodeUtils {
 	public static boolean isMethodSymbolic(Config conf, String methodName, int numberOfArgs, Vector<String> args) {
 		String[] methods = conf.getStringArray("symbolic.method");
 		boolean misMatchedArgs = false;
-		String shortName = ""; 
+		String shortName = "";
 		if (methods != null) {
 			List<String> list = Arrays.asList(methods);
 			Iterator<String> it = list.iterator();
@@ -333,8 +333,8 @@ public class BytecodeUtils {
 			FieldInfo[] fields = ci.getDeclaredInstanceFields();
 			ElementInfo ei;
 			if (isStatic) {
-				DynamicArea da = th.getVM().getDynamicArea();
-				ei = da.get(ci.getClassObjectRef());
+				//DynamicArea da = th.getVM().getDynamicArea();
+				ei = th.getElementInfo(ci.getClassObjectRef());
 			} else {
 				int objRef = th.getCalleeThis(invInst.getArgSize());
 				if (objRef == -1) { // NPE
@@ -342,7 +342,7 @@ public class BytecodeUtils {
 							th.createAndThrowException("java.lang.NullPointerException", "calling '" + mname
 							+	 "' on null object"));
 				}
-				ei = DynamicArea.getHeap().get(objRef);
+				ei = th.getElementInfo(objRef);
 			}
 
 
@@ -655,8 +655,8 @@ public class BytecodeUtils {
 			FieldInfo[] fields = ci.getDeclaredInstanceFields();
 			ElementInfo ei;
 			if (isStatic) {
-				DynamicArea da = th.getVM().getDynamicArea();
-				ei = da.get(ci.getClassObjectRef());
+				//DynamicArea da = th.getVM().getDynamicArea();
+				ei = th.getElementInfo(ci.getClassObjectRef());
 			} else {
 				int objRef = th.getCalleeThis(invInst.getArgSize());
 				if (objRef == -1) { // NPE
@@ -664,7 +664,7 @@ public class BytecodeUtils {
 							th.createAndThrowException("java.lang.NullPointerException", "calling '" + mname
 							+	 "' on null object"));
 				}
-				ei = DynamicArea.getHeap().get(objRef);
+				ei = th.getElementInfo(objRef);
 			}
 
 

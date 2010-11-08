@@ -29,6 +29,7 @@ import gov.nasa.jpf.jvm.DynamicElementInfo;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
 import gov.nasa.jpf.jvm.Fields;
+import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.KernelState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.symbc.heap.HeapNode;
@@ -40,21 +41,21 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
 public class UberLazyHelper {
-	
+
 	public static boolean symbolicVariableExists(ChoiceGenerator<?> cg, String fieldIdentifier) {
-		EquivalenceObjects equivObjs = ((PartitionChoiceGenerator) cg).	
+		EquivalenceObjects equivObjs = ((PartitionChoiceGenerator) cg).
 															getCurrentEquivalenceObject();
 		if(equivObjs != null && equivObjs.getEquivClass(fieldIdentifier) != null) {
 			return true;
 		}
 		return false;
 	}
-	
 
-	
+
+
 	 public static HashMap<Integer, EquivalenceClass> initializePartitionDataStructs
 	 									(String objIdentifier, int numPartitions) {
-		 HashMap<Integer, EquivalenceClass> partition = new 
+		 HashMap<Integer, EquivalenceClass> partition = new
 		 							HashMap<Integer, EquivalenceClass>(numPartitions);
 		 for(int index = 0; index < numPartitions; index++) {
 			EquivalenceClass ec = new EquivalenceClass(objIdentifier);
@@ -62,24 +63,24 @@ public class UberLazyHelper {
 		 }
 		 return partition;
 	 }
-	 
+
 	 public static HashMap<Integer, EquivalenceClass> initializePartitionDataStructs
 	 												(int objIdentifier, int numPartitions) {
 		return UberLazyHelper.initializePartitionDataStructs
 										(Integer.toString(objIdentifier),numPartitions);
 	 }
-	 
+
 	 public static HashMap<Integer, EquivalenceClass> initializePartitionsWithData(int objId,
 			 							HashMap<String, Set<String>> partFunc) {
 		 int numPartitions = partFunc.size();
 		 return UberLazyHelper.initializePartitionDataStructs(objId, numPartitions);
 	 }
-	 
+
 	 public static EquivalenceElem getSuperParentInClassHierarchy(EquivalenceClass eqClass) {
 		 ArrayList<EquivalenceElem> eqElems = eqClass.getElementsInEquivClass();
 		 return UberLazyHelper.getSuperParentInClassHeirarchy(eqElems);
 	 }
-	 
+
 	 public static EquivalenceElem getSuperParentInClassHeirarchy(ArrayList<EquivalenceElem> eqElems) {
 		 if(eqElems.size() <= 0) {
 			 return null;
@@ -94,7 +95,7 @@ public class UberLazyHelper {
 				 parentClassInfo = ClassInfo.getResolvedClassInfo
 				 										(currElem.getTypeOfElement());
 				 	 elem = currElem;
-			 } 	
+			 }
 
 		 }
 		 return elem;
@@ -102,33 +103,33 @@ public class UberLazyHelper {
 
 	 public static ChoiceGenerator<?> getPrevPartitionChoiceGenerator(ChoiceGenerator<?> currCG) {
 		 ChoiceGenerator<?> prevPartitionCG = currCG;
-		 while(!((prevPartitionCG == null) || (prevPartitionCG instanceof 
+		 while(!((prevPartitionCG == null) || (prevPartitionCG instanceof
 				 PartitionChoiceGenerator))) {
 			 prevPartitionCG = prevPartitionCG.getPreviousChoiceGenerator();
 		 }
 		 return prevPartitionCG;
 
 	 }
-	 
-	
-	 
+
+
+
 	 public static EquivalenceObjects getEquivalenceObjects(ChoiceGenerator<?> prevPartitionCG) {
 		 if(prevPartitionCG != null) {
 			 return ((PartitionChoiceGenerator) prevPartitionCG).
 			 									getCurrentEquivalenceObject();
 		 }
 		 return null;
-	 
+
 	 }
-	 
-	 
+
+
 	 public static EquivalenceObjects generateNewEquivalenceClass(EquivalenceObjects currEquivObjs,
 			 String fieldIdentifier, ArrayList<EquivalenceElem> equivElems) {
 		 EquivalenceClass eqClass = new EquivalenceClass(fieldIdentifier, equivElems);
 		 currEquivObjs.replaceClass(fieldIdentifier, eqClass);
 		 return currEquivObjs;
 	 }
-	 
+
 	 public static ArrayList<String> getUniqueObjReferences(ArrayList<EquivalenceElem> equivElems) {
 		 ArrayList<String> retVals = new ArrayList<String>();
 		 for(int eqIndex = 0; eqIndex < equivElems.size(); eqIndex++) {
@@ -140,7 +141,7 @@ public class UberLazyHelper {
 		 }
 		 return retVals;
 	 }
-	 
+
 	public static ArrayList<EquivalenceElem> getEquivalenceElemsGivenObjRef(String objRef,
 															ArrayList<EquivalenceElem> allElems) {
 		ArrayList<EquivalenceElem> retVals = new ArrayList<EquivalenceElem>();
@@ -152,7 +153,7 @@ public class UberLazyHelper {
 		}
 		return retVals;
 	}
-	 
+
 	 public static ArrayList<EquivalenceElem> getAllAliasedObjects(ChoiceGenerator<?> prevCG, String typeClassInfo) {
 
 		 ArrayList<EquivalenceElem> aliasedElem = new ArrayList<EquivalenceElem>();
@@ -176,12 +177,12 @@ public class UberLazyHelper {
 			 UberLazyHeapNode un = (UberLazyHeapNode) n;
 			 String fieldIdentifier = un.getFieldIdentifier();
 			 if(equivObjs.containsEquivClassForRef(fieldIdentifier)) {
-				 
+
 					eqClass = equivObjs.getEquivClass(fieldIdentifier);
 					ArrayList<EquivalenceElem> elems = eqClass.
 														getElementsInEquivClass();
-				
-					// if the parent is an instance, all its subtypes will 
+
+					// if the parent is an instance, all its subtypes will
 					if(tClassInfo.isInstanceOf(typeClassInfo)){
 						aliasedElem.addAll(elems);
 					} else {
@@ -203,7 +204,7 @@ public class UberLazyHelper {
 		 //System.out.println(aliasedElem.toString());
 		 return aliasedElem;
 	 }
-	 
+
 	 //initializes a new concretization for object represented by EqivalenceElem -- "elem"
 	 public static void generatingNewConcretization(int objref, EquivalenceElem elem,
 			 SymbolicInputHeap symInputHeap, KernelState ks, ThreadInfo th) {
@@ -214,21 +215,21 @@ public class UberLazyHelper {
 				 					getResolvedClassInfo(elem.getTypeOfElement());
 				 //replace in the symbolic world
 				 n.replaceType(tClassInfo);
-				 
+
 				 //replace in the concrete world
 				 DynamicElementInfo dei = ks.da.get(objref);
-				 dei.restoreFields(tClassInfo.createInstanceFields());	
-				 int daIndex = objref; 
-				 ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
-				 
-				 //initialize the instance fields as symbolic 
+				 dei.restoreFields(tClassInfo.createInstanceFields());
+				 int daIndex = objref;
+				// ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
+				 ElementInfo eiRef = JVM.getVM().getHeap().get(daIndex);
+				 //initialize the instance fields as symbolic
 				 Fields f = eiRef.getFields();
 				 int numOfFields = f.getNumberOfFields();
 				 FieldInfo[] fields = new FieldInfo[numOfFields];
 				 for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
 					 fields[fieldIndex] = f.getFieldInfo(fieldIndex);
 				 }
-				 String refChain; 
+				 String refChain;
 				 if(n instanceof UberLazyHeapNode) {
 					 UberLazyHeapNode hn  = (UberLazyHeapNode) n;
 					 refChain = hn.getRefChain();
@@ -237,31 +238,31 @@ public class UberLazyHelper {
 				 }
 				 Helper.initializeInstanceFields(fields, eiRef,refChain);
 
-				 //initialize the static fields as symbolic 					
+				 //initialize the static fields as symbolic
 				 ClassInfo superClass = tClassInfo;
 				 while(superClass != null) {
 					 FieldInfo[] staticFields = superClass.getDeclaredStaticFields();
 					 Helper.initializeStaticFields(staticFields, superClass, th);
 					 superClass = superClass.getSuperClass();
 				 }
-				 
+
 				 //TODO: Update the heap constraint based on what is split
-			
+
 				 return;
 			 }
 			 n = n.getNext();
 		 }
 	 }
-	 
-	 
-	 public static int addNewHeapNode(String fieldIdentifier, 
+
+
+	 public static int addNewHeapNode(String fieldIdentifier,
 			 ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
 			 KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap) {
 		 daIndex = ks.da.newObject(typeClassInfo, ti);
 		 String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
 		 SymbolicInteger newSymRef = new SymbolicInteger( refChain);
-		 ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
-
+		 //ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
+		 ElementInfo eiRef = JVM.getVM().getHeap().get(daIndex);
 		 // neha: this change allows all the fields in the class hierarchy of the
 		 // object to be initialized as symbolic and not just its instance fields
 		 Fields f = eiRef.getFields();
@@ -292,6 +293,6 @@ public class UberLazyHelper {
 		 return daIndex;
 
 	 }
-	  
-	  
+
+
 }

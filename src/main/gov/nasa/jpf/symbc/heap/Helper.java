@@ -100,18 +100,18 @@ public class Helper {
 				initializeStaticField(staticFields[i], ci, ti, "");
 		}
 	}
-	
+
 	  //neha: added the code to intansiate an new heap in a separate procedure. There are multiple
 	  //bytecodes that need access to the same code. Lazy initialization and uber-lazy initialization
 	  // generate a new HeapNode in the same way. This can be used across different init algorithms.
 	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
-			  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap, 
+			  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap,
 			  int numSymRefs, HeapNode[] prevSymRefs ) {
 		  daIndex = ks.da.newObject(typeClassInfo, ti);
 		  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
 		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
-		  ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
-		  
+		  ElementInfo eiRef = ti.getElementInfo(daIndex);
+
 		  // neha: this change allows all the fields in the class hierarchy of the
 		  // object to be initialized as symbolic and not just its instance fields
 		  Fields f = eiRef.getFields();
@@ -120,9 +120,9 @@ public class Helper {
 		  for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
 			  fields[fieldIndex] = f.getFieldInfo(fieldIndex);
 		  }
-		  
+
 		  Helper.initializeInstanceFields(fields, eiRef,refChain);
-		  
+
 		  //neha: this change allows all the static fields in the class hierarchy
 		  // of the object to be initialized as symbolic and not just its immediate
 		  // static fields
@@ -132,7 +132,7 @@ public class Helper {
 			  Helper.initializeStaticFields(staticFields, superClass, ti);
 			  superClass = superClass.getSuperClass();
 		  }
-		  	  
+
 		  // create new HeapNode based on above info
 		  // update associated symbolic input heap
 		  HeapNode n= new HeapNode(daIndex,typeClassInfo,newSymRef);

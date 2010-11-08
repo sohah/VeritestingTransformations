@@ -49,23 +49,23 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
   ChoiceGenerator<?> prevHeapCG;
   boolean abstractClass = false;
 
-  
+
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 	  Config conf = ti.getVM().getConfig();
 	  String[] lazy = conf.getStringArray("symbolic.lazy");
-	  if (lazy == null || !lazy[0].equalsIgnoreCase("true")) 
+	  if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
 		  return super.execute(ss,ks,ti);
 
 	  //neha: check whether the subtypes from polymorphism need to added
 	  // when instantiating "new" objects during lazy-initialization.
-	  // the configuration allows to consider all subtypes during the 
+	  // the configuration allows to consider all subtypes during the
 	  // instantiation. In aliasing all subtypes are considered by default.
-	  
+
 	  String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
-	  if(!subtypes.equals("false") && 
+	  if(!subtypes.equals("false") &&
 			  TypeHierarchy.typeHierarchies == null) {
-		  TypeHierarchy.buildTypeHierarchy(ti);	
+		  TypeHierarchy.buildTypeHierarchy(ti);
 	  }
 
 	  //original GETFIELD code from super
@@ -75,7 +75,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		 return ti.createAndThrowException("java.lang.NullPointerException",
 	                        "referencing field '" + fname + "' on null object");
 	 }
-	 ElementInfo ei = DynamicArea.getHeap().get(objRef);
+	 ElementInfo ei = ti.getElementInfo(objRef);
 	 FieldInfo fi = getFieldInfo();
 	 if (fi == null) {
 	    return ti.createAndThrowException("java.lang.NoSuchFieldError",
@@ -211,12 +211,12 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  else if (currentChoice == numSymRefs){ //null object
 		  pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
 		  daIndex = -1;
-	  } 
+	  }
 	  else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 		  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
 		  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
 				  		symInputHeap, numSymRefs, prevSymRefs);
-	  } else { 
+	  } else {
 		  int counter;
 		  if(abstractClass) {
 				counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
@@ -224,7 +224,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 				counter = currentChoice - (numSymRefs+1) - 1;
 		  }
 		  ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
-		  daIndex = Helper.addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap, 
+		  daIndex = Helper.addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap,
 				  		symInputHeap, numSymRefs, prevSymRefs);
 	  }
 
@@ -236,6 +236,6 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  //System.out.println(">>>>>>>>>>>>.GETFIELD pcHeap: " + pcHeap.toString());
 	  return getNext(ti);
   }
-  
+
 
 }
