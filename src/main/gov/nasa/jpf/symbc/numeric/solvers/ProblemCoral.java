@@ -78,7 +78,7 @@ public class ProblemCoral extends ProblemGeneral {
 		 */
 		this.solverKind = solverKind;
 		this.optmize = preprocOptimizations;
-		Config.nIterationsPSO = 500;
+		Config.nIterationsPSO = 600;
 		/**
 		 * random seed used to generate random numbers.
 		 */
@@ -326,12 +326,12 @@ public class ProblemCoral extends ProblemGeneral {
 
 	@Override
 	public Object minus(int value, Object exp) {
-		return Util.sub((SymInt)exp, Util.createConstant(value));
+		return Util.sub(Util.createConstant(value),(SymInt)exp);
 	}
 
 	@Override
 	public Object minus(Object exp, int value) {
-		return Util.sub(Util.createConstant(value), (SymInt)exp);
+		return Util.sub((SymInt)exp,Util.createConstant(value));
 	}
 
 	@Override
@@ -347,12 +347,12 @@ public class ProblemCoral extends ProblemGeneral {
 
 	@Override
 	public Object minus(double value, Object exp) {
-		return Util.sub((SymDouble)exp, Util.createConstant(value));
+		return Util.sub(Util.createConstant(value),(SymDouble)exp);
 	}
 
 	@Override
 	public Object minus(Object exp, double value) {
-		return Util.sub(Util.createConstant(value), (SymDouble)exp);
+		return Util.sub((SymDouble)exp,Util.createConstant(value));
 	}
 
 	@Override
