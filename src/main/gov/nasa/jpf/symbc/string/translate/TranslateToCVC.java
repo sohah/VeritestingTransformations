@@ -25,6 +25,7 @@ import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotStartsWith;
+import gov.nasa.jpf.symbc.string.graph.EdgeReplaceCharChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeStartsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeSubstring1Equal;
 import gov.nasa.jpf.symbc.string.graph.EdgeSubstring2Equal;
@@ -154,6 +155,9 @@ public class TranslateToCVC {
 			else if (e instanceof EdgeSubstring2Equal) {
 				handleEdgeSubstring2Equal((EdgeSubstring2Equal) e);
 			}
+			else if (e instanceof EdgeReplaceCharChar) {
+				handleEdgeReplaceCharChar((EdgeReplaceCharChar) e);
+			}
 			else {
 				throw new RuntimeException("Edge not supported: " + e.getClass().toString());
 			}
@@ -170,7 +174,7 @@ public class TranslateToCVC {
 		SatResult result = vc.checkUnsat(expr);
 		if (result == SatResult.UNSATISFIABLE) {
 			vc.pop();
-            //println ("[isSat] Current solutions is unsat, extending lengts");
+			//println ("[isSat] Current solutions is unsat, extending lengts");
             LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
             for (Vertex v: g.getVertices()) {
             	if (!v.getName().startsWith("CHAR"))
@@ -365,6 +369,30 @@ public class TranslateToCVC {
 	private static void handleEdgeNotStartsWith (EdgeNotStartsWith e) {
 		if (e.getSource().getLength() < e.getDest().getLength()) return;
 		post (vc.notExpr(startsWith(e)));
+	}
+	
+	private static void handleEdgeReplaceCharChar (EdgeReplaceCharChar e) {
+		ExprMut source = getExprMut (e.getSource());
+		ExprMut dest = getExprMut (e.getDest());
+		
+		Expr setOflit = null;
+		Expr lit;
+		//println ("[handleEdgeReplaceCharChar] e.getSource().getLength(): " + e.getSource().getLength());
+		for (int i = 1; i <= e.getSource().getLength(); i++) {
+			lit = vc.iteExpr(vc.eqExpr(vc.newBVExtractExpr(source, i * 8 - 1, i * 8 - 8), vc.newBVConstExpr(toBits(e.getC1()))), 
+					   vc.eqExpr(vc.newBVExtractExpr(dest, i * 8 - 1, i * 8 - 8), vc.newBVConstExpr(toBits(e.getC2()))),
+					   vc.trueExpr());
+			setOflit = and (setOflit, lit);
+		}
+		//println ("[handleEdgeReplaceCharChar] setOflit: " + setOflit);
+		post (setOflit);
+		
+		setOflit = null;
+		for (int i = 1; i <= e.getSource().getLength(); i++) {
+			lit = vc.notExpr(vc.eqExpr(vc.newBVExtractExpr(dest, i * 8 - 1, i * 8 - 8), vc.newBVConstExpr(toBits(e.getC1()))));
+			setOflit = and (setOflit, lit);
+		}
+		post (setOflit);
 	}
 	
 	private static Expr endsWith (Edge e) {

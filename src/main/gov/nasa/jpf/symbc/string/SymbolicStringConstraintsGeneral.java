@@ -31,6 +31,7 @@ import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotStartsWith;
+import gov.nasa.jpf.symbc.string.graph.EdgeReplaceCharChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeStartsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeSubstring1Equal;
 import gov.nasa.jpf.symbc.string.graph.EdgeSubstring2Equal;
@@ -209,6 +210,20 @@ public class SymbolicStringConstraintsGeneral {
 				e = new EdgeConcat(v3.getName(), v1, v2, v3);
 				result.addEdge(v1, v2, v3, (EdgeConcat) e);
 				break;
+			case REPLACE:
+				/*graphLeft = convertToGraph((StringExpression) temp.oprlist[1]);
+				graphRight = convertToGraph ((StringExpression) temp.oprlist[2]);
+				result.mergeIn(graphLeft);
+				result.mergeIn(graphRight);*/
+				graphBefore = convertToGraph ((StringExpression) temp.oprlist[0]);
+				result.mergeIn(graphBefore);
+				v1 = result.findVertex(((StringExpression) temp.oprlist[0]).getName());
+				v2 = createVertex(temp);
+				StringConstant s1 = (StringConstant) temp.oprlist[1];
+				StringConstant s2 = (StringConstant) temp.oprlist[2];
+				e = new EdgeReplaceCharChar("EdgeReplaceCharChar_" + v1.getName() + "_" + v2.getName() + "_(" + s1 + "," + s2 + ")", v1, v2, s2.solution().charAt(0), s1.solution().charAt(0));
+				result.addEdge(v1, v2, e);
+				break;
 			default:
 				//println ("[WARNING] [convertToAutomaton] Did not understand " + temp.op);
 			}
@@ -309,24 +324,30 @@ public class SymbolicStringConstraintsGeneral {
 		 * options are exhuasted or a satisfiable solution has turned up
 		 */
 		boolean decisionProcedure = false;
-		if (solver.equals(SAT)) {
-			//println ("[isSatisfiable] Using SAT Solver");
-			decisionProcedure = TranslateToSAT.isSat(global_graph, pc.npc);
-		}
-		else if (solver.equals(AUTOMATA)) {
-			//println ("[isSatisfiable] Using Automata's");
-			decisionProcedure = TranslateToAutomata.isSat(global_graph, pc.npc);
-		}
-		else if (solver.equals(CVC)) {
-			//println ("[isSatisfiable] Using Bitvector's");
-			decisionProcedure = TranslateToCVC.isSat(global_graph, pc.npc); 
-		}
-		else if (solver.equals(CVC_INC)) {
-			//println ("[isSatisfiable] Using Bitvector's");
-			decisionProcedure = TranslateToCVCInc.isSat(global_graph, pc.npc); 
-		}
-		else {
-			throw new RuntimeException("Unknown string solver!!!");
+		try {
+			if (solver.equals(SAT)) {
+				//println ("[isSatisfiable] Using SAT Solver");
+				decisionProcedure = TranslateToSAT.isSat(global_graph, pc.npc);
+			}
+			else if (solver.equals(AUTOMATA)) {
+				//println ("[isSatisfiable] Using Automata's");
+				decisionProcedure = TranslateToAutomata.isSat(global_graph, pc.npc);
+			}
+			else if (solver.equals(CVC)) {
+				//println ("[isSatisfiable] Using Bitvector's");
+				decisionProcedure = TranslateToCVC.isSat(global_graph, pc.npc); 
+			}
+			else if (solver.equals(CVC_INC)) {
+				//println ("[isSatisfiable] Using Bitvector's");
+				decisionProcedure = TranslateToCVCInc.isSat(global_graph, pc.npc); 
+			}
+			else {
+				throw new RuntimeException("Unknown string solver!!!");
+			}
+		} catch (StackOverflowError e) {
+			System.err.println("Stacked overflowed");
+			e.printStackTrace();
+			System.err.println(global_graph.toDot());
 		}
 		if (!decisionProcedure) {
 			//println ("[isSatisfiable] Decision procedure gave unsat");

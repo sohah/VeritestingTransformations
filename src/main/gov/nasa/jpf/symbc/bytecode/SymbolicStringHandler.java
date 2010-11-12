@@ -1045,6 +1045,7 @@ public class SymbolicStringHandler {
 		handleBooleanStringInstructions(invInst, ss, th, StringComparator.STARTSWITH);
 	}
 
+	//Only supports character for character
 	public Instruction handleReplace(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		StringExpression sym_v1 = (StringExpression) sf.getOperandAttr(0);
@@ -1057,15 +1058,15 @@ public class SymbolicStringHandler {
 			int s1 = th.pop();
 			int s2 = th.pop();
 			int s3 = th.pop();
-
+			//System.out.println("[handleReplace] " + s1 + " " + s2 + " " + s3);
 			StringExpression result = null;
 			if (sym_v1 == null) { // operand 0 is concrete
-				ElementInfo e1 = th.getElementInfo(s1);
-				String val = e1.asString();
+				//ElementInfo e1 = th.getElementInfo(s1);
+				String val = String.valueOf((char) s1);
 				if (sym_v2 == null) { // sym_v3 has to be symbolic
-					ElementInfo e2 = th.getElementInfo(s2);
-					String val1 = e2.asString();
-					result = sym_v3._replace(val, val1);
+					//ElementInfo e2 = th.getElementInfo(s2);
+					//String val1 = e2.asString();
+					result = sym_v3._replace(val, String.valueOf((char)s2));
 				} else {
 					if (sym_v3 == null) { // only sym_v2 is symbolic
 						ElementInfo e3 = th.getElementInfo(s3);
@@ -1079,15 +1080,15 @@ public class SymbolicStringHandler {
 			} else { // sym_v1 is symbolic
 				if (sym_v2 == null) {
 					if (sym_v3 == null) {
-						ElementInfo e2 = th.getElementInfo(s2);
-						String val1 = e2.asString();
-						ElementInfo e3 = th.getElementInfo(s3);
-						String val2 = e3.asString();
+						//ElementInfo e2 = th.getElementInfo(s2);
+						String val1 = String.valueOf((char) s2);
+						//ElementInfo e3 = th.getElementInfo(s3);
+						String val2 = String.valueOf((char) s3);
 						sym_v3 = new StringConstant(val2);
 						result = sym_v3._replace(sym_v1, val1);
 					} else {
-						ElementInfo e2 = th.getElementInfo(s2);
-						String val1 = e2.asString();
+						//ElementInfo e2 = th.getElementInfo(s2);
+						String val1 = String.valueOf((char) s2);
 						result = sym_v3._replace(sym_v1, val1);
 					}
 				} else {

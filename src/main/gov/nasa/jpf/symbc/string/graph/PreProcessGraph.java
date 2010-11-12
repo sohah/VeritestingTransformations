@@ -621,6 +621,26 @@ public class PreProcessGraph {
 			}
 		}
 		
+		/*Speedup replace (big speedup)*/
+		for (Edge e1: g.getEdges()) {
+			for (Edge e2: g.getEdges()) {
+				if (e1.equals(e2)) continue;
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
+				if (!e1.getSource().equals(e2.getDest())) continue;
+				if (e1 instanceof EdgeContains && e2 instanceof EdgeReplaceCharChar) {
+					
+					EdgeContains ec = (EdgeContains) e1;
+					if (ec.getDest().isConstant()) {
+						String containsString = ec.getDest().getSolution();
+						EdgeReplaceCharChar ercc = (EdgeReplaceCharChar) e2;
+						char noMoreChar = ercc.getC1();
+						if (containsString.contains(String.valueOf(noMoreChar))) {
+							return false;
+						}
+					}
+				}
+			}
+		}
 		
 		//Determine size of vertecis
 		change = true;
@@ -777,6 +797,9 @@ public class PreProcessGraph {
 				}
 				else if (e instanceof EdgeContains) {
 					pc._addDet(Comparator.GE, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
+				}
+				else if (e instanceof EdgeReplaceCharChar) {
+					pc._addDet(Comparator.EQ, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
 				}
 			}
 		}
