@@ -617,4 +617,30 @@ public class AutomatonExtra {
 		}
 		return result;
 	}
+	
+	public static Automaton reverseReplace (Automaton a, char c) {
+		Automaton b = a.clone();
+        for (State s : b.getStates()) {
+            Set<Transition> transitions = s.getTransitions();
+            for (Transition t : new ArrayList<Transition>(transitions)) {
+                char min = t.getMin();
+                char max = t.getMax();
+                State dest = t.getDest();
+                if (c < min || c > max) { // c is outside of reach
+                    //transitions.remove(t);
+                    transitions.add(new Transition(c, dest));
+                    /*if (min < c) {
+                        transitions.add(new Transition(min, (char) (c - 1), dest));
+                    }
+                    if (c < max) {
+                        transitions.add(new Transition((char) (c + 1), max, dest));
+                    }*/
+                }
+            }
+        }
+        b.setDeterministic(false);
+        b.reduce();
+        b.minimize();
+        return b;
+	}
 }
