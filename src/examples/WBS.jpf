@@ -1,7 +1,0 @@
-target=WBS
-classpath=${jpf-symbc}/build/tests
-sourcepath=${jpf-symbc}/src/tests
-symbolic.method = WBS.launch(sym#sym#sym#sym#sym#sym#sym#sym#sym)
-symbolic.minint=-100
-symbolic.maxint=100
-vm.storage.class=nil
