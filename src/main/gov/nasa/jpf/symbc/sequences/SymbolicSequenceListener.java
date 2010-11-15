@@ -176,7 +176,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				String methodName = md.getInvokedMethodName();
 				// get number of arguments.
 				// corina: changed this since it is apparently broken
-				int numberOfArgs = md.getArgumentValues(ti).length;
+				int numberOfArgs = md.getArgumentValues(ti).length-1;//hack
 				//int numberOfArgs = md.getInvokedMethod(ti).getArgumentTypeNames().length;
 
 				MethodInfo mi = md.getInvokedMethod();
