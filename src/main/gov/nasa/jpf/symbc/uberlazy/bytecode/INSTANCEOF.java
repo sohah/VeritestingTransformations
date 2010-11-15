@@ -71,7 +71,7 @@ public class INSTANCEOF extends gov.nasa.jpf.jvm.bytecode.INSTANCEOF {
 		 if(prevPartitionCG == null || numPartitions == 1) {
 			 if (objref == -1) {
 				 th.push(0, false);
-			 } else if (ks.da.get(objref).instanceOf(super.getType())) {
+			 } else if (ks.heap.get(objref).instanceOf(super.getType())) {
 				 th.push(1, false);
 			 } else {
 				 th.push(0, false);

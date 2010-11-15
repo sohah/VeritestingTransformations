@@ -82,7 +82,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		//			  return ti.getPC();
 		// end: not sure if this code should stay here
 	
-		ElementInfo ei = ks.sa.get(ci.getName());
+		ElementInfo ei = ks.statics.get(ci.getName());
 	
 		//end GETSTATIC code from super
 	

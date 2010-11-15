@@ -107,7 +107,7 @@ public class Helper {
 	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
 			  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap,
 			  int numSymRefs, HeapNode[] prevSymRefs ) {
-		  daIndex = ks.da.newObject(typeClassInfo, ti);
+		  daIndex = ks.heap.newObject(typeClassInfo, ti);
 		  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
 		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
 		  ElementInfo eiRef = ti.getElementInfo(daIndex);

@@ -217,7 +217,7 @@ public class UberLazyHelper {
 				 n.replaceType(tClassInfo);
 
 				 //replace in the concrete world
-				 DynamicElementInfo dei = ks.da.get(objref);
+				 DynamicElementInfo dei = (DynamicElementInfo)ks.heap.get(objref);
 				 dei.restoreFields(tClassInfo.createInstanceFields());
 				 int daIndex = objref;
 				// ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
@@ -258,7 +258,7 @@ public class UberLazyHelper {
 	 public static int addNewHeapNode(String fieldIdentifier,
 			 ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
 			 KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap) {
-		 daIndex = ks.da.newObject(typeClassInfo, ti);
+		 daIndex = ks.heap.newObject(typeClassInfo, ti);
 		 String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
 		 SymbolicInteger newSymRef = new SymbolicInteger( refChain);
 		 //ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
