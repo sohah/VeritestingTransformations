@@ -9,9 +9,9 @@ public class ExSymExe {
 
 	  ExSymExe inst = new ExSymExe();
 	  field = 9;
-	  inst.test(0, 1);
+	  //inst.test(0, 1);
 	  //inst.test2(x,x);
-	  //inst.test1(x,true);
+	  inst.test1(x,true);
   }
   /* we want to let the user specify that this method should be symbolic */
 

@@ -18,10 +18,10 @@ sourcepath=${jpf-symbc}/src/tests
 #symbolic.dp=no_solver
 #symbolic.dp=coral
 #symbolic.dp=choco2
-symbolic.dp=yices
+#symbolic.dp=yices
 
-symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test(sym#sym)
-
+#symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test(sym#sym)
+symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test1(sym#con)
 listener = gov.nasa.jpf.symbc.SymbolicListener
 
 vm.storage.class=nil

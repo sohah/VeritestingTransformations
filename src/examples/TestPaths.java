@@ -23,7 +23,9 @@
 public class TestPaths {
 
   public static void main (String[] args){
-    testMe(42, false);
+   // testMe(42, false);
+	System.out.println("!!!!!!!!!!!!!!! Start Testing! ");
+    (new TestPaths()).testMe2(0,false);
   }
 
   // how many tests do we need to cover all paths?
@@ -37,5 +39,18 @@ public class TestPaths {
 		  System.out.println("  >= 1200");
     }
   }
+
+  public void testMe2 (int x, boolean b) {
+	  System.out.println("!!!!!!!!!!!!!!! First step! ");
+	    //System.out.println("x = " + x);
+        if (b) {
+        	if (x <= 1200){
+        		System.out.println("  <= 1200");
+        	}
+        	if(x >= 1200){
+        		System.out.println("  >= 1200");
+        	}
+        }
+	  }
 
 }
