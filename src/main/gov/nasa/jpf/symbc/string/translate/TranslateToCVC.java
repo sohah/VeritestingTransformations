@@ -518,7 +518,9 @@ public class TranslateToCVC {
 	}
 	
 	private static void handleEdgeTrim (EdgeTrimEqual e) {
+		//println ("[handleEdgeTrim] entered handleEdgeTrim " + e);
 		if (e.getSource().getLength() == e.getDest().getLength()) {
+			//println ("[handleEdgeTrim] 1. posting: " + equal(e));
 			post (equal(e));
 			return;
 		}
@@ -537,15 +539,18 @@ public class TranslateToCVC {
 					sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - j) * 8 - 1, (e.getSource().getLength() - j) * 8 - 8);
 					lit = and(lit, vc.eqExpr(sourceTemp, vc.newBVConstExpr(toBits(' '))));
 				}
-				sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - diff + i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 1);
+				sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i - e.getDest().getLength()) * 8 - 1 + 1);
 				//destTemp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - (j - i)) * 8 - 1, (e.getDest().getLength() - (j - i)) * 8 - 8);
+				//println ("[handleEdgeTrim] 2. lit before: " + lit);
 				lit = and (lit, vc.eqExpr(sourceTemp, dest));
+				//println ("[handleEdgeTrim] 2. lit so far: " + lit);
 				for (int j = i + e.getDest().getLength(); j < e.getSource().getLength(); j++) {
 					sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - j) * 8 - 1, (e.getSource().getLength() - j) * 8 - 8);
 					lit = and(lit, vc.eqExpr(sourceTemp, vc.newBVConstExpr(toBits(' '))));
 				}
 				listOflit = or (listOflit, lit);
 			}
+			//println ("[handleEdgeTrim] 2. posting: " + listOflit);
 			post (listOflit);
 			
 		}
@@ -587,6 +592,7 @@ public class TranslateToCVC {
 					listOfLit = vc.orExpr(listOfLit, lit);
 				}
 			}
+			//println ("[handleEdgeTrim] 3. posting: " + listOfLit);
 			post (listOfLit);
 		}
 		else if (!e.getDest().isConstant()) {
@@ -600,6 +606,7 @@ public class TranslateToCVC {
 				Expr temp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
 				lit = and (lit, vc.eqExpr(temp, vc.newBVConstExpr(toBits(constant.charAt(i)))));
 			}
+			//println ("[handleEdgeTrim] 4. posting: " + lit);
 			post (lit);
 		}
 	}

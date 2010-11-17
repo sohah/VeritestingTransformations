@@ -82,10 +82,6 @@ public class NEW extends gov.nasa.jpf.jvm.bytecode.NEW {
 	    // pushes the return value onto the stack
 	    ti.push(objRef, true);
 
-
-
-	    // pushes the return value onto the stack
-	    ti.push(objRef, true);
 	// TODO: to review
 	    //insert dummy expressions for StringBuilder and StringBuffer
 	    //String className = ci.getName();

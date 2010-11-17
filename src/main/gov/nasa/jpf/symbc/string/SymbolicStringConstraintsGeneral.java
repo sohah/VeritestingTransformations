@@ -427,11 +427,13 @@ public class SymbolicStringConstraintsGeneral {
 	
 	public static String getSolution () {
 		StringBuilder sb = new StringBuilder();
-		for (StringSymbolic ss: setOfSolution) {
-			sb.append(ss.getName());
-			sb.append ('[');
-			sb.append(ss.solution());
-			sb.append("]\n");
+		if (setOfSolution != null) {
+			for (StringSymbolic ss: setOfSolution) {
+				sb.append(ss.getName());
+				sb.append ('[');
+				sb.append(ss.solution());
+				sb.append("]\n");
+			}
 		}
 		return sb.toString();
 	}

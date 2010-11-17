@@ -2912,7 +2912,9 @@ public class SymbolicStringHandler {
 			} else {
 				System.out.print("Symbolic Exp [ " + result + " ]");
 			}
-
+			int objRef = th.getHeap().newString("", th);
+			th.push(objRef, true);
+			sf.setOperandAttr(sym_v1);
 		}
 	}
 }
