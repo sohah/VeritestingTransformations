@@ -18,24 +18,29 @@
 //
 
 package gov.nasa.jpf.symbc.concolic;
-// supports math lib
+// support for arbitrary external functions
 
 import gov.nasa.jpf.symbc.numeric.Expression;
+import gov.nasa.jpf.symbc.numeric.IntegerExpression;
+import gov.nasa.jpf.symbc.numeric.RealExpression;
 
 import java.util.Map;
-
+import java.lang.reflect.*;
 
 public class FunctionExpression extends Expression
 {
-	Expression [] args;
-	String   function_name; // should be fully qualified
+	String class_name;
+	String method_name;
+	Object[] args;
+	Expression [] sym_args;
 
-	public FunctionExpression (String fun, Expression [] as)
+	public FunctionExpression (String cls, String mth, Object [] as, Expression [] sym_as)
 	{
-		function_name = fun;
-
+		class_name = cls;
+		method_name = mth;
+		assert((as == null && sym_as == null) || as.length == sym_as.length);
 		// do we need a deep copy here or a shallow copy is enough?
-		if (as!=null) {
+		if (as != null) { // && sym_as!=null) {
 			args = new Expression [as.length];
 			for (int i=0; i < as.length; i++)
 				args[i] = as[i];
@@ -47,37 +52,53 @@ public class FunctionExpression extends Expression
 		// here we need to use reflection to invoke the method with
 		// name function_name and with parameters the solutions of the arguments
 
-		Class c;
-		return 0.0;
+		try {
+			  Class<?> cls = Class.forName(class_name);
+		      Class<?>[] argTypes = new Class<?>[args.length];
+		      for (int i=0; i<args.length; i++)
+		        argTypes[i] = args[i].getClass();
 
+
+		      Method m = cls.getMethod(method_name, argTypes);
+		      for (int i=0; i<args.length; i++)
+		    	  if (sym_args[i] instanceof IntegerExpression)
+			        args[i] = new Integer(((IntegerExpression)sym_args[i]).solution());
+			      else // RealExpression
+			    	args[i] = new Double(((RealExpression)sym_args[i]).solution());
+
+		      int modifiers = m.getModifiers();
+		      if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)){
+		        Object result = m.invoke(null, args); // here we need the type of the result
+		        System.out.println("result "+result);
+		      }
+		}
+
+		catch (Throwable e) {
+			System.err.println(e);
+		}
+		return 0.0;
 	}
 
     public void getVarsVals(Map<String,Object> varsVals) {
-//    	if (arg1 != null) arg1.getVarsVals(varsVals);
-//    	if (arg2 != null) arg2.getVarsVals(varsVals);
+    	if (sym_args!=null)
+    		for (int i = 0; i < sym_args.length; i++)
+    			sym_args[i].getVarsVals(varsVals);
     }
 
 	public String stringPC() {
-		return "";
-//		if (op == Function.SIN || op == Function.COS ||
-//			op == Function.ROUND || op == Function.EXP ||
-//			op == Function.ASIN || op == Function.ACOS ||
-//			op == Function.ATAN || op == Function.LOG ||
-//			op == Function.TAN || op == Function.SQRT)
-//			return "(" + op.toString() + "(" + arg1.stringPC() + "))";
-//		else //op == MathFunction.POW || op == MathFunction.ATAN2
-//			return "(" + op.toString() + "(" + arg1.stringPC() + "," + arg2.stringPC() + "))";
+		String result="";
+		if (sym_args!=null)
+    		for (int i = 0; i < sym_args.length; i++)
+    			result = result + sym_args[i].stringPC() + " ";
+		return "(" + class_name +"." + method_name + "(" + result + ")";
+
 	}
 
 	public String toString () {
-		return "";
-//		if (op == Function.SIN || op == Function.COS ||
-//				op == Function.ROUND || op == Function.EXP ||
-//				op == Function.ASIN || op == Function.ACOS ||
-//				op == Function.ATAN || op == Function.LOG ||
-//				op == Function.TAN || op == Function.SQRT)
-//			return  op.toString() + "(" + arg1.toString() + ")";
-//		else //op == MathFunction.POW || op == MathFunction.ATAN2
-//			return  op.toString() + "(" + arg1.toString() + "," + arg2.toString() + ")";
+		String result="";
+		if (sym_args!=null)
+    		for (int i = 0; i < sym_args.length; i++)
+    			result = result + sym_args[i].toString() + " ";
+		return "(" + class_name +"." + method_name + "(" + result + ")";
 	}
 }
