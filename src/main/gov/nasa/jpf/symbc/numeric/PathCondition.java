@@ -23,7 +23,10 @@ import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.MJIEnv;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
 import gov.nasa.jpf.symbc.string.StringPathCondition;
+
+import gov.nasa.jpf.symbc.concolic.*;
 
 // path condition contains mixed constraints of integers and reals
 
@@ -230,8 +233,21 @@ public class PathCondition {
 //			return true;
 //		}
 
-		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
-		boolean result1 = solver.isSatisfiable(this);
+		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();						
+		boolean result1;
+		
+		if (SymbolicInstructionFactory.concolicMode) {
+			PCAnalyzer pa = new PCAnalyzer();
+			// first we split the PC into the easy and concolic parts
+			// concolic refers to the parts that we cannot handle with a DP and instead use concrete values for. 
+			pa.splitPathCondition(this);
+			pa.solveSplitPC();
+			result1 = solver.isSatisfiable(pa.getSimplifiedPC());
+		}
+		else {
+			result1 = solver.isSatisfiable(this);
+		}
+		
 		solver.cleanup();
 
 		if (SymbolicInstructionFactory.debugMode) {
