@@ -79,6 +79,19 @@ public class MathRealExpression extends RealExpression
 		arg2 = a2;
 		
 	}
+	
+	public RealExpression getArg1() {
+		return arg1;
+	}
+	
+	public RealExpression getArg2() {
+		return arg2;
+	}
+	
+	public MathFunction getOp() {
+		return op;
+	}
+	
 	public double solution() 
 	{
 		double a1 = (arg1==null?0:arg1.solution());
