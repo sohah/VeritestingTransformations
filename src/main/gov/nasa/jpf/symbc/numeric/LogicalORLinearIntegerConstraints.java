@@ -12,6 +12,12 @@ public class LogicalORLinearIntegerConstraints extends Constraint{
 		list = new ArrayList<LinearIntegerConstraint>();
 	}
 	
+	public LogicalORLinearIntegerConstraints (List<LinearIntegerConstraint> l) {
+		super (null, null, null);
+		list = l;
+	}
+	
+	
 	public void addToList (LinearIntegerConstraint lic) {
 		if (!list.contains(lic)) list.add(lic);
 	}
