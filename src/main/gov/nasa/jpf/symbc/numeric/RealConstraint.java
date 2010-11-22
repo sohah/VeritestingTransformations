@@ -23,6 +23,10 @@ public class RealConstraint extends Constraint {
     public RealConstraint(RealExpression l, Comparator c, RealExpression r) {
       super(l, c, r);
     }
+    
+    public RealConstraint(RealConstraint rc) {
+        super(rc.getLeft(), rc.getComparator(), rc.getRight());
+      }
 
     public String toString() {
       return /* "%Real% " + */super.toString();
