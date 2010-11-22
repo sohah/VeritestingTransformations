@@ -87,4 +87,7 @@ public class BinaryLinearIntegerExpression extends LinearIntegerExpression
 	            ((BinaryLinearIntegerExpression) o).right.equals(this.right));
 	}
 
+	//protected void finalize() throws Throwable {
+    //	System.out.println("Finalized BLIExp -> " + this);
+    //}
 }
