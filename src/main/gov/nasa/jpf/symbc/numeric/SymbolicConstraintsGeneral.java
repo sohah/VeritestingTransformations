@@ -32,6 +32,8 @@ import gov.nasa.jpf.symbc.numeric.solvers.ProblemIAsolver;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemYices;
 
 
+
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -759,13 +761,16 @@ public class SymbolicConstraintsGeneral {
 		return true;
 	}
 
+	//static Map<String,Boolean> dpMap = new HashMap<String,Boolean>();
+	
 	public boolean isSatisfiable(PathCondition pc) {
 		if (pc == null || pc.count == 0) {
 			if (SymbolicInstructionFactory.debugMode)
 				System.out.println("## Warning: empty path condition");
 			return true;
 		}
-
+		
+		
 //		if (SymbolicInstructionFactory.debugMode)
 //			System.out.println("checking: PC "+pc);
 
@@ -840,9 +845,12 @@ public class SymbolicConstraintsGeneral {
 
 		//pb.getSolver().setTimeLimit(30000);
 
+		
+		
 		result = pb.solve();
 
-
+		if (SymbolicInstructionFactory.debugMode) 
+			System.out.println(" --> " + pc + " -> " + result);
 
 		if(result == null) {
 			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) "+pc);
