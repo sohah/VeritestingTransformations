@@ -10,6 +10,16 @@ symbolic.method=concolic.PowExample.test(sym#sym)
 
 symbolic.concolic=true
 
-listener = .symbc.SymbolicListener
+symbolic.debug=on
+
+symbolic.minreal=-10.0
+
+#symbolic.maxreal=1000.0
+
+#symbolic.minint=-100
+
+#symbolic.maxint=100
+
+#listener = .symbc.SymbolicListener
 
 vm.storage.class=nil

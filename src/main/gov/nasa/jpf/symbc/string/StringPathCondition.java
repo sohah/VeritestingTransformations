@@ -109,10 +109,11 @@ public class StringPathCondition {
 	    return false;
 	  }
 
-	  public void solve() {// warning: solve calls simplify
+	  public boolean solve() {// warning: solve calls simplify
 	  // SymbolicStringConstraintsGeneral solver = new SymbolicStringConstraintsGeneral();
 	  // solver.solve(this);
 	      StringPathCondition.flagSolved = true;
+	      return true;
 	  }
 
 	  public boolean simplify() {

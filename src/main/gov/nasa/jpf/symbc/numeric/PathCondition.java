@@ -216,14 +216,15 @@ public class PathCondition {
 		return false;
 	}
 
-	public void solve() {// warning: solve calls simplify
+	public boolean solve() {// warning: solve calls simplify
 
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
-		solver.solve(this);
+		boolean result1 = solver.solve(this);
 		PathCondition.flagSolved = true;
 
 		// modification for string path condition
-		spc.solve(); // TODO: to review
+		boolean result2 = spc.solve(); // TODO: to review
+		return result1 && result2;
 	}
 
 	public boolean simplify() {
@@ -233,22 +234,28 @@ public class PathCondition {
 //			return true;
 //		}
 
-		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();						
+		SymbolicConstraintsGeneral solver;
 		boolean result1;
-		
+
 		if (SymbolicInstructionFactory.concolicMode) {
 			PCAnalyzer pa = new PCAnalyzer();
 			// first we split the PC into the easy and concolic parts
-			// concolic refers to the parts that we cannot handle with a DP and instead use concrete values for. 
+			// concolic refers to the parts that we cannot handle with a DP and instead use concrete values for.
 			pa.splitPathCondition(this);
-			pa.solveSplitPC();
-			result1 = solver.isSatisfiable(pa.getSimplifiedPC());
+			if(pa.solveSplitPC()) {
+				solver = new SymbolicConstraintsGeneral();
+				result1 = solver.isSatisfiable(pa.getSimplifiedPC());
+				solver.cleanup();
+			}
+			else
+				result1 = false;
 		}
 		else {
+			solver = new SymbolicConstraintsGeneral();
 			result1 = solver.isSatisfiable(this);
+			solver.cleanup();
 		}
-		
-		solver.cleanup();
+
 
 		if (SymbolicInstructionFactory.debugMode) {
 			MinMax.Debug_no_path_constraints ++;

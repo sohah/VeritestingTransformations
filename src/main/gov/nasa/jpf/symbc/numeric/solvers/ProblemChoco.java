@@ -298,8 +298,8 @@ public class ProblemChoco extends ProblemGeneral {
         pb.getSolver().setTimeLimit(ProblemChoco.timeBound);
 
         Boolean result = pb.solve();
-        if (result == null)
-        	System.out.println("Choco PC"+pb.pretty());
+//        if (result == null)
+ //       	System.out.println("Choco PC"+pb.pretty());
 
 		return result;
 	}

@@ -762,15 +762,15 @@ public class SymbolicConstraintsGeneral {
 	}
 
 	//static Map<String,Boolean> dpMap = new HashMap<String,Boolean>();
-	
+
 	public boolean isSatisfiable(PathCondition pc) {
 		if (pc == null || pc.count == 0) {
 			if (SymbolicInstructionFactory.debugMode)
 				System.out.println("## Warning: empty path condition");
 			return true;
 		}
-		
-		
+
+
 //		if (SymbolicInstructionFactory.debugMode)
 //			System.out.println("checking: PC "+pc);
 
@@ -845,11 +845,11 @@ public class SymbolicConstraintsGeneral {
 
 		//pb.getSolver().setTimeLimit(30000);
 
-		
-		
+
+
 		result = pb.solve();
 
-		if (SymbolicInstructionFactory.debugMode) 
+		if (SymbolicInstructionFactory.debugMode)
 			System.out.println(" --> " + pc + " -> " + result);
 
 		if(result == null) {
@@ -874,15 +874,15 @@ public class SymbolicConstraintsGeneral {
    }
 
 
-	public void solve(PathCondition pc) {
+	public boolean solve(PathCondition pc) {
 		if (SymbolicInstructionFactory.debugMode)
 			System.out.println("solving: PC " + pc);
 
-		if (pc == null || pc.count == 0) return;
+		if (pc == null || pc.count == 0) return true;
 
 		String[] dp = SymbolicInstructionFactory.dp;
 		if (dp[0].equalsIgnoreCase("no_solver"))
-			return;
+			return true;
 
 		if(isSatisfiable(pc)) {
 
@@ -946,8 +946,10 @@ public class SymbolicConstraintsGeneral {
 			} // end catch
 */
 			cleanup();
+			return true;
 		}
-
+		else
+			return false;
 		}
 
 	/**

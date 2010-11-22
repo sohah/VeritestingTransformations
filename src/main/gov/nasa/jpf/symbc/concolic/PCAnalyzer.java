@@ -7,20 +7,20 @@ public class PCAnalyzer {
 
 	// this one will hold the parts that are easy to solve
 	PathCondition simplePC;
-	// this is the part that contains functions/operations 
-	// that we cannot solve with our DPs and hence want to use 
+	// this is the part that contains functions/operations
+	// that we cannot solve with our DPs and hence want to use
 	// concrete values on
 	PathCondition concolicPC;
-	
-	/* 
+
+	/*
 	 * Walks the PC and splits it into simplePC and concolicPC
 	 */
 	public void splitPathCondition(PathCondition pc) {
 		PathCondition newPC = pc.make_copy();
 		Constraint cRef = newPC.header;
 		simplePC = new PathCondition();
-		concolicPC = new PathCondition(); 
-		
+		concolicPC = new PathCondition();
+
 		while (cRef != null) {
 			if (cRef instanceof RealConstraint) {
 				// this will be the only one that goes to concolicPC for now
@@ -38,12 +38,13 @@ public class PCAnalyzer {
 		}
 		if (SymbolicInstructionFactory.debugMode) {
 			System.out.println("--------after splitting------------");
+			System.out.println("originalPC " + pc);
 			System.out.println("concolicPC " + concolicPC);
 			System.out.println("simplePC " + simplePC);
 			System.out.println("--------after splitting------------");
 		}
 	}
-	
+
 	RealExpression getExpression(RealExpression eRef) {
 		assert eRef != null;
 		assert !(eRef instanceof RealConstant);
@@ -54,7 +55,7 @@ public class PCAnalyzer {
 
 		if(eRef instanceof BinaryRealExpression) {
 			Operator    opRef = ((BinaryRealExpression)eRef).getOp();
-			RealExpression	e_leftRef = ((BinaryRealExpression)eRef).getLeft(); 
+			RealExpression	e_leftRef = ((BinaryRealExpression)eRef).getLeft();
 			RealExpression	e_rightRef = ((BinaryRealExpression)eRef).getRight();
 
 			return new BinaryRealExpression(getExpression(e_leftRef),opRef,getExpression(e_rightRef));
@@ -67,48 +68,59 @@ public class PCAnalyzer {
 		throw new RuntimeException("## Error: Expression " + eRef);
 	}
 
-	
+
 	RealConstraint traverseRealConstraint(RealConstraint cRef) {
 		Comparator c_compRef = cRef.getComparator();
 		RealExpression c_leftRef = (RealExpression)cRef.getLeft();
 		RealExpression c_rightRef = (RealExpression)cRef.getRight();
 
 		return new RealConstraint(getExpression(c_leftRef),c_compRef,getExpression(c_rightRef));
-	}	
-	
-	public void solveSplitPC() {
+	}
+
+	public boolean solveSplitPC() {
 		// first solve the simplePC and then use the results to update concolicPC
-		simplePC.solve();
+		if (simplePC.solve() == false) return false;
 		if (SymbolicInstructionFactory.debugMode) {
 			System.out.println("--------------------");
 			System.out.println("simplePC " + simplePC);
 			System.out.println("--------------------");
 		}
 
-		// now replace all math functions in concolicPC 
+		// now replace all math functions in concolicPC
 		// with their execution results with simplePC arguments
-		
+
 		//PathCondition simplifiedPC = new PathCondition();
 		RealConstraint cRef = (RealConstraint)concolicPC.header;
-		
+
 		while (cRef != null) {
-			simplePC.prependUnlessRepeated(traverseRealConstraint(cRef)); 
+			simplePC.prependUnlessRepeated(traverseRealConstraint(cRef));
 			cRef = (RealConstraint)cRef.and;
 		}
-		
-		simplePC.solve();
-		
+
+		if(SymbolicInstructionFactory.debugMode){
+			if (true /*SymbolicInstructionFactory.debugMode*/) {
+				System.out.println("--------------------");
+				System.out.println("before solving simplifiedPC " + simplePC);
+				System.out.println("--------------------");
+			}
+
+		simplePC.flagSolved = false;
+		if(simplePC.solve())
+			System.out.println("simplifiedPC satisfiable");
+		else
+			System.out.println("simplifiedPC not satisfiable");
 		if (true /*SymbolicInstructionFactory.debugMode*/) {
 			System.out.println("--------------------");
 			System.out.println("simplifiedPC " + simplePC);
 			System.out.println("--------------------");
 		}
-		
+		}
+        return true;
 	}
-	
+
 	public PathCondition getSimplifiedPC() {
 		return simplePC;
 	}
-	
-	
+
+
 }

@@ -8,6 +8,8 @@ sourcepath=${jpf-symbc}/src/examples
 # concrete value for 'b'
 symbolic.method= TestPaths.testMe2(sym#sym)
 
+symbolic.dp=yices
+
 listener = .symbc.SymbolicListener
 
 vm.storage.class=nil
