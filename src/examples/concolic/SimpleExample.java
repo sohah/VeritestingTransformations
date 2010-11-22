@@ -3,7 +3,7 @@ package concolic;
 public class SimpleExample {
 
 	public void test(int x, int y) {
-			if (x >= 2 && x < y && y == Math.pow(x,2.0)-2) {
+			if (x >= 0 && x > y && y == Math.pow(x,2.0)) {
 				System.out.println("S0");
 			}
 			else
