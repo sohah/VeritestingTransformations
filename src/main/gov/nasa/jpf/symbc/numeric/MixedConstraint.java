@@ -20,10 +20,14 @@
 package gov.nasa.jpf.symbc.numeric;
 
 public class MixedConstraint extends Constraint {
-      public MixedConstraint(RealExpression l, Comparator c, IntegerExpression r) {
+    public MixedConstraint(RealExpression l, Comparator c, IntegerExpression r) {
       super(l, c, r);
     }
 
+    public MixedConstraint(MixedConstraint mc) {
+        super(mc.getLeft(), mc.getComparator(), mc.getRight());
+      }
+    
     public String toString() {
       return /* "%Mixed% " + */super.toString();
     }
