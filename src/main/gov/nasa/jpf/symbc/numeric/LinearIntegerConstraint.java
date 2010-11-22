@@ -23,6 +23,10 @@ public class LinearIntegerConstraint extends Constraint {
     public LinearIntegerConstraint(IntegerExpression l, Comparator c, IntegerExpression r) {
       super(l, c, r);
     }
+    
+    public LinearIntegerConstraint(LinearIntegerConstraint lic) {
+        super(lic.getLeft(), lic.getComparator(), lic.getRight());
+      }
 
     public String toString() {
       return /* "%LinearInteger% " + */super.toString();
