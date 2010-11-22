@@ -348,4 +348,9 @@ abstract class LinearIntegerExpression extends IntegerExpression
     	}
     	return new BinaryNonLinearIntegerExpression(this, SHIFTL, e);
     }
+    
+    //protected void finalize() throws Throwable {
+    //	System.out.println("Finalized LIE" + this);
+    //}
+    
 }
