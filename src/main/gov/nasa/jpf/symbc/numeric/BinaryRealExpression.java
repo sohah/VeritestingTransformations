@@ -27,7 +27,7 @@ public class BinaryRealExpression extends RealExpression
 	Operator   op;
 	RealExpression right;
 
-	BinaryRealExpression (RealExpression l, Operator o, RealExpression r) 
+	public BinaryRealExpression (RealExpression l, Operator o, RealExpression r) 
 	{
 		left = l;
 		op = o;
