@@ -45,6 +45,45 @@ public class PCAnalyzer {
 		}
 	}
 
+	PathCondition extraPC;
+
+	RealConstraint eqConcolicConstraint(RealExpression eRef) {
+		if(eRef instanceof MathRealExpression) {
+			MathFunction funRef;
+			RealExpression	e_arg1Ref;
+			RealExpression	e_arg2Ref;
+
+			funRef = ((MathRealExpression)eRef).op;
+			e_arg1Ref = ((MathRealExpression)eRef).arg1;
+			e_arg2Ref = ((MathRealExpression)eRef).arg2;
+
+			switch(funRef){
+			case SIN:
+			case COS:
+			case ROUND:
+			case EXP:
+			case ASIN:
+			case ACOS:
+			case ATAN:
+			case LOG:
+			case TAN:
+			case SQRT:return new RealConstraint(e_arg1Ref, Comparator.EQ, new RealConstant(e_arg1Ref.solution()));
+			case POW:
+			case ATAN2: {
+				RealConstraint c1 = new RealConstraint(e_arg1Ref, Comparator.EQ, new RealConstant(e_arg1Ref.solution()));
+				RealConstraint c2 = new RealConstraint(e_arg2Ref, Comparator.EQ, new RealConstant(e_arg2Ref.solution()));
+				c1.and = c2;
+				return c1;
+			}
+			default:
+				throw new RuntimeException("## Error: Expression " + eRef);
+			}
+		}
+		return null;
+	}
+
+
+
 	RealExpression getExpression(RealExpression eRef) {
 		assert eRef != null;
 		assert !(eRef instanceof RealConstant);
@@ -62,6 +101,7 @@ public class PCAnalyzer {
 		}
 
 		if(eRef instanceof MathRealExpression) {
+			extraPC.prependUnlessRepeated(eqConcolicConstraint(eRef));
 			return new RealConstant(eRef.solution());
 		}
 
@@ -92,10 +132,13 @@ public class PCAnalyzer {
 		//PathCondition simplifiedPC = new PathCondition();
 		RealConstraint cRef = (RealConstraint)concolicPC.header;
 
+		extraPC = new PathCondition();
 		while (cRef != null) {
 			simplePC.prependUnlessRepeated(traverseRealConstraint(cRef));
 			cRef = (RealConstraint)cRef.and;
 		}
+		if(extraPC.header!=null)
+			simplePC.prependAllConjuncts(extraPC.header);
 
 		if(SymbolicInstructionFactory.debugMode){
 			if (true /*SymbolicInstructionFactory.debugMode*/) {
