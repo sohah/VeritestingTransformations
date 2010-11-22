@@ -138,6 +138,13 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	 */
 	static public boolean debugMode;
 
+	/*
+	 * Concolic mode where we concrete execute for now
+	 * only Math operations
+	 */
+	
+	static public boolean concolicMode;
+	
 	//bytecodes replaced by our symbolic implementation
 	/** This is not needed anymore with the new implementation --neha
 	    static final String[] BC_NAMES = {
@@ -189,6 +196,14 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 			debugMode = false;
 		}
 
+		String[] concolic  = conf.getStringArray("symbolic.concolic");
+		if (concolic != null) {
+			concolicMode = true;
+		} else {
+			concolicMode = false;
+		}
+		
+		
 		if(dp[0].equalsIgnoreCase("choco") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare") || dp == null) { // default is choco
 		  ProblemChoco.timeBound = conf.getInt("symbolic.choco_time_bound", 30000);
 		  System.out.println("symbolic.choco_time_bound="+ProblemChoco.timeBound);
