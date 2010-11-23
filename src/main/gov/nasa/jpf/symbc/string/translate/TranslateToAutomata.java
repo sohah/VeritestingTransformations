@@ -84,6 +84,9 @@ public class TranslateToAutomata {
 		//println ("[isSat] integer constraints: " + pc.header);
 		boolean restart = true;
 		while (restart) {
+			/* check if there was a timeout */
+			SymbolicStringConstraintsGeneral.checkTimeOut();
+			
 			restart = false;
 			global_graph = g;
 			global_pc  = pc;

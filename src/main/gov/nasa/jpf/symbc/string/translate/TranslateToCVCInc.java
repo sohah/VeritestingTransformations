@@ -70,6 +70,8 @@ public class TranslateToCVCInc {
 	
 	private static int varIndex;
 	
+	//public static int totalTiming = 0;
+	
 	private static boolean printClauses = true;
 	private static boolean logging = true;
 	
@@ -155,6 +157,7 @@ public class TranslateToCVCInc {
 			return true;
 		}
 		else {
+			vc.delete();
 			return false;
 		}
 	}
@@ -506,16 +509,20 @@ public class TranslateToCVCInc {
 					sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - j) * 8 - 1, (e.getSource().getLength() - j) * 8 - 8);
 					lit = and(lit, vc.eqExpr(sourceTemp, vc.newBVConstExpr(toBits(' '))));
 				}
-				sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - diff + i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 1);
+				sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i - e.getDest().getLength()) * 8 - 1 + 1);
 				//destTemp = vc.newBVExtractExpr(dest, (e.getDest().getLength() - (j - i)) * 8 - 1, (e.getDest().getLength() - (j - i)) * 8 - 8);
+				//println ("[handleEdgeTrim] 2. lit before: " + lit);
 				lit = and (lit, vc.eqExpr(sourceTemp, dest));
+				//println ("[handleEdgeTrim] 2. lit so far: " + lit);
 				for (int j = i + e.getDest().getLength(); j < e.getSource().getLength(); j++) {
 					sourceTemp = vc.newBVExtractExpr(source, (e.getSource().getLength() - j) * 8 - 1, (e.getSource().getLength() - j) * 8 - 8);
 					lit = and(lit, vc.eqExpr(sourceTemp, vc.newBVConstExpr(toBits(' '))));
 				}
 				listOflit = or (listOflit, lit);
 			}
+			//println ("[handleEdgeTrim] 2. posting: " + listOflit);
 			result = post (listOflit);
+
 			
 		}
 		else if (!e.getSource().isConstant()) {
@@ -1393,7 +1400,9 @@ public class TranslateToCVCInc {
 		vc.push();	
 		//println ("[post] Formula to check: " + ee);
 		//println ("[post] On top of       : " + vc.getAssumptions());
+		//long timing = System.currentTimeMillis();
 		SatResult satResult = vc.checkUnsat(ee);
+		//totalTiming += System.currentTimeMillis() - timing;
 		CVCEverCalled = true;
 		if (satResult == SatResult.SATISFIABLE) {
 			//println ("[post]: " + vc.);

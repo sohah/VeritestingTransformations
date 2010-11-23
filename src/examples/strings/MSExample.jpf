@@ -27,7 +27,11 @@ symbolic.dp=cvc3bitvec
 # "none" (default), "cvc" (recommended), "automata" or
 # "sat". At the moment symbolic.dp must be equal to
 # "choco" for it to work.
-symbolic.string_dp=automata
+symbolic.string_dp=cvc
+
+#Set the symbolic string executioner timeout (in ms)
+#zero for no timeout.
+symbolic.string_dp_timeout_ms=0
 # As a side note for eclipse users, to run cvc3
 # enabled programs, the eclipse plugin which allows
 # you to right click on a .jpf test file and click

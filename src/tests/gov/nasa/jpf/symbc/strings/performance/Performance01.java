@@ -1,10 +1,10 @@
 package gov.nasa.jpf.symbc.strings.performance;
 
 public class Performance01 {
-	private static final int MAX_LENGTH = 5;
+	private static final int MAX_LENGTH = 10;
 	
 	public static void main (String [] args) {
-		test3 ("dcba", "dcb", "dc", "d");
+		test2 ("dcba", "a", "b");
 	}
 	
 	public static void test (String a, String b) {
@@ -29,9 +29,9 @@ public class Performance01 {
 			System.out.println("Step 5");
 			i++;
 		}
-		if (i == 5) {
+		/*if (i == 5) {
 			throw new RuntimeException ("look at this");
-		}
+		}*/
 	}
 	
 	public static void test2 (String a, String b, String c) {
@@ -85,7 +85,7 @@ public class Performance01 {
 			if (a.endsWith("a")) {
 				System.out.println("Step 1");
 				i++;
-			}
+			}	
 			if (b.endsWith("b")) {
 				System.out.println("Step 2");
 				i++;
@@ -134,9 +134,9 @@ public class Performance01 {
 				System.out.println("Step 13");
 				i++;
 			}
-			if (i == 13) {
+			/*if (i == 13) {
 				throw new RuntimeException ("look at this");
-			}
+			}*/
 		}
 	}
 }

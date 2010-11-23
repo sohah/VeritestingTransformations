@@ -129,7 +129,10 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	  };
 
 	static public String[] dp;
+	
+	/* Symbolic String configuration */
 	static public String[] string_dp;
+	static public int stringTimeout;
 
 	/*
 	 * This is intended to serve as a catchall debug flag.
@@ -181,6 +184,9 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 		}
 		System.out.println("symbolic.dp="+dp[0]);
 
+		stringTimeout = conf.getInt("symbolic.string_dp_timeout_ms");
+		System.out.println("symbolic.string_dp_timeout_ms="+stringTimeout);
+		
 		string_dp = conf.getStringArray("symbolic.string_dp");
 		if (string_dp == null) {
 			string_dp = new String[1];
@@ -188,6 +194,8 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 		}
 		System.out.println("symbolic.string_dp="+string_dp[0]);
 
+		
+		
 		//Just checking if set, don't care about any values
 		String[] dummy = conf.getStringArray("symbolic.debug");
 		if (dummy != null) {
