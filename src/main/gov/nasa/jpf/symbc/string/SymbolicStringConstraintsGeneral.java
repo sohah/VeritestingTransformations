@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.Comparator;
@@ -98,6 +100,18 @@ public class SymbolicStringConstraintsGeneral {
 	
 	/*Something added for research into other solving techniques */
 	private static final boolean EJECT_TEXT = false;
+	
+	/*Timer to be used for timing out*/
+	static Timer timer;
+	
+	/*Time (in ms) until timeout, zero for no timeout*/
+	private static long TIMEOUT = 0;
+	
+	/*Boolean which is flagged when the timeout has been achieved */
+	static boolean timedOut;
+	
+	/*Mutex lock on timedOut */
+	static Object mutexTimedOut = new Object();
 	
 	public SymbolicStringConstraintsGeneral () {
 		
@@ -239,11 +253,8 @@ public class SymbolicStringConstraintsGeneral {
 	 * @return
 	 */
 	public boolean isSatisfiable(StringPathCondition pc) {
-		if (EJECT_TEXT) { /* For research into other solving techniques */
-			SymbolicStringConstraintsGeneralToText temp = new SymbolicStringConstraintsGeneralToText();
-			return temp.isSatisfiable(pc);
-		}
-		//println ("[isSatisfiable] String PC: " + pc.header);
+		//println ("[isSatisfiable] entered");
+		
 		String string_dp[] = SymbolicInstructionFactory.string_dp;
 		/* Set up solver */
 		if (string_dp[0].equals("automata")) {
@@ -263,166 +274,199 @@ public class SymbolicStringConstraintsGeneral {
 			//println ("[isSatisfiable] No Solver");
 			return true;
 		}
-		setOfSolution = new HashSet<StringSymbolic>();
-		StringConstraint sc;
-		if (pc == null) {
-			//println ("[isSatisfiable] PC is null");
-			return true;
+		
+		TIMEOUT = SymbolicInstructionFactory.stringTimeout;
+
+		if (TIMEOUT > 0) {
+			timedOut = false;
+			timer = new Timer();
+			timer.schedule(new SymbolicStringTimeOut(), TIMEOUT);
 		}
-		else {sc = pc.header;}
-		//if (sc == null) {return true;}
-		this.global_spc = pc;
-		constantStringCount++;
-		if (symbolicIntegerGenerator == null)
-			symbolicIntegerGenerator = new SymbolicIntegerGenerator();
-		
-		global_graph = new StringGraph();
-		
-		/* Convert each clause in the path condition to a subgraph,
-		 * and add it to the global_graph
-		 */
-		if (sc != null) {
-			boolean result = process (sc);
-			sc = sc.and;
-			while (result == true && sc != null) {
-				result = process (sc);
-				sc = sc.and;
-			}
-		}
-		
-		/* Walk through integer constraints and convert each constraint
-		 * to a subgraph and add it to the global_graph
-		 */
-		
-		Constraint constraint = pc.npc.header;
-		//println ("[isSatisfiable] Int cons given:" + pc.npc.header);
-		while (constraint != null) {
-			//First solve any previous integer constriants
-			
-			
-			processIntegerConstraint(constraint.getLeft());
-			processIntegerConstraint(constraint.getRight());
-			constraint = constraint.getTail();
-		}
-		
-		//First solve any previous integer constriants
-		SymbolicConstraintsGeneral scg = new SymbolicConstraintsGeneral();
-		scg.solve(pc.npc);
-		PathCondition.flagSolved = true;
-		
-		
-		//Start solving
-		//println(global_graph.toDot());
-		/* Preprocess the graph */
-		boolean resultOfPp = PreProcessGraph.preprocess(global_graph, pc.npc);
-		if (!resultOfPp) {
-			//println ("[isSat] Preprocessor gave Unsat");
-			return false;
-		}
-		//println(global_graph.toDot());
-		/* Call the string solver, it will in turn churn away until all
-		 * options are exhuasted or a satisfiable solution has turned up
-		 */
-		boolean decisionProcedure = false;
 		try {
-			if (solver.equals(SAT)) {
-				//println ("[isSatisfiable] Using SAT Solver");
-				decisionProcedure = TranslateToSAT.isSat(global_graph, pc.npc);
+			if (EJECT_TEXT) { /* For research into other solving techniques */
+				SymbolicStringConstraintsGeneralToText temp = new SymbolicStringConstraintsGeneralToText();
+				cancelTimer();
+				return temp.isSatisfiable(pc);
 			}
-			else if (solver.equals(AUTOMATA)) {
-				//println ("[isSatisfiable] Using Automata's");
-				decisionProcedure = TranslateToAutomata.isSat(global_graph, pc.npc);
+			//println ("[isSatisfiable] String PC: " + pc.header);
+			
+			setOfSolution = new HashSet<StringSymbolic>();
+			StringConstraint sc;
+			if (pc == null) {
+				//println ("[isSatisfiable] PC is null");
+				cancelTimer();
+				return true;
 			}
-			else if (solver.equals(CVC)) {
-				//println ("[isSatisfiable] Using Bitvector's");
-				decisionProcedure = TranslateToCVC.isSat(global_graph, pc.npc); 
+			else {sc = pc.header;}
+			//if (sc == null) {return true;}
+			this.global_spc = pc;
+			constantStringCount++;
+			if (symbolicIntegerGenerator == null)
+				symbolicIntegerGenerator = new SymbolicIntegerGenerator();
+			
+			global_graph = new StringGraph();
+			
+			/* Convert each clause in the path condition to a subgraph,
+			 * and add it to the global_graph
+			 */
+			if (sc != null) {
+				boolean result = process (sc);
+				sc = sc.and;
+				while (result == true && sc != null) {
+					result = process (sc);
+					sc = sc.and;
+				}
+				
+				/* check if there was a timeout */
+				checkTimeOut();
 			}
-			else if (solver.equals(CVC_INC)) {
-				//println ("[isSatisfiable] Using Bitvector's");
-				decisionProcedure = TranslateToCVCInc.isSat(global_graph, pc.npc); 
+			
+			/* Walk through integer constraints and convert each constraint
+			 * to a subgraph and add it to the global_graph
+			 */
+			
+			Constraint constraint = pc.npc.header;
+			//println ("[isSatisfiable] Int cons given:" + pc.npc.header);
+			while (constraint != null) {
+				//First solve any previous integer constriants
+				processIntegerConstraint(constraint.getLeft());
+				processIntegerConstraint(constraint.getRight());
+				constraint = constraint.getTail();
+				
+				/* check if there was a timeout */
+				checkTimeOut();
 			}
-			else {
-				throw new RuntimeException("Unknown string solver!!!");
+			
+			//First solve any previous integer constriants
+			SymbolicConstraintsGeneral scg = new SymbolicConstraintsGeneral();
+			scg.solve(pc.npc);
+			PathCondition.flagSolved = true;
+			
+			
+			//Start solving
+			//println(global_graph.toDot());
+			/* Preprocess the graph */
+			boolean resultOfPp = PreProcessGraph.preprocess(global_graph, pc.npc);
+			/* check if there was a timeout */
+			checkTimeOut();
+			if (!resultOfPp) {
+				//println ("[isSat] Preprocessor gave Unsat");
+				cancelTimer();
+				return false;
 			}
-		} catch (StackOverflowError e) {
-			System.err.println("Stacked overflowed");
-			e.printStackTrace();
-			System.err.println(global_graph.toDot());
+			//println(global_graph.toDot());
+			/* Call the string solver, it will in turn churn away until all
+			 * options are exhuasted or a satisfiable solution has turned up
+			 */
+			boolean decisionProcedure = false;
+			try {
+				if (solver.equals(SAT)) {
+					//println ("[isSatisfiable] Using SAT Solver");
+					decisionProcedure = TranslateToSAT.isSat(global_graph, pc.npc);
+				}
+				else if (solver.equals(AUTOMATA)) {
+					//println ("[isSatisfiable] Using Automata's");
+					decisionProcedure = TranslateToAutomata.isSat(global_graph, pc.npc);
+				}
+				else if (solver.equals(CVC)) {
+					//println ("[isSatisfiable] Using Bitvector's");
+					decisionProcedure = TranslateToCVC.isSat(global_graph, pc.npc); 
+				}
+				else if (solver.equals(CVC_INC)) {
+					//println ("[isSatisfiable] Using Bitvector's");
+					decisionProcedure = TranslateToCVCInc.isSat(global_graph, pc.npc); 
+				}
+				else {
+					throw new RuntimeException("Unknown string solver!!!");
+				}
+			} catch (StackOverflowError e) {
+				System.err.println("Stacked overflowed");
+				e.printStackTrace();
+				System.err.println(global_graph.toDot());
+			}
+			if (!decisionProcedure) {
+				//println ("[isSatisfiable] Decision procedure gave unsat");
+				cancelTimer();
+				return false;
+			}
+			/* check if there was a timeout */
+			checkTimeOut();
+			//println ("[isSatisfiable] Solution: " + global_graph.toString());
+			
+			//Get the solutions from graph and place back into symbolic strings
+			Vertex temp;
+			for (Edge e: global_graph.getEdges()) {
+				if (!(e instanceof EdgeConcat)) {
+					//println ("[isSatisfiable] edge: " + e.getSource().uniqueName() + " - "+ e.getDest().uniqueName());
+					List<StringSymbolic> represents = e.getSource().getRepresents();
+					if (represents != null) {
+						for (StringSymbolic ss: represents) {
+							temp = global_graph.findVertex(e.getSource().getName());
+							//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
+							ss.solution = temp.getSolution();
+							if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+						}
+					}
+					represents = e.getDest().getRepresents();
+					if (represents != null) {
+						for (StringSymbolic ss: represents) {
+							temp = global_graph.findVertex(e.getDest().getName());
+							//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");						
+							ss.solution = temp.getSolution();
+							if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+						}
+					}
+				}
+				else {
+					List<StringSymbolic> represents = e.getSources().get(0).getRepresents();
+					if (represents != null) {
+						for (StringSymbolic ss: represents) {
+							temp = global_graph.findVertex(e.getSources().get(0).getName());
+							//println ("[isSatisfiable] 1. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
+							ss.solution = temp.getSolution();
+							if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+						}
+					}
+					represents = e.getSources().get(1).getRepresents();
+					if (represents != null) {
+						for (StringSymbolic ss: represents) {
+							temp = global_graph.findVertex(e.getSources().get(1).getName());
+							//println ("[isSatisfiable] 2. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
+							ss.solution = temp.getSolution();
+							if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+						}
+					}
+					represents = e.getDest().getRepresents();
+					if (represents != null) {
+						for (StringSymbolic ss: represents) {
+							temp = global_graph.findVertex(e.getDest().getName());
+							//println ("[isSatisfiable] 3. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
+							ss.solution = temp.getSolution();
+							if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+						}
+					}
+				}
+			}
+			
+			if (global_graph.getEdges().size() == 0) {
+				for (Vertex v: global_graph.getVertices()) {
+					List<StringSymbolic> represents = v.getRepresents();
+					for (StringSymbolic ss: represents) {
+						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
+						ss.solution = v.getSolution();
+						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+					}
+				}
+			}
+			StringPathCondition.flagSolved = true;
+			//println ("StringPC: " + getSolution());
+			cancelTimer();
+			return true;
+		} catch (SymbolicStringTimedOutException e) {
+			System.err.println("Symbolic String Executioner timed out");
+			timedOut = false;
+			return false; // or return true?
 		}
-		if (!decisionProcedure) {
-			//println ("[isSatisfiable] Decision procedure gave unsat");
-			return false;
-		}
-		//println ("[isSatisfiable] Solution: " + global_graph.toString());
-		
-		//Get the solutions from graph and place back into symbolic strings
-		Vertex temp;
-		for (Edge e: global_graph.getEdges()) {
-			if (!(e instanceof EdgeConcat)) {
-				//println ("[isSatisfiable] edge: " + e.getSource().uniqueName() + " - "+ e.getDest().uniqueName());
-				List<StringSymbolic> represents = e.getSource().getRepresents();
-				if (represents != null) {
-					for (StringSymbolic ss: represents) {
-						temp = global_graph.findVertex(e.getSource().getName());
-						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
-						ss.solution = temp.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-					}
-				}
-				represents = e.getDest().getRepresents();
-				if (represents != null) {
-					for (StringSymbolic ss: represents) {
-						temp = global_graph.findVertex(e.getDest().getName());
-						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + temp.getSolution() + "'");						
-						ss.solution = temp.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-					}
-				}
-			}
-			else {
-				List<StringSymbolic> represents = e.getSources().get(0).getRepresents();
-				if (represents != null) {
-					for (StringSymbolic ss: represents) {
-						temp = global_graph.findVertex(e.getSources().get(0).getName());
-						//println ("[isSatisfiable] 1. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
-						ss.solution = temp.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-					}
-				}
-				represents = e.getSources().get(1).getRepresents();
-				if (represents != null) {
-					for (StringSymbolic ss: represents) {
-						temp = global_graph.findVertex(e.getSources().get(1).getName());
-						//println ("[isSatisfiable] 2. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
-						ss.solution = temp.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-					}
-				}
-				represents = e.getDest().getRepresents();
-				if (represents != null) {
-					for (StringSymbolic ss: represents) {
-						temp = global_graph.findVertex(e.getDest().getName());
-						//println ("[isSatisfiable] 3. Setting " + ss.getName() + " to '" + temp.getSolution() + "'");
-						ss.solution = temp.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-					}
-				}
-			}
-		}
-		
-		if (global_graph.getEdges().size() == 0) {
-			for (Vertex v: global_graph.getVertices()) {
-				List<StringSymbolic> represents = v.getRepresents();
-				for (StringSymbolic ss: represents) {
-					//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
-					ss.solution = v.getSolution();
-					if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
-				}
-			}
-		}
-		StringPathCondition.flagSolved = true;
-		//println ("StringPC: " + getSolution());
-		return true;
 	}
 	
 	public static String getSolution () {
@@ -694,6 +738,23 @@ public class SymbolicStringConstraintsGeneral {
 		}
 		
 		return true;
+	}
+	
+	public static void checkTimeOut () {
+		synchronized (mutexTimedOut) {
+			if (timedOut) {
+				throw new SymbolicStringTimedOutException();
+			}
+		}
+	}
+	
+	public static void cancelTimer () {
+		if (TIMEOUT > 0) {
+			timer.cancel();
+			synchronized (mutexTimedOut) {
+				timedOut = false;
+			}
+		}
 	}
 	
 	private static void println (String s) {

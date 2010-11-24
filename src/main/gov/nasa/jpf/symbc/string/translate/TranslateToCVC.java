@@ -70,6 +70,8 @@ public class TranslateToCVC {
 	
 	private static int varIndex;
 	
+	//public static int totalTiming = 0;
+	
 	private static boolean printClauses = true;
 	private static boolean logging = true;
 	
@@ -79,6 +81,8 @@ public class TranslateToCVC {
 	
 	//most sign, first letter
 	public static boolean isSat (StringGraph g, PathCondition pc) {
+		/* check if there was a timeout */
+		SymbolicStringConstraintsGeneral.checkTimeOut();
 		//println ("[isSat] graph after preprocessing: " + g.toDot());
 		global_pc = pc;
 		if (scg == null) scg = new SymbolicConstraintsGeneral();
@@ -171,7 +175,9 @@ public class TranslateToCVC {
 		//println(expr.toString());
 		//vc.loadFile(fileName);
 		vc.push();
+		//long timing = System.currentTimeMillis();
 		SatResult result = vc.checkUnsat(expr);
+		//totalTiming += System.currentTimeMillis() - timing;
 		if (result == SatResult.UNSATISFIABLE) {
 			vc.pop();
 			//println ("[isSat] Current solutions is unsat, extending lengts");
