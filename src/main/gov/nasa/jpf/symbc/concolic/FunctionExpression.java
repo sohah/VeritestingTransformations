@@ -27,48 +27,54 @@ import gov.nasa.jpf.symbc.numeric.RealExpression;
 import java.util.Map;
 import java.lang.reflect.*;
 
-public class FunctionExpression extends Expression
+public class FunctionExpression extends RealExpression
 {
 	String class_name;
 	String method_name;
-	Object[] args;
-	Expression [] sym_args;
+	Class<?>[] argTypes;
+	public Expression [] sym_args;
 
-	public FunctionExpression (String cls, String mth, Object [] as, Expression [] sym_as)
+	// what happens when there are no arguments?
+	public FunctionExpression (String cls, String mth, Class<?>[] ast, Expression [] sym_as)
 	{
 		class_name = cls;
 		method_name = mth;
-		assert((as == null && sym_as == null) || as.length == sym_as.length);
+		assert(ast != null && sym_as != null && sym_as.length == ast.length);
 		// do we need a deep copy here or a shallow copy is enough?
-		if (as != null) { // && sym_as!=null) {
-			args = new Expression [as.length];
-			for (int i=0; i < as.length; i++)
-				args[i] = as[i];
-		}
+		argTypes = ast;
+		sym_args = sym_as;
 	}
 
+	// here we assume that the solution is always double; if it is not we can cast it later;
 	public double solution()
 	{
 		// here we need to use reflection to invoke the method with
-		// name function_name and with parameters the solutions of the arguments
+		// name method_name and with parameters the solutions of the arguments
+
+		assert(sym_args!=null && sym_args.length >0);
 
 		try {
 			  Class<?> cls = Class.forName(class_name);
-		      Class<?>[] argTypes = new Class<?>[args.length];
+			  Object[] args = new Object[sym_args.length];
 		      for (int i=0; i<args.length; i++)
-		        argTypes[i] = args[i].getClass();
-
-
-		      Method m = cls.getMethod(method_name, argTypes);
-		      for (int i=0; i<args.length; i++)
-		    	  if (sym_args[i] instanceof IntegerExpression)
+		    	  if (sym_args[i] instanceof IntegerExpression) {
 			        args[i] = new Integer(((IntegerExpression)sym_args[i]).solution());
-			      else // RealExpression
+		    	  }
+			      else {// RealExpression
 			    	args[i] = new Double(((RealExpression)sym_args[i]).solution());
-
+			      }
+		      Method m = cls.getMethod(method_name, argTypes);
 		      int modifiers = m.getModifiers();
 		      if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)){
 		        Object result = m.invoke(null, args); // here we need the type of the result
+		        if (result instanceof Double) {
+		        	//System.out.println("result type is double");
+		        	return ((Double) result).doubleValue();
+		        }
+		        if (result instanceof Integer) {
+		        	System.out.println("result type is int");
+		        	return ((Integer) result).doubleValue();
+		        }
 		        System.out.println("result "+result);
 		      }
 		}
@@ -101,4 +107,6 @@ public class FunctionExpression extends Expression
     			result = result + sym_args[i].toString() + " ";
 		return "(" + class_name +"." + method_name + "(" + result + ")";
 	}
+
+
 }

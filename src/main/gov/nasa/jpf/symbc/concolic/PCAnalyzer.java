@@ -37,16 +37,17 @@ public class PCAnalyzer {
 			cRef = cRef.and;
 		}
 		if (SymbolicInstructionFactory.debugMode) {
-			System.out.println("--------after splitting------------");
+			System.out.println("--------begin after splitting------------");
 			System.out.println("originalPC " + pc);
 			System.out.println("concolicPC " + concolicPC);
 			System.out.println("simplePC " + simplePC);
-			System.out.println("--------after splitting------------");
+			System.out.println("--------end after splitting------------");
 		}
 	}
 
-	PathCondition extraPC;
+	PathCondition extraPC; // spaghetti code; TODO this better
 
+	// for now assume only real expressions
 	RealConstraint eqConcolicConstraint(RealExpression eRef) {
 		if(eRef instanceof MathRealExpression) {
 			MathFunction funRef;
@@ -79,6 +80,19 @@ public class PCAnalyzer {
 				throw new RuntimeException("## Error: Expression " + eRef);
 			}
 		}
+		else if (eRef instanceof FunctionExpression) {
+			Expression [] sym_args = ((FunctionExpression)eRef).sym_args;
+			assert(sym_args != null && sym_args.length > 0);
+			RealExpression e = (RealExpression)sym_args[0];// for now assume only real expressions; TODO the integer expressions
+			RealConstraint c = new RealConstraint(e, Comparator.EQ, new RealConstant(e.solution()));
+			for(int i=1; i<sym_args.length; i++) {
+					RealExpression e2 = (RealExpression)sym_args[i];
+					RealConstraint c2 = new RealConstraint(e2, Comparator.EQ, new RealConstant(e2.solution()));
+					c2.and = c;
+					c = c2;
+			}
+			return c;
+		}
 		return null;
 	}
 
@@ -100,7 +114,7 @@ public class PCAnalyzer {
 			return new BinaryRealExpression(getExpression(e_leftRef),opRef,getExpression(e_rightRef));
 		}
 
-		if(eRef instanceof MathRealExpression) {
+		if(eRef instanceof MathRealExpression || eRef instanceof FunctionExpression) {
 			extraPC.prependUnlessRepeated(eqConcolicConstraint(eRef));
 			return new RealConstant(eRef.solution());
 		}
@@ -121,6 +135,7 @@ public class PCAnalyzer {
 		// first solve the simplePC and then use the results to update concolicPC
 		if (simplePC.solve() == false) return false;
 		if (SymbolicInstructionFactory.debugMode) {
+			System.out.println("........................START SOLVING");
 			System.out.println("--------------------");
 			System.out.println("simplePC " + simplePC);
 			System.out.println("--------------------");
@@ -137,26 +152,29 @@ public class PCAnalyzer {
 			simplePC.prependUnlessRepeated(traverseRealConstraint(cRef));
 			cRef = (RealConstraint)cRef.and;
 		}
-		if(extraPC.header!=null)
+		if(SymbolicInstructionFactory.debugMode) System.out.println("new PC " + simplePC);
+		if(extraPC.header!=null) {
+			if(SymbolicInstructionFactory.debugMode) System.out.println("extraPC constraints" + extraPC);
 			simplePC.prependAllConjuncts(extraPC.header);
+		}
 
 		if(SymbolicInstructionFactory.debugMode){
 			if (true /*SymbolicInstructionFactory.debugMode*/) {
 				System.out.println("--------------------");
-				System.out.println("before solving simplifiedPC " + simplePC);
+				System.out.println("before solving combined PC " + simplePC);
 				System.out.println("--------------------");
 			}
 
 		simplePC.flagSolved = false;
 		if(simplePC.solve())
-			System.out.println("simplifiedPC satisfiable");
+			System.out.println("combined PC satisfiable");
 		else
-			System.out.println("simplifiedPC not satisfiable");
-		if (true /*SymbolicInstructionFactory.debugMode*/) {
-			System.out.println("--------------------");
-			System.out.println("simplifiedPC " + simplePC);
-			System.out.println("--------------------");
-		}
+			System.out.println("combined PC not satisfiable");
+//		if (true /*SymbolicInstructionFactory.debugMode*/) {
+//			System.out.println("--------------------");
+//			System.out.println("simplifiedPC " + simplePC);
+//			System.out.println("--------------------");
+//		}
 		}
         return true;
 	}

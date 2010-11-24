@@ -32,9 +32,6 @@ import gov.nasa.jpf.symbc.concolic.*;
 
 public class PathCondition {
     public static boolean flagSolved = false;
-    //neha: additional check to control when
-    // constraints need to be solve
-    //public static boolean flagCheck = true;
 
     public Constraint header;
     int count = 0;
@@ -228,11 +225,7 @@ public class PathCondition {
 	}
 
 	public boolean simplify() {
-		//neha: Added this to control solving the path constraint
-		// contingent on the variable being set.
-//		if (!PathCondition.flagCheck){
-//			return true;
-//		}
+
 
 		SymbolicConstraintsGeneral solver;
 		boolean result1;
