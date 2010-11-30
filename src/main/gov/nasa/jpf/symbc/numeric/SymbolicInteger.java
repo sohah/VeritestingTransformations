@@ -23,7 +23,7 @@ import java.util.Map;
 
 public class SymbolicInteger extends LinearIntegerExpression
 {
-	public static int UNDEFINED = 0;//Integer.MIN_VALUE+42;
+	public static int UNDEFINED = 1;//Integer.MIN_VALUE+42;
 	public int _min = MinMax.MININT;
 	public int _max = MinMax.MAXINT;
 	public int solution = UNDEFINED; // C
@@ -129,7 +129,7 @@ public class SymbolicInteger extends LinearIntegerExpression
         //return Integer.toHexString(_min ^ _max).hashCode();
     	return unique_id;
     }
-    
+
     protected void finalize() throws Throwable {
     	System.out.println("Finalized " + this);
     }

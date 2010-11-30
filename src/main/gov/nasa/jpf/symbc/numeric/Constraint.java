@@ -30,7 +30,7 @@ public abstract class Constraint {
 
   public Constraint and;
 
-  Constraint(Expression l, Comparator c, Expression r) {
+  public Constraint(Expression l, Comparator c, Expression r) {
     left = l;
     comp = c;
     right = r;
@@ -45,26 +45,26 @@ public abstract class Constraint {
   public Expression getRight() {
       return right;
   }
-  
+
   /**
    * Returns the comparator used in this constraint.
    */
   public Comparator getComparator() {
     return comp;
   }
-  
+
   /**
-   * Returns the negation of this constraint, but without the tail.   
+   * Returns the negation of this constraint, but without the tail.
    */
   public abstract Constraint not();
-  
+
   /**
-   * Returns the next conjunct. 
+   * Returns the next conjunct.
    */
   public Constraint getTail() {
     return and;
   }
-  
+
   public String stringPC() {
     return left.stringPC() + comp.toString() + right.stringPC()
         + ((and == null) ? "" : " &&\n" + and.stringPC());
@@ -113,7 +113,7 @@ public abstract class Constraint {
   }
 
   public Constraint last() {
-      Constraint c= this; 
+      Constraint c= this;
       while(c.and != null) {
           c = c.and;
       }

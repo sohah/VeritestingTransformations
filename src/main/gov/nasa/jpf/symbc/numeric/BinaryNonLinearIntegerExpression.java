@@ -25,12 +25,12 @@ import java.util.Map;
  * @author Sarfraz Khurshid (khurshid@lcs.mit.edu)
  *
  */
-class BinaryNonLinearIntegerExpression extends NonLinearIntegerExpression {
-	IntegerExpression left;
+public class BinaryNonLinearIntegerExpression extends NonLinearIntegerExpression {
+	public IntegerExpression left;
 
-	Operator op;
+	public Operator op;
 
-	IntegerExpression right;
+	public IntegerExpression right;
 
 	BinaryNonLinearIntegerExpression(IntegerExpression l, Operator o, IntegerExpression r) {
 		left = l;

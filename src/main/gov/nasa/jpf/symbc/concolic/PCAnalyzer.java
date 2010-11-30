@@ -31,8 +31,10 @@ public class PCAnalyzer {
 				simplePC.prependUnlessRepeated(new MixedConstraint((MixedConstraint)cRef));
 			} else if (cRef instanceof LogicalORLinearIntegerConstraints) {
 				simplePC.prependUnlessRepeated(new LogicalORLinearIntegerConstraints(((LogicalORLinearIntegerConstraints)cRef).getList()));
-			} else {
-				throw new RuntimeException("## Error: Non Linear Integer Constraint not handled " + cRef);
+			} else if (cRef instanceof NonLinearIntegerConstraint){
+				concolicPC.prependUnlessRepeated(new NonLinearIntegerConstraint((NonLinearIntegerConstraint)cRef));
+			} else	{
+				throw new RuntimeException("## Error: Constraint not handled " + cRef);
 			}
 			cRef = cRef.and;
 		}
@@ -48,7 +50,7 @@ public class PCAnalyzer {
 	PathCondition extraPC; // spaghetti code; TODO this better
 
 	// for now assume only real expressions
-	RealConstraint eqConcolicConstraint(RealExpression eRef) {
+	Constraint eqConcolicConstraint(Expression eRef) {
 		if(eRef instanceof MathRealExpression) {
 			MathFunction funRef;
 			RealExpression	e_arg1Ref;
@@ -93,16 +95,31 @@ public class PCAnalyzer {
 			}
 			return c;
 		}
-		return null;
+		else if (eRef instanceof BinaryNonLinearIntegerExpression) {
+
+			IntegerExpression	e_arg1Ref;
+			IntegerExpression	e_arg2Ref;
+
+			e_arg1Ref = ((BinaryNonLinearIntegerExpression)eRef).left;
+			e_arg2Ref = ((BinaryNonLinearIntegerExpression)eRef).right;
+			LinearIntegerConstraint c1 = new LinearIntegerConstraint(e_arg1Ref, Comparator.EQ, new IntegerConstant(e_arg1Ref.solution()));
+			LinearIntegerConstraint c2 = new LinearIntegerConstraint(e_arg2Ref, Comparator.EQ, new IntegerConstant(e_arg2Ref.solution()));
+			c1.and = c2;
+			return c1;
+		}
+		throw new RuntimeException("## Error: Expression " + eRef);
 	}
 
 
 
-	RealExpression getExpression(RealExpression eRef) {
+	Expression getExpression(Expression eRef) {
 		assert eRef != null;
 		assert !(eRef instanceof RealConstant);
 
-		if (eRef instanceof SymbolicReal) {
+		if (eRef instanceof SymbolicReal || eRef instanceof RealConstant) {
+			return eRef;
+		}
+		if (eRef instanceof SymbolicInteger || eRef instanceof IntegerConstant) {
 			return eRef;
 		}
 
@@ -111,26 +128,45 @@ public class PCAnalyzer {
 			RealExpression	e_leftRef = ((BinaryRealExpression)eRef).getLeft();
 			RealExpression	e_rightRef = ((BinaryRealExpression)eRef).getRight();
 
-			return new BinaryRealExpression(getExpression(e_leftRef),opRef,getExpression(e_rightRef));
+			return new BinaryRealExpression((RealExpression)getExpression(e_leftRef),opRef,(RealExpression)getExpression(e_rightRef));
 		}
+
 
 		if(eRef instanceof MathRealExpression || eRef instanceof FunctionExpression) {
 			extraPC.prependUnlessRepeated(eqConcolicConstraint(eRef));
-			return new RealConstant(eRef.solution());
+			return new RealConstant(((RealExpression)eRef).solution());
+		}
+
+		if(eRef instanceof BinaryNonLinearIntegerExpression) {
+			extraPC.prependUnlessRepeated(eqConcolicConstraint(eRef));
+			return new IntegerConstant(((BinaryNonLinearIntegerExpression)eRef).solution());
 		}
 
 		throw new RuntimeException("## Error: Expression " + eRef);
 	}
 
 
-	RealConstraint traverseRealConstraint(RealConstraint cRef) {
+//	RealConstraint traverseRealConstraint(RealConstraint cRef) {
+//		Comparator c_compRef = cRef.getComparator();
+//		RealExpression c_leftRef = (RealExpression)cRef.getLeft();
+//		RealExpression c_rightRef = (RealExpression)cRef.getRight();
+//
+//		return new RealConstraint(getExpression(c_leftRef),c_compRef,getExpression(c_rightRef));
+//	}
+	Constraint traverseConstraint(Constraint cRef) {
 		Comparator c_compRef = cRef.getComparator();
-		RealExpression c_leftRef = (RealExpression)cRef.getLeft();
-		RealExpression c_rightRef = (RealExpression)cRef.getRight();
+		Expression c_leftRef = cRef.getLeft();
+		Expression c_rightRef = cRef.getRight();
 
-		return new RealConstraint(getExpression(c_leftRef),c_compRef,getExpression(c_rightRef));
+		//return new Constraint(getExpression(c_leftRef),c_compRef,getExpression(c_rightRef));
+		if(cRef instanceof RealConstraint)
+			return new RealConstraint((RealExpression)(getExpression(c_leftRef)),c_compRef,(RealExpression)(getExpression(c_rightRef)));
+		if(cRef instanceof NonLinearIntegerConstraint)
+			return new LinearIntegerConstraint((IntegerExpression)(getExpression(c_leftRef)),c_compRef,(IntegerExpression)(getExpression(c_rightRef)));
+		throw new RuntimeException("## Error: Constraint " + cRef);
+
+
 	}
-
 	public boolean solveSplitPC() {
 		// first solve the simplePC and then use the results to update concolicPC
 		if (simplePC.solve() == false) return false;
@@ -145,11 +181,11 @@ public class PCAnalyzer {
 		// with their execution results with simplePC arguments
 
 		//PathCondition simplifiedPC = new PathCondition();
-		RealConstraint cRef = (RealConstraint)concolicPC.header;
+		Constraint cRef = concolicPC.header;
 
 		extraPC = new PathCondition();
 		while (cRef != null) {
-			simplePC.prependUnlessRepeated(traverseRealConstraint(cRef));
+			simplePC.prependUnlessRepeated(traverseConstraint(cRef));
 			cRef = (RealConstraint)cRef.and;
 		}
 		if(SymbolicInstructionFactory.debugMode) System.out.println("new PC " + simplePC);

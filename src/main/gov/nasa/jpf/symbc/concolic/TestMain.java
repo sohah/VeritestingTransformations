@@ -14,6 +14,7 @@ public class TestMain {
 	native static double hash(double x);
 
 	public static double hash_java(double x) {
+
 		if (x == 1.0) return 1000.0;
 		if (x == 2.0) return 2000.0;
 		return 3000.0;
@@ -30,8 +31,8 @@ public class TestMain {
 				System.out.println("S1");
 				path = 2;
 			}
-			//if (y > 1000) {
-			if (x > 3 && y > 10) {
+			if (y > 1000) {
+			//if (x > 3 && y > 10) {
 				if (path == 1)
 					System.out.println("S0;S3");
 				if (path == 2)

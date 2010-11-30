@@ -20,10 +20,13 @@
 package gov.nasa.jpf.symbc.numeric;
 
 public class NonLinearIntegerConstraint extends Constraint {
-    NonLinearIntegerConstraint(IntegerExpression l, Comparator c, IntegerExpression r) {
+    public NonLinearIntegerConstraint(IntegerExpression l, Comparator c, IntegerExpression r) {
       super(l, c, r);
     }
-    
+
+    public NonLinearIntegerConstraint(NonLinearIntegerConstraint c) {
+      super(c.getLeft(), c.getComparator(), c.getRight());
+    }
     public String toString() {
       return "%NonLinInteger% " + super.toString();
     }
@@ -31,13 +34,13 @@ public class NonLinearIntegerConstraint extends Constraint {
     public IntegerExpression getLeft() {
         return (IntegerExpression) super.getLeft();
     }
-    
+
     public IntegerExpression getRight() {
         return (IntegerExpression) super.getRight();
     }
-    
+
     @Override
     public NonLinearIntegerConstraint not() {
         return new NonLinearIntegerConstraint(getLeft(), getComparator().not(), getRight());
-    }    
+    }
 }
