@@ -206,11 +206,15 @@ public class ProblemYices extends ProblemGeneral {
 
 	public double getRealValueInf(Object dpVar) {
 //		return ((RealVar) dpVar).getValue().getInf();
-		throw new RuntimeException("# Error: Yices can not compute realValueInf!");
+//		throw new RuntimeException("# Error: Yices can not compute realValueInf!");
+		System.out.println("# Warning: Yices can not compute realValueInf! (used 0.0)");
+		return 0.0;
 	}
 	public double getRealValueSup(Object dpVar) {
 //		return ((RealVar) dpVar).getValue().getSup();
-		throw new RuntimeException("# Error: Yices can not compute realValueSup!");
+//		throw new RuntimeException("# Error: Yices can not compute realValueSup!");
+		System.out.println("# Warning: Yices can not compute realValueSup! (used 0.0)");
+		return 0.0;
 	}
 	public double getRealValue(Object dpVar) {
 //		return ((IntDomainVar) dpVar).getVal();

@@ -18,7 +18,7 @@ symbolic.maxint=100
 
 #symbolic.dp=choco2
 
-symbolic.dp=yices
+#symbolic.dp=yices
 
 #symbolic.dp=cvc3
 
@@ -28,6 +28,6 @@ vm.storage.class=nil
 
 symbolic.debug=true
 
-listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
+listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener,gov.nasa.jpf.listener.CoverageAnalyzer
 
 #listener = gov.nasa.jpf.symbc.SymbolicListener
