@@ -4,10 +4,8 @@ package gov.nasa.jpf.symbc.heap;
 
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DoubleFieldInfo;
-import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.Fields;
 import gov.nasa.jpf.jvm.FloatFieldInfo;
 import gov.nasa.jpf.jvm.IntegerFieldInfo;
 import gov.nasa.jpf.jvm.KernelState;
@@ -114,11 +112,11 @@ public class Helper {
 
 		  // neha: this change allows all the fields in the class hierarchy of the
 		  // object to be initialized as symbolic and not just its instance fields
-		  Fields f = eiRef.getFields();
-		  int numOfFields = f.getNumberOfFields();
+
+		  int numOfFields = eiRef.getNumberOfFields();
 		  FieldInfo[] fields = new FieldInfo[numOfFields];
 		  for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
-			  fields[fieldIndex] = f.getFieldInfo(fieldIndex);
+			  fields[fieldIndex] = eiRef.getFieldInfo(fieldIndex);
 		  }
 
 		  Helper.initializeInstanceFields(fields, eiRef,refChain);

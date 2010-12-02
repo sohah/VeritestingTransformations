@@ -24,11 +24,9 @@ import java.util.Set;
 
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.DynamicElementInfo;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.Fields;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.KernelState;
 import gov.nasa.jpf.jvm.ThreadInfo;
@@ -223,11 +221,10 @@ public class UberLazyHelper {
 				// ElementInfo eiRef = DynamicArea.getHeap().get(daIndex);
 				 ElementInfo eiRef = JVM.getVM().getHeap().get(daIndex);
 				 //initialize the instance fields as symbolic
-				 Fields f = eiRef.getFields();
-				 int numOfFields = f.getNumberOfFields();
+				 int numOfFields = eiRef.getNumberOfFields();
 				 FieldInfo[] fields = new FieldInfo[numOfFields];
 				 for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
-					 fields[fieldIndex] = f.getFieldInfo(fieldIndex);
+					 fields[fieldIndex] = eiRef.getFieldInfo(fieldIndex);
 				 }
 				 String refChain;
 				 if(n instanceof UberLazyHeapNode) {
@@ -265,11 +262,10 @@ public class UberLazyHelper {
 		 ElementInfo eiRef = JVM.getVM().getHeap().get(daIndex);
 		 // neha: this change allows all the fields in the class hierarchy of the
 		 // object to be initialized as symbolic and not just its instance fields
-		 Fields f = eiRef.getFields();
-		 int numOfFields = f.getNumberOfFields();
+		 int numOfFields = eiRef.getNumberOfFields();
 		 FieldInfo[] fields = new FieldInfo[numOfFields];
 		 for(int fieldIndex = 0; fieldIndex < numOfFields; fieldIndex++) {
-			 fields[fieldIndex] = f.getFieldInfo(fieldIndex);
+			 fields[fieldIndex] = eiRef.getFieldInfo(fieldIndex);
 		 }
 
 		 Helper.initializeInstanceFields(fields, eiRef,refChain);
