@@ -230,7 +230,8 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
 	  ei.setReferenceField(fi,daIndex );
 	  ei.setFieldAttr(fi, null);
-	  ti.push( ei.getIntField(fi), fi.isReference());
+	  
+	  ti.push(ei.getReferenceField(fi), fi.isReference());
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
 	  //System.out.println(">>>>>>>>>>>>.GETFIELD pcHeap: " + pcHeap.toString());

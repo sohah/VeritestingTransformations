@@ -206,7 +206,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 		ei.setReferenceField(fi,daIndex );
 		ei.setFieldAttr(fi, Helper.SymbolicNull); // was null
-		ti.push( ei.getIntField(fi), fi.isReference());
+		ti.push( ei.getReferenceField(fi), fi.isReference());
 		((HeapChoiceGenerator)heapCG).setCurrentPCheap(pcHeap);
 		((HeapChoiceGenerator)heapCG).setCurrentSymInputHeap(symInputHeap);
 		//System.out.println("GETSTATIC pcHeap: " + pcHeap.toString());

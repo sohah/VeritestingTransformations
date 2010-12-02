@@ -202,7 +202,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		 ei.setFieldAttr(fi, null);
 
     }
-	  ti.push( ei.getIntField(fi), fi.isReference());
+	  ti.push( ei.getReferenceField(fi), fi.isReference());
 
 	  //ti.setOperandAttrNoClone(new String(Integer.toString(ei.getIntField(fi)).concat("__" + fi.getName())));
 	  ti.setOperandAttrNoClone(new String(Integer.toString(ei.getIntField(fi))));

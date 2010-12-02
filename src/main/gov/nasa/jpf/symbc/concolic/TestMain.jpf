@@ -1,5 +1,6 @@
 target=gov.nasa.jpf.symbc.concolic.TestMain
 
+classpath=${jpf-symbc}/build/main
 
 symbolic.method=gov.nasa.jpf.symbc.concolic.TestMain.test_concolic(sym#sym)
 
@@ -8,5 +9,7 @@ symbolic.concolic=true
 #symbolic.debug=on
 
 #listener = .symbc.SymbolicListener
+
+
 
 vm.storage.class=nil

@@ -20,12 +20,20 @@
 package gov.nasa.jpf.symbc.concolic;
 // support for arbitrary external functions
 
+import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
+import gov.nasa.jpf.util.FileUtils;
 
+import java.util.ArrayList;
 import java.util.Map;
+import java.io.File;
 import java.lang.reflect.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 public class FunctionExpression extends RealExpression
 {
@@ -46,7 +54,7 @@ public class FunctionExpression extends RealExpression
 	}
 
 	// here we assume that the solution is always double; if it is not we can cast it later;
-	public double solution()
+	public double solution() 
 	{
 		// here we need to use reflection to invoke the method with
 		// name method_name and with parameters the solutions of the arguments
@@ -54,7 +62,23 @@ public class FunctionExpression extends RealExpression
 		assert(sym_args!=null && sym_args.length >0);
 
 		try {
-			  Class<?> cls = Class.forName(class_name);
+			
+			 ArrayList<String> list = new ArrayList<String>();
+			 String[] cp = ClassInfo.getClassPathElements();
+			 cp = FileUtils.expandWildcards(cp);
+			 for (String e : cp) {
+			      list.add(e);
+			 }
+			 URL[] urls = FileUtils.getURLs(list);
+
+			URLClassLoader loader = new URLClassLoader(urls);
+			Class<?> cls = null;
+			try {
+				cls = Class.forName(class_name, true, loader);
+			} catch (ClassNotFoundException c) {
+				System.err.println("Class not found:" + class_name);
+			}
+			
 			  Object[] args = new Object[sym_args.length];
 		      for (int i=0; i<args.length; i++)
 		    	  if (sym_args[i] instanceof IntegerExpression) {

@@ -109,8 +109,13 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 				  mi.getClassName(),
 				  mi.getName(), args_type, sym_args);
 		System.out.println("result is :" + result.toString());
+		
 		ret = 0;
 		resultAttr = result;
+	}
+	
+	private void checkReturnType() {
+		
 	}
 	
 }
