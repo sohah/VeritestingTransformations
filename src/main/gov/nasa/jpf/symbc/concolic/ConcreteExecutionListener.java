@@ -13,8 +13,8 @@ import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.symbc.numeric.Expression;
+import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.RealConstant;
-import gov.nasa.jpf.symbc.numeric.RealExpression;
 
 public class ConcreteExecutionListener extends PropertyListenerAdapter {
 
@@ -22,6 +22,11 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 	public static boolean debug = false;
 	long ret;
 	Object resultAttr; 
+	
+	public enum type {
+		INT, DOUBLE, FLOAT, BYTE, 
+		SHORT, LONG, BOOLEAN, CHAR
+	}
 	
 	public ConcreteExecutionListener(Config conf, JPF jpf) {
 		jpf.addPublisherExtension(ConsolePublisher.class, this);
@@ -35,20 +40,16 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 			boolean foundAnote = checkConcreteAnnotation(mi);
 			if(foundAnote) {
 				
-				System.out.println(lastInsn.getSourceLine() + "srcLine");
+				//System.out.println(lastInsn.getSourceLine() + "srcLine");
 				ThreadInfo ti = vm.getCurrentThread();
 				//ti.setReturnValue(0);
 				
 				StackFrame sf = ti.popFrame();
 				generateFunctionExpression(mi, (InvokeInstruction) lastInsn, ti);
-				ti.removeArguments(mi);
-				ti.longPush(ret);
-				ti.setLongOperandAttr(resultAttr);
+				
 				
 				Instruction nextIns = sf.getPC().getNext();
-				System.out.println(nextIns.getSourceLine());
-				
-				
+				//System.out.println(nextIns.getSourceLine());
 				
 			    vm.getCurrentThread().skipInstruction();
 			    vm.getCurrentThread().setNextPC(nextIns);
@@ -94,28 +95,79 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 		for(int argIndex = 0; argIndex < size; argIndex++) {
 			Object attribute = attrs[argIndex];
 			if(attribute == null) {
-				//create a new constant
-				// for now we assume you can only pass doubles
-				sym_args[argIndex] = new RealConstant(Double.parseDouble
-									(values[argIndex].toString()));
+				sym_args[argIndex] = this.generateConstant(
+								types[argIndex], 
+								values[argIndex]);
 			} else {
 				sym_args[argIndex] = (Expression) attribute;
 			}
-			args_type[argIndex] = Double.TYPE;
+			args_type[argIndex] = checkArgumentTypes(types[argIndex]);
 		}
-		System.out.println("In the generate function expression" + mi.getClassName());
+		//System.out.println("In the generate function expression" + mi.getClassName());
 		
 		FunctionExpression result = new FunctionExpression(
 				  mi.getClassName(),
 				  mi.getName(), args_type, sym_args);
-		System.out.println("result is :" + result.toString());
-		
-		ret = 0;
-		resultAttr = result;
+		//System.out.println("result is :" + result.toString());
+		checkReturnType(ti, mi, result);
 	}
 	
-	private void checkReturnType() {
-		
+	
+	private void checkReturnType(ThreadInfo ti, MethodInfo mi, Object resultAttr) {
+		String retTypeName = mi.getReturnTypeName();
+		ti.removeArguments(mi);
+		if(retTypeName.equals("double") || retTypeName.equals("long")) {
+			ti.longPush(0);
+			ti.setLongOperandAttr(resultAttr);
+		} else {
+			ti.push(0);
+			ti.setOperandAttr(resultAttr);
+		}
+	}
+	
+	private Class<?> checkArgumentTypes(String typeVal) {
+		if(typeVal.equals("int")) {
+			return Integer.TYPE; 
+		} else if (typeVal.equals("double")) {
+			return Double.TYPE;
+		} else if (typeVal.equals("float")) {
+			return Float.TYPE;
+		} else if (typeVal.equals("long")) {
+			return Long.TYPE;
+		} else if (typeVal.equals("short")) {
+			return Short.TYPE;
+		}  else if (typeVal.equals("boolean")) {
+			return Boolean.TYPE;
+		} else {
+			throw new RuntimeException("the type not handled :" + typeVal);
+		}
+	}
+	
+	private Expression generateConstant(String typeVal, Object value) {
+		if(typeVal.equals("int")) {
+			return new IntegerConstant(Integer.parseInt
+					(value.toString()));
+		} else if (typeVal.equals("double")) {
+			return new RealConstant(Double.parseDouble
+					(value.toString()));
+		} else if (typeVal.equals("float")) {
+			return new RealConstant(Float.parseFloat
+					(value.toString()));
+		} else if (typeVal.equals("long")) {
+			return new IntegerConstant((int) Long.parseLong
+					(value.toString()));
+		} else if (typeVal.equals("short")) {
+			return new IntegerConstant((int) Short.parseShort
+					(value.toString()));
+		} else if (typeVal.equals("boolean")) {
+			if(value.toString().equals("true")) {
+				return new IntegerConstant(1);
+			} else {
+				return new IntegerConstant(0);
+			}
+		} else {
+			throw new RuntimeException("the type not handled :" + typeVal);
+		}
 	}
 	
 }
