@@ -20,9 +20,10 @@
 package gov.nasa.jpf.symbc.numeric;
 
 import java.util.Map;
+import java.util.Random;
 
 public class SymbolicReal extends RealExpression {
-	public static double UNDEFINED = Integer.MIN_VALUE+42;
+	public static double UNDEFINED = MinMax.MINDOUBLE;
 	public double _min = MinMax.MINDOUBLE;
 	public double _max = MinMax.MAXDOUBLE;
 	public double solution = UNDEFINED; // C
@@ -96,8 +97,18 @@ public class SymbolicReal extends RealExpression {
 
 
 	public double solution() {
-		if (PathCondition.flagSolved)
+		if (PathCondition.flagSolved) {
+			if (solution == UNDEFINED) {
+				double d;
+				d = new Random().nextDouble();
+				if(d < 0.5)
+					d = _min * d;
+				else
+					d = _max * d;
+				return d;
+			}
 			return solution;
+		}
 		else
 			throw new RuntimeException("## Error: PC not solved!");
 	}

@@ -180,6 +180,12 @@ public class PathCondition {
        count= length(header);
     }
 
+    public void appendAllConjuncts(Constraint t) {
+        Constraint tmp = header.last();
+        tmp.and = t;
+        count= length(header);
+     }
+
     private static int length(Constraint c) {
         int x= 0;
         while (c != null) {
@@ -227,28 +233,16 @@ public class PathCondition {
 	public boolean simplify() {
 
 
-		SymbolicConstraintsGeneral solver;
+		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 		boolean result1;
 
 		if (SymbolicInstructionFactory.concolicMode) {
 			PCAnalyzer pa = new PCAnalyzer();
-			// first we split the PC into the easy and concolic parts
-			// concolic refers to the parts that we cannot handle with a DP and instead use concrete values for.
-			pa.splitPathCondition(this);
-			if(pa.solveSplitPC()) {
-				solver = new SymbolicConstraintsGeneral();
-				result1 = solver.isSatisfiable(pa.getSimplifiedPC());
-				solver.cleanup();
-			}
-			else
-				result1 = false;
+			result1 = pa.isSatisfiable(this,solver);
 		}
-		else {
-			solver = new SymbolicConstraintsGeneral();
+		else
 			result1 = solver.isSatisfiable(this);
-			solver.cleanup();
-		}
-
+		solver.cleanup();
 
 		if (SymbolicInstructionFactory.debugMode) {
 			MinMax.Debug_no_path_constraints ++;

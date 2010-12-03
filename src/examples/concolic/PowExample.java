@@ -13,8 +13,8 @@ public class PowExample {
 				System.out.println("S1");
 				path = 2;
 			}
-			if (y > 10) {
-			//if (x > 3 && y > 10) {
+			if (y > 8) {
+			//if (x > 1 && y > 3) {
 				if (path == 1)
 					System.out.println("S0;S3");
 				if (path == 2)

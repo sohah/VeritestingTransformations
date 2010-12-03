@@ -24,7 +24,7 @@ import java.util.Map;
 public abstract class Constraint {
   private final Expression left;
 
-  private final Comparator comp;
+  private Comparator comp;
 
   private final Expression right;
 
@@ -53,6 +53,9 @@ public abstract class Constraint {
     return comp;
   }
 
+  public void setComparator(Comparator c) {
+	    comp = c;
+	  }
   /**
    * Returns the negation of this constraint, but without the tail.
    */

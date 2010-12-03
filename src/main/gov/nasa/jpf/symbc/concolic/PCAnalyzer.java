@@ -12,6 +12,71 @@ public class PCAnalyzer {
 	// concrete values on
 	PathCondition concolicPC;
 
+	static public int MAX_TRIES = 3;
+
+	// extraPC encodes extra EQ constraints of the form x == solution, where solution is obtained by solving simplePC
+	PathCondition extraPC; // spaghetti code; TODO this better
+
+	PathCondition getEQExtraConstraints() { return extraPC; }
+
+	// first we split the PC into the easy and concolic parts
+	// concolic refers to the parts that we cannot handle with a DP and instead use concrete values for.
+	public boolean isSatisfiable(PathCondition pc, SymbolicConstraintsGeneral solver) {
+		if (pc == null || pc.header == null) return true;
+		boolean result = false;
+		PathCondition working_pc = pc.make_copy();
+		int tries = 0;// heuristic to try different solutions up to some counter given by the user
+		while(tries < MAX_TRIES) {
+			if (SymbolicInstructionFactory.debugMode) {
+				System.out.println("--------working PC------------"+tries);
+				System.out.println("original pc " + pc);
+				System.out.println("extra pc " + extraPC);
+				System.out.println("working pc " + working_pc);
+				System.out.println("--- end printing working PC ---");
+			}
+
+
+			splitPathCondition(working_pc);
+			if (simplePC.solve() == false) return false;
+			if(concolicPC == null || concolicPC.header == null) return true;
+
+			createSimplifiedPC();
+			result = solver.isSatisfiable(getSimplifiedPC());
+
+			if (SymbolicInstructionFactory.debugMode) {
+				if(result)
+					System.out.println("combined PC satisfiable");
+				else
+					System.out.println("combined PC not satisfiable");
+			}
+
+			if(result) return true;
+
+			if(!SymbolicInstructionFactory.heuristicRandomMode) {
+				// Heuristic 1: systematically try different solutions
+				// add to beginning of working_pc extra constraints obtained from negating the constraints in extraPC
+				// assume for now we'll have only one EQ constraint;
+
+
+				if(extraPC == null || extraPC.header == null) return false;
+
+				Constraint cRef = extraPC.header;
+				while (cRef != null) {
+					cRef.setComparator(Comparator.GT); // should be NE
+					cRef=cRef.and;
+				}
+				working_pc.prependAllConjuncts(extraPC.header);
+			}
+			else {
+				System.out.println("Heuristic random mode!");
+			}
+			tries ++;
+		}
+
+		return result;
+	}
+
+
 	/*
 	 * Walks the PC and splits it into simplePC and concolicPC
 	 */
@@ -23,8 +88,11 @@ public class PCAnalyzer {
 
 		while (cRef != null) {
 			if (cRef instanceof RealConstraint) {
+				if (isComplex((RealConstraint)cRef))
 				// this will be the only one that goes to concolicPC for now
-				concolicPC.prependUnlessRepeated(new RealConstraint((RealConstraint)cRef));
+					concolicPC.prependUnlessRepeated(new RealConstraint((RealConstraint)cRef));
+				else
+					simplePC.prependUnlessRepeated(new RealConstraint((RealConstraint)cRef));
 			} else if (cRef instanceof LinearIntegerConstraint) {
 				simplePC.prependUnlessRepeated(new LinearIntegerConstraint((LinearIntegerConstraint)cRef));
 			} else if (cRef instanceof MixedConstraint) {
@@ -47,7 +115,20 @@ public class PCAnalyzer {
 		}
 	}
 
-	PathCondition extraPC; // spaghetti code; TODO this better
+	boolean isComplex(RealExpression eRef) {
+		if (eRef instanceof SymbolicReal || eRef instanceof RealConstant)
+			return false;
+
+		if(eRef instanceof MathRealExpression || eRef instanceof FunctionExpression)
+			return true;
+
+		return isComplex(((BinaryRealExpression)eRef).getLeft()) ||  isComplex(((BinaryRealExpression)eRef).getRight());
+	}
+
+    boolean isComplex(RealConstraint cRef) {
+    	return isComplex(cRef.getLeft()) ||  isComplex(cRef.getRight());
+    }
+
 
 	// for now assume only real expressions
 	Constraint eqConcolicConstraint(Expression eRef) {
@@ -167,9 +248,9 @@ public class PCAnalyzer {
 
 
 	}
-	public boolean solveSplitPC() {
+	public void createSimplifiedPC() {
 		// first solve the simplePC and then use the results to update concolicPC
-		if (simplePC.solve() == false) return false;
+
 		if (SymbolicInstructionFactory.debugMode) {
 			System.out.println("........................START SOLVING");
 			System.out.println("--------------------");
@@ -191,7 +272,7 @@ public class PCAnalyzer {
 		if(SymbolicInstructionFactory.debugMode) System.out.println("new PC " + simplePC);
 		if(extraPC.header!=null) {
 			if(SymbolicInstructionFactory.debugMode) System.out.println("extraPC constraints" + extraPC);
-			simplePC.prependAllConjuncts(extraPC.header);
+			simplePC.appendAllConjuncts(extraPC.header);
 		}
 
 		if(SymbolicInstructionFactory.debugMode){
@@ -202,17 +283,14 @@ public class PCAnalyzer {
 			}
 
 		simplePC.flagSolved = false;
-		if(simplePC.solve())
-			System.out.println("combined PC satisfiable");
-		else
-			System.out.println("combined PC not satisfiable");
+
 //		if (true /*SymbolicInstructionFactory.debugMode*/) {
 //			System.out.println("--------------------");
 //			System.out.println("simplifiedPC " + simplePC);
 //			System.out.println("--------------------");
 //		}
 		}
-        return true;
+
 	}
 
 	public PathCondition getSimplifiedPC() {

@@ -147,6 +147,7 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	 */
 
 	static public boolean concolicMode;
+	static public boolean heuristicRandomMode;
 
 	//bytecodes replaced by our symbolic implementation
 	/** This is not needed anymore with the new implementation --neha
@@ -211,6 +212,12 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 			concolicMode = false;
 		}
 
+		String[] heuristicRandom  = conf.getStringArray("symbolic.heuristicRandom");
+		if (heuristicRandom != null) {
+			heuristicRandomMode = true;
+		} else {
+			heuristicRandomMode = false;
+		}
 
 		if(dp[0].equalsIgnoreCase("choco") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare") || dp == null) { // default is choco
 		  ProblemChoco.timeBound = conf.getInt("symbolic.choco_time_bound", 30000);

@@ -16,9 +16,11 @@ symbolic.debug=on
 
 #symbolic.maxreal=1000.0
 
-#symbolic.minint=-100
+symbolic.minint=-100
 
-#symbolic.maxint=100
+symbolic.maxint=100
+
+symbolic.heuristicRandom=false
 
 #listener = .symbc.SymbolicListener
 

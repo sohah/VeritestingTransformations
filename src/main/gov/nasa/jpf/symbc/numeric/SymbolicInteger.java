@@ -20,10 +20,11 @@
 package gov.nasa.jpf.symbc.numeric;
 
 import java.util.Map;
+import java.util.Random;
 
 public class SymbolicInteger extends LinearIntegerExpression
 {
-	public static int UNDEFINED = 1;//Integer.MIN_VALUE+42;
+	public static int UNDEFINED = MinMax.MININT;
 	public int _min = MinMax.MININT;
 	public int _max = MinMax.MAXINT;
 	public int solution = UNDEFINED; // C
@@ -92,8 +93,12 @@ public class SymbolicInteger extends LinearIntegerExpression
 	}
 
 	public int solution() {
-		if (PathCondition.flagSolved)
+		if (PathCondition.flagSolved) {
+			if (solution == UNDEFINED) {
+				return (new Random().nextInt(_max-_min))+_min;
+			}
 			return solution;
+		}
 		else
 			throw new RuntimeException("## Error: PC not solved!");
 	}
