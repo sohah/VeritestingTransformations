@@ -48,6 +48,7 @@ import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.util.Pair;
 
 import java.io.BufferedWriter;
@@ -107,7 +108,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
  	Set<Vector> methodSequences = new LinkedHashSet<Vector>();
 
  	// Name of the class under test
- 	String className;
+ 	String className ="";
 
  	// custom marker to mark error strings in method sequences
  	private final static String exceptionMarker = "##EXCEPTION## ";
@@ -120,15 +121,14 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 		//System.out.println("--------->property violated");
 		JVM vm = search.getVM();
 		SystemState ss = vm.getSystemState();
-		ChoiceGenerator cg = vm.getChoiceGenerator();
+		ChoiceGenerator<?> cg = vm.getChoiceGenerator();
 		if (!(cg instanceof PCChoiceGenerator)){
-			ChoiceGenerator prev_cg = cg.getPreviousChoiceGenerator();
+			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
 			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
 				prev_cg = prev_cg.getPreviousChoiceGenerator();
 			}
 			cg = prev_cg;
 		}
-		//String error = search.getLastError().getDetails();
 		Property prop = search.getLastError().getProperty();
 		String errAnn="";
 		if (prop instanceof NoUncaughtExceptionsProperty) {
@@ -147,7 +147,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 			pc.solve();
 
 			// get the chain of choice generators.
-			ChoiceGenerator [] cgs = ss.getChoiceGenerators();
+			ChoiceGenerator<?> [] cgs = ss.getChoiceGenerators();
 			Vector<String> methodSequence = getMethodSequence(cgs);
 			// Now append the error String and then add methodSequence to methodSequences
 			// prefix the exception marker to distinguish this from
@@ -156,8 +156,6 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				methodSequence.add(0,errAnn);
 			methodSequence.add(exceptionMarker + error);
 			methodSequences.add(methodSequence);
-
-
 		}
 	}
 
@@ -170,18 +168,14 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 			Instruction insn = vm.getLastInstruction();
 			SystemState ss = vm.getSystemState();
 			ThreadInfo ti = vm.getLastThreadInfo();
+			Config conf  = vm.getConfig();
 
 			if (insn instanceof InvokeInstruction && insn.isCompleted(ti)) {
 				InvokeInstruction md = (InvokeInstruction) insn;
 				String methodName = md.getInvokedMethodName();
-				// get number of arguments.
-				// corina: changed this since it is apparently broken
-				int numberOfArgs = md.getArgumentValues(ti).length;//-1;//hack
-				//int numberOfArgs = md.getInvokedMethod(ti).getArgumentTypeNames().length;
+				int numberOfArgs = md.getArgumentValues(ti).length;
 
 				MethodInfo mi = md.getInvokedMethod();
-				Config conf = ti.getVM().getConfig();
-				//neha: full name for the method invoked symbolically
 				if ((BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 
 					// FIXME: get the object name?
@@ -202,6 +196,8 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 
 					// get symbolic attributes
 					// concretely executed method will have null attributes.
+					// TODO: fix there
+
 					byte[] argTypes = mi.getArgumentTypes();
 					Object[] attributes = new Object[numberOfArgs];
 					StackFrame sf = ti.getTopFrame();
@@ -237,22 +233,22 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 
 	public void stateBacktracked(Search search) {
 		JVM vm = search.getVM();
+		Config conf = vm.getConfig();
+
 		Instruction insn = vm.getChoiceGenerator().getInsn();
 		SystemState ss = vm.getSystemState();
 		ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
 		MethodInfo mi = insn.getMethodInfo();
-		//neha: changed methodName to FullName
 		String methodName = mi.getFullName();
-		int numberOfArgs = mi.getArgumentsSize()- 1;// corina: problem here? - 1;
 
-		Config conf = ti.getVM().getConfig(); // Corina: added fix
+		int numberOfArgs = mi.getNumberOfArguments();//mi.getArgumentsSize()- 1;// corina: problem here? - 1;
 
 		if (BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
 
-			ChoiceGenerator cg = vm.getChoiceGenerator();
+			ChoiceGenerator<?> cg = vm.getChoiceGenerator();
 
 			if (!(cg instanceof PCChoiceGenerator)){
-				ChoiceGenerator prev_cg = cg.getPreviousChoiceGenerator();
+				ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
 				while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
 						prev_cg = prev_cg.getPreviousChoiceGenerator();
 				}
@@ -267,7 +263,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				pc.solve();
 
 				// get the chain of choice generators.
-				ChoiceGenerator [] cgs = ss.getChoiceGenerators();
+				ChoiceGenerator<?> [] cgs = ss.getChoiceGenerators();
 				methodSequences.add(getMethodSequence(cgs));
 			}
 		}
@@ -284,7 +280,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 	 * A single invoked 'method' is represented as a String.
 	 *
 	 */
-	private Vector getMethodSequence(ChoiceGenerator [] cgs){
+	private Vector<String> getMethodSequence(ChoiceGenerator [] cgs){
 		// A method sequence is a vector of strings
 		Vector<String> methodSequence = new Vector<String>();
 		ChoiceGenerator cg = null;
@@ -324,8 +320,15 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 		for(int i=0; i<numberOfArgs; i++){
 			Object attribute = attributes[i];
 			if (attribute != null){ // parameter symbolic
-				IntegerExpression e = (IntegerExpression)attributes[i];
-				invokedMethod += e.solution() + ",";
+				// here we should consider different types of symbolic arguments
+				//IntegerExpression e = (IntegerExpression)attributes[i];
+				Object e = attributes[i];
+				String solution = "";
+				if(e instanceof IntegerExpression)
+					solution = solution+ ((IntegerExpression) e).solution();
+				else
+					solution = solution+ ((RealExpression) e).solution();
+				invokedMethod += solution + ",";
 			}
 			else { // parameter concrete - for a concrete parameter, the symbolic attribute is null
 				invokedMethod += argValues[i];
