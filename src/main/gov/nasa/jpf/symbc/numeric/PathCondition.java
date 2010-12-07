@@ -259,8 +259,7 @@ public class PathCondition {
 	}
 
 	public String stringPC() {
-		return "# = " + count + ((header == null) ? "" : "\n" + header.stringPC())
-		            + "\n" + spc.stringPC(); // TODO: to review
+		return "# = " + count + ((header == null) ? "" : "\n" + header.stringPC());
 	}
 
 	public String toString() {
