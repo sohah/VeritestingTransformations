@@ -70,7 +70,7 @@ public abstract class Constraint {
 
   public String stringPC() {
     return left.stringPC() + comp.toString() + right.stringPC()
-        + ((and == null) ? "" : " &&\n" + and.stringPC());
+        + ((and == null) ? "" : " && " + and.stringPC());
   }
 
   public void getVarVals(Map<String,Object> varsVals) {
