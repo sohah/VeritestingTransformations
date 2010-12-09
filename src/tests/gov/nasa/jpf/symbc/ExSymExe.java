@@ -16,9 +16,10 @@ public class ExSymExe {
   /* we want to let the user specify that this method should be symbolic */
 
   public void test1 (int x, boolean b) {
-	  if (x <= 1200)
+	  Integer z = new Integer(x);
+	  if (z <= 1200)
 		  System.out.println("le 0");
-	  if(x >= 1200)
+	  if(z >= 1200)
 		  System.out.println("ge 0");
 	  if(b)
 		  System.out.println("b true");

@@ -26,21 +26,17 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DynamicElementInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.Fields;
-import gov.nasa.jpf.jvm.FloatFieldInfo;
-import gov.nasa.jpf.jvm.IntegerFieldInfo;
+
+
 import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.LongFieldInfo;
+
 import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.ReferenceFieldInfo;
+
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.ARETURN;
-import gov.nasa.jpf.jvm.bytecode.IRETURN;
+//import gov.nasa.jpf.jvm.bytecode.ARETURN;
+//import gov.nasa.jpf.jvm.bytecode.IRETURN;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
@@ -50,41 +46,27 @@ import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.symbc.bytecode.INVOKESTATIC;
-import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
-import gov.nasa.jpf.symbc.heap.HeapNode;
-import gov.nasa.jpf.symbc.heap.SymbolicInputHeap;
-import gov.nasa.jpf.symbc.numeric.Comparator;
+import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
+
+
 import gov.nasa.jpf.symbc.numeric.Expression;
-import gov.nasa.jpf.symbc.numeric.IntegerConstant;
-import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
-import gov.nasa.jpf.symbc.numeric.RealConstant;
-import gov.nasa.jpf.symbc.numeric.RealExpression;
-import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
-import gov.nasa.jpf.symbc.numeric.SymbolicReal;
+
+import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
+//import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+
 import gov.nasa.jpf.util.Pair;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import gov.nasa.jpf.symbc.numeric.MinMax;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemCompare;
-import gov.nasa.jpf.symbc.numeric.solvers.DebugSolvers;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3BitVector;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemIAsolver;
+
 
 public class SymbolicListener extends PropertyListenerAdapter implements PublisherExtension {
 
@@ -146,11 +128,11 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 //			return;
 
 		JVM vm = search.getVM();
-		Config conf = vm.getConfig();
+		//Config conf = vm.getConfig();
 		SystemState ss = vm.getSystemState();
 		ClassInfo ci = vm.getClassInfo();
-		String className = ci.getName();
-		ThreadInfo ti = vm.getLastThreadInfo();
+		//String className = ci.getName();
+		//ThreadInfo ti = vm.getLastThreadInfo();
 		//MethodInfo mi = ti.getMethod();
 		//String methodName = mi.getName();
 		//int numberOfArgs = mi.getNumberOfArguments();
@@ -171,12 +153,20 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				PathCondition pc = ((PCChoiceGenerator) cg).getCurrentPC();
 				String error = search.getLastError().getDetails();
 				error = "\"" + error.substring(0,error.indexOf("\n")) + "...\"";
-				PathCondition result = new PathCondition();
-				IntegerExpression sym_err = new SymbolicInteger("ERROR");
-				IntegerExpression sym_value = new SymbolicInteger(error);
-				result._addDet(Comparator.EQ, sym_err, sym_value);
+				// C: not clear where result was used here -- to review
+				//PathCondition result = new PathCondition();
+				//IntegerExpression sym_err = new SymbolicInteger("ERROR");
+				//IntegerExpression sym_value = new SymbolicInteger(error);
+				//result._addDet(Comparator.EQ, sym_err, sym_value);
 				//solve the path condition, then print it
-				pc.solve();
+				//pc.solve();
+				if (SymbolicInstructionFactory.concolicMode) { //TODO: cleaner
+					SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
+					PCAnalyzer pa = new PCAnalyzer();
+					pa.solve(pc,solver);
+				}
+				else
+					pc.solve();
 				Pair<String,String> pcPair = new Pair<String,String>(pc.stringPC(),error);//(pc.toString(),error);
 				//String methodName = vm.getLastInstruction().getMethodInfo().getName();
 				MethodSummary methodSummary = allSummaries.get(currentMethodName);
@@ -325,14 +315,28 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						if ((cg instanceof PCChoiceGenerator) &&(
 								(PCChoiceGenerator) cg).getCurrentPC() != null){
 							PathCondition pc = ((PCChoiceGenerator) cg).getCurrentPC();
-							pc.solve(); //we only solve the pc
-							PathCondition result = new PathCondition();
+							//pc.solve(); //we only solve the pc
+							if (SymbolicInstructionFactory.concolicMode) { //TODO: cleaner
+								SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
+								PCAnalyzer pa = new PCAnalyzer();
+								pa.solve(pc,solver);
+							}
+							else
+								pc.solve();
+							//C: where is result used?
+							//PathCondition result = new PathCondition();
 							//after the following statement is executed, the pc loses its solution
-							IntegerExpression sym_result = new SymbolicInteger("RETURN");
+							// is the return always an integer??
+							//TODO: to review this part
 							String pcString = pc.stringPC();
 							Pair<String,String> pcPair = null;
 							//after the following statement is executed, the pc loses its solution
 							String returnString = "";
+/* To review
+
+
+							IntegerExpression sym_result = new SymbolicInteger("RETURN");
+
 							if (insn instanceof IRETURN){
 								IRETURN ireturn = (IRETURN)insn;
 								int returnValue = ireturn.getReturnValue();
@@ -364,7 +368,15 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 										result._addDet(Comparator.EQ, sym_result,  new SymbolicInteger(tmp));
 								}
 							}
-							pc.solve();
+							//pc.solve();
+							if (SymbolicInstructionFactory.concolicMode) { //TODO: cleaner
+								SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
+								PCAnalyzer pa = new PCAnalyzer();
+								pa.solve(pc,solver);
+							}
+							else
+								pc.solve();
+end to review*/
 							pcString = pc.toString();
 							pcPair = new Pair<String,String>(pcString,returnString);
 							MethodSummary methodSummary = allSummaries.get(longName);
@@ -390,7 +402,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 		  Instruction insn = vm.getChoiceGenerator().getInsn();
 		  SystemState ss = vm.getSystemState();
-		  ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
+		  //ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
 		  MethodInfo mi = insn.getMethodInfo();
 		  String className = mi.getClassName();
 		  //neha: changed the method name to full name
@@ -502,7 +514,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 
 	  private void printMethodSummaryHTML(PrintWriter pw, MethodSummary methodSummary){
-		  pw.println("<h1>Test Cases Generated by Symbolic Java Path Finder for " +
+		  pw.println("<h1>Test Cases Generated by Symbolic JavaPath Finder for " +
 				  methodSummary.getMethodName() + " (Path Coverage) </h1>");
 
 		  Vector<Pair> pathConditions = methodSummary.getPathConditions();

@@ -890,13 +890,13 @@ public class SymbolicConstraintsGeneral {
 			Set<Entry<SymbolicReal,Object>> sym_realvar_mappings = symRealVar.entrySet();
 			Iterator<Entry<SymbolicReal,Object>> i_real = sym_realvar_mappings.iterator();
 			// first set inf / sup values
-			while(i_real.hasNext()) {
-				Entry<SymbolicReal,Object> e = i_real.next();
-				SymbolicReal pcVar = e.getKey();
-				Object dpVar = e.getValue();
-				pcVar.solution_inf=pb.getRealValueInf(dpVar);
-				pcVar.solution_sup=pb.getRealValueSup(dpVar);
-			}
+//			while(i_real.hasNext()) {
+//				Entry<SymbolicReal,Object> e = i_real.next();
+//				SymbolicReal pcVar = e.getKey();
+//				Object dpVar = e.getValue();
+//				pcVar.solution_inf=pb.getRealValueInf(dpVar);
+//				pcVar.solution_sup=pb.getRealValueSup(dpVar);
+//			}
 
 			try{
 				sym_realvar_mappings = symRealVar.entrySet();
@@ -979,17 +979,18 @@ public class SymbolicConstraintsGeneral {
 			// Note: using solution_inf or solution_sup alone sometimes fails
 			// because of floating point inaccuracies
 			// trick to get a better value: cast to float?
-			pcVar.solution = (prob.getRealValueInf(dpVar) + prob
-					.getRealValueSup(dpVar)) / 2;
+			pcVar.solution =  prob.getRealValueInf(dpVar);
+				//(prob.getRealValueInf(dpVar) + prob
+					//.getRealValueSup(dpVar)) / 2;
 			// (float)pcVar.solution_inf;
-			prob.post(prob.eq(dpVar, pcVar.solution));
-			isSolvable = prob.solve();
-			if (isSolvable == null)
-				isSolvable = Boolean.FALSE;
+			//prob.post(prob.eq(dpVar, pcVar.solution));
+			//isSolvable = prob.solve();
+			//if (isSolvable == null)
+				//isSolvable = Boolean.FALSE;
 
 		}
 		if (!isSolvable) {
-			System.err.println("# Warning: PC " + pc.stringPC()
+			System.out.println("# Warning: PC " //+ pc.stringPC()
 					+ " is solvable but could not find the solution!");
 			return null; // alert debugSolver to not bother checking this result
 		} else {

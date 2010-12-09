@@ -222,7 +222,9 @@ public class PathCondition {
 	public boolean solve() {// warning: solve calls simplify
 
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
+
 		boolean result1 = solver.solve(this);
+		solver.cleanup();
 		PathCondition.flagSolved = true;
 
 		// modification for string path condition

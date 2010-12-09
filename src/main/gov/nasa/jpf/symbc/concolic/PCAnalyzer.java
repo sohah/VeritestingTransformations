@@ -12,7 +12,7 @@ public class PCAnalyzer {
 	// concrete values on
 	PathCondition concolicPC;
 
-	static public int MAX_TRIES = 3;
+	static public int MAX_TRIES = 1;
 
 	// extraPC encodes extra EQ constraints of the form x == solution, where solution is obtained by solving simplePC
 	PathCondition extraPC; // spaghetti code; TODO this better
@@ -21,11 +21,13 @@ public class PCAnalyzer {
 
 	// first we split the PC into the easy and concolic parts
 	// concolic refers to the parts that we cannot handle with a DP and instead use concrete values for.
+
 	public boolean isSatisfiable(PathCondition pc, SymbolicConstraintsGeneral solver) {
 		if (pc == null || pc.header == null) return true;
 		boolean result = false;
 		PathCondition working_pc = pc.make_copy();
 		int tries = 0;// heuristic to try different solutions up to some counter given by the user
+
 		while(tries < MAX_TRIES) {
 			if (SymbolicInstructionFactory.debugMode) {
 				System.out.println("--------working PC------------"+tries);
@@ -50,7 +52,10 @@ public class PCAnalyzer {
 					System.out.println("combined PC not satisfiable");
 			}
 
-			if(result) return true;
+			if(result) {
+				//solver.solve(getSimplifiedPC());
+				return true;
+			}
 
 			if(!SymbolicInstructionFactory.heuristicRandomMode) {
 				// Heuristic 1: systematically try different solutions
@@ -62,7 +67,7 @@ public class PCAnalyzer {
 
 				Constraint cRef = extraPC.header;
 				while (cRef != null) {
-					cRef.setComparator(Comparator.GT); // should be NE
+					cRef.setComparator(Comparator.GT); // TODO: should be NE but choco can not handle it
 					cRef=cRef.and;
 				}
 				working_pc.prependAllConjuncts(extraPC.header);
@@ -73,9 +78,20 @@ public class PCAnalyzer {
 			tries ++;
 		}
 
+		assert !result;
 		return result;
 	}
 
+	// called only for satisfiable pc: could be simplified
+	// not in synch with the heuristics
+	public boolean solve(PathCondition pc, SymbolicConstraintsGeneral solver) {
+		if (pc == null || pc.header == null) return true;
+			splitPathCondition(pc);
+			simplePC.solve();
+			if(concolicPC == null || concolicPC.header == null) return true;
+			createSimplifiedPC();
+			return solver.solve(getSimplifiedPC());
+	}
 
 	/*
 	 * Walks the PC and splits it into simplePC and concolicPC
@@ -195,7 +211,7 @@ public class PCAnalyzer {
 
 	Expression getExpression(Expression eRef) {
 		assert eRef != null;
-		assert !(eRef instanceof RealConstant);
+		//assert !(eRef instanceof RealConstant);
 
 		if (eRef instanceof SymbolicReal || eRef instanceof RealConstant) {
 			return eRef;

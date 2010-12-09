@@ -42,13 +42,16 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.symbc.bytecode.INVOKESTATIC;
+import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
+import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.util.Pair;
 
 import java.io.BufferedWriter;
@@ -144,7 +147,13 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 
 			PathCondition pc = ((PCChoiceGenerator) cg).getCurrentPC();
 			//solve the path condition
-			pc.solve();
+			if (SymbolicInstructionFactory.concolicMode) { //TODO: cleaner
+				SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
+				PCAnalyzer pa = new PCAnalyzer();
+				pa.solve(pc,solver);
+			}
+			else
+				pc.solve();
 
 			// get the chain of choice generators.
 			ChoiceGenerator<?> [] cgs = ss.getChoiceGenerators();
@@ -260,8 +269,13 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 
 				PathCondition pc = ((PCChoiceGenerator) cg).getCurrentPC();
 				//solve the path condition
-				pc.solve();
-
+				if (SymbolicInstructionFactory.concolicMode) { //TODO: cleaner
+					SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
+					PCAnalyzer pa = new PCAnalyzer();
+					pa.solve(pc,solver);
+				}
+				else
+					pc.solve();
 				// get the chain of choice generators.
 				ChoiceGenerator<?> [] cgs = ss.getChoiceGenerators();
 				methodSequences.add(getMethodSequence(cgs));

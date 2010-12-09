@@ -54,14 +54,13 @@ public class ProblemYices extends ProblemGeneral {
 		yices.yicesl_read(ctx,"(define "+name+"::int)");
 		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
 		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
-//		yices.yicesl_read(ctx,"(assert (> "+ name + " 0))");
 		return name;
 	}
 
 	public String makeRealVar(String name, double min, double max) {
 		yices.yicesl_read(ctx,"(define "+name+"::real)");
-//		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
-//		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
+		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
+		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
 		return name;
 	}
 
@@ -207,8 +206,9 @@ public class ProblemYices extends ProblemGeneral {
 	public double getRealValueInf(Object dpVar) {
 //		return ((RealVar) dpVar).getValue().getInf();
 //		throw new RuntimeException("# Error: Yices can not compute realValueInf!");
-		System.out.println("# Warning: Yices can not compute realValueInf! (used 0.0)");
-		return 0.0;
+		//System.out.println("# Warning: Yices can not compute realValueInf! (used 0.0)");
+		//return 0.0;
+		return getRealValue(dpVar);
 	}
 	public double getRealValueSup(Object dpVar) {
 //		return ((RealVar) dpVar).getValue().getSup();
@@ -263,7 +263,8 @@ public class ProblemYices extends ProblemGeneral {
 		        }
 		    }
 		}
-		throw new RuntimeException("# Error: Yices didn't find real solution for variable "+vname);
+		//throw new RuntimeException("# Error: Yices didn't find real solution for variable "+vname);
+		return 0.0;
 	}
 	static java.io.File f;
 	static java.io.FileReader fr;
