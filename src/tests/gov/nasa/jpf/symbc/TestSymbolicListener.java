@@ -266,8 +266,11 @@ public class TestSymbolicListener extends SymbolicListener {
       if (null != ci) {
         if (checkSymbolicEntry(vm.getConfig(), mi.getName(), mi
             .getNumberOfArguments(), mi, ci.getName())) {
-          outputs.put(getCurrentPC(ss.getChoiceGenerator()), currentOutput());
-
+          PathCondition pc = getCurrentPC(ss.getChoiceGenerator());
+          if(pc == null) {
+            pc = new PathCondition();
+          } 
+          outputs.put(pc, currentOutput());
         }
       }
     }
@@ -283,6 +286,6 @@ public class TestSymbolicListener extends SymbolicListener {
       publisher.getOut().println(pc);
       publisher.getOut().println(outputs.get(pc));
 
-    }
   }
+}
 }
