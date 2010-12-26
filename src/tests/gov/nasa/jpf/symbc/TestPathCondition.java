@@ -1,51 +1,49 @@
 package gov.nasa.jpf.symbc;
 
-public class TestPathCondition {
+import org.junit.Test;
+
+public class TestPathCondition extends InvokeTest{
 
 	// ------------------------ test1(float, float) -----------------------------
 
 	// x > 1.1f
-	private static String PC1 = "# = 1\nx_SYMREAL > CONST_1.100000023841858";
+	private static String PC1 = "# = 1\nx_1_SYMREAL > CONST_1.100000023841858";
 
 	//
 	// (x <= 1.1f)
-	private static String PC2 = "# = 1\nx_SYMREAL < CONST_1.100000023841858";
+	private static String PC2 = "# = 1\nx_1_SYMREAL < CONST_1.100000023841858";
 
-	private static String PC3 = "# = 1\nCONST_1.100000023841858 == x_SYMREAL";
+	private static String PC3 = "# = 1\nCONST_1.100000023841858 == x_1_SYMREAL";
 
 	//
 	// [(x > 1.1f) && ((z := y) > 30.0f)] || [(x < 1.1f) && ((z := x+y) > 30.0f)] || [(x == 1.1f) && ((z := x+y) > 30.0f)]
-	private static String PC4 = "# = 2\n(x_SYMREAL + y_SYMREAL) > CONST_30.0 && CONST_1.100000023841858 == x_SYMREAL";
+	private static String PC4 = "# = 2\n(x_1_SYMREAL + y_2_SYMREAL) > CONST_30.0 && CONST_1.100000023841858 == x_1_SYMREAL";
 
-	private static String PC5_5 = "# = 2\ny_SYMREAL > CONST_30.0 && x_SYMREAL > CONST_1.100000023841858";
+	private static String PC5_5 = "# = 2\ny_2_SYMREAL > CONST_30.0 && x_1_SYMREAL > CONST_1.100000023841858";
 
-	private static String PC5_75 = "# = 2\n(x_SYMREAL + y_SYMREAL) > CONST_30.0 && x_SYMREAL < CONST_1.100000023841858";
+	private static String PC5_75 = "# = 2\n(x_1_SYMREAL + y_2_SYMREAL) > CONST_30.0 && x_1_SYMREAL < CONST_1.100000023841858";
 
-	// private static String PC5_75 = "# = 2\n(x_SYMREAL + y_SYMREAL) > CONST_30.0 && x_SYMREAL < CONST_1.100000023841858";
+	// private static String PC5_75 = "# = 2\n(x_1_SYMREAL + y_2_SYMREAL) > CONST_30.0 && x_1_SYMREAL < CONST_1.100000023841858";
 
 	//
 	// [((z := x+y) < 30.0f) && (x == 1.1f)] || [(x < 1.1f) && ((z := x+y) < 30.0f)] ||
 	// [(x < 1.1f) && ((z := x+y) == 30.0f)] || [(x == 1.1f) && ((z := x+y) == 30.0f)] ||
 	// [(x > 1.1f) && ((z := y) < 30.0f)] || [(x > 1.1f) && ((z := y) == 30.0f)]
-	private static String PC6 = "# = 2\n(x_SYMREAL + y_SYMREAL) < CONST_30.0 && CONST_1.100000023841858 == x_SYMREAL";
+	private static String PC6 = "# = 2\n(x_1_SYMREAL + y_2_SYMREAL) < CONST_30.0 && CONST_1.100000023841858 == x_1_SYMREAL";
 
-	private static String PC6_5 = "# = 2\nCONST_30.0 == (x_SYMREAL + y_SYMREAL) && CONST_1.100000023841858 == x_SYMREAL";
+	private static String PC6_5 = "# = 2\nCONST_30.0 == (x_1_SYMREAL + y_2_SYMREAL) && CONST_1.100000023841858 == x_1_SYMREAL";
 
-	private static String PC6_75 = "# = 2\nCONST_30.0 == (x_SYMREAL + y_SYMREAL) && x_SYMREAL < CONST_1.100000023841858";
+	private static String PC6_75 = "# = 2\nCONST_30.0 == (x_1_SYMREAL + y_2_SYMREAL) && x_1_SYMREAL < CONST_1.100000023841858";
 
-	// private static String PC6_75 = "# = 2\nCONST_30.0 == (x_SYMREAL + y_SYMREAL) && x_SYMREAL < CONST_1.100000023841858";
+	// private static String PC6_75 = "# = 2\nCONST_30.0 == (x_1_SYMREAL + y_2_SYMREAL) && x_1_SYMREAL < CONST_1.100000023841858";
 
-	private static String PC7 = "# = 2\n(x_SYMREAL + y_SYMREAL) < CONST_30.0 && x_SYMREAL < CONST_1.100000023841858";
+	private static String PC7 = "# = 2\n(x_1_SYMREAL + y_2_SYMREAL) < CONST_30.0 && x_1_SYMREAL < CONST_1.100000023841858";
 
-	// private static String PC7 = "# = 2\n(x_SYMREAL + y_SYMREAL) < CONST_30.0 && x_SYMREAL < CONST_1.100000023841858";
+	// private static String PC7 = "# = 2\n(x_1_SYMREAL + y_2_SYMREAL) < CONST_30.0 && x_1_SYMREAL < CONST_1.100000023841858";
 
-	private static String PC8 = "# = 2\ny_SYMREAL < CONST_30.0 && x_SYMREAL > CONST_1.100000023841858";
+	private static String PC8 = "# = 2\ny_2_SYMREAL < CONST_30.0 && x_1_SYMREAL > CONST_1.100000023841858";
 
-	private static String PC9 = "# = 2\nCONST_30.0 == y_SYMREAL && x_SYMREAL > CONST_1.100000023841858";
-
-	private static String makePCAssertString(String location, String goodPC, String badPC) {
-		return String.format("Bad Path condition in %s:\nEXPECTED:\n%s\nACTUAL:\n%s\n", location, goodPC, badPC);
-	}
+	private static String PC9 = "# = 2\nCONST_30.0 == y_2_SYMREAL && x_1_SYMREAL > CONST_1.100000023841858";
 
 	// "private" forces calls to use INVOKESPECIAL
 	private void test1(float x, float y) {
@@ -112,9 +110,9 @@ public class TestPathCondition {
 
 	// ------------------------ test2_sym(double, double) -----------------------------
 	// Same as test2_concrete except called with symbolic args, so Path Condition changes inside the "if" statements.
-	private static String PC_TEST2_1 = "# = 3\nu_SYMREAL > CONST_1.1 && ";
-	private static String PC_TEST2_2 = "# = 3\nCONST_1.1 == u_SYMREAL && ";
-	private static String PC_TEST2_3 = "# = 3\nu_SYMREAL < CONST_1.1 && ";
+	private static String PC_TEST2_1 = "# = 3\nu_3_SYMREAL > CONST_1.1 && ";
+	private static String PC_TEST2_2 = "# = 3\nCONST_1.1 == u_3_SYMREAL && ";
+	private static String PC_TEST2_3 = "# = 3\nu_3_SYMREAL < CONST_1.1 && ";
 	
 	// "private" forces calls to use INVOKESPECIAL
 	private void test2_sym(double x2, double y2) {
@@ -157,14 +155,25 @@ public class TestPathCondition {
 	 * @param args
 	 */
 	public void test(float x, float y, double u, double v, int s, int t) {
-		test1(x, y);
+    test1(x, y);
 		test2_concrete(11.0, 21.0);
 		test2_sym(u,v);
 		test3_concrete(11.0, 21.0);
 	}
 
 	public static void main(String[] args) {
-		TestPathCondition test = new TestPathCondition();
-		test.test(11.0f, 21.0f, 31.0, 41.0, 51, 61);
+    runTestsOfThisClass(args);
 	}
+
+  private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.TestPathCondition.test(sym#sym#sym#sym#sym#sym)";
+  private static final String[] JPF_ARGS = {INSN_FACTORY, SYM_METHOD};
+
+  @Test
+  public void mainTest() {
+    if (verifyNoPropertyViolation(JPF_ARGS)) {
+      TestPathCondition test = new TestPathCondition();
+
+      test.test(11.0f, 21.0f, 31.0, 41.0, 51, 61);
+    }
+  }
 }
