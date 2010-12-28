@@ -41,6 +41,7 @@ public class FunctionExpression extends RealExpression
 	String method_name;
 	Class<?>[] argTypes;
 	public Expression [] sym_args;
+	static URLClassLoader clsLoader = null;
 
 	// what happens when there are no arguments?
 	public FunctionExpression (String cls, String mth, Class<?>[] ast, Expression [] sym_as)
@@ -62,23 +63,26 @@ public class FunctionExpression extends RealExpression
 		assert(sym_args!=null && sym_args.length >0);
 
 		try {
-
-			 ArrayList<String> list = new ArrayList<String>();
-			 String[] cp = ClassInfo.getClassPathElements();
-			 cp = FileUtils.expandWildcards(cp);
-			 for (String e : cp) {
-			      list.add(e);
-			 }
-			 URL[] urls = FileUtils.getURLs(list);
-
-			URLClassLoader loader = new URLClassLoader(urls);
+			if(clsLoader == null) {
+				ArrayList<String> list = new ArrayList<String>();
+				String[] cp = ClassInfo.getClassPathElements();
+				cp = FileUtils.expandWildcards(cp);
+				for (String e : cp) {
+					list.add(e);
+				}
+				URL[] urls = FileUtils.getURLs(list);
+				clsLoader = new URLClassLoader(urls);
+			}
+			
 			Class<?> cls = null;
 			try {
-				cls = Class.forName(class_name, true, loader);
+				cls = Class.forName(class_name, true, clsLoader);
 			} catch (ClassNotFoundException c) {
 				System.err.println("Class not found:" + class_name);
+			} catch (UnsatisfiedLinkError e) {
+				
 			}
-
+			
 			  Object[] args = new Object[sym_args.length];
 		      for (int i=0; i<args.length; i++)
 		    	  if (sym_args[i] instanceof IntegerExpression) {
@@ -90,16 +94,22 @@ public class FunctionExpression extends RealExpression
 		      Method m = cls.getMethod(method_name, argTypes);
 		      int modifiers = m.getModifiers();
 		      if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)){
-		        Object result = m.invoke(null, args); // here we need the type of the result
+		    	  Object result = null;
+		    	  try {
+		    		  result = m.invoke(null, args); // here we need the type of the result
+		    	  } catch(InvocationTargetException e) {
+		    		 e.printStackTrace();
+		    		 System.err.println("exception :" + e.getMessage());
+		    	  }
 		        if (result instanceof Double) {
 		        	//System.out.println("result type is double");
 		        	return ((Double) result).doubleValue();
 		        }
 		        if (result instanceof Integer) {
-		        	System.out.println("result type is int");
+		        	//System.out.println("result type is int");
 		        	return ((Integer) result).doubleValue();
 		        }
-		        System.out.println("result "+result);
+		        //System.out.println("result "+result);
 		      }
 		}
 

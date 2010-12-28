@@ -1,0 +1,12 @@
+target = concolic.TestStatCalc
+
+
+symbolic.concolic=true
+symbolic.debug=on
+symbolic.method=concolic.StatCalculator.addValue(sym)
+listener=gov.nasa.jpf.symbc.SymbolicListener,.symbc.concolic.ConcreteExecutionListener
+
+
+classpath = ${jpf-symbc}/build/examples
+sourcepath = ${jpf-symbc}/build/examples
+
