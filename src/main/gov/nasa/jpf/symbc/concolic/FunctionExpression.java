@@ -78,8 +78,11 @@ public class FunctionExpression extends RealExpression
 			try {
 				cls = Class.forName(class_name, true, clsLoader);
 			} catch (ClassNotFoundException c) {
+				c.printStackTrace();
 				System.err.println("Class not found:" + class_name);
 			} catch (UnsatisfiedLinkError e) {
+				e.printStackTrace();
+				System.out.println("unsatisfied link error");
 				
 			}
 			
