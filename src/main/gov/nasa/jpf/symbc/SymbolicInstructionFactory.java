@@ -171,7 +171,7 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	};**/
 
 
-	InstructionFactoryFilter filter = new InstructionFactoryFilter(null, new String[] {"java.*", "javax.*" },
+	InstructionFactoryFilter filter = new InstructionFactoryFilter(null, new String[] {/*"java.*",*/ "javax.*" },
 			null, null);
 
 

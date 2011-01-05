@@ -1,6 +1,8 @@
 package gov.nasa.jpf.symbc;
 
-public class TestTermination {
+import org.junit.Test;
+
+public class TestTermination extends InvokeTest{
 	static void test(int i, int j, int k) {
 		//while (i <= 100 && j <= k) {
 		if(i <=100 && j <=k) {
@@ -18,8 +20,19 @@ public class TestTermination {
 		}
 	}
 	
-	public static void main(String[] args) {
-		test (0,0,0);
-	}
+  private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.TestTermination.test(sym#sym#sym)";
+  private static final String[] JPF_ARGS = {INSN_FACTORY, SYM_METHOD};
+
+  public static void main(String[] args) {
+    runTestsOfThisClass(args);
+  }
+
+  @Test
+  public void mainTest() {
+    if (verifyNoPropertyViolation(JPF_ARGS)) {
+      TestTermination test = new TestTermination();
+      test.test (0,0,0);
+    }
+  }
 
 }

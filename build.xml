@@ -190,7 +190,7 @@
       <fileset dir="build/annotations" erroronmissingdir="false"/>
     </jar>
   </target>
-
+  
 
   <target name="dist" description="build binary distribution">
     <delete file="build/${ant.project.name}.zip"/>
@@ -242,6 +242,10 @@
         <fileset dir="build/tests">
           <exclude name="**/JPF_*.class"/>
           <include name="**/Test*.class"/>
+          <exclude name="**/TestBitwise*.class"/>
+          <exclude name="**/Test*$*.class"/>
+          <exclude name="**/TestSymbolicListener.class"/>
+          <exclude name="**/TestSymbolicOutput.class"/>          
         </fileset>
       </batchtest>
 

@@ -1,6 +1,8 @@
 package gov.nasa.jpf.symbc;
 
-public class TestInvokeSTATICandVIRTUAL {
+import org.junit.Test;
+
+public class TestInvokeSTATICandVIRTUAL extends InvokeTest{
 	@Preconditions("x>0.0&&y>0.0")
 	private static void testFloat(float x, float y) {
 		if (x > y)
@@ -123,26 +125,33 @@ public class TestInvokeSTATICandVIRTUAL {
 		else
 			System.out.println("*** y<z");
 	}
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		double x = 7.0;
-		double y = 9.0;
-		testFloat((float)x,(float)y);
-		testDouble(x,y);
-		(new TestInvokeSTATICandVIRTUAL()).testDoubleThis(x,y);
-		(new TestInvokeSTATICandVIRTUAL()).testFloatDoubleThis((float)x,y);
-		//(new TestInvokeSTATICandVIRTUAL()).testSimple(0);
-		//test1(11.0f, 21.0f);
-		//test2(11.0, 21.0);
-		//(new TestInvokeSTATICandVIRTUAL()).test3(0.0f, 0.0f);
-		//(new TestInvokeSTATICandVIRTUAL()).test4(0.0, 0.0);
-		//(new TestInvokeSTATICandVIRTUAL()).test5(0, 0);
-		//test6(0, 0);
-		//test7(0,0,0);
-		//(new TestInvokeSTATICandVIRTUAL()).test8(0, 0,0);
 
+  public static void main(String[] args) {
+    runTestsOfThisClass(args);
 	}
+
+  private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.TestInvokeSTATICandVIRTUAL.testFloat(sym#sym)";
+  private static final String[] JPF_ARGS = {INSN_FACTORY, SYM_METHOD};
+
+  @Test
+  public void mainTest() {
+    if (verifyNoPropertyViolation(JPF_ARGS)) {
+      double x = 7.0;
+      double y = 9.0;
+      testFloat((float)x,(float)y);
+      testDouble(x,y);
+      (new TestInvokeSTATICandVIRTUAL()).testDoubleThis(x,y);
+      (new TestInvokeSTATICandVIRTUAL()).testFloatDoubleThis((float)x,y);
+      //(new TestInvokeSTATICandVIRTUAL()).testSimple(0);
+      //test1(11.0f, 21.0f);
+      //test2(11.0, 21.0);
+      //(new TestInvokeSTATICandVIRTUAL()).test3(0.0f, 0.0f);
+      //(new TestInvokeSTATICandVIRTUAL()).test4(0.0, 0.0);
+      //(new TestInvokeSTATICandVIRTUAL()).test5(0, 0);
+      //test6(0, 0);
+      //test7(0,0,0);
+      //(new TestInvokeSTATICandVIRTUAL()).test8(0, 0,0);
+    }
+  }
 
 }

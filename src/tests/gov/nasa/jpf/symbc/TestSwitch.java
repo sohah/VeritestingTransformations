@@ -1,7 +1,9 @@
 package gov.nasa.jpf.symbc;
 
+import org.junit.Test;
 
-public class TestSwitch {
+
+public class TestSwitch extends InvokeTest{
 	public enum Y {Y1, Y2};
 	
 	void testSwitch1() {
@@ -20,12 +22,19 @@ public class TestSwitch {
 		}
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		TestSwitch test = new TestSwitch();
+  private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.TestSwitch.testSwitch1()";
+  private static final String[] JPF_ARGS = {INSN_FACTORY, SYM_METHOD};
 
-		test.testSwitch1();
-	}
+  public static void main(String[] args) {
+    runTestsOfThisClass(args);
+  }
+
+  @Test
+  public void mainTest() {
+    if (verifyNoPropertyViolation(JPF_ARGS)) {
+      TestSwitch test = new TestSwitch();
+      test.testSwitch1();
+    }
+  }
+
 }
