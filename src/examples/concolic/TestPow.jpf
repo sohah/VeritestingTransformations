@@ -11,7 +11,7 @@ symbolic.method=concolic.PowExample.test(sym#sym)
 symbolic.concolic=true
 
 
-#symbolic.debug=on
+symbolic.debug=on
 
 symbolic.minreal=-10.0
 
