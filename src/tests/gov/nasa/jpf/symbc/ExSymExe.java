@@ -11,16 +11,37 @@ public class ExSymExe {
 	  field = 9;
 	  //inst.test(0, 1);
 	  //inst.test2(x,x);
-	  inst.test1(x,true);
+	  //inst.test1(x,true);
+	  inst.test3(0.0, 0.0);
+	  inst.test4(0.0, 0);
   }
   /* we want to let the user specify that this method should be symbolic */
+
+  public void test3(double x, double y) {
+	  if(Math.sin(x)+Math.cos(y)==1)
+		  System.out.println("eq");
+	  else
+		  System.out.println("neq");
+
+	  System.out.println("1. <1"+(Math.sin(-10000.0)+Math.cos(-10000.0)));
+	  System.out.println("2. ==1"+(Math.sin(-10000.0)+Math.cos(-9998.118620049521)));
+	  System.out.println("3. >1"+(Math.sin(-10000.0)+Math.cos(-9998.118619049521)));
+  }
+
+  public void test4(double x, int y) {
+	  if(x+y==0)
+		  System.out.println("eq");
+	  else
+		  System.out.println("neq");
+  }
+
 
   public void test1 (int x, boolean b) {
 	  Integer z = new Integer(x);
 	  if (z <= 1200)
-		  System.out.println("le 0");
+		  System.out.println("le 1200");
 	  if(z >= 1200)
-		  System.out.println("ge 0");
+		  System.out.println("ge 1200");
 	  if(b)
 		  System.out.println("b true");
 	  else

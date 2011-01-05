@@ -17,3 +17,4 @@ symbolic.maxint=100
 #search.class = .search.heuristic.BFSHeuristic
 
 listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener,gov.nasa.jpf.listener.CoverageAnalyzer
+coverage.show_methods=true
