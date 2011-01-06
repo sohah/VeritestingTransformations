@@ -6,9 +6,9 @@ javac Bessel.java
 # Generate a C header file
 javah -jni Bessel
 
-gcc -c -m64 BesselImp.c
+gcc -c -m64 concolic_BesselImp.c
 
-gcc -m64 -dynamiclib BesselImp.o -o libCJavaInterface.dylib
+gcc -m64 -dynamiclib concolic_BesselImp.o -o libCJavaInterface.dylib
 
 # Set the search path for shared libraries
 export LD_LIBRARY_PATH=.
