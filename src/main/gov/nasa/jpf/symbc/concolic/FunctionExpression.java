@@ -21,14 +21,15 @@ package gov.nasa.jpf.symbc.concolic;
 // support for arbitrary external functions
 
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.symbc.numeric.Constraint;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
+import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.util.FileUtils;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.io.File;
 import java.lang.reflect.*;
 //import java.net.MalformedURLException;
 //import java.net.URI;
@@ -42,9 +43,11 @@ public class FunctionExpression extends RealExpression
 	Class<?>[] argTypes;
 	public Expression [] sym_args;
 	static URLClassLoader clsLoader = null;
+	ArrayList<PathCondition> conditions;
 
 	// what happens when there are no arguments?
-	public FunctionExpression (String cls, String mth, Class<?>[] ast, Expression [] sym_as)
+	public FunctionExpression (String cls, String mth, Class<?>[] ast, 
+			Expression [] sym_as, ArrayList<PathCondition> conditions)
 	{
 		class_name = cls;
 		method_name = mth;
@@ -52,6 +55,7 @@ public class FunctionExpression extends RealExpression
 		// do we need a deep copy here or a shallow copy is enough?
 		argTypes = ast;
 		sym_args = sym_as;
+		this.conditions = conditions;
 	}
 
 	// here we assume that the solution is always double; if it is not we can cast it later;

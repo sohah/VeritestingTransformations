@@ -15,8 +15,7 @@ public class PartitionEx {
 	}
 	
 	@Concrete("true")
-	@Partition({"z within 10 +- 4", "z > 0",
-					"z within 10 +- 15"})
+	@Partition({"z>5.0&&z<10.0","z>0.0"})
 	public static double runConcrete(double z) {
 		if(z == 10) {
 			return z / 1.2;

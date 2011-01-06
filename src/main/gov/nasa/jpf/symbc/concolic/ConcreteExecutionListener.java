@@ -1,11 +1,17 @@
 package gov.nasa.jpf.symbc.concolic;
 
+import gov.nasa.jpf.symbc.numeric.PathCondition;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.AnnotationInfo;
 import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
@@ -15,13 +21,13 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.RealConstant;
-
 public class ConcreteExecutionListener extends PropertyListenerAdapter {
 
 	Config config;
 	public static boolean debug = false;
 	long ret;
 	Object resultAttr; 
+	String[] partitions;
 	
 	public enum type {
 		INT, DOUBLE, FLOAT, BYTE, 
@@ -38,6 +44,7 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 		MethodInfo mi = vm.getCurrentThread().getMethod();
 		if(lastInsn != null && lastInsn instanceof InvokeInstruction) {
 			boolean foundAnote = checkConcreteAnnotation(mi);
+			
 			if(foundAnote) {
 				
 				//System.out.println(lastInsn.getSourceLine() + "srcLine");
@@ -61,24 +68,32 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 
 	private boolean checkConcreteAnnotation(MethodInfo mi) {
 		AnnotationInfo[] ai = mi.getAnnotations();
-		if(ai == null || ai.length == 0)  return false;
+		boolean retVal = false;
+		if(ai == null || ai.length == 0)  return retVal;
 		for(int aIndex = 0; aIndex < ai.length; aIndex++) {
 			AnnotationInfo annotation = ai[aIndex];
 			if(annotation.getName().equals
 							("gov.nasa.jpf.symbc.Concrete")) {
 				if(annotation.valueAsString().
 									equalsIgnoreCase("true"))
-					return true;
+					retVal = true;
 				else 
-					return false;
+					retVal = false;
+			} else if (annotation.getName().equals
+					("gov.nasa.jpf.symbc.Partition"))	 {
+				
+				partitions = annotation.getValueAsStringArray();
+				for(int i = 0; i < partitions.length; i++) {
+					System.out.println(partitions[i]);
+				}
 			}
 		}
-		return false;
+		return retVal;
 	}
 	
 	private void generateFunctionExpression(MethodInfo mi, InvokeInstruction ivk,
 			ThreadInfo ti){
-		
+		System.out.println("coming here");
 		Object [] attrs = ivk.getArgumentAttrs(ti);
 		Object [] values = ivk.getArgumentValues(ti);
 		String [] types = mi.getArgumentTypeNames();
@@ -92,6 +107,10 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 		Class<?>[] args_type = new Class<?> [size];
 		Expression[] sym_args = new Expression[size];
 		
+		Map<String,Expression> expressionMap = 
+			new HashMap<String, Expression>();
+		LocalVarInfo[] localVars = mi.getLocalVars();
+		
 		for(int argIndex = 0; argIndex < size; argIndex++) {
 			Object attribute = attrs[argIndex];
 			if(attribute == null) {
@@ -100,14 +119,20 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 								values[argIndex]);
 			} else {
 				sym_args[argIndex] = (Expression) attribute;
+				expressionMap.put(localVars[argIndex].getName(),
+						sym_args[argIndex]);
+				
+				
 			}
 			args_type[argIndex] = checkArgumentTypes(types[argIndex]);
 		}
-		//System.out.println("In the generate function expression" + mi.getClassName());
+		
+		ArrayList<PathCondition> conditions = Partition.
+							createConditions(partitions, expressionMap);
 		
 		FunctionExpression result = new FunctionExpression(
 				  mi.getClassName(),
-				  mi.getName(), args_type, sym_args);
+				  mi.getName(), args_type, sym_args, conditions);
 		//System.out.println("result is :" + result.toString());
 		checkReturnType(ti, mi, result);
 	}

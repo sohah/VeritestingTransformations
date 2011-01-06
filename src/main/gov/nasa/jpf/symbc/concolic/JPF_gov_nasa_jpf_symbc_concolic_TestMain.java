@@ -31,7 +31,7 @@ public class JPF_gov_nasa_jpf_symbc_concolic_TestMain {
 
 		  FunctionExpression result = new FunctionExpression(
 				  "gov.nasa.jpf.symbc.concolic.TestMain",
-				  "hash_java", args_type, sym_args);
+				  "hash_java", args_type, sym_args, null);
 		  env.setReturnAttribute(result);
 		  // System.out.println("result "+result);
 		  return 0.0;
