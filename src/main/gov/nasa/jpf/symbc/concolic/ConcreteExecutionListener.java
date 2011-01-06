@@ -58,8 +58,8 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 				Instruction nextIns = sf.getPC().getNext();
 				//System.out.println(nextIns.getSourceLine());
 				
-			    vm.getCurrentThread().skipInstruction();
-			    vm.getCurrentThread().setNextPC(nextIns);
+			    vm.getCurrentThread().skipInstruction(nextIns);
+			    //vm.getCurrentThread().setNextPC(nextIns);
 			
 				
 			}
