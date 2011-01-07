@@ -1,0 +1,17 @@
+target=concolic.MathSin
+
+
+classpath=${jpf-symbc}/build/examples
+
+sourcepath=${jpf-symbc}/src/examples
+
+symbolic.method=concolic.MathSin.calc(sym)
+symbolic.concolic=true
+#symbolic.heuristicRandom=true
+
+symbolic.debug=on
+
+listener = .symbc.concolic.ConcreteExecutionListener
+
+
+vm.storage.class=nil
