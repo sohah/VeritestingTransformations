@@ -43,14 +43,14 @@ public class Partition {
 			addExpression(assumeString,expressionMap, pc);
 		}
 
-		System.out.println("parition "+pc);
+		//System.out.println("parition "+pc);
 		return pc;
 	}
 
 	public PathCondition addConstraints(PathCondition pc, String assumeString,
 			Map<String,Expression> expressionMap) {
 
-		System.out.println("Precondition: "+assumeString);
+		//System.out.println("Precondition: "+assumeString);
 
 		if (assumeString.contains("&&")){
 			StringTokenizer st = new StringTokenizer(assumeString,"&&");
@@ -63,7 +63,7 @@ public class Partition {
 		}
 
 		//System.out.println("added precondition "+ assumeString);
-		System.out.println("PC: "+ pc);
+		//System.out.println("PC: "+ pc);
 		return pc;
 	}
 
@@ -119,17 +119,16 @@ public class Partition {
 		}else
 			throw new RuntimeException("## Error: parse error in pre-condition (op)");
 
-		System.out.println("expressionMap :" + expressionMap.toString());
-		System.out.println("lhs.toString :" + lhs.toString());
+		//System.out.println("expressionMap :" + expressionMap.toString());
+		//System.out.println("lhs.toString :" + lhs.toString());
 
-		Iterator<String> expMap = expressionMap.keySet().iterator();
-		while(expMap.hasNext()) {
-			System.out.println(expMap.next());
+		//Iterator<String> expMap = expressionMap.keySet().iterator();
+		//while(expMap.hasNext()) {
+		//	System.out.println(expMap.next());
 			
-		}
+		//}
 		
 		if (expressionMap.containsKey(lhs)) {
-			System.out.println("here????????");
 			lhsExpression = expressionMap.get(lhs.toString());
 		}
 		else {
