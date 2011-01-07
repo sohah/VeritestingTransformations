@@ -66,7 +66,7 @@ public class Bessel
       		System.out.println("!!!!!!!!!!! br2");
   }
 
-  @Concrete("true")
+  //@Concrete("true")
   public static double y0(double x) {
 	  double result = bessely0(x); //bessely0test(x);
 	  System.out.println("Invoking concrete y0 "+ x + " " + result );

@@ -15,6 +15,7 @@ import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.report.ConsolePublisher;
@@ -44,27 +45,19 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 		MethodInfo mi = vm.getCurrentThread().getMethod();
 		if(lastInsn != null && lastInsn instanceof InvokeInstruction) {
 			boolean foundAnote = checkConcreteAnnotation(mi);
-			
 			if(foundAnote) {
-				
-				//System.out.println(lastInsn.getSourceLine() + "srcLine");
 				ThreadInfo ti = vm.getCurrentThread();
-				//ti.setReturnValue(0);
-				
 				StackFrame sf = ti.popFrame();
-				generateFunctionExpression(mi, (InvokeInstruction) lastInsn, ti);
-				
-				
-				Instruction nextIns = sf.getPC().getNext();
-				//System.out.println(nextIns.getSourceLine());
-				
-			    vm.getCurrentThread().skipInstruction(nextIns);
-			    //vm.getCurrentThread().setNextPC(nextIns);
-			
-				
+				FunctionExpression result = 
+					generateFunctionExpression(mi, (InvokeInstruction)
+													lastInsn, ti);
+				checkReturnType(ti, mi, result);		
+				Instruction nextIns = sf.getPC().getNext();		
+			    vm.getCurrentThread().skipInstruction(nextIns);	
 			}
-		}
+		} 
 	}
+	
 
 	private boolean checkConcreteAnnotation(MethodInfo mi) {
 		AnnotationInfo[] ai = mi.getAnnotations();
@@ -91,9 +84,8 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 		return retVal;
 	}
 	
-	private void generateFunctionExpression(MethodInfo mi, InvokeInstruction ivk,
-			ThreadInfo ti){
-		System.out.println("coming here");
+	private FunctionExpression generateFunctionExpression(MethodInfo mi, 
+			InvokeInstruction ivk, ThreadInfo ti){
 		Object [] attrs = ivk.getArgumentAttrs(ti);
 		Object [] values = ivk.getArgumentValues(ti);
 		String [] types = mi.getArgumentTypeNames();
@@ -119,7 +111,8 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 								values[argIndex]);
 			} else {
 				sym_args[argIndex] = (Expression) attribute;
-				expressionMap.put(localVars[argIndex].getName(),
+				if(localVars.length > argIndex)
+					expressionMap.put(localVars[argIndex].getName(),
 						sym_args[argIndex]);
 				
 				
@@ -133,8 +126,8 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 		FunctionExpression result = new FunctionExpression(
 				  mi.getClassName(),
 				  mi.getName(), args_type, sym_args, conditions);
-		//System.out.println("result is :" + result.toString());
-		checkReturnType(ti, mi, result);
+		System.out.println("result is :" + result.toString());
+		return result;
 	}
 	
 	
@@ -149,6 +142,8 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 			ti.setOperandAttr(resultAttr);
 		}
 	}
+	
+	
 	
 	private Class<?> checkArgumentTypes(String typeVal) {
 		if(typeVal.equals("int")) {
