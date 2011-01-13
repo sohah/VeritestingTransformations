@@ -1,5 +1,7 @@
 package gov.nasa.jpf.symbc.concolic;
 
+import java.util.ArrayList;
+
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.*;
 
@@ -12,10 +14,13 @@ public class PCAnalyzer {
 	// concrete values on
 	PathCondition concolicPC;
 
-	static public int MAX_TRIES = 1;
+	//static public int MAX_TRIES = 1;
 
 	// extraPC encodes extra EQ constraints of the form x == solution, where solution is obtained by solving simplePC
 	PathCondition extraPC; // spaghetti code; TODO this better
+
+	ArrayList<PathCondition> partitionPCs; // collects conditions for partition heuristic; for now works only for one external function
+
 
 	PathCondition getEQExtraConstraints() { return extraPC; }
 
@@ -26,58 +31,113 @@ public class PCAnalyzer {
 		if (pc == null || pc.header == null) return true;
 		boolean result = false;
 		PathCondition working_pc = pc.make_copy();
+
+		// reset the values of the various helper PCs
+		simplePC = null;
+		concolicPC = null;
+		extraPC = null;
+		partitionPCs = null;
+
 		int tries = 0;// heuristic to try different solutions up to some counter given by the user
+		int MAX_TRIES = SymbolicInstructionFactory.MaxTries;
 
-		while(tries < MAX_TRIES) {
-			if (SymbolicInstructionFactory.debugMode) {
-				System.out.println("--------working PC------------"+tries);
-				System.out.println("original pc " + pc);
-				System.out.println("extra pc " + extraPC);
-				System.out.println("working pc " + working_pc);
-				System.out.println("--- end printing working PC ---");
-			}
-
-
-			splitPathCondition(working_pc);
-			if (simplePC.solve() == false) return false;
-			if(concolicPC == null || concolicPC.header == null) return true;
-
-			createSimplifiedPC();
-			result = solver.isSatisfiable(getSimplifiedPC());
-
-			if (SymbolicInstructionFactory.debugMode) {
-				if(result)
-					System.out.println("combined PC satisfiable");
-				else
-					System.out.println("combined PC not satisfiable");
-			}
-
-			if(result) {
-				//solver.solve(getSimplifiedPC());
-				return true;
-			}
-
-			if(!SymbolicInstructionFactory.heuristicRandomMode) {
-				// Heuristic 1: systematically try different solutions
-				// add to beginning of working_pc extra constraints obtained from negating the constraints in extraPC
-				// assume for now we'll have only one EQ constraint;
-
-
-				if(extraPC == null || extraPC.header == null) return false;
-
-				Constraint cRef = extraPC.header;
-				while (cRef != null) {
-					cRef.setComparator(Comparator.GT); // TODO: should be NE but choco can not handle it
-					cRef=cRef.and;
-				}
-				working_pc.prependAllConjuncts(extraPC.header);
-			}
-			else {
-				System.out.println("Heuristic random mode!");
-			}
-			tries ++;
+		if (SymbolicInstructionFactory.debugMode) {
+			System.out.println("--------original PC------------"+tries);
+			System.out.println("original pc " + pc);
+			System.out.println("--- end printing original PC ---");
 		}
 
+		if(!SymbolicInstructionFactory.heuristicPartitionMode) {
+
+			while(tries < MAX_TRIES) {
+
+				splitPathCondition(working_pc);
+				if (simplePC.solve() == false) return false;
+				if(concolicPC == null || concolicPC.header == null) return true;
+
+				createSimplifiedPC();
+				result = solver.isSatisfiable(getSimplifiedPC());
+
+				if (SymbolicInstructionFactory.debugMode) {
+					if(result)
+						System.out.println("combined PC satisfiable");
+					else
+						System.out.println("combined PC not satisfiable");
+				}
+
+				if(result) {
+					//solver.solve(getSimplifiedPC());
+					return true;
+				}
+
+				if(!SymbolicInstructionFactory.heuristicRandomMode) {
+					// Heuristic 1: systematically try different solutions
+					// add to beginning of working_pc extra constraints obtained from negating the constraints in extraPC
+					// assume for now we'll have only one EQ constraint;
+					// i.e. we can only handle one external function with only one parameter
+
+
+					if(extraPC == null || extraPC.header == null) return false;
+					if (SymbolicInstructionFactory.debugMode) {
+						System.out.println("--------extra PC------------"+tries);
+						System.out.println("extra pc " + extraPC);
+						System.out.println("--- end printing extra PC ---");
+					}
+
+					Constraint cRef = extraPC.header;
+					while (cRef != null) {
+						cRef.setComparator(Comparator.GT); // TODO: should be NE but choco can not handle it
+						cRef=cRef.and;
+					}
+					working_pc.prependAllConjuncts(extraPC.header);
+				}
+				else {
+					System.out.println("Heuristic random mode!");
+				}
+				tries ++;
+				if (SymbolicInstructionFactory.debugMode) {
+					System.out.println("--------working PC------------"+tries);
+					System.out.println("working pc " + working_pc);
+					System.out.println("--- end printing working PC ---");
+				}
+			}
+		}
+		else { // heuristicPartitionMode
+
+
+				// Heuristic 3: systematically try different solutions in the PC attached to the function expression
+				// add to beginning of working_pc extra constraints obtained from negating the constraints in extraPC
+				// assume for now we'll have only one external function that has associated a set of partitions;
+
+			if(partitionPCs == null) return false; // we can not progress because we have no partitions to choose from
+
+			Constraint old_header = working_pc.header;
+
+			for(int i = 0; i < partitionPCs.size(); i++) {
+				PathCondition partitionPC = partitionPCs.get(i);
+				// the idea is that the working pc is different every time.
+				working_pc.header = old_header;
+				working_pc.prependAllConjuncts(partitionPC.header);
+
+				splitPathCondition(working_pc);
+				if (simplePC.solve() == false) return false;
+				if(concolicPC == null || concolicPC.header == null) return true;
+
+				createSimplifiedPC();
+				result = solver.isSatisfiable(getSimplifiedPC());
+
+				if (SymbolicInstructionFactory.debugMode) {
+					if(result)
+						System.out.println("combined PC satisfiable");
+					else
+						System.out.println("combined PC not satisfiable");
+				}
+
+				if(result)
+					//solver.solve(getSimplifiedPC());
+					return true;
+			}
+		}
 		assert !result;
 		return result;
 	}
@@ -231,6 +291,9 @@ public class PCAnalyzer {
 
 		if(eRef instanceof MathRealExpression || eRef instanceof FunctionExpression) {
 			extraPC.prependUnlessRepeated(eqConcolicConstraint(eRef));
+			if(eRef instanceof FunctionExpression && ((FunctionExpression)eRef).conditions !=null) {
+				partitionPCs =  ((FunctionExpression)eRef).conditions; // be careful because we can only handle one function for now
+			}
 			return new RealConstant(((RealExpression)eRef).solution());
 		}
 

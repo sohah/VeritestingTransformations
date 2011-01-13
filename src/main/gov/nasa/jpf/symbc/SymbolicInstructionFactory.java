@@ -24,6 +24,7 @@ import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.jvm.DefaultInstructionFactory;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
 import gov.nasa.jpf.symbc.numeric.MinMax;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
@@ -148,6 +149,8 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 
 	static public boolean concolicMode;
 	static public boolean heuristicRandomMode;
+	static public boolean heuristicPartitionMode;
+	static public int MaxTries = 1;
 
 	//bytecodes replaced by our symbolic implementation
 	/** This is not needed anymore with the new implementation --neha
@@ -208,15 +211,35 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 		String[] concolic  = conf.getStringArray("symbolic.concolic");
 		if (concolic != null) {
 			concolicMode = true;
+			System.out.println("symbolic.concolic=true");
 		} else {
 			concolicMode = false;
+		}
+
+		String[] concolicMaxTries  = conf.getStringArray("symbolic.concolic.MAX_TRIES");
+		if (concolicMaxTries != null) {
+			MaxTries = Integer.parseInt(concolicMaxTries[0]);
+			assert (MaxTries > 0);
+			System.out.println("symbolic.concolicMAX_TRIES=" + MaxTries);
+		} else {
+			MaxTries = 1;
 		}
 
 		String[] heuristicRandom  = conf.getStringArray("symbolic.heuristicRandom");
 		if (heuristicRandom != null) {
 			heuristicRandomMode = true;
+			System.out.println("symbolic.heuristicRandom=true");
 		} else {
 			heuristicRandomMode = false;
+		}
+
+		String[] heuristicPartition  = conf.getStringArray("symbolic.heuristicPartition");
+		if (heuristicPartition != null) {
+			assert(! heuristicRandomMode);
+			heuristicPartitionMode = true;
+			System.out.println("symbolic.heuristicPartition=true");
+		} else {
+			heuristicPartitionMode = false;
 		}
 
 		if(dp[0].equalsIgnoreCase("choco") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare") || dp == null) { // default is choco
