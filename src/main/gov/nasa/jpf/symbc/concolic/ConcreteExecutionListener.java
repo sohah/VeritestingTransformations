@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.concolic;
 
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 
 import java.util.ArrayList;
@@ -27,19 +28,19 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 	Config config;
 	public static boolean debug = false;
 	long ret;
-	Object resultAttr; 
+	Object resultAttr;
 	String[] partitions;
-	
+
 	public enum type {
-		INT, DOUBLE, FLOAT, BYTE, 
+		INT, DOUBLE, FLOAT, BYTE,
 		SHORT, LONG, BOOLEAN, CHAR
 	}
-	
+
 	public ConcreteExecutionListener(Config conf, JPF jpf) {
 		jpf.addPublisherExtension(ConsolePublisher.class, this);
 		this.config = conf;
 	}
-	
+
 	public void instructionExecuted(JVM vm) {
 		Instruction lastInsn =  vm.getLastInstruction();
 		MethodInfo mi = vm.getCurrentThread().getMethod();
@@ -48,16 +49,16 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 			if(foundAnote) {
 				ThreadInfo ti = vm.getCurrentThread();
 				StackFrame sf = ti.popFrame();
-				FunctionExpression result = 
+				FunctionExpression result =
 					generateFunctionExpression(mi, (InvokeInstruction)
 													lastInsn, ti);
-				checkReturnType(ti, mi, result);		
-				Instruction nextIns = sf.getPC().getNext();		
-			    vm.getCurrentThread().skipInstruction(nextIns);	
+				checkReturnType(ti, mi, result);
+				Instruction nextIns = sf.getPC().getNext();
+			    vm.getCurrentThread().skipInstruction(nextIns);
 			}
-		} 
+		}
 	}
-	
+
 
 	private boolean checkConcreteAnnotation(MethodInfo mi) {
 		AnnotationInfo[] ai = mi.getAnnotations();
@@ -70,67 +71,68 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 				if(annotation.valueAsString().
 									equalsIgnoreCase("true"))
 					retVal = true;
-				else 
+				else
 					retVal = false;
 			} else if (annotation.getName().equals
 					("gov.nasa.jpf.symbc.Partition"))	 {
-				
+
 				partitions = annotation.getValueAsStringArray();
-				for(int i = 0; i < partitions.length; i++) {
-					System.out.println(partitions[i]);
-				}
+//				if (SymbolicInstructionFactory.debugMode)
+//					for(int i = 0; i < partitions.length; i++)
+//						System.out.println("discovered partition "+partitions[i]);
 			}
 		}
 		return retVal;
 	}
-	
-	private FunctionExpression generateFunctionExpression(MethodInfo mi, 
+
+	private FunctionExpression generateFunctionExpression(MethodInfo mi,
 			InvokeInstruction ivk, ThreadInfo ti){
 		Object [] attrs = ivk.getArgumentAttrs(ti);
 		Object [] values = ivk.getArgumentValues(ti);
 		String [] types = mi.getArgumentTypeNames();
-		
+
 		assert (attrs != null);
-		
-		assert (attrs.length == values.length && 
+
+		assert (attrs.length == values.length &&
 						values.length == types.length);
 		int size = attrs.length;
-		
+
 		Class<?>[] args_type = new Class<?> [size];
 		Expression[] sym_args = new Expression[size];
-		
-		Map<String,Expression> expressionMap = 
+
+		Map<String,Expression> expressionMap =
 			new HashMap<String, Expression>();
 		LocalVarInfo[] localVars = mi.getLocalVars();
-		
+
 		for(int argIndex = 0; argIndex < size; argIndex++) {
 			Object attribute = attrs[argIndex];
 			if(attribute == null) {
 				sym_args[argIndex] = this.generateConstant(
-								types[argIndex], 
+								types[argIndex],
 								values[argIndex]);
 			} else {
 				sym_args[argIndex] = (Expression) attribute;
 				if(localVars.length > argIndex)
 					expressionMap.put(localVars[argIndex].getName(),
 						sym_args[argIndex]);
-				
-				
+
+
 			}
 			args_type[argIndex] = checkArgumentTypes(types[argIndex]);
 		}
-		
+
 		ArrayList<PathCondition> conditions = Partition.
 							createConditions(partitions, expressionMap);
-		
+
+
 		FunctionExpression result = new FunctionExpression(
 				  mi.getClassName(),
 				  mi.getName(), args_type, sym_args, conditions);
-		System.out.println("result is :" + result.toString());
+
 		return result;
 	}
-	
-	
+
+
 	private void checkReturnType(ThreadInfo ti, MethodInfo mi, Object resultAttr) {
 		String retTypeName = mi.getReturnTypeName();
 		ti.removeArguments(mi);
@@ -142,12 +144,12 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 			ti.setOperandAttr(resultAttr);
 		}
 	}
-	
-	
-	
+
+
+
 	private Class<?> checkArgumentTypes(String typeVal) {
 		if(typeVal.equals("int")) {
-			return Integer.TYPE; 
+			return Integer.TYPE;
 		} else if (typeVal.equals("double")) {
 			return Double.TYPE;
 		} else if (typeVal.equals("float")) {
@@ -162,7 +164,7 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 			throw new RuntimeException("the type not handled :" + typeVal);
 		}
 	}
-	
+
 	private Expression generateConstant(String typeVal, Object value) {
 		if(typeVal.equals("int")) {
 			return new IntegerConstant(Integer.parseInt
@@ -189,5 +191,5 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 			throw new RuntimeException("the type not handled :" + typeVal);
 		}
 	}
-	
+
 }

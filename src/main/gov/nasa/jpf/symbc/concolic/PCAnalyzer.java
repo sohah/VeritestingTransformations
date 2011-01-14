@@ -27,10 +27,30 @@ public class PCAnalyzer {
 	// first we split the PC into the easy and concolic parts
 	// concolic refers to the parts that we cannot handle with a DP and instead use concrete values for.
 
+	public boolean mixedIsSatisfiable(PathCondition working_pc,SymbolicConstraintsGeneral solver) {
+		boolean result = false;
+		splitPathCondition(working_pc);
+		if (simplePC.solve() == false) return false;
+		if(concolicPC == null || concolicPC.header == null) return true;
+
+		createSimplifiedPC();
+		result = solver.isSatisfiable(getSimplifiedPC());
+
+		if (SymbolicInstructionFactory.debugMode) {
+			if(result)
+				System.out.println("combined PC satisfiable");
+			else
+				System.out.println("combined PC not satisfiable");
+		}
+
+		return(result);
+	}
+
 	public boolean isSatisfiable(PathCondition pc, SymbolicConstraintsGeneral solver) {
 		if (pc == null || pc.header == null) return true;
 		boolean result = false;
 		PathCondition working_pc = pc.make_copy();
+		Constraint working_pc_last = working_pc.last();
 
 		// reset the values of the various helper PCs
 		simplePC = null;
@@ -51,19 +71,7 @@ public class PCAnalyzer {
 
 			while(tries < MAX_TRIES) {
 
-				splitPathCondition(working_pc);
-				if (simplePC.solve() == false) return false;
-				if(concolicPC == null || concolicPC.header == null) return true;
-
-				createSimplifiedPC();
-				result = solver.isSatisfiable(getSimplifiedPC());
-
-				if (SymbolicInstructionFactory.debugMode) {
-					if(result)
-						System.out.println("combined PC satisfiable");
-					else
-						System.out.println("combined PC not satisfiable");
-				}
+				result = mixedIsSatisfiable(working_pc, solver);
 
 				if(result) {
 					//solver.solve(getSimplifiedPC());
@@ -104,39 +112,65 @@ public class PCAnalyzer {
 		}
 		else { // heuristicPartitionMode
 
+			if (SymbolicInstructionFactory.debugMode)
+				System.out.println("--------start Partition Heuristic------------"+tries);
 
 				// Heuristic 3: systematically try different solutions in the PC attached to the function expression
 				// add to beginning of working_pc extra constraints obtained from negating the constraints in extraPC
 				// assume for now we'll have only one external function that has associated a set of partitions;
 
-			if(partitionPCs == null) return false; // we can not progress because we have no partitions to choose from
+			//if(partitionPCs == null) return false; // we can not progress because we have no partitions to choose from
 
-			Constraint old_header = working_pc.header;
-
-			for(int i = 0; i < partitionPCs.size(); i++) {
-				PathCondition partitionPC = partitionPCs.get(i);
-				// the idea is that the working pc is different every time.
-				working_pc.header = old_header;
-				working_pc.prependAllConjuncts(partitionPC.header);
-
-				splitPathCondition(working_pc);
-				if (simplePC.solve() == false) return false;
-				if(concolicPC == null || concolicPC.header == null) return true;
-
-				createSimplifiedPC();
-				result = solver.isSatisfiable(getSimplifiedPC());
-
-				if (SymbolicInstructionFactory.debugMode) {
-					if(result)
-						System.out.println("combined PC satisfiable");
-					else
-						System.out.println("combined PC not satisfiable");
-				}
+			    result = mixedIsSatisfiable(working_pc, solver);
 
 				if(result)
 					//solver.solve(getSimplifiedPC());
 					return true;
-			}
+
+
+				if(partitionPCs == null) {
+					System.out.println("Partition PC is null");
+					return false; // we can not progress because we have no partitions to choose from
+				}
+
+
+				// otherwise, try to use the partitions to search for solutions and repeat
+				//Constraint old_header = working_pc.header;
+				//working_pc = pc.make_copy();
+
+				for(int i = 0; i < partitionPCs.size(); i++) {
+
+					PathCondition partitionPC = partitionPCs.get(i);
+					// the idea is that the working pc is different every time.
+					//working_pc.header = old_header;
+
+
+//					if (SymbolicInstructionFactory.debugMode) {
+//						System.out.println("--------Partition Heuristic working PC------------"+tries);
+//						System.out.println("working pc " + working_pc);
+//						System.out.println("partition pc " + partitionPC);
+//						System.out.println("--- end printing Partition Heuristic working PC ---");
+//					}
+					//working_pc.prependAllConjuncts(partitionPC.header);
+					working_pc.appendAllConjuncts(partitionPC.header);
+
+					if (SymbolicInstructionFactory.debugMode) {
+						System.out.println("--------Partition Heuristic working PC------------"+tries);
+						System.out.println("working pc " + working_pc);
+						System.out.println("--- end printing Partition Heuristic working PC ---");
+					}
+
+					result = mixedIsSatisfiable(working_pc, solver);
+
+					if(working_pc_last!=null)
+						working_pc_last.and = null; // remove the conjuncts added from the partitions
+
+					if(result)
+						//solver.solve(getSimplifiedPC());
+						return true;
+
+
+				}
 		}
 		assert !result;
 		return result;
@@ -292,7 +326,11 @@ public class PCAnalyzer {
 		if(eRef instanceof MathRealExpression || eRef instanceof FunctionExpression) {
 			extraPC.prependUnlessRepeated(eqConcolicConstraint(eRef));
 			if(eRef instanceof FunctionExpression && ((FunctionExpression)eRef).conditions !=null) {
-				partitionPCs =  ((FunctionExpression)eRef).conditions; // be careful because we can only handle one function for now
+				if(SymbolicInstructionFactory.debugMode)
+					System.out.println("found partitions for "+((FunctionExpression)eRef).method_name);
+				if(partitionPCs==null) {// be careful because we can only handle one function for now
+				   partitionPCs =  ((FunctionExpression)eRef).conditions;
+				}
 			}
 			return new RealConstant(((RealExpression)eRef).solution());
 		}

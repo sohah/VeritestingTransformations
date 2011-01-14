@@ -219,6 +219,17 @@ public class PathCondition {
 		return false;
 	}
 
+	public Constraint last() {
+		Constraint t = header;
+		Constraint last = null;
+		while (t != null) {
+			last = t;
+			t = t.and;
+		}
+
+		return last;
+	}
+
 	public boolean solve() {// warning: solve calls simplify
 
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();

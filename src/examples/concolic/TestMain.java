@@ -2,8 +2,12 @@ package concolic;
 
 import java.lang.reflect.*;
 import gov.nasa.jpf.symbc.Concrete;
+import gov.nasa.jpf.symbc.Partition;
 
 
+// this is the example that shows the power of the new technique,
+// it illustrates various heuristics and
+// can be used to explain how we are different/improve upon from DART and EXE
 public class TestMain {
 	static String class_name;
 	static String method_name;
@@ -16,6 +20,7 @@ public class TestMain {
 	//native static double hash(double x);
 
 	@Concrete("true")
+    @Partition({"x>3.0","x<=3.0"})
 	public static double hash(double x) {
 
 		if (x == 1.0) return 1000.0;
@@ -35,7 +40,7 @@ public class TestMain {
 				path = 2;
 			}
 			if (y > 1000) {
-			//if (x > 3 && y > 10) {
+			//if (x > 3 && y > 1000) {
 				if (path == 1)
 					System.out.println("S0;S3");
 				if (path == 2)

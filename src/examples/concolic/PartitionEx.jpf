@@ -9,6 +9,7 @@ sourcepath=${jpf-symbc}/src/examples
 symbolic.method=concolic.PartitionEx.runSymbolic(sym)
 #,concolic.TestConcreteAnote.runConcrete(sym#sym)
 
+symbolic.heuristcPartition=true
 symbolic.concolic=true
 
 symbolic.debug=on

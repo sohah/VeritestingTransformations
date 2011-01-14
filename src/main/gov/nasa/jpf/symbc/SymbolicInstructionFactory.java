@@ -220,7 +220,7 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 		if (concolicMaxTries != null) {
 			MaxTries = Integer.parseInt(concolicMaxTries[0]);
 			assert (MaxTries > 0);
-			System.out.println("symbolic.concolicMAX_TRIES=" + MaxTries);
+			System.out.println("symbolic.concolic.MAX_TRIES=" + MaxTries);
 		} else {
 			MaxTries = 1;
 		}
