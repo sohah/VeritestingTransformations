@@ -21,6 +21,7 @@ public class ExSymExeStrings53 {
 	  if (a.startsWith("a")) {
 		  if (a.startsWith("b")) {
 			  System.out.println("boo");
+			  throw new RuntimeException ("This should not happen");
 		  }
 	  }
   }

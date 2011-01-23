@@ -18,11 +18,17 @@ public class ExSymExeStrings52 {
   }
   
   public static void test (String a, String b, int x) {
+	  int i = 0;
 	  if (a.equals("aaa")) {
+		  i = i + 1;
 		  System.out.println("boo");
 	  }
 	  if (!a.equals("aaa")) {
+		  i = i + 1;
 		  System.out.println("aaa");
+	  }
+	  if (i == 2) {
+		  throw new RuntimeException ("This should not happen");
 	  }
   }
 
