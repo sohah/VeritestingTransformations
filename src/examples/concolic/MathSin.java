@@ -21,7 +21,7 @@ public static final double half = 1.0/2.0;
 public static final double mag52 = 1024.*1024.*1024.*1024.*1024.*4.;/*2**52*/
 public static final double magic = 1024.*1024.*1024.*1024.*1024.*4.;/*2**52*/
 
-	public static final double[] P = { 
+	public static final double[] P = {
 		  -0.64462136749e-9,
 		   0.5688203332688e-7,
 		  -0.359880911703133e-5,
@@ -31,7 +31,7 @@ public static final double magic = 1024.*1024.*1024.*1024.*1024.*4.;/*2**52*/
 		  -0.64596409750621907082,
 		   0.15707963267948963959e1
 		 };
-	
+
 public static double _2_pi_hi;
 public static double pi2_lo;
 public static double pi2_hi_hi;
@@ -45,9 +45,9 @@ public static final double X_EPS = 1e-10;
 
 
 public static double a2, c1, c2;
-	
+
 @Concrete("true")
-@Partition({"x>=0.0&&x<=1.0","x==1.0E-55"})
+@Partition({"x>=1.0E-55&&x<=1.0","x>=0.0&&x<1.0E-55"})
 public static double calculate(double x){
 
 	double retval;
@@ -64,10 +64,10 @@ public static double calculate(double x){
 	// convert into the different parts
 	//
 	long l_x = Double.doubleToRawLongBits(x);
-	//System.out.println("raw"+l_x);
+	System.out.println("raw"+l_x);
 	md_b_sign = (int) ((l_x >> 63) & 1);
 	xexp = (int)((l_x >> 52) & 0x7FF);
-	//System.out.println("exp raw"+xexp);
+	System.out.println("exp raw"+xexp);
 
 	// introduce sign of exponent
 	if (xexp > 0x400){
@@ -84,8 +84,8 @@ public static double calculate(double x){
 	if (IEEE_MAX == xexp){
 		if( md_b_m1 >0 || md_b_m2 >0  ){
 			System.out.println("unnormalized");
-			retval = x; 
-		}else{   
+			retval = x;
+		}else{
 			System.out.println("NaN");
 			retval = Double.NaN;
 		}
@@ -101,7 +101,7 @@ public static double calculate(double x){
 		System.out.println("small");
 		return x*(1.0-x*x*sixth); /* x**4 < epsilon of x        */
 	}
-	// 
+	//
 
 
 	if (md_b_sign == 1){
@@ -115,7 +115,7 @@ public static double calculate(double x){
 	}else if (xexp <= (IEEE_BIAS + IEEE_MANT)){
 		System.out.println("must bring into range...");
 		double xm, x3, x4, x5, x6;
-		// SKIPPED int bot2;  
+		// SKIPPED int bot2;
 		double xn_d;
 		double md; // should be bit union
 
@@ -133,7 +133,7 @@ public static double calculate(double x){
 		int bot2 = xn_m2 & 3;
 
 
-		// SKIPPED: bot2 now input bot2 = (int)xm;   // should be: xn.b.m2 & 3; 
+		// SKIPPED: bot2 now input bot2 = (int)xm;   // should be: xn.b.m2 & 3;
 
 		/*
 		 * Form xm * (pi/2) exactly by doing:
@@ -232,10 +232,10 @@ public static double calculate(double x){
 		// x *= __POL7(P,x2);
 		// #define __POL7(C,X)     __POL(C,X,7)
 		// in math1.h
-		// 
-		x *= ((((((((P)[0]*(x2) + (P)[1])*(x2) + 
+		//
+		x *= ((((((((P)[0]*(x2) + (P)[1])*(x2) +
 				(P)[2])*(x2) + (P)[3])*(x2) + (P)[4])*(x2) + (P)[5])*(x2) + (P)[6])*(x2) + (P)[7]);
-	}else 
+	}else
 		x *= pi2_hi;              /* x = x * (pi/2)               */
 
 	if (sign==1) x = -x;
@@ -248,8 +248,13 @@ public static double calculate(double x){
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-	    MathSin.calc(1.0);
-	   
+	   // MathSin.calc(1.0);
+		double x = 0.0;
+		while(x < 100) {
+			System.out.println("calculate "+x + "..." +MathSin.calculate(x));
+			x = x+ 0.5;
+		}
+
 	  //  double x = MathSin.calculate(0.0);
      //  System.out.println("0 -->" + x);
      //  System.out.println("1e-55 --> "+ MathSin.calculate(1e-55)); //1.0E-55
@@ -259,11 +264,11 @@ public static double calculate(double x){
       //  Debug.printPC("\nMathSin.calculate Path Condition: ");
 
 	}
-	
+
 	public static void calc(double x) {
 		 if(MathSin.calculate(x) == 0) {
 		    	System.out.println("value of 0.0 ----- br1 !!!!!!!!!!!!!!!!!!!");
-		 } 
+		 }
 		  if(MathSin.calculate(x) == 1.0E-55) {
 		    	System.out.println("\n value of 1e-55 ----- br2 !!!!!!!!!!!!!!!!!!");
 		 }

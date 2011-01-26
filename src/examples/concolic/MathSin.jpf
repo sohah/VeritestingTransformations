@@ -9,7 +9,9 @@ symbolic.method=concolic.MathSin.calc(sym)
 symbolic.concolic=true
 #symbolic.heuristicRandom=true
 
-symbolic.debug=on
+#symbolic.heuristicPartition=true
+
+#symbolic.debug=on
 
 listener = .symbc.concolic.ConcreteExecutionListener
 

@@ -47,6 +47,7 @@ public class PCAnalyzer {
 	}
 
 	public boolean isSatisfiable(PathCondition pc, SymbolicConstraintsGeneral solver) {
+		//System.out.println("PC "+pc);
 		if (pc == null || pc.header == null) return true;
 		boolean result = false;
 		PathCondition working_pc = pc.make_copy();

@@ -23,35 +23,38 @@ public class TestMain {
     @Partition({"x>3.0","x<=3.0"})
 	public static double hash(double x) {
 
-		if (x == 1.0) return 1000.0;
-		if (x == 2.0) return 2000.0;
-		return 3000.0;
+		if (x == 1.0) return 10.0;
+		if (x == 2.0) return 20.0;
+		return 30.0;
 	}
 
 	public static void test_concolic(int x, int y) {
 		int path = 0;
 		if (x > 0) {
 			if (y == hash(x)) {
-				System.out.println("S0");
+				//System.out.println("S0");
 				path = 1;
 			}
 			else {
-				System.out.println("S1");
+				//System.out.println("S1");
 				path = 2;
 			}
-			if (y > 1000) {
-			//if (x > 3 && y > 1000) {
-				if (path == 1)
+			//if (y > 10) {
+			if (x > 3 && y > 10) {
+				 if (path == 1)
 					System.out.println("S0;S3");
-				if (path == 2)
+				 if (path == 2)
 					System.out.println("S1;S3");
 			}
 			else {
-				if (path == 1)
+				 if (path == 1)
 					System.out.println("S0;S4");
-				if (path == 2)
+				 if (path == 2)
 					System.out.println("S1;S4");
 			}
+		}
+		else {
+			System.out.println("ELSE");
 		}
 
 
