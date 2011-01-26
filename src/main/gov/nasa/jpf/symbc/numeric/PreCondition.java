@@ -39,15 +39,11 @@ public class PreCondition {
 		}else{
 			addExpression(assumeString,expressionMap);
 		}
-
-		System.out.println("initial PC "+pc);
 		return pc;
 	}
 
 	public PathCondition addConstraints(PathCondition pc, String assumeString,
 			Map<String,Expression> expressionMap) {
-
-		System.out.println("Precondition: "+assumeString);
 
 		this.pc = pc;
 		if (assumeString.contains("&&")){
@@ -60,8 +56,6 @@ public class PreCondition {
 			addExpression(assumeString,expressionMap);
 		}
 
-		//System.out.println("added precondition "+ assumeString);
-		System.out.println("PC: "+ pc);
 		return pc;
 	}
 
