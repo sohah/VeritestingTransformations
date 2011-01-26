@@ -18,14 +18,21 @@ public class ExSymExeStrings51 {
   }
   
   public static void test (String a, String b, int x) {
+	  int i = 0;
 	  if (a.length() > 3) {
+		  i = i + 1;
 		  System.out.println("aaa");
 	  }
 	  if (b.length() < 2) {
+		  i = i + 1;
 		  System.out.println("bbb");
 	  }
 	  if (b.contains(a)) {
+		  i = i + 1;
 		  System.out.println("boo");
+	  }
+	  if (i == 3) {
+		  throw new RuntimeException ("This should not happen");
 	  }
   }
 

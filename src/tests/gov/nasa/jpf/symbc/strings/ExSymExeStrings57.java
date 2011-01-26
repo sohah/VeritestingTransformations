@@ -20,6 +20,7 @@ public class ExSymExeStrings57 {
   public static void test (String a, String b, int x) {
 	  if (a.startsWith("hello") && a.indexOf('e', 2) > -1) {
 		  System.out.println("aa");
+		  throw new RuntimeException ("This should happen");
 	  }
   }
 

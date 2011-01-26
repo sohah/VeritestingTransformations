@@ -13,13 +13,13 @@ public class ExSymExeStringsDemo {
 	  String d = "ddd"; 
 	  //test01 (a,b, 1);
 	  //test02(a,b,1);
-	  test02a(a, b, 1);
+	  //test02a(a, b, 1);
 	  //test03(a,b,1);
 	  //test04(a,b,1);
 	  //test05(a,b,1);
 	  //test06(a,b,1);
 	  //test07(a,b,1);
-	  //test08("c  ","c",0);
+	  test08("c  ","c",0);
 	  //test08a(a,b,1);
 	  //test09(a,b,1);
 	  //test10(a,b,1);
@@ -33,8 +33,6 @@ public class ExSymExeStringsDemo {
 		  if (a.endsWith("ba")) {
 			  System.out.println("boo");
 		  }
-		  
-		  
 	  }
   }
   
@@ -143,7 +141,7 @@ public class ExSymExeStringsDemo {
 			  && a.length() < 5 && b.length() < 2) {
 		  if (i >= 0) {
 			  for (; i < a.length(); i++) {
-				  System.out.println(i);
+				  //System.out.println(i);
 				  int old = i;
 				  /* some code */
 				  if (a.charAt(i) == 'c' && a.charAt(i+1) == 'd') {

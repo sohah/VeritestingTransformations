@@ -8,7 +8,8 @@ public class ExSymExeStrings62 {
 
   public static void main (String[] args) {
 	  String a = "ddd";
-	  test (a);
+	  //test (a);
+	  fixedtest("a");
 	  Debug.printPC("This is the PC at the end:");
 	  //a=a.concat(b);
 	  
