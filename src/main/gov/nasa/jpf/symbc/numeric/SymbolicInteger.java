@@ -136,6 +136,6 @@ public class SymbolicInteger extends LinearIntegerExpression
     }
 
     protected void finalize() throws Throwable {
-    	System.out.println("Finalized " + this);
+    	//System.out.println("Finalized " + this);
     }
 }
