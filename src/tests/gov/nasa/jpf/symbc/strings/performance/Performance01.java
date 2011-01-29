@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.strings.performance;
 
 public class Performance01 {
+	//MAX_LENGTH = 5 for all tests
 	private static final int MAX_LENGTH = 10;
 	
 	public static void main (String [] args) {
@@ -73,9 +74,9 @@ public class Performance01 {
 				System.out.println("Step 9");
 				i++;
 			}
-			if (i == 9) {
+			/*if (i == 9) {
 				throw new RuntimeException ("look at this");
-			}
+			}*/
 		}
 	}
 	

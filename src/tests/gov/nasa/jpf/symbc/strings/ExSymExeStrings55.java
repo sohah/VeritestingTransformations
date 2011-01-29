@@ -23,6 +23,7 @@ public class ExSymExeStrings55 {
 	  int len = a.length();
 	  char c = a.charAt(i);
 	  if (c == '<') {
+		  System.out.println("int: " + a);
 		  if (i + 14 < len &&
 					(a.charAt(i + 8) == '\"')
 					&&
