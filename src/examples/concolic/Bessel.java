@@ -51,6 +51,8 @@ public class Bessel
   public static void main(String[] args)
     {
       run_bessel(0.0);
+      for(int i=0; i<100;i++)
+    	  System.out.println("Y0 "+i + " " + y0(i));
 
     }
 

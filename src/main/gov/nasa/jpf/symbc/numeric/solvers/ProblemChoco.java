@@ -294,6 +294,10 @@ public class ProblemChoco extends ProblemGeneral {
 		return ((IntDomainVar) dpVar).getVal();
 	}
 
+	public Object constant(double d) {
+		return pb.cst(d);
+	}
+
 	public Boolean solve() {
         pb.getSolver().setTimeLimit(ProblemChoco.timeBound);
 

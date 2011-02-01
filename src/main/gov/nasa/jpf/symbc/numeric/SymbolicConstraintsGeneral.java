@@ -207,7 +207,8 @@ public class SymbolicConstraintsGeneral {
 			switch(opRef){
 			case PLUS:
 				if (e_leftRef instanceof RealConstant && e_rightRef instanceof RealConstant)
-					throw new RuntimeException("## Error: this is not a symbolic expression"); //
+					return pb.constant(((RealConstant)e_leftRef).value + ((RealConstant)e_rightRef).value);
+					//throw new RuntimeException("## Error: this is not a symbolic expression"); //
 				else if (e_leftRef instanceof RealConstant)
 					return pb.plus(((RealConstant)e_leftRef).value, getExpression(e_rightRef));
 				else if (e_rightRef instanceof RealConstant)
