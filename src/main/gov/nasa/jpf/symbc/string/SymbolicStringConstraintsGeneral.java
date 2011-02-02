@@ -47,6 +47,7 @@ import gov.nasa.jpf.symbc.string.translate.TranslateToCVC;
 import gov.nasa.jpf.symbc.string.translate.TranslateToCVCInc;
 import gov.nasa.jpf.symbc.string.translate.TranslateToSAT;
 import gov.nasa.jpf.symbc.string.translate.TranslateToZ3;
+import gov.nasa.jpf.symbc.string.translate.TranslateToZ3Inc;
 
 /**
  * Main entry point for the symbolic string solver.
@@ -93,6 +94,7 @@ public class SymbolicStringConstraintsGeneral {
 	public static final String CVC = "CVC";
 	public static final String CVC_INC = "CVC_Inc";
 	public static final String Z3 = "Z3";
+	public static final String Z3_INC = "Z3_INC";
 	
 	/* Default solver */
 	public static String solver = AUTOMATA;
@@ -275,6 +277,9 @@ public class SymbolicStringConstraintsGeneral {
 		else if (string_dp[0].equals("z3")) {
 			solver = Z3;
 		}
+		else if (string_dp[0].equals("z3_inc")) {
+			solver = Z3_INC;
+		}
 		else {
 			/* No solver, return true */
 			//println ("[isSatisfiable] No Solver");
@@ -385,6 +390,9 @@ public class SymbolicStringConstraintsGeneral {
 				else if (solver.equals(Z3)) {
 					//println ("[isSatisfiable] Using Bitvector's");
 					decisionProcedure = TranslateToZ3.isSat(global_graph, pc.npc); 
+				}
+				else if (solver.equals(Z3_INC)) {
+					decisionProcedure = TranslateToZ3Inc.isSat(global_graph, pc.npc);
 				}
 				else {
 					throw new RuntimeException("Unknown string solver!!!");

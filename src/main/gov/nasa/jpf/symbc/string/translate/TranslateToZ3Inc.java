@@ -19,13 +19,13 @@ import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf2;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar2;
+import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOf;
 import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar2;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotStartsWith;
-import gov.nasa.jpf.symbc.string.graph.EdgeReplaceCharChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeStartsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeSubstring1Equal;
 import gov.nasa.jpf.symbc.string.graph.EdgeSubstring2Equal;
@@ -34,7 +34,6 @@ import gov.nasa.jpf.symbc.string.graph.StringGraph;
 import gov.nasa.jpf.symbc.string.graph.Vertex;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,18 +48,9 @@ import org.sat4j.specs.IProblem;
 import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
 
-import cvc3.Expr;
-import cvc3.ExprMut;
-import cvc3.FlagsMut;
-import cvc3.QueryResult;
-import cvc3.SatResult;
-import cvc3.TypeMut;
-import cvc3.ValidityChecker;
-
-public class TranslateToZ3 {
+public class TranslateToZ3Inc {
 	
 	protected static BVExpr expr;
-    protected static FlagsMut flags = null;
 	/* This number can be calculated beforehand */
 	private static final int MAXVAR = 100000;
 	/* Size of string */
@@ -76,19 +66,21 @@ public class TranslateToZ3 {
 	private static boolean printClauses = true;
 	private static boolean logging = true;
 	
-	private static SymbolicConstraintsGeneral scg;
-	
+	private static StringGraph global_graph;
 	private static PathCondition global_pc;
+	
+	private static boolean Z3EverCalled;
+	
+	private static SymbolicConstraintsGeneral scg;
 	
 	private static Z3Interface z3Interface;
 	
 	//most sign, first letter
 	public static boolean isSat (StringGraph g, PathCondition pc) {
-		/* check if there was a timeout */
-		SymbolicStringConstraintsGeneral.checkTimeOut();
-		//println ("[isSat] graph after preprocessing: " + g.toDot());
-		global_pc = pc;
 		if (scg == null) scg = new SymbolicConstraintsGeneral();
+		Z3EverCalled = false;
+		global_graph = g;
+		global_pc = pc;
 		expr = null;
 		//println ("[isSat] Bitvector: PC passed on: " + pc.header);
 		map = new HashMap<Vertex, BVExpr>();
@@ -101,189 +93,121 @@ public class TranslateToZ3 {
 			}
 		}
 		
-		
 		//println ("[isSat] Walking through the edges");
 		for (Edge e: g.getEdges()) {
-			if (e instanceof EdgeStartsWith) {
-				handleEdgeStartsWith ((EdgeStartsWith) e);
-			}
-			else if (e instanceof EdgeNotStartsWith) {
-				handleEdgeNotStartsWith((EdgeNotStartsWith) e);
-			}
-			else if (e instanceof EdgeEqual) {
-				handleEdgeEqual ((EdgeEqual) e);
-			}
-			else if (e instanceof EdgeNotEqual) {
-				handleEdgeNotEqual((EdgeNotEqual) e);
-			}
-			else if (e instanceof EdgeTrimEqual) {
-				handleEdgeTrim((EdgeTrimEqual) e);
-			}
-			else if (e instanceof EdgeCharAt) {
-				handleEdgeCharAt((EdgeCharAt) e);
-			}
-			else if (e instanceof EdgeConcat) {
-				handleEdgeConcat((EdgeConcat) e);
-			}
-			else if (e instanceof EdgeContains) {
-				handleEdgeContains((EdgeContains) e);
-			}
-			else if (e instanceof EdgeEndsWith) {
-				handleEdgeEndsWith((EdgeEndsWith) e);
-			}
-			else if (e instanceof EdgeIndexOf) {
-				handleEdgeIndexOf((EdgeIndexOf) e);
-			}
-			else if (e instanceof EdgeIndexOfChar) {
-				handleEdgeIndexOfChar((EdgeIndexOfChar) e);
-			}
-			else if (e instanceof EdgeLastIndexOfChar) {
-				handleEdgeLastIndexOfChar((EdgeLastIndexOfChar) e);
-			}
-			else if (e instanceof EdgeLastIndexOfChar2) {
-				handleEdgeLastIndexOfChar2((EdgeLastIndexOfChar2) e);
-			}
-			else if (e instanceof EdgeIndexOf2) {
-				//println ("[isSat] EdgeIndexOf2");
-				handleEdgeIndexOf2((EdgeIndexOf2) e);
-			}
-			else if (e instanceof EdgeIndexOfChar2) {
-				//println ("[isSat] EdgeIndexOfChar2");
-				handleEdgeIndexOfChar2((EdgeIndexOfChar2) e);
-			}
-			else if (e instanceof EdgeNotContains) {
-				handleEdgeNotContains((EdgeNotContains) e);
-			}
-			else if (e instanceof EdgeNotEndsWith) {
-				handleEdgeNotEndsWith((EdgeNotEndsWith) e);
-			}
-			else if (e instanceof EdgeSubstring1Equal) {
-				handleEdgeSubstring1Equal((EdgeSubstring1Equal) e);
-			}
-			else if (e instanceof EdgeSubstring2Equal) {
-				handleEdgeSubstring2Equal((EdgeSubstring2Equal) e);
-			}
-			else if (e instanceof EdgeReplaceCharChar) {
-				handleEdgeReplaceCharChar((EdgeReplaceCharChar) e);
-			}
-			else {
-				throw new RuntimeException("Edge not supported: " + e.getClass().toString());
-			}
-			if(expr != null) {
-				//println ("[isSat] expr: " + expr.toString());
+			boolean result = handle(e);
+			if (result == false) {
+				if (PathCondition.flagSolved == false) {
+					//println ("[isSat] Path Condition changed, starting integer solver...");
+					if (scg.isSatisfiable(pc)) {
+						//println ("[isSat] Found to be sat, solving...");
+						scg.solve(pc);
+						PathCondition.flagSolved = true;
+						//println ("[isSat] solved " + global_pc.header.toString());
+						z3Interface.close(); z3Interface = null;
+						return isSat (g, pc); //remove recursion
+					}
+					else {
+						//println ("[isSat] integer solver could not solve");
+						//println ("[isSat] string expr: " + expr.toString());
+						//println ("[isSat] constraints: " + global_pc.header.toString());
+						return false;
+					}
+				}
+				else {
+					return false;
+				}
 			}
 		}
-		//println ("[isSat] Done walking through the edges");
-		/* TODO: Remove*/		
-		if (expr == null) return true;
-		//println(expr.toString());
-		//vc.loadFile(fileName);
-		//vc.push();
-		//long timing = System.currentTimeMillis();
-		
-		
-		//return true;
-		//SatResult result = vc.checkUnsat(expr);
-		try {
-			z3Interface = new Z3Interface();
-			z3Interface.sendMessage(getSMTLibMsg());
-		} catch (IOException ex) {
-			throw new RuntimeException("Could not send z3 message: " + ex.getMessage());
+		if (!Z3EverCalled) {
+			return true;
 		}
-		//System.out.println("Solution: " + z3Interface.getAns());
-		//totalTiming += System.currentTimeMillis() - timing;
-		if (z3Interface.sat == false) {
-			//println ("[isSat] Current solutions is unsat, extending lengts");
-            LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-            for (Vertex v: g.getVertices()) {
-            	if (!v.getName().startsWith("CHAR"))
-            		loic.addToList(new LinearIntegerConstraint(v.getSymbolicLength(), Comparator.NE, new IntegerConstant(v.getSymbolicLength().solution())));
-            }
-            for (Edge e: g.getEdges()) {
-            	if (e instanceof EdgeCharAt) {
-            		EdgeCharAt eca = (EdgeCharAt) e;
-            		loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.NE, new IntegerConstant(eca.getIndex().solution())));
-            		loic.addToList(new LinearIntegerConstraint(eca.getValue(), Comparator.NE, new IntegerConstant(eca.getValue().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOf) {
-            		EdgeIndexOf eio = (EdgeIndexOf) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOfChar) {
-            		EdgeIndexOfChar eio = (EdgeIndexOfChar) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-            	}
-            	else if (e instanceof EdgeLastIndexOfChar) {
-            		EdgeLastIndexOfChar eio = (EdgeLastIndexOfChar) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-            	}
-            	else if (e instanceof EdgeLastIndexOfChar2) {
-            		EdgeLastIndexOfChar2 eio = (EdgeLastIndexOfChar2) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(eio.getIndex().getMinDist().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOf2) {
-            		EdgeIndexOf2 eio = (EdgeIndexOf2) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().getMinIndex().solution())));
-            	}
-            	else if (e instanceof EdgeIndexOfChar2) {
-            		EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e;
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(eio.getIndex().getMinDist().solution())));
-            	}
-            	else if (e instanceof EdgeSubstring1Equal) {
-            		EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) e;
-            		if (es1e.getArgument1Symbolic() != null) {
-            			loic.addToList(new LinearIntegerConstraint(es1e.getArgument1Symbolic(), Comparator.NE, new IntegerConstant(es1e.getArgument1Symbolic().solution())));
-            		}
-            	}
-            	else if (e instanceof EdgeSubstring2Equal) {
-            		EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e;
-            		if (es2e.getSymbolicArgument1() != null) {
-            			loic.addToList(new LinearIntegerConstraint(es2e.getSymbolicArgument1(), Comparator.NE, new IntegerConstant(es2e.getSymbolicArgument1().solution())));
-            		}
-            		if (es2e.getSymbolicArgument2() != null) {
-            			loic.addToList(new LinearIntegerConstraint(es2e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(es2e.getSymbolicArgument2().solution())));
-            		}
-            	}
-            }
-            //println ("[isSat] loic: " + loic);
-            pc._addDet(loic);
-            //println ("[isSat] firing up integer constraint solver");
-            if (scg.isSatisfiable(pc)) {
-            	//println ("[isSat] integer constriant solver found it to be sat, solving...");
-				scg.solve(pc);
-				pc.flagSolved = true;
-				//println ("[isSat] solved PC: " + pc.header); 
-				
-				return isSat (g, pc); //TODO: Prevent infinite looping
-			}
-			else {
-				//println ("[isSat] With the added constraint, could not be solved");
-				
-				return false;
-			}
-        }
-        else if (z3Interface.sat) {
-        	Map<String, String> ans = z3Interface.getAns();
+		
+		//println ("[post] Formula to check: " + vc.trueExpr());
+		//println ("[post] On top of       : " + vc.getAssumptions());
+		if (z3Interface.isSAT()) {
+			Map<String, String> ans = z3Interface.getAns();
+			
         	//println(model.toString());
         	
         	for (Entry<String, String> entry: ans.entrySet()) {
         		String vertexName = BVVar.reverseMap.get(entry.getKey().charAt(0));
         		String rawData = entry.getValue();
+        		
         		rawData = fromRawData(rawData);
+        		
         		////println (vertexName + " = " + rawData);
         		Vertex v = g.findVertex(vertexName);
         		v.setSolution(rawData);
         	}
            // System.out.//println("Satisfiable (Invalid)\n");
+        	z3Interface.close(); z3Interface = null;
             return true;
-        }else{
-        	return false;
-        }
-		
-		//return true;
+		}
+		else {
+			z3Interface.close(); z3Interface = null;
+			return false;
+		}
+	}
+	
+	private static boolean handle (Edge e) {
+		if (e instanceof EdgeStartsWith) {
+			return handleEdgeStartsWith ((EdgeStartsWith) e);
+		}
+		else if (e instanceof EdgeNotStartsWith) {
+			return handleEdgeNotStartsWith((EdgeNotStartsWith) e);
+		}
+		else if (e instanceof EdgeEndsWith) {
+			return handleEdgeEndsWith ((EdgeEndsWith) e);
+		}
+		else if (e instanceof EdgeNotEndsWith) {
+			return handleEdgeNotEndsWith((EdgeNotEndsWith) e);
+		}
+		else if (e instanceof EdgeNotEqual) {
+			return handleEdgeNotEqual((EdgeNotEqual) e);
+		}
+		else if (e instanceof EdgeTrimEqual) {
+			return handleEdgeTrim((EdgeTrimEqual) e);
+		}
+		else if (e instanceof EdgeSubstring1Equal) {
+			return handleEdgeSubstring1Equal((EdgeSubstring1Equal) e);
+		}
+		else if (e instanceof EdgeSubstring2Equal) {
+			return handleEdgeSubstring2Equal((EdgeSubstring2Equal) e);
+		}
+		else if (e instanceof EdgeConcat) {
+			return handleEdgeConcat((EdgeConcat) e);
+		}
+		else if (e instanceof EdgeCharAt) {
+			return handleEdgeCharAt((EdgeCharAt) e);
+		}
+		else if (e instanceof EdgeIndexOf) {
+			return handleEdgeIndexOf((EdgeIndexOf) e);
+		}
+		else if (e instanceof EdgeIndexOf2) {
+			return handleEdgeIndexOf2((EdgeIndexOf2) e);
+		}
+		else if (e instanceof EdgeIndexOfChar) {
+			return handleEdgeIndexOfChar((EdgeIndexOfChar) e);
+		}
+		else if (e instanceof EdgeIndexOfChar2) {
+			return handleEdgeIndexOfChar2((EdgeIndexOfChar2) e);
+		}
+		else if (e instanceof EdgeContains) {
+			return handleEdgeContains((EdgeContains) e);
+		}
+		else if (e instanceof EdgeNotContains) {
+			return handleEdgeNotContains((EdgeNotContains) e);
+		}
+		else if (e instanceof EdgeLastIndexOfChar) {
+			return handleEdgeLastIndexOfChar((EdgeLastIndexOfChar) e);
+		}
+		else if (e instanceof EdgeLastIndexOfChar2) {
+			return handleEdgeLastIndexOfChar2((EdgeLastIndexOfChar2) e);
+		}
+		else {
+			throw new RuntimeException("Not handled: " + e.getClass());
+		}
 	}
 	
 	private static String fromRawData (String data) {
@@ -304,14 +228,14 @@ public class TranslateToZ3 {
 		return result.toString();
 	}
 	
-	private static BVExpr startsWith (Edge e) {
+	private static boolean handleEdgeStartsWith (EdgeStartsWith e) {
+		//println ("[handleEdgeStartsWith] entered: " + e.toString());
+		boolean result = false;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			BVExpr source = getBVExpr (e.getSource());
 			BVExpr dest = getBVExpr (e.getDest());
-			
-			BVExpr temp = new BVExtract (source, e.getSource().getLength() * 8 - 1, (e.getSource().getLength() - e.getDest().getLength() + 1) * 8 - 8);
-			return (new BVEq(temp, dest));
-			
+			BVExpr temp = new BVExtract(source, e.getSource().getLength() * 8 - 1, (e.getSource().getLength() - e.getDest().getLength() + 1) * 8 - 8);
+			result = post(new BVEq (temp, dest));
 		}
 		else if (!e.getSource().isConstant()) {
 			BVExpr source = getBVExpr(e.getSource());
@@ -329,7 +253,7 @@ public class TranslateToZ3 {
 				}
 			}
 			//println ("[startsWith] returning: " + lit);
-			return (lit);
+			result = post (lit);
 		}
 		else if (!e.getDest().isConstant()) {
 			BVExpr dest = getBVExpr(e.getDest());
@@ -340,70 +264,94 @@ public class TranslateToZ3 {
 				for (int i = 0; i <= j; i++) {
 					BVExpr temp = new BVExtract(dest, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
 					char character = constant.charAt(i);
+					
 					if (lit == null) {
-						lit = new BVEq (temp, new BVConst(character));
+						lit = new BVEq(temp, new BVConst(character));
 					}
 					else {
-						lit = new BVAnd (lit, new BVEq (temp, new BVConst(character)));
+						lit = new BVAnd(lit, new BVEq(temp, new BVConst (character)));
 					}
 				}
 				if (listOfLit == null) {
 					listOfLit = lit;
 				}
 				else {
-					listOfLit = new BVOr (listOfLit, lit);
+					listOfLit = new BVOr(listOfLit, lit);
 				}
 			}
-			return (listOfLit);
+			result = post (listOfLit);
 		}
 		else {
-			String sourceConstant = e.getSource().getSolution();
+			throw new RuntimeException("This should not be reached");
+		}
+		if (result == false) {
+			//println ("[handleEdgeStartsWith] eliminate lengths");
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+			//println ("[handleEdgeStartsWith] " + global_pc.header.toString());
+		}
+		//println ("[handleEdgeStartsWith] returning true");
+		return result;
+	}
+	
+	private static boolean handleEdgeNotStartsWith (EdgeNotStartsWith e) {
+		//println ("[handleEdgeNotStartsWith] entered");
+		if (e.getSource().getLength() < e.getDest().getLength()) return true;
+		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			BVExpr source = getBVExpr (e.getSource());
+			BVExpr dest = getBVExpr (e.getDest());
+			BVExpr temp = new BVExtract(source, e.getSource().getLength() * 8 - 1, (e.getSource().getLength() - e.getDest().getLength() + 1) * 8 - 8);
+			return post(new BVNot(new BVEq(temp, dest)));
+		}
+		else if (!e.getSource().isConstant()) {
+			BVExpr source = getBVExpr(e.getSource());
+			String constant = e.getDest().getSolution();
+			//println ("[startsWith] constant: " + constant);
+			BVExpr lit = null;
+			for (int i = 0; i < constant.length(); i++) {
+				BVExpr temp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+				char character = constant.charAt(i);
+				
+				if (lit == null) {
+					lit = new BVEq(temp, new BVConst(character));
+				}
+				else {
+					lit = new BVAnd(lit, new BVEq(temp, new BVConst (character)));
+				}
+			}
+			//println ("[startsWith] returning: " + lit);
+			return post (new BVNot(lit));
+		}
+		else if (!e.getDest().isConstant()) {
+			BVExpr dest = getBVExpr(e.getDest());
+			String constant = e.getSource().getSolution();
+			BVExpr listOfLit = null;
+			for (int j = 0; j < constant.length(); j++) {
+				BVExpr lit = null;
+				for (int i = 0; i <= j; i++) {
+					BVExpr temp = new BVExtract(dest, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					char character = constant.charAt(i);
+					
+					if (lit == null) {
+						lit = new BVEq(temp, new BVConst (character));
+					}
+					else {
+						lit = new BVAnd(lit, new BVEq(temp, new BVConst (character)));
+					}
+				}
+				if (listOfLit == null) {
+					listOfLit = lit;
+				}
+				else {
+					listOfLit = new BVOr(listOfLit, lit);
+				}
+			}
+			return post (new BVNot((listOfLit)));
+		}
+		else {
 			String destConstant = e.getDest().getSolution();
-			//println ("[startsWith] sourceConstant: " + sourceConstant);
-			//println ("[startsWith] destConstant: " + destConstant);
-			
-			if (sourceConstant.startsWith(destConstant)) {
-				return new BVTrue ();
-			}
-			else {
-				return new BVFalse();
-			}
+			String sourceConstant = e.getSource().getSolution();
+			return !sourceConstant.startsWith(destConstant);
 		}
-		//println ("[startsWith] returning null: " + e.toString());
-		//return null;
-	}
-	
-	private static void handleEdgeStartsWith (EdgeStartsWith e) {
-		post (startsWith(e));
-	}
-	
-	private static void handleEdgeNotStartsWith (EdgeNotStartsWith e) {
-		if (e.getSource().getLength() < e.getDest().getLength()) return;
-		post (new BVNot(startsWith(e)));
-	}
-	
-	private static void handleEdgeReplaceCharChar (EdgeReplaceCharChar e) {
-		BVExpr source = getBVExpr (e.getSource());
-		BVExpr dest = getBVExpr (e.getDest());
-		
-		BVExpr setOflit = null;
-		BVExpr lit;
-		//println ("[handleEdgeReplaceCharChar] e.getSource().getLength(): " + e.getSource().getLength());
-		for (int i = 1; i <= e.getSource().getLength(); i++) {
-			lit = new BVITE(new BVEq(new BVExtract(source, i * 8 - 1, i * 8 - 8), new BVConst(e.getC1())), 
-					   new BVEq(new BVExtract(dest, i * 8 - 1, i * 8 - 8), new BVConst(e.getC2())),
-					   new BVTrue());
-			setOflit = and (setOflit, lit);
-		}
-		//println ("[handleEdgeReplaceCharChar] setOflit: " + setOflit);
-		post (setOflit);
-		
-		setOflit = null;
-		for (int i = 1; i <= e.getSource().getLength(); i++) {
-			lit = new BVNot(new BVEq(new BVExtract(dest, i * 8 - 1, i * 8 - 8), new BVConst(e.getC1())));
-			setOflit = and (setOflit, lit);
-		}
-		post (setOflit);
 	}
 	
 	private static BVExpr endsWith (Edge e) {
@@ -422,11 +370,12 @@ public class TranslateToZ3 {
 			for (int i = constant.length() - 1; i >= 0; i--) {
 				BVExpr temp = new BVExtract(source, (constant.length() - i) * 8 - 1, (constant.length() - i) * 8 - 8);
 				char character = constant.charAt(i);
+				
 				if (lit == null) {
-					lit = new BVEq(temp, new BVConst(character));
+					lit = new BVEq(temp, new BVConst (character));
 				}
 				else {
-					lit = new BVAnd(lit, new BVEq(temp, new BVConst(character)));
+					lit = new BVAnd(lit, new BVEq(temp, new BVConst (character)));
 				}
 
 			}
@@ -441,11 +390,12 @@ public class TranslateToZ3 {
 				for (int i = constant.length() - 1; i >= constant.length() - j - 1; i--) {
 					BVExpr temp = new BVExtract(dest, (constant.length() - i) * 8 - 1, (constant.length() - i) * 8 - 8);
 					char character = constant.charAt(i);
+					//boolean[] bits = toBits (character);
 					if (lit == null) {
-						lit = new BVEq(temp, new BVConst(character));
+						lit = new BVEq(temp, new BVConst (character));
 					}
 					else {
-						lit = new BVAnd(lit, new BVEq(temp, new BVConst(character)));
+						lit = new BVAnd(lit, new BVEq(temp, new BVConst (character)));
 					}
 
 				}
@@ -461,22 +411,26 @@ public class TranslateToZ3 {
 		return null;
 	}
 	
-	private static void handleEdgeEndsWith (EdgeEndsWith e) {
-		post (endsWith(e));
+	private static boolean handleEdgeEndsWith (EdgeEndsWith e) {
+		boolean result = post (endsWith(e));
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
-	private static void handleEdgeNotEndsWith (EdgeNotEndsWith e) {
+	private static boolean handleEdgeNotEndsWith (EdgeNotEndsWith e) {
 		if (e.getDest().getLength() > e.getSource().getLength()) {
-			return;
+			return true;
 		}
-		post (new BVNot(endsWith(e)));
+		boolean result = post (new BVNot(endsWith(e)));
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
 	private static BVExpr equal (Edge e) {
-		//println ("[equal] e: " + e.toString());
-		if (e.getSource().getLength() != e.getDest().getLength()) {
-			return new BVFalse();
-		}
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			BVExpr source = getBVExpr(e.getSource());
 			BVExpr dest = getBVExpr(e.getDest());
@@ -488,9 +442,10 @@ public class TranslateToZ3 {
 			BVExpr lit = null;
 			for (int i = 0; i < constant.length(); i++) {
 				char c = constant.charAt(i);
+				
 				BVExpr temp = new BVExtract(source, (constant.length() -i) * 8 - 1, (constant.length() -i) * 8 - 8);
-				BVExpr cons = new BVConst(c);
-				lit = and (lit, new BVEq (temp, cons));
+				BVExpr cons = new BVConst (c);
+				lit = and (lit, new BVEq(temp, cons));
 			}
 			return lit;
 		}
@@ -500,9 +455,10 @@ public class TranslateToZ3 {
 			BVExpr lit = null;
 			for (int i = 0; i < constant.length(); i++) {
 				char c = constant.charAt(i);
-				BVExpr temp = new BVExtract (dest, (constant.length() -i) * 8 - 1, (constant.length() -i) * 8 - 8);
-				BVExpr cons = new BVConst(c);
-				lit = and (lit, new BVEq (temp, cons));
+
+				BVExpr temp = new BVExtract(dest, (constant.length() -i) * 8 - 1, (constant.length() -i) * 8 - 8);
+				BVExpr cons = new BVConst (c);
+				lit = and (lit, new BVEq(temp, cons));
 			}
 			return lit;
 
@@ -511,27 +467,21 @@ public class TranslateToZ3 {
 	}
 	
 	
-	private static void handleEdgeNotEqual (EdgeNotEqual e) {
+	private static boolean handleEdgeNotEqual (EdgeNotEqual e) {
+		//println ("[handleEdgeNotEqual] entered");
 		if (e.getSource().getLength() != e.getDest().getLength()) {
-			return;
+			return true;
 		}
 		
-		post (new BVNot(equal(e)));
+		return post (new BVNot(equal(e)));
 	}
 	
-	private static void handleEdgeEqual (EdgeEqual e) {
-		//println ("[handleEdgeEqual] entered: " + e.toString());
-		post (equal(e));
-	}
-	
-	private static void handleEdgeTrim (EdgeTrimEqual e) {
-		//println ("[handleEdgeTrim] entered handleEdgeTrim " + e);
+	private static boolean handleEdgeTrim (EdgeTrimEqual e) {
+		//println ("[handleEdgeTrim] entered");
 		if (e.getSource().getLength() == e.getDest().getLength()) {
-			//println ("[handleEdgeTrim] 1. posting: " + equal(e));
-			post (equal(e));
-			return;
+			return post (equal(e));
 		}
-		
+		boolean result = false;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			BVExpr source = getBVExpr(e.getSource());
 			BVExpr dest = getBVExpr(e.getDest());
@@ -544,7 +494,7 @@ public class TranslateToZ3 {
 				BVExpr sourceTemp, destTemp;
 				for (int j = 0; j < i; j++) {
 					sourceTemp = new BVExtract(source, (e.getSource().getLength() - j) * 8 - 1, (e.getSource().getLength() - j) * 8 - 8);
-					lit = and(lit, new BVEq (sourceTemp, new BVConst (' ')));
+					lit = and(lit, new BVEq(sourceTemp, new BVConst(' ')));
 				}
 				sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i - e.getDest().getLength()) * 8 - 1 + 1);
 				//destTemp = new BVExtract(dest, (e.getDest().getLength() - (j - i)) * 8 - 1, (e.getDest().getLength() - (j - i)) * 8 - 8);
@@ -553,12 +503,13 @@ public class TranslateToZ3 {
 				//println ("[handleEdgeTrim] 2. lit so far: " + lit);
 				for (int j = i + e.getDest().getLength(); j < e.getSource().getLength(); j++) {
 					sourceTemp = new BVExtract(source, (e.getSource().getLength() - j) * 8 - 1, (e.getSource().getLength() - j) * 8 - 8);
-					lit = and(lit, new BVEq(sourceTemp, new BVConst(' ')));
+					lit = and(lit, new BVEq(sourceTemp, new BVConst (' ')));
 				}
 				listOflit = or (listOflit, lit);
 			}
 			//println ("[handleEdgeTrim] 2. posting: " + listOflit);
-			post (listOflit);
+			result = post (listOflit);
+
 			
 		}
 		else if (!e.getSource().isConstant()) {
@@ -583,13 +534,13 @@ public class TranslateToZ3 {
 				BVExpr lit = null;
 				for (int i = 0; i < s.length(); i++) {
 					BVExpr temp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr bvconst = new BVConst(s.charAt(i));
-					BVExpr toplace = new BVEq (temp, bvconst);
+					BVExpr bvconst = new BVConst (s.charAt(i));
+					BVExpr toplace = new BVEq(temp, bvconst);
 					if (lit == null) {
 						lit = toplace;
 					}
 					else {
-						lit = new BVAnd (lit, toplace);
+						lit = new BVAnd(lit, toplace);
 					}
 				}
 				if (listOfLit == null) {
@@ -599,8 +550,7 @@ public class TranslateToZ3 {
 					listOfLit = new BVOr(listOfLit, lit);
 				}
 			}
-			//println ("[handleEdgeTrim] 3. posting: " + listOfLit);
-			post (listOfLit);
+			result = post (listOfLit);
 		}
 		else if (!e.getDest().isConstant()) {
 			BVExpr dest = getBVExpr(e.getDest());
@@ -611,42 +561,68 @@ public class TranslateToZ3 {
 			BVExpr lit = null;
 			for (int i = 0; i < constant.length(); i++) {
 				BVExpr temp = new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
-				lit = and (lit, new BVEq(temp, new BVConst(constant.charAt(i))));
+				lit = and (lit, new BVEq(temp, new BVConst (constant.charAt(i))));
 			}
-			//println ("[handleEdgeTrim] 4. posting: " + lit);
-			post (lit);
+			result = post (lit);
 		}
+		else {
+			throw new RuntimeException("This should not be reached");
+		}
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
-	public static void handleEdgeCharAt (EdgeCharAt e) {
+	private static boolean handleEdgeCharAt (EdgeCharAt e) {
+		boolean result = true;
 		if (!e.getSource().isConstant()) {
 			BVExpr source = getBVExpr(e.getSource());
 			char c = (char) e.getValue().solution();
 			int index = e.getIndex().solution();
+			//println ("[handleEdgeCharAt] " + c + " " + index);
 			BVExpr temp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
-			BVExpr cons = new BVConst(c);
-			post (new BVEq(temp, cons));
+			BVExpr cons = new BVConst (c);
+			//println ("[handleEdgeCharAt] posting: " + new BVEq(temp, cons));
+			result = post (new BVEq(temp, cons));
 		}
 		else {
 			String constant = e.getSource().getSolution();
 			char c = (char) e.getValue().solution();
 			int index = e.getIndex().solution();
 			if (index > -1) {
-				BVExpr temp1 = new BVConst(constant.charAt(index));
-				BVExpr temp2 = new BVConst(c);
-				post (new BVEq(temp1, temp2));
+				BVExpr temp1 = new BVConst (constant.charAt(index));
+				BVExpr temp2 = new BVConst (c);
+				//println ("[handleEdgeCharAt] posting: " + new BVEq(temp1, temp2));
+				result = post (new BVEq(temp1, temp2));
 			}
 			else {
+				BVExpr lit = null;
 				for (int i = 0; i < constant.length(); i++) {
 					BVExpr temp1 = new BVConst(constant.charAt(i));
 					BVExpr temp2 = new BVConst(c);
-					post (new BVNot(new BVEq(temp1, temp2)));
+					lit = and (lit, new BVNot(new BVEq(temp1, temp2)));
 				}
+				//println ("[handleEdgeCharAt] posting: " + lit.toString());
+				result = post (lit);
 			}
 		}
+		if (result == false) {
+			//println ("[handleEdgeCharAt] returning false");
+			//LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			//println ("[handleEdgeCharAt] e.getSource().getLength(): " + e.getSource().getLength());
+			//println ("[handleEdgeCharAt] index: " + e.getIndex().solution());
+			LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			loic.addToList(new LinearIntegerConstraint(e.getValue(), Comparator.NE, new IntegerConstant(e.getValue().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
 	}
 	
-	private static void handleEdgeConcat (EdgeConcat e) {
+	private static boolean handleEdgeConcat (EdgeConcat e) {
+		//println ("[handleEdgeConcat] entered");
+		boolean result = false;
 		if (e.getDest().isConstant()) {
 			//println ("[handleEdgeConcat] dest is constant");
 			if (!e.getSources().get(0).isConstant() && !e.getSources().get(1).isConstant()) {
@@ -662,10 +638,10 @@ public class TranslateToZ3 {
 				}
 				for (int i = 0; i < e.getSources().get(1).getLength(); i++) {
 					BVExpr temp = new BVExtract(source2, (e.getSources().get(1).getLength() - i) * 8 - 1, (e.getSources().get(1).getLength() - i) * 8 - 8);
-					BVExpr cons = new BVConst(constant.charAt(i + e.getSources().get(0).getLength()));
+					BVExpr cons = new BVConst (constant.charAt(i + e.getSources().get(0).getLength()));
 					lit = and (lit, new BVEq(temp, cons));
 				}
-				post(lit);
+				result = post(lit);
 			}
 			else if (!e.getSources().get(0).isConstant()) {
 				String destConstant = e.getDest().getSolution();
@@ -675,10 +651,10 @@ public class TranslateToZ3 {
 				BVExpr lit = null;
 				for (int i = 0; i < e.getSources().get(0).getLength(); i++) {
 					BVExpr temp = new BVExtract(source1, (e.getSources().get(0).getLength() - i) * 8 - 1, (e.getSources().get(0).getLength() - i) * 8 - 8);
-					BVExpr cons = new BVConst(destConstant.charAt(i));
+					BVExpr cons = new BVConst (destConstant.charAt(i));
 					lit = and (lit, new BVEq(temp, cons));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else if (!e.getSources().get(1).isConstant()) {
 				String destConstant = e.getDest().getSolution();
@@ -688,12 +664,20 @@ public class TranslateToZ3 {
 				BVExpr lit = null;
 				for (int i = e.getSources().get(0).getLength(); i < e.getDest().getLength(); i++) {
 					BVExpr temp = new BVExtract(source2, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
-					BVExpr cons = new BVConst(destConstant.charAt(i));
+					BVExpr cons = new BVConst (destConstant.charAt(i));
 					lit = and (lit, new BVEq(temp, cons));
 				}
-				post (lit);
+				result = post (lit);
 			}
-			
+			else {
+				//System.out.println(e.getDest().isConstant() + " " + e.getSources().get(1).isConstant() + " " + e.getSources().get(0).isConstant());
+				String destConstant = e.getDest().getSolution();
+				String source1Constant = e.getSources().get(0).getSolution();
+				String source2Constant = e.getSources().get(1).getSolution();
+				result = (destConstant.equals(source1Constant.concat(source2Constant)));
+
+				//throw new RuntimeException ("Should not be reached");
+			}
 		}
 		else {
 			//println ("[handleEdgeConcat] dest is NOT constant");
@@ -709,7 +693,7 @@ public class TranslateToZ3 {
 				//println ("[handleEdgeConcat] " + e.getDest().getLength() + " - " + e.getSources().get(0).getLength());
 				temp = new BVExtract(dest, (e.getDest().getLength() - e.getSources().get(0).getLength()) * 8 - 1, 0);
 				lit = and (lit, new BVEq(temp, source2));
-				post(lit);
+				result = post(lit);
 			}
 			else if (!e.getSources().get(0).isConstant()) {
 				BVExpr source1 = getBVExpr(e.getSources().get(0));
@@ -727,7 +711,7 @@ public class TranslateToZ3 {
 					BVExpr cons = new BVConst(character);
 					lit = and (lit, new BVEq(temp, cons));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else if (!e.getSources().get(1).isConstant()) {
 				String source1Cons = e.getSources().get(0).getSolution();
@@ -737,7 +721,7 @@ public class TranslateToZ3 {
 				for (int i = 0; i < source1Cons.length(); i++) {
 					char character = source1Cons.charAt(i);
 					BVExpr temp = new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
-					BVExpr cons = new BVConst(character);
+					BVExpr cons = new BVConst (character);
 					lit = and (lit, new BVEq(temp, cons));
 				}
 				for (int i = 0; i < e.getSources().get(1).getLength(); i++) {
@@ -745,18 +729,27 @@ public class TranslateToZ3 {
 					BVExpr source2Temp = new BVExtract(source2, (e.getSources().get(1).getLength() - i) * 8 - 1, (e.getSources().get(1).getLength() - i) * 8 - 8);
 					lit = and (lit, new BVEq(destTemp, source2Temp));
 				}
-				post (lit);
+				result = post (lit);
 			}
 		}
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
 	private static BVExpr contains (Edge e) {
+		return contains (e, 0);
+	}
+	
+	private static BVExpr contains (Edge e, int startIndex) {
+		if (startIndex < 0) startIndex = 0;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			BVExpr source = getBVExpr(e.getSource());
 			BVExpr dest = getBVExpr(e.getDest());
 			int diff = e.getSource().getLength() - e.getDest().getLength();
 			BVExpr listOfLit = null;
-			for (int i = 0; i <= diff; i++) {
+			for (int i = startIndex; i <= diff; i++) {
 				BVExpr lit = null;
 				for (int j = i; j < i + e.getDest().getLength(); j++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - j) * 8 - 1, (e.getSource().getLength() - j) * 8 - 8);
@@ -774,11 +767,11 @@ public class TranslateToZ3 {
 			int diff = e.getSource().getLength() - destCons.length();
 			//println ("[contains] diff: " + diff);
 			BVExpr listOfLit = null;
-			for (int i = 0; i <= diff; i++) {
+			for (int i = startIndex; i <= diff; i++) {
 				BVExpr lit = null;
 				for (int j = i; j < i + destCons.length(); j++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - j) * 8 - 1, (e.getSource().getLength() - j) * 8 - 8);
-					BVExpr cons = new BVConst(destCons.charAt(j - i));
+					BVExpr cons = new BVConst (destCons.charAt(j - i));
 					lit = and (lit, new BVEq(sourceTemp, cons));
 				}
 				listOfLit = or (listOfLit, lit);
@@ -788,8 +781,8 @@ public class TranslateToZ3 {
 		else if (!e.getDest().isConstant()) {
 			BVExpr dest = getBVExpr(e.getDest());
 			String sourceCons = e.getSource().getSolution();
-			String[] possibleSolutions = new String [e.getSource().getLength() - e.getDest().getLength() + 1];
-			for (int i = 0; i <= e.getSource().getLength() - e.getDest().getLength(); i++) {
+			String[] possibleSolutions = new String [e.getSource().getLength() - e.getDest().getLength() + 1 - startIndex];
+			for (int i = startIndex; i <= e.getSource().getLength() - e.getDest().getLength(); i++) {
 				possibleSolutions[i] = sourceCons.substring(i, i+e.getDest().getLength());
 			}
 			BVExpr listOfLit = null;
@@ -797,7 +790,7 @@ public class TranslateToZ3 {
 				BVExpr lit = null;
 				for (int i = 0; i < s.length(); i++) {
 					BVExpr temp = new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
-					BVExpr cons = new BVConst(sourceCons.charAt(i));
+					BVExpr cons = new BVConst (sourceCons.charAt(i));
 					lit = and (lit, new BVEq(temp, cons));
 				}
 				listOfLit = or (listOfLit, lit);
@@ -807,16 +800,25 @@ public class TranslateToZ3 {
 		return null;
 	}
 	
-	private static void handleEdgeContains (EdgeContains e) {
+	private static boolean handleEdgeContains (EdgeContains e) {
+		//println ("[handleEdgeContains] entered");
+		boolean result = true;
 		if (e.getSource().getLength() == e.getDest().getLength()) {
 			//println ("[handleEdgeContains] handing over to equals");
-			post (equal(e));
-			return;
+			result = post (equal(e));
 		}
-		post (contains(e));
+		else {
+			result = post (contains(e));
+		}
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
-	private static void handleEdgeIndexOf2 (EdgeIndexOf2 e) {
+	private static boolean handleEdgeIndexOf2 (EdgeIndexOf2 e) {
+		//println ("[handleEdgeIndexOf2] entered: " + e.toString());
+		boolean result = true;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			BVExpr source = getBVExpr (e.getSource());
 			BVExpr dest = getBVExpr (e.getDest());
@@ -828,18 +830,20 @@ public class TranslateToZ3 {
 					BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - (i - index)) * 8 - 1, (e.getDest().getLength() - (i - index)) * 8 - 8);
 					lit = and (lit, new BVEq(sourceTemp, destTemp));
 				}
-				post (lit);
+				//println ("[handleEdgeIndexOf2] posting: " + lit.toString());
+				result = post (lit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (new BVNot(equal(e)));
-					return;
+					//println ("[handleEdgeIndexOf2] posting: " + new BVNot(equal(e)));
+					result = post (new BVNot(equal(e)));
 				}
 				else {
-					post (new BVNot(contains(e))); //TODO: fix this, it should take into account the minimal distance
+					//println ("[handleEdgeIndexOf2] posting: " + new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
+					result = post (new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
 				}
 			}
 		}
@@ -851,21 +855,23 @@ public class TranslateToZ3 {
 				BVExpr lit = null;
 				for (int i = index; i < index + e.getDest().getLength(); i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr cons = new BVConst(destCons.charAt(i - index));
+					BVExpr cons = new BVConst (destCons.charAt(i - index));
 					lit = and (lit, new BVEq(sourceTemp, cons));
 				}
-				post (lit);
+				//println ("[handleEdgeIndexOf2] posting: " + lit.toString());
+				result = post (lit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (new BVNot(equal(e)));
-					return;
+					//println ("[handleEdgeIndexof2] posting: " + new BVNot(equal(e)));
+					result = post (new BVNot(equal(e)));
 				}
 				else {
-					post (new BVNot(contains(e)));
+					//println ("[handleEdgeIndexof2] posting: " + new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
+					result = post (new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
 				}
 			}
 		}
@@ -880,28 +886,39 @@ public class TranslateToZ3 {
 				BVExpr lit = null;
 				for (int i = 0; i < realSolution.length(); i++) {
 					BVExpr destExpr = new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
-					BVExpr cons = new BVConst(realSolution.charAt(i));
+					BVExpr cons = new BVConst (realSolution.charAt(i));
 					lit = and (lit, new BVEq(destExpr, cons));
 				}
-				post (lit);
+				//println ("[handleEdgeIndexOf2] posting: " + lit.toString());
+				result = post (lit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (new BVNot(equal(e)));
-					return;
+					//println ("[handleEdgeIndexOf2] posting: " + new BVNot(equal(e)));
+					result = post (new BVNot(equal(e)));
 				}
 				else {
-					post (new BVNot(contains(e)));
+					//println ("[handleEdgeIndexOf2] posting: " + new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
+					result = post (new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
 				}
 			}
 		}
+		if (result == false) {
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
 	}
 	
-	private static void handleEdgeIndexOf (EdgeIndexOf e) {
+	private static boolean handleEdgeIndexOf (EdgeIndexOf e) {
+		//println ("[handleEdgeIndexOf] entered");
+		boolean result = true;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			//println ("[handleEdgeIndexOf] branch 1");
 			BVExpr source = getBVExpr (e.getSource());
 			BVExpr dest = getBVExpr (e.getDest());
 			int index = e.getIndex().solution();
@@ -912,48 +929,61 @@ public class TranslateToZ3 {
 					BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - (i - index)) * 8 - 1, (e.getDest().getLength() - (i - index)) * 8 - 8);
 					lit = and (lit, new BVEq(sourceTemp, destTemp));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (new BVNot(equal(e)));
-					return;
+					result = post (new BVNot(equal(e)));
 				}
 				else {
-					post (new BVNot(contains(e)));
+					result = post (new BVNot(contains(e)));
 				}
+				if (result == false) {
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				}
+				return result;
 			}
 		}
 		else if (!e.getSource().isConstant()) {
+			//println ("[handleEdgeIndexOf] branch 2");
 			BVExpr source = getBVExpr (e.getSource());
 			String destCons = e.getDest().getSolution();
 			int index = e.getIndex().solution();
 			if (index > -1) {
+				//println ("[handleEdgeIndexOf] branch 2.1");
 				BVExpr lit = null;
 				for (int i = index; i < index + e.getDest().getLength(); i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr cons = new BVConst(destCons.charAt(i - index));
+					BVExpr cons = new BVConst (destCons.charAt(i - index));
 					lit = and (lit, new BVEq(sourceTemp, cons));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else {
+				//println ("[handleEdgeIndexOf] branch 2.2");
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (new BVNot(equal(e)));
-					return;
+					result = post (new BVNot(equal(e)));
 				}
 				else {
-					post (new BVNot(contains(e)));
+					//Check if it is at all possible
+					//println ("[handleEdgeIndexOf] branch 2.2.3");
+					result = post (new BVNot(contains(e)));
+					//no matter if it is false, can't fix it
 				}
+				if (result == false) {
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				}
+				return result;
 			}
 		}
 		else if (!e.getDest().isConstant()) {
+			//println ("[handleEdgeIndexOf] branch 3");
 			String sourceCons = e.getSource().getSolution();
 			
 			BVExpr dest = getBVExpr(e.getDest());
@@ -964,27 +994,41 @@ public class TranslateToZ3 {
 				BVExpr lit = null;
 				for (int i = 0; i < realSolution.length(); i++) {
 					BVExpr destExpr = new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
-					BVExpr cons = new BVConst(realSolution.charAt(i));
+					BVExpr cons = new BVConst (realSolution.charAt(i));
 					lit = and (lit, new BVEq(destExpr, cons));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
-					return;
+					return true;
 				}
 				else if (e.getSource().getLength() == e.getDest().getLength()) {
-					post (new BVNot(equal(e)));
-					return;
+					result = post (new BVNot(equal(e)));
 				}
 				else {
-					post (new BVNot(contains(e)));
+					result = post (new BVNot(contains(e)));
 				}
+				if (result == false) {
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				}
+				return result;
 			}
 		}
+		else {
+			throw new RuntimeException("Should not be reached");
+		}
+		if (result == false) {
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
+		
 	}
 	
-	private static void handleEdgeIndexOfChar (EdgeIndexOfChar e) {
+	private static boolean handleEdgeIndexOfChar (EdgeIndexOfChar e) {
+		boolean result = true;
 		if (!e.getSource().isConstant()) {
 			BVExpr source = getBVExpr(e.getSource());
 			int index = e.getIndex().solution();
@@ -994,23 +1038,27 @@ public class TranslateToZ3 {
 				/* no other occurences of the character may come before */
 				for (int i = 0; i < index; i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr constant = new BVConst(character);
+					BVExpr constant = new BVConst (character);
 					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
 				}
 				BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
-				BVExpr constant = new BVConst(character);
+				BVExpr constant = new BVConst (character);
 				lit = and (lit, new BVEq(sourceTemp, constant));
-				post (lit);
+				result = post (lit);
 				//println ("[handleEdgeIndexOfChar] lit: " + lit.toString());
 			}
 			else {
 				BVExpr lit = null;
 				for (int i = 0; i < e.getSource().getLength(); i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr constant = new BVConst(character);
+					BVExpr constant = new BVConst (character);
 					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
 				}
-				post (lit);
+				result = post (lit);
+				if (result == false) {
+					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				}
+				return result;
 			}
 		}
 		else {
@@ -1018,88 +1066,19 @@ public class TranslateToZ3 {
 			int index = e.getIndex().solution();
 			char character = (char) e.getIndex().getExpression().solution();
 			int actualAns = source.indexOf(character);
-			post (new BVEq(new BVConst(actualAns), new BVConst(index)));
+			result = post (new BVEq(new BVConst(actualAns), new BVConst(index)));
 		}
+		if (result == false) {
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
 	}
 	
-	private static void handleEdgeLastIndexOfChar (EdgeLastIndexOfChar e) {
-		if (!e.getSource().isConstant()) {
-			BVExpr source = getBVExpr(e.getSource());
-			int index = e.getIndex().solution();
-			char character = (char) e.getIndex().getExpression().solution();
-			if (index > -1) {
-				BVExpr lit = null;
-				/* no other occurences of the character may come after */
-				for (int i = index+1; i < e.getSource().getLength(); i++) {
-					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr constant = new BVConst(character);
-					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
-				}
-				BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
-				BVExpr constant = new BVConst(character);
-				lit = and (lit, new BVEq(sourceTemp, constant));
-				post (lit);
-				//println ("[handleEdgeIndexOfChar] lit: " + lit.toString());
-			}
-			else {
-				BVExpr lit = null;
-				for (int i = 0; i < e.getSource().getLength(); i++) {
-					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr constant = new BVConst(character);
-					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
-				}
-				post (lit);
-			}
-		}
-		else {
-			String source = e.getSource().getSolution();
-			int index = e.getIndex().solution();
-			char character = (char) e.getIndex().getExpression().solution();
-			int actualAns = source.indexOf(character);
-			post (new BVEq(new BVConst(actualAns), new BVConst(index)));
-		}
-	}
-	
-	private static void handleEdgeLastIndexOfChar2 (EdgeLastIndexOfChar2 e) {
-		if (!e.getSource().isConstant()) {
-			BVExpr source = getBVExpr(e.getSource());
-			int index = e.getIndex().solution();
-			char character = (char) e.getIndex().getExpression().solution();
-			if (index > -1) {
-				BVExpr lit = null;
-				/* no other occurences of the character may come after up till second argument*/
-				for (int i = index+1; i < e.getIndex().getMinDist().solution(); i++) {
-					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr constant = new BVConst(character);
-					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
-				}
-				BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
-				BVExpr constant = new BVConst(character);
-				lit = and (lit, new BVEq(sourceTemp, constant));
-				post (lit);
-				//println ("[handleEdgeIndexOfChar] lit: " + lit.toString());
-			}
-			else {
-				BVExpr lit = null;
-				//Can not feature uptil the second argument
-				for (int i = 0; i < e.getIndex().getMinDist().solution(); i++) {
-					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr constant = new BVConst(character);
-					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
-				}
-				post (lit);
-			}
-		}
-		else {
-			String source = e.getSource().getSolution();
-			int index = e.getIndex().solution();
-			char character = (char) e.getIndex().getExpression().solution();
-			int actualAns = source.lastIndexOf(character, e.getIndex().getMinDist().solution());
-			post (new BVEq(new BVConst(actualAns), new BVConst(index)));
-		}
-	}
-	
-	private static void handleEdgeIndexOfChar2 (EdgeIndexOfChar2 e) {
+	private static boolean handleEdgeIndexOfChar2 (EdgeIndexOfChar2 e) {
+		//println ("[handleEdgeIndexOfChar2] entered: " + e.toString());
+		boolean result = true;
 		if (!e.getSource().isConstant()) {
 			BVExpr source = getBVExpr(e.getSource());
 			int index = e.getIndex().solution();
@@ -1113,24 +1092,28 @@ public class TranslateToZ3 {
 				if (e.getIndex().getMinDist().solution() < 0) {
 					i = 0;
 				}
+				//println ("[handleEdgeIndexOfChar2] min dist: " + i);
 				for (; i < index; i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr constant = new BVConst(character);
+					BVExpr constant = new BVConst (character);
 					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
 				}
 				BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
-				BVExpr constant = new BVConst(character);
+				BVExpr constant = new BVConst (character);
 				lit = and (lit, new BVEq(sourceTemp, constant));
-				post (lit);
+				//println ("[handleEdgeIndexOfChar2] posting: " + lit.toString());
+				result = post (lit);
 			}
 			else {
 				BVExpr lit = null;
-				for (int i = 0; i < e.getSource().getLength(); i++) {
+				int i = e.getIndex().getMinDist().solution();
+				if (i < 0) i = 0;
+				for (; i < e.getSource().getLength(); i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr constant = new BVConst(character);
+					BVExpr constant = new BVConst (character);
 					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
 				}
-				post (lit);
+				result = post (lit);
 			}
 		}
 		else {
@@ -1138,18 +1121,30 @@ public class TranslateToZ3 {
 			int index = e.getIndex().solution();
 			char character = (char) e.getIndex().getExpression().solution();
 			int actualAns = source.indexOf(character, e.getIndex().getMinDist().solution());
-			post (new BVEq(new BVConst(actualAns), new BVConst(index)));
+			result = post (new BVEq(new BVConst(actualAns), new BVConst(index)));
 		}
+		if (result == false) {
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
 	}
 	
-	private static void handleEdgeNotContains (EdgeNotContains e) {
+	private static boolean handleEdgeNotContains (EdgeNotContains e) {
 		if (e.getSource().getLength() < e.getDest().getLength()) {
-			return;
+			return true;
 		}
-		post (new BVNot(contains(e)));
+		boolean result = post (new BVNot(contains(e)));
+		if (result == false) {
+			//In my automata approach this never happens
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
-	private static void handleEdgeSubstring1Equal (EdgeSubstring1Equal e) {
+	private static boolean handleEdgeSubstring1Equal (EdgeSubstring1Equal e) {
+		boolean result = false;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			BVExpr source = getBVExpr(e.getSource());
 			BVExpr dest = getBVExpr(e.getDest());
@@ -1160,7 +1155,7 @@ public class TranslateToZ3 {
 				BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
 				lit = and (lit, new BVEq(sourceTemp, destTemp));
 			}
-			post (lit);
+			result = post (lit);
 		}
 		else if (!e.getSource().isConstant()) {
 			BVExpr source = getBVExpr(e.getSource());
@@ -1169,17 +1164,115 @@ public class TranslateToZ3 {
 			BVExpr lit = null;
 			for (int i = 0; i < e.getDest().getLength(); i++) {
 				BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
-				BVExpr destTemp = new BVConst(destCons.charAt(i));
+				BVExpr destTemp = new BVConst (destCons.charAt(i));
 				lit = and (lit, new BVEq(sourceTemp, destTemp));
 			}
-			post (lit);
+			result = post (lit);
 		}
 		else {
 			throw new RuntimeException("Preprocessor should handle this");
 		}
+		if (result == false) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}
+		return result;
 	}
 	
-	private static void handleEdgeSubstring2Equal (EdgeSubstring2Equal e) {
+	private static boolean handleEdgeLastIndexOfChar (EdgeLastIndexOfChar e) {
+		boolean result = true;
+		if (!e.getSource().isConstant()) {
+			BVExpr source = getBVExpr(e.getSource());
+			int index = e.getIndex().solution();
+			char character = (char) e.getIndex().getExpression().solution();
+			if (index > -1) {
+				BVExpr lit = null;
+				/* no other occurences of the character may come after */
+				for (int i = index+1; i < e.getSource().getLength(); i++) {
+					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					BVExpr constant = new BVConst (character);
+					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
+				}
+				BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
+				BVExpr constant = new BVConst (character);
+				lit = and (lit, new BVEq(sourceTemp, constant));
+				result = post (lit);
+				//println ("[handleEdgeIndexOfChar] lit: " + lit.toString());
+			}
+			else {
+				BVExpr lit = null;
+				for (int i = 0; i < e.getSource().getLength(); i++) {
+					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					BVExpr constant = new BVConst (character);
+					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
+				}
+				result = post (lit);
+			}
+		}
+		else {
+			String source = e.getSource().getSolution();
+			int index = e.getIndex().solution();
+			char character = (char) e.getIndex().getExpression().solution();
+			int actualAns = source.indexOf(character);
+			result = post (new BVEq(new BVConst(actualAns), new BVConst(index)));
+		}
+		if (result == false) {
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
+	}
+	
+	private static boolean handleEdgeLastIndexOfChar2 (EdgeLastIndexOfChar2 e) {
+		boolean result = true;
+		if (!e.getSource().isConstant()) {
+			BVExpr source = getBVExpr(e.getSource());
+			int index = e.getIndex().solution();
+			char character = (char) e.getIndex().getExpression().solution();
+			if (index > -1) {
+				BVExpr lit = null;
+				/* no other occurences of the character may come after up till second argument*/
+				for (int i = index+1; i < e.getIndex().getMinDist().solution(); i++) {
+					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					BVExpr constant = new BVConst (character);
+					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
+				}
+				BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
+				BVExpr constant = new BVConst (character);
+				lit = and (lit, new BVEq(sourceTemp, constant));
+				result = post (lit);
+				//println ("[handleEdgeIndexOfChar] lit: " + lit.toString());
+			}
+			else {
+				BVExpr lit = null;
+				//Can not feature uptil the second argument
+				for (int i = 0; i < e.getIndex().getMinDist().solution(); i++) {
+					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					BVExpr constant = new BVConst (character);
+					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
+				}
+				result = post (lit);
+			}
+		}
+		else {
+			String source = e.getSource().getSolution();
+			int index = e.getIndex().solution();
+			char character = (char) e.getIndex().getExpression().solution();
+			int actualAns = source.lastIndexOf(character, e.getIndex().getMinDist().solution());
+			result = (index == actualAns);
+		}
+		if (result == false) {
+			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+			loic.addToList(new LinearIntegerConstraint(e.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(e.getIndex().getMinDist().solution())));
+			global_pc._addDet(loic);
+		}
+		return result;
+		
+	}
+	
+	private static boolean handleEdgeSubstring2Equal (EdgeSubstring2Equal e) {
+		boolean result = true;
 		if (!e.hasSymbolicArgs()) {
 			if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 				BVExpr source = getBVExpr(e.getSource());
@@ -1192,7 +1285,7 @@ public class TranslateToZ3 {
 					BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
 					lit = and (lit, new BVEq(sourceTemp, destTemp));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else if (!e.getSource().isConstant()) {
 				BVExpr source = getBVExpr(e.getSource());
@@ -1202,14 +1295,18 @@ public class TranslateToZ3 {
 				BVExpr lit = null;
 				for (int i = 0; i < arg2 - arg1; i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
-					BVExpr destTemp = new BVConst(destCons.charAt(i));
+					BVExpr destTemp = new BVConst (destCons.charAt(i));
 					lit = and (lit, new BVEq(sourceTemp, destTemp));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else {
 				throw new RuntimeException("Preprocessor should handle this");
 			}
+			if (result == false) {
+				global_pc._addDet(elimanateCurrentLengthsConstraints());
+			}
+			return result;
 		}
 		else if (e.getSymbolicArgument1() == null && e.getSymbolicArgument2() != null) {
 			if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
@@ -1223,7 +1320,7 @@ public class TranslateToZ3 {
 					BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
 					lit = and (lit, new BVEq(sourceTemp, destTemp));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else if (!e.getSource().isConstant()) {
 				BVExpr source = getBVExpr(e.getSource());
@@ -1232,22 +1329,29 @@ public class TranslateToZ3 {
 				int arg2 = e.getSymbolicArgument2().solution();
 				if (arg2 - arg1 != destCons.length()) {
 					//TODO: Can definitly improve here
-					//global_pc._addDet(Comparator.EQ, e.getSymbolicArgument2(), destCons.length() + arg1);
-					post(new BVFalse());
-					return;
+					LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+					loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(arg2)));
+					global_pc._addDet(loic);
+					return false;
 					//throw new RuntimeException((arg2 - arg1) + " is not equal to '" + destCons + "' length of " + destCons.length());
 				}
 				BVExpr lit = null;
 				for (int i = 0; i < arg2 - arg1; i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - (i + arg1)) * 8 - 1, (e.getSource().getLength() - (i + arg1)) * 8 - 8);
-					BVExpr destTemp = new BVConst(destCons.charAt(i));
+					BVExpr destTemp = new BVConst (destCons.charAt(i));
 					lit = and (lit, new BVEq(sourceTemp, destTemp));
 				}
-				post (lit);
+				result = post (lit);
 			}
 			else {
 				throw new RuntimeException("Preprocessor should handle this");
 			}
+			if (result == false) {
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(e.getSymbolicArgument2().solution())));
+				global_pc._addDet(loic);
+			}
+			return result;
 		}
 		else {
 			throw new RuntimeException ("not supported, yet");
@@ -1272,13 +1376,39 @@ public class TranslateToZ3 {
 		}
 	}
 	
-	private static void post (BVExpr e) {
+	private static boolean post (BVExpr ee) {
 		if (expr == null) {
-			expr = e;
+			expr = ee;
 		}
 		else {
-			expr = new BVAnd(e, expr);
-		}		
+			expr = new BVAnd(ee, expr);
+		}
+			
+		//println ("[post] Formula to check: " + ee);
+		//println ("[post] On top of       : " + vc.getAssumptions());
+		//long timing = System.currentTimeMillis();
+		try {
+			StringBuffer sb = new StringBuffer ();
+			sb.append ("(assert ");
+			sb.append (ee.toSMTLib());
+			sb.append (")");
+			z3Interface.sendIncMessage(sb.toString());
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+		//totalTiming += System.currentTimeMillis() - timing;
+		Z3EverCalled = true;
+		if (z3Interface.isSAT()) {
+			//println ("[post]: " + vc.);
+			//vc.pop();
+			//println ("[post] returned true");
+			return true;
+		}
+		else {
+			//println ("[post] returned false");
+			return false;
+		}
 	}
 	
 	private static boolean[] toBits (char c) {
@@ -1304,6 +1434,14 @@ public class TranslateToZ3 {
 			result = new BVVar(v.getName(), 8 * v.getLength());
 			//println ("[BVExpr] " + v.getName() +  " length: " + (8 * v.getLength()));
 			map.put(v, result);
+			
+			try {
+				BVVar var = (BVVar) result;
+				z3Interface.sendIncMessage(var.toSMTLibDec());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 			//Apply character constraints to each character
 			BVExpr lit = null;
 			for (int i = 0; i < v.getLength(); i++) {
@@ -1322,64 +1460,17 @@ public class TranslateToZ3 {
 		return result;
 	}
 	
-	private static String getSMTLibString (Expr em) {
-		StringBuilder sb = new StringBuilder();
-		
-		preOrderTraversal (em, sb);
-		
-		return sb.toString();
-	}
-	
-	private static void preOrderTraversal (Expr em, StringBuilder string) {
-		
-		if (em.isAnd()) {
-			string.append ("and");
-		}
-		else if (em.isOr()) {
-			string.append ("or");
-		}
-		else if (em.isNot()) {
-			string.append ("not");
-		}
-		else if (em.isEq()) {
-			string.append ("=");
-		}
-		else if (em.isBvExtract()) {
-			string.append ("BV Extract");
-			return;
-		}
-		else {
-			string.append ("|" + em.getKind() + "|");
-		}
-		string.append (" ");
-			
-		string.append ("(");
-		for (Object e: em.getChildren()) {
-			preOrderTraversal((Expr) e, string);
-		}
-		string.append (")");
-	}
-	
-	private static String getSMTLibMsg () {
-		StringBuilder sb = new StringBuilder ();
-		
-		for (Entry<Vertex, BVExpr> e: map.entrySet()) {
-			BVVar var = (BVVar) e.getValue();
-			sb.append(var.toSMTLibDec());
-			sb.append ("\n");
-		}
-		
-		sb.append ("(assert ");
-		sb.append (expr.toSMTLib());
-		sb.append (")\n");
-		
-		sb.append ("(check-sat)\n(get-info model)\n");
-		
-		return sb.toString();
-	}
-	
 	private static void println (String msg) {
-		System.out.println("[TranslateToCVC] " + msg);
+		System.out.println("[TranslateToZ3Inc] " + msg);
+	}
+	
+	private static LogicalORLinearIntegerConstraints elimanateCurrentLengthsConstraints() {
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		for (Vertex v: global_graph.getVertices()) {
+			if (v.isConstant() || v.getName().startsWith("CHAR")) continue;
+			loic.addToList(new LinearIntegerConstraint(v.getSymbolicLength(), Comparator.NE, new IntegerConstant(v.getLength())));
+		}
+		return loic;
 	}
 
 }
