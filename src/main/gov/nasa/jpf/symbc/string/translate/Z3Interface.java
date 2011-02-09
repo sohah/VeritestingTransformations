@@ -86,23 +86,14 @@ public class Z3Interface {
 				throw new RuntimeException("Z3 encountered an error in its input: " + oldline + "\n" + line);
 			}
 			else if (line.startsWith("((\"model\" \"") && sat) {
-				String temp = line.substring(11);
-				boolean nothingToProcess = process (temp);
-				if (nothingToProcess) {
-					break;
-				}
-				if (line.endsWith("\"))")) {
-					break;
-				}
+				if (line.endsWith("\"))")) break;
 				line = brCleanUp.readLine();
-				while (line != null) {
-					
-					process (line);
-					if (line.endsWith("\"))")) {
-						break;
-					}
+				process (line);
+				while (!line.endsWith("\"))")) {
 					line = brCleanUp.readLine();
+					process (line);
 				}
+				
 				break;
 			}
 			line = brCleanUp.readLine();
@@ -118,15 +109,12 @@ public class Z3Interface {
 			return null;
 	}
 	
-	private boolean process (String line) {
-		if (line.equals ("\"))")) {
-			return true;
-		}
-		String words[] = line.split(" -> ");
-		String varName = words[0];
+	private void process (String line) {
+		String words[] = line.split(" ");
+		String varName = words[1];
 		StringBuilder sb = new StringBuilder();
-		for (int i = 2; i < words[1].length(); i++) {
-			char c = words[1].charAt(i);
+		for (int i = 2; i < words[2].length(); i++) {
+			char c = words[2].charAt(i);
 			if (Character.isDigit(c)) {
 				sb.append (c);
 			}
@@ -146,8 +134,6 @@ public class Z3Interface {
 				sb.append("0");
 		}
 		answers.put(varName, sb.toString());
-		
-		return false;
 	}
 	
 	public boolean isSAT () {
@@ -157,6 +143,9 @@ public class Z3Interface {
 	public void close () {
 		try {
 			this.sendMessage("");
+			stdin.close();
+			stdout.close();
+			process.destroy();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

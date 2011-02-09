@@ -291,7 +291,7 @@ public class ProblemYices extends ProblemGeneral {
 
 			try {
 
-				f = new File(workingDir+"/yicesOutput/out.txt");
+				f = new File(workingDir+"/yicesOutput/out.txt"); //Bug
 				fr = new FileReader(f);
 
 				bufferedReader =  new BufferedReader(fr);//=new FileReader(f));//new File(workingDir+"/yicesOutput/out.txt")));//fr);

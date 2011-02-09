@@ -89,6 +89,7 @@ public class TranslateToZ3Inc {
 			try {
 				z3Interface = new Z3Interface();
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw new RuntimeException("Could not load up z3\nMake sure the Z3 binary is in lib directory");
 			}
 		}
@@ -111,15 +112,18 @@ public class TranslateToZ3Inc {
 						//println ("[isSat] integer solver could not solve");
 						//println ("[isSat] string expr: " + expr.toString());
 						//println ("[isSat] constraints: " + global_pc.header.toString());
+						z3Interface.close(); z3Interface = null;
 						return false;
 					}
 				}
 				else {
+					z3Interface.close(); z3Interface = null;
 					return false;
 				}
 			}
 		}
 		if (!Z3EverCalled) {
+			z3Interface.close(); z3Interface = null;
 			return true;
 		}
 		
@@ -1377,6 +1381,7 @@ public class TranslateToZ3Inc {
 	}
 	
 	private static boolean post (BVExpr ee) {
+		if (ee == null) return true;
 		if (expr == null) {
 			expr = ee;
 		}

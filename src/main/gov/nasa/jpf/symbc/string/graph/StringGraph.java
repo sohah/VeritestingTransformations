@@ -39,6 +39,8 @@ public class StringGraph {
 	}
 	
 	public void addEdge (Vertex s1, Vertex s2, Vertex d1, EdgeConcat e) {
+		if (s1 == null || s2 == null) throw new RuntimeException();
+		
 		if (!vertices.contains(s1)) vertices.add(s1);
 		else e.setSource(vertices.get(vertices.indexOf(s1)), 0);
 		if (!vertices.contains(s2)) vertices.add(s2);
@@ -59,12 +61,14 @@ public class StringGraph {
 	}
 	
 	public void addVertex (Vertex v) {
+		if (v == null) throw new RuntimeException();
 		if (!vertices.contains(v)) vertices.add(v);
 	}
 	
 	
 	public void mergeIn (StringGraph g) {
 		for (Vertex v: g.vertices) {
+			if (v == null) throw new RuntimeException();
 			if (!vertices.contains(v)) vertices.add(v);
 		}
 		for (Edge e: g.edges) {
@@ -420,6 +424,10 @@ public class StringGraph {
 		//println ("[mergeVertices] Edges to add: "+ edgesToAdd);
 		for (Edge e: edgesToAdd) {
 			addEdge(e.getSource(), e.getDest(), e);
+		}
+		
+		for (Vertex v: getVertices()) {
+			if (v == null) throw new RuntimeException();
 		}
 		
 		return true;
