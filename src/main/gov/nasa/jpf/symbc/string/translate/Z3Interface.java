@@ -47,13 +47,14 @@ public class Z3Interface {
 				throw new RuntimeException("Z3 encountered an error in its input: " + oldline + "\n" + line);
 			}
 			else if (line.startsWith("((\"model\" \"") && sat) {
-				String temp = line.substring(11);
-				process (temp);
+				if (line.endsWith("\"))")) break;
 				line = brCleanUp.readLine();
-				while (line != null) {
-					process (line);
+				process (line);
+				while (!line.endsWith("\"))")) {
 					line = brCleanUp.readLine();
+					process (line);
 				}
+				
 				break;
 			}
 			line = brCleanUp.readLine();
