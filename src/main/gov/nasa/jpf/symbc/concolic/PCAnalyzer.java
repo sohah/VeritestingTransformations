@@ -94,6 +94,7 @@ public class PCAnalyzer {
 					}
 
 					Constraint cRef = extraPC.header;
+					int length = extraPC.count();
 					while (cRef != null) {
 						cRef.setComparator(Comparator.GT); // TODO: should be NE but choco can not handle it
 						cRef=cRef.and;
@@ -142,6 +143,7 @@ public class PCAnalyzer {
 				for(int i = 0; i < partitionPCs.size(); i++) {
 
 					PathCondition partitionPC = partitionPCs.get(i);
+					System.out.println("partitionPC "+partitionPC);
 					// the idea is that the working pc is different every time.
 					//working_pc.header = old_header;
 
@@ -327,7 +329,7 @@ public class PCAnalyzer {
 		if(eRef instanceof MathRealExpression || eRef instanceof FunctionExpression) {
 			extraPC.prependUnlessRepeated(eqConcolicConstraint(eRef));
 			if(eRef instanceof FunctionExpression && ((FunctionExpression)eRef).conditions !=null) {
-				if(SymbolicInstructionFactory.debugMode)
+				//if(SymbolicInstructionFactory.debugMode)
 					System.out.println("found partitions for "+((FunctionExpression)eRef).method_name);
 				if(partitionPCs==null) {// be careful because we can only handle one function for now
 				   partitionPCs =  ((FunctionExpression)eRef).conditions;

@@ -121,7 +121,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 	}
 
 	public void propertyViolated (Search search){
-		//System.out.println("--------->property violated");
+		System.out.println("--------->property violated");
 		JVM vm = search.getVM();
 		SystemState ss = vm.getSystemState();
 		ChoiceGenerator<?> cg = vm.getChoiceGenerator();
@@ -146,6 +146,8 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				      ((PCChoiceGenerator) cg).getCurrentPC() != null){
 
 			PathCondition pc = ((PCChoiceGenerator) cg).getCurrentPC();
+			System.out.println("pc "+ pc.count() + " "+pc);
+
 			//solve the path condition
 			if (SymbolicInstructionFactory.concolicMode) { //TODO: cleaner
 				SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();

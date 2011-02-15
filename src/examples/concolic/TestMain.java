@@ -31,6 +31,7 @@ public class TestMain {
 	public static void test_concolic(int x, int y) {
 		int path = 0;
 		if (x > 0) {
+			x = x + 1;
 			if (y == hash(x)) {
 				//System.out.println("S0");
 				path = 1;
@@ -39,8 +40,8 @@ public class TestMain {
 				//System.out.println("S1");
 				path = 2;
 			}
-			//if (y > 10) {
-			if (x > 3 && y > 10) {
+			if (y > 10) {
+			//if (x > 3 && y > 10) {
 				 if (path == 1)
 					System.out.println("S0;S3");
 				 if (path == 2)
