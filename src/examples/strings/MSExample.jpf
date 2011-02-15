@@ -19,7 +19,7 @@ sourcepath=${jpf-symbc}/src/examples
 symbolic.dp=choco
 
 #symbolic.dp=cvc3
-symbolic.dp=cvc3bitvec
+#symbolic.dp=cvc3bitvec
 
 #symbolic.dp.yices
 
@@ -27,7 +27,7 @@ symbolic.dp=cvc3bitvec
 # "none" (default), "cvc" (recommended), "automata" or
 # "sat". At the moment symbolic.dp must be equal to
 # "choco" for it to work.
-symbolic.string_dp=cvc
+symbolic.string_dp=z3_inc
 
 #Set the symbolic string executioner timeout (in ms)
 #zero for no timeout.

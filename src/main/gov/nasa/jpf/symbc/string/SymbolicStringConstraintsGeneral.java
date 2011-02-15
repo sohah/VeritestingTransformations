@@ -13,6 +13,8 @@ import gov.nasa.jpf.symbc.numeric.Constraint;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
+import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
+import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.string.graph.Edge;
@@ -47,6 +49,7 @@ import gov.nasa.jpf.symbc.string.translate.TranslateToCVC;
 import gov.nasa.jpf.symbc.string.translate.TranslateToCVCInc;
 import gov.nasa.jpf.symbc.string.translate.TranslateToSAT;
 import gov.nasa.jpf.symbc.string.translate.TranslateToZ3;
+import gov.nasa.jpf.symbc.string.translate.TranslateToZ3Inc;
 
 /**
  * Main entry point for the symbolic string solver.
@@ -93,6 +96,7 @@ public class SymbolicStringConstraintsGeneral {
 	public static final String CVC = "CVC";
 	public static final String CVC_INC = "CVC_Inc";
 	public static final String Z3 = "Z3";
+	public static final String Z3_INC = "Z3_INC";
 	
 	/* Default solver */
 	public static String solver = AUTOMATA;
@@ -120,7 +124,11 @@ public class SymbolicStringConstraintsGeneral {
 	}
 	
 	private Vertex createVertex (StringExpression se) {
-		Vertex v = new Vertex (se.getName(), symbolicIntegerGenerator);
+		boolean oldValue = PathCondition.flagSolved;
+		PathCondition.flagSolved = false;
+		String vertexName = se.getName();
+		PathCondition.flagSolved = oldValue;
+		Vertex v = new Vertex (vertexName, symbolicIntegerGenerator);
 		global_spc.npc._addDet(Comparator.EQ, v.getSymbolicLength(), se._length());
 		return v;
 	}
@@ -171,7 +179,12 @@ public class SymbolicStringConstraintsGeneral {
 			case SUBSTRING:
 				// something is symbolic so ...
 				graphBefore = convertToGraph((StringExpression) temp.oprlist[0]);
-				v1 = createVertex (((StringExpression) temp.oprlist[0]));
+				//v1 = createVertex (((StringExpression) temp.oprlist[0]));
+				//System.out.println("v1: " + v1.getName());
+				boolean oldState = PathCondition.flagSolved;
+				PathCondition.flagSolved = false;
+				v1 = graphBefore.findVertex(((StringExpression) temp.oprlist[0]).getName());
+				PathCondition.flagSolved = oldState;
 				if (temp.oprlist[1] instanceof IntegerConstant && (temp.oprlist.length == 2 || temp.oprlist[2] instanceof IntegerConstant)) {
 					a1 = ((IntegerConstant) temp.oprlist[1]).solution();
 					a2 = -1;
@@ -220,7 +233,9 @@ public class SymbolicStringConstraintsGeneral {
 				result.mergeIn(graphLeft);
 				result.mergeIn(graphRight);
 				v1 = result.findVertex(((StringExpression) temp.left).getName());
+				if (v1 == null) v1 = result.findVertex("C_" + ((StringExpression) temp.left).getName());
 				v2 = result.findVertex(((StringExpression) temp.right).getName());
+				if (v2 == null) v2 = result.findVertex("C_" + ((StringExpression) temp.right).getName());
 				//println ("[convertToAutomaton] [CONCAT] v1: " + v1.getName() + ", v2: " + v2.getName());
 				v3 = createVertex (se);
 				e = new EdgeConcat(v3.getName(), v1, v2, v3);
@@ -239,6 +254,56 @@ public class SymbolicStringConstraintsGeneral {
 				StringConstant s2 = (StringConstant) temp.oprlist[2];
 				e = new EdgeReplaceCharChar("EdgeReplaceCharChar_" + v1.getName() + "_" + v2.getName() + "_(" + s1 + "," + s2 + ")", v1, v2, s2.solution().charAt(0), s1.solution().charAt(0));
 				result.addEdge(v1, v2, e);
+				break;
+			case VALUEOF:
+				/*
+				 * I have to restrict myself here just because of DNF->CNF blowup
+				 */
+				IntegerExpression ie = (IntegerExpression) temp.oprlist[0];
+				boolean oldSetting = PathCondition.flagSolved;
+				PathCondition.flagSolved = false;
+				v1 = new Vertex (temp.getName(), symbolicIntegerGenerator);
+				PathCondition.flagSolved = oldSetting;
+				result.addVertex(v1);
+				
+				//Feeble attempt at log
+				LogicalORLinearIntegerConstraints lolic = new LogicalORLinearIntegerConstraints();
+				
+				Constraint temp1 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(1));
+				Constraint temp2 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-10));
+				Constraint temp3 = new LinearIntegerConstraint(ie, Comparator.LT, new IntegerConstant(10));
+				temp1.and = temp2;
+				temp2.and = temp3;
+						
+				lolic.addToList((LinearIntegerConstraint)temp1);
+				
+				for (int i = 0; i < 2; i++) {
+					
+					temp1 = new LinearIntegerConstraint(ie, Comparator.LT, new IntegerConstant((int) Math.pow(10, i+2)));
+					temp2 = new LinearIntegerConstraint(ie, Comparator.GE, new IntegerConstant((int) Math.pow(10, i+1)));
+					/*temp3 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-1 * ((int) Math.pow(10, i+1)))); 
+					Constraint temp4 = new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant(-1 * ((int) Math.pow(10, i))));*/
+					temp3 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(i+2));
+					temp1.and = temp2; temp2.and = temp3;
+					lolic.addToList((LinearIntegerConstraint) temp1);
+				}
+				
+				for (int i = 0; i < 3; i++) {
+					
+					temp1 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-1 * ((int) Math.pow(10, i+1))));
+					temp2 = new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant(-1 * ((int) Math.pow(10, i))));
+					/*temp3 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-1 * ((int) Math.pow(10, i+1)))); 
+					Constraint temp4 = new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant(-1 * ((int) Math.pow(10, i))));*/
+					temp3 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(i+2));
+					temp1.and = temp2; temp2.and = temp3;
+					lolic.addToList((LinearIntegerConstraint) temp1);
+				}
+				
+				//global_spc.npc._addDet(lolic);
+				result.addVertex(v1);
+				
+				//throw new RuntimeException("NOT HANDLED YET");
+				
 				break;
 			default:
 				//println ("[WARNING] [convertToAutomaton] Did not understand " + temp.op);
@@ -274,6 +339,9 @@ public class SymbolicStringConstraintsGeneral {
 		}
 		else if (string_dp[0].equals("z3")) {
 			solver = Z3;
+		}
+		else if (string_dp[0].equals("z3_inc")) {
+			solver = Z3_INC;
 		}
 		else {
 			/* No solver, return true */
@@ -385,6 +453,9 @@ public class SymbolicStringConstraintsGeneral {
 				else if (solver.equals(Z3)) {
 					//println ("[isSatisfiable] Using Bitvector's");
 					decisionProcedure = TranslateToZ3.isSat(global_graph, pc.npc); 
+				}
+				else if (solver.equals(Z3_INC)) {
+					decisionProcedure = TranslateToZ3Inc.isSat(global_graph, pc.npc);
 				}
 				else {
 					throw new RuntimeException("Unknown string solver!!!");
@@ -677,6 +748,12 @@ public class SymbolicStringConstraintsGeneral {
 			v1 = global_graph.findVertex(se_left.getName());
 			//println ("[process] should be name: " + se_left.getName());
 			v2 = global_graph.findVertex(se_right.getName());
+			if (v1 == null) {
+				System.out.println("Could not find v1: " + se_left.getName());
+			}
+			if (v2 == null) {
+				System.out.println("Could not find v2: " + se_right.getName());
+			}
 			global_graph.addEdge(v1, v2, new EdgeNotEqual("EdgeNotEqual_" + v1.getName() + "=" + v2.getName(), v1, v2));
 			break;
 		case STARTSWITH:

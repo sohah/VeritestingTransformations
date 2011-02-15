@@ -18,7 +18,7 @@ public class ExSymExeStrings13 {
   public static void test (String a, String b) {
 	  if (a.startsWith(" ")) {
 		  if (a.trim().equals("ab")) {
-			  System.out.println("hello");
+			  throw new RuntimeException("This should happen");
 		  }
 	  }
   }

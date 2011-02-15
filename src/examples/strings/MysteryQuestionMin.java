@@ -4,7 +4,7 @@ public class MysteryQuestionMin {
 	
 	public static void main (String[] args) {
 		System.out.println("start");
-		preserveSomeHtmlTagsAndRemoveWhitespaces("");
+		preserveSomeHtmlTagsAndRemoveWhitespaces("<< HREF=\"\"<A HREF=\">     ");
 		System.out.println ("end");
 	}
 	
