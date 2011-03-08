@@ -199,7 +199,7 @@ public class SymbolicStringConstraintsGeneral {
 						v2 = createVertex (temp);
 						global_spc.npc._addDet(Comparator.EQ, v2.getSymbolicLength(), v1.getSymbolicLength()._minus(a1));
 						graphBefore.addEdge(v1, v2, new EdgeSubstring1Equal("EdgeSubstring1Equal_" + v1.getName() + "_" + v2.getName() + "_(" + a1 + ")", a1, v1, v2));
-					}
+				}
 				}
 				else if (temp.oprlist[1] instanceof IntegerExpression && temp.oprlist.length == 2) {
 					//throw new RuntimeException ("Reached");
@@ -259,6 +259,7 @@ public class SymbolicStringConstraintsGeneral {
 				/*
 				 * I have to restrict myself here just because of DNF->CNF blowup
 				 */
+				println("In valueof");
 				IntegerExpression ie = (IntegerExpression) temp.oprlist[0];
 				boolean oldSetting = PathCondition.flagSolved;
 				PathCondition.flagSolved = false;
@@ -267,36 +268,52 @@ public class SymbolicStringConstraintsGeneral {
 				result.addVertex(v1);
 				
 				//Feeble attempt at log
-				LogicalORLinearIntegerConstraints lolic = new LogicalORLinearIntegerConstraints();
 				
-				Constraint temp1 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(1));
+				
+				/*Constraint temp1 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(1));
 				Constraint temp2 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-10));
 				Constraint temp3 = new LinearIntegerConstraint(ie, Comparator.LT, new IntegerConstant(10));
 				temp1.and = temp2;
 				temp2.and = temp3;
 						
-				lolic.addToList((LinearIntegerConstraint)temp1);
+				lolic.addToList((LinearIntegerConstraint)temp1);*/
+				global_spc.npc._addDet(Comparator.LE, v1.getSymbolicLength(), 5);
 				
-				for (int i = 0; i < 2; i++) {
+				int max = 5;
+				
+				LogicalORLinearIntegerConstraints lolic;
+				
+				for (int i = 1; i <= max-1; i++) {
+					lolic = new LogicalORLinearIntegerConstraints();
+					lolic.addToList(new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.LE, new IntegerConstant (i)));
+					if (i == max-1) {
+						//Don't add anything
+					} else {
+						lolic.addToList(new LinearIntegerConstraint(ie, Comparator.GE, new IntegerConstant ((int) Math.pow(10, i))));
+						global_spc.npc._addDet(lolic);
+					}
 					
-					temp1 = new LinearIntegerConstraint(ie, Comparator.LT, new IntegerConstant((int) Math.pow(10, i+2)));
-					temp2 = new LinearIntegerConstraint(ie, Comparator.GE, new IntegerConstant((int) Math.pow(10, i+1)));
-					/*temp3 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-1 * ((int) Math.pow(10, i+1)))); 
-					Constraint temp4 = new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant(-1 * ((int) Math.pow(10, i))));*/
-					temp3 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(i+2));
-					temp1.and = temp2; temp2.and = temp3;
-					lolic.addToList((LinearIntegerConstraint) temp1);
+					
+					lolic = new LogicalORLinearIntegerConstraints();
+					lolic.addToList(new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.LE, new IntegerConstant (i)));
+					if (i == 1) {
+						lolic.addToList(new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant (0)));
+					} else {
+						lolic.addToList(new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant (-1 * ((int) Math.pow(10, i-1)))));
+					}
+					global_spc.npc._addDet(lolic);
 				}
 				
-				for (int i = 0; i < 3; i++) {
+				for (int i = 2; i <= max; i++) {
+					lolic = new LogicalORLinearIntegerConstraints();
+					lolic.addToList(new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.GE, new IntegerConstant (i)));
+					lolic.addToList(new LinearIntegerConstraint(ie, Comparator.LT, new IntegerConstant ((int) Math.pow(10, i-1))));
+					global_spc.npc._addDet(lolic);
 					
-					temp1 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-1 * ((int) Math.pow(10, i+1))));
-					temp2 = new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant(-1 * ((int) Math.pow(10, i))));
-					/*temp3 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-1 * ((int) Math.pow(10, i+1)))); 
-					Constraint temp4 = new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant(-1 * ((int) Math.pow(10, i))));*/
-					temp3 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(i+2));
-					temp1.and = temp2; temp2.and = temp3;
-					lolic.addToList((LinearIntegerConstraint) temp1);
+					lolic = new LogicalORLinearIntegerConstraints();
+					lolic.addToList(new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.GE, new IntegerConstant (i)));
+					lolic.addToList(new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant (-1 * ((int) Math.pow(10, i-1)))));
+					global_spc.npc._addDet(lolic);
 				}
 				
 				//global_spc.npc._addDet(lolic);
@@ -312,6 +329,15 @@ public class SymbolicStringConstraintsGeneral {
 		return result;
 	}
 
+	public boolean isSatisfiable(StringPathCondition pc) {
+		boolean result = inner_isSatisfiable(pc);
+		
+		//println ("PC:" + pc.header);
+		//println ("result: " + result);
+		
+		return result;
+	}
+	
 	/**
 	 * Main entry point, solves (not only tests satisfiability) the given
 	 * path condition
@@ -319,7 +345,7 @@ public class SymbolicStringConstraintsGeneral {
 	 * @param pc
 	 * @return
 	 */
-	public boolean isSatisfiable(StringPathCondition pc) {
+	private boolean inner_isSatisfiable(StringPathCondition pc) {
 		//println ("[isSatisfiable] entered");
 		
 		String string_dp[] = SymbolicInstructionFactory.string_dp;
@@ -451,7 +477,7 @@ public class SymbolicStringConstraintsGeneral {
 					decisionProcedure = TranslateToCVCInc.isSat(global_graph, pc.npc); 
 				}
 				else if (solver.equals(Z3)) {
-					//println ("[isSatisfiable] Using Bitvector's");
+					//println ("[isSatisfiable] Using Z3");
 					decisionProcedure = TranslateToZ3.isSat(global_graph, pc.npc); 
 				}
 				else if (solver.equals(Z3_INC)) {

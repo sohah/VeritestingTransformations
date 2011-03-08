@@ -185,8 +185,11 @@ public class TranslateToZ3 {
 		//return true;
 		//SatResult result = vc.checkUnsat(expr);
 		try {
+			//println ("[isSat] Starting up Z3...");
 			z3Interface = new Z3Interface();
+			//println ("[isSat] started, sending message...");
 			z3Interface.sendMessage(getSMTLibMsg());
+			//println ("[isSat] Done");
 		} catch (IOException ex) {
 			throw new RuntimeException("Could not send z3 message: " + ex.getMessage());
 		}
@@ -1379,7 +1382,7 @@ public class TranslateToZ3 {
 	}
 	
 	private static void println (String msg) {
-		System.out.println("[TranslateToCVC] " + msg);
+		System.out.println("[TranslateToZ3] " + msg);
 	}
 
 }
