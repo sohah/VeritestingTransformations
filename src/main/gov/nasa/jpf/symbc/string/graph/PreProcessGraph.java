@@ -653,9 +653,50 @@ public class PreProcessGraph {
 			change = false;
 			for (Edge e: g.getEdges()) {
 				
-				
+				//println ("Edge: " + e);
 				if (e.allVertecisAreConstant()) {
+					//println ("all constants");
 					//Should handle all constants here
+					if (e instanceof EdgeContains) {
+						if (!e.getSource().getSolution().contains(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeNotContains) {
+						if (e.getSource().getSolution().contains(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeEndsWith) {
+						if (!e.getSource().getSolution().endsWith(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeNotEndsWith) {
+						if (e.getSource().getSolution().endsWith(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeStartsWith) {
+						if (!e.getSource().getSolution().startsWith(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeNotStartsWith) {
+						if (e.getSource().getSolution().startsWith(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeEqual) {
+						if (!e.getSource().getSolution().equals(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeNotEqual) {
+						if (e.getSource().getSolution().equals(e.getDest().getSolution())) {
+							return false;
+						}
+					}
 					continue;
 				}
 				
@@ -664,6 +705,7 @@ public class PreProcessGraph {
 					pc._addDet(Comparator.EQ, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
 				}
 				else if (e instanceof EdgeEndsWith) {
+					//println ("EdgeEndsWith here");
 					pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
 				}
 				else if (e instanceof EdgeStartsWith) {
@@ -796,6 +838,7 @@ public class PreProcessGraph {
 					pc._addDet(Comparator.LT, eca.value, SymbolicStringConstraintsGeneral.MAX_CHAR);
 				}
 				else if (e instanceof EdgeContains) {
+					//println ("Here");
 					pc._addDet(Comparator.GE, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
 				}
 				else if (e instanceof EdgeReplaceCharChar) {
@@ -805,7 +848,7 @@ public class PreProcessGraph {
 		}
 		//println ("Done with loop");
 		
-		if (scg.isSatisfiable(pc)) {
+		if (scg.isSatisfiable(pc)) { 
 			//println ("is Sat");
 			scg.solve(pc);
 			PathCondition.flagSolved = true;

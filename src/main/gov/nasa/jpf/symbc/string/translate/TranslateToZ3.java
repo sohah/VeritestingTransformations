@@ -309,6 +309,7 @@ public class TranslateToZ3 {
 	
 	private static BVExpr startsWith (Edge e) {
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			//println ("startsWith Branch 1");
 			BVExpr source = getBVExpr (e.getSource());
 			BVExpr dest = getBVExpr (e.getDest());
 			
@@ -317,6 +318,7 @@ public class TranslateToZ3 {
 			
 		}
 		else if (!e.getSource().isConstant()) {
+			//println ("startsWith Branch 2 " + e);
 			BVExpr source = getBVExpr(e.getSource());
 			String constant = e.getDest().getSolution();
 			//println ("[startsWith] constant: " + constant);
@@ -335,10 +337,16 @@ public class TranslateToZ3 {
 			return (lit);
 		}
 		else if (!e.getDest().isConstant()) {
+			//println ("startsWith Branch 3 " + e);
 			BVExpr dest = getBVExpr(e.getDest());
 			String constant = e.getSource().getSolution();
-			BVExpr listOfLit = null;
-			for (int j = 0; j < constant.length(); j++) {
+			BVExpr lit = null;
+			for (int i = 0; i < e.getDest().getLength(); i++) {
+				BVExpr temp = new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
+				char character = constant.charAt(i);
+				lit = and(lit, new BVEq (temp, new BVConst(character)));
+			}
+			/*for (int j = 0; j < constant.length(); j++) {
 				BVExpr lit = null;
 				for (int i = 0; i <= j; i++) {
 					BVExpr temp = new BVExtract(dest, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
@@ -356,8 +364,8 @@ public class TranslateToZ3 {
 				else {
 					listOfLit = new BVOr (listOfLit, lit);
 				}
-			}
-			return (listOfLit);
+			}*/
+			return (lit);
 		}
 		else {
 			String sourceConstant = e.getSource().getSolution();
@@ -410,7 +418,9 @@ public class TranslateToZ3 {
 	}
 	
 	private static BVExpr endsWith (Edge e) {
+		//println ("endsWith entered");
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			//println ("endsWith branch 1");
 			BVExpr source = getBVExpr (e.getSource());
 			BVExpr dest = getBVExpr (e.getDest());
 			
@@ -419,6 +429,7 @@ public class TranslateToZ3 {
 			
 		}
 		else if (!e.getSource().isConstant()) {
+			//println ("endsWith branch 2");
 			BVExpr source = getBVExpr(e.getSource());
 			String constant = e.getDest().getSolution();
 			BVExpr lit = null;
@@ -436,10 +447,16 @@ public class TranslateToZ3 {
 			return (lit);
 		}
 		else if (!e.getDest().isConstant()) {
+			//println ("endsWith branch 3");
 			BVExpr dest = getBVExpr(e.getDest());
 			String constant = e.getSource().getSolution();
-			BVExpr listOfLit = null;
-			for (int j = 0; j < constant.length(); j++) {
+			BVExpr lit = null;
+			for (int i = 0; i < e.getDest().getLength(); i++) {
+				BVExpr temp = new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
+				char character = constant.charAt(i + (constant.length() - e.getDest().getLength()));
+				lit = and (lit, new BVEq (temp, new BVConst (character)));
+			}
+			/*for (int j = 0; j < constant.length(); j++) {
 				BVExpr lit = null;
 				for (int i = constant.length() - 1; i >= constant.length() - j - 1; i--) {
 					BVExpr temp = new BVExtract(dest, (constant.length() - i) * 8 - 1, (constant.length() - i) * 8 - 8);
@@ -458,17 +475,29 @@ public class TranslateToZ3 {
 				else {
 					listOfLit = new BVOr(listOfLit, lit);
 				}
+			}*/
+			return (lit);
+		} else {
+			String constant1 = e.getSource().getSolution();
+			String constant2 = e.getDest().getSolution();
+			if (constant1.endsWith(constant2)) {
+				return new BVTrue();
 			}
-			return (listOfLit);
+			else {
+				return new BVFalse();
+			}
 		}
-		return null;
+		//println ("endsWith no branch");
+		//return null;
 	}
 	
 	private static void handleEdgeEndsWith (EdgeEndsWith e) {
+		//println ("handleEdgeEndsWith " + e);
 		post (endsWith(e));
 	}
 	
 	private static void handleEdgeNotEndsWith (EdgeNotEndsWith e) {
+		//println ("handleEdgeNotEndsWith");
 		if (e.getDest().getLength() > e.getSource().getLength()) {
 			return;
 		}
@@ -509,8 +538,16 @@ public class TranslateToZ3 {
 			}
 			return lit;
 
+		} else {
+			String constant1 = e.getSource().getSolution();
+			String constant2 = e.getDest().getSolution();
+			if (constant1.equals(constant2)) {
+				return new BVTrue();
+			} else {
+				return new BVFalse();
+			}
 		}
-		return null;
+		//return null;
 	}
 	
 	
@@ -518,7 +555,6 @@ public class TranslateToZ3 {
 		if (e.getSource().getLength() != e.getDest().getLength()) {
 			return;
 		}
-		
 		post (new BVNot(equal(e)));
 	}
 	
@@ -755,6 +791,7 @@ public class TranslateToZ3 {
 	
 	private static BVExpr contains (Edge e) {
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			//println ("contains branch 1");
 			BVExpr source = getBVExpr(e.getSource());
 			BVExpr dest = getBVExpr(e.getDest());
 			int diff = e.getSource().getLength() - e.getDest().getLength();
@@ -771,6 +808,7 @@ public class TranslateToZ3 {
 			return (listOfLit);
 		}
 		else if (!e.getSource().isConstant()) {
+			//println ("contains branch 2");
 			//println ("[contains] source not constant");
 			BVExpr source = getBVExpr(e.getSource());
 			String destCons = e.getDest().getSolution();
@@ -789,6 +827,7 @@ public class TranslateToZ3 {
 			return (listOfLit);
 		}
 		else if (!e.getDest().isConstant()) {
+			//println ("contains branch 3");
 			BVExpr dest = getBVExpr(e.getDest());
 			String sourceCons = e.getSource().getSolution();
 			String[] possibleSolutions = new String [e.getSource().getLength() - e.getDest().getLength() + 1];
@@ -807,7 +846,18 @@ public class TranslateToZ3 {
 			}
 			return (listOfLit);
 		}
-		return null;
+		else {
+			String constant1 = e.getSource().getSolution();
+			String constant2 = e.getDest().getSolution();
+			if (constant1.contains(constant2)) {
+				return new BVTrue();
+			}
+			else {
+				return new BVFalse();
+			}
+		}
+		//println ("contains no branch");
+		//return null;
 	}
 	
 	private static void handleEdgeContains (EdgeContains e) {
@@ -1146,6 +1196,7 @@ public class TranslateToZ3 {
 	}
 	
 	private static void handleEdgeNotContains (EdgeNotContains e) {
+		//println ("handleEdgeNotContains");
 		if (e.getSource().getLength() < e.getDest().getLength()) {
 			return;
 		}

@@ -22,8 +22,10 @@ import gov.nasa.jpf.symbc.string.graph.EdgeStartsWith;
 import gov.nasa.jpf.symbc.string.graph.PreProcessGraph;
 import gov.nasa.jpf.symbc.string.graph.StringGraph;
 import gov.nasa.jpf.symbc.string.graph.Vertex;
+import gov.nasa.jpf.symbc.string.translate.BVVar;
 import gov.nasa.jpf.symbc.string.translate.TranslateToAutomata;
 import gov.nasa.jpf.symbc.string.translate.TranslateToZ3;
+import gov.nasa.jpf.symbc.string.translate.TranslateToZ3Inc;
 
 public class RandomTest {
 	
@@ -33,39 +35,60 @@ public class RandomTest {
 	static int counter;
 	static PathCondition pc;
 	
+	private static final String Z3_Inc = "Z3 Inc";
+	private static final String Z3 = "Z3";
+	private static final String Automata = "Automata";
+	
 	public static void main (String [] args) {
 		setUpJPF();
 		Profile p = Profile.NewProfile();
 		p.amountOfStringCons = 5;
 		p.stringConsMaxLength = 5;
 		p.amountOfStringVar = 2;
-		p.amountOfEdges = 10;
+		p.amountOfEdges = 5;
 		
 		p.listOfEdgesToBeUsed = Profile.smallSetOfEdges();
 		
-		args = new String[]{"-8492305658774017607"};
-		
+		//args = new String[]{"4482676770472428340"};
+		//args = new String[]{"7463434583100419681"};
+		//args = new String[]{"6195941135273736924"};
+		//args = new String[]{"-5452898171472999736"};
+		//args = new String[]{"-8789835043277711195"};
+		//args = new String[]{"-8333472512654717307"};
+		//TODO: 2797260435590869202
 		if (args.length == 0) {
 			for (int i = 0; i < 100; i++) {
 				random = new Random();
-				go (p, random.nextLong());
+				long seed = random.nextLong();
+				go (p, seed, Z3_Inc);
+				go (p, seed, Automata);
 			}
 		}
 		else {
 			long seed = Long.parseLong(args[0]);
 			random = new Random();
-			go (p, seed);
+			go (p, seed, Z3_Inc);
 		}
 	}
 	
-	public static void go (Profile p, long seed) {
+	public static void go (Profile p, long seed, String Solver) {
 		StringGraph sg = generateRandomStringGraph (p, seed);
 		System.out.println(sg.toDot());
-		boolean result = PreProcessGraph.preprocess(sg, pc);		
-		System.out.println(result);
+		boolean result = PreProcessGraph.preprocess(sg, pc);
+		//System.out.println(sg.toDot());
+		//System.out.println(pc.header);
+		System.out.println("Preprocessor " + result);
 		if (result == false) {}
 		else {
-			TranslateToZ3.isSat(sg, pc);
+			long time = System.currentTimeMillis();
+			if (Solver.equals (Z3_Inc)) {
+				TranslateToZ3Inc.isSat(sg, pc);
+			}
+			else if (Solver.equals(Automata)) {
+				TranslateToAutomata.isSat(sg, pc);
+			}
+			long dur = System.currentTimeMillis() - time;
+			System.out.println("[output] " + Solver + ": " + dur);
 		}
 	}
 	
@@ -90,7 +113,7 @@ public class RandomTest {
 		char character = 'a';
 		
 		for (int i = 0; i < p.amountOfStringVar; i++) {
-			result.addVertex(new Vertex(String.valueOf(character), sig));
+			result.addVertex(new Vertex("SYM_" + String.valueOf(character), sig));
 			character = (char) ((int) character + 1);
 		}
 		
