@@ -3,22 +3,46 @@ package gov.nasa.jpf.symbc.string.testing;
 import java.util.List;
 import java.util.Random;
 
+import javax.print.attribute.IntegerSyntax;
+
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+import gov.nasa.jpf.symbc.string.SymbolicIndexOf2Integer;
+import gov.nasa.jpf.symbc.string.SymbolicIndexOfChar2Integer;
+import gov.nasa.jpf.symbc.string.SymbolicIndexOfCharInteger;
+import gov.nasa.jpf.symbc.string.SymbolicIndexOfInteger;
 import gov.nasa.jpf.symbc.string.SymbolicIntegerGenerator;
+import gov.nasa.jpf.symbc.string.SymbolicLastIndexOf2Integer;
+import gov.nasa.jpf.symbc.string.SymbolicLastIndexOfChar2Integer;
+import gov.nasa.jpf.symbc.string.SymbolicLastIndexOfCharInteger;
+import gov.nasa.jpf.symbc.string.SymbolicLastIndexOfInteger;
+import gov.nasa.jpf.symbc.string.graph.EdgeCharAt;
+import gov.nasa.jpf.symbc.string.graph.EdgeConcat;
 import gov.nasa.jpf.symbc.string.graph.EdgeContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeEqual;
+import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf;
+import gov.nasa.jpf.symbc.string.graph.EdgeIndexOf2;
+import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar;
+import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar2;
+import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOf;
+import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOf2;
+import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar;
+import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar2;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotStartsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeStartsWith;
+import gov.nasa.jpf.symbc.string.graph.EdgeSubstring1Equal;
+import gov.nasa.jpf.symbc.string.graph.EdgeSubstring2Equal;
+import gov.nasa.jpf.symbc.string.graph.EdgeTrimEqual;
 import gov.nasa.jpf.symbc.string.graph.PreProcessGraph;
 import gov.nasa.jpf.symbc.string.graph.StringGraph;
 import gov.nasa.jpf.symbc.string.graph.Vertex;
@@ -38,6 +62,9 @@ public class RandomTest {
 	private static final String Z3_Inc = "Z3 Inc";
 	private static final String Z3 = "Z3";
 	private static final String Automata = "Automata";
+	private static IntegerConstant integerCons[];
+	private static SymbolicInteger integerVars[];
+	private static int vertexCounter;
 	
 	public static void main (String [] args) {
 		setUpJPF();
@@ -45,9 +72,10 @@ public class RandomTest {
 		p.amountOfStringCons = 5;
 		p.stringConsMaxLength = 5;
 		p.amountOfStringVar = 2;
-		p.amountOfEdges = 5;
-		
-		p.listOfEdgesToBeUsed = Profile.smallSetOfEdges();
+		p.amountOfEdges = 3;
+		p.amountOfIntegerCons = 2;
+		p.amountOfIntegerVar = 2;
+		p.listOfEdgesToBeUsed = Profile.defaultSetOfEdges();
 		
 		//args = new String[]{"4482676770472428340"};
 		//args = new String[]{"7463434583100419681"};
@@ -56,12 +84,15 @@ public class RandomTest {
 		//args = new String[]{"-8789835043277711195"};
 		//args = new String[]{"-8333472512654717307"};
 		//TODO: 2797260435590869202
+		//TODO: 8916679733395261340
 		if (args.length == 0) {
+			System.out.println("[data]," + p);
 			for (int i = 0; i < 100; i++) {
 				random = new Random();
 				long seed = random.nextLong();
-				go (p, seed, Z3_Inc);
-				go (p, seed, Automata);
+				long z3dur = go (p, seed, Z3_Inc);
+				long autodur = go (p, seed, Automata);
+				System.out.println("[data],"+seed+","+z3dur+","+autodur);
 			}
 		}
 		else {
@@ -71,7 +102,7 @@ public class RandomTest {
 		}
 	}
 	
-	public static void go (Profile p, long seed, String Solver) {
+	public static long go (Profile p, long seed, String Solver) {
 		StringGraph sg = generateRandomStringGraph (p, seed);
 		System.out.println(sg.toDot());
 		boolean result = PreProcessGraph.preprocess(sg, pc);
@@ -88,8 +119,10 @@ public class RandomTest {
 				TranslateToAutomata.isSat(sg, pc);
 			}
 			long dur = System.currentTimeMillis() - time;
-			System.out.println("[output] " + Solver + ": " + dur);
+			//System.out.println("[output] " + Solver + ": " + dur);
+			return dur;
 		}
+		return -1;
 	}
 	
 	public static void setUpJPF () {
@@ -104,10 +137,15 @@ public class RandomTest {
 		random.setSeed(seed);
 		counter = 0;
 		
+		integerCons = new IntegerConstant[p.amountOfIntegerCons];
+		integerVars = new SymbolicInteger[p.amountOfIntegerVar];
+		
 		totalWeight = 0;
 		for (int i = 0; i < p.listOfEdgesToBeUsed.length; i++) {
 			totalWeight = totalWeight + p.listOfEdgesToBeUsed[i];
 		}
+		
+		vertexCounter = 0;
 		
 		sig = new SymbolicIntegerGenerator();
 		char character = 'a';
@@ -122,6 +160,14 @@ public class RandomTest {
 			result.addVertex(new Vertex("CONST_" + name, name, true));
 		}
 		
+		for (int i = 0; i < p.amountOfIntegerCons; i++) {
+			integerCons[i] = new IntegerConstant(random.nextInt(31));
+		}
+		
+		for (int i = 0; i < p.amountOfIntegerVar; i++) {
+			integerVars[i] = new SymbolicInteger("SYM_INT_" + i);
+		}
+		
 		for (int i = 0; i < p.amountOfEdges; i++ ) {
 			double ran = random.nextDouble();
 			ran = ran * totalWeight;
@@ -130,10 +176,12 @@ public class RandomTest {
 			switch (index) {
 			case 0:
 				//EdgeCharAt
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeCharAt(result, random.nextInt(4));
+				break;
 			case 1:
 				//EdgeConcat
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeConcat(result);
+				break;
 			case 2:
 				//EdgeContains
 				handleEdgeContains (result);
@@ -148,28 +196,36 @@ public class RandomTest {
 				break;
 			case 5:
 				//EdgeIndexOf
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeIndexOf (result, random.nextInt(2));
+				break;
 			case 6:
 				//EdgeIndexOf2
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeIndexOf2 (result, random.nextInt(4));
+				break;
 			case 7:
 				//EdgeIndexOfChar
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeIndexOfChar (result, random.nextInt(2));
+				break;
 			case 8:
 				//EdgeIndexOfChar2
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeIndexOfChar2 (result, random.nextInt(8));
+				break;
 			case 9:
 				//EdgeLastIndexOf
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeLastIndexOf (result, random.nextInt(2));
+				break;
 			case 10:
 				//EdgeLastIndexOf2
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeLastIndexOf2 (result, random.nextInt(4));
+				break;
 			case 11:
 				//EdgeLastIndexOfChar
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeLastIndexOfChar (result, random.nextInt(2));
+				break;
 			case 12:
 				//EdgeLastIndexOfChar2
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeLastIndexOfChar2 (result, random.nextInt(8));
+				break;
 			case 13:
 				//EdgeNotContains
 				handleEdgeNotContains (result);
@@ -195,17 +251,425 @@ public class RandomTest {
 				break;
 			case 19:
 				//EdgeSubstring1Equal
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeSubstring1Equal(result);
+				break;
 			case 20:
 				//EdgeSubstring2Equal
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeSubstring2Equal(result, random.nextInt(3));
+				break;
 			case 21:
 				//EdgeTrimEqual
-				throw new RuntimeException ("Not implemented yet");
+				handleEdgeTrimEqual(result);
+				break;
 			}
 		}
 		
 		return result;
+	}
+	
+	private static void handleEdgeTrimEqual (StringGraph result) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = selectRandomVertex(result);
+		while (v1.equals(v2)) {
+			v1 = selectRandomVertex(result);
+			v2 = selectRandomVertex(result);
+		}
+		EdgeTrimEqual edge = new EdgeTrimEqual("EdgeTrimEqual_" + getCounter(), v1, v2);
+	}
+	
+	private static void handleEdgeSubstring1Equal (StringGraph result) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = selectRandomVertex(result);
+		while (v1.equals(v2)) {
+			v1 = selectRandomVertex(result);
+			v2 = selectRandomVertex(result);
+		}
+		EdgeSubstring1Equal edge = new EdgeSubstring1Equal("EdgeSubstring1Equal_" + getCounter(), randomConsInteger(), v1, v2);
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeSubstring2Equal (StringGraph result, int mode) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = selectRandomVertex(result);
+		while (v1.equals(v2)) {
+			v1 = selectRandomVertex(result);
+			v2 = selectRandomVertex(result);
+		}
+		IntegerExpression ie1, ie2;
+		switch (mode) {
+		case 0:
+			ie1 = randomConsInteger();
+			ie2 = randomConsInteger();
+			break;
+		case 1:
+			ie1 = randomSymInteger();
+			ie2 = randomConsInteger();
+			break;
+		case 2:
+			ie1 = randomConsInteger();
+			ie2 = randomSymInteger();
+			break;
+		default:
+			throw new RuntimeException("should not be reached");
+		}
+		//TDOD: Should maybe change
+		EdgeSubstring2Equal edge = null;
+		if (ie1 instanceof IntegerConstant && ie2 instanceof IntegerConstant) {
+			edge = new EdgeSubstring2Equal("EdgeSubstring1Equal_" + getCounter(), ie1.solution(), ie2.solution(), v1, v2);
+		}
+		else if (ie1 instanceof IntegerConstant) {
+			edge = new EdgeSubstring2Equal("EdgeSubstring1Equal_" + getCounter(), ie1.solution(), ie2, v1, v2);
+		}
+		else if (ie2 instanceof IntegerConstant) {
+			edge = new EdgeSubstring2Equal("EdgeSubstring1Equal_" + getCounter(), ie1, ie2.solution(), v1, v2);
+		}
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeIndexOf (StringGraph result, int mode) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = selectRandomVertex(result);
+		while (v1.equals(v2)) {
+			v1 = selectRandomVertex(result);
+			v2 = selectRandomVertex(result);
+		}
+		IntegerExpression ie;
+		switch (mode) {
+		case 0:
+			ie = randomConsInteger();
+			break;
+		case 1:
+			ie = randomSymInteger();
+			break;
+		default:
+			throw new RuntimeException("should not be reached");
+		}
+		SymbolicIndexOfInteger sioi = new SymbolicIndexOfInteger("TEMP_" + vertexCounter, 1, 30, null, null);
+		vertexCounter++;
+		pc._addDet(Comparator.EQ, ie, sioi);
+		EdgeIndexOf edge = new EdgeIndexOf("EdgeIndexOf_" + getCounter(), v1, v2, sioi);
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeLastIndexOf (StringGraph result, int mode) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = selectRandomVertex(result);
+		while (v1.equals(v2)) {
+			v1 = selectRandomVertex(result);
+			v2 = selectRandomVertex(result);
+		}
+		IntegerExpression ie;
+		switch (mode) {
+		case 0:
+			ie = randomConsInteger();
+			break;
+		case 1:
+			ie = randomSymInteger();
+			break;
+		default:
+			throw new RuntimeException("should not be reached");
+		}
+		SymbolicLastIndexOfInteger sioi = new SymbolicLastIndexOfInteger("TEMP_" + vertexCounter, 1, 30, null, null);
+		vertexCounter++;
+		pc._addDet(Comparator.EQ, ie, sioi);
+		EdgeLastIndexOf edge = new EdgeLastIndexOf("EdgeLastIndexOf_" + getCounter(), v1, v2, sioi);
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeIndexOfChar (StringGraph result, int mode) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = new Vertex ("TEMP_" + vertexCounter, 1);
+		vertexCounter++;
+		IntegerExpression ie1, ie2;
+		switch (mode) {
+		case 0:
+			ie1 = randomConsInteger();
+			ie2 = randomConsInteger();
+			break;
+		case 1:
+			ie1 = randomSymInteger();
+			ie2 = randomConsInteger();
+			break;
+		case 2:
+			ie1 = randomConsInteger();
+			ie2 = randomSymInteger();
+			break;
+		case 3:
+			ie1 = randomSymInteger();
+			ie2 = randomSymInteger();
+			break;
+		default:
+			throw new RuntimeException("should not be reached");
+		}
+		SymbolicIndexOfCharInteger sioi = new SymbolicIndexOfCharInteger("TEMP_" + vertexCounter, 1, 30, null, ie1);
+		vertexCounter++;
+		pc._addDet(Comparator.EQ, ie2, sioi);
+		EdgeIndexOfChar edge = new EdgeIndexOfChar("EdgeIndexOfChar_" + getCounter(), v1, v2, sioi);
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeLastIndexOfChar (StringGraph result, int mode) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = new Vertex ("TEMP_" + vertexCounter, 1);
+		vertexCounter++;
+		IntegerExpression ie1, ie2;
+		switch (mode) {
+		case 0:
+			ie1 = randomConsInteger();
+			ie2 = randomConsInteger();
+			break;
+		case 1:
+			ie1 = randomSymInteger();
+			ie2 = randomConsInteger();
+			break;
+		case 2:
+			ie1 = randomConsInteger();
+			ie2 = randomSymInteger();
+			break;
+		case 3:
+			ie1 = randomSymInteger();
+			ie2 = randomSymInteger();
+			break;
+		default:
+			throw new RuntimeException("should not be reached");
+		}
+		SymbolicLastIndexOfCharInteger sioi = new SymbolicLastIndexOfCharInteger("TEMP_" + vertexCounter, 1, 30, null, ie1);
+		vertexCounter++;
+		pc._addDet(Comparator.EQ, ie2, sioi);
+		EdgeLastIndexOfChar edge = new EdgeLastIndexOfChar("EdgeLastIndexOfChar_" + getCounter(), v1, v2, sioi);
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeIndexOfChar2 (StringGraph result, int mode) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = new Vertex ("TEMP_" + vertexCounter, 1);
+		vertexCounter++;
+		IntegerExpression ie1, ie2,ie3;
+		switch (mode) {
+		case 0:
+			ie1 = randomConsInteger();
+			ie2 = randomConsInteger();
+			ie3 = randomConsInteger();
+			break;
+		case 1:
+			ie1 = randomSymInteger();
+			ie2 = randomConsInteger();
+			ie3 = randomConsInteger();
+			break;
+		case 2:
+			ie1 = randomConsInteger();
+			ie2 = randomSymInteger();
+			ie3 = randomConsInteger();
+			break;
+		case 3:
+			ie1 = randomSymInteger();
+			ie2 = randomSymInteger();
+			ie3 = randomConsInteger();
+			break;
+		case 4:
+			ie1 = randomConsInteger();
+			ie2 = randomConsInteger();
+			ie3 = randomSymInteger();
+			break;
+		case 5:
+			ie1 = randomSymInteger();
+			ie2 = randomConsInteger();
+			ie3 = randomSymInteger();
+			break;
+		case 6:
+			ie1 = randomConsInteger();
+			ie2 = randomSymInteger();
+			ie3 = randomSymInteger();
+			break;
+		case 7:
+			ie1 = randomSymInteger();
+			ie2 = randomSymInteger();
+			ie3 = randomSymInteger();
+			break;	
+		default:
+			throw new RuntimeException("should not be reached");
+		}
+		SymbolicIndexOfChar2Integer sioi = new SymbolicIndexOfChar2Integer("TEMP_" + vertexCounter, 1, 30, null, ie1,ie3);
+		vertexCounter++;
+		pc._addDet(Comparator.EQ, ie2, sioi);
+		EdgeIndexOfChar2 edge = new EdgeIndexOfChar2("EdgeIndexOfChar_" + getCounter(), v1, v2, sioi);
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeLastIndexOfChar2 (StringGraph result, int mode) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = new Vertex ("TEMP_" + vertexCounter, 1);
+		vertexCounter++;
+		IntegerExpression ie1, ie2,ie3;
+		switch (mode) {
+		case 0:
+			ie1 = randomConsInteger();
+			ie2 = randomConsInteger();
+			ie3 = randomConsInteger();
+			break;
+		case 1:
+			ie1 = randomSymInteger();
+			ie2 = randomConsInteger();
+			ie3 = randomConsInteger();
+			break;
+		case 2:
+			ie1 = randomConsInteger();
+			ie2 = randomSymInteger();
+			ie3 = randomConsInteger();
+			break;
+		case 3:
+			ie1 = randomSymInteger();
+			ie2 = randomSymInteger();
+			ie3 = randomConsInteger();
+			break;
+		case 4:
+			ie1 = randomConsInteger();
+			ie2 = randomConsInteger();
+			ie3 = randomSymInteger();
+			break;
+		case 5:
+			ie1 = randomSymInteger();
+			ie2 = randomConsInteger();
+			ie3 = randomSymInteger();
+			break;
+		case 6:
+			ie1 = randomConsInteger();
+			ie2 = randomSymInteger();
+			ie3 = randomSymInteger();
+			break;
+		case 7:
+			ie1 = randomSymInteger();
+			ie2 = randomSymInteger();
+			ie3 = randomSymInteger();
+			break;	
+		default:
+			throw new RuntimeException("should not be reached");
+		}
+		SymbolicLastIndexOfChar2Integer sioi = new SymbolicLastIndexOfChar2Integer("TEMP_" + vertexCounter, 1, 30, null, ie1,ie3);
+		vertexCounter++;
+		pc._addDet(Comparator.EQ, ie2, sioi);
+		EdgeLastIndexOfChar2 edge = new EdgeLastIndexOfChar2("EdgeLastIndexOfChar_" + getCounter(), v1, v2, sioi);
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeIndexOf2 (StringGraph result, int mode) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = selectRandomVertex(result);
+		while (v1.equals(v2)) {
+			v1 = selectRandomVertex(result);
+			v2 = selectRandomVertex(result);
+		}
+		IntegerExpression ie1, ie2;
+		switch (mode) {
+		case 0:
+			ie1 = randomConsInteger();
+			ie2 = randomConsInteger();
+			break;
+		case 1:
+			ie1 = randomSymInteger();
+			ie2 = randomConsInteger();
+			break;
+		case 2:
+			ie1 = randomConsInteger();
+			ie2 = randomSymInteger();
+			break;
+		case 3:
+			ie1 = randomSymInteger();
+			ie2 = randomSymInteger();
+			break;
+		default:
+			throw new RuntimeException("should not be reached");
+		}
+		SymbolicIndexOf2Integer sioi = new SymbolicIndexOf2Integer("TEMP_" + vertexCounter, 1, 30, null, null, ie1);
+		vertexCounter++;
+		pc._addDet(Comparator.EQ, ie2, sioi);
+		EdgeIndexOf2 edge = new EdgeIndexOf2("EdgeIndexOf2_" + getCounter(), v1, v2, sioi);
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeLastIndexOf2 (StringGraph result, int mode) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = selectRandomVertex(result);
+		while (v1.equals(v2)) {
+			v1 = selectRandomVertex(result);
+			v2 = selectRandomVertex(result);
+		}
+		IntegerExpression ie1, ie2;
+		switch (mode) {
+		case 0:
+			ie1 = randomConsInteger();
+			ie2 = randomConsInteger();
+			break;
+		case 1:
+			ie1 = randomSymInteger();
+			ie2 = randomConsInteger();
+			break;
+		case 2:
+			ie1 = randomConsInteger();
+			ie2 = randomSymInteger();
+			break;
+		case 3:
+			ie1 = randomSymInteger();
+			ie2 = randomSymInteger();
+			break;
+		default:
+			throw new RuntimeException("should not be reached");
+		}
+		SymbolicLastIndexOf2Integer sioi = new SymbolicLastIndexOf2Integer("TEMP_" + vertexCounter, 1, 30, null, null, ie1);
+		vertexCounter++;
+		pc._addDet(Comparator.EQ, ie2, sioi);
+		EdgeLastIndexOf2 edge = new EdgeLastIndexOf2("EdgeLastIndexOf2_" + getCounter(), v1, v2, sioi);
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeCharAt (StringGraph result, int mode) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = new Vertex ("TEMP_" + vertexCounter, 1);
+		vertexCounter++;
+		IntegerExpression i1, i2;
+		switch (mode) {
+		case 0:
+			i1 = randomConsInteger ();
+			i2 = randomConsInteger ();
+			break;
+		case 1:
+			i1 = randomConsInteger();
+			i2 = randomSymInteger();
+			break;
+		case 2:
+			i1 = randomSymInteger();
+			i2 = randomConsInteger();
+			break;
+		case 3:
+			i1 = randomSymInteger();
+			i2 = randomSymInteger();
+			break;
+		default:
+			throw new RuntimeException ("Should not be reached");
+		}
+		EdgeCharAt edge = new EdgeCharAt("EdgeCharAt_" + getCounter(), v1, v2, i1, i2);
+		result.addEdge(v1, v2, edge);
+	}
+	
+	private static void handleEdgeConcat (StringGraph result) {
+		Vertex v1 = selectRandomVertex(result);
+		Vertex v2 = selectRandomVertex(result);
+		Vertex v3 = selectRandomVertex(result);
+		while (v1.equals(v2) || v1.equals(v3) || v2.equals(v3)) {
+			v1 = selectRandomVertex(result);
+			v2 = selectRandomVertex(result);
+			v3 = selectRandomVertex(result);
+		}
+		EdgeConcat edge = new EdgeConcat("EdgeConcat_" + getCounter(), v1, v2, v3);
+		result.addEdge(v1,v2,v3,edge);
+	}
+	
+	private static IntegerConstant randomConsInteger () {
+		return integerCons[random.nextInt(integerCons.length)];
+	}
+	
+	private static SymbolicInteger randomSymInteger () {
+		return integerVars[random.nextInt(integerVars.length)];
 	}
 	
 	private static void handleEdgeStartsWith (StringGraph result) {
