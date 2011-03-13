@@ -2427,8 +2427,8 @@ public class SymbolicStringHandler {
 		}
 		// if method does not return anything then
 		MethodInfo mi = invInst.getInvokedMethod();
-		byte b = mi.getReturnType();
-		if (b == Constants.T_VOID)
+		byte b = mi.getReturnTypeCode();
+		if (b == Types.T_VOID)
 			System.out.println("WARNING: Could not set variable attribute");
 
 	}
