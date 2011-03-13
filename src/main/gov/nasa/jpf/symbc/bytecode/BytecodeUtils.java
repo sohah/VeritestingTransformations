@@ -466,6 +466,10 @@ public class BytecodeUtils {
 
 	private static int symVarCounter = 1;
 
+  public static void clearSymVarCounter() {
+    symVarCounter = 1;
+  }
+
 	public enum VarType {
 		INT, REAL, REF, STRING
 	};
