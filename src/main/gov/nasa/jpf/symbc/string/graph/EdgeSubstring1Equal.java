@@ -18,6 +18,7 @@ public class EdgeSubstring1Equal implements Edge{
 		this.a1 = a1;
 	}
 	
+	//TODO: This still needs to work system-wide
 	public EdgeSubstring1Equal (String name, IntegerExpression a1, Vertex v1, Vertex v2) {
 		this.v1 = v1;
 		this.v2 = v2;

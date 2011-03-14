@@ -108,16 +108,16 @@ public class SymbolicStringConstraintsGeneral {
 	private static final boolean EJECT_TEXT = false;
 	
 	/*Timer to be used for timing out*/
-	static Timer timer;
+	public static Timer timer;
 	
 	/*Time (in ms) until timeout, zero for no timeout*/
-	private static long TIMEOUT = 0;
+	public static long TIMEOUT = 0;
 	
 	/*Boolean which is flagged when the timeout has been achieved */
-	static boolean timedOut;
+	public static boolean timedOut;
 	
 	/*Mutex lock on timedOut */
-	static Object mutexTimedOut = new Object();
+	public static Object mutexTimedOut = new Object();
 	
 	public SymbolicStringConstraintsGeneral () {
 		
@@ -854,6 +854,7 @@ public class SymbolicStringConstraintsGeneral {
 	}
 	
 	public static void checkTimeOut () {
+		//println ("[checkTimeOut] checking timed out");
 		synchronized (mutexTimedOut) {
 			if (timedOut) {
 				throw new SymbolicStringTimedOutException();

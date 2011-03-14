@@ -77,6 +77,7 @@ public class TranslateToZ3Inc {
 	
 	//most sign, first letter
 	public static boolean isSat (StringGraph g, PathCondition pc) {
+		SymbolicStringConstraintsGeneral.checkTimeOut();
 		if (scg == null) scg = new SymbolicConstraintsGeneral();
 		Z3EverCalled = false;
 		global_graph = g;
@@ -154,6 +155,7 @@ public class TranslateToZ3Inc {
 		}
 	}
 	
+	//TODO add EdgeLastIndexOf
 	private static boolean handle (Edge e) {
 		if (e instanceof EdgeStartsWith) {
 			return handleEdgeStartsWith ((EdgeStartsWith) e);
@@ -1076,7 +1078,14 @@ public class TranslateToZ3Inc {
 			}
 		}
 		else {
-			throw new RuntimeException("Should not be reached");
+			//Assume both is constant
+			if (e.getSource().getSolution().indexOf(e.getDest().getSolution()) == e.getIndex().solution()) {
+				return true;
+			}
+			else {
+				global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				return false;
+			}
 		}
 		if (result == false) {
 			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
@@ -1181,7 +1190,13 @@ public class TranslateToZ3Inc {
 			int index = e.getIndex().solution();
 			char character = (char) e.getIndex().getExpression().solution();
 			int actualAns = source.indexOf(character, e.getIndex().getMinDist().solution());
-			result = post (new BVEq(new BVConst(actualAns), new BVConst(index)));
+			if (index == actualAns) {
+				result = post (new BVTrue());
+			}
+			else {
+				result = post (new BVFalse());
+			}
+			//result = post (new BVEq(new BVConst(actualAns), new BVConst(index)));
 		}
 		if (result == false) {
 			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
@@ -1292,7 +1307,10 @@ public class TranslateToZ3Inc {
 			if (index > -1) {
 				BVExpr lit = null;
 				/* no other occurences of the character may come after up till second argument*/
-				for (int i = index+1; i < e.getIndex().getMinDist().solution(); i++) {
+				/*println ("minDist: " + e.getIndex().getMinDist().solution());
+				println ("index: " + index);
+				println ("e.getSource().getLength(): " + e.getSource().getLength());*/
+				for (int i = index+1; i < e.getIndex().getMinDist().solution() && e.getSource().getLength() - i - 1 >= 0; i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
 					BVExpr constant = new BVConst (character);
 					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
@@ -1404,7 +1422,11 @@ public class TranslateToZ3Inc {
 				result = post (lit);
 			}
 			else {
-				throw new RuntimeException("Preprocessor should handle this");
+				//Assume both constants
+				if (!e.getSource().getSolution().substring(e.getArgument1(),e.getSymbolicArgument2().solution()).equals((e.getDest().getSolution()))) {
+					global_pc._addDet(Comparator.NE, e.getSymbolicArgument2(), e.getSymbolicArgument2().solution());
+					return false;
+				}
 			}
 			if (result == false) {
 				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();

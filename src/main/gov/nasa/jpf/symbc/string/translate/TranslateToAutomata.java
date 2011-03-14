@@ -84,6 +84,7 @@ public class TranslateToAutomata {
 		//println ("[isSat] integer constraints: " + pc.header);
 		boolean restart = true;
 		while (restart) {
+			//println ("[isSat] restart");
 			/* check if there was a timeout */
 			SymbolicStringConstraintsGeneral.checkTimeOut();
 			
@@ -153,6 +154,8 @@ public class TranslateToAutomata {
 			//Take the leaves, and intersect with sources
 			boolean result = false;
 			while (!result && g.getEdges().size() > 0) {
+				/* check if there was a timeout */
+				SymbolicStringConstraintsGeneral.checkTimeOut();
 				//if (mapAutomaton == null) {
 					mapAutomaton = new HashMap<Vertex, Automaton>();
 					for (Vertex v: g.getVertices()) {
@@ -246,6 +249,7 @@ public class TranslateToAutomata {
 					}
 					if (result == false) break;
 				}
+				//if (result == false) break;
 			}
 			
 			
@@ -1903,6 +1907,7 @@ public class TranslateToAutomata {
 		String character = String.valueOf((char) e.getIndex().getExpression().solution());
 		//First check if it is possible
 		if (index > -1) {
+			//println ("[handleEdgeIndexOfChar2] index > -1");
 			Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
 			Automaton intersection = AutomatonExtra.intersection(a1, temp);
 			if (intersection.isEmpty()) {
@@ -1950,6 +1955,7 @@ public class TranslateToAutomata {
 			}
 		}
 		else {
+			//println ("[handleEdgeIndexOfChar2] index == -1");
 			/*Automaton temp = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
 			//println ("[handleEdgeIndexOfChar2] temp example: '" + temp.getShortestExample(true) + "'");
 			//println ("[handleEdgeIndexOfChar2] a1 example: '" + a1.getShortestExample(true) + "'");
@@ -2088,7 +2094,6 @@ public class TranslateToAutomata {
 			Automaton temp = AutomatonExtra.substring(source, e.getArgument1(), arg2);
 			//println ("[handleEdgeSubstring2Equal] source.getLength() = " + e.getSource().getLength());
 			//println ("[handleEdgeSubstring2Equal] temp diff = " + (arg2 - e.getArgument1()));
-			//println ("[handleEdgeSubstring2Equal] dest = " + dest.getFiniteStrings());
 			Automaton intersection = AutomatonExtra.intersection(temp, dest);
 			
 			if (intersection.isEmpty()) {

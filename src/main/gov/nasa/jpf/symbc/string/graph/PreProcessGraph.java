@@ -36,6 +36,13 @@ public class PreProcessGraph {
 	public static boolean preprocess (StringGraph g, PathCondition currentPC) { 
 		//println ("[preprocess] Preprocessor running...");
 		scg = new SymbolicConstraintsGeneral();
+		/*if (!scg.isSatisfiable(currentPC)) {
+			return false;
+		}
+		else {
+			scg.solve(currentPC);
+		}*/
+		
 		PathCondition pc = currentPC;
 		
 		//Remove duplicates
@@ -167,12 +174,12 @@ public class PreProcessGraph {
 					}
 				}
 				else {
-					if (e.getSources().get(0).isConstant() && e.getSources().get(1).isConstant()) {
+					if (e.getSources().get(0).isConstant() && e.getSources().get(1).isConstant() && !e.getDest().isConstant()) {
 						String leftString = e.getSources().get(0).getSolution();
 						String rightString = e.getSources().get(1).getSolution();
 						String concatString = leftString.concat(rightString);
-						e.getDest().setConstant(true);
 						e.getDest().setSolution(concatString);
+						e.getDest().setConstant(true);
 						e.getDest().setLength(concatString.length());
 					}
 				}
@@ -697,6 +704,18 @@ public class PreProcessGraph {
 							return false;
 						}
 					}
+					else if (e instanceof EdgeSubstring1Equal) {
+						EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) e;
+						if (!e.getSource().getSolution().substring(es1e.getArgument1()).equals((e.getDest().getSolution()))) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeSubstring2Equal) {
+						EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e;
+						if (es2e.getSymbolicArgument2() == null && !e.getSource().getSolution().substring(es2e.getArgument1(),es2e.getArgument2()).equals((e.getDest().getSolution()))) {
+							return false;
+						}
+					}
 					continue;
 				}
 				
@@ -725,11 +744,14 @@ public class PreProcessGraph {
 						pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
 						pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), new IntegerConstant(es2e.getArgument2()));
 						pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.getArgument2() - es2e.getArgument1()));
+						println ("branch 1");
 					}
 					else if (es2e.getSymbolicArgument1() == null && es2e.getSymbolicArgument2() != null){
 						pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
 						pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), es2e.getSymbolicArgument2());
 						pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), 0);
+						pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), es2e.getArgument1());
+						println ("branch 2");
 						//pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.a2 - es2e.a1));
 					}
 					else {
