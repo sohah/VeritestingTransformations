@@ -36,6 +36,7 @@ public class PreProcessGraph {
 	public static boolean preprocess (StringGraph g, PathCondition currentPC) { 
 		//println ("[preprocess] Preprocessor running...");
 		scg = new SymbolicConstraintsGeneral();
+		
 		/*if (!scg.isSatisfiable(currentPC)) {
 			return false;
 		}
@@ -744,14 +745,12 @@ public class PreProcessGraph {
 						pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
 						pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), new IntegerConstant(es2e.getArgument2()));
 						pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.getArgument2() - es2e.getArgument1()));
-						println ("branch 1");
 					}
 					else if (es2e.getSymbolicArgument1() == null && es2e.getSymbolicArgument2() != null){
 						pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
 						pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), es2e.getSymbolicArgument2());
 						pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), 0);
 						pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), es2e.getArgument1());
-						println ("branch 2");
 						//pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.a2 - es2e.a1));
 					}
 					else {
@@ -866,6 +865,8 @@ public class PreProcessGraph {
 				else if (e instanceof EdgeReplaceCharChar) {
 					pc._addDet(Comparator.EQ, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
 				}
+				
+				
 			}
 		}
 		//println ("Done with loop");
