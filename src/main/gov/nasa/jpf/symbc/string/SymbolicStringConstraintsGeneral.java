@@ -63,7 +63,7 @@ import gov.nasa.jpf.symbc.string.translate.TranslateToZ3Inc;
  * 5. if step 4 gives unsat, and there is more integer values that satisfy step 3, go to step 3
  * 6. Translate the StringGraph to the original symbolic strings.
  * 
- * More info, visit www.cs.sun.ac.za/~gredelinghuys/string
+ * Visit http://www1.sun.ac.za/redmine/projects/jpfbugs/issues to log bugs
  * 
  * @author GJ Redelinghuys
  *

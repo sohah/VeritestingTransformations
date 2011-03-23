@@ -145,4 +145,8 @@ public class StringConstraint {
   public StringExpression getRight () {
 	  return right;
   }
+  
+  public StringConstraint and () {
+	  return and;
+  }
 }
