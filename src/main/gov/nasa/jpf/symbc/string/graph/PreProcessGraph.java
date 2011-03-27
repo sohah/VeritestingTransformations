@@ -82,6 +82,8 @@ public class PreProcessGraph {
 							return false;
 						}
 						change = true;
+						/* Done merging, ensure both vertices lengths are the same */
+						forceLengthsSame (v1, v2, pc);
 					}
 				}
 			}
@@ -135,6 +137,8 @@ public class PreProcessGraph {
 							return false;
 						}
 						change = true;
+						/* Done merging, ensure both vertices lengths are the same */
+						forceLengthsSame (v1, v2, pc);
 					}
 				}
 			}
@@ -657,6 +661,8 @@ public class PreProcessGraph {
 			pc._addDet(Comparator.GE, v.getSymbolicLength(), 1);
 			pc._addDet(Comparator.LE, v.getSymbolicLength(), MAXIMUM_LENGTH);
 		}
+		//println (g.toDot());
+		//println (currentPC.header.toString());
 		while (change) {
 			change = false;
 			for (Edge e: g.getEdges()) {
@@ -923,6 +929,25 @@ public class PreProcessGraph {
 		}
 		//println ("[preprocess] Preprocessor done");
 		return true;
+	}
+	
+	private static void forceLengthsSame (Vertex v1, Vertex v2, PathCondition pc) {
+		if (v1.constant) {
+			if (v2.constant) {
+				pc._addDet(Comparator.EQ, v1.getLength(), new IntegerConstant(v2.getLength()));
+			}
+			else {
+				pc._addDet(Comparator.EQ, v1.getLength(), v2.getSymbolicLength());
+			}
+		}
+		else {
+			if (v2.constant) {
+				pc._addDet(Comparator.EQ, v1.getSymbolicLength(), new IntegerConstant(v2.getLength()));
+			}
+			else {
+				pc._addDet(Comparator.EQ, v1.getSymbolicLength(), v2.getSymbolicLength());
+			}
+		}
 	}
 	
 	private static void println (String msg) {

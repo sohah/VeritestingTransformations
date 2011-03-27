@@ -1244,6 +1244,18 @@ public class TranslateToZ3Inc {
 			}
 			result = post (lit);
 		}
+		else if (!e.getDest().isConstant()) {
+			String sourceCons = e.getSource().getSolution();
+			BVExpr dest = getBVExpr(e.getDest());
+			int arg1 = e.getArgument1();
+			BVExpr lit = null;
+			for (int i = 0; i < e.getDest().getLength(); i++) {
+				BVExpr sourceTemp = new BVConst (sourceCons.charAt(i + arg1));
+				BVExpr destTemp =new BVExtract(dest, (e.getDest().getLength() - i) * 8 - 1, (e.getDest().getLength() - i) * 8 - 8);
+				lit = and (lit, new BVEq (sourceTemp, destTemp));
+			}
+			result = post(lit);
+		}
 		else {
 			throw new RuntimeException("Preprocessor should handle this");
 		}

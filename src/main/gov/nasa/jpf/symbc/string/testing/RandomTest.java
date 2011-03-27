@@ -103,9 +103,11 @@ public class RandomTest {
 		//args = new String[]{"-7189896289378272226"};
 		//args = new String[]{"-3605963236366167326"};
 		//args = new String[]{"-7236756415893867232"};
+		//args = new String[]{"7027824590206899706"};
+		//args = new String[]{"-4376207953586733395"};
 		if (args.length == 0) {
 			System.out.println("[data]," + p);
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 1000; i++) {
 				random = new Random();
 				long seed = random.nextLong();
 				long z3dur = go (p, seed, Z3_Inc);
@@ -332,7 +334,6 @@ public class RandomTest {
 			v2 = selectRandomVertex(result);
 		}
 		IntegerConstant ic = randomConsInteger();
-		System.out.println("ic: " + ic);
 		pc._addDet(Comparator.GE, ic, 1);
 		pc._addDet(Comparator.LE, ic, PreProcessGraph.MAXIMUM_LENGTH);
 		if (v1.isConstant()) {
@@ -340,6 +341,8 @@ public class RandomTest {
 		} else {
 			pc._addDet(Comparator.LE, ic, v1.getSymbolicLength());
 		}
+		/*println (pc.header.toString());
+		println ("ic: " + ic);*/
 		EdgeSubstring1Equal edge = new EdgeSubstring1Equal("EdgeSubstring1Equal_" + getCounter(), ic.solution(), v1, v2);
 		result.addEdge(v1, v2, edge);
 	}
@@ -892,5 +895,9 @@ public class RandomTest {
 			}
 		}
 		return -1;
+	}
+	
+	private static void println (String msg) {
+		System.out.println("[RandomTest] " + msg);
 	}
 }
