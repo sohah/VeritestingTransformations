@@ -105,6 +105,9 @@ public class RandomTest {
 		//args = new String[]{"-7236756415893867232"};
 		//args = new String[]{"7027824590206899706"};
 		//args = new String[]{"-4376207953586733395"};
+		//args = new String[]{"6208297289381565893"};
+		//args = new String[]{"8607490714217974499"};
+		//args = new String[]{"-9113673849729818348"};
 		if (args.length == 0) {
 			System.out.println("[data]," + p);
 			for (int i = 0; i < 1000; i++) {
@@ -572,6 +575,8 @@ public class RandomTest {
 		pc._addDet(Comparator.LE, ie1, SymbolicStringConstraintsGeneral.MAX_CHAR);
 		vertexCounter++;
 		pc._addDet(Comparator.EQ, ie2, sioi);
+		pc._addDet(Comparator.GE, sioi, ie3);
+		pc._addDet(Comparator.GE, ie3, 0);
 		EdgeIndexOfChar2 edge = new EdgeIndexOfChar2("EdgeIndexOfChar_" + getCounter(), v1, v2, sioi);
 		result.addEdge(v1, v2, edge);
 	}

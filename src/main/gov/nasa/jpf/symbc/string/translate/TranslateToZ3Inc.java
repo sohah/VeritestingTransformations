@@ -1135,7 +1135,11 @@ public class TranslateToZ3Inc {
 			int index = e.getIndex().solution();
 			char character = (char) e.getIndex().getExpression().solution();
 			int actualAns = source.indexOf(character);
-			result = post (new BVEq(new BVConst(actualAns), new BVConst(index)));
+			//result = post (new BVEq(new BVConst(actualAns), new BVConst(index)));
+			if (actualAns == index) {
+				return true;
+			}
+			else {return false;}
 		}
 		if (result == false) {
 			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
@@ -1149,15 +1153,18 @@ public class TranslateToZ3Inc {
 		//println ("[handleEdgeIndexOfChar2] entered: " + e.toString());
 		boolean result = true;
 		if (!e.getSource().isConstant()) {
+			//println ("[handleEdgeIndexOfChar2] branch 1");
 			BVExpr source = getBVExpr(e.getSource());
 			int index = e.getIndex().solution();
 			char character = (char) e.getIndex().getExpression().solution();
 			if (index > -1) {
-				//println ("[handleEdgeIndexOfChar2] branch 1");
+				//println ("[handleEdgeIndexOfChar2] branch 1.1, index="+index);
+				//println (global_pc.header.toString());
 				BVExpr lit = null;
 				/* no other occurences of the character may come before */
 				//println ("[handleEdgeIndexOfChar2] e.getIndex().getMinDist().solution() = " + e.getIndex().getMinDist().solution());
 				int i = e.getIndex().getMinDist().solution();
+				//println ("[handleEdgeIndexOfChar2] e.getIndex().getMinDist().solution() = " + e.getIndex().getMinDist().solution());
 				if (e.getIndex().getMinDist().solution() < 0) {
 					i = 0;
 				}
@@ -1170,10 +1177,11 @@ public class TranslateToZ3Inc {
 				BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
 				BVExpr constant = new BVConst (character);
 				lit = and (lit, new BVEq(sourceTemp, constant));
-				//println ("[handleEdgeIndexOfChar2] posting: " + lit.toString());
+				//println ("[handleEdgeIndexOfChar2] posting: " + lit.toSMTLib());
 				result = post (lit);
 			}
 			else {
+				//println ("[handleEdgeIndexOfChar2] branch 1.2");
 				BVExpr lit = null;
 				int i = e.getIndex().getMinDist().solution();
 				if (i < 0) i = 0;
@@ -1186,6 +1194,7 @@ public class TranslateToZ3Inc {
 			}
 		}
 		else {
+			//println ("[handleEdgeIndexOfChar2] branch 2");
 			String source = e.getSource().getSolution();
 			int index = e.getIndex().solution();
 			char character = (char) e.getIndex().getExpression().solution();

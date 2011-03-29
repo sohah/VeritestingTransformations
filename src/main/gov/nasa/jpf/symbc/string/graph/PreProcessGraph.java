@@ -713,6 +713,9 @@ public class PreProcessGraph {
 					}
 					else if (e instanceof EdgeSubstring1Equal) {
 						EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) e;
+						if (e.getDest().getSolution().length() + es1e.getArgument1() > e.getSource().getSolution().length()) {
+							return false;
+						}
 						if (!e.getSource().getSolution().substring(es1e.getArgument1()).equals((e.getDest().getSolution()))) {
 							return false;
 						}
