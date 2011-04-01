@@ -1,6 +1,13 @@
 package gov.nasa.jpf.symbc.strings.performance;
 
 public class Performance03 {
+	
+	/*
+	 * Path condition explosion.
+	 * 
+	 * There is one variable to play with here, "someNumber" in method "test", which sets the number of paths to be explored
+	 * . The number of paths will be someNumber * 100.
+	 */
 	public static void main (String [] args) {
 		test("a", "b", "c");
 	}

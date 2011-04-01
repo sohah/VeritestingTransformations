@@ -1,7 +1,10 @@
 package gov.nasa.jpf.symbc.string.testing;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.Timer;
 
 import javax.print.attribute.IntegerSyntax;
@@ -73,7 +76,7 @@ public class RandomTest {
 	
 	private static int TEST_TIMEOUT = 120 * 1000; //(ms)
 	
-	public static void main (String [] args) {
+	public static void main (String [] args) throws FileNotFoundException {
 		setUpJPF();
 		Profile p = Profile.NewProfile();
 		p.amountOfStringCons = 5;
@@ -108,24 +111,39 @@ public class RandomTest {
 		//args = new String[]{"6208297289381565893"};
 		//args = new String[]{"8607490714217974499"};
 		//args = new String[]{"-9113673849729818348"};
+		//args = new String[]{"705452481494713414"}; good diff
+		//args = new String[]{"-1242344884180004662"};
+		//args = new String[]{ "3476996485065834879"};
+		args = new String[]{"-v", "/home/gideon/numbers"};
+		//args = new String[]{"7049847513125521827"};
 		if (args.length == 0) {
 			System.out.println("[data]," + p);
-			for (int i = 0; i < 1000; i++) {
+			for (int i = 0; i < 10000; i++) {
 				random = new Random();
 				long seed = random.nextLong();
 				long z3dur = go (p, seed, Z3_Inc);
 				long autodur = go (p, seed, Automata);
-				System.out.println("[data],"+seed+","+z3dur+","+autodur);
+				System.out.println("[data],\""+seed+"\","+z3dur+","+autodur);
 			}
 		}
-		else {
+		else if (args.length == 1) {
 			long seed = Long.parseLong(args[0]);
 			random = new Random();
 			System.out.println("[RandomTest] Calling with z3");
 			long z3dur = go (p, seed, Z3_Inc);
 			System.out.println("[RandomTest] Calling with automata");
 			long autodur = go (p, seed, Automata);
-			System.out.println("[data],"+seed+","+z3dur+","+autodur);
+			System.out.println("[data],\""+seed+"\","+z3dur+","+autodur);
+		}
+		else {
+			Scanner scanner = new Scanner(new File(args[1]));
+			while (scanner.hasNext()) {
+				String number = scanner.nextLine();
+				long seed = Long.parseLong(number);
+				random = new Random();
+				StringGraph sg = generateRandomStringGraph (p, seed);
+				System.out.println(seed + "\n" + sg.toDot());
+			}
 		}
 	}
 	
@@ -185,7 +203,7 @@ public class RandomTest {
 	public static StringGraph generateRandomStringGraph (Profile p, long seed) {
 		StringGraph result = new StringGraph();
 		pc = new PathCondition();
-		System.out.println("Random seed: " + seed);
+		//System.out.println("Random seed: " + seed);
 		random.setSeed(seed);
 		counter = 0;
 		
@@ -382,6 +400,11 @@ public class RandomTest {
 		pc._addDet(Comparator.LE, ie1, PreProcessGraph.MAXIMUM_LENGTH);
 		pc._addDet(Comparator.LE, ie2, PreProcessGraph.MAXIMUM_LENGTH);
 		pc._addDet(Comparator.LE, ie1, ie2);
+		if (!v2.isConstant()) {
+			pc._addDet(Comparator.EQ, ie2._minus(ie1)._plus(1), v2.getSymbolicLength());
+		} else {
+			pc._addDet(Comparator.EQ, ie2._minus(ie1)._plus(1), v2.getLength());
+		}
 		if (v1.isConstant()) {
 			pc._addDet(Comparator.LE, ie2, v1.getLength());
 		}
@@ -567,9 +590,9 @@ public class RandomTest {
 		default:
 			throw new RuntimeException("should not be reached");
 		}
-		System.out.println("ie1: " + ie1);
+		/*System.out.println("ie1: " + ie1);
 		System.out.println("ie2: " + ie2);
-		System.out.println("ie3: " + ie3);
+		System.out.println("ie3: " + ie3);*/
 		SymbolicIndexOfChar2Integer sioi = new SymbolicIndexOfChar2Integer("TEMP_" + vertexCounter, 1, 30, null, ie1,ie3);
 		pc._addDet(Comparator.GE, ie1, SymbolicStringConstraintsGeneral.MIN_CHAR);
 		pc._addDet(Comparator.LE, ie1, SymbolicStringConstraintsGeneral.MAX_CHAR);
