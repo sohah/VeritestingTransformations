@@ -17,11 +17,17 @@ public class ExSymExeStrings21 {
   }
   
   public static void test (String a, String b, String c) {
+	  int i = 0;
 	  if (a.equals(b)) {
 		  System.out.println("aaa");
+		  i++;
 	  }
 	  if (b.equals(c)) {
 		  System.out.println("bbb");
+		  i++;
+	  }
+	  if (i == 0) {
+		  throw new RuntimeException();
 	  }
 
   }

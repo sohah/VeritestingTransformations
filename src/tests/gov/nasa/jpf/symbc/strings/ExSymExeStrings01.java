@@ -16,14 +16,18 @@ public class ExSymExeStrings01 {
   }
   
   public static void test (String a, String b) {
+	  int i = 0;
 	  if (a.startsWith("a")) {
-		  System.out.println("bbb");
+		  i++;
 	  }
 	  if (b.startsWith ("b")) {
-		  System.out.println("ccc");
+		  i++;
 	  }
 	  if (a.length() + 1 < b.length()) {
 		  System.out.println("aaa");
+	  }
+	  if (i == 2) {
+		  throw new RuntimeException("");
 	  }
   }
 

@@ -17,8 +17,13 @@ public class ExSymExeStrings03 {
   
   public static void test (String a, String b) {
 	  String c = a.trim();
+	  int i = 0;
 	  if (c.equals("aa")) {
 		  System.out.println("bbb");
+		  i++;
+	  }
+	  if (i == 0) {
+		  throw new RuntimeException ();
 	  }
   }
 

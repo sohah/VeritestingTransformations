@@ -18,15 +18,20 @@ public class ExSymExeStrings22 {
   }
   
   public static void test (String a, String b, String c, String d) {
+	  int i = 0;
 	  if (a.equals(b)) {
 		  System.out.println("aaa");
+		  i++;
 	  }
 	  if (b.equals(c)) {
 		  System.out.println("bbb");
+		  i++;
 	  }
 	  if (c.equals(d)) {
 		  System.out.println("ccc");
+		  i++;
 	  }
+	  if (i == 0) {throw new RuntimeException();}
 
   }
 
