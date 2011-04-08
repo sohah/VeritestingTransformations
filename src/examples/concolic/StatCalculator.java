@@ -67,8 +67,7 @@ public class StatCalculator implements Serializable
         return mean;
     }
     
-    @Concrete("true")
-    public static double getStandardDeviation(double x)
+    public static double getStandardDeviation()
     {
         return deviation;
     }

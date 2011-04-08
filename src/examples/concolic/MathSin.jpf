@@ -5,7 +5,7 @@ classpath=${jpf-symbc}/build/examples
 
 sourcepath=${jpf-symbc}/src/examples
 
-symbolic.method=concolic.MathSin.calc(sym)
+symbolic.method=concolic.MathSin.mysin(sym)
 symbolic.concolic=true
 #symbolic.heuristicRandom=true
 
