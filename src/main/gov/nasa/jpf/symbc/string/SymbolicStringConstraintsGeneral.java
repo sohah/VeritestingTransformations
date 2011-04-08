@@ -63,7 +63,7 @@ import gov.nasa.jpf.symbc.string.translate.TranslateToZ3Inc;
  * 5. if step 4 gives unsat, and there is more integer values that satisfy step 3, go to step 3
  * 6. Translate the StringGraph to the original symbolic strings.
  * 
- * More info, visit www.cs.sun.ac.za/~gredelinghuys/string
+ * Visit http://www1.sun.ac.za/redmine/projects/jpfbugs/issues to log bugs
  * 
  * @author GJ Redelinghuys
  *
@@ -108,16 +108,16 @@ public class SymbolicStringConstraintsGeneral {
 	private static final boolean EJECT_TEXT = false;
 	
 	/*Timer to be used for timing out*/
-	static Timer timer;
+	public static Timer timer;
 	
 	/*Time (in ms) until timeout, zero for no timeout*/
-	private static long TIMEOUT = 0;
+	public static long TIMEOUT = 0;
 	
 	/*Boolean which is flagged when the timeout has been achieved */
-	static boolean timedOut;
+	public static boolean timedOut;
 	
 	/*Mutex lock on timedOut */
-	static Object mutexTimedOut = new Object();
+	public static Object mutexTimedOut = new Object();
 	
 	public SymbolicStringConstraintsGeneral () {
 		
@@ -410,6 +410,7 @@ public class SymbolicStringConstraintsGeneral {
 			 * and add it to the global_graph
 			 */
 			if (sc != null) {
+				//println ("Constraints: " + pc.npc.header + "\nDone");
 				boolean result = process (sc);
 				sc = sc.and;
 				while (result == true && sc != null) {
@@ -420,6 +421,7 @@ public class SymbolicStringConstraintsGeneral {
 				/* check if there was a timeout */
 				checkTimeOut();
 			}
+			//println ("pc.npc: " + pc.npc.header);
 			
 			/* Walk through integer constraints and convert each constraint
 			 * to a subgraph and add it to the global_graph
@@ -428,11 +430,10 @@ public class SymbolicStringConstraintsGeneral {
 			Constraint constraint = pc.npc.header;
 			//println ("[isSatisfiable] Int cons given:" + pc.npc.header);
 			while (constraint != null) {
-				//First solve any previous integer constriants
 				processIntegerConstraint(constraint.getLeft());
 				processIntegerConstraint(constraint.getRight());
 				constraint = constraint.getTail();
-				
+				//println ("Constraints: " + pc.npc.header + "\nDone");
 				/* check if there was a timeout */
 				checkTimeOut();
 			}
@@ -441,7 +442,7 @@ public class SymbolicStringConstraintsGeneral {
 			SymbolicConstraintsGeneral scg = new SymbolicConstraintsGeneral();
 			scg.solve(pc.npc);
 			PathCondition.flagSolved = true;
-			
+			//println ("Constraints: " + pc.npc.header + "\nDone");
 			
 			//Start solving
 			//println(global_graph.toDot());
@@ -854,6 +855,7 @@ public class SymbolicStringConstraintsGeneral {
 	}
 	
 	public static void checkTimeOut () {
+		//println ("[checkTimeOut] checking timed out");
 		synchronized (mutexTimedOut) {
 			if (timedOut) {
 				throw new SymbolicStringTimedOutException();

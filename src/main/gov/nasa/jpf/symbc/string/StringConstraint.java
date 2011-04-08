@@ -133,4 +133,20 @@ public class StringConstraint {
         + ((and == null) ? "" : " && " + and.toString());
    }
   }
+  
+  public StringComparator getComparator() {
+	  return comp;
+  }
+  
+  public StringExpression getLeft () {
+	  return left;
+  }
+  
+  public StringExpression getRight () {
+	  return right;
+  }
+  
+  public StringConstraint and () {
+	  return and;
+  }
 }

@@ -1,7 +1,11 @@
 package gov.nasa.jpf.symbc.string.testing;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
+import java.util.Timer;
 
 import javax.print.attribute.IntegerSyntax;
 
@@ -13,6 +17,7 @@ import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+import gov.nasa.jpf.symbc.string.StringSymbolic;
 import gov.nasa.jpf.symbc.string.SymbolicIndexOf2Integer;
 import gov.nasa.jpf.symbc.string.SymbolicIndexOfChar2Integer;
 import gov.nasa.jpf.symbc.string.SymbolicIndexOfCharInteger;
@@ -22,6 +27,9 @@ import gov.nasa.jpf.symbc.string.SymbolicLastIndexOf2Integer;
 import gov.nasa.jpf.symbc.string.SymbolicLastIndexOfChar2Integer;
 import gov.nasa.jpf.symbc.string.SymbolicLastIndexOfCharInteger;
 import gov.nasa.jpf.symbc.string.SymbolicLastIndexOfInteger;
+import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
+import gov.nasa.jpf.symbc.string.SymbolicStringTimeOut;
+import gov.nasa.jpf.symbc.string.SymbolicStringTimedOutException;
 import gov.nasa.jpf.symbc.string.graph.EdgeCharAt;
 import gov.nasa.jpf.symbc.string.graph.EdgeConcat;
 import gov.nasa.jpf.symbc.string.graph.EdgeContains;
@@ -66,7 +74,9 @@ public class RandomTest {
 	private static SymbolicInteger integerVars[];
 	private static int vertexCounter;
 	
-	public static void main (String [] args) {
+	private static int TEST_TIMEOUT = 120 * 1000; //(ms)
+	
+	public static void main (String [] args) throws FileNotFoundException {
 		setUpJPF();
 		Profile p = Profile.NewProfile();
 		p.amountOfStringCons = 5;
@@ -75,7 +85,7 @@ public class RandomTest {
 		p.amountOfEdges = 3;
 		p.amountOfIntegerCons = 2;
 		p.amountOfIntegerVar = 2;
-		p.listOfEdgesToBeUsed = Profile.defaultSetOfEdges();
+		p.listOfEdgesToBeUsed = Profile.defaultSetOfEdges2();
 		
 		//args = new String[]{"4482676770472428340"};
 		//args = new String[]{"7463434583100419681"};
@@ -84,21 +94,56 @@ public class RandomTest {
 		//args = new String[]{"-8789835043277711195"};
 		//args = new String[]{"-8333472512654717307"};
 		//TODO: 2797260435590869202
-		//TODO: 8916679733395261340
+		//args = new String[]{"8916679733395261340"};
+		//args = new String[]{"-6073284858942019344"};
+		//args = new String[]{"3068802442326409421"};
+		//args = new String[]{"4058543832693410397"};
+		//args = new String[]{"945342098152955059"};
+		//args = new String[]{"5296771593399017434"};
+		//args = new String[]{"2060370656708903858"};
+		//args = new String[]{"8047697279252921453"};
+		//args = new String[]{"4245195189447030174"};
+		//args = new String[]{"-7189896289378272226"};
+		//args = new String[]{"-3605963236366167326"};
+		//args = new String[]{"-7236756415893867232"};
+		//args = new String[]{"7027824590206899706"};
+		//args = new String[]{"-4376207953586733395"};
+		//args = new String[]{"6208297289381565893"};
+		//args = new String[]{"8607490714217974499"};
+		//args = new String[]{"-9113673849729818348"};
+		//args = new String[]{"705452481494713414"}; good diff
+		//args = new String[]{"-1242344884180004662"};
+		//args = new String[]{ "3476996485065834879"};
+		args = new String[]{"-v", "/home/gideon/numbers"};
+		//args = new String[]{"7049847513125521827"};
 		if (args.length == 0) {
 			System.out.println("[data]," + p);
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 10000; i++) {
 				random = new Random();
 				long seed = random.nextLong();
 				long z3dur = go (p, seed, Z3_Inc);
 				long autodur = go (p, seed, Automata);
-				System.out.println("[data],"+seed+","+z3dur+","+autodur);
+				System.out.println("[data],\""+seed+"\","+z3dur+","+autodur);
 			}
 		}
-		else {
+		else if (args.length == 1) {
 			long seed = Long.parseLong(args[0]);
 			random = new Random();
-			go (p, seed, Z3_Inc);
+			System.out.println("[RandomTest] Calling with z3");
+			long z3dur = go (p, seed, Z3_Inc);
+			System.out.println("[RandomTest] Calling with automata");
+			long autodur = go (p, seed, Automata);
+			System.out.println("[data],\""+seed+"\","+z3dur+","+autodur);
+		}
+		else {
+			Scanner scanner = new Scanner(new File(args[1]));
+			while (scanner.hasNext()) {
+				String number = scanner.nextLine();
+				long seed = Long.parseLong(number);
+				random = new Random();
+				StringGraph sg = generateRandomStringGraph (p, seed);
+				System.out.println(seed + "\n" + sg.toDot());
+			}
 		}
 	}
 	
@@ -107,16 +152,41 @@ public class RandomTest {
 		System.out.println(sg.toDot());
 		boolean result = PreProcessGraph.preprocess(sg, pc);
 		//System.out.println(sg.toDot());
-		//System.out.println(pc.header);
+		System.out.println(pc.header);
 		System.out.println("Preprocessor " + result);
 		if (result == false) {}
 		else {
 			long time = System.currentTimeMillis();
 			if (Solver.equals (Z3_Inc)) {
-				TranslateToZ3Inc.isSat(sg, pc);
+				System.out.println("[RandomTest] branch 1");
+				SymbolicStringConstraintsGeneral.TIMEOUT = TEST_TIMEOUT;
+				SymbolicStringConstraintsGeneral.timedOut = false;
+				SymbolicStringConstraintsGeneral.timer = new Timer();
+				SymbolicStringConstraintsGeneral.timer.schedule(new SymbolicStringTimeOut(), SymbolicStringConstraintsGeneral.TIMEOUT);
+				try {
+					System.out.println("[RandomTest] Z3 inc staring");
+					TranslateToZ3Inc.isSat(sg, pc);
+					System.out.println("[RandomTest] Z3 inc done");
+				} catch (SymbolicStringTimedOutException e) {
+					SymbolicStringConstraintsGeneral.timer.cancel();
+					return -2;
+				}
+				SymbolicStringConstraintsGeneral.timer.cancel();
 			}
 			else if (Solver.equals(Automata)) {
-				TranslateToAutomata.isSat(sg, pc);
+				System.out.println("[RandomTest] branch 2");
+				SymbolicStringConstraintsGeneral.TIMEOUT = TEST_TIMEOUT;
+				SymbolicStringConstraintsGeneral.timedOut = false;
+				SymbolicStringConstraintsGeneral.timer = new Timer();
+				SymbolicStringConstraintsGeneral.timer.schedule(new SymbolicStringTimeOut(), SymbolicStringConstraintsGeneral.TIMEOUT);
+				try {
+					TranslateToAutomata.isSat(sg, pc);
+					System.out.println("[RandomTest] Automata done");
+				} catch (SymbolicStringTimedOutException e) {
+					SymbolicStringConstraintsGeneral.timer.cancel();
+					return -2;
+				}
+				SymbolicStringConstraintsGeneral.timer.cancel();
 			}
 			long dur = System.currentTimeMillis() - time;
 			//System.out.println("[output] " + Solver + ": " + dur);
@@ -133,7 +203,7 @@ public class RandomTest {
 	public static StringGraph generateRandomStringGraph (Profile p, long seed) {
 		StringGraph result = new StringGraph();
 		pc = new PathCondition();
-		System.out.println("Random seed: " + seed);
+		//System.out.println("Random seed: " + seed);
 		random.setSeed(seed);
 		counter = 0;
 		
@@ -161,7 +231,7 @@ public class RandomTest {
 		}
 		
 		for (int i = 0; i < p.amountOfIntegerCons; i++) {
-			integerCons[i] = new IntegerConstant(random.nextInt(31));
+			integerCons[i] = new IntegerConstant(random.nextInt(200));
 		}
 		
 		for (int i = 0; i < p.amountOfIntegerVar; i++) {
@@ -255,7 +325,7 @@ public class RandomTest {
 				break;
 			case 20:
 				//EdgeSubstring2Equal
-				handleEdgeSubstring2Equal(result, random.nextInt(3));
+				handleEdgeSubstring2Equal(result, random.nextInt(2));
 				break;
 			case 21:
 				//EdgeTrimEqual
@@ -284,7 +354,17 @@ public class RandomTest {
 			v1 = selectRandomVertex(result);
 			v2 = selectRandomVertex(result);
 		}
-		EdgeSubstring1Equal edge = new EdgeSubstring1Equal("EdgeSubstring1Equal_" + getCounter(), randomConsInteger(), v1, v2);
+		IntegerConstant ic = randomConsInteger();
+		pc._addDet(Comparator.GE, ic, 1);
+		pc._addDet(Comparator.LE, ic, PreProcessGraph.MAXIMUM_LENGTH);
+		if (v1.isConstant()) {
+			pc._addDet(Comparator.LE, ic, v1.getLength());
+		} else {
+			pc._addDet(Comparator.LE, ic, v1.getSymbolicLength());
+		}
+		/*println (pc.header.toString());
+		println ("ic: " + ic);*/
+		EdgeSubstring1Equal edge = new EdgeSubstring1Equal("EdgeSubstring1Equal_" + getCounter(), ic.solution(), v1, v2);
 		result.addEdge(v1, v2, edge);
 	}
 	
@@ -296,16 +376,17 @@ public class RandomTest {
 			v2 = selectRandomVertex(result);
 		}
 		IntegerExpression ie1, ie2;
+		System.out.println("mode: " + mode);
 		switch (mode) {
 		case 0:
 			ie1 = randomConsInteger();
 			ie2 = randomConsInteger();
 			break;
-		case 1:
+		/*case 1:
 			ie1 = randomSymInteger();
 			ie2 = randomConsInteger();
-			break;
-		case 2:
+			break;*/
+		case 1:
 			ie1 = randomConsInteger();
 			ie2 = randomSymInteger();
 			break;
@@ -314,6 +395,22 @@ public class RandomTest {
 		}
 		//TDOD: Should maybe change
 		EdgeSubstring2Equal edge = null;
+		pc._addDet(Comparator.GE, ie1, 1);
+		pc._addDet(Comparator.GE, ie2, 1);
+		pc._addDet(Comparator.LE, ie1, PreProcessGraph.MAXIMUM_LENGTH);
+		pc._addDet(Comparator.LE, ie2, PreProcessGraph.MAXIMUM_LENGTH);
+		pc._addDet(Comparator.LE, ie1, ie2);
+		if (!v2.isConstant()) {
+			pc._addDet(Comparator.EQ, ie2._minus(ie1)._plus(1), v2.getSymbolicLength());
+		} else {
+			pc._addDet(Comparator.EQ, ie2._minus(ie1)._plus(1), v2.getLength());
+		}
+		if (v1.isConstant()) {
+			pc._addDet(Comparator.LE, ie2, v1.getLength());
+		}
+		else {
+			pc._addDet(Comparator.LE, ie2, v1.getSymbolicLength());
+		}
 		if (ie1 instanceof IntegerConstant && ie2 instanceof IntegerConstant) {
 			edge = new EdgeSubstring2Equal("EdgeSubstring1Equal_" + getCounter(), ie1.solution(), ie2.solution(), v1, v2);
 		}
@@ -402,6 +499,8 @@ public class RandomTest {
 			throw new RuntimeException("should not be reached");
 		}
 		SymbolicIndexOfCharInteger sioi = new SymbolicIndexOfCharInteger("TEMP_" + vertexCounter, 1, 30, null, ie1);
+		pc._addDet(Comparator.GE, ie1, SymbolicStringConstraintsGeneral.MIN_CHAR);
+		pc._addDet(Comparator.LE, ie1, SymbolicStringConstraintsGeneral.MAX_CHAR);
 		vertexCounter++;
 		pc._addDet(Comparator.EQ, ie2, sioi);
 		EdgeIndexOfChar edge = new EdgeIndexOfChar("EdgeIndexOfChar_" + getCounter(), v1, v2, sioi);
@@ -434,6 +533,8 @@ public class RandomTest {
 			throw new RuntimeException("should not be reached");
 		}
 		SymbolicLastIndexOfCharInteger sioi = new SymbolicLastIndexOfCharInteger("TEMP_" + vertexCounter, 1, 30, null, ie1);
+		pc._addDet(Comparator.GE, ie1, SymbolicStringConstraintsGeneral.MIN_CHAR);
+		pc._addDet(Comparator.LE, ie1, SymbolicStringConstraintsGeneral.MAX_CHAR);
 		vertexCounter++;
 		pc._addDet(Comparator.EQ, ie2, sioi);
 		EdgeLastIndexOfChar edge = new EdgeLastIndexOfChar("EdgeLastIndexOfChar_" + getCounter(), v1, v2, sioi);
@@ -489,9 +590,16 @@ public class RandomTest {
 		default:
 			throw new RuntimeException("should not be reached");
 		}
+		/*System.out.println("ie1: " + ie1);
+		System.out.println("ie2: " + ie2);
+		System.out.println("ie3: " + ie3);*/
 		SymbolicIndexOfChar2Integer sioi = new SymbolicIndexOfChar2Integer("TEMP_" + vertexCounter, 1, 30, null, ie1,ie3);
+		pc._addDet(Comparator.GE, ie1, SymbolicStringConstraintsGeneral.MIN_CHAR);
+		pc._addDet(Comparator.LE, ie1, SymbolicStringConstraintsGeneral.MAX_CHAR);
 		vertexCounter++;
 		pc._addDet(Comparator.EQ, ie2, sioi);
+		pc._addDet(Comparator.GE, sioi, ie3);
+		pc._addDet(Comparator.GE, ie3, 0);
 		EdgeIndexOfChar2 edge = new EdgeIndexOfChar2("EdgeIndexOfChar_" + getCounter(), v1, v2, sioi);
 		result.addEdge(v1, v2, edge);
 	}
@@ -546,9 +654,11 @@ public class RandomTest {
 			throw new RuntimeException("should not be reached");
 		}
 		SymbolicLastIndexOfChar2Integer sioi = new SymbolicLastIndexOfChar2Integer("TEMP_" + vertexCounter, 1, 30, null, ie1,ie3);
+		pc._addDet(Comparator.GE, ie1, SymbolicStringConstraintsGeneral.MIN_CHAR);
+		pc._addDet(Comparator.LE, ie1, SymbolicStringConstraintsGeneral.MAX_CHAR);
 		vertexCounter++;
 		pc._addDet(Comparator.EQ, ie2, sioi);
-		EdgeLastIndexOfChar2 edge = new EdgeLastIndexOfChar2("EdgeLastIndexOfChar_" + getCounter(), v1, v2, sioi);
+		EdgeLastIndexOfChar2 edge = new EdgeLastIndexOfChar2("EdgeLastIndexOfChar2_" + getCounter(), v1, v2, sioi);
 		result.addEdge(v1, v2, edge);
 	}
 	
@@ -648,6 +758,8 @@ public class RandomTest {
 			throw new RuntimeException ("Should not be reached");
 		}
 		EdgeCharAt edge = new EdgeCharAt("EdgeCharAt_" + getCounter(), v1, v2, i1, i2);
+		pc._addDet(Comparator.GE, i2, SymbolicStringConstraintsGeneral.MIN_CHAR);
+		pc._addDet(Comparator.LE, i2, SymbolicStringConstraintsGeneral.MAX_CHAR);
 		result.addEdge(v1, v2, edge);
 	}
 	
@@ -811,5 +923,9 @@ public class RandomTest {
 			}
 		}
 		return -1;
+	}
+	
+	private static void println (String msg) {
+		System.out.println("[RandomTest] " + msg);
 	}
 }

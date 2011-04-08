@@ -43,6 +43,16 @@ public class Vertex {
 		this.uniqueNumber = count++;
 	}
 	
+	public Vertex (Vertex v) {
+		this.name = v.name;
+		this.solution = v.solution;
+		this.constant = v.constant;
+		this.symbolic_length = v.symbolic_length;
+		this.count = v.count;
+		this.represents = v.represents;
+		this.uniqueNumber = v.uniqueNumber;
+	}
+	
 	public String getName () {
 		return name;
 	}
