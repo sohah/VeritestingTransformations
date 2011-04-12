@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.heap;
 
 
 
+import gov.nasa.jpf.jvm.BooleanFieldInfo;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DoubleFieldInfo;
 import gov.nasa.jpf.jvm.ElementInfo;
@@ -33,10 +34,6 @@ public class Helper {
 		name = field.getName();
 		String fullName = refChain + "." + name + suffix;
 		if (field instanceof IntegerFieldInfo || field instanceof LongFieldInfo) {
-			if ("boolean".equals(field.getType()))
-				//					treat boolean as an integer with range [0,1]
-				sym_v = new SymbolicInteger(fullName, 0, 1);
-			else
 				sym_v = new SymbolicInteger(fullName);
 		} else if (field instanceof FloatFieldInfo || field instanceof DoubleFieldInfo) {
 			sym_v = new SymbolicReal(fullName);
@@ -45,6 +42,9 @@ public class Helper {
 				sym_v = new StringSymbolic(fullName);
 			else
 				sym_v = new SymbolicInteger(fullName);
+		} else if (field instanceof BooleanFieldInfo) {
+				//	treat boolean as an integer with range [0,1]
+				sym_v = new SymbolicInteger(fullName, 0, 1);
 		}
 		eiRef.setFieldAttr(field, sym_v);
 		return sym_v;
@@ -65,10 +65,6 @@ public class Helper {
 		name = staticField.getName();
 		String fullName = ci.getName() + "." + name + suffix;// + "_init";
 		if (staticField instanceof IntegerFieldInfo || staticField instanceof LongFieldInfo) {
-			if ("boolean".equals(staticField.getType()))
-				//						treat boolean as an integer with range [0,1]
-				sym_v = new SymbolicInteger(fullName, 0, 1);
-			else
 				sym_v = new SymbolicInteger(fullName);
 		} else if (staticField instanceof FloatFieldInfo
 				|| staticField instanceof DoubleFieldInfo) {
@@ -78,6 +74,9 @@ public class Helper {
 				sym_v = new StringSymbolic(fullName);
 			else
 				sym_v = new SymbolicInteger(fullName);
+		} else if (staticField instanceof BooleanFieldInfo) {
+				//						treat boolean as an integer with range [0,1]
+				sym_v = new SymbolicInteger(fullName, 0, 1);
 		}
 		StaticElementInfo sei = ci.getStaticElementInfo();
 		if (sei == null) {
