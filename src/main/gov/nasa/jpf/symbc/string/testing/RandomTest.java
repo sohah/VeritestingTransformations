@@ -116,9 +116,10 @@ public class RandomTest {
 		//args = new String[]{ "3476996485065834879"};
 		args = new String[]{"-v", "/home/gideon/numbers"};
 		//args = new String[]{"7049847513125521827"};
+		//args = new String[]{"8911160557294150329"};
 		if (args.length == 0) {
 			System.out.println("[data]," + p);
-			for (int i = 0; i < 10000; i++) {
+			for (int i = 0; i < 100; i++) {
 				random = new Random();
 				long seed = random.nextLong();
 				long z3dur = go (p, seed, Z3_Inc);
@@ -143,6 +144,12 @@ public class RandomTest {
 				random = new Random();
 				StringGraph sg = generateRandomStringGraph (p, seed);
 				System.out.println(seed + "\n" + sg.toDot());
+				/*random = new Random();
+				System.out.println("[RandomTest] Calling with z3");
+				long z3dur = go (p, seed, Z3_Inc);
+				System.out.println("[RandomTest] Calling with automata");
+				long autodur = go (p, seed, Automata);
+				System.out.println("[data],\""+seed+"\","+z3dur+","+autodur);*/
 			}
 		}
 	}

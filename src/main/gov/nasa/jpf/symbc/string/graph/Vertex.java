@@ -71,6 +71,7 @@ public class Vertex {
 	
 	public String getSolution () {
 		if (solution == null || this.getLength() == 0) return "";
+		//if (solution == null) return "";
 		return solution.toString();
 	}
 	

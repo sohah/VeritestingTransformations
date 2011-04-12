@@ -12,7 +12,7 @@ public class Performance01 {
 	 *  - The maximum length of each symbolic string variable set by MAX_LENGTH
 	 */
 	public static void main (String [] args) {
-		test2 ("dcba", "a", "b");
+		test2 ("dcba", "a","b");
 	}
 	
 	public static void test (String a, String b) {

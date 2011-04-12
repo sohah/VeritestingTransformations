@@ -291,6 +291,7 @@ public class TranslateToAutomata {
 	
 	private static boolean handleNots (StringGraph g) {
 		int numberOfNots = 0;
+		println ("Start of handleNots");
 		for (Edge e: g.getEdges()) {
 			if (e instanceof EdgeNotEqual) {
 				if (e.getSource().getSolution().equals(e.getDest().getSolution())) {
@@ -302,6 +303,7 @@ public class TranslateToAutomata {
 			}
 			else if (e instanceof EdgeNotStartsWith) {
 				if (e.getSource().getSolution().startsWith(e.getDest().getSolution())) {
+					//println (e.getSource().getName() + " (" + e.getSource().getSolution() + ") startswith " + e.getDest().getName() + " (" + e.getDest().getSolution() + ") and it shouldn't");
 					if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 						numberOfNots++;
 					}
@@ -369,19 +371,52 @@ public class TranslateToAutomata {
 				}
 			}
 		}
-		if (numberOfNots == 0) {
-			return true;
-		}
 		println ("numberOfNots: " + numberOfNots);
-		Map<Vertex, Automaton> copyOfMapAutomaton = copyMapAutomaton();
-		boolean result = innerHandleNots(g, toBits(numberOfNots, 0));
-		int i = 1;
-		while (i < numberOfNots && result == false) {
-			mapAutomaton = copyOfMapAutomaton;
-			result = innerHandleNots(g, toBits(numberOfNots, i));
-			i++;
+		/*if (numberOfNots == 0) {
+			return true;
+		}*/
+		Map<Vertex, Automaton> copyOfMapAutomaton = null;
+		if (mapAutomaton != null) {
+			copyOfMapAutomaton = copyMapAutomaton();
 		}
-		return result;
+		
+		
+		int result = 0;
+		while (true) {
+			result = innerHandleNots(g, toBits(numberOfNots, 0));
+			int i = 1;
+			boolean breakInnerLoop = false;
+			while (i < numberOfNots && result == 0) {
+				if (PathCondition.flagSolved == false) {
+					if (scg.isSatisfiable(global_pc)) {
+						scg.solve(global_pc);
+						PathCondition.flagSolved = true;
+					}
+					else {
+						//println ("[isSat] handled isnots, path condition could not be solved");
+						return false;
+					}
+				}
+				
+				//println ("loop");
+				mapAutomaton = copyOfMapAutomaton;
+				//println ("numberOfNots " + numberOfNots + " i " +i );
+				result = innerHandleNots(g, toBits(numberOfNots, i));
+				if (result == 2) {
+					numberOfNots++;
+					breakInnerLoop = true;
+					break;
+				}
+				i++;
+			}
+			if (breakInnerLoop == true) {
+				breakInnerLoop = false;
+				continue;
+			}
+			break;
+		}
+		if (result == 0) return false;
+		else return true;
 	}
 	
 	private static Map<Vertex, Automaton> copyMapAutomaton () {
@@ -396,12 +431,17 @@ public class TranslateToAutomata {
 	}
 	
 	private static boolean[] toBits (int length, int c) {
+		//println (String.format("toBits (%d, %d)\n", length, c));
 		boolean[] result = new boolean[length];
 		int num = (int) c;
 		int i = result.length - 1;
-		int div = (int) Math.pow(length+1, 2);
+		int div = (int) Math.pow(2, length-1);
+		//println ("div " + div);
 		while (num > 0) {
+			//println ("num " + num + " i " + i);
 			int temp = num / div;
+			//println (String.format("%d / %d = %d\n", num, div, temp));
+			//println ("temp " + temp);
 			num = num - div * temp;
 			div = div / 2;
 			if (temp == 1) result[i] = true;
@@ -410,11 +450,12 @@ public class TranslateToAutomata {
 		return result;
 	}
 	
-	private static boolean innerHandleNots (StringGraph g, boolean[] bitArray) {
+	private static int innerHandleNots (StringGraph g, boolean[] bitArray) {
 		boolean nonequalityFlipFlop = false;
 		int indexBitArray = 0;
 		boolean change = true;
-		while (change) {
+		//while (change) {
+		try {
 			change = false;
 			//TODO: Add last index of, and can optimise indexOf with dest as constant
 			for (Edge e: g.getEdges()) {
@@ -422,6 +463,7 @@ public class TranslateToAutomata {
 					if (e.getSource().getSolution().equals(e.getDest().getSolution())) {
 						//println (e.getSource().getName() + " (" + e.getSource().getSolution() + ") == " + e.getDest().getName() + " (" + e.getDest().getSolution() + ") and it shouldn't");
 						if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+							//println ("Here 1");
 							nonequalityFlipFlop = bitArray[indexBitArray++];
 							if (nonequalityFlipFlop == false) {
 								Automaton a = mapAutomaton.get(e.getSource());
@@ -430,14 +472,14 @@ public class TranslateToAutomata {
 								if (a.isEmpty()) {
 									//println ("[isSat] EdgeNotEqual gave empty");
 									elimanateCurrentLengths();
-									return false;
+									return 0;
 								}
 								mapAutomaton.put(e.getSource(), a);
 								e.getSource().setSolution(a.getShortestExample(true));
 								change = true;
 								
 								boolean propResult = propagateChange(e.getSource(), e.getDest());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 							}
 							else {
 								Automaton a = mapAutomaton.get(e.getDest());
@@ -446,14 +488,14 @@ public class TranslateToAutomata {
 								if (a.isEmpty()) {
 									//println ("[isSat] EdgeNotEqual gave empty");
 									elimanateCurrentLengths();
-									return false;
+									return 0;
 								}
 								mapAutomaton.put(e.getDest(), a);
 								e.getDest().setSolution(a.getShortestExample(true));
 								change = true;
 
 								boolean propResult = propagateChange(e.getDest(), e.getSource());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 							}
 						}
 						else if (!e.getSource().isConstant()) {
@@ -463,13 +505,13 @@ public class TranslateToAutomata {
 							if (a.isEmpty()) {
 								//println ("[isSat] EdgeNotEqual gave empty");
 								elimanateCurrentLengths();
-								return false;
+								return 0;
 							}
 							mapAutomaton.put(e.getSource(), a);
 							e.getSource().setSolution(a.getShortestExample(true));
 							change = true;
 							boolean propResult = propagateChange(e.getSource(), e.getDest());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else if (!e.getDest().isConstant()) {
 							Automaton a = mapAutomaton.get(e.getDest());
@@ -478,17 +520,17 @@ public class TranslateToAutomata {
 							if (a.isEmpty()) {
 								//println ("[isSat] EdgeNotEqual gave empty");
 								elimanateCurrentLengths();
-								return false;
+								return 0;
 							}
 							mapAutomaton.put(e.getDest(), a);
 							e.getDest().setSolution(a.getShortestExample(true));
 							change = true;
 							boolean propResult = propagateChange(e.getDest(), e.getSource());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else {
 							//All is constant
-							return false;
+							return 0;
 						}
 					}
 				}
@@ -496,6 +538,7 @@ public class TranslateToAutomata {
 					if (e.getSource().getSolution().startsWith(e.getDest().getSolution())) {
 						//println (e.getSource().getName() + " (" + e.getSource().getSolution() + ") startswith " + e.getDest().getName() + " (" + e.getDest().getSolution() + ") and it shouldn't");
 						if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+							//println ("Here 2");
 							nonequalityFlipFlop = bitArray[indexBitArray++];
 							if (nonequalityFlipFlop == false) {
 								Automaton a = mapAutomaton.get(e.getSource());
@@ -504,14 +547,14 @@ public class TranslateToAutomata {
 								if (a.isEmpty()) {
 									//println ("[isSat] EdgeNotStartsWith gave empty");
 									elimanateCurrentLengths();
-									return false;
+									return 0;
 								}
 								mapAutomaton.put(e.getSource(), a);
 								e.getSource().setSolution(a.getShortestExample(true));
 								change = true;
 								
 								boolean propResult = propagateChange(e.getSource(), e.getDest());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 							}
 							else {
 								Automaton a = mapAutomaton.get(e.getDest());
@@ -520,7 +563,7 @@ public class TranslateToAutomata {
 								if (a.isEmpty()) {
 									//println ("[isSat] EdgeNotStartsWith gave empty");
 									elimanateCurrentLengths();
-									return false;
+									return 0;
 								}
 
 								mapAutomaton.put(e.getDest(), a);
@@ -528,7 +571,7 @@ public class TranslateToAutomata {
 								change = true;
 
 								boolean propResult = propagateChange(e.getDest(), e.getSource());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 							}
 						}
 						else if (!e.getSource().isConstant()) {
@@ -538,13 +581,13 @@ public class TranslateToAutomata {
 							if (a.isEmpty()) {
 								//println ("[isSat] EdgeNotStartsWith gave empty");
 								elimanateCurrentLengths();
-								return false;
+								return 0;
 							}
 							mapAutomaton.put(e.getSource(), a);
 							e.getSource().setSolution(a.getShortestExample(true));
 							change = true;
 							boolean propResult = propagateChange(e.getSource(), e.getDest());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else if (!e.getDest().isConstant()) {
 							Automaton a = mapAutomaton.get(e.getDest());
@@ -554,17 +597,17 @@ public class TranslateToAutomata {
 							if (a.isEmpty()) {
 								//println ("[isSat] EdgeNotStartsWith gave empty");
 								elimanateCurrentLengths();
-								return false;
+								return 0;
 							}
 
 							e.getDest().setSolution(a.getShortestExample(true));
 							change = true;
 							boolean propResult = propagateChange(e.getDest(), e.getSource());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else {
 							//All is constant
-							return false;
+							return 0;
 						}
 					}
 				}
@@ -580,7 +623,7 @@ public class TranslateToAutomata {
 								if (a.isEmpty()) {
 									//println ("[isSat] EdgeNotEndsWith gave empty");
 									elimanateCurrentLengths();
-									return false;
+									return 0;
 								}
 
 								mapAutomaton.put(e.getSource(), a);
@@ -588,7 +631,7 @@ public class TranslateToAutomata {
 								change = true;
 								
 								boolean propResult = propagateChange(e.getSource(), e.getDest());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 							}
 							else {
 								Automaton a = mapAutomaton.get(e.getDest());
@@ -597,7 +640,7 @@ public class TranslateToAutomata {
 								if (a.isEmpty()) {
 									//println ("[isSat] EdgeNotEndsWith gave empty");
 									elimanateCurrentLengths();
-									return false;
+									return 0;
 								}
 
 								mapAutomaton.put(e.getDest(), a);
@@ -605,7 +648,7 @@ public class TranslateToAutomata {
 								change = true;
 
 								boolean propResult = propagateChange(e.getDest(), e.getSource());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 							}
 						}
 						else if (!e.getSource().isConstant()) {
@@ -615,13 +658,13 @@ public class TranslateToAutomata {
 							if (a.isEmpty()) {
 								//println ("[isSat] EdgeNotEndsWith gave empty");
 								elimanateCurrentLengths();
-								return false;
+								return 0;
 							}
 							mapAutomaton.put(e.getSource(), a);
 							e.getSource().setSolution(a.getShortestExample(true));
 							change = true;
 							boolean propResult = propagateChange(e.getSource(), e.getDest());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else if (!e.getDest().isConstant()) {
 							Automaton a = mapAutomaton.get(e.getDest());
@@ -630,18 +673,18 @@ public class TranslateToAutomata {
 							if (a.isEmpty()) {
 								//println ("[isSat] EdgeNotEndsWith gave empty");
 								elimanateCurrentLengths();
-								return false;
+								return 0;
 							}
 
 							mapAutomaton.put(e.getDest(), a);
 							e.getDest().setSolution(a.getShortestExample(true));
 							change = true;
 							boolean propResult = propagateChange(e.getDest(), e.getSource());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else {
 							//All is constant
-							return false;
+							return 0;
 						}
 					}
 				}
@@ -663,13 +706,13 @@ public class TranslateToAutomata {
 						source2 = AutomatonExtra.minus(source2, Automaton.makeString(source2Solution));
 						mapAutomaton.put(ec.getSources().get(0), source1);
 						mapAutomaton.put(ec.getSources().get(1), source2);
-						if (source1.isEmpty()) return false;
-						if (source2.isEmpty()) return false;
+						if (source1.isEmpty()) return 0;
+						if (source2.isEmpty()) return 0;
 						if (!ec.getSources().get(0).isConstant()) {ec.getSources().get(0).setSolution(source1.getShortestExample(true));}
 						if (!ec.getSources().get(1).isConstant()) {ec.getSources().get(1).setSolution(source2.getShortestExample(true));}
 						boolean propresult = propagateChange(ec.getSources().get(0), ec.getDest());
 						propresult = propresult && propagateChange(ec.getSources().get(1), ec.getDest());
-						if (!propresult) return false;
+						if (!propresult) return 0;
 						
 						//Apply lengths
 						Automaton length1 = AutomatonExtra.lengthAutomaton(ec.getSources().get(0).getLength());
@@ -697,14 +740,14 @@ public class TranslateToAutomata {
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(enc.getSource().getSolution()));
 								if (temp.isEmpty()) {
 									//println ("[isSat] EdgeNotContains return false");
-									return false;
+									return 0;
 								}
 								if (!enc.getSource().isConstant()) enc.getSource().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(enc.getSource(), temp);
 								boolean propResult = propagateChange(enc.getSource(), enc.getDest());
 								if (!propResult) {
 									//println ("[isSat] EdgeNotContains return false");
-									return false;
+									return 0;
 								}
 								
 							}
@@ -713,14 +756,14 @@ public class TranslateToAutomata {
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(enc.getDest().getSolution()));
 								if (temp.isEmpty()) {
 									//println ("[isSat] EdgeNotContains return false");
-									return false;
+									return 0;
 								}
 								if (!enc.getDest().isConstant()) enc.getDest().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(enc.getDest(), temp);
 								boolean propResult = propagateChange(enc.getDest(), enc.getSource());
 								if (!propResult) {
 									//println ("[isSat] EdgeNotContains return false");
-									return false;
+									return 0;
 								}
 
 							}
@@ -730,14 +773,14 @@ public class TranslateToAutomata {
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(enc.getSource().getSolution()));
 							if (temp.isEmpty()) {
 								//println ("[isSat] EdgeNotContains return false");
-								return false;
+								return 0;
 							}
 							if (!enc.getSource().isConstant()) enc.getSource().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(enc.getSource(), temp);
 							boolean propResult = propagateChange(enc.getSource(), enc.getDest());
 							if (!propResult) {
 								//println ("[isSat] EdgeNotContains return false");
-								return false;
+								return 0;
 							}
 						}
 						else if (!enc.getDest().isConstant()) {
@@ -745,19 +788,19 @@ public class TranslateToAutomata {
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(enc.getDest().getSolution()));
 							if (temp.isEmpty()) {
 								//println ("[isSat] EdgeNotContains return false");
-								return false;
+								return 0;
 							}
 							if (!enc.getDest().isConstant()) enc.getDest().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(enc.getDest(), temp);
 							boolean propResult = propagateChange(enc.getDest(), enc.getSource());
 							if (!propResult) {
 								//println ("[isSat] EdgeNotContains return false");
-								return false;
+								return 0;
 							}
 						}
 						else {
 							//println ("[isSat] EdgeNotContains return false");
-							return false;
+							return 0;
 						}
 						
 						change = true;
@@ -772,45 +815,45 @@ public class TranslateToAutomata {
 							if (nonequalityFlipFlop == false) {
 								Automaton a1 = mapAutomaton.get(eio.getSource());
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return false;
+								if (temp.isEmpty()) return 0;
 								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getSource(), temp);
 								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 								
 							}
 							else {
 								Automaton a1 = mapAutomaton.get(eio.getDest());
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-								if (temp.isEmpty()) return false;
+								if (temp.isEmpty()) return 0;
 								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getDest(), temp);
 								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 
 							}
 						}
 						else if (!eio.getSource().isConstant()) {
 							Automaton a1 = mapAutomaton.get(eio.getSource());
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-							if (temp.isEmpty()) return false;
+							if (temp.isEmpty()) return 0;
 							if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(eio.getSource(), temp);
 							boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else if (!eio.getDest().isConstant()) {
 							Automaton a1 = mapAutomaton.get(eio.getDest());
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-							if (temp.isEmpty()) return false;
+							if (temp.isEmpty()) return 0;
 							if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(eio.getDest(), temp);
 							boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else {
 							//Everything is constant
-							return false;
+							return 0;
 						}
 						
 						change = true;
@@ -825,45 +868,45 @@ public class TranslateToAutomata {
 							if (nonequalityFlipFlop == false) {
 								Automaton a1 = mapAutomaton.get(eio.getSource());
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return false; //Maybe remove the possibility of -1?
+								if (temp.isEmpty()) return 0; //Maybe remove the possibility of -1?
 								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getSource(), temp);
 								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 								
 							}
 							else {
 								Automaton a1 = mapAutomaton.get(eio.getDest());
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-								if (temp.isEmpty()) return false;
+								if (temp.isEmpty()) return 0;
 								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getDest(), temp);
 								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 
 							}
 						}
 						else if (!eio.getSource().isConstant()) {
 							Automaton a1 = mapAutomaton.get(eio.getSource());
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-							if (temp.isEmpty()) return false;
+							if (temp.isEmpty()) return 0;
 							if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(eio.getSource(), temp);
 							boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else if (!eio.getDest().isConstant()) {
 							Automaton a1 = mapAutomaton.get(eio.getDest());
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-							if (temp.isEmpty()) return false;
+							if (temp.isEmpty()) return 0;
 							if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(eio.getDest(), temp);
 							boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else {
 							//Everything is constant
-							return false;
+							return 0;
 						}
 						
 						change = true;
@@ -879,21 +922,21 @@ public class TranslateToAutomata {
 							if (nonequalityFlipFlop == false) {
 								Automaton a1 = mapAutomaton.get(eio.getSource());
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return false;
+								if (temp.isEmpty()) return 0;
 								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getSource(), temp);
 								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 								
 							}
 							else {
 								Automaton a1 = mapAutomaton.get(eio.getDest());
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-								if (temp.isEmpty()) return false;
+								if (temp.isEmpty()) return 0;
 								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getDest(), temp);
 								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 
 							}
 						}
@@ -911,7 +954,7 @@ public class TranslateToAutomata {
 							Automaton newA1 = AutomatonExtra.minus(a1, temp);
 							if (newA1.isEmpty()) {
 								//println ("[EdgeIndexOfChar] returning false");
-								return false;
+								return 0;
 							}
 							eio.getSource().setSolution(newA1.getShortestExample(true));
 							//println ("eio.getSource().getSolution(): '" + eio.getSource().getSolution() + "'");
@@ -919,22 +962,22 @@ public class TranslateToAutomata {
 							boolean propResult = propagateChange(eio.getSource(), eio.getDest());
 							if (!propResult) {
 								//println ("[EdgeIndexOfChar] propegation returning false");
-								return false;
+								return 0;
 							}
 						}
 						else if (!eio.getDest().isConstant()) {
 							//println ("[EdgeIndexOfChar] branch 3");
 							Automaton a1 = mapAutomaton.get(eio.getDest());
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-							if (temp.isEmpty()) return false;
+							if (temp.isEmpty()) return 0;
 							if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(eio.getDest(), temp);
 							boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else {
 							//Everything is constant
-							return false;
+							return 0;
 						}
 						
 						change = true;
@@ -951,14 +994,14 @@ public class TranslateToAutomata {
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
 								if (temp.isEmpty()) {
 									//println ("[isSat] EdgeLastIndexOfChar return false");
-									return false;
+									return 0;
 								}
 								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getSource(), temp);
 								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
 								if (!propResult) {
 									//println ("[isSat] EdgeLastIndexOfChar return false");
-									return false;
+									return 0;
 								}
 								
 							}
@@ -967,14 +1010,14 @@ public class TranslateToAutomata {
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
 								if (temp.isEmpty()) {
 									//println ("[isSat] EdgeLastIndexOfChar return false");
-									return false;
+									return 0;
 								}
 								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getDest(), temp);
 								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
 								if (!propResult) {
 									//println ("[isSat] EdgeLastIndexOfChar return false");
-									return false;
+									return 0;
 								}
 
 							}
@@ -984,14 +1027,14 @@ public class TranslateToAutomata {
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
 							if (temp.isEmpty()) {
 								//println ("[isSat] EdgeLastIndexOfChar return false");
-								return false;
+								return 0;
 							}
 							if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(eio.getSource(), temp);
 							boolean propResult = propagateChange(eio.getSource(), eio.getDest());
 							if (!propResult) {
 								//println ("[isSat] EdgeLastIndexOfChar return false");
-								return false;
+								return 0;
 							}
 						}
 						else if (!eio.getDest().isConstant()) {
@@ -999,19 +1042,19 @@ public class TranslateToAutomata {
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
 							if (temp.isEmpty()) {
 								//println ("[isSat] EdgeLastIndexOfChar return false");
-								return false;
+								return 0;
 							}
 							if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(eio.getDest(), temp);
 							boolean propResult = propagateChange(eio.getDest(), eio.getSource());
 							if (!propResult) {
 								//println ("[isSat] EdgeLastIndexOfChar return false");
-								return false;
+								return 0;
 							}
 						}
 						else {
 							//println ("[isSat] EdgeLastIndexOfChar return false");
-							return false;
+							return 0;
 						}
 						
 						change = true;
@@ -1026,53 +1069,56 @@ public class TranslateToAutomata {
 							if (nonequalityFlipFlop == false) {
 								Automaton a1 = mapAutomaton.get(eio.getSource());
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return false;
+								if (temp.isEmpty()) return 0;
 								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getSource(), temp);
 								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 								
 							}
 							else {
 								Automaton a1 = mapAutomaton.get(eio.getDest());
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-								if (temp.isEmpty()) return false;
+								if (temp.isEmpty()) return 0;
 								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getDest(), temp);
 								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-								if (!propResult) return false;
+								if (!propResult) return 0;
 
 							}
 						}
 						else if (!eio.getSource().isConstant()) {
 							Automaton a1 = mapAutomaton.get(eio.getSource());
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-							if (temp.isEmpty()) return false;
+							if (temp.isEmpty()) return 0;
 							if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(eio.getSource(), temp);
 							boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else if (!eio.getDest().isConstant()) {
 							Automaton a1 = mapAutomaton.get(eio.getDest());
 							Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
-							if (temp.isEmpty()) return false;
+							if (temp.isEmpty()) return 0;
 							if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
 							mapAutomaton.put(eio.getDest(), temp);
 							boolean propResult = propagateChange(eio.getDest(), eio.getSource());
-							if (!propResult) return false;
+							if (!propResult) return 0;
 						}
 						else {
 							//Everything is constant
-							return false;
+							return 0;
 						}
 						
 						change = true;
 					}
 				}
 			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			//number of nots was incorrect
+			return 2;
 		}
-		return true;
+		return 1;
 	}
 	
 	
