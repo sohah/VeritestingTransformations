@@ -400,11 +400,13 @@ public class StringGraph {
 			renameVertex(v2, v1);
 			sticks = v1;
 			dissapears = v2;
+			v2.setSolution(v1.getSolution());
 		}
 		else if (v2.isConstant()) {
 			renameVertex(v1, v2);
 			sticks = v2;
 			dissapears = v1;
+			v1.setSolution(v2.getSolution());
 		}
 		else { // All is symbolic
 			renameVertex(v2, v1);

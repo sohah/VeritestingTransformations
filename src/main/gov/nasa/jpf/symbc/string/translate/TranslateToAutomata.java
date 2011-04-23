@@ -291,7 +291,7 @@ public class TranslateToAutomata {
 	
 	private static boolean handleNots (StringGraph g) {
 		int numberOfNots = 0;
-		println ("Start of handleNots");
+		//println ("Start of handleNots");
 		for (Edge e: g.getEdges()) {
 			if (e instanceof EdgeNotEqual) {
 				if (e.getSource().getSolution().equals(e.getDest().getSolution())) {
@@ -371,7 +371,7 @@ public class TranslateToAutomata {
 				}
 			}
 		}
-		println ("numberOfNots: " + numberOfNots);
+		//println ("numberOfNots: " + numberOfNots);
 		/*if (numberOfNots == 0) {
 			return true;
 		}*/
@@ -2229,7 +2229,9 @@ public class TranslateToAutomata {
 	private static boolean handleEdgeIndexOf (EdgeIndexOf e) {
 		//println ("[handleEdgeIndexOf] entered");
 		Automaton a1 = mapAutomaton.get(e.getSource());
+		println (String.format("[handleEdgeIndexOf] a1: '%s'", a1.getShortestExample(true)));
 		Automaton a2 = mapAutomaton.get(e.getDest());
+		println (String.format("[handleEdgeIndexOf] a2: '%s'", a2.getShortestExample(true)));
 		int index = e.getIndex().solution();
 		//First check if it is possible
 		if (index > -1) {
@@ -2243,6 +2245,36 @@ public class TranslateToAutomata {
 				global_pc._addDet(loic);
 				return false;
 			}
+			//Make sure the destination is not present in source before index.
+			//println ("[handlEdgeIndexOf: " + index);
+			Automaton exclude = Automaton.makeEmpty();
+			for (int i = 0; i <= index - e.getDest().getLength(); i++) {
+				Automaton prefixSpaces = AutomatonExtra.lengthAutomaton(i);
+				Automaton suffixSpaces = AutomatonExtra.lengthAutomaton(index - i - e.getDest().getLength());
+				Automaton aNew = prefixSpaces.concatenate(a2).concatenate(suffixSpaces);
+				println (String.format("[handleEdgeIndexOf] aNew: '%s'", aNew.getShortestExample(true)));
+				exclude = exclude.union(aNew);
+			}
+			//println (String.format("[handleEdgeIndexOf] exclude: '%s'", exclude.getShortestExample(true)));
+			//Lengthen exclude
+			Automaton lengthenExclude = exclude.concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton excludeInverse = lengthenExclude.complement().intersection(AutomatonExtra.makeAnyStringFixed());
+			excludeInverse = AutomatonExtra.intersection(excludeInverse, AutomatonExtra.lengthAutomaton(e.getSource().getLength()));
+			//println (String.format("[handleEdgeIndexOf] excludeInverser: '%s'", excludeInverse.getShortestExample(true)));
+			//println (String.format("a1: '%s'", a1.getShortestExample(true)));
+			a1 = AutomatonExtra.intersection(a1, excludeInverse);
+			if (a1.isEmpty()) {
+				//println ("[handleEdgeIndexOf] String encountered before");
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(index))); //TODO: Must be equal to -1?
+				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
+				global_pc._addDet(loic);
+				return false;
+			}
+			//println ("[handleEdgeIndexOf] not empty");
+			mapAutomaton.put(e.getSource(), a1);
+			e.getSource().setSolution(a1.getShortestExample(true));
+			
 			temp = AutomatonExtra.lengthAutomaton(index);
 			temp = temp.concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
 			intersection = AutomatonExtra.intersection(a1, temp);
@@ -2518,6 +2550,37 @@ public class TranslateToAutomata {
 				//println ("[handleEdgeIndexOfChar] " + global_pc.toString());
 				return false;
 			}
+			
+			//Make sure the destination is not present in source before index.
+			//println ("[handlEdgeIndexOf: " + index);
+			Automaton exclude = Automaton.makeEmpty();
+			for (int i = 0; i <= index - e.getDest().getLength(); i++) {
+				Automaton prefixSpaces = AutomatonExtra.lengthAutomaton(i);
+				Automaton suffixSpaces = AutomatonExtra.lengthAutomaton(index - i - e.getDest().getLength());
+				Automaton aNew = prefixSpaces.concatenate(Automaton.makeChar(character.charAt(0))).concatenate(suffixSpaces);
+				//println (String.format("[handleEdgeIndexOf] aNew: '%s'", aNew.getShortestExample(true)));
+				exclude = exclude.union(aNew);
+			}
+			//println (String.format("[handleEdgeIndexOf] exclude: '%s'", exclude.getShortestExample(true)));
+			//Lengthen exclude
+			Automaton lengthenExclude = exclude.concatenate(AutomatonExtra.makeAnyStringFixed());
+			Automaton excludeInverse = lengthenExclude.complement().intersection(AutomatonExtra.makeAnyStringFixed());
+			excludeInverse = AutomatonExtra.intersection(excludeInverse, AutomatonExtra.lengthAutomaton(e.getSource().getLength()));
+			//println (String.format("[handleEdgeIndexOf] excludeInverser: '%s'", excludeInverse.getShortestExample(true)));
+			//println (String.format("a1: '%s'", a1.getShortestExample(true)));
+			a1 = AutomatonExtra.intersection(a1, excludeInverse);
+			if (a1.isEmpty()) {
+				//println ("[handleEdgeIndexOf] String encountered before");
+				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(index))); //TODO: Must be equal to -1?
+				//global_pc._addDet (Comparator.EQ, e.getIndex(), -1);
+				global_pc._addDet(loic);
+				return false;
+			}
+			//println ("[handleEdgeIndexOf] not empty");
+			mapAutomaton.put(e.getSource(), a1);
+			e.getSource().setSolution(a1.getShortestExample(true));
+			
 			temp = AutomatonExtra.lengthAutomaton(index);
 			temp = temp.concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
 			intersection = AutomatonExtra.intersection(a1, temp);
