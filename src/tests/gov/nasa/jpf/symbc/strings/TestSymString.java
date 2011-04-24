@@ -792,4 +792,724 @@ public class TestSymString {
 			
 		}
 	}
+	
+	@Test
+	public void Test11_1 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("aa"), var1);
+			stringCurrentPC._addDet(StringComparator.ENDSWITH, new StringConstant("bb"), var2);
+			pc._addDet(Comparator.GT, var1._indexOf(var2), 0);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(var1.solution().startsWith("aa"));
+			Assert.assertTrue(var2.solution().endsWith("bb"));
+			Assert.assertTrue(var1.solution().indexOf(var2.solution()) > 0);
+			
+		}
+	}
+	
+	@Test
+	public void Test12_1 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			pc._addDet(Comparator.EQ, var1._charAt(new IntegerConstant(1)), new IntegerConstant((int) 'a'));
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(var1.solution().charAt(1) == 'a');
+			
+		}
+	}
+	
+	@Test
+	public void Test12_2 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			pc._addDet(Comparator.NE, var1._charAt(new IntegerConstant(1)), new IntegerConstant((int) 'a'));
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(var1.solution().charAt(1) != 'a');
+		}
+	}
+	
+	@Test
+	public void Test13_1 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			SymbolicInteger si = new SymbolicInteger("si1");
+			pc._addDet(Comparator.EQ, var1._charAt(new IntegerConstant(1)), si);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(var1.solution().charAt(1) == si.solution());
+			
+		}
+	}
+	
+	@Test
+	public void Test14_1 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, var1, new StringConstant("abc"));
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, var2, new StringConstant("b"));
+			stringCurrentPC._addDet(StringComparator.EQUALS, var1, var2);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(!result);
+		}
+	}
+	
+	@Test
+	public void Test14_2 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, var1, new StringConstant("abc"));
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, var2, new StringConstant("b"));
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var1, var2);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(!var1.solution().equals(var2.solution()));
+		}
+	}
+	
+	@Test
+	public void Test15_1 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var1, var2);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(!var1.solution().equals(var2.solution()));
+		}
+	}
+	
+	@Test
+	public void Test15_2 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.EQUALS, var1, var2);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(var1.solution().equals(var2.solution()));
+		}
+	}
+	
+	@Test
+	public void Test16 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringExpression var2 = var1._trim();
+			stringCurrentPC._addDet(StringComparator.EQUALS, var2, new StringConstant("ab"));
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(var1.solution().trim().equals("ab"));
+		}
+	}
+	
+	@Test
+	public void Test17 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant(" "), var1);
+			StringExpression var2 = var1._trim();
+			stringCurrentPC._addDet(StringComparator.EQUALS, new StringConstant("ab"), var2 );
+			//System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var1.solution().trim().equals("ab"));
+			Assert.assertTrue(var1.solution().startsWith(" "));
+		}
+	}
+	
+	@Test
+	public void Test18 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringExpression var1ss = var1._subString(1);
+			stringCurrentPC._addDet(StringComparator.EQUALS, var1ss, var2 );
+			//System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var1.solution().substring(1).equals(var2.solution()));
+		}
+	}
+	
+	@Test
+	public void Test19_1 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.ENDSWITH, new StringConstant("a"), var2 );
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, var2, var1 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().endsWith("a"));
+			Assert.assertTrue(var1.solution().startsWith(var2.solution()));
+		}
+	}
+	
+	@Test
+	public void Test19_2 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.NOTENDSWITH, new StringConstant("a"), var2 );
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, var2, var1 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().endsWith("a"));
+			Assert.assertTrue(var1.solution().startsWith(var2.solution()));
+		}
+	}
+	
+	@Test
+	public void Test19_3 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.ENDSWITH, new StringConstant("a"), var2 );
+			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var2, var1 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().endsWith("a"));
+			Assert.assertTrue(!var1.solution().startsWith(var2.solution()));
+		}
+	}
+	
+	@Test
+	public void Test19_4 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.NOTENDSWITH, new StringConstant("a"), var2 );
+			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var2, var1 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().endsWith("a"));
+			Assert.assertTrue(!var1.solution().startsWith(var2.solution()));
+		}
+	}
+	
+	@Test
+	public void Test20_1 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			stringCurrentPC._addDet(StringComparator.EQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.EQUALS, var2, var3 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().equals(var1.solution()));
+			Assert.assertTrue(var2.solution().equals(var3.solution()));
+		}
+	}
+	
+	@Test
+	public void Test20_2 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.EQUALS, var2, var3 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().equals(var1.solution()));
+			Assert.assertTrue(var2.solution().equals(var3.solution()));
+		}
+	}
+	
+	@Test
+	public void Test20_3 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			stringCurrentPC._addDet(StringComparator.EQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var2, var3 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().equals(var1.solution()));
+			Assert.assertTrue(!var2.solution().equals(var3.solution()));
+		}
+	}
+	
+	@Test
+	public void Test20_4 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var2, var3 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			System.out.printf("var1: '%s'\n", var1.solution());
+			System.out.printf("var2: '%s'\n", var2.solution());
+			System.out.printf("var3: '%s'\n", var3.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().equals(var1.solution()));
+			Assert.assertTrue(!var2.solution().equals(var3.solution()));
+		}
+	}
+	
+	@Test
+	public void Test21_1 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			StringSymbolic var4 = new StringSymbolic("var4");
+			stringCurrentPC._addDet(StringComparator.EQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.EQUALS, var2, var3 );
+			stringCurrentPC._addDet(StringComparator.EQUALS, var3, var4 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().equals(var1.solution()));
+			Assert.assertTrue(var2.solution().equals(var3.solution()));
+			Assert.assertTrue(var3.solution().equals(var4.solution()));
+		}
+	}
+	
+	@Test
+	public void Test21_2 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			StringSymbolic var4 = new StringSymbolic("var4");
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.EQUALS, var2, var3 );
+			stringCurrentPC._addDet(StringComparator.EQUALS, var3, var4 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().equals(var1.solution()));
+			Assert.assertTrue(var2.solution().equals(var3.solution()));
+			Assert.assertTrue(var3.solution().equals(var4.solution()));
+		}
+	}
+	
+	@Test
+	public void Test21_3 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			StringSymbolic var4 = new StringSymbolic("var4");
+			stringCurrentPC._addDet(StringComparator.EQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var2, var3 );
+			stringCurrentPC._addDet(StringComparator.EQUALS, var3, var4 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().equals(var1.solution()));
+			Assert.assertTrue(!var2.solution().equals(var3.solution()));
+			Assert.assertTrue(var3.solution().equals(var4.solution()));
+		}
+	}
+	
+	@Test
+	public void Test21_4 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			StringSymbolic var4 = new StringSymbolic("var4");
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var2, var3 );
+			stringCurrentPC._addDet(StringComparator.EQUALS, var3, var4 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().equals(var1.solution()));
+			Assert.assertTrue(!var2.solution().equals(var3.solution()));
+			Assert.assertTrue(var3.solution().equals(var4.solution()));
+		}
+	}
+	
+	@Test
+	public void Test21_5 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			StringSymbolic var4 = new StringSymbolic("var4");
+			stringCurrentPC._addDet(StringComparator.EQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.EQUALS, var2, var3 );
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var3, var4 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().equals(var1.solution()));
+			Assert.assertTrue(var2.solution().equals(var3.solution()));
+			Assert.assertTrue(!var3.solution().equals(var4.solution()));
+		}
+	}
+	
+	@Test
+	public void Test21_6 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			StringSymbolic var4 = new StringSymbolic("var4");
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.EQUALS, var2, var3 );
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var3, var4 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().equals(var1.solution()));
+			Assert.assertTrue(var2.solution().equals(var3.solution()));
+			Assert.assertTrue(!var3.solution().equals(var4.solution()));
+		}
+	}
+	
+	@Test
+	public void Test21_7 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			StringSymbolic var4 = new StringSymbolic("var4");
+			stringCurrentPC._addDet(StringComparator.EQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var2, var3 );
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var3, var4 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().equals(var1.solution()));
+			Assert.assertTrue(!var2.solution().equals(var3.solution()));
+			Assert.assertTrue(!var3.solution().equals(var4.solution()));
+		}
+	}
+	
+	@Test
+	public void Test21_8 () {
+		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			StringSymbolic var3 = new StringSymbolic("var3");
+			StringSymbolic var4 = new StringSymbolic("var4");
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var1, var2 );
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var2, var3 );
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var3, var4 );
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().equals(var1.solution()));
+			Assert.assertTrue(!var2.solution().equals(var3.solution()));
+			Assert.assertTrue(!var3.solution().equals(var4.solution()));
+		}
+	}
 }
