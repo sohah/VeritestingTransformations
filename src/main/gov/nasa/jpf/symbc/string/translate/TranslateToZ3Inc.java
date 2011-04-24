@@ -1041,7 +1041,7 @@ public class TranslateToZ3Inc {
 					BVExpr cons = new BVConst(destCons.charAt(i - index));
 					totalLit = and (totalLit, new BVEq(sourceTemp, cons));
 				}
-				post (totalLit);
+				result = post (totalLit);
 			}
 			else {
 				//println ("[handleEdgeIndexOf] branch 2.2");
@@ -1348,8 +1348,8 @@ public class TranslateToZ3Inc {
 				BVExpr lit = null;
 				/* no other occurences of the character may come after up till second argument*/
 				/*println ("minDist: " + e.getIndex().getMinDist().solution());
-				println ("index: " + index);
-				println ("e.getSource().getLength(): " + e.getSource().getLength());*/
+				//println ("index: " + index);
+				//println ("e.getSource().getLength(): " + e.getSource().getLength());*/
 				for (int i = index+1; i < e.getIndex().getMinDist().solution() && e.getSource().getLength() - i - 1 >= 0; i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
 					BVExpr constant = new BVConst (character);

@@ -371,7 +371,7 @@ public class TranslateToAutomata {
 				}
 			}
 		}
-		println ("numberOfNots: " + numberOfNots);
+		//println ("numberOfNots: " + numberOfNots);
 		/*if (numberOfNots == 0) {
 			return true;
 		}*/
@@ -384,14 +384,27 @@ public class TranslateToAutomata {
 		int result = 0;
 		while (true) {
 			result = innerHandleNots(g, toBits(numberOfNots, 0));
-			println ("result: " + result);
+			//println ("result: " + result);
 			if (result  == 2) {
 				numberOfNots++;
 				continue;
 			}
+			if (PathCondition.flagSolved == false) {
+				if (scg.isSatisfiable(global_pc)) {
+					scg.solve(global_pc);
+					PathCondition.flagSolved = true;
+					continue;
+				}
+				else {
+					//println ("[isSat] handled isnots, path condition could not be solved");
+					return false;
+				}
+			}
 			int i = 1;
 			boolean breakInnerLoop = false;
+			//println ("Starting while loop...");
 			while (i < numberOfNots && result == 0) {
+				//println ("in while loop");
 				if (PathCondition.flagSolved == false) {
 					if (scg.isSatisfiable(global_pc)) {
 						scg.solve(global_pc);
@@ -466,9 +479,9 @@ public class TranslateToAutomata {
 				for (Edge e: g.getEdges()) {
 					if (e instanceof EdgeNotEqual) {
 						if (e.getSource().getSolution().equals(e.getDest().getSolution())) {
-							println (e.getSource().getName() + " (" + e.getSource().getSolution() + ") == " + e.getDest().getName() + " (" + e.getDest().getSolution() + ") and it shouldn't");
+							//println (e.getSource().getName() + " (" + e.getSource().getSolution() + ") == " + e.getDest().getName() + " (" + e.getDest().getSolution() + ") and it shouldn't");
 							if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
-								println ("Here 1");
+								//println ("Here 1");
 								nonequalityFlipFlop = bitArray[indexBitArray++];
 								if (nonequalityFlipFlop == false) {
 									Automaton a = mapAutomaton.get(e.getSource());
@@ -482,7 +495,7 @@ public class TranslateToAutomata {
 									mapAutomaton.put(e.getSource(), a);
 									e.getSource().setSolution(a.getShortestExample(true));
 									change = true;
-									println ("change = true");
+									//println ("change = true");
 									
 									boolean propResult = propagateChange(e.getSource(), e.getDest());
 									if (!propResult) return 0;
@@ -812,7 +825,7 @@ public class TranslateToAutomata {
 							change = true;
 						}
 					}
-					else if (e instanceof EdgeIndexOf) {
+					else if (e instanceof EdgeIndexOf) { //TODO: Major patch up need for cases, where index was guessed wrong
 						EdgeIndexOf eio = (EdgeIndexOf) e;
 						if (eio.getIndex().solution() == -1 && eio.getSource().getSolution().contains(eio.getDest().getSolution())) {
 							//println ("'" + eio.getSource().getSolution() + "' contains '" + eio.getDest().getSolution() + "' and it should not");
@@ -840,13 +853,26 @@ public class TranslateToAutomata {
 								}
 							}
 							else if (!eio.getSource().isConstant()) {
+								//println ("branch 2");
 								Automaton a1 = mapAutomaton.get(eio.getSource());
 								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
-								if (temp.isEmpty()) return 0;
+								if (temp.isEmpty()) {
+									//println ("here 1");
+									LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+									loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
+									global_pc._addDet(loic);
+									return 0;
+								}
 								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getSource(), temp);
 								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
-								if (!propResult) return 0;
+								if (!propResult) {
+									//println ("here 2");
+									LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+									loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
+									global_pc._addDet(loic);
+									return 0;
+								}
 							}
 							else if (!eio.getDest().isConstant()) {
 								Automaton a1 = mapAutomaton.get(eio.getDest());
@@ -2240,9 +2266,9 @@ public class TranslateToAutomata {
 	private static boolean handleEdgeIndexOf (EdgeIndexOf e) {
 		//println ("[handleEdgeIndexOf] entered");
 		Automaton a1 = mapAutomaton.get(e.getSource());
-		println (String.format("[handleEdgeIndexOf] a1: '%s'", a1.getShortestExample(true)));
+		//println (String.format("[handleEdgeIndexOf] a1: '%s'", a1.getShortestExample(true)));
 		Automaton a2 = mapAutomaton.get(e.getDest());
-		println (String.format("[handleEdgeIndexOf] a2: '%s'", a2.getShortestExample(true)));
+		//println (String.format("[handleEdgeIndexOf] a2: '%s'", a2.getShortestExample(true)));
 		int index = e.getIndex().solution();
 		//First check if it is possible
 		if (index > -1) {
@@ -2263,7 +2289,7 @@ public class TranslateToAutomata {
 				Automaton prefixSpaces = AutomatonExtra.lengthAutomaton(i);
 				Automaton suffixSpaces = AutomatonExtra.lengthAutomaton(index - i - e.getDest().getLength());
 				Automaton aNew = prefixSpaces.concatenate(a2).concatenate(suffixSpaces);
-				println (String.format("[handleEdgeIndexOf] aNew: '%s'", aNew.getShortestExample(true)));
+				//println (String.format("[handleEdgeIndexOf] aNew: '%s'", aNew.getShortestExample(true)));
 				exclude = exclude.union(aNew);
 			}
 			//println (String.format("[handleEdgeIndexOf] exclude: '%s'", exclude.getShortestExample(true)));
