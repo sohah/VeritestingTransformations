@@ -87,14 +87,18 @@ public class StringGraph {
 		for (Edge e: edges) {
 			if (e instanceof EdgeConcat) {
 				sb.append("\t");
+				sb.append ("\"");
 				sb.append (e.getSources().get(0));
+				sb.append ("\"");
 				sb.append ("->");
 				sb.append("c");
 				sb.append (String.valueOf(concatTemp));
 				sb.append(" [label=\"Concat left\"]\n");
 				
 				sb.append("\t");
+				sb.append ("\"");
 				sb.append (e.getSources().get(1));
+				sb.append ("\"");
 				sb.append ("->");
 				sb.append("c");
 				sb.append (String.valueOf(concatTemp));
@@ -104,16 +108,22 @@ public class StringGraph {
 				sb.append("c");
 				sb.append (String.valueOf(concatTemp));
 				sb.append ("->");
+				sb.append ("\"");
 				sb.append (e.getDest());
+				sb.append ("\"");
 				sb.append(" [label=\"Concat dest\"]\n");
 				concatTemp++;
 				
 			}
 			else {
 				sb.append("\t");
+				sb.append ("\"");
 				sb.append (e.getSource());
+				sb.append ("\"");
 				sb.append ("->");
+				sb.append ("\"");
 				sb.append(e.getDest());
+				sb.append ("\"");
 				sb.append(" [label=\"");
 				//sb.append(e.getName());
 				if (e instanceof EdgeNotStartsWith) {
@@ -390,11 +400,13 @@ public class StringGraph {
 			renameVertex(v2, v1);
 			sticks = v1;
 			dissapears = v2;
+			v2.setSolution(v1.getSolution());
 		}
 		else if (v2.isConstant()) {
 			renameVertex(v1, v2);
 			sticks = v2;
 			dissapears = v1;
+			v1.setSolution(v2.getSolution());
 		}
 		else { // All is symbolic
 			renameVertex(v2, v1);

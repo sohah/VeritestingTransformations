@@ -2,6 +2,7 @@ package concolic;
 import gov.nasa.jpf.symbc.Concrete;
 // Bessel example taken from:
 // http://www.nag.com/IndustryArticles/pontjavafiles.zip
+import gov.nasa.jpf.symbc.Partition;
 
 // The Bessel.java file
 
@@ -24,8 +25,8 @@ public class Bessel
 
 
   // Declaration of the Native (C) function
-  @Concrete("true")
-  public static native double bessely0(double x);
+@Concrete("true")
+ public static native double bessely0(double x);
 
   //@Concrete("true")
   public static double bessely0test(double x) {
@@ -62,13 +63,15 @@ public class Bessel
       	double y;
       	y = y0(x); //bessely0(x);
 
-      	if(x>= 1.25 && y > 0.2)
+      	if(x >= 1.25 && y > 0.2)
       		System.out.println("!!!!!!!!!!! br1");
       	else
       		System.out.println("!!!!!!!!!!! br2");
   }
 
   //@Concrete("true")
+ // @Concrete("true")
+  //@Partition({"x>=1.25","x>0.0"})
   public static double y0(double x) {
 	  double result = bessely0(x); //bessely0test(x);
 	  System.out.println("Invoking concrete y0 "+ x + " " + result );

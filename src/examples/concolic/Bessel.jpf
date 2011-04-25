@@ -12,6 +12,8 @@ symbolic.method=concolic.Bessel.run_bessel(sym)
 
 symbolic.concolic=true
 #symbolic.heuristicRandom=true
+symbolic.heuristcPartition=true
+
 
 symbolic.debug=on
 

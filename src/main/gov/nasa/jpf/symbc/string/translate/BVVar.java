@@ -7,7 +7,7 @@ public class BVVar implements BVExpr{
 	String name;
 	int size;
 	
-	static Map<String, Character> map;
+	public static Map<String, Character> map;
 	static Map<Character, String> reverseMap;
 	static char startChar;
 	
@@ -21,6 +21,7 @@ public class BVVar implements BVExpr{
 	}
 	
 	public String toSMTLibDec () {
+		
 		char currentChar;
 		if (map == null) {
 			map = new HashMap<String, Character>();
@@ -40,7 +41,7 @@ public class BVVar implements BVExpr{
 			currentChar = startChar;
 			startChar++;
 		}
-		
+		//println ("map: " + map);
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append ("(declare-fun "); 
@@ -50,6 +51,10 @@ public class BVVar implements BVExpr{
 		sb.append ("))");
 		
 		return sb.toString();
+	}
+	
+	public static void println (String msg) {
+		System.out.println("[BVVar]" + msg);
 	}
 	
 	public String toSMTLib () {

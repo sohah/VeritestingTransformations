@@ -63,7 +63,7 @@ import gov.nasa.jpf.symbc.string.translate.TranslateToZ3Inc;
  * 5. if step 4 gives unsat, and there is more integer values that satisfy step 3, go to step 3
  * 6. Translate the StringGraph to the original symbolic strings.
  * 
- * More info, visit www.cs.sun.ac.za/~gredelinghuys/string
+ * Visit http://www1.sun.ac.za/redmine/projects/jpfbugs/issues to log bugs
  * 
  * @author GJ Redelinghuys
  *
@@ -108,16 +108,16 @@ public class SymbolicStringConstraintsGeneral {
 	private static final boolean EJECT_TEXT = false;
 	
 	/*Timer to be used for timing out*/
-	static Timer timer;
+	public static Timer timer;
 	
 	/*Time (in ms) until timeout, zero for no timeout*/
-	private static long TIMEOUT = 0;
+	public static long TIMEOUT = 0;
 	
 	/*Boolean which is flagged when the timeout has been achieved */
-	static boolean timedOut;
+	public static boolean timedOut;
 	
 	/*Mutex lock on timedOut */
-	static Object mutexTimedOut = new Object();
+	public static Object mutexTimedOut = new Object();
 	
 	public SymbolicStringConstraintsGeneral () {
 		
@@ -199,7 +199,7 @@ public class SymbolicStringConstraintsGeneral {
 						v2 = createVertex (temp);
 						global_spc.npc._addDet(Comparator.EQ, v2.getSymbolicLength(), v1.getSymbolicLength()._minus(a1));
 						graphBefore.addEdge(v1, v2, new EdgeSubstring1Equal("EdgeSubstring1Equal_" + v1.getName() + "_" + v2.getName() + "_(" + a1 + ")", a1, v1, v2));
-					}
+				}
 				}
 				else if (temp.oprlist[1] instanceof IntegerExpression && temp.oprlist.length == 2) {
 					//throw new RuntimeException ("Reached");
@@ -259,6 +259,7 @@ public class SymbolicStringConstraintsGeneral {
 				/*
 				 * I have to restrict myself here just because of DNF->CNF blowup
 				 */
+				println("In valueof");
 				IntegerExpression ie = (IntegerExpression) temp.oprlist[0];
 				boolean oldSetting = PathCondition.flagSolved;
 				PathCondition.flagSolved = false;
@@ -267,36 +268,52 @@ public class SymbolicStringConstraintsGeneral {
 				result.addVertex(v1);
 				
 				//Feeble attempt at log
-				LogicalORLinearIntegerConstraints lolic = new LogicalORLinearIntegerConstraints();
 				
-				Constraint temp1 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(1));
+				
+				/*Constraint temp1 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(1));
 				Constraint temp2 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-10));
 				Constraint temp3 = new LinearIntegerConstraint(ie, Comparator.LT, new IntegerConstant(10));
 				temp1.and = temp2;
 				temp2.and = temp3;
 						
-				lolic.addToList((LinearIntegerConstraint)temp1);
+				lolic.addToList((LinearIntegerConstraint)temp1);*/
+				global_spc.npc._addDet(Comparator.LE, v1.getSymbolicLength(), 5);
 				
-				for (int i = 0; i < 2; i++) {
+				int max = 5;
+				
+				LogicalORLinearIntegerConstraints lolic;
+				
+				for (int i = 1; i <= max-1; i++) {
+					lolic = new LogicalORLinearIntegerConstraints();
+					lolic.addToList(new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.LE, new IntegerConstant (i)));
+					if (i == max-1) {
+						//Don't add anything
+					} else {
+						lolic.addToList(new LinearIntegerConstraint(ie, Comparator.GE, new IntegerConstant ((int) Math.pow(10, i))));
+						global_spc.npc._addDet(lolic);
+					}
 					
-					temp1 = new LinearIntegerConstraint(ie, Comparator.LT, new IntegerConstant((int) Math.pow(10, i+2)));
-					temp2 = new LinearIntegerConstraint(ie, Comparator.GE, new IntegerConstant((int) Math.pow(10, i+1)));
-					/*temp3 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-1 * ((int) Math.pow(10, i+1)))); 
-					Constraint temp4 = new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant(-1 * ((int) Math.pow(10, i))));*/
-					temp3 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(i+2));
-					temp1.and = temp2; temp2.and = temp3;
-					lolic.addToList((LinearIntegerConstraint) temp1);
+					
+					lolic = new LogicalORLinearIntegerConstraints();
+					lolic.addToList(new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.LE, new IntegerConstant (i)));
+					if (i == 1) {
+						lolic.addToList(new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant (0)));
+					} else {
+						lolic.addToList(new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant (-1 * ((int) Math.pow(10, i-1)))));
+					}
+					global_spc.npc._addDet(lolic);
 				}
 				
-				for (int i = 0; i < 3; i++) {
+				for (int i = 2; i <= max; i++) {
+					lolic = new LogicalORLinearIntegerConstraints();
+					lolic.addToList(new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.GE, new IntegerConstant (i)));
+					lolic.addToList(new LinearIntegerConstraint(ie, Comparator.LT, new IntegerConstant ((int) Math.pow(10, i-1))));
+					global_spc.npc._addDet(lolic);
 					
-					temp1 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-1 * ((int) Math.pow(10, i+1))));
-					temp2 = new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant(-1 * ((int) Math.pow(10, i))));
-					/*temp3 = new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant(-1 * ((int) Math.pow(10, i+1)))); 
-					Constraint temp4 = new LinearIntegerConstraint(ie, Comparator.LE, new IntegerConstant(-1 * ((int) Math.pow(10, i))));*/
-					temp3 = new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.EQ, new IntegerConstant(i+2));
-					temp1.and = temp2; temp2.and = temp3;
-					lolic.addToList((LinearIntegerConstraint) temp1);
+					lolic = new LogicalORLinearIntegerConstraints();
+					lolic.addToList(new LinearIntegerConstraint(v1.getSymbolicLength(), Comparator.GE, new IntegerConstant (i)));
+					lolic.addToList(new LinearIntegerConstraint(ie, Comparator.GT, new IntegerConstant (-1 * ((int) Math.pow(10, i-1)))));
+					global_spc.npc._addDet(lolic);
 				}
 				
 				//global_spc.npc._addDet(lolic);
@@ -312,6 +329,15 @@ public class SymbolicStringConstraintsGeneral {
 		return result;
 	}
 
+	public boolean isSatisfiable(StringPathCondition pc) {
+		boolean result = inner_isSatisfiable(pc);
+		
+		//println ("PC:" + pc.header);
+		//println ("result: " + result);
+		
+		return result;
+	}
+	
 	/**
 	 * Main entry point, solves (not only tests satisfiability) the given
 	 * path condition
@@ -319,7 +345,7 @@ public class SymbolicStringConstraintsGeneral {
 	 * @param pc
 	 * @return
 	 */
-	public boolean isSatisfiable(StringPathCondition pc) {
+	private boolean inner_isSatisfiable(StringPathCondition pc) {
 		//println ("[isSatisfiable] entered");
 		
 		String string_dp[] = SymbolicInstructionFactory.string_dp;
@@ -384,6 +410,7 @@ public class SymbolicStringConstraintsGeneral {
 			 * and add it to the global_graph
 			 */
 			if (sc != null) {
+				//println ("Constraints: " + pc.npc.header + "\nDone");
 				boolean result = process (sc);
 				sc = sc.and;
 				while (result == true && sc != null) {
@@ -394,6 +421,7 @@ public class SymbolicStringConstraintsGeneral {
 				/* check if there was a timeout */
 				checkTimeOut();
 			}
+			//println ("pc.npc: " + pc.npc.header);
 			
 			/* Walk through integer constraints and convert each constraint
 			 * to a subgraph and add it to the global_graph
@@ -402,11 +430,10 @@ public class SymbolicStringConstraintsGeneral {
 			Constraint constraint = pc.npc.header;
 			//println ("[isSatisfiable] Int cons given:" + pc.npc.header);
 			while (constraint != null) {
-				//First solve any previous integer constriants
 				processIntegerConstraint(constraint.getLeft());
 				processIntegerConstraint(constraint.getRight());
 				constraint = constraint.getTail();
-				
+				//println ("Constraints: " + pc.npc.header + "\nDone");
 				/* check if there was a timeout */
 				checkTimeOut();
 			}
@@ -415,10 +442,11 @@ public class SymbolicStringConstraintsGeneral {
 			SymbolicConstraintsGeneral scg = new SymbolicConstraintsGeneral();
 			scg.solve(pc.npc);
 			PathCondition.flagSolved = true;
-			
+			//println ("Constraints: " + pc.npc.header + "\nDone");
 			
 			//Start solving
 			//println(global_graph.toDot());
+			
 			/* Preprocess the graph */
 			boolean resultOfPp = PreProcessGraph.preprocess(global_graph, pc.npc);
 			/* check if there was a timeout */
@@ -451,7 +479,7 @@ public class SymbolicStringConstraintsGeneral {
 					decisionProcedure = TranslateToCVCInc.isSat(global_graph, pc.npc); 
 				}
 				else if (solver.equals(Z3)) {
-					//println ("[isSatisfiable] Using Bitvector's");
+					//println ("[isSatisfiable] Using Z3");
 					decisionProcedure = TranslateToZ3.isSat(global_graph, pc.npc); 
 				}
 				else if (solver.equals(Z3_INC)) {
@@ -529,16 +557,28 @@ public class SymbolicStringConstraintsGeneral {
 				}
 			}
 			
-			if (global_graph.getEdges().size() == 0) {
-				for (Vertex v: global_graph.getVertices()) {
-					List<StringSymbolic> represents = v.getRepresents();
-					for (StringSymbolic ss: represents) {
-						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
-						ss.solution = v.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+			//if (global_graph.getEdges().size() == 0) {
+			for (Vertex v: global_graph.getVertices()) {
+				boolean inEdge = false;
+				for (Edge e: global_graph.getEdges()) {
+					if (e.isHyper() && (e.getSources().get(0).equals (v) || e.getSources().get(1).equals (v) || e.getDest().equals(v))) {
+						inEdge = true;
+					}
+					else if (!e.isHyper() && (e.getSource().equals (v) || e.getDest().equals(v))) {
+						inEdge = true;
 					}
 				}
+				if (inEdge) {
+					continue;
+				}
+				List<StringSymbolic> represents = v.getRepresents();
+				for (StringSymbolic ss: represents) {
+					//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
+					ss.solution = v.getSolution();
+					if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+				}
 			}
+			//}
 			StringPathCondition.flagSolved = true;
 			//println ("StringPC: " + getSolution());
 			cancelTimer();
@@ -828,6 +868,7 @@ public class SymbolicStringConstraintsGeneral {
 	}
 	
 	public static void checkTimeOut () {
+		//println ("[checkTimeOut] checking timed out");
 		synchronized (mutexTimedOut) {
 			if (timedOut) {
 				throw new SymbolicStringTimedOutException();

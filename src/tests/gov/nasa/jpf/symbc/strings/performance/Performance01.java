@@ -4,8 +4,15 @@ public class Performance01 {
 	//MAX_LENGTH = 5 for all tests
 	private static final int MAX_LENGTH = 10;
 	
+	/*
+	 * Multiple symbolic string performance test
+	 * 
+	 * There is two variables to play with here:
+	 *  - The amount of symbolic string variables, set by the different testX methods
+	 *  - The maximum length of each symbolic string variable set by MAX_LENGTH
+	 */
 	public static void main (String [] args) {
-		test2 ("dcba", "a", "b");
+		test2 ("dcba", "a","b");
 	}
 	
 	public static void test (String a, String b) {

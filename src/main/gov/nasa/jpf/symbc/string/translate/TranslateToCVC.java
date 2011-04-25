@@ -327,6 +327,7 @@ public class TranslateToCVC {
 			return (lit);
 		}
 		else if (!e.getDest().isConstant()) {
+			//TODO Fix
 			ExprMut dest = getExprMut(e.getDest());
 			String constant = e.getSource().getSolution();
 			Expr listOfLit = null;
@@ -430,6 +431,7 @@ public class TranslateToCVC {
 			return (lit);
 		}
 		else if (!e.getDest().isConstant()) {
+			//TODO:Fix
 			ExprMut dest = getExprMut(e.getDest());
 			String constant = e.getSource().getSolution();
 			Expr listOfLit = null;

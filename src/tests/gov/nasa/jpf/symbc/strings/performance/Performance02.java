@@ -3,8 +3,16 @@ package gov.nasa.jpf.symbc.strings.performance;
 public class Performance02 {
 	private static final int MAX_LENGTH = 5;
 	
+	/*
+	 * string-integer constraint performance testing.
+	 * 
+	 * There is one dimension to set here, and that is choosing which testX method to run
+	 */
 	public static void main (String [] args) {
-		test3 ("ajzcb", 3,2,1, 3,2,1, 3,2,1);
+		//test ("ajzcb", 3,2,1);
+		//test2 ("ajzcb", 3,2,1, 3,2,1);
+		//test3 ("ajzcb", 3,2,1, 3,2,1, 3,2,1);
+		test4 ("ajzcb", 3,2,1, 3,2,1, 3,2,1, 3,2,1);
 	}
 	
 	public static void test (String a, int i1, int j1, int k1) {
@@ -22,10 +30,10 @@ public class Performance02 {
 				System.out.println("Step 3");
 				count++;
 			}
-			if (a.lastIndexOf("z") == j1) {
+			/*if (a.lastIndexOf("z") == j1) {
 				System.out.println("Step 4");
 				count++;
-			}
+			}*/
 			if (a.charAt(k1) == 'j') {
 				System.out.println("Step 5");
 				count++;
@@ -55,14 +63,14 @@ public class Performance02 {
 				System.out.println("Step 4");
 				count++;
 			}
-			if (a.lastIndexOf("y") == j1) {
+			/*if (a.lastIndexOf("y") == j1) {
 				System.out.println("Step 5");
 				count++;
 			}
 			if (a.lastIndexOf("z") == j2) {
 				System.out.println("Step 6");
 				count++;
-			}
+			}*/
 			if (a.charAt(k1) == 'j') {
 				System.out.println("Step 7");
 				count++;
@@ -100,7 +108,7 @@ public class Performance02 {
 				System.out.println("Step 5");
 				count++;
 			}
-			if (a.lastIndexOf("x") == j1) {
+			/*if (a.lastIndexOf("x") == j1) {
 				System.out.println("Step 6");
 				count++;
 			}
@@ -111,7 +119,7 @@ public class Performance02 {
 			if (a.lastIndexOf("z") == j3) {
 				System.out.println("Step 8");
 				count++;
-			}
+			}*/
 			if (a.charAt(k1) == 'j') {
 				System.out.println("Step 9");
 				count++;
@@ -157,7 +165,7 @@ public class Performance02 {
 				System.out.println("Step 6");
 				count++;
 			}
-			if (a.lastIndexOf("w") == j1) {
+			/*if (a.lastIndexOf("w") == j1) {
 				System.out.println("Step 7");
 				count++;
 			}
@@ -172,7 +180,7 @@ public class Performance02 {
 			if (a.lastIndexOf("z") == j4) {
 				System.out.println("Step 10");
 				count++;
-			}
+			}*/
 			if (a.charAt(k1) == 'j') {
 				System.out.println("Step 11");
 				count++;

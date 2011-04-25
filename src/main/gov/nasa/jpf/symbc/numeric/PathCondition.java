@@ -35,6 +35,7 @@ public class PathCondition {
 
     public Constraint header;
     int count = 0;
+    int solverCalls = 0;
 
     // TODO: to review
     public StringPathCondition spc = new StringPathCondition(this);
@@ -43,11 +44,16 @@ public class PathCondition {
     	header = null;
     }
 
+    public int getSolverCalls(){
+    	return this.solverCalls;
+    }
+
 	public PathCondition make_copy() {
 		PathCondition pc_new = new PathCondition();
 		pc_new.header = this.header;
 	    pc_new.count = this.count;
 	    pc_new.spc = this.spc.make_copy(pc_new); // TODO: to review
+	    pc_new.solverCalls = this.solverCalls;
 		return pc_new;
 	}
 
@@ -255,8 +261,9 @@ public class PathCondition {
 		}
 		else
 			result1 = solver.isSatisfiable(this);
+		solverCalls++;
 		solver.cleanup();
-
+		
 		if (SymbolicInstructionFactory.debugMode) {
 			MinMax.Debug_no_path_constraints ++;
 			if (result1)
@@ -297,5 +304,6 @@ public class PathCondition {
 	        return null;
 	    }
 	}
+
 
 }

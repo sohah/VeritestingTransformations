@@ -36,6 +36,14 @@ public class PreProcessGraph {
 	public static boolean preprocess (StringGraph g, PathCondition currentPC) { 
 		//println ("[preprocess] Preprocessor running...");
 		scg = new SymbolicConstraintsGeneral();
+		
+		/*if (!scg.isSatisfiable(currentPC)) {
+			return false;
+		}
+		else {
+			scg.solve(currentPC);
+		}*/
+		
 		PathCondition pc = currentPC;
 		
 		//Remove duplicates
@@ -74,6 +82,8 @@ public class PreProcessGraph {
 							return false;
 						}
 						change = true;
+						/* Done merging, ensure both vertices lengths are the same */
+						forceLengthsSame (v1, v2, pc);
 					}
 				}
 			}
@@ -127,6 +137,8 @@ public class PreProcessGraph {
 							return false;
 						}
 						change = true;
+						/* Done merging, ensure both vertices lengths are the same */
+						forceLengthsSame (v1, v2, pc);
 					}
 				}
 			}
@@ -167,12 +179,12 @@ public class PreProcessGraph {
 					}
 				}
 				else {
-					if (e.getSources().get(0).isConstant() && e.getSources().get(1).isConstant()) {
+					if (e.getSources().get(0).isConstant() && e.getSources().get(1).isConstant() && !e.getDest().isConstant()) {
 						String leftString = e.getSources().get(0).getSolution();
 						String rightString = e.getSources().get(1).getSolution();
 						String concatString = leftString.concat(rightString);
-						e.getDest().setConstant(true);
 						e.getDest().setSolution(concatString);
+						e.getDest().setConstant(true);
 						e.getDest().setLength(concatString.length());
 					}
 				}
@@ -649,13 +661,71 @@ public class PreProcessGraph {
 			pc._addDet(Comparator.GE, v.getSymbolicLength(), 1);
 			pc._addDet(Comparator.LE, v.getSymbolicLength(), MAXIMUM_LENGTH);
 		}
+		//println (g.toDot());
+		//println (currentPC.header.toString());
 		while (change) {
 			change = false;
 			for (Edge e: g.getEdges()) {
 				
-				
+				//println ("Edge: " + e);
 				if (e.allVertecisAreConstant()) {
+					//println ("all constants");
 					//Should handle all constants here
+					if (e instanceof EdgeContains) {
+						if (!e.getSource().getSolution().contains(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeNotContains) {
+						if (e.getSource().getSolution().contains(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeEndsWith) {
+						if (!e.getSource().getSolution().endsWith(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeNotEndsWith) {
+						if (e.getSource().getSolution().endsWith(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeStartsWith) {
+						if (!e.getSource().getSolution().startsWith(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeNotStartsWith) {
+						if (e.getSource().getSolution().startsWith(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeEqual) {
+						if (!e.getSource().getSolution().equals(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeNotEqual) {
+						if (e.getSource().getSolution().equals(e.getDest().getSolution())) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeSubstring1Equal) {
+						EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) e;
+						if (e.getDest().getSolution().length() + es1e.getArgument1() > e.getSource().getSolution().length()) {
+							return false;
+						}
+						if (!e.getSource().getSolution().substring(es1e.getArgument1()).equals((e.getDest().getSolution()))) {
+							return false;
+						}
+					}
+					else if (e instanceof EdgeSubstring2Equal) {
+						EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e;
+						if (es2e.getSymbolicArgument2() == null && !e.getSource().getSolution().substring(es2e.getArgument1(),es2e.getArgument2()).equals((e.getDest().getSolution()))) {
+							return false;
+						}
+					}
 					continue;
 				}
 				
@@ -664,6 +734,7 @@ public class PreProcessGraph {
 					pc._addDet(Comparator.EQ, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
 				}
 				else if (e instanceof EdgeEndsWith) {
+					//println ("EdgeEndsWith here");
 					pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
 				}
 				else if (e instanceof EdgeStartsWith) {
@@ -688,6 +759,7 @@ public class PreProcessGraph {
 						pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
 						pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), es2e.getSymbolicArgument2());
 						pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), 0);
+						pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), es2e.getArgument1());
 						//pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.a2 - es2e.a1));
 					}
 					else {
@@ -796,16 +868,19 @@ public class PreProcessGraph {
 					pc._addDet(Comparator.LT, eca.value, SymbolicStringConstraintsGeneral.MAX_CHAR);
 				}
 				else if (e instanceof EdgeContains) {
+					//println ("Here");
 					pc._addDet(Comparator.GE, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
 				}
 				else if (e instanceof EdgeReplaceCharChar) {
 					pc._addDet(Comparator.EQ, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
 				}
+				
+				
 			}
 		}
 		//println ("Done with loop");
 		
-		if (scg.isSatisfiable(pc)) {
+		if (scg.isSatisfiable(pc)) { 
 			//println ("is Sat");
 			scg.solve(pc);
 			PathCondition.flagSolved = true;
@@ -857,6 +932,25 @@ public class PreProcessGraph {
 		}
 		//println ("[preprocess] Preprocessor done");
 		return true;
+	}
+	
+	private static void forceLengthsSame (Vertex v1, Vertex v2, PathCondition pc) {
+		if (v1.constant) {
+			if (v2.constant) {
+				pc._addDet(Comparator.EQ, v1.getLength(), new IntegerConstant(v2.getLength()));
+			}
+			else {
+				pc._addDet(Comparator.EQ, v1.getLength(), v2.getSymbolicLength());
+			}
+		}
+		else {
+			if (v2.constant) {
+				pc._addDet(Comparator.EQ, v1.getSymbolicLength(), new IntegerConstant(v2.getLength()));
+			}
+			else {
+				pc._addDet(Comparator.EQ, v1.getSymbolicLength(), v2.getSymbolicLength());
+			}
+		}
 	}
 	
 	private static void println (String msg) {
