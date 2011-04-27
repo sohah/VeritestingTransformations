@@ -993,13 +993,33 @@ public class TranslateToZ3Inc {
 			BVExpr dest = getBVExpr (e.getDest());
 			int index = e.getIndex().solution();
 			if (index > -1) {
-				BVExpr lit = null;
+				/*BVExpr lit = null;
+				
 				for (int i = index; i < index + e.getDest().getLength(); i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
 					BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - (i - index)) * 8 - 1, (e.getDest().getLength() - (i - index)) * 8 - 8);
 					lit = and (lit, new BVEq(sourceTemp, destTemp));
 				}
-				result = post (lit);
+				result = post (lit);*/
+				
+				BVExpr totalLit = null;
+				for (int i = 0; i <= index - e.getDest().getLength(); i++) {
+					BVExpr lit = null;
+					for (int j = 0; j < e.getDest().getLength(); j++) {
+						int totalOffset = i + j;
+						BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - totalOffset) * 8 - 1, (e.getSource().getLength() - totalOffset) * 8 - 8);
+						BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - j) * 8 - 1, (e.getDest().getLength() - j) * 8 - 8);
+						lit = and (lit, new BVEq(sourceTemp, destTemp));
+					}
+					totalLit = and (totalLit, new BVNot(lit));
+				}
+
+				for (int i = index; i < index + e.getDest().getLength(); i++) {
+					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - (i - index)) * 8 - 1, (e.getDest().getLength() - (i - index)) * 8 - 8);
+					totalLit = and (totalLit, new BVEq(sourceTemp, destTemp));
+				}
+				result = post (totalLit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {

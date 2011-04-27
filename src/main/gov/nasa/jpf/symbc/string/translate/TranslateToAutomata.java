@@ -890,6 +890,77 @@ public class TranslateToAutomata {
 							
 							change = true;
 						}
+						else if (eio.getIndex().solution() != -1 && eio.getSource().getSolution().indexOf(eio.getDest().getSolution()) < eio.getIndex().solution()) {
+							//TODO: What if indexOf == -1?
+							//println ("'" + eio.getSource().getSolution() + "' indexof '" + eio.getDest().getSolution() + "' == " + eio.getSource().getSolution().indexOf(eio.getDest().getSolution()) +" and it should not");
+							int indexOf = eio.getSource().getSolution().indexOf(eio.getDest().getSolution());
+							if (!eio.getSource().isConstant() && !eio.getDest().isConstant()) {
+								nonequalityFlipFlop = bitArray[indexBitArray++];
+								if (nonequalityFlipFlop == false) {
+									Automaton a1 = mapAutomaton.get(eio.getSource());
+									Automaton toBeRemoved = AutomatonExtra.lengthAutomaton(indexOf).concatenate(Automaton.makeChar(eio.getDest().getSolution().charAt(0)).concatenate(AutomatonExtra.lengthAutomaton(e.getSource().getLength() - indexOf - 1)));
+									/*println (String.format ("1 '%s'", AutomatonExtra.lengthAutomaton(indexOf).getShortestExample(true)));
+									println (String.format ("2 '%s'", Automaton.makeChar(eio.getDest().getSolution().charAt(0)).getShortestExample(true)));
+									println (String.format ("3 '%s'", AutomatonExtra.lengthAutomaton(e.getSource().getLength() - indexOf - 1).getShortestExample(true)));
+									println (String.format ("ToBeRemoved '%s'", toBeRemoved.getShortestExample(true)));*/
+									Automaton temp = AutomatonExtra.minus (a1, toBeRemoved);
+									if (temp.isEmpty()) return 0;
+									if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
+									mapAutomaton.put(eio.getSource(), temp);
+									boolean propResult = propagateChange(eio.getSource(), eio.getDest());
+									if (!propResult) return 0;
+									
+								}
+								else {
+									Automaton a1 = mapAutomaton.get(eio.getDest());
+									Automaton toBeRemoved = Automaton.makeChar(eio.getSource().getSolution().charAt(indexOf)).concatenate(AutomatonExtra.lengthAutomaton(e.getDest().getLength() - 1));
+									Automaton temp = AutomatonExtra.minus (a1, toBeRemoved);
+									if (temp.isEmpty()) return 0;
+									if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
+									mapAutomaton.put(eio.getDest(), temp);
+									boolean propResult = propagateChange(eio.getDest(), eio.getSource());
+									if (!propResult) return 0;
+	
+								}
+							}
+							else if (!eio.getSource().isConstant()) { //TODO: Need to update
+								//println ("branch 2");
+								Automaton a1 = mapAutomaton.get(eio.getSource());
+								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getSource().getSolution()));
+								if (temp.isEmpty()) {
+									//println ("here 1");
+									LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+									loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
+									global_pc._addDet(loic);
+									return 0;
+								}
+								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
+								mapAutomaton.put(eio.getSource(), temp);
+								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
+								if (!propResult) {
+									//println ("here 2");
+									LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+									loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
+									global_pc._addDet(loic);
+									return 0;
+								}
+							}
+							else if (!eio.getDest().isConstant()) {
+								Automaton a1 = mapAutomaton.get(eio.getDest());
+								Automaton temp = AutomatonExtra.minus (a1, Automaton.makeString(eio.getDest().getSolution()));
+								if (temp.isEmpty()) return 0;
+								if (!eio.getDest().isConstant()) eio.getDest().setSolution(temp.getShortestExample(true));
+								mapAutomaton.put(eio.getDest(), temp);
+								boolean propResult = propagateChange(eio.getDest(), eio.getSource());
+								if (!propResult) return 0;
+							}
+							else {
+								//Everything is constant
+								return 0;
+							}
+							
+							change = true;
+						}
 					}
 					else if (e instanceof EdgeIndexOf2) {
 						EdgeIndexOf2 eio = (EdgeIndexOf2) e;
@@ -2310,7 +2381,25 @@ public class TranslateToAutomata {
 			}
 			//println ("[handleEdgeIndexOf] not empty");
 			mapAutomaton.put(e.getSource(), a1);
-			e.getSource().setSolution(a1.getShortestExample(true));
+			if (!e.getSource().isConstant()) e.getSource().setSolution(a1.getShortestExample(true));
+			println(String.format("a1 example: '%s'", a1.getShortestExample(true)));
+			
+			
+			//Remove source.substring(0, dest.length) from dest
+			/*exclude = AutomatonExtra.substring(a1, 0, e.getDest().getLength());
+			if (exclude.getShortestExample(true).length() != e.getDest().getLength()) {
+				throw new RuntimeException("assumption fail");
+			}
+			println(String.format("exclude example: '%s'", exclude.getShortestExample(true)));
+			excludeInverse = exclude.complement().intersection(AutomatonExtra.makeAnyStringFixed());
+			println(String.format("excludeInverse example: '%s'", excludeInverse.getShortestExample(true)));
+			excludeInverse = AutomatonExtra.intersection(excludeInverse, AutomatonExtra.lengthAutomaton(e.getDest().getLength()));
+			println(String.format("excludeInverse example: '%s'", excludeInverse.getShortestExample(true)));
+			println(String.format("a2 example: '%s'", a2.getShortestExample(true)));
+			a2 = AutomatonExtra.intersection(a2, excludeInverse);
+			println(String.format("a2 example: '%s'", a2.getShortestExample(true)));
+			mapAutomaton.put(e.getDest(), a2);
+			if (!e.getDest().isConstant()) e.getDest().setSolution(a2.getShortestExample(true));*/
 			
 			temp = AutomatonExtra.lengthAutomaton(index);
 			temp = temp.concatenate(a2).concatenate(AutomatonExtra.makeAnyStringFixed());
@@ -2616,7 +2705,7 @@ public class TranslateToAutomata {
 			}
 			//println ("[handleEdgeIndexOf] not empty");
 			mapAutomaton.put(e.getSource(), a1);
-			e.getSource().setSolution(a1.getShortestExample(true));
+			if (!e.getSource().isConstant()) e.getSource().setSolution(a1.getShortestExample(true));
 			
 			temp = AutomatonExtra.lengthAutomaton(index);
 			temp = temp.concatenate(Automaton.makeString(character)).concatenate(AutomatonExtra.makeAnyStringFixed());
