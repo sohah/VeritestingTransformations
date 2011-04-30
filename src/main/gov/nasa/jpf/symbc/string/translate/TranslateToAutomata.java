@@ -286,6 +286,7 @@ public class TranslateToAutomata {
 			listOfConstraints.add(0, pc.header);
 			memo.put(listOfConstraints, mapAutomaton);
 		}*/
+		
 		return true;
 	}
 	
@@ -751,7 +752,6 @@ public class TranslateToAutomata {
 					else if (e instanceof EdgeNotContains) {
 						EdgeNotContains enc = (EdgeNotContains) e;
 						if (enc.getSource().getSolution().contains(enc.getDest().getSolution())) {
-							//println (enc.getSource().getSolution() + " contains " + enc.getDest().getSolution() + " and it should not");
 							if (!enc.getSource().isConstant() && !enc.getDest().isConstant()) {
 								nonequalityFlipFlop = bitArray[indexBitArray++];
 								if (nonequalityFlipFlop == false) {

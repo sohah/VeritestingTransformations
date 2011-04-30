@@ -564,14 +564,15 @@ public class TranslateToZ3 {
 	}
 	
 	private static void handleEdgeTrim (EdgeTrimEqual e) {
-		//println ("[handleEdgeTrim] entered handleEdgeTrim " + e);
+		println ("[handleEdgeTrim] entered handleEdgeTrim " + e);
 		if (e.getSource().getLength() == e.getDest().getLength()) {
-			//println ("[handleEdgeTrim] 1. posting: " + equal(e));
+			println ("[handleEdgeTrim] 1. posting: " + equal(e));
 			post (equal(e));
 			return;
 		}
 		
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			//println ("[handleEdgeTrim] branch 1");
 			BVExpr source = getBVExpr(e.getSource());
 			BVExpr dest = getBVExpr(e.getDest());
 			
@@ -601,6 +602,7 @@ public class TranslateToZ3 {
 			
 		}
 		else if (!e.getSource().isConstant()) {
+			//println ("[handleEdgeTrim] branch 2");
 			BVExpr source = getBVExpr(e.getSource());
 			String constant = e.getDest().getSolution();
 			int diff = e.getSource().getLength() - e.getDest().getLength() + 1;
@@ -642,6 +644,7 @@ public class TranslateToZ3 {
 			post (listOfLit);
 		}
 		else if (!e.getDest().isConstant()) {
+			//println ("[handleEdgeTrim] branch 3");
 			BVExpr dest = getBVExpr(e.getDest());
 			String constant = e.getSource().getSolution().trim();
 			if (e.getDest().getLength() != constant.length()) {
@@ -1226,7 +1229,6 @@ public class TranslateToZ3 {
 	}
 	
 	private static void handleEdgeNotContains (EdgeNotContains e) {
-		//println ("handleEdgeNotContains");
 		if (e.getSource().getLength() < e.getDest().getLength()) {
 			return;
 		}
