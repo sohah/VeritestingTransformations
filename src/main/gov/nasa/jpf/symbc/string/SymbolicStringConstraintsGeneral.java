@@ -456,6 +456,7 @@ public class SymbolicStringConstraintsGeneral {
 				cancelTimer();
 				return false;
 			}
+			//println ("After preproccess");
 			//println(global_graph.toDot());
 			/* Call the string solver, it will in turn churn away until all
 			 * options are exhuasted or a satisfiable solution has turned up
@@ -576,6 +577,19 @@ public class SymbolicStringConstraintsGeneral {
 					//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
 					ss.solution = v.getSolution();
 					if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+				}
+			}
+			
+			//Enforce that solutions are their given lengths
+			for (Vertex v: global_graph.getVertices()) {
+				while (v.getSolution().length() != v.getLength()) {
+					v.setSolution(v.getSolution() + " ");
+				}
+				
+				List<StringSymbolic> represents = v.getRepresents();
+				if (represents == null) continue; 
+				for (StringSymbolic ss: represents) {
+					ss.solution = v.getSolution();
 				}
 			}
 			//}

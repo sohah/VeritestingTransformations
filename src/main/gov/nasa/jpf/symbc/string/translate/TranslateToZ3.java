@@ -564,14 +564,15 @@ public class TranslateToZ3 {
 	}
 	
 	private static void handleEdgeTrim (EdgeTrimEqual e) {
-		//println ("[handleEdgeTrim] entered handleEdgeTrim " + e);
+		println ("[handleEdgeTrim] entered handleEdgeTrim " + e);
 		if (e.getSource().getLength() == e.getDest().getLength()) {
-			//println ("[handleEdgeTrim] 1. posting: " + equal(e));
+			println ("[handleEdgeTrim] 1. posting: " + equal(e));
 			post (equal(e));
 			return;
 		}
 		
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			//println ("[handleEdgeTrim] branch 1");
 			BVExpr source = getBVExpr(e.getSource());
 			BVExpr dest = getBVExpr(e.getDest());
 			
@@ -601,6 +602,7 @@ public class TranslateToZ3 {
 			
 		}
 		else if (!e.getSource().isConstant()) {
+			//println ("[handleEdgeTrim] branch 2");
 			BVExpr source = getBVExpr(e.getSource());
 			String constant = e.getDest().getSolution();
 			int diff = e.getSource().getLength() - e.getDest().getLength() + 1;
@@ -642,6 +644,7 @@ public class TranslateToZ3 {
 			post (listOfLit);
 		}
 		else if (!e.getDest().isConstant()) {
+			//println ("[handleEdgeTrim] branch 3");
 			BVExpr dest = getBVExpr(e.getDest());
 			String constant = e.getSource().getSolution().trim();
 			if (e.getDest().getLength() != constant.length()) {
@@ -961,13 +964,26 @@ public class TranslateToZ3 {
 			BVExpr dest = getBVExpr (e.getDest());
 			int index = e.getIndex().solution();
 			if (index > -1) {
-				BVExpr lit = null;
+				//println ("branch 1.1, index: " + index);
+				BVExpr totalLit = null;
+				//println ("e.getDest().getLength(): " + e.getDest().getLength());
+				for (int i = 0; i <= index - e.getDest().getLength(); i++) {
+					BVExpr lit = null;
+					for (int j = 0; j < e.getDest().getLength(); j++) {
+						int totalOffset = i + j;
+						BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - totalOffset) * 8 - 1, (e.getSource().getLength() - totalOffset) * 8 - 8);
+						BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - j) * 8 - 1, (e.getDest().getLength() - j) * 8 - 8);
+						lit = and (lit, new BVEq(sourceTemp, destTemp));
+					}
+					totalLit = and (totalLit, new BVNot(lit));
+				}
+				//println ("totalLit: " + totalLit);
 				for (int i = index; i < index + e.getDest().getLength(); i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
 					BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - (i - index)) * 8 - 1, (e.getDest().getLength() - (i - index)) * 8 - 8);
-					lit = and (lit, new BVEq(sourceTemp, destTemp));
+					totalLit = and (totalLit, new BVEq(sourceTemp, destTemp));
 				}
-				post (lit);
+				post (totalLit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
@@ -991,7 +1007,7 @@ public class TranslateToZ3 {
 				//println ("branch 2.1");
 				BVExpr totalLit = null;
 				//Characters before should not be equal
-				for (int i = 0; i < index - destCons.length(); i++) {
+				for (int i = 0; i <= index - destCons.length(); i++) { //TODO: Double check
 					BVExpr lit = null;
 					for (int j = 0; j < destCons.length(); j++) {
 						int entireOff = i + j;
@@ -1213,7 +1229,6 @@ public class TranslateToZ3 {
 	}
 	
 	private static void handleEdgeNotContains (EdgeNotContains e) {
-		//println ("handleEdgeNotContains");
 		if (e.getSource().getLength() < e.getDest().getLength()) {
 			return;
 		}
