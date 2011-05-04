@@ -205,7 +205,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  ti.push( ei.getReferenceField(fi), fi.isReference());
 
 	  //ti.setOperandAttrNoClone(new String(Integer.toString(ei.getIntField(fi)).concat("__" + fi.getName())));
-	  ti.setOperandAttrNoClone(new String(Integer.toString(ei.getIntField(fi))));
+	  ti.setOperandAttrNoClone(new String(Integer.toString(ei.getReferenceField(fi))));
 
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
