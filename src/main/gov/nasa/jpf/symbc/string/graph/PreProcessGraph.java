@@ -90,7 +90,7 @@ public class PreProcessGraph {
 		}
 		
 		//Add equality between startswiths
-		List<Edge> edgesToAdd = new ArrayList<Edge>();
+		/*List<Edge> edgesToAdd = new ArrayList<Edge>();
 		for (Edge e1: g.getEdges()) {
 			for (Edge e2: g.getEdges()) {
 				if (e1.equals(e2)) continue;
@@ -105,7 +105,7 @@ public class PreProcessGraph {
 		}
 		for (Edge e: edgesToAdd) {
 			g.addEdge(e.getSource(), e.getDest(), e);
-		}
+		}*/
 		
 		/*
 		 * Populate with equality and merge, again, due to the previous

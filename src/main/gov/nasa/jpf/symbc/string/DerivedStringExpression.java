@@ -108,6 +108,8 @@ public class DerivedStringExpression extends StringExpression {
     switch (op) {
       case CONCAT:
         return l.concat(r);
+      case TRIM:
+    	  return right.solution();
       default:
         throw new RuntimeException(
             "## Error: BinaryStringSolution solution: l " + l + " op " + op

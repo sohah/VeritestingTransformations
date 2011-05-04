@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.string.translate;
 
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
 import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
@@ -789,10 +790,11 @@ public class TranslateToZ3Inc {
 	}
 	
 	private static BVExpr contains (Edge e) {
-		return contains (e, 0);
+		return contains (e, new IntegerConstant(0));
 	}
 	
-	private static BVExpr contains (Edge e, int startIndex) {
+	private static BVExpr contains (Edge e, IntegerExpression IEstartIndex) {
+		int startIndex = IEstartIndex.solution();
 		if (startIndex < 0) startIndex = 0;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 			//println ("contains branch 1");
@@ -816,6 +818,7 @@ public class TranslateToZ3Inc {
 			BVExpr source = getBVExpr(e.getSource());
 			String destCons = e.getDest().getSolution();
 			int diff = e.getSource().getLength() - destCons.length();
+			//println ("[contains] startIndex: " + startIndex);
 			//println ("[contains] diff: " + diff);
 			BVExpr listOfLit = null;
 			for (int i = startIndex; i <= diff; i++) {
@@ -827,6 +830,10 @@ public class TranslateToZ3Inc {
 				}
 				listOfLit = or (listOfLit, lit);
 			}
+			if (listOfLit == null) { //TODO: Could be sped up
+				//global_pc._addDet(Comparator.GE, e.getSource().getLength(), IEstartIndex);
+				return new BVFalse();
+			} 
 			return (listOfLit);
 		}
 		else if (!e.getDest().isConstant()) {
@@ -905,7 +912,7 @@ public class TranslateToZ3Inc {
 				}
 				else {
 					//println ("[handleEdgeIndexOf2] posting: " + new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
-					result = post (new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
+					result = post (new BVNot(contains(e, e.getIndex().getMinIndex())));
 				}
 			}
 		}
@@ -933,7 +940,8 @@ public class TranslateToZ3Inc {
 				}
 				else {
 					//println ("[handleEdgeIndexof2] posting: " + new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
-					result = post (new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
+					BVExpr expr= contains(e, e.getIndex().getMinIndex());
+					result = post (new BVNot(expr));
 				}
 			}
 		}
@@ -964,7 +972,7 @@ public class TranslateToZ3Inc {
 				}
 				else {
 					//println ("[handleEdgeIndexOf2] posting: " + new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
-					result = post (new BVNot(contains(e, e.getIndex().getMinIndex().solution())));
+					result = post (new BVNot(contains(e, e.getIndex().getMinIndex())));
 				}
 			}
 		}
@@ -985,13 +993,33 @@ public class TranslateToZ3Inc {
 			BVExpr dest = getBVExpr (e.getDest());
 			int index = e.getIndex().solution();
 			if (index > -1) {
-				BVExpr lit = null;
+				/*BVExpr lit = null;
+				
 				for (int i = index; i < index + e.getDest().getLength(); i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
 					BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - (i - index)) * 8 - 1, (e.getDest().getLength() - (i - index)) * 8 - 8);
 					lit = and (lit, new BVEq(sourceTemp, destTemp));
 				}
-				result = post (lit);
+				result = post (lit);*/
+				
+				BVExpr totalLit = null;
+				for (int i = 0; i <= index - e.getDest().getLength(); i++) {
+					BVExpr lit = null;
+					for (int j = 0; j < e.getDest().getLength(); j++) {
+						int totalOffset = i + j;
+						BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - totalOffset) * 8 - 1, (e.getSource().getLength() - totalOffset) * 8 - 8);
+						BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - j) * 8 - 1, (e.getDest().getLength() - j) * 8 - 8);
+						lit = and (lit, new BVEq(sourceTemp, destTemp));
+					}
+					totalLit = and (totalLit, new BVNot(lit));
+				}
+
+				for (int i = index; i < index + e.getDest().getLength(); i++) {
+					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
+					BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - (i - index)) * 8 - 1, (e.getDest().getLength() - (i - index)) * 8 - 8);
+					totalLit = and (totalLit, new BVEq(sourceTemp, destTemp));
+				}
+				result = post (totalLit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
@@ -1016,13 +1044,24 @@ public class TranslateToZ3Inc {
 			int index = e.getIndex().solution();
 			if (index > -1) {
 				//println ("[handleEdgeIndexOf] branch 2.1");
-				BVExpr lit = null;
+				BVExpr totalLit = null;
+				//Characters before should not be equal
+				for (int i = 0; i < index - destCons.length(); i++) {
+					BVExpr lit = null;
+					for (int j = 0; j < destCons.length(); j++) {
+						int entireOff = i + j;
+						BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - entireOff) * 8 - 1, (e.getSource().getLength() - entireOff) * 8 - 8);
+						BVExpr cons = new BVConst(destCons.charAt(j));
+						lit = and (lit, new BVEq (sourceTemp, cons));
+					}
+					totalLit = and(totalLit, new BVNot(lit));
+				}
 				for (int i = index; i < index + e.getDest().getLength(); i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
-					BVExpr cons = new BVConst (destCons.charAt(i - index));
-					lit = and (lit, new BVEq(sourceTemp, cons));
+					BVExpr cons = new BVConst(destCons.charAt(i - index));
+					totalLit = and (totalLit, new BVEq(sourceTemp, cons));
 				}
-				result = post (lit);
+				result = post (totalLit);
 			}
 			else {
 				//println ("[handleEdgeIndexOf] branch 2.2");
@@ -1329,8 +1368,8 @@ public class TranslateToZ3Inc {
 				BVExpr lit = null;
 				/* no other occurences of the character may come after up till second argument*/
 				/*println ("minDist: " + e.getIndex().getMinDist().solution());
-				println ("index: " + index);
-				println ("e.getSource().getLength(): " + e.getSource().getLength());*/
+				//println ("index: " + index);
+				//println ("e.getSource().getLength(): " + e.getSource().getLength());*/
 				for (int i = index+1; i < e.getIndex().getMinDist().solution() && e.getSource().getLength() - i - 1 >= 0; i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
 					BVExpr constant = new BVConst (character);

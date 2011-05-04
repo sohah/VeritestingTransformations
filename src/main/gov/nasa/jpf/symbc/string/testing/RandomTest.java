@@ -116,24 +116,25 @@ public class RandomTest {
 		//args = new String[]{ "3476996485065834879"};
 		args = new String[]{"-v", "/home/gideon/numbers"};
 		//args = new String[]{"7049847513125521827"};
+		//args = new String[]{"8911160557294150329"};
 		if (args.length == 0) {
 			System.out.println("[data]," + p);
-			for (int i = 0; i < 10000; i++) {
+			for (int i = 0; i < 100; i++) {
 				random = new Random();
 				long seed = random.nextLong();
-				long z3dur = go (p, seed, Z3_Inc);
-				long autodur = go (p, seed, Automata);
-				System.out.println("[data],\""+seed+"\","+z3dur+","+autodur);
+				Result z3dur = go (p, seed, Z3_Inc);
+				Result autodur = go (p, seed, Automata);
+				System.out.println("[data],\""+seed+"\","+z3dur.time+","+autodur.time);
 			}
 		}
 		else if (args.length == 1) {
 			long seed = Long.parseLong(args[0]);
 			random = new Random();
 			System.out.println("[RandomTest] Calling with z3");
-			long z3dur = go (p, seed, Z3_Inc);
+			Result z3dur = go (p, seed, Z3_Inc);
 			System.out.println("[RandomTest] Calling with automata");
-			long autodur = go (p, seed, Automata);
-			System.out.println("[data],\""+seed+"\","+z3dur+","+autodur);
+			Result autodur = go (p, seed, Automata);
+			System.out.println("[data],\""+seed+"\","+z3dur.time+","+autodur.time);
 		}
 		else {
 			Scanner scanner = new Scanner(new File(args[1]));
@@ -143,11 +144,23 @@ public class RandomTest {
 				random = new Random();
 				StringGraph sg = generateRandomStringGraph (p, seed);
 				System.out.println(seed + "\n" + sg.toDot());
+				random = new Random();
+				System.out.println("[RandomTest] Calling with z3");
+				Result z3dur = go (p, seed, Z3_Inc);
+				System.out.println("[RandomTest] Calling with automata");
+				Result autodur = go (p, seed, Automata);
+				System.out.print("[data]");
+				if (z3dur.time > 0 && autodur.time > 0) {
+					if (z3dur.result != autodur.result) {
+						System.out.print("[FAILURE]");
+					}
+				}
+				System.out.println(",\""+seed+"\","+z3dur.time+","+autodur.time);
 			}
 		}
 	}
 	
-	public static long go (Profile p, long seed, String Solver) {
+	public static Result go (Profile p, long seed, String Solver) {
 		StringGraph sg = generateRandomStringGraph (p, seed);
 		System.out.println(sg.toDot());
 		boolean result = PreProcessGraph.preprocess(sg, pc);
@@ -165,11 +178,11 @@ public class RandomTest {
 				SymbolicStringConstraintsGeneral.timer.schedule(new SymbolicStringTimeOut(), SymbolicStringConstraintsGeneral.TIMEOUT);
 				try {
 					System.out.println("[RandomTest] Z3 inc staring");
-					TranslateToZ3Inc.isSat(sg, pc);
+					result = TranslateToZ3Inc.isSat(sg, pc);
 					System.out.println("[RandomTest] Z3 inc done");
 				} catch (SymbolicStringTimedOutException e) {
 					SymbolicStringConstraintsGeneral.timer.cancel();
-					return -2;
+					return new Result(-2, false);
 				}
 				SymbolicStringConstraintsGeneral.timer.cancel();
 			}
@@ -180,19 +193,19 @@ public class RandomTest {
 				SymbolicStringConstraintsGeneral.timer = new Timer();
 				SymbolicStringConstraintsGeneral.timer.schedule(new SymbolicStringTimeOut(), SymbolicStringConstraintsGeneral.TIMEOUT);
 				try {
-					TranslateToAutomata.isSat(sg, pc);
+					result = TranslateToAutomata.isSat(sg, pc);
 					System.out.println("[RandomTest] Automata done");
 				} catch (SymbolicStringTimedOutException e) {
 					SymbolicStringConstraintsGeneral.timer.cancel();
-					return -2;
+					return new Result (-2, false);
 				}
 				SymbolicStringConstraintsGeneral.timer.cancel();
 			}
 			long dur = System.currentTimeMillis() - time;
 			//System.out.println("[output] " + Solver + ": " + dur);
-			return dur;
+			return new Result(dur, result);
 		}
-		return -1;
+		return new Result(-1, false);
 	}
 	
 	public static void setUpJPF () {
@@ -927,5 +940,15 @@ public class RandomTest {
 	
 	private static void println (String msg) {
 		System.out.println("[RandomTest] " + msg);
+	}
+	
+	static class Result {
+		long time;
+		boolean result;
+		
+		public Result (long time, boolean result) {
+			this.time = time;
+			this.result = result;
+		}
 	}
 }

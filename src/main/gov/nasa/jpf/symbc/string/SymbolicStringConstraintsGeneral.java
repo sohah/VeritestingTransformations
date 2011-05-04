@@ -446,6 +446,7 @@ public class SymbolicStringConstraintsGeneral {
 			
 			//Start solving
 			//println(global_graph.toDot());
+			
 			/* Preprocess the graph */
 			boolean resultOfPp = PreProcessGraph.preprocess(global_graph, pc.npc);
 			/* check if there was a timeout */
@@ -455,6 +456,7 @@ public class SymbolicStringConstraintsGeneral {
 				cancelTimer();
 				return false;
 			}
+			//println ("After preproccess");
 			//println(global_graph.toDot());
 			/* Call the string solver, it will in turn churn away until all
 			 * options are exhuasted or a satisfiable solution has turned up
@@ -556,16 +558,41 @@ public class SymbolicStringConstraintsGeneral {
 				}
 			}
 			
-			if (global_graph.getEdges().size() == 0) {
-				for (Vertex v: global_graph.getVertices()) {
-					List<StringSymbolic> represents = v.getRepresents();
-					for (StringSymbolic ss: represents) {
-						//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
-						ss.solution = v.getSolution();
-						if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+			//if (global_graph.getEdges().size() == 0) {
+			for (Vertex v: global_graph.getVertices()) {
+				boolean inEdge = false;
+				for (Edge e: global_graph.getEdges()) {
+					if (e.isHyper() && (e.getSources().get(0).equals (v) || e.getSources().get(1).equals (v) || e.getDest().equals(v))) {
+						inEdge = true;
+					}
+					else if (!e.isHyper() && (e.getSource().equals (v) || e.getDest().equals(v))) {
+						inEdge = true;
 					}
 				}
+				if (inEdge) {
+					continue;
+				}
+				List<StringSymbolic> represents = v.getRepresents();
+				for (StringSymbolic ss: represents) {
+					//println ("[isSatisfiable] Setting " + ss.getName() + " to '" + v.getSolution() + "'");
+					ss.solution = v.getSolution();
+					if (!setOfSolution.contains(ss)) setOfSolution.add(ss);
+				}
 			}
+			
+			//Enforce that solutions are their given lengths
+			for (Vertex v: global_graph.getVertices()) {
+				while (v.getSolution().length() != v.getLength()) {
+					v.setSolution(v.getSolution() + " ");
+				}
+				
+				List<StringSymbolic> represents = v.getRepresents();
+				if (represents == null) continue; 
+				for (StringSymbolic ss: represents) {
+					ss.solution = v.getSolution();
+				}
+			}
+			//}
 			StringPathCondition.flagSolved = true;
 			//println ("StringPC: " + getSolution());
 			cancelTimer();
