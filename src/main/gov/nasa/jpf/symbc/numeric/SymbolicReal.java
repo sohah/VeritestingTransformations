@@ -19,6 +19,8 @@
 
 package gov.nasa.jpf.symbc.numeric;
 
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+
 import java.util.Map;
 import java.util.Random;
 
@@ -98,7 +100,8 @@ public class SymbolicReal extends RealExpression {
 
 	public double solution() {
 		if (PathCondition.flagSolved) {
-			if (solution == UNDEFINED) {
+			if (solution == UNDEFINED && SymbolicInstructionFactory.concolicMode) {
+				// return a random value in concolic mode; note that if the solution happens to be exactly the value of UNDEFINED, then there is a bug
 				double d;
 				d = new Random().nextDouble();
 				if(d < 0.5)

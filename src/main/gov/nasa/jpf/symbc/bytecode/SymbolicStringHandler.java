@@ -33,19 +33,14 @@ TERMINATION OF THIS AGREEMENT. */
 
 package gov.nasa.jpf.symbc.bytecode;
 
-import java.math.BigDecimal;
 
-import javax.management.RuntimeErrorException;
 
 import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.Fields;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.NoClassInfoException;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
@@ -56,14 +51,10 @@ import gov.nasa.jpf.symbc.mixednumstrg.SpecialRealExpression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.Expression;
-import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
-import gov.nasa.jpf.symbc.numeric.Operator;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
-import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
-import org.apache.bcel.Constants;
 
 import gov.nasa.jpf.symbc.string.*;
 import gov.nasa.jpf.symbc.mixednumstrg.*;

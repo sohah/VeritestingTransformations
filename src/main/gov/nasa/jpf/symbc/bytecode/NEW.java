@@ -35,7 +35,6 @@ import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
 
 // TODO: to review
 
-import org.apache.bcel.classfile.ConstantPool;
 
 
 /**
@@ -43,7 +42,9 @@ import org.apache.bcel.classfile.ConstantPool;
  * ... => ..., objectref
  */
 public class NEW extends gov.nasa.jpf.jvm.bytecode.NEW {
-
+	public NEW (String clsName) {
+	    super(clsName);
+	  }
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 	  Heap da = ti.getHeap();

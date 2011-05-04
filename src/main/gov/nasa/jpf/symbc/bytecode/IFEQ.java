@@ -32,7 +32,9 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 // we should factor out some of the code and put it in a parent class for all "if statements"
 
 public class IFEQ extends gov.nasa.jpf.jvm.bytecode.IFEQ {
-
+	public IFEQ(int targetPosition){
+	    super(targetPosition);
+	  }
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 

@@ -31,6 +31,9 @@ import gov.nasa.jpf.jvm.bytecode.Instruction;
  * ..., objectref, [arg1, [arg2 ...]] => ...
  */
 public class INVOKESPECIAL extends gov.nasa.jpf.jvm.bytecode.INVOKESPECIAL {
+	public INVOKESPECIAL(String clsName, String methodName, String methodSignature) {
+	    super(clsName, methodName, methodSignature);
+	  }
 	@Override
 	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
 

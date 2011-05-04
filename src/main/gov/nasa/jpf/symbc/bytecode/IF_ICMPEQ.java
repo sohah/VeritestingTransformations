@@ -26,10 +26,13 @@ import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import gov.nasa.jpf.symbc.numeric.*;
 
+
 //we should factor out some of the code and put it in a parent class for all "if statements"
 
 public class IF_ICMPEQ extends gov.nasa.jpf.jvm.bytecode.IF_ICMPEQ{
-
+	public IF_ICMPEQ(int targetPosition){
+	    super(targetPosition);
+	  }
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 

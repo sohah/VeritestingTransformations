@@ -26,6 +26,9 @@ import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
+	public INVOKEVIRTUAL(String clsName, String methodName, String methodSignature) {
+	    super(clsName, methodName, methodSignature);
+	  }
 	@Override
 	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
 

@@ -20,114 +20,440 @@
 package gov.nasa.jpf.symbc;
 
 import gov.nasa.jpf.Config;
-import gov.nasa.jpf.JPFException;
-import gov.nasa.jpf.jvm.DefaultInstructionFactory;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
+import gov.nasa.jpf.symbc.bytecode.*;
 import gov.nasa.jpf.symbc.numeric.MinMax;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco;
 import gov.nasa.jpf.util.InstructionFactoryFilter;
 
-/*
- * Refactored version to use the DefaultInstructionFactory -- neha
- */
-public class SymbolicInstructionFactory extends DefaultInstructionFactory {
-	 static Class<? extends Instruction>[] insnClass;
 
-	  static {
-	    insnClass = createInsnClassArray(260);
+public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.InstructionFactory {
+	  @Override
+	  public ALOAD aload(int localVarIndex) {
+	    return new ALOAD(localVarIndex);
+	  }
 
-	    insnClass[ALOAD_0]         = gov.nasa.jpf.symbc.bytecode.ALOAD.class;
-	    insnClass[ALOAD_1]         = gov.nasa.jpf.symbc.bytecode.ALOAD.class;
-	    insnClass[ALOAD_2]         = gov.nasa.jpf.symbc.bytecode.ALOAD.class;
-	    insnClass[ALOAD_3]         = gov.nasa.jpf.symbc.bytecode.ALOAD.class;
-	    insnClass[IADD] = gov.nasa.jpf.symbc.bytecode.IADD.class;
-	    insnClass[IAND] = gov.nasa.jpf.symbc.bytecode.IAND.class;
-	    insnClass[IINC] = gov.nasa.jpf.symbc.bytecode.IINC.class;
-	    insnClass[ISUB] = gov.nasa.jpf.symbc.bytecode.ISUB.class;
-	    insnClass[IMUL] = gov.nasa.jpf.symbc.bytecode.IMUL.class;
-	    insnClass[INEG] = gov.nasa.jpf.symbc.bytecode.INEG.class;
-	    insnClass[IFLE] = gov.nasa.jpf.symbc.bytecode.IFLE.class;
-	    insnClass[IFLT] = gov.nasa.jpf.symbc.bytecode.IFLT.class;
-	    insnClass[IFGE] = gov.nasa.jpf.symbc.bytecode.IFGE.class;
-	    insnClass[IFGT] = gov.nasa.jpf.symbc.bytecode.IFGT.class;
-	    insnClass[IFEQ] = gov.nasa.jpf.symbc.bytecode.IFEQ.class;
-	    insnClass[IFNE] = gov.nasa.jpf.symbc.bytecode.IFNE.class;
-	    insnClass[INVOKESTATIC] = gov.nasa.jpf.symbc.bytecode.INVOKESTATIC.class;
-	    insnClass[INVOKEVIRTUAL] = gov.nasa.jpf.symbc.bytecode.INVOKEVIRTUAL.class;
-	    insnClass[IF_ICMPGE] = gov.nasa.jpf.symbc.bytecode.IF_ICMPGE.class;
-	    insnClass[IF_ICMPGT] = gov.nasa.jpf.symbc.bytecode.IF_ICMPGT.class;
-	    insnClass[IF_ICMPLE] = gov.nasa.jpf.symbc.bytecode.IF_ICMPLE.class;
-	    insnClass[IF_ICMPLT] = gov.nasa.jpf.symbc.bytecode.IF_ICMPLT.class;
-	    insnClass[IDIV] = gov.nasa.jpf.symbc.bytecode.IDIV.class;
-	    insnClass[ISHL] = gov.nasa.jpf.symbc.bytecode.ISHL.class;
-	    insnClass[ISHR] = gov.nasa.jpf.symbc.bytecode.ISHR.class;
-	    insnClass[IUSHR] = gov.nasa.jpf.symbc.bytecode.IUSHR.class;
-	    insnClass[IXOR] = gov.nasa.jpf.symbc.bytecode.IXOR.class;
-	    insnClass[IOR] = gov.nasa.jpf.symbc.bytecode.IOR.class;
-	    insnClass[IREM] = gov.nasa.jpf.symbc.bytecode.IREM.class;
-	    insnClass[IF_ICMPEQ] = gov.nasa.jpf.symbc.bytecode.IF_ICMPEQ.class;
-	    insnClass[IF_ICMPNE] = gov.nasa.jpf.symbc.bytecode.IF_ICMPNE.class;
-	    insnClass[INVOKESPECIAL] = gov.nasa.jpf.symbc.bytecode.INVOKESPECIAL.class;
-	    insnClass[FADD] = gov.nasa.jpf.symbc.bytecode.FADD.class;
-	    insnClass[FDIV] = gov.nasa.jpf.symbc.bytecode.FDIV.class;
-	    insnClass[FMUL] = gov.nasa.jpf.symbc.bytecode.FMUL.class;
-	    insnClass[FNEG] = gov.nasa.jpf.symbc.bytecode.FNEG.class;
-	    insnClass[FREM] = gov.nasa.jpf.symbc.bytecode.FREM.class;
-	    insnClass[FSUB] = gov.nasa.jpf.symbc.bytecode.FSUB.class;
-	    insnClass[FCMPG] = gov.nasa.jpf.symbc.bytecode.FCMPG.class;
-	    insnClass[FCMPL] = gov.nasa.jpf.symbc.bytecode.FCMPL.class;
-	    insnClass[DADD] = gov.nasa.jpf.symbc.bytecode.DADD.class;
-	    insnClass[DCMPG] = gov.nasa.jpf.symbc.bytecode.DCMPG.class;
-	    insnClass[DCMPL] = gov.nasa.jpf.symbc.bytecode.DCMPL.class;
-	    insnClass[DDIV] = gov.nasa.jpf.symbc.bytecode.DDIV.class;
-	    insnClass[DMUL] = gov.nasa.jpf.symbc.bytecode.DMUL.class;
-	    insnClass[DNEG] = gov.nasa.jpf.symbc.bytecode.DNEG.class;
-	    insnClass[DREM] = gov.nasa.jpf.symbc.bytecode.DREM.class;
-	    insnClass[DSUB] = gov.nasa.jpf.symbc.bytecode.DSUB.class;
-	    insnClass[LADD] = gov.nasa.jpf.symbc.bytecode.LADD.class;
-	    insnClass[LAND] = gov.nasa.jpf.symbc.bytecode.LAND.class;
-	    insnClass[LCMP] = gov.nasa.jpf.symbc.bytecode.LCMP.class;
-	    insnClass[LDIV] = gov.nasa.jpf.symbc.bytecode.LDIV.class;
-	    insnClass[LMUL] = gov.nasa.jpf.symbc.bytecode.LMUL.class;
-	    insnClass[LNEG] = gov.nasa.jpf.symbc.bytecode.LNEG.class;
-	    insnClass[LOR] = gov.nasa.jpf.symbc.bytecode.LOR.class;
-	    insnClass[LREM] = gov.nasa.jpf.symbc.bytecode.LREM.class;
-	    insnClass[LSHL] = gov.nasa.jpf.symbc.bytecode.LSHL.class;
-	    insnClass[LSHR] = gov.nasa.jpf.symbc.bytecode.LSHR.class;
-	    insnClass[LSUB] = gov.nasa.jpf.symbc.bytecode.LSUB.class;
-	    insnClass[LUSHR] = gov.nasa.jpf.symbc.bytecode.LUSHR.class;
-	    insnClass[LXOR] = gov.nasa.jpf.symbc.bytecode.LXOR.class;
-		insnClass[I2D] = gov.nasa.jpf.symbc.bytecode.I2D.class;
-		insnClass[D2I] = gov.nasa.jpf.symbc.bytecode.D2I.class;
-		insnClass[D2L] = gov.nasa.jpf.symbc.bytecode.D2L.class;
-		insnClass[I2F] = gov.nasa.jpf.symbc.bytecode.I2F.class;
-		insnClass[L2D] = gov.nasa.jpf.symbc.bytecode.L2D.class;
-		insnClass[L2F] = gov.nasa.jpf.symbc.bytecode.L2F.class;
-		insnClass[F2L] = gov.nasa.jpf.symbc.bytecode.F2L.class;
-		insnClass[F2I] = gov.nasa.jpf.symbc.bytecode.F2I.class;
-		insnClass[LOOKUPSWITCH] = gov.nasa.jpf.symbc.bytecode.LOOKUPSWITCH.class;
-		insnClass[TABLESWITCH] = gov.nasa.jpf.symbc.bytecode.TABLESWITCH.class;
-		insnClass[D2F] = gov.nasa.jpf.symbc.bytecode.D2F.class;
-		insnClass[F2D] = gov.nasa.jpf.symbc.bytecode.F2D.class;
-		insnClass[I2B] = gov.nasa.jpf.symbc.bytecode.I2B.class;
-		insnClass[I2C] = gov.nasa.jpf.symbc.bytecode.I2C.class;
-		insnClass[I2S] = gov.nasa.jpf.symbc.bytecode.I2S.class;
-		insnClass[I2L] = gov.nasa.jpf.symbc.bytecode.I2L.class;
-		insnClass[L2I] = gov.nasa.jpf.symbc.bytecode.IADD.class;
-		insnClass[GETFIELD] = gov.nasa.jpf.symbc.bytecode.GETFIELD.class;
-		insnClass[GETSTATIC] = gov.nasa.jpf.symbc.bytecode.GETSTATIC.class;
+
+	  @Override
+	  public ALOAD aload_0() {
+	    return new ALOAD(0);
+	  }
+
+	  @Override
+	  public ALOAD aload_1() {
+	    return new ALOAD(1);
+	  }
+
+	  @Override
+	  public ALOAD aload_2() {
+	    return new ALOAD(2);
+	  }
+
+	  @Override
+	  public ALOAD aload_3() {
+	    return new ALOAD(3);
+	  }
+
+	  @Override
+	  public IADD iadd() {
+	    return new IADD();
+	  }
+
+	  @Override
+	  public IAND iand() {
+	    return new IAND();
+	  }
+
+	  @Override
+	  public IINC iinc(int localVarIndex, int incConstant) {
+		    return new IINC(localVarIndex, incConstant);
+	  }
+
+	  @Override
+	  public ISUB isub() {
+	    return new ISUB();
+	  }
+
+	  @Override
+	  public IMUL imul() {
+	    return new IMUL();
+	  }
+
+	  @Override
+	  public INEG ineg() {
+	    return new INEG();
+	  }
+
+	  @Override
+	  public IFLE ifle(int targetPc) {
+	    return new IFLE(targetPc);
+	  }
+
+	  @Override
+	  public IFLT iflt(int targetPc) {
+	    return new IFLT(targetPc);
+	  }
+
+	  @Override
+	  public IFGE ifge(int targetPc) {
+	    return new IFGE(targetPc);
+	  }
+
+	  @Override
+	  public IFGT ifgt(int targetPc) {
+	    return new IFGT(targetPc);
+	  }
+
+	  @Override
+	  public IFEQ ifeq(int targetPc) {
+	    return new IFEQ(targetPc);
+	  }
+
+	  @Override
+	  public IFNE ifne(int targetPc) {
+	    return new IFNE(targetPc);
+	  }
+
+	  @Override
+	  public INVOKESTATIC invokestatic(String clsName, String methodName, String methodSignature) {
+	    return new INVOKESTATIC(clsName, methodName, methodSignature);
+	  }
+
+	  @Override
+	  public INVOKEVIRTUAL invokevirtual(String clsName, String methodName, String methodSignature) {
+		    return new INVOKEVIRTUAL(clsName, methodName, methodSignature);
+	  }
+
+	  @Override
+	  public INVOKESPECIAL invokespecial(String clsName, String methodName, String methodSignature) {
+		    return new INVOKESPECIAL(clsName, methodName, methodSignature);
+	  }
+
+	  @Override
+	  public IF_ICMPGE if_icmpge(int targetPc) {
+		    return new IF_ICMPGE(targetPc);
+	  }
+
+	  @Override
+	  public IF_ICMPGT if_icmpgt(int targetPc) {
+		    return new IF_ICMPGT(targetPc);
+	  }
+
+	  @Override
+	  public IF_ICMPLE if_icmple(int targetPc) {
+		    return new IF_ICMPLE(targetPc);
+	  }
+
+	  @Override
+	  public IF_ICMPLT if_icmplt(int targetPc) {
+		    return new IF_ICMPLT(targetPc);
+	  }
+
+	  @Override
+	  public IDIV idiv() {
+	    return new IDIV();
+	  }
+
+	  @Override
+	  public ISHL ishl() {
+	    return new ISHL();
+	  }
+
+	  @Override
+	  public ISHR ishr() {
+	    return new ISHR();
+	  }
+
+	  @Override
+	  public IUSHR iushr() {
+	    return new IUSHR();
+	  }
+
+	  @Override
+	  public IXOR ixor() {
+	    return new IXOR();
+	  }
+
+	  @Override
+	  public IOR ior() {
+	    return new IOR();
+	  }
+
+	  @Override
+	  public IREM irem() {
+	    return new IREM();
+	  }
+
+	  @Override
+	  public IF_ICMPEQ if_icmpeq(int targetPc) {
+		    return new IF_ICMPEQ(targetPc);
+	  }
+
+	  @Override
+	  public IF_ICMPNE if_icmpne(int targetPc) {
+		    return new IF_ICMPNE(targetPc);
+	  }
+
+
+	  @Override
+	  public FADD fadd() {
+	    return new FADD();
+	  }
+
+	  @Override
+	  public FDIV fdiv() {
+	    return new FDIV();
+	  }
+
+	  @Override
+	  public FMUL fmul() {
+	    return new FMUL();
+	  }
+
+	  @Override
+	  public FNEG fneg() {
+	    return new FNEG();
+	  }
+
+	  @Override
+	  public FREM frem() {
+	    return new FREM();
+	  }
+
+	  @Override
+	  public FSUB fsub() {
+	    return new FSUB();
+	  }
+
+	  @Override
+	  public FCMPG fcmpg() {
+	    return new FCMPG();
+	  }
+
+	  @Override
+	  public FCMPL fcmpl() {
+		    return new FCMPL();
+		  }
+
+	  @Override
+	  public DADD dadd() {
+		    return new DADD();
+		  }
+
+	  @Override
+	  public DCMPG dcmpg() {
+		    return new DCMPG();
+		  }
+
+	  @Override
+	  public DCMPL dcmpl() {
+		    return new DCMPL();
+		  }
+
+	  @Override
+	  public DDIV ddiv() {
+		    return new DDIV();
+		  }
+
+	  @Override
+	  public DMUL dmul() {
+		    return new DMUL();
+		  }
+
+	  @Override
+	  public DNEG dneg() {
+		    return new DNEG();
+		  }
+
+	  @Override
+	  public DREM drem() {
+		    return new DREM();
+		  }
+
+	  @Override
+	  public DSUB dsub() {
+		    return new DSUB();
+		  }
+
+	  @Override
+	  public LADD ladd() {
+		    return new LADD();
+		  }
+
+	  @Override
+	  public LAND land() {
+		    return new LAND();
+		  }
+
+	  @Override
+	  public LCMP lcmp() {
+		    return new LCMP();
+		  }
+
+	  @Override
+	  public LDIV ldiv() {
+		    return new LDIV();
+		  }
+
+	  @Override
+	  public LMUL lmul() {
+		    return new LMUL();
+		  }
+
+	  @Override
+	  public LNEG lneg() {
+		    return new LNEG();
+		  }
+
+	  @Override
+	  public LOR lor() {
+		    return new LOR();
+		  }
+
+	  @Override
+	  public LREM lrem() {
+		    return new LREM();
+		  }
+
+	  @Override
+	  public LSHL lshl() {
+		    return new LSHL();
+		  }
+
+	  @Override
+	  public LSHR lshr() {
+		    return new LSHR();
+		  }
+
+	  @Override
+	  public LSUB lsub() {
+		    return new LSUB();
+		  }
+
+	  @Override
+	  public LUSHR lushr() {
+		    return new LUSHR();
+		  }
+
+	  @Override
+	  public LXOR lxor() {
+		    return new LXOR();
+		  }
+
+	  @Override
+	  public I2D i2d() {
+		    return new I2D();
+		  }
+
+	  @Override
+	  public D2I d2i() {
+		    return new D2I();
+		  }
+
+	  @Override
+	  public D2L d2l() {
+		    return new D2L();
+		  }
+
+	  @Override
+	  public I2F i2f() {
+		    return new I2F();
+		  }
+
+	  @Override
+	  public L2D l2d() {
+		    return new L2D();
+		  }
+
+	  @Override
+	  public L2F l2f() {
+		    return new L2F();
+		  }
+
+	  @Override
+	  public F2L f2l() {
+		    return new F2L();
+		  }
+
+	  @Override
+	  public F2I f2i() {
+		    return new F2I();
+		  }
+
+	  @Override
+	  public LOOKUPSWITCH lookupswitch(int defaultTargetPc, int nEntries) {
+		    return new LOOKUPSWITCH(defaultTargetPc, nEntries);
+		  }
+
+	  @Override
+	  public TABLESWITCH tableswitch(int defaultTargetPc, int low, int high) {
+		    return new TABLESWITCH(defaultTargetPc, low, high);
+		  }
+
+	  @Override
+	  public D2F d2f() {
+		    return new D2F();
+		  }
+
+	  @Override
+	  public F2D f2d() {
+		    return new F2D();
+		  }
+
+	  @Override
+	  public I2B i2b() {
+		    return new I2B();
+		  }
+
+	  @Override
+	  public I2C i2c() {
+		    return new I2C();
+		  }
+
+	  @Override
+	  public I2S i2s() {
+		    return new I2S();
+		  }
+
+	  @Override
+	  public I2L i2l() {
+		    return new I2L();
+		  }
+
+	  @Override
+	  public L2I l2i() {
+		    return new L2I();
+		  }
+
+	  @Override
+	  public GETFIELD getfield(String fieldName, String clsName, String fieldDescriptor){
+		    return new GETFIELD(fieldName, clsName, fieldDescriptor);
+		  }
+	  @Override
+	  public GETSTATIC getstatic(String fieldName, String clsName, String fieldDescriptor){
+		    return new GETSTATIC(fieldName, clsName, fieldDescriptor);
+		  }
+
 		//TODO: to review
         //From Fujitsu:
-		insnClass[NEW] = gov.nasa.jpf.symbc.bytecode.NEW.class;
-		insnClass[IFNULL] = gov.nasa.jpf.symbc.bytecode.IFNULL.class;
-		insnClass[IFNONNULL] = gov.nasa.jpf.symbc.bytecode.IFNONNULL.class;
-		// IMPORTANT: if any new bytecodes are added make sure to update the
-		// length of the array which is at the top of the function
-	  };
+
+	  @Override
+	  public NEW new_(String clsName) {
+		    return new NEW(clsName);
+		  }
+	  @Override
+	  public IFNONNULL ifnonnull(int targetPc) {
+		    return new IFNONNULL(targetPc);
+		  }
+	  @Override
+	  public IFNULL ifnull(int targetPc) {
+		    return new IFNULL(targetPc);
+		  }
+
+
+
+
 
 	static public String[] dp;
 
@@ -152,28 +478,7 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 	static public boolean heuristicPartitionMode;
 	static public int MaxTries = 1;
 
-	//bytecodes replaced by our symbolic implementation
-	/** This is not needed anymore with the new implementation --neha
-	    static final String[] BC_NAMES = {
-		"IADD", "IAND", "IINC", "ISUB","IMUL","INEG",
-		"IFLE","IFLT","IFGE","IFGT","IFEQ","IFNE",
-		"INVOKESTATIC","INVOKEVIRTUAL",
-		"IF_ICMPGE","IF_ICMPGT","IF_ICMPLE","IF_ICMPLT",
-		"IDIV", "IXOR", "IOR", "IREM", "IF_ICMPEQ", "IF_ICMPNE","INVOKESPECIAL",
-		"FADD", "FDIV", "FMUL", "FNEG","FREM", "FSUB", "FCMPG", "FCMPL",
-        "DADD", "DCMPG", "DCMPL", "DDIV", "DMUL", "DNEG", "DREM", "DSUB",
-        "LADD", "LAND", "LCMP", "LDIV", "LMUL", "LNEG", "LOR", "LREM",
-        "LSHL", "LSHR", "LSUB", "LUSHR", "LXOR",
-        "I2D" , "D2I" , "D2L", "I2F" , "L2D", "L2F" , "F2L" , "F2I",
-        "LOOKUPSWITCH", "TABLESWITCH",
-        "D2F", "F2D", "I2B", "I2C", "I2S", "I2L", "L2I"
-        , "GETFIELD", "GETSTATIC"
-        //TODO: to review
-        //From Fujitsu:
-        , "NEW", "IFNULL", "IFNONNULL"
-	};**/
-
-
+//TODO: check
 	InstructionFactoryFilter filter = new InstructionFactoryFilter(null, new String[] {/*"java.*",*/ "javax.*" },
 			null, null);
 
@@ -264,32 +569,17 @@ public class SymbolicInstructionFactory extends DefaultInstructionFactory {
 		if (dontcare != null && dontcare[0] != null) {
 			SymbolicInteger.UNDEFINED = new Integer(dontcare[0]);
 			SymbolicReal.UNDEFINED = new Double(dontcare[0]);
-
+		}
 		System.out.println("symbolic.minint="+MinMax.MININT);
 		System.out.println("symbolic.maxint="+MinMax.MAXINT);
 		System.out.println("symbolic.minreal="+MinMax.MINDOUBLE);
 		System.out.println("symbolic.maxreal="+MinMax.MAXDOUBLE);
 		System.out.println("symbolic.undefined="+SymbolicInteger.UNDEFINED);
-		}
+		if((SymbolicInteger.UNDEFINED >= MinMax.MININT && SymbolicInteger.UNDEFINED <= MinMax.MAXINT) &&
+			(SymbolicInteger.UNDEFINED >= MinMax.MINDOUBLE && SymbolicInteger.UNDEFINED <= MinMax.MAXDOUBLE))
+			System.err.println("Warning: undefined value should be outside  min..max ranges");
+
 	}
 
-	public Instruction create(ClassInfo ciMth, int opCode) {
 
-	    if (opCode < insnClass.length){
-	      Class<?> cls = insnClass[opCode];
-	      if (cls != null && filter.isInstrumentedClass(ciMth)) {
-	        try {
-	          Instruction insn = (Instruction) cls.newInstance();
-	          return insn;
-
-	        } catch (Throwable e) {
-	          throw new JPFException("creation of symbc Instruction object for opCode "
-	                  + opCode + " failed: " + e);
-	        }
-	      }
-	    }
-
-	    // use default instruction classes
-	    return super.create(ciMth, opCode);
-	  }
 }

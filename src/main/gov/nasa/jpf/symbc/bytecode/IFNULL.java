@@ -29,7 +29,9 @@ import gov.nasa.jpf.symbc.numeric.Expression;
 //TODO: to review: approximation
 
 public class IFNULL extends gov.nasa.jpf.jvm.bytecode.IFNULL {
-		
+	public IFNULL (int targetPc) {
+	    super(targetPc);
+	  }
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 

@@ -28,7 +28,9 @@ import gov.nasa.jpf.symbc.numeric.*;
 //we should factor out some of the code and put it in a parent class for all "if statements"
 
 public class IF_ICMPNE extends gov.nasa.jpf.jvm.bytecode.IF_ICMPNE{
-
+	public IF_ICMPNE(int targetPosition){
+	    super(targetPosition);
+	  }
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 

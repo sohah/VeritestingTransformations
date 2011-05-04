@@ -28,7 +28,9 @@ import gov.nasa.jpf.symbc.numeric.*;
 //we should factor out some of the code and put it in a parent class for all "if statements"
 
 public class IF_ICMPLE extends gov.nasa.jpf.jvm.bytecode.IF_ICMPLE{
-
+	public IF_ICMPLE(int targetPosition){
+	    super(targetPosition);
+	  }
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 

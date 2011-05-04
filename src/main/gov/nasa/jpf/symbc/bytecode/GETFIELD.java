@@ -43,6 +43,9 @@ import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
 import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 
 public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
+	public GETFIELD(String fieldName, String clsName, String fieldDescriptor){
+	    super(fieldName, clsName, fieldDescriptor);
+	  }
 
   private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
   private int numSymRefs = 0; // # of prev. initialized objects
@@ -230,7 +233,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
 	  ei.setReferenceField(fi,daIndex );
 	  ei.setFieldAttr(fi, null);
-	  
+
 	  ti.push(ei.getReferenceField(fi), fi.isReference());
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);

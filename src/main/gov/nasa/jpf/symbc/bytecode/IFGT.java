@@ -33,7 +33,9 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 // we should factor out some of the code and put it in a parent class for all "if statements"
 
 public class IFGT extends gov.nasa.jpf.jvm.bytecode.IFGT {
-
+	public IFGT(int targetPosition){
+	    super(targetPosition);
+	  }
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 

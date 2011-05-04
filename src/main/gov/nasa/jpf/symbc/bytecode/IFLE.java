@@ -31,6 +31,10 @@ import gov.nasa.jpf.symbc.numeric.*;
 
 public class IFLE extends gov.nasa.jpf.jvm.bytecode.IFLE {
 
+	public IFLE(int targetPosition){
+	    super(targetPosition);
+	  }
+
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 

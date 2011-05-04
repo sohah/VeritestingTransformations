@@ -28,7 +28,9 @@ import gov.nasa.jpf.symbc.numeric.Expression;
 // TODO: to review: approximation
 
 public class IFNONNULL extends gov.nasa.jpf.jvm.bytecode.IFNONNULL {
-		
+	public IFNONNULL (int targetPc) {
+	    super(targetPc);
+	  }
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 
@@ -38,7 +40,7 @@ public class IFNONNULL extends gov.nasa.jpf.jvm.bytecode.IFNONNULL {
 			//System.out.println("Execute IFEQ: The condition is concrete");
 			return super.execute(ss, ks, ti);
 		}
-		else { 
+		else {
 			ti.pop();
 			return getTarget();
 		}

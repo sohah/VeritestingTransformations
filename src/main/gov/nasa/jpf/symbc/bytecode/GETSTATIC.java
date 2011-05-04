@@ -42,7 +42,9 @@ import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
 import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
-
+	public GETSTATIC(String fieldName, String clsName, String fieldDescriptor){
+	    super(fieldName, clsName, fieldDescriptor);
+	  }
 
 
 	private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
@@ -51,7 +53,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	ChoiceGenerator<?> prevHeapCG;
 	 boolean abstractClass = false;
 
-	
+
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 		Config conf = ti.getVM().getConfig();
@@ -61,13 +63,13 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 		//neha: check whether the subtypes from polymorphism need to added
 		// when instantiating "new" objects during lazy-initialization.
-		// the configuration allows to consider all subtypes during the 
+		// the configuration allows to consider all subtypes during the
 		// instantiation. In aliasing all subtypes are considered by default.
-		
+
 		String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
-		if(!subtypes.equals("false") && 
+		if(!subtypes.equals("false") &&
 				TypeHierarchy.typeHierarchies == null) {
-			TypeHierarchy.buildTypeHierarchy(ti);	
+			TypeHierarchy.buildTypeHierarchy(ti);
 		}
 
 		FieldInfo fi = getFieldInfo();
@@ -81,14 +83,14 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		//	    if (!mi.isClinit(ci) && requiresClinitCalls(ti, ci))
 		//			  return ti.getPC();
 		// end: not sure if this code should stay here
-	
+
 		ElementInfo ei = ks.statics.get(ci.getName());
-	
+
 		//end GETSTATIC code from super
-	
+
 		Object attr = ei.getFieldAttr(fi);
-	
-	
+
+
 		if (!(fi.isReference() && attr != null && attr != Helper.SymbolicNull))
 			return super.execute(ss,ks,ti);
 
@@ -191,7 +193,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
 			  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
 					  		symInputHeap, numSymRefs, prevSymRefs);
-		  } else { 
+		  } else {
 			  int counter;
 			  if(abstractClass) {
 					counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
@@ -202,7 +204,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			  daIndex = Helper.addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap,
 					  		symInputHeap, numSymRefs, prevSymRefs);
 		  }
-			
+
 
 		ei.setReferenceField(fi,daIndex );
 		ei.setFieldAttr(fi, Helper.SymbolicNull); // was null

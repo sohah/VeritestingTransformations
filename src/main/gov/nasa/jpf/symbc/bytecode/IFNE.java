@@ -32,7 +32,9 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 // we should factor out some of the code and put it in a parent class for all "if statements"
 
 public class IFNE extends gov.nasa.jpf.jvm.bytecode.IFNE {
-
+	public IFNE(int targetPosition){
+	    super(targetPosition);
+	  }
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
 
