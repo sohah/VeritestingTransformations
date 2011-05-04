@@ -40,7 +40,8 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
-import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
+//import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
+
 public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	public GETSTATIC(String fieldName, String clsName, String fieldDescriptor){
 	    super(fieldName, clsName, fieldDescriptor);
@@ -65,12 +66,12 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		// when instantiating "new" objects during lazy-initialization.
 		// the configuration allows to consider all subtypes during the
 		// instantiation. In aliasing all subtypes are considered by default.
-
-		String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
-		if(!subtypes.equals("false") &&
-				TypeHierarchy.typeHierarchies == null) {
-			TypeHierarchy.buildTypeHierarchy(ti);
-		}
+//TODO: fix
+//		String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
+//		if(!subtypes.equals("false") &&
+//				TypeHierarchy.typeHierarchies == null) {
+//			TypeHierarchy.buildTypeHierarchy(ti);
+//		}
 
 		FieldInfo fi = getFieldInfo();
 		if (fi == null) {
@@ -144,14 +145,15 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 				abstractClass = true;
 				increment = 1; // only null
 			}
-			if(!subtypes.equals("false")) {
-				// get the number of subtypes that exist, and add the number in
-				// the choice generator in addition to the ones that were there
-				numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
-				heapCG = new HeapChoiceGenerator(numSymRefs+increment+numNewRefs); // +null,new
-			} else {
+			// TODO: fix
+//			if(!subtypes.equals("false")) {
+//				// get the number of subtypes that exist, and add the number in
+//				// the choice generator in addition to the ones that were there
+//				numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
+//				heapCG = new HeapChoiceGenerator(numSymRefs+increment+numNewRefs); // +null,new
+//			} else {
 				heapCG = new HeapChoiceGenerator(numSymRefs+2);  //+null,new
-			}
+			//}
 			ss.setNextChoiceGenerator(heapCG);
 			return this;
 		} else {  // this is what really returns results
@@ -194,15 +196,17 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
 					  		symInputHeap, numSymRefs, prevSymRefs);
 		  } else {
-			  int counter;
-			  if(abstractClass) {
-					counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
-			  } else {
-					counter = currentChoice - (numSymRefs+1) - 1;
-			  }
-			  ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
-			  daIndex = Helper.addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap,
-					  		symInputHeap, numSymRefs, prevSymRefs);
+			  //TODO: fix
+			  System.err.println("subtyping not handled");
+//			  int counter;
+//			  if(abstractClass) {
+//					counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
+//			  } else {
+//					counter = currentChoice - (numSymRefs+1) - 1;
+//			  }
+//			  ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
+//			  daIndex = Helper.addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap,
+//					  		symInputHeap, numSymRefs, prevSymRefs);
 		  }
 
 

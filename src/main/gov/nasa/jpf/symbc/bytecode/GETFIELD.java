@@ -40,7 +40,7 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
-import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
+//import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 
 public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	public GETFIELD(String fieldName, String clsName, String fieldDescriptor){
@@ -64,12 +64,12 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  // when instantiating "new" objects during lazy-initialization.
 	  // the configuration allows to consider all subtypes during the
 	  // instantiation. In aliasing all subtypes are considered by default.
-
-	  String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
-	  if(!subtypes.equals("false") &&
-			  TypeHierarchy.typeHierarchies == null) {
-		  TypeHierarchy.buildTypeHierarchy(ti);
-	  }
+//TODO: fix
+//	  String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
+//	  if(!subtypes.equals("false") &&
+//			  TypeHierarchy.typeHierarchies == null) {
+//		  TypeHierarchy.buildTypeHierarchy(ti);
+//	  }
 
 	  //original GETFIELD code from super
 	 int objRef = ti.peek(); // don't pop yet, we might re-execute
@@ -157,14 +157,15 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 			  increment = 1; // only null
 		  }
 		  //neha: if subtypes are to be considered
-		  if(!subtypes.equals("false")) {
-			  // get the number of subtypes that exist, and add the number in
-			  // the choice generator inaddition to the ones that were there
-			  int numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
-			  thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment+numNewRefs); // +null, (no new)
-		  } else {
+		  //TODO: fix
+//		  if(!subtypes.equals("false")) {
+//			  // get the number of subtypes that exist, and add the number in
+//			  // the choice generator inaddition to the ones that were there
+//			  int numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
+//			  thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment+numNewRefs); // +null, (no new)
+//		  } else {
 			  thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment);  //+null,new
-		  }
+//		  }
 		  ss.setNextChoiceGenerator(thisHeapCG);
 		  return this;
 	  }
@@ -220,15 +221,17 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
 				  		symInputHeap, numSymRefs, prevSymRefs);
 	  } else {
-		  int counter;
-		  if(abstractClass) {
-				counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
-		  } else {
-				counter = currentChoice - (numSymRefs+1) - 1;
-		  }
-		  ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
-		  daIndex = Helper.addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap,
-				  		symInputHeap, numSymRefs, prevSymRefs);
+		  System.err.println("subtyping not handled");
+		  //TODO: fix
+//		  int counter;
+//		  if(abstractClass) {
+//				counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
+//		  } else {
+//				counter = currentChoice - (numSymRefs+1) - 1;
+//		  }
+//		  ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
+//		  daIndex = Helper.addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap,
+//				  		symInputHeap, numSymRefs, prevSymRefs);
 	  }
 
 	  ei.setReferenceField(fi,daIndex );
