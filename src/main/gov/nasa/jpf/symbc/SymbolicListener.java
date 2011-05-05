@@ -272,10 +272,10 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							symVarName = names[sfIndex] + "_CONCRETE" + ",";
 
 						//if(sf.getLocalVariableType(names[sfIndex]).equals("D") || sf.getLocalVariableType(names[sfIndex]).equals("L"))
-						if(argTypeNames[i].equals("double") || argTypeNames[i].equals("long"))
-							sfIndex=sfIndex+2;
-
-						else
+//						if(argTypeNames[i].equals("double") || argTypeNames[i].equals("long"))
+//							sfIndex=sfIndex+2;
+//
+//						else
 						    sfIndex++;
 					}
 

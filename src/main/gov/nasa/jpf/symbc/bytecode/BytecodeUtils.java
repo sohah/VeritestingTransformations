@@ -237,6 +237,7 @@ public class BytecodeUtils {
 			String outputString = "\n***Execute symbolic " + bytecodeName + ": " + mname + "  (";
 
 			String[] localVars = mi.getLocalVariableNames();
+
 			int localVarsIdx = 0;
 			//if debug option was not used when compiling the class,
 			//then we do not have names of the locals
@@ -257,8 +258,6 @@ public class BytecodeUtils {
 			int stackIdx = numStackSlots - 1; // stackIdx ranges from numStackSlots-1 to 0 ???
 
 			for (int j = 0; j < argSize; j++) { // j ranges over actual arguments
-
-
 				if (symClass || args.get(j).equalsIgnoreCase("SYM")) {
 					String name =  localVars[localVarsIdx];
 					if (argTypes[j].equalsIgnoreCase("int") || argTypes[j].equalsIgnoreCase("long")) {
@@ -299,7 +298,7 @@ public class BytecodeUtils {
 
 				if (argTypes[j].equalsIgnoreCase("long") || argTypes[j].equalsIgnoreCase("double")) {
 					stackIdx--;
-					localVarsIdx++;
+					//localVarsIdx++;
 				}
 				stackIdx--;
 				localVarsIdx++;

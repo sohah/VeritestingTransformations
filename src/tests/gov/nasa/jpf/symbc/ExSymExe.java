@@ -12,10 +12,17 @@ public class ExSymExe {
 	  //inst.test(0, 1);
 	  //inst.test2(x,x);
 	  //inst.test1(x,true);
-	  inst.test3(0.0, 0.0);
+	  //inst.test3(0.0, 0.0);
 	  inst.test4(0.0, 0);
+	  inst.test5(0.0, 0);
   }
   /* we want to let the user specify that this method should be symbolic */
+  public void test5(double xm, double ym) {
+	  if(ym == (1.0 + xm) && (ym - xm) == (3.0 + ym))
+		 System.out.println("true");
+	  else
+		 System.out.println("false");
+  }
 
   public void test3(double x, double y) {
 	  if(Math.sin(x)+Math.cos(y)==1)
