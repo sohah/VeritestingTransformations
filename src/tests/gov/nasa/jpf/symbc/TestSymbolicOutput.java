@@ -7,6 +7,7 @@ import gov.nasa.jpf.jvm.ExceptionInfo;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.util.test.TestJPF;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.util.JPFSiteUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,16 @@ public class TestSymbolicOutput extends TestJPF {
 
     if (conf.getTarget() != null) {
       ExceptionInfo xi = null;
+
+       //--- initialize the classpath from <projectId>.test_classpath
+    String projectId = JPFSiteUtils.getCurrentProjectId();
+    if (projectId != null) {
+      String testCp = conf.getString(projectId + ".test_classpath");
+      if (testCp != null) {
+        conf.append("classpath", testCp, ",");
+      }
+    }
+
       JPF jpf = new JPF(conf);
       TestSymbolicListener listener = new TestSymbolicListener(conf, jpf);
       jpf.addListener(listener);
