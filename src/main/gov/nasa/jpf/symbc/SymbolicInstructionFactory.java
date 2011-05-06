@@ -20,6 +20,7 @@
 package gov.nasa.jpf.symbc;
 
 import gov.nasa.jpf.Config;
+import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.symbc.bytecode.*;
 import gov.nasa.jpf.symbc.numeric.MinMax;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
@@ -30,430 +31,428 @@ import gov.nasa.jpf.util.InstructionFactoryFilter;
 
 public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.InstructionFactory {
 	  @Override
-	  public ALOAD aload(int localVarIndex) {
-	    return new ALOAD(localVarIndex);
+	  public gov.nasa.jpf.jvm.bytecode.ALOAD aload(int localVarIndex) {
+	    return filter.isInstrumentedClass(ci) ? new ALOAD(localVarIndex) : (ALOAD) super.aload(localVarIndex);
 	  }
 
 
 	  @Override
-	  public ALOAD aload_0() {
-	    return new ALOAD(0);
+	  public gov.nasa.jpf.jvm.bytecode.ALOAD aload_0() {
+	    return filter.isInstrumentedClass(ci) ? new ALOAD(0): super.aload_0();
 	  }
 
 	  @Override
-	  public ALOAD aload_1() {
-	    return new ALOAD(1);
+	  public gov.nasa.jpf.jvm.bytecode.ALOAD aload_1() {
+	    return filter.isInstrumentedClass(ci) ? new ALOAD(1): super.aload_1();
 	  }
 
 	  @Override
-	  public ALOAD aload_2() {
-	    return new ALOAD(2);
+	  public gov.nasa.jpf.jvm.bytecode.ALOAD aload_2() {
+	    return filter.isInstrumentedClass(ci) ? new ALOAD(2): super.aload_2();
 	  }
 
 	  @Override
-	  public ALOAD aload_3() {
-	    return new ALOAD(3);
+	  public gov.nasa.jpf.jvm.bytecode.ALOAD aload_3() {
+	    return filter.isInstrumentedClass(ci) ? new ALOAD(3): super.aload_3();
 	  }
 
 	  @Override
-	  public IADD iadd() {
-	    return new IADD();
+	  public gov.nasa.jpf.jvm.bytecode.IADD iadd() {
+	    return filter.isInstrumentedClass(ci) ? new IADD(): super.iadd();
 	  }
 
 	  @Override
-	  public IAND iand() {
-	    return new IAND();
+	  public gov.nasa.jpf.jvm.bytecode.IAND iand() {
+	    return filter.isInstrumentedClass(ci) ? new IAND(): super.iand() ;
 	  }
 
 	  @Override
-	  public IINC iinc(int localVarIndex, int incConstant) {
-		    return new IINC(localVarIndex, incConstant);
+	  public gov.nasa.jpf.jvm.bytecode.IINC iinc(int localVarIndex, int incConstant) {
+		    return filter.isInstrumentedClass(ci) ? new IINC(localVarIndex, incConstant) :super.iinc(localVarIndex, incConstant);
 	  }
 
 	  @Override
-	  public ISUB isub() {
-	    return new ISUB();
+	  public gov.nasa.jpf.jvm.bytecode.ISUB isub() {
+	    return filter.isInstrumentedClass(ci) ? new ISUB() : super.isub();
 	  }
 
 	  @Override
-	  public IMUL imul() {
-	    return new IMUL();
+	  public gov.nasa.jpf.jvm.bytecode.IMUL imul() {
+	    return filter.isInstrumentedClass(ci) ? new IMUL() : super.imul();
 	  }
 
 	  @Override
-	  public INEG ineg() {
-	    return new INEG();
+	  public gov.nasa.jpf.jvm.bytecode.INEG ineg() {
+	    return filter.isInstrumentedClass(ci) ? new INEG() : super.ineg();
 	  }
 
 	  @Override
-	  public IFLE ifle(int targetPc) {
-	    return new IFLE(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IFLE ifle(int targetPc) {
+	    return filter.isInstrumentedClass(ci) ? new IFLE(targetPc) : super.ifle(targetPc);
 	  }
 
 	  @Override
-	  public IFLT iflt(int targetPc) {
-	    return new IFLT(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IFLT iflt(int targetPc) {
+	    return filter.isInstrumentedClass(ci) ? new IFLT(targetPc) : super.iflt(targetPc);
 	  }
 
 	  @Override
-	  public IFGE ifge(int targetPc) {
-	    return new IFGE(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IFGE ifge(int targetPc) {
+	    return filter.isInstrumentedClass(ci) ? new IFGE(targetPc): super.ifge(targetPc);
 	  }
 
 	  @Override
-	  public IFGT ifgt(int targetPc) {
-	    return new IFGT(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IFGT ifgt(int targetPc) {
+	    return filter.isInstrumentedClass(ci) ? new IFGT(targetPc): super.ifgt(targetPc);
 	  }
 
 	  @Override
-	  public IFEQ ifeq(int targetPc) {
-	    return new IFEQ(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IFEQ ifeq(int targetPc) {
+	    return filter.isInstrumentedClass(ci) ? new IFEQ(targetPc): super.ifeq(targetPc);
 	  }
 
 	  @Override
-	  public IFNE ifne(int targetPc) {
-	    return new IFNE(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IFNE ifne(int targetPc) {
+	    return filter.isInstrumentedClass(ci) ? new IFNE(targetPc): super.ifne(targetPc);
 	  }
 
 	  @Override
-	  public INVOKESTATIC invokestatic(String clsName, String methodName, String methodSignature) {
-	    return new INVOKESTATIC(clsName, methodName, methodSignature);
+	  public gov.nasa.jpf.jvm.bytecode.INVOKESTATIC invokestatic(String clsName, String methodName, String methodSignature) {
+	    return filter.isInstrumentedClass(ci) ? new INVOKESTATIC(clsName, methodName, methodSignature): super.invokestatic(clsName, methodName, methodSignature)
+	    		;
 	  }
 
 	  @Override
-	  public INVOKEVIRTUAL invokevirtual(String clsName, String methodName, String methodSignature) {
-		    return new INVOKEVIRTUAL(clsName, methodName, methodSignature);
+	  public gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL invokevirtual(String clsName, String methodName, String methodSignature) {
+		    return filter.isInstrumentedClass(ci) ? new INVOKEVIRTUAL(clsName, methodName, methodSignature): super.invokevirtual(clsName, methodName, methodSignature);
 	  }
 
 	  @Override
-	  public INVOKESPECIAL invokespecial(String clsName, String methodName, String methodSignature) {
-		    return new INVOKESPECIAL(clsName, methodName, methodSignature);
+	  public gov.nasa.jpf.jvm.bytecode.INVOKESPECIAL invokespecial(String clsName, String methodName, String methodSignature) {
+		    return filter.isInstrumentedClass(ci) ? new INVOKESPECIAL(clsName, methodName, methodSignature): super.invokespecial(clsName, methodName, methodSignature);
 	  }
 
 	  @Override
-	  public IF_ICMPGE if_icmpge(int targetPc) {
-		    return new IF_ICMPGE(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IF_ICMPGE if_icmpge(int targetPc) {
+		    return filter.isInstrumentedClass(ci) ? new IF_ICMPGE(targetPc): super.if_icmpge(targetPc);
 	  }
 
 	  @Override
-	  public IF_ICMPGT if_icmpgt(int targetPc) {
-		    return new IF_ICMPGT(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IF_ICMPGT if_icmpgt(int targetPc) {
+		    return filter.isInstrumentedClass(ci) ? new IF_ICMPGT(targetPc): super.if_icmpgt(targetPc);
 	  }
 
 	  @Override
-	  public IF_ICMPLE if_icmple(int targetPc) {
-		    return new IF_ICMPLE(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IF_ICMPLE if_icmple(int targetPc) {
+		    return filter.isInstrumentedClass(ci) ? new IF_ICMPLE(targetPc): super.if_icmple(targetPc);
 	  }
 
 	  @Override
-	  public IF_ICMPLT if_icmplt(int targetPc) {
-		    return new IF_ICMPLT(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IF_ICMPLT if_icmplt(int targetPc) {
+		    return filter.isInstrumentedClass(ci) ? new IF_ICMPLT(targetPc): super.if_icmplt(targetPc);
 	  }
 
 	  @Override
-	  public IDIV idiv() {
-	    return new IDIV();
+	  public gov.nasa.jpf.jvm.bytecode.IDIV idiv() {
+	    return filter.isInstrumentedClass(ci) ? new IDIV(): super.idiv();
 	  }
 
 	  @Override
-	  public ISHL ishl() {
-	    return new ISHL();
+	  public gov.nasa.jpf.jvm.bytecode.ISHL ishl() {
+	    return filter.isInstrumentedClass(ci) ? new ISHL(): super.ishl();
 	  }
 
 	  @Override
-	  public ISHR ishr() {
-	    return new ISHR();
+	  public gov.nasa.jpf.jvm.bytecode.ISHR ishr() {
+	    return filter.isInstrumentedClass(ci) ? new ISHR(): super.ishr();
 	  }
 
 	  @Override
-	  public IUSHR iushr() {
-	    return new IUSHR();
+	  public gov.nasa.jpf.jvm.bytecode.IUSHR iushr() {
+	    return filter.isInstrumentedClass(ci) ? new IUSHR(): super.iushr();
 	  }
 
 	  @Override
-	  public IXOR ixor() {
-	    return new IXOR();
+	  public gov.nasa.jpf.jvm.bytecode.IXOR ixor() {
+	    return filter.isInstrumentedClass(ci) ? new IXOR(): super.ixor();
 	  }
 
 	  @Override
-	  public IOR ior() {
-	    return new IOR();
+	  public gov.nasa.jpf.jvm.bytecode.IOR ior() {
+	    return filter.isInstrumentedClass(ci) ? new IOR(): super.ior();
 	  }
 
 	  @Override
-	  public IREM irem() {
-	    return new IREM();
+	  public gov.nasa.jpf.jvm.bytecode.IREM irem() {
+	    return filter.isInstrumentedClass(ci) ? new IREM(): super.irem();
 	  }
 
 	  @Override
-	  public IF_ICMPEQ if_icmpeq(int targetPc) {
-		    return new IF_ICMPEQ(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IF_ICMPEQ if_icmpeq(int targetPc) {
+		    return filter.isInstrumentedClass(ci) ? new IF_ICMPEQ(targetPc): super.if_icmpeq(targetPc);
 	  }
 
 	  @Override
-	  public IF_ICMPNE if_icmpne(int targetPc) {
-		    return new IF_ICMPNE(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IF_ICMPNE if_icmpne(int targetPc) {
+		    return filter.isInstrumentedClass(ci) ? new IF_ICMPNE(targetPc): super.if_icmpne(targetPc);
 	  }
 
 
 	  @Override
-	  public FADD fadd() {
-	    return new FADD();
+	  public gov.nasa.jpf.jvm.bytecode.FADD fadd() {
+	    return filter.isInstrumentedClass(ci) ? new FADD(): super.fadd();
 	  }
 
 	  @Override
-	  public FDIV fdiv() {
-	    return new FDIV();
+	  public gov.nasa.jpf.jvm.bytecode.FDIV fdiv() {
+	    return filter.isInstrumentedClass(ci) ? new FDIV(): super.fdiv();
 	  }
 
 	  @Override
-	  public FMUL fmul() {
-	    return new FMUL();
+	  public gov.nasa.jpf.jvm.bytecode.FMUL fmul() {
+	    return filter.isInstrumentedClass(ci) ? new FMUL(): super.fmul();
 	  }
 
 	  @Override
-	  public FNEG fneg() {
-	    return new FNEG();
+	  public gov.nasa.jpf.jvm.bytecode.FNEG fneg() {
+	    return filter.isInstrumentedClass(ci) ? new FNEG(): super.fneg();
 	  }
 
 	  @Override
-	  public FREM frem() {
-	    return new FREM();
+	  public gov.nasa.jpf.jvm.bytecode.FREM frem() {
+	    return filter.isInstrumentedClass(ci) ? new FREM(): super.frem();
 	  }
 
 	  @Override
-	  public FSUB fsub() {
-	    return new FSUB();
+	  public gov.nasa.jpf.jvm.bytecode.FSUB fsub() {
+	    return filter.isInstrumentedClass(ci) ? new FSUB(): super.fsub();
 	  }
 
 	  @Override
-	  public FCMPG fcmpg() {
-	    return new FCMPG();
+	  public gov.nasa.jpf.jvm.bytecode.FCMPG fcmpg() {
+	    return filter.isInstrumentedClass(ci) ? new FCMPG(): super.fcmpg()
+	    		;
 	  }
 
 	  @Override
-	  public FCMPL fcmpl() {
-		    return new FCMPL();
+	  public gov.nasa.jpf.jvm.bytecode.FCMPL fcmpl() {
+		    return filter.isInstrumentedClass(ci) ? new FCMPL(): super.fcmpl();
 		  }
 
 	  @Override
-	  public DADD dadd() {
-		    return new DADD();
+	  public gov.nasa.jpf.jvm.bytecode.DADD dadd() {
+		    return filter.isInstrumentedClass(ci) ? new DADD(): super.dadd();
 		  }
 
 	  @Override
-	  public DCMPG dcmpg() {
-		    return new DCMPG();
+	  public gov.nasa.jpf.jvm.bytecode.DCMPG dcmpg() {
+		    return filter.isInstrumentedClass(ci) ? new DCMPG(): super.dcmpg();
 		  }
 
 	  @Override
-	  public DCMPL dcmpl() {
-		    return new DCMPL();
+	  public gov.nasa.jpf.jvm.bytecode.DCMPL dcmpl() {
+		    return filter.isInstrumentedClass(ci) ? new DCMPL(): super.dcmpl();
 		  }
 
 	  @Override
-	  public DDIV ddiv() {
-		    return new DDIV();
+	  public gov.nasa.jpf.jvm.bytecode.DDIV ddiv() {
+		    return filter.isInstrumentedClass(ci) ? new DDIV(): super.ddiv();
 		  }
 
 	  @Override
-	  public DMUL dmul() {
-		    return new DMUL();
+	  public gov.nasa.jpf.jvm.bytecode.DMUL dmul() {
+		    return filter.isInstrumentedClass(ci) ? new DMUL(): super.dmul();
 		  }
 
 	  @Override
-	  public DNEG dneg() {
-		    return new DNEG();
+	  public gov.nasa.jpf.jvm.bytecode.DNEG dneg() {
+		    return filter.isInstrumentedClass(ci) ? new DNEG(): super.dneg();
 		  }
 
 	  @Override
-	  public DREM drem() {
-		    return new DREM();
+	  public gov.nasa.jpf.jvm.bytecode.DREM drem() {
+		    return filter.isInstrumentedClass(ci) ? new DREM(): super.drem();
 		  }
 
 	  @Override
-	  public DSUB dsub() {
-		    return new DSUB();
+	  public gov.nasa.jpf.jvm.bytecode.DSUB dsub() {
+		    return filter.isInstrumentedClass(ci) ? new DSUB(): super.dsub();
 		  }
 
 	  @Override
-	  public LADD ladd() {
-		    return new LADD();
+	  public gov.nasa.jpf.jvm.bytecode.LADD ladd() {
+		    return filter.isInstrumentedClass(ci) ? new LADD(): super.ladd();
 		  }
 
 	  @Override
-	  public LAND land() {
-		    return new LAND();
+	  public gov.nasa.jpf.jvm.bytecode.LAND land() {
+		    return filter.isInstrumentedClass(ci) ? new LAND(): super.land();
 		  }
 
 	  @Override
-	  public LCMP lcmp() {
-		    return new LCMP();
+	  public gov.nasa.jpf.jvm.bytecode.LCMP lcmp() {
+		    return filter.isInstrumentedClass(ci) ? new LCMP(): super.lcmp();
 		  }
 
 	  @Override
-	  public LDIV ldiv() {
-		    return new LDIV();
+	  public gov.nasa.jpf.jvm.bytecode.LDIV ldiv() {
+		    return filter.isInstrumentedClass(ci) ? new LDIV(): super.ldiv();
 		  }
 
 	  @Override
-	  public LMUL lmul() {
-		    return new LMUL();
+	  public gov.nasa.jpf.jvm.bytecode.LMUL lmul() {
+		    return filter.isInstrumentedClass(ci) ? new LMUL(): super.lmul();
 		  }
 
 	  @Override
-	  public LNEG lneg() {
-		    return new LNEG();
+	  public gov.nasa.jpf.jvm.bytecode.LNEG lneg() {
+		    return filter.isInstrumentedClass(ci) ? new LNEG(): super.lneg();
 		  }
 
 	  @Override
-	  public LOR lor() {
-		    return new LOR();
+	  public gov.nasa.jpf.jvm.bytecode.LOR lor() {
+		  return filter.isInstrumentedClass(ci) ? new LOR(): super.lor();
 		  }
 
 	  @Override
-	  public LREM lrem() {
-		    return new LREM();
+	  public gov.nasa.jpf.jvm.bytecode.LREM lrem() {
+		  return filter.isInstrumentedClass(ci) ? new LREM(): super.lrem();
 		  }
 
 	  @Override
-	  public LSHL lshl() {
-		    return new LSHL();
+	  public gov.nasa.jpf.jvm.bytecode.LSHL lshl() {
+		  return filter.isInstrumentedClass(ci) ? new LSHL(): super.lshl();
 		  }
 
 	  @Override
-	  public LSHR lshr() {
-		    return new LSHR();
+	  public gov.nasa.jpf.jvm.bytecode.LSHR lshr() {
+		  return filter.isInstrumentedClass(ci) ? new LSHR(): super.lshr();
 		  }
 
 	  @Override
-	  public LSUB lsub() {
-		    return new LSUB();
+	  public gov.nasa.jpf.jvm.bytecode.LSUB lsub() {
+		  return filter.isInstrumentedClass(ci) ? new LSUB(): super.lsub();
 		  }
 
 	  @Override
-	  public LUSHR lushr() {
-		    return new LUSHR();
+	  public gov.nasa.jpf.jvm.bytecode.LUSHR lushr() {
+		  return filter.isInstrumentedClass(ci) ? new LUSHR(): super.lushr();
 		  }
 
 	  @Override
-	  public LXOR lxor() {
-		    return new LXOR();
+	  public gov.nasa.jpf.jvm.bytecode.LXOR lxor() {
+		  return filter.isInstrumentedClass(ci) ? new LXOR(): super.lxor();
 		  }
 
 	  @Override
-	  public I2D i2d() {
-		    return new I2D();
+	  public gov.nasa.jpf.jvm.bytecode.I2D i2d() {
+		  return filter.isInstrumentedClass(ci) ? new I2D(): super.i2d();
 		  }
 
 	  @Override
-	  public D2I d2i() {
-		    return new D2I();
+	  public gov.nasa.jpf.jvm.bytecode.D2I d2i() {
+		  return filter.isInstrumentedClass(ci) ? new D2I(): super.d2i();
 		  }
 
 	  @Override
-	  public D2L d2l() {
-		    return new D2L();
+	  public gov.nasa.jpf.jvm.bytecode.D2L d2l() {
+		  return filter.isInstrumentedClass(ci) ?  new D2L(): super.d2l();
 		  }
 
 	  @Override
-	  public I2F i2f() {
-		    return new I2F();
+	  public gov.nasa.jpf.jvm.bytecode.I2F i2f() {
+		  return filter.isInstrumentedClass(ci) ?  new I2F(): super.i2f();
 		  }
 
 	  @Override
-	  public L2D l2d() {
-		    return new L2D();
+	  public gov.nasa.jpf.jvm.bytecode.L2D l2d() {
+		  return filter.isInstrumentedClass(ci) ?  new L2D(): super.l2d();
 		  }
 
 	  @Override
-	  public L2F l2f() {
-		    return new L2F();
+	  public gov.nasa.jpf.jvm.bytecode.L2F l2f() {
+		  return filter.isInstrumentedClass(ci) ?  new L2F(): super.l2f();
 		  }
 
 	  @Override
-	  public F2L f2l() {
-		    return new F2L();
+	  public gov.nasa.jpf.jvm.bytecode.F2L f2l() {
+		  return filter.isInstrumentedClass(ci) ?  new F2L(): super.f2l();
 		  }
 
 	  @Override
-	  public F2I f2i() {
-		    return new F2I();
+	  public gov.nasa.jpf.jvm.bytecode.F2I f2i() {
+		  return filter.isInstrumentedClass(ci) ?  new F2I(): super.f2i();
 		  }
 
 	  @Override
-	  public LOOKUPSWITCH lookupswitch(int defaultTargetPc, int nEntries) {
-		    return new LOOKUPSWITCH(defaultTargetPc, nEntries);
+	  public gov.nasa.jpf.jvm.bytecode.LOOKUPSWITCH lookupswitch(int defaultTargetPc, int nEntries) {
+		  return filter.isInstrumentedClass(ci) ?  new LOOKUPSWITCH(defaultTargetPc, nEntries): super.lookupswitch(defaultTargetPc, nEntries);
 		  }
 
 	  @Override
-	  public TABLESWITCH tableswitch(int defaultTargetPc, int low, int high) {
-		    return new TABLESWITCH(defaultTargetPc, low, high);
+	  public gov.nasa.jpf.jvm.bytecode.TABLESWITCH tableswitch(int defaultTargetPc, int low, int high) {
+		  return filter.isInstrumentedClass(ci) ?  new TABLESWITCH(defaultTargetPc, low, high): super.tableswitch(defaultTargetPc, low, high);
 		  }
 
 	  @Override
-	  public D2F d2f() {
-		    return new D2F();
+	  public gov.nasa.jpf.jvm.bytecode.D2F d2f() {
+		  return filter.isInstrumentedClass(ci) ?  new D2F(): super.d2f();
 		  }
 
 	  @Override
-	  public F2D f2d() {
-		    return new F2D();
+	  public gov.nasa.jpf.jvm.bytecode.F2D f2d() {
+		  return filter.isInstrumentedClass(ci) ?  new F2D(): super.f2d();
 		  }
 
 	  @Override
-	  public I2B i2b() {
-		    return new I2B();
+	  public gov.nasa.jpf.jvm.bytecode.I2B i2b() {
+		  return filter.isInstrumentedClass(ci) ?  new I2B(): super.i2b();
 		  }
 
 	  @Override
-	  public I2C i2c() {
-		    return new I2C();
+	  public gov.nasa.jpf.jvm.bytecode.I2C i2c() {
+		  return filter.isInstrumentedClass(ci) ?  new I2C(): super.i2c();
 		  }
 
 	  @Override
-	  public I2S i2s() {
-		    return new I2S();
+	  public gov.nasa.jpf.jvm.bytecode.I2S i2s() {
+		  return filter.isInstrumentedClass(ci) ?  new I2S(): super.i2s();
 		  }
 
 	  @Override
-	  public I2L i2l() {
-		    return new I2L();
+	  public gov.nasa.jpf.jvm.bytecode.I2L i2l() {
+		  return filter.isInstrumentedClass(ci) ?  new I2L(): super.i2l();
 		  }
 
 	  @Override
-	  public L2I l2i() {
-		    return new L2I();
+	  public gov.nasa.jpf.jvm.bytecode.L2I l2i() {
+		  return filter.isInstrumentedClass(ci) ?  new L2I(): super.l2i();
 		  }
 
 	  @Override
-	  public GETFIELD getfield(String fieldName, String clsName, String fieldDescriptor){
-		    return new GETFIELD(fieldName, clsName, fieldDescriptor);
+	  public gov.nasa.jpf.jvm.bytecode.GETFIELD getfield(String fieldName, String clsName, String fieldDescriptor){
+		  return filter.isInstrumentedClass(ci) ?  new GETFIELD(fieldName, clsName, fieldDescriptor): super.getfield(fieldName, clsName, fieldDescriptor);
 		  }
 	  @Override
-	  public GETSTATIC getstatic(String fieldName, String clsName, String fieldDescriptor){
-		    return new GETSTATIC(fieldName, clsName, fieldDescriptor);
+	  public gov.nasa.jpf.jvm.bytecode.GETSTATIC getstatic(String fieldName, String clsName, String fieldDescriptor){
+		  return filter.isInstrumentedClass(ci) ?  new GETSTATIC(fieldName, clsName, fieldDescriptor): super.getstatic(fieldName, clsName, fieldDescriptor);
 		  }
 
 		//TODO: to review
         //From Fujitsu:
 
 	  @Override
-	  public NEW new_(String clsName) {
-		    return new NEW(clsName);
+	  public gov.nasa.jpf.jvm.bytecode.NEW new_(String clsName) {
+		  return filter.isInstrumentedClass(ci) ?  new NEW(clsName): super.new_(clsName);
 		  }
 	  @Override
-	  public IFNONNULL ifnonnull(int targetPc) {
-		    return new IFNONNULL(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IFNONNULL ifnonnull(int targetPc) {
+		  return filter.isInstrumentedClass(ci) ?  new IFNONNULL(targetPc): super.ifnonnull(targetPc);
 		  }
 	  @Override
-	  public IFNULL ifnull(int targetPc) {
-		    return new IFNULL(targetPc);
+	  public gov.nasa.jpf.jvm.bytecode.IFNULL ifnull(int targetPc) {
+		  return filter.isInstrumentedClass(ci) ?  new IFNULL(targetPc): super.ifnull(targetPc);
 		  }
-
-
-
-
 
 	static public String[] dp;
 
@@ -478,13 +477,19 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 	static public boolean heuristicPartitionMode;
 	static public int MaxTries = 1;
 
-//TODO: check
-	InstructionFactoryFilter filter = new InstructionFactoryFilter(null, new String[] {/*"java.*",*/ "javax.*" },
-			null, null);
+	ClassInfo ci;
+	InstructionFactoryFilter filter;
 
+	 @Override
+	 public void setClassInfoContext(ClassInfo ci){
+		    this.ci = ci;
+	 }
 
-	public  SymbolicInstructionFactory (Config conf){
+	 public  SymbolicInstructionFactory (Config conf){
+
 		System.out.println("Running Symbolic PathFinder ...");
+
+		filter = new InstructionFactoryFilter(null, new String[] {/*"java.*",*/ "javax.*" },null, null);
 
 		dp = conf.getStringArray("symbolic.dp");
 		if (dp == null) {

@@ -1,3 +1,4 @@
+
 //
 //Copyright (C) 2007 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration
@@ -17,18 +18,16 @@
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 package gov.nasa.jpf.symbc;
 
-// does not work well for static methods:summary not printed for errors
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
+import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.Types;
-import gov.nasa.jpf.jvm.bytecode.IRETURN;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
@@ -38,164 +37,497 @@ import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.symbc.bytecode.INVOKESTATIC;
+import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
 import gov.nasa.jpf.symbc.numeric.Expression;
-import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
-import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
+import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.util.Pair;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+
+
 public class SymbolicListenerClean extends PropertyListenerAdapter implements PublisherExtension {
 
+	/* Locals to preserve the value that was held by JPF prior to changing it
+	 * in order to turn off state matching during symbolic execution
+	 */
+	private boolean retainVal = false;
+	private boolean forcedVal = false;
 
-	Set<String> test_sequences = new HashSet<String>();; // here we print the test sequences
-	private Map<String,MethodSummaryClean> allSummaries = new HashMap<String,MethodSummaryClean>();
+	private Map<String,MethodSummary> allSummaries;
+	private String currentMethodName = "";
 
 	public SymbolicListenerClean(Config conf, JPF jpf) {
 		jpf.addPublisherExtension(ConsolePublisher.class, this);
+		allSummaries = new HashMap<String, MethodSummary>();
 	}
 
+
+
 	public void propertyViolated (Search search){
-		//System.out.println("--------->property violated");
+
+
 		JVM vm = search.getVM();
+
 		SystemState ss = vm.getSystemState();
-		ChoiceGenerator cg = vm.getChoiceGenerator();
-		if (!(cg instanceof PCChoiceGenerator)){
-			ChoiceGenerator prev_cg = cg.getPreviousChoiceGenerator();
-			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-				prev_cg = prev_cg.getPreviousChoiceGenerator();
+		ClassInfo ci = vm.getClassInfo();
+
+			ChoiceGenerator <?>cg = vm.getChoiceGenerator();
+			if (!(cg instanceof PCChoiceGenerator)){
+				ChoiceGenerator <?> prev_cg = cg.getPreviousChoiceGenerator();
+				while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
+					prev_cg = prev_cg.getPreviousChoiceGenerator();
+				}
+				cg = prev_cg;
 			}
-			cg = prev_cg;
-		}
-		String error = search.getLastError().getDetails();
-		error = "\"" + error.substring(0,error.indexOf("\n")) + "...\"";
-		if ((cg instanceof PCChoiceGenerator) &&
+			if ((cg instanceof PCChoiceGenerator) &&
 				      ((PCChoiceGenerator) cg).getCurrentPC() != null){
+				PathCondition pc = ((PCChoiceGenerator) cg).getCurrentPC();
+				String error = search.getLastError().getDetails();
+				error = "\"" + error.substring(0,error.indexOf("\n")) + "...\"";
 
-			PathCondition pc = ((PCChoiceGenerator) cg).getCurrentPC();
-			//solve the path condition, then print it
-			pc.solve();
+				if (SymbolicInstructionFactory.concolicMode) { //TODO: cleaner
+					SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
+					PCAnalyzer pa = new PCAnalyzer();
+					pa.solve(pc,solver);
+				}
+				else
+					pc.solve();
+				Pair<String,String> pcPair = new Pair<String,String>(pc.stringPC(),error);//(pc.toString(),error);
 
-            String sequence = "";
-            // here we should get from the path all the choices that tell you the methods on the current path
-			// with their arguments and their attributes (i.e. symbolic values)
-			// get the solutions from the symbolic arguments
-			// from here build the sequence and store it somewhere to be printed in the end
-            // you can get the solution of a symbolic object by invoking solution()
-            //IntegerExpression e;
-            //e.solution();
-            test_sequences.add(sequence);
-			System.out.println("PC "+pc.toString());
-			System.out.println("String PC:\n" + SymbolicStringConstraintsGeneral.getSolution());
-		}
+				MethodSummary methodSummary = allSummaries.get(currentMethodName);
+				methodSummary.addPathCondition(pcPair);
+				allSummaries.put(currentMethodName,methodSummary);
+				System.out.println("Property Violated: PC is "+pc.toString());
+				System.out.println("Property Violated: result is  "+error);
+				System.out.println("****************************");
+			}
+		//}
 	}
 
 	public void instructionExecuted(JVM vm) {
 
+		if (!vm.getSystemState().isIgnored()) {
 			Instruction insn = vm.getLastInstruction();
 			SystemState ss = vm.getSystemState();
 			ThreadInfo ti = vm.getLastThreadInfo();
 			Config conf = vm.getConfig();
 
-			if (insn instanceof InvokeInstruction && insn.isCompleted(ti)) {
+			if (insn instanceof InvokeInstruction) {
 				InvokeInstruction md = (InvokeInstruction) insn;
 				String methodName = md.getInvokedMethodName();
-				Object [] args = md.getArgumentValues(ti);
-				int numberOfArgs = args.length;
+				int numberOfArgs = md.getArgumentValues(ti).length;
 				MethodInfo mi = md.getInvokedMethod();
-				//  neha: changed methodName to full name
-				if ((BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
-					// here we should remember the method name and the arguments
-					// make sure we align concrete and symbolic arguments
-					if (mi.isMJI())
-						throw new RuntimeException("## Error:  native symbolic method not handled here!!!");
+				ClassInfo ci = mi.getClassInfo();
+				String className = ci.getName();
 
+				if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
+						|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null)){
+
+					retainVal = ss.getRetainAttributes();
+					forcedVal = ss.isForced();
+					//turn off state matching
+					ss.setForced(true);
+					//make sure it stays turned off when a new state is created
+					ss.retainAttributes(true);
+
+
+					MethodSummary methodSummary = new MethodSummary();
 					String shortName = methodName;
 					String longName = mi.getLongName();
 					if (methodName.contains("("))
 						shortName = methodName.substring(0,methodName.indexOf("("));
-					System.out.println("long name" + longName);
-					System.out.println("short name" + shortName);
-
-
-					// print concrete values
-					System.out.println("method name" + methodName);
-					for (int i = 0; i < numberOfArgs; i++)
-						System.out.println("args["+i+"]="+args[i]);
-
-					// print symbolic values
-
-					// code that gets the arg attributes
-					// getArgAttributes should be a method mi or md
-					// concrete args have null attributes
-					//@@@@@@@@@@
-					byte[] at = mi.getArgumentTypes();
-					Object[] attrs = new Object[numberOfArgs];
-					StackFrame sf = ti.getTopFrame();
-					int count = 1 ; // we do not care about this
-					if (md instanceof INVOKESTATIC)
-						count = 0;  //no "this" reference
-					for (int i = 0; i < numberOfArgs; i++) {
-						attrs[i] = sf.getLocalAttr(count);
-						count++;
-						if(at[i]== Types.T_LONG || at[i] == Types.T_DOUBLE)
-							count++;
+					methodSummary.setMethodName(shortName);
+					Object [] args = md.getArgumentValues(ti);
+					String argValues = "";
+					for (int i=0; i<args.length; i++){
+						argValues = argValues + args[i];
+						if ((i+1) < args.length)
+							argValues = argValues + ",";
 					}
-					//@@@@@@@@@@
+					methodSummary.setArgValues(argValues);
+					String [] argTypeNames = md.getInvokedMethod(ti).getArgumentTypeNames();
+					String argTypes = "";
+					for (int j=0; j<argTypeNames.length; j++){
+						argTypes = argTypes + argTypeNames[j];
+						if ((j+1) < argTypeNames.length)
+							argTypes = argTypes + ",";
+					}
+					methodSummary.setArgTypes(argTypes);
 
-					// end code that gets the arg attributes
 
-					//Object[] attrsPeter = md.getArgumentAttrs(ti);
-					for (int k=0; k < numberOfArgs; k++)
-						System.out.println("attrs["+k+"]="+attrs[k]+ " ");
-					MethodSummaryClean methodSummary = new MethodSummaryClean();
+					//get the symbolic values (changed from constructing them here)
+					StackFrame sf = ti.getTopFrame();
+					String symValues = "";
+					String symVarName = "";
 
-					methodSummary.argValues = args;
-					methodSummary.symValues = attrs;
-					methodSummary.methodName = shortName;
+					String[] names = mi.getLocalVariableNames();
+
+					int sfIndex;
+
+
+					if(names == null)
+						throw new RuntimeException("ERROR: you need to turn debug option on");
+
+					if (md instanceof INVOKESTATIC)
+							sfIndex=0;
+					else
+						sfIndex=1; // do not consider implicit parameter "this"
+
+					for(int i=0; i < numberOfArgs; i++){
+						Expression expLocal = (Expression)sf.getLocalAttr(sfIndex);
+						if (expLocal != null){ // symbolic
+							symVarName = expLocal.toString();
+							symValues = symValues + symVarName + ",";
+						}
+						else
+							symVarName = names[sfIndex] + "_CONCRETE" + ",";
+
+						    sfIndex++;
+					}
+
+					// get rid of last ","
+					if (symValues.endsWith(",")) {
+						symValues = symValues.substring(0,symValues.length()-1);
+					}
+					methodSummary.setSymValues(symValues);
+
+					currentMethodName = longName;
 					allSummaries.put(longName,methodSummary);
 				}
+			}else if (insn instanceof ReturnInstruction){
+				MethodInfo mi = insn.getMethodInfo();
+				ClassInfo ci = mi.getClassInfo();
+				if (null != ci){
+					String className = ci.getName();
+					String methodName = mi.getName();
+					String longName = mi.getLongName();
+					int numberOfArgs = mi.getNumberOfArguments();
+
+					if (((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
+							|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
+
+						ss.retainAttributes(retainVal);
+						ss.setForced(forcedVal);
+						ChoiceGenerator <?>cg = vm.getChoiceGenerator();
+						if (!(cg instanceof PCChoiceGenerator)){
+							ChoiceGenerator <?> prev_cg = cg.getPreviousChoiceGenerator();
+							while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
+								prev_cg = prev_cg.getPreviousChoiceGenerator();
+							}
+							cg = prev_cg;
+						}
+						if ((cg instanceof PCChoiceGenerator) &&(
+								(PCChoiceGenerator) cg).getCurrentPC() != null){
+							PathCondition pc = ((PCChoiceGenerator) cg).getCurrentPC();
+
+							if (SymbolicInstructionFactory.concolicMode) { //TODO: cleaner
+								SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
+								PCAnalyzer pa = new PCAnalyzer();
+								pa.solve(pc,solver);
+							}
+							else
+								pc.solve();
+
+							String pcString = pc.stringPC();
+							Pair<String,String> pcPair = null;
+
+							String returnString = "";
+
+							pcString = pc.toString();
+							pcPair = new Pair<String,String>(pcString,returnString);
+							MethodSummary methodSummary = allSummaries.get(longName);
+							Vector<Pair> pcs = methodSummary.getPathConditions();
+							if ((!pcs.contains(pcPair)) && (pcString.contains("SYM"))) {
+								methodSummary.addPathCondition(pcPair);
+							}
+							allSummaries.put(longName,methodSummary);
+							System.out.println("PC "+pc.toString());
+							//System.out.println("Return is  "+returnString);
+							System.out.println("****************************");
+						}
+					}
+				}
 			}
-			//else if (insn instanceof ReturnInstruction){
-			// I don't think we need to do anything  here for printing test sequences...
-			// but I'll put code for printing method summaries as in the original SymbolicListener
-			//}
-
-
+		}
 	}
 
-
-
 	  public void stateBacktracked(Search search) {
-		 // here do something similar to what you do when propertyViolated
+
+		  JVM vm = search.getVM();
+		  Config conf = vm.getConfig();
+		  Instruction insn = vm.getChoiceGenerator().getInsn();
+		  SystemState ss = vm.getSystemState();
+		  MethodInfo mi = insn.getMethodInfo();
+		  String className = mi.getClassName();
+		  String methodName = mi.getFullName();
+		  //this method returns the number of slots for the arguments, including "this"
+		  int numberOfArgs = mi.getNumberOfArguments();
+
+		  if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
+					|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
+			//get the original values and save them for restoration after
+			//we are done with symbolic execution
+			retainVal = ss.getRetainAttributes();
+			forcedVal = ss.isForced();
+			//turn off state matching
+			ss.setForced(true);
+			//make sure it stays turned off when a new state is created
+			ss.retainAttributes(true);
+		  }
 	  }
+
+	  /*
+	   *  todo: needs to be implemented if we are going to support heuristic search
+	   */
+	  public void stateRestored(Search search) {
+		  System.err.println("Warning: State restored - heuristic search not supported");
+	  }
+	  /*
+	   * Save the method summaries to a file for use by others
+	   */
+	  public void searchFinished(Search search) {
+		  //writeTable();
+//		  if (search.getConfig().getStringArray("symbolic.dp")[0].equalsIgnoreCase("compare")) {
+//			  ProblemCompare.dump(search);
+//		  }
+	  }
+
+	  /*
+	   * The way this method works is specific to the format of the methodSummary
+	   * data structure
+	   */
+
+	  //TODO:  needs to be changed not to use String representations
+	  private void printMethodSummary(PrintWriter pw, MethodSummary methodSummary){
+
+
+		  System.out.println("Symbolic values: " +methodSummary.getSymValues());
+		  Vector<Pair> pathConditions = methodSummary.getPathConditions();
+		  if (pathConditions.size() > 0){
+			  Iterator it = pathConditions.iterator();
+			  String allTestCases = "";
+			  while(it.hasNext()){
+				  String testCase = methodSummary.getMethodName() + "(";
+				  Pair pcPair = (Pair)it.next();
+				  String pc = (String)pcPair.a;
+				  String errorMessage = (String)pcPair.b;
+				  String symValues = methodSummary.getSymValues();
+				  String argValues = methodSummary.getArgValues();
+				  String argTypes = methodSummary.getArgTypes();
+
+				  StringTokenizer st = new StringTokenizer(symValues, ",");
+				  StringTokenizer st2 = new StringTokenizer(argValues, ",");
+				  StringTokenizer st3 = new StringTokenizer(argTypes, ",");
+				  while(st2.hasMoreTokens()){
+					  String token = "";
+					  String actualValue = st2.nextToken();
+					  String actualType = st3.nextToken();
+					  if (st.hasMoreTokens())
+						  token = st.nextToken();
+					  if (pc.contains(token)){
+						  String temp = pc.substring(pc.indexOf(token));
+						  String val = temp.substring(temp.indexOf("[")+1,temp.indexOf("]"));
+						  if (actualType.equalsIgnoreCase("int") ||
+								  actualType.equalsIgnoreCase("float") ||
+								  actualType.equalsIgnoreCase("long") ||
+								  actualType.equalsIgnoreCase("double"))
+							  testCase = testCase + val + ",";
+						  else{ //translate boolean values represented as ints
+							  //to "true" or "false"
+							  if (val.equalsIgnoreCase("0"))
+								  testCase = testCase + "false" + ",";
+							  else
+								  testCase = testCase + "true" + ",";
+						  }
+					  }else{
+						  //need to check if value is concrete
+						  if (token.contains("CONCRETE"))
+							  testCase = testCase + actualValue + ",";
+						  else
+							  testCase = testCase + "don't care,";
+					  }
+				  }
+				  if (testCase.endsWith(","))
+					  testCase = testCase.substring(0,testCase.length()-1);
+				  testCase = testCase + ")";
+				  //process global information and append it to the output
+
+				  if (!errorMessage.equalsIgnoreCase(""))
+					  testCase = testCase + "  --> " + errorMessage;
+				  //do not add duplicate test case
+				  if (!allTestCases.contains(testCase))
+					  allTestCases = allTestCases + "\n" + testCase;
+			  }
+			  pw.println(allTestCases);
+		  }else{
+			  pw.println("No path conditions for " + methodSummary.getMethodName() +
+					  "(" + methodSummary.getArgValues() + ")");
+		  }
+	  }
+
+
+	  private void printMethodSummaryHTML(PrintWriter pw, MethodSummary methodSummary){
+		  pw.println("<h1>Test Cases Generated by Symbolic JavaPath Finder for " +
+				  methodSummary.getMethodName() + " (Path Coverage) </h1>");
+
+		  Vector<Pair> pathConditions = methodSummary.getPathConditions();
+		  if (pathConditions.size() > 0){
+			  Iterator it = pathConditions.iterator();
+			  String allTestCases = "";
+			  String symValues = methodSummary.getSymValues();
+			  StringTokenizer st = new StringTokenizer(symValues, ",");
+			  while(st.hasMoreTokens())
+				  allTestCases = allTestCases + "<td>" + st.nextToken() + "</td>";
+			  allTestCases = "<tr>" + allTestCases + "</tr>\n";
+			  while(it.hasNext()){
+				  String testCase = "<tr>";
+				  Pair pcPair = (Pair)it.next();
+				  String pc = (String)pcPair.a;
+				  String errorMessage = (String)pcPair.b;
+				  //String symValues = methodSummary.getSymValues();
+				  String argValues = methodSummary.getArgValues();
+				  String argTypes = methodSummary.getArgTypes();
+				  //StringTokenizer
+				  st = new StringTokenizer(symValues, ",");
+				  StringTokenizer st2 = new StringTokenizer(argValues, ",");
+				  StringTokenizer st3 = new StringTokenizer(argTypes, ",");
+				  while(st2.hasMoreTokens()){
+					  String token = "";
+					  String actualValue = st2.nextToken();
+					  String actualType = st3.nextToken();
+					  if (st.hasMoreTokens())
+						  token = st.nextToken();
+					  if (pc.contains(token)){
+						  String temp = pc.substring(pc.indexOf(token));
+						  String val = temp.substring(temp.indexOf("[")+1,temp.indexOf("]"));
+						  if (actualType.equalsIgnoreCase("int") ||
+								  actualType.equalsIgnoreCase("float") ||
+								  actualType.equalsIgnoreCase("long") ||
+								  actualType.equalsIgnoreCase("double"))
+							  testCase = testCase + "<td>" + val + "</td>";
+						  else{ //translate boolean values represented as ints
+							  //to "true" or "false"
+							  if (val.equalsIgnoreCase("0"))
+								  testCase = testCase + "<td>false</td>";
+							  else
+								  testCase = testCase + "<td>true</td>";
+						  }
+					  }else{
+						  //need to check if value is concrete
+						  if (token.contains("CONCRETE"))
+							  testCase = testCase + "<td>" + actualValue + "</td>";
+						  else
+							  testCase = testCase + "<td>don't care</td>";
+					  }
+				  }
+
+				 //testCase = testCase + "</tr>";
+				  //process global information and append it to the output
+
+
+				  if (!errorMessage.equalsIgnoreCase(""))
+					  testCase = testCase + "<td>" + errorMessage + "</td>";
+				  //do not add duplicate test case
+				  if (!allTestCases.contains(testCase))
+					  allTestCases = allTestCases + testCase + "</tr>\n";
+			  }
+			  pw.println("<table border=1>");
+			  pw.print(allTestCases);
+			  pw.println("</table>");
+		  }else{
+			  pw.println("No path conditions for " + methodSummary.getMethodName() +
+					  "(" + methodSummary.getArgValues() + ")");
+		  }
+
+	  }
+
+
 
       //	-------- the publisher interface
 	  public void publishFinished (Publisher publisher) {
+		String[] dp = SymbolicInstructionFactory.dp;
+		if (dp[0].equalsIgnoreCase("no_solver") || dp[0].equalsIgnoreCase("cvc3bitvec"))
+				return;
+
 	    PrintWriter pw = publisher.getOut();
-        // here just print the method sequences
-	    publisher.publishTopicStart("Method Sequences");
-	    Iterator<String> it = test_sequences.iterator();
-	    while (it.hasNext())
-	    	pw.println(it.next());
+
+	    publisher.publishTopicStart("Method Summaries");
+	    Iterator it = allSummaries.entrySet().iterator();
+	    while (it.hasNext()){
+	    	Map.Entry me = (Map.Entry)it.next();
+	    	MethodSummary methodSummary = (MethodSummary)me.getValue();
+	    	printMethodSummary(pw, methodSummary);
+	    }
+
+	    publisher.publishTopicStart("Method Summaries (HTML)");
+	    it = allSummaries.entrySet().iterator();
+	    while (it.hasNext()){
+	    	Map.Entry me = (Map.Entry)it.next();
+	    	MethodSummary methodSummary = (MethodSummary)me.getValue();
+	    	printMethodSummaryHTML(pw, methodSummary);
+	    }
 	  }
 
-	  protected class MethodSummaryClean{
-			private String methodName;
-			private Object [] argValues;
-			private Object [] symValues;
+	  protected class MethodSummary{
+			private String methodName = "";
+			private String argTypes = "";
+			private String argValues = "";
+			private String symValues = "";
+			private Vector<Pair> pathConditions;
+
+			public MethodSummary(){
+			 	pathConditions = new Vector<Pair>();
+			}
+
+			public void setMethodName(String mName){
+				this.methodName = mName;
+			}
+
+			public String getMethodName(){
+				return this.methodName;
+			}
+
+			public void setArgTypes(String args){
+				this.argTypes = args;
+			}
+
+			public String getArgTypes(){
+				return this.argTypes;
+			}
+
+			public void setArgValues(String vals){
+				this.argValues = vals;
+			}
+
+			public String getArgValues(){
+				return this.argValues;
+			}
+
+			public void setSymValues(String sym){
+				this.symValues = sym;
+			}
+
+			public String getSymValues(){
+				return this.symValues;
+			}
+
+			public void addPathCondition(Pair pc){
+				pathConditions.add(pc);
+			}
+
+			public Vector<Pair> getPathConditions(){
+				return this.pathConditions;
+			}
+
 	  }
 }
+

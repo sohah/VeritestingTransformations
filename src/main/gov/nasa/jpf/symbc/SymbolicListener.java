@@ -35,6 +35,7 @@ import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jvm.Types;
 //import gov.nasa.jpf.jvm.bytecode.ARETURN;
 //import gov.nasa.jpf.jvm.bytecode.IRETURN;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -129,8 +130,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 		JVM vm = search.getVM();
 		//Config conf = vm.getConfig();
-		SystemState ss = vm.getSystemState();
-		ClassInfo ci = vm.getClassInfo();
+		//SystemState ss = vm.getSystemState();
+		//ClassInfo ci = vm.getClassInfo();
 		//String className = ci.getName();
 		//ThreadInfo ti = vm.getLastThreadInfo();
 		//MethodInfo mi = ti.getMethod();
@@ -191,11 +192,11 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				InvokeInstruction md = (InvokeInstruction) insn;
 				String methodName = md.getInvokedMethodName();
 				int numberOfArgs = md.getArgumentValues(ti).length;
+
 				MethodInfo mi = md.getInvokedMethod();
 				ClassInfo ci = mi.getClassInfo();
 				String className = ci.getName();
-				//neha:changed invoked method to full name method
-				//System.out.println("!!!!!!!!!! full name "+mi.getFullName());
+
 				if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 						|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null)){
 					//get the original values and save them for restoration after
@@ -222,68 +223,58 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 					if (methodName.contains("("))
 						shortName = methodName.substring(0,methodName.indexOf("("));
 					methodSummary.setMethodName(shortName);
-					Object [] args = md.getArgumentValues(ti);
-					String argValues = "";
-					for (int i=0; i<args.length; i++){
-						argValues = argValues + args[i];
-						if ((i+1) < args.length)
-							argValues = argValues + ",";
+					Object [] argValues = md.getArgumentValues(ti);
+					String argValuesStr = "";
+					for (int i=0; i<argValues.length; i++){
+						argValuesStr = argValuesStr + argValues[i];
+						if ((i+1) < argValues.length)
+							argValuesStr = argValuesStr + ",";
 					}
-					methodSummary.setArgValues(argValues);
-					String [] argTypeNames = md.getInvokedMethod(ti).getArgumentTypeNames();
-					String argTypes = "";
-					for (int j=0; j<argTypeNames.length; j++){
-						argTypes = argTypes + argTypeNames[j];
-						if ((j+1) < argTypeNames.length)
-							argTypes = argTypes + ",";
+					methodSummary.setArgValues(argValuesStr);
+					byte [] argTypes = mi.getArgumentTypes();
+					String argTypesStr = "";
+					for (int i=0; i<argTypes.length; i++){
+						argTypesStr = argTypesStr + argTypes[i];
+						if ((i+1) < argTypes.length)
+							argTypesStr = argTypesStr + ",";
 					}
-					methodSummary.setArgTypes(argTypes);
-
+					methodSummary.setArgTypes(argTypesStr);
 
 					//get the symbolic values (changed from constructing them here)
-					StackFrame sf = ti.getTopFrame();
-					String symValues = "";
-					String symVarName = "";
+					String symValuesStr = "";
+					String symVarNameStr = "";
 
-					String[] names = mi.getLocalVariableNames();
+					String[] names = mi.getLocalVariableNames(); // seems names does contain "this" so we need one more index :( namesIndex
 
-					int sfIndex;
-
-					//TODO:
-					//if debug option was not used when compiling the class,
-					//then we do not have names of the locals and need to
-					//use a different naming scheme
-					//previous code was broken
 					if(names == null)
 						throw new RuntimeException("ERROR: you need to turn debug option on");
 
-					if (md instanceof INVOKESTATIC)
-							sfIndex=0;
-					else
-						sfIndex=1; // do not consider implicit parameter "this"
+					int sfIndex=1; //do not consider implicit param "this"
+					int namesIndex=1;
+					if (md instanceof INVOKESTATIC) {
+							sfIndex=0; // no "this" for static
+							namesIndex =0;
+					}
+					StackFrame sf = ti.getTopFrame();
 
 					for(int i=0; i < numberOfArgs; i++){
 						Expression expLocal = (Expression)sf.getLocalAttr(sfIndex);
-						if (expLocal != null){ // symbolic
-							symVarName = expLocal.toString();
-							symValues = symValues + symVarName + ",";
-						}
+						if (expLocal != null) // symbolic
+							symVarNameStr = expLocal.toString();
 						else
-							symVarName = names[sfIndex] + "_CONCRETE" + ",";
+							symVarNameStr = names[namesIndex] + "_CONCRETE" + ",";
+						symValuesStr = symValuesStr + symVarNameStr + ",";
+						sfIndex++;namesIndex++;
+						if(argTypes[i] == Types.T_LONG || argTypes[i] == Types.T_DOUBLE)
+							sfIndex++;
 
-						//if(sf.getLocalVariableType(names[sfIndex]).equals("D") || sf.getLocalVariableType(names[sfIndex]).equals("L"))
-//						if(argTypeNames[i].equals("double") || argTypeNames[i].equals("long"))
-//							sfIndex=sfIndex+2;
-//
-//						else
-						    sfIndex++;
 					}
 
 					// get rid of last ","
-					if (symValues.endsWith(",")) {
-						symValues = symValues.substring(0,symValues.length()-1);
+					if (symValuesStr.endsWith(",")) {
+						symValuesStr = symValuesStr.substring(0,symValuesStr.length()-1);
 					}
-					methodSummary.setSymValues(symValues);
+					methodSummary.setSymValues(symValuesStr);
 
 					currentMethodName = longName;
 					allSummaries.put(longName,methodSummary);
@@ -468,24 +459,23 @@ end to review*/
 				  while(st2.hasMoreTokens()){
 					  String token = "";
 					  String actualValue = st2.nextToken();
-					  String actualType = st3.nextToken();
+					  byte actualType = Byte.parseByte(st3.nextToken());
 					  if (st.hasMoreTokens())
 						  token = st.nextToken();
 					  if (pc.contains(token)){
 						  String temp = pc.substring(pc.indexOf(token));
 						  String val = temp.substring(temp.indexOf("[")+1,temp.indexOf("]"));
-						  if (actualType.equalsIgnoreCase("int") ||
-								  actualType.equalsIgnoreCase("float") ||
-								  actualType.equalsIgnoreCase("long") ||
-								  actualType.equalsIgnoreCase("double"))
+						  if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_DOUBLE)
 							  testCase = testCase + val + ",";
-						  else{ //translate boolean values represented as ints
+						  else if (actualType == Types.T_BOOLEAN){ //translate boolean values represented as ints
 							  //to "true" or "false"
 							  if (val.equalsIgnoreCase("0"))
 								  testCase = testCase + "false" + ",";
 							  else
 								  testCase = testCase + "true" + ",";
 						  }
+						  else
+							  throw new RuntimeException("## Error: listener does not support type other than int, long, float, double and boolean");
 					  }else{
 						  //need to check if value is concrete
 						  if (token.contains("CONCRETE"))
@@ -541,24 +531,24 @@ end to review*/
 				  while(st2.hasMoreTokens()){
 					  String token = "";
 					  String actualValue = st2.nextToken();
-					  String actualType = st3.nextToken();
+					  byte actualType = Byte.parseByte(st3.nextToken());
 					  if (st.hasMoreTokens())
 						  token = st.nextToken();
 					  if (pc.contains(token)){
 						  String temp = pc.substring(pc.indexOf(token));
 						  String val = temp.substring(temp.indexOf("[")+1,temp.indexOf("]"));
-						  if (actualType.equalsIgnoreCase("int") ||
-								  actualType.equalsIgnoreCase("float") ||
-								  actualType.equalsIgnoreCase("long") ||
-								  actualType.equalsIgnoreCase("double"))
+					      if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_DOUBLE)
 							  testCase = testCase + "<td>" + val + "</td>";
-						  else{ //translate boolean values represented as ints
+						  else if (actualType == Types.T_BOOLEAN) { //translate boolean values represented as ints
 							  //to "true" or "false"
 							  if (val.equalsIgnoreCase("0"))
 								  testCase = testCase + "<td>false</td>";
 							  else
 								  testCase = testCase + "<td>true</td>";
 						  }
+						  else
+							  throw new RuntimeException("## Error: listener does not support type other than int, long, float, double and boolean");
+
 					  }else{
 						  //need to check if value is concrete
 						  if (token.contains("CONCRETE"))

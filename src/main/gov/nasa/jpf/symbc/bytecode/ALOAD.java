@@ -25,7 +25,8 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 
 	public ALOAD(int localVarIndex) {
 	    super(localVarIndex);
-	  }
+	}
+
 	private HeapNode[] prevSymRefs;
 	private ChoiceGenerator<?> prevHeapCG;
 	private int numSymRefs = 0;

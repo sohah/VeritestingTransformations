@@ -14,14 +14,21 @@ public class ExSymExe {
 	  //inst.test1(x,true);
 	  //inst.test3(0.0, 0.0);
 	  inst.test4(0.0, 0);
-	  inst.test5(0.0, 0);
+	  inst.test5(0, 0);
   }
   /* we want to let the user specify that this method should be symbolic */
   public void test5(double xm, double ym) {
-	  if(ym == (1.0 + xm) && (ym - xm) == (3.0 + ym))
-		 System.out.println("true");
+//	  if(ym == (1.0 + xm) && (ym - xm) == (3.0 + ym))
+//		 System.out.println("true");
+//	  else
+//		 System.out.println("false");
+	  if (xm < ym && xm > ym) {
+		  System.out.println("unreachable");
+		  assert(false);
+	  }
 	  else
-		 System.out.println("false");
+		  assert (true);
+
   }
 
   public void test3(double x, double y) {
