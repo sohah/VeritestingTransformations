@@ -1,5 +1,5 @@
 //TODO: needs to be simplified;
-// summary printing broken
+
 
 //
 //Copyright (C) 2007 United States Government as represented by the
@@ -20,7 +20,7 @@
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 package gov.nasa.jpf.symbc;
 
-// does not work well for static methods:summary not printed for errors
+
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;

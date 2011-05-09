@@ -11,7 +11,7 @@ public class ExSymExe {
 	  field = 9;
 	  //inst.test(0, 1);
 	  //inst.test2(x,x);
-	  //inst.test1(x,true);
+	  test1(x,true);
 	  //inst.test3(0.0, 0.0);
 	  inst.test4(0.0, 0);
 	  inst.test5(0, 0);
@@ -50,7 +50,7 @@ public class ExSymExe {
   }
 
 
-  public void test1 (int x, boolean b) {
+  public static void test1 (int x, boolean b) {
 	  Integer z = new Integer(x);
 	  if (z <= 1200)
 		  System.out.println("le 1200");
@@ -59,8 +59,8 @@ public class ExSymExe {
 	  if(b)
 		  System.out.println("b true");
 	  else
-		  System.out.println("b false");
-	 //assert (false);
+		  //System.out.println("b false");
+		  assert (false);
   }
   public void test (int x, int z) {
 	  if (x > z)

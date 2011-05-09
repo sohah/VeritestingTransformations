@@ -920,7 +920,8 @@ public class SymbolicStringHandler {
 				return invInst.getNext();
 			}
 		} else {
-			System.err.println("ERROR: Initialization type not handled in Symbolic String Handler init");
+			// Corina TODO: we should allow symbolic string analysis to kick in only when desired
+			System.err.println("Warning Symbolic String Analysis: Initialization type not handled in symbc/bytecode/SymbolicStringHandler init");
 			return null;
 		}
 
