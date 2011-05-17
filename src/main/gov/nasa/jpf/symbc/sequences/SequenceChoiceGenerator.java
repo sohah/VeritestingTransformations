@@ -16,11 +16,8 @@
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 package gov.nasa.jpf.symbc.sequences;
-
-import java.util.Vector;
-
 import gov.nasa.jpf.jvm.choice.IntIntervalGenerator;
-import gov.nasa.jpf.symbc.numeric.PathCondition;
+
 
 /**
 * @author pcorina
@@ -41,7 +38,8 @@ public class SequenceChoiceGenerator extends IntIntervalGenerator {
   private Object [] attributes;
 
   // will always make only one choice
-  public SequenceChoiceGenerator(String _methodShortName) {
+@SuppressWarnings("deprecation")
+public SequenceChoiceGenerator(String _methodShortName) {
       super(0, 0);
       methodShortName = _methodShortName;
   }
