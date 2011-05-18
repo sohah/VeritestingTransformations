@@ -1,4 +1,4 @@
-target=gov.nasa.jpf.symbc.ExSymExe
+target=gov.nasa.jpf.symbc.ExSymExeSwitch
 
 classpath=${jpf-symbc}/build/tests
 
@@ -16,14 +16,14 @@ sourcepath=${jpf-symbc}/src/tests
 # in this particular configuration all the input
 # parameters to methods test2 and test are symbolic
 #symbolic.dp=no_solver
-symbolic.dp=coral
+#symbolic.dp=coral
 #symbolic.dp=choco2
 #symbolic.dp=yices
 
 #symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test(sym#sym)
-symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test1(sym#sym)
+symbolic.method= gov.nasa.jpf.symbc.ExSymExeSwitch.test(sym)
 #,gov.nasa.jpf.symbc.ExSymExe.test5(sym#sym)
-listener = gov.nasa.jpf.symbc.SymbolicListener
+#listener = gov.nasa.jpf.symbc.SymbolicListener
 
 vm.storage.class=nil
 

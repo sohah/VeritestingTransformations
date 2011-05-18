@@ -24,5 +24,6 @@
 	<classpathentry kind="lib" path="lib/choco-solver-2.1.1-20100709.142532-2.jar"/>
 	<classpathentry kind="lib" path="lib/yicesapijava.jar"/>
 	<classpathentry kind="lib" path="lib/aima-core.jar"/>
+	<classpathentry kind="lib" path="lib/bcel.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

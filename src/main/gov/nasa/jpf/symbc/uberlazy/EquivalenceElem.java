@@ -16,31 +16,35 @@
 // THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
-package gov.nasa.jpf.symbc.bytecode;
 
+package gov.nasa.jpf.symbc.uberlazy;
 
-/**
- * Access jump table by key match and jump
- * ..., key => ...
- */
-public class LOOKUPSWITCH extends SwitchInstruction implements gov.nasa.jpf.jvm.LookupSwitchInstruction {
-
-	  public LOOKUPSWITCH (int defaultTarget, int numberOfTargets) {
-	    super(defaultTarget, numberOfTargets);
-	  }
-
-	  public void setTarget (int index, int match, int target){
-	    targets[index] = target;
-	    matches[index] = match;
-	  }
-
-
-	  public int getLength() {
-	    return 10 + 2*(matches.length); // <2do> NOT RIGHT: padding!!
-	  }
-
-	  public int getByteCode () {
-	    return 0xAB;
-	  }
-
-}
+public class EquivalenceElem implements Cloneable{
+	protected String typeOfElem;
+	protected String aliasIdentifier;
+	
+	public EquivalenceElem(String typeOfElem, String aliasIdentifier) {
+		this.typeOfElem = typeOfElem;
+		this.aliasIdentifier = aliasIdentifier;
+	}
+	
+	public String getTypeOfElement() {
+		return typeOfElem;
+	}
+	
+	public String getAliasIdentifier() {
+		return aliasIdentifier;
+	}
+	
+	public String toString() {
+		String outputString = "(".concat(typeOfElem).concat(", ");
+		outputString = outputString.concat(aliasIdentifier).concat(")");
+		return outputString;
+	}
+	
+	public EquivalenceElem make_copy() {
+		EquivalenceElem copy = new EquivalenceElem(this.typeOfElem,
+									this.aliasIdentifier);
+		return copy;
+	}
+ }

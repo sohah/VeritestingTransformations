@@ -1,13 +1,13 @@
 //
-// Copyright (C) 2006 United States Government as represented by the
+// Copyright (C) 2007 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration
 // (NASA).  All Rights Reserved.
-//
+// 
 // This software is distributed under the NASA Open Source Agreement
 // (NOSA), version 1.3.  The NOSA has been approved by the Open Source
 // Initiative.  See the file NOSA-1.3-JPF at the top of the distribution
 // directory tree for the complete NOSA document.
-//
+// 
 // THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY
 // KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT
 // LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO
@@ -16,31 +16,33 @@
 // THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT
 // DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
-package gov.nasa.jpf.symbc.bytecode;
+package gov.nasa.jpf.symbc.uberlazy;
 
+import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 
-/**
- * Access jump table by key match and jump
- * ..., key => ...
- */
-public class LOOKUPSWITCH extends SwitchInstruction implements gov.nasa.jpf.jvm.LookupSwitchInstruction {
+public class PartitionChoiceGenerator extends HeapChoiceGenerator {
 
-	  public LOOKUPSWITCH (int defaultTarget, int numberOfTargets) {
-	    super(defaultTarget, numberOfTargets);
-	  }
+	EquivalenceObjects [] eqObjsList; // list of equivalence classes
+	
+	public PartitionChoiceGenerator(int size) {
+		super(size);
+		eqObjsList = new EquivalenceObjects[size];
+	}
+	
+	public void setEquivalenceObj(EquivalenceObjects equivObj) {
+		eqObjsList[getNextChoice()] = equivObj;
+	}
+	
+	// creates a deep copy 
+	public EquivalenceObjects getCurrentEquivalenceObject() {
 
-	  public void setTarget (int index, int match, int target){
-	    targets[index] = target;
-	    matches[index] = match;
-	  }
-
-
-	  public int getLength() {
-	    return 10 + 2*(matches.length); // <2do> NOT RIGHT: padding!!
-	  }
-
-	  public int getByteCode () {
-	    return 0xAB;
-	  }
-
+		EquivalenceObjects eqObjs;
+		
+		eqObjs = eqObjsList[getNextChoice()];
+		if(eqObjs != null) {
+			return ((EquivalenceObjects)eqObjs.make_copy());
+		} else {
+			return null;
+		}
+	}
 }
