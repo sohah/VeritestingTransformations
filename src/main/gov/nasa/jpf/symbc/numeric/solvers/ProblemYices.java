@@ -19,443 +19,372 @@
 
 package gov.nasa.jpf.symbc.numeric.solvers;
 
-
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-
-
-import yices.*;
+import java.util.HashMap;
 
 public class ProblemYices extends ProblemGeneral {
-	YicesLite yices;
-	int ctx;
-	static YicesLite oldYices;
-	static int oldCtx;
+  Yices yices;
+  int ctx;
+  static Yices oldYices;
+  static int oldCtx;
 
-	public ProblemYices() {
-		//reset the old context
-		if(oldYices!=null)
-			oldYices.yicesl_del_context(oldCtx);
+  HashMap<String, String> modelMap = new HashMap<String, String>();
 
-		yices = new YicesLite();
-		ctx = yices.yicesl_mk_context();
-//		yices.yicesl_read(ctx,"(set-evidence! true)");
-//		yices.yicesl_read(ctx,"(set-arith-only! true)");
-		yices.yicesl_set_verbosity((short)0);
-		//pb.setPrecision(1e-8);// need to check this
-//		workingDir = System.getProperty("user.dir");
-	}
+  public ProblemYices() {
+    //reset the old context
+    if(oldYices!=null)
+      oldYices.yicesl_del_context(oldCtx);
 
-	public String makeIntVar(String name, int min, int max) {
-		yices.yicesl_read(ctx,"(define "+name+"::int)");
-		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
-		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
-		return name;
-	}
+    String workingDir = System.getProperty("user.dir");
+    String modelDir = workingDir + "/yicesOutput";
+    File file = new File(modelDir);
+    if (!file.exists()) {
+      try {
+        file.mkdir();
+      } catch (Exception e) {
+        throw new RuntimeException("# Error: Cannot create directory" + modelDir);
+      }
+    }
 
-	public String makeRealVar(String name, double min, double max) {
-		yices.yicesl_read(ctx,"(define "+name+"::real)");
-		yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
-		yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
-		return name;
-	}
+    yices = new Yices();
 
-	public Object eq(int value, Object exp){return "(= " + value + " " + (String)exp + ")";}
-	public Object eq(Object exp, int value){return "(= " + (String)exp + " " + value + ")";}
-	public Object eq(Object exp1, Object exp2){
-		return "(= " + (String)exp1 + " " + (String)exp2 + ")";
-	}
-	public Object eq(double value, Object exp){return "(= " + value + " " + (String)exp + ")";}
-	public Object eq(Object exp, double value){return "(= " + (String)exp + " " + value + ")";}
-	public Object neq(int value, Object exp){return "(/= " + value + " " + (String)exp + ")";}
-	public Object neq(Object exp, int value){return "(/= " + (String)exp + " " + value + ")";}
-	public Object neq(Object exp1, Object exp2){
-		return "(/= " + (String)exp1 + " " + (String)exp2 + ")";
+    ctx = yices.yicesl_mk_context();
+    yices.yicesl_set_verbosity((short)0);
+    //		workingDir = System.getProperty("user.dir");
+  }
 
-	}
-	public Object neq(double value, Object exp){return "(/= " + value + " " + (String)exp + ")";}
-	public Object neq(Object exp, double value){return "(/= " + (String)exp + " " + value + ")";}
-	public Object leq(int value, Object exp){return "(<= " + value + " " + (String)exp + ")";}
-	public Object leq(Object exp, int value){return "(<= " + (String)exp + " " + value + ")";}
-	public Object leq(Object exp1, Object exp2){
-		return "(<= " + (String)exp1 + " " + (String)exp2 + ")";
-	}
-	public Object leq(double value, Object exp){return "(<= " + value + " " + (String)exp + ")";}
-	public Object leq(Object exp, double value){return "(<= " + (String)exp + " " + value + ")";}
-	public Object geq(int value, Object exp){return "(>= " + value + " " + (String)exp + ")";}
-	public Object geq(Object exp, int value){return "(>= " + (String)exp + " " + value + ")";}
-	public Object geq(Object exp1, Object exp2){
-		return "(>= " + (String)exp1 + " " + (String)exp2 + ")";
-	}
-	public Object geq(double value, Object exp){
-		return "(>= " + value + " " + (String)exp + ")";
-	}
-	public Object geq(Object exp, double value){
-		return "(>= " + (String)exp + " " + value + ")";
-	}
-	public Object lt(int value, Object exp){
-		return "(< " + value + " " + (String)exp + ")";
-	}
-	public Object lt(Object exp, int value){
-		return "(< " + (String)exp + " " + value + ")";
-	}
-	public Object lt(Object exp1, Object exp2){
-		return "(< " + (String)exp1 + " " + (String)exp2 + ")";
-	}
-	public Object lt(double value, Object exp){
-		return "(< " + value + " " + (String)exp + ")";
-	}
-	public Object lt(Object exp, double value){
-		return "(< " + (String)exp + " " + value + ")";
-	}
-	public Object gt(int value, Object exp){
-		return "(> " + value + " " + (String)exp + ")";
-	}
-	public Object gt(Object exp, int value){
-		return "(> " + (String)exp + " " + value + ")";
-	}
-	public Object gt(Object exp1, Object exp2){
-		return "(> " + (String)exp1 + " " + (String)exp2 + ")";
-	}
-	public Object gt(double value, Object exp){
-		return "(> " + value + " " + (String)exp + ")";
-	}
-	public Object gt(Object exp, double value){
-		return "(> " + (String)exp + " " + value + ")";
-	}
+  public String getYicesDouble(double d) {
+    int power = 1;
+    String dstr = Double.toString(d);
+    if (dstr.contains("E")) {
+      int indexOfE = dstr.indexOf('E');
+      power = Integer.decode(dstr.substring(indexOfE));
+      dstr = dstr.substring(0, indexOfE);
+    }
+    if (dstr.contains(".")) {
+      int indexOfDot = dstr.indexOf('.');
+      int length = dstr.length();
+      int nZeroes = length - indexOfDot - 1;
+      dstr = dstr.substring(0, indexOfDot) + dstr.substring(indexOfDot + 1, length);
+      int div = 1;
+      while (nZeroes > 0) {
+        div *= 10;
+        nZeroes--;
+      }
+      if (power > 1)
+        return "(/ (* " + dstr + " " + power + ") " + div + ")";
+      else
+        return "(/ " + dstr + " " + div + ")";
+    } else
+      return "(*" + dstr + " " + power + ")"; 
+  }
 
-	public Object plus(int value, Object exp) {
-		return "(+ " + value + " " + (String)exp + ")";
-	}
-	public Object plus(Object exp, int value) {
-		return "(+ " + (String)exp + " " + value + ")";
-	}
-	public Object plus(Object exp1, Object exp2) {
-		return "(+ " + (String)exp1 + " " + (String)exp2 + ")";
-	}
-	public Object plus(double value, Object exp) {
-		return "(+ " + value + " " + (String)exp + ")";
-	}
-	public Object plus(Object exp, double value) {
-		return "(+ " + (String)exp + " " + value + ")";
-	}
+  public double getYicesDouble(String value)
+  {
+    boolean isNeg = false;
+    if (value.contains("/")) {
+      String[] tokens = value.split("/");
 
-	public Object minus(int value, Object exp) {
-		return "(- " + value + " " + (String)exp + ")";
-	}
-	public Object minus(Object exp, int value) {
-		return "(- " + (String)exp + " " + value + ")";
-	}
-	public Object minus(Object exp1, Object exp2) {
-		return "(- " + (String)exp1 + " " + (String)exp2 + ")";
-	}
-	public Object minus(double value, Object exp) {
-		return "(- " + value + " " + (String)exp + ")";
-	}
-	public Object minus(Object exp, double value) {
-		return "(- " + (String)exp + " " + value + ")";
-	}
-	public Object mult(int value, Object exp) {
-		return "(* " + value + " " + (String)exp + ")";
-	}
-	public Object mult(Object exp, int value) {
-		return "(* " + (String)exp + " " + value + ")";
-	}
-	public Object mult(Object exp1, Object exp2) {
-		return "(* " + (String)exp1 + " " + (String)exp2 + ")";
-	}
-	public Object mult(double value, Object exp) {
-		return "(* " + value + " " + (String)exp + ")";
-	}
-	public Object mult(Object exp, double value) {
-		return "(* " + (String)exp + " " + value + ")";
-	}
-	public Object div(int value, Object exp) {
-		return "(/ " + value + " " + (String)exp + ")";
-	}
-	public Object div(Object exp, int value) {
-		return "(/ " + (String)exp + " " + value + ")";
-	}
-	public Object div(Object exp1, Object exp2) {
-		return "(/ " + (String)exp1 + " " + (String)exp2 + ")";
-	}
-	public Object div(double value, Object exp) {
-		return "(/ " + value + " " + (String)exp + ")";
-	}
-	public Object div(Object exp, double value) {
-		return "(/ " + (String)exp + " " + value + ")";
-	}
-//	Object sin(Object exp) {
-//		return pb.sin((RealExp) exp);
-//	}
-//	Object cos(Object exp) {
-//		return pb.cos((RealExp) exp);
-//	}
-//
-//	Object power(Object exp, double value) {
-//		return pb.power((RealExp) exp, (int)value);
-//	}
-	public Object mixed(Object exp1, Object exp2) { // TODO:check !!!
-		return "(= " + (String)exp1 + " " + (String)exp2 + ")";
-	}
+      if (tokens[0].startsWith("-")) {
+        isNeg = true;
+        tokens[0] = tokens[0].substring(1);
+      }
 
-	public double getRealValueInf(Object dpVar) {
-//		return ((RealVar) dpVar).getValue().getInf();
-//		throw new RuntimeException("# Error: Yices can not compute realValueInf!");
-		//System.out.println("# Warning: Yices can not compute realValueInf! (used 0.0)");
-		//return 0.0;
-		return getRealValue(dpVar);
-	}
-	public double getRealValueSup(Object dpVar) {
-//		return ((RealVar) dpVar).getValue().getSup();
-//		throw new RuntimeException("# Error: Yices can not compute realValueSup!");
-		System.out.println("# Warning: Yices can not compute realValueSup! (used 0.0)");
-		return 0.0;
-	}
-	public double getRealValue(Object dpVar) {
-//		return ((IntDomainVar) dpVar).getVal();
-//		System.out.println("lookup variable "+(String)dpVar);
-		String vname = (String) dpVar;
+      double left = Double.valueOf(tokens[0]);
+      double right = Double.valueOf(tokens[1]);
 
-		int sat = yices.yicesl_inconsistent(ctx);
-		if(sat == 0){
-			//dump solution
-//			System.out.println(System.getProperty("user.dir"));
-			String workingDir = System.getProperty("user.dir");
+      if (right == 0)
+        throw new RuntimeException("# Error: Divide by zero!");
 
-			yices.yicesl_set_output_file(workingDir+"/yicesOutput/out.txt");
-			yices.yicesl_read(ctx,"(set-evidence! true)");
-			yices.yicesl_read(ctx, "(check)");
-			yices.yicesl_read(ctx,"(set-evidence! false)");
+      return isNeg ? -1.0 * left / right : left / right;
+    } else
+      return Double.valueOf(value);
+  }
 
-			//read in solution and look up the value to return
-			BufferedReader bufferedReader = null;
-			try {
-				bufferedReader =  new BufferedReader(new FileReader(new File(workingDir+"/yicesOutput/out.txt")));
-				String new_line;
-				String delims = "[ ]+";
-				 while((new_line = bufferedReader.readLine()) != null) {
-					  String[] tokens = new_line.split(delims);
-					  if(tokens.length == 3){
-						  if(tokens[1].compareTo(vname) == 0){
-							  int value = Integer.parseInt(tokens[2].substring(0, tokens[2].length()-1));
-//							  System.out.println(vname+" = "+value);
-							  return value;
-						  }
-					  }
-		  		 }
-			} catch (FileNotFoundException ex) {
-		        ex.printStackTrace();
-		    } catch (IOException ex) {
-		        ex.printStackTrace();
-		    } finally {
-		        //Close the BufferedWriter
-		        try {
-		            if (bufferedReader != null) {
-		                bufferedReader.close();
-		            }
-		        } catch (IOException ex) {
-		            ex.printStackTrace();
-		        }
-		    }
-		}
-		//throw new RuntimeException("# Error: Yices didn't find real solution for variable "+vname);
-		return 0.0;
-	}
-	static java.io.File f;
-	static java.io.FileReader fr;
+  public String makeIntVar(String name, int min, int max) {
+    yices.yicesl_read(ctx,"(define "+name+"::int)");
+    yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
+    yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
+    return name;
+  }
 
+  public String makeRealVar(String name, double min, double max) {
+    yices.yicesl_read(ctx,"(define "+name+"::real)");
+    yices.yicesl_read(ctx,"(assert (> "+ name + " " + getYicesDouble(min) +"))");
+    yices.yicesl_read(ctx,"(assert (< "+ name + " " + getYicesDouble(max) +"))");
+    return name;
+  }
 
-	public int getIntValue(Object dpVar) {
+  public Object eq(int value, Object exp){return "(= " + value + " " + (String)exp + ")";}
+  public Object eq(Object exp, int value){return "(= " + (String)exp + " " + value + ")";}
+  public Object eq(Object exp1, Object exp2){return "(= " + (String)exp1 + " " + (String)exp2 + ")";}
+  public Object eq(double value, Object exp){return "(= " + getYicesDouble(value) + " " + (String)exp + ")";}
+  public Object eq(Object exp, double value){return "(= " + (String)exp + " " + getYicesDouble(value) + ")";}
 
-		String vname = (String) dpVar;
+  public Object neq(int value, Object exp){return "(/= " + value + " " + (String)exp + ")";}
+  public Object neq(Object exp, int value){return "(/= " + (String)exp + " " + value + ")";}
+  public Object neq(Object exp1, Object exp2){return "(/= " + (String)exp1 + " " + (String)exp2 + ")";}
+  public Object neq(double value, Object exp){return "(/= " + getYicesDouble(value) + " " + (String)exp + ")";}
+  public Object neq(Object exp, double value){return "(/= " + (String)exp + " " + getYicesDouble(value) + ")";}
 
-		int sat = yices.yicesl_inconsistent(ctx);
+  public Object leq(int value, Object exp){return "(<= " + value + " " + (String)exp + ")";}
+  public Object leq(Object exp, int value){return "(<= " + (String)exp + " " + value + ")";}
+  public Object leq(Object exp1, Object exp2){return "(<= " + (String)exp1 + " " + (String)exp2 + ")";}
+  public Object leq(double value, Object exp){return "(<= " + getYicesDouble(value) + " " + (String)exp + ")";}
+  public Object leq(Object exp, double value){return "(<= " + (String)exp + " " + getYicesDouble(value) + ")";}
 
-		if(sat == 0){
-			//dump solution
+  public Object geq(int value, Object exp){return "(>= " + value + " " + (String)exp + ")";}
+  public Object geq(Object exp, int value){return "(>= " + (String)exp + " " + value + ")";}
+  public Object geq(Object exp1, Object exp2){return "(>= " + (String)exp1 + " " + (String)exp2 + ")";}
+  public Object geq(double value, Object exp){return "(>= " + getYicesDouble(value) + " " + (String)exp + ")";}
+  public Object geq(Object exp, double value){return "(>= " + (String)exp + " " + getYicesDouble(value) + ")";}
 
-			String workingDir = System.getProperty("user.dir");
+  public Object lt(int value, Object exp){return "(< " + value + " " + (String)exp + ")";}
+  public Object lt(Object exp, int value){return "(< " + (String)exp + " " + value + ")";}
+  public Object lt(Object exp1, Object exp2){return "(< " + (String)exp1 + " " + (String)exp2 + ")";}
+  public Object lt(double value, Object exp){return "(< " + getYicesDouble(value) + " " + (String)exp + ")";}
+  public Object lt(Object exp, double value){return "(< " + (String)exp + " " + getYicesDouble(value) + ")";}
 
-			yices.yicesl_set_output_file(workingDir+"/yicesOutput/out.txt");
-			yices.yicesl_read(ctx,"(set-evidence! true)");
-			yices.yicesl_read(ctx, "(check)");
-			yices.yicesl_read(ctx,"(set-evidence! false)");
+  public Object gt(int value, Object exp){return "(> " + value + " " + (String)exp + ")";}
+  public Object gt(Object exp, int value){return "(> " + (String)exp + " " + value + ")";}
+  public Object gt(Object exp1, Object exp2){return "(> " + (String)exp1 + " " + (String)exp2 + ")";}
+  public Object gt(double value, Object exp){return "(> " + getYicesDouble(value) + " " + (String)exp + ")";}
+  public Object gt(Object exp, double value){return "(> " + (String)exp + " " + getYicesDouble(value) + ")";}
 
-			//read in solution and look up the value to return
-			BufferedReader bufferedReader = null;
+  public Object plus(int value, Object exp) {return "(+ " + value + " " + (String)exp + ")";}
+  public Object plus(Object exp, int value) {return "(+ " + (String)exp + " " + value + ")";}
+  public Object plus(Object exp1, Object exp2) {return "(+ " + (String)exp1 + " " + (String)exp2 + ")";}
+  public Object plus(double value, Object exp) {return "(+ " + getYicesDouble(value) + " " + (String)exp + ")";}
+  public Object plus(Object exp, double value) {return "(+ " + (String)exp + " " + getYicesDouble(value) + ")";}
 
-			try {
+  public Object minus(int value, Object exp) {return "(- " + value + " " + (String)exp + ")";}
+  public Object minus(Object exp, int value) {return "(- " + (String)exp + " " + value + ")";}
+  public Object minus(Object exp1, Object exp2) {return "(- " + (String)exp1 + " " + (String)exp2 + ")";}
+  public Object minus(double value, Object exp) {return "(- " + getYicesDouble(value) + " " + (String)exp + ")";}
+  public Object minus(Object exp, double value) {return "(- " + (String)exp + " " + getYicesDouble(value) + ")";}
 
-				f = new File(workingDir+"/yicesOutput/out.txt"); //Bug
-				fr = new FileReader(f);
+  public Object mult(int value, Object exp) {return "(* " + value + " " + (String)exp + ")";}
+  public Object mult(Object exp, int value) {return "(* " + (String)exp + " " + value + ")";}
+  public Object mult(Object exp1, Object exp2) {return "(* " + (String)exp1 + " " + (String)exp2 + ")";}
+  public Object mult(double value, Object exp) {return "(* " + getYicesDouble(value) + " " + (String)exp + ")";}
+  public Object mult(Object exp, double value) {return "(* " + (String)exp + " " + getYicesDouble(value) + ")";}
 
-				bufferedReader =  new BufferedReader(fr);//=new FileReader(f));//new File(workingDir+"/yicesOutput/out.txt")));//fr);
-				String new_line;
-				String delims = "[ ]+";
+  public Object div(int value, Object exp) {return "(/ " + value + " " + (String)exp + ")";}
+  public Object div(Object exp, int value) {return "(/ " + (String)exp + " " + value + ")";}
+  public Object div(Object exp1, Object exp2) {return "(/ " + (String)exp1 + " " + (String)exp2 + ")";}
+  public Object div(double value, Object exp) {return "(/ " + getYicesDouble(value) + " " + (String)exp + ")";}
+  public Object div(Object exp, double value) {return "(/ " + (String)exp + " " + getYicesDouble(value) + ")";}
 
-				while((new_line = bufferedReader.readLine()) != null) {
+  //	Object sin(Object exp) {
+  //		return pb.sin((RealExp) exp);
+  //	}
+  //	Object cos(Object exp) {
+  //		return pb.cos((RealExp) exp);
+  //	}
+  //
+  //	Object power(Object exp, double value) {
+  //		return pb.power((RealExp) exp, (int)value);
+  //	}
 
-					  String[] tokens = new_line.split(delims);
-					  for (int i =1; i < tokens.length; i=i+3) {
+  public Object mixed(Object exp1, Object exp2) {return "(= " + (String)exp1 + " " + (String)exp2 + ")";}
 
-					  //if(tokens.length == 3){
-						  if(tokens[i].compareTo(vname) == 0){
-							  int value = Integer.parseInt(tokens[i+1].substring(0, tokens[i+1].length()-1));
-//							  System.out.println(vname+" = "+value);
-							  bufferedReader.close();
-							  fr.close();
-							  f = null;
-							  fr = null;
-							  return value;
-						  }
-					  }
-				 }
-				 bufferedReader.close();
-				 fr.close();
-				 f = null;
-				 fr = null;
+  private void readModel(String modelFileName) {
+    BufferedReader bufferedReader = null;
+    modelMap.clear();
 
+    try {
+      bufferedReader =  new BufferedReader(new FileReader(new File(modelFileName)));
+      String new_line;
+      String delims = "[ ]+";
+      while((new_line = bufferedReader.readLine()) != null) {
+        String[] tokens = new_line.split(delims);
+        if(tokens.length == 3){
+          modelMap.put(tokens[1], tokens[2].substring(0, tokens[2].length() - 1));
+        }
+      }
+    } catch (FileNotFoundException ex) {
+      ex.printStackTrace();
+    } catch (IOException ex) {
+      ex.printStackTrace();
+    } finally {
+      try {
+        if (bufferedReader != null) {
+          bufferedReader.close();
+        }  
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    }	  
+  }
 
-			} catch (Exception ex) {
-		        ex.printStackTrace();
-		    }
-		}
-		throw new RuntimeException("# Error: Yices didn't find int solution for variable "+vname);
-	}
+  public double getRealValueInf(Object dpVar) {
+    //		return ((RealVar) dpVar).getValue().getInf();
+    //		throw new RuntimeException("# Error: Yices can not compute realValueInf!");
+    //System.out.println("# Warning: Yices can not compute realValueInf! (used 0.0)");
+    //return 0.0;
+    return getRealValue(dpVar);
+  }
+  public double getRealValueSup(Object dpVar) {
+    //		return ((RealVar) dpVar).getValue().getSup();
+    //		throw new RuntimeException("# Error: Yices can not compute realValueSup!");
+    System.out.println("# Warning: Yices can not compute realValueSup! (used 0.0)");
+    return 0.0;
+  }
 
-	public Boolean solve() {
-//        pb.getSolver().setTimeLimit(30000);
-//		yices.yicesl_read(ctx,"(dump-context)");
-		int sat = yices.yicesl_inconsistent(ctx);
+  public double getRealValue(Object dpVar) {
+    String vname = (String) dpVar;
 
-//		if(sat == 0){
-//			yices.yicesl_read(ctx,"(set-evidence! true)");
-//			yices.yicesl_read(ctx, "(check)");
-//			yices.yicesl_read(ctx,"(set-evidence! false)");
-//		}
+    if (modelMap.containsKey(vname)) {
+      return getYicesDouble(modelMap.get(vname));
+    }
+    return 0.0;
+  }
 
-//		yices.yicesl_del_context(ctx);
-		oldYices = yices;
-		oldCtx = ctx;
-		return sat == 0 ? true : false;
-	}
-	public void post(Object constraint) {
-		yices.yicesl_read(ctx,"(assert " + (String)constraint + ")");
-	}
+  public int getIntValue(Object dpVar) {
+    String vname = (String) dpVar;
 
+    if (modelMap.containsKey(vname)) {
+      return Integer.parseInt(modelMap.get(vname));
+    }
+    return 0;
+  }
 
+  public Boolean solve() {
+    //        pb.getSolver().setTimeLimit(30000);
+    //		yices.yicesl_read(ctx,"(dump-context)");
 
-	public Object and(int value, Object exp) {
-		throw new RuntimeException("## Error Yices does not support bitwise AND");
-	}
+    int sat = yices.yicesl_inconsistent(ctx);
+    if(sat == 0) {
+      String workingDir = System.getProperty("user.dir");
+      String modelFileName = workingDir + "/yicesOutput/model.txt";
+      yices.yicesl_set_output_file(modelFileName);
 
-	public Object and(Object exp, int value) {
-		throw new RuntimeException("## Error Yices does not support bitwise AND");
-	}
+      yices.yicesl_read(ctx,"(set-evidence! true)");
+      yices.yicesl_read(ctx, "(check)");
+      yices.yicesl_read(ctx,"(set-evidence! false)");
+      readModel(modelFileName);
+    }
 
-	public Object and(Object exp1, Object exp2) {
-		throw new RuntimeException("## Error Yices does not support bitwise AND");
-	}
+    //		yices.yicesl_del_context(ctx);
+    oldYices = yices;
+    oldCtx = ctx;
+    return sat == 0 ? true : false;
+  }
 
-	@Override
-	public
-	Object or(int value, Object exp) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
-	}
+  public void post(Object constraint) {
+    yices.yicesl_read(ctx,"(assert " + (String)constraint + ")");
+  }
 
-	@Override
-	public
-	Object or(Object exp, int value) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
-	}
+  public Object and(int value, Object exp) {
+    throw new RuntimeException("## Error Yices does not support bitwise AND");
+  }
 
-	@Override
-	public
-	Object or(Object exp1, Object exp2) {
-		throw new RuntimeException("## Error Yices does not support bitwise OR");
-	}
+  public Object and(Object exp, int value) {
+    throw new RuntimeException("## Error Yices does not support bitwise AND");
+  }
 
-	@Override
-	public
-	Object shiftL(int value, Object exp) {
-		throw new RuntimeException("## Error Yices does not support bitwise shiftL");
-	}
+  public Object and(Object exp1, Object exp2) {
+    throw new RuntimeException("## Error Yices does not support bitwise AND");
+  }
 
-	@Override
-	public
-	Object shiftL(Object exp, int value) {
-		throw new RuntimeException("## Error Yices does not support bitwise shiftL");
-	}
+  @Override
+  public
+  Object or(int value, Object exp) {
+    throw new RuntimeException("## Error Yices does not support bitwise OR");
+  }
 
-	@Override
-	public
-	Object shiftR(int value, Object exp) {
-		throw new RuntimeException("## Error Yices does not support bitwise shiftR");
-	}
+  @Override
+  public
+  Object or(Object exp, int value) {
+    throw new RuntimeException("## Error Yices does not support bitwise OR");
+  }
 
-	@Override
-	public
-	Object shiftR(Object exp, int value) {
-		throw new RuntimeException("## Error Yices does not support bitwise shiftR");
-	}
+  @Override
+  public
+  Object or(Object exp1, Object exp2) {
+    throw new RuntimeException("## Error Yices does not support bitwise OR");
+  }
 
-	@Override
-	public
-	Object xor(int value, Object exp) {
-		throw new RuntimeException("## Error Yices does not support bitwise XOR");
-	}
+  @Override
+  public
+  Object shiftL(int value, Object exp) {
+    throw new RuntimeException("## Error Yices does not support bitwise shiftL");
+  }
 
-	@Override
-	public
-	Object xor(Object exp, int value) {
-		throw new RuntimeException("## Error Yices does not support bitwise XOR");
-	}
+  @Override
+  public
+  Object shiftL(Object exp, int value) {
+    throw new RuntimeException("## Error Yices does not support bitwise shiftL");
+  }
 
-	@Override
-	public
-	Object xor(Object exp1, Object exp2) {
-		throw new RuntimeException("## Error Yices does not support bitwise XOR");
-	}
+  @Override
+  public
+  Object shiftR(int value, Object exp) {
+    throw new RuntimeException("## Error Yices does not support bitwise shiftR");
+  }
 
-	@Override
-	public Object shiftL(Object exp1, Object exp2) {
-		throw new RuntimeException("## Error Yices does not support bitwise shifL");
-	}
+  @Override
+  public
+  Object shiftR(Object exp, int value) {
+    throw new RuntimeException("## Error Yices does not support bitwise shiftR");
+  }
 
-	@Override
-	public Object shiftR(Object exp1, Object exp2) {
-		throw new RuntimeException("## Error Yices does not support bitwise shifR");
-	}
+  @Override
+  public
+  Object xor(int value, Object exp) {
+    throw new RuntimeException("## Error Yices does not support bitwise XOR");
+  }
 
-	@Override
-	public Object shiftUR(int value, Object exp) {
-		throw new RuntimeException("## Error Yices does not support bitwise shiftUR");
-	}
+  @Override
+  public
+  Object xor(Object exp, int value) {
+    throw new RuntimeException("## Error Yices does not support bitwise XOR");
+  }
 
-	@Override
-	public Object shiftUR(Object exp, int value) {
-		throw new RuntimeException("## Error Yices does not support bitwise shiftUR");
-	}
+  @Override
+  public
+  Object xor(Object exp1, Object exp2) {
+    throw new RuntimeException("## Error Yices does not support bitwise XOR");
+  }
 
-	@Override
-	public Object shiftUR(Object exp1, Object exp2) {
-		throw new RuntimeException("## Error Yices does not support bitwise shiftUR");
-	}
+  @Override
+  public Object shiftL(Object exp1, Object exp2) {
+    throw new RuntimeException("## Error Yices does not support bitwise shifL");
+  }
 
-	@Override
-	public void postLogicalOR(Object[] constraints) {
-		assert(constraints != null && constraints.length >=1);
-		String orResult = "";
-		for (int i = 0; i<constraints.length; i++) {
-			orResult += (String)constraints[i] + " ";
-		}
-		orResult = "(or " + orResult+ ")";
-		post(orResult);
-	}
+  @Override
+  public Object shiftR(Object exp1, Object exp2) {
+    throw new RuntimeException("## Error Yices does not support bitwise shifR");
+  }
+
+  @Override
+  public Object shiftUR(int value, Object exp) {
+    throw new RuntimeException("## Error Yices does not support bitwise shiftUR");
+  }
+
+  @Override
+  public Object shiftUR(Object exp, int value) {
+    throw new RuntimeException("## Error Yices does not support bitwise shiftUR");
+  }
+
+  @Override
+  public Object shiftUR(Object exp1, Object exp2) {
+    throw new RuntimeException("## Error Yices does not support bitwise shiftUR");
+  }
+
+  @Override
+  public void postLogicalOR(Object[] constraints) {
+    assert(constraints != null && constraints.length >=1);
+    String orResult = "";
+    for (int i = 0; i<constraints.length; i++) {
+      orResult += (String)constraints[i] + " ";
+    }
+    orResult = "(or " + orResult+ ")";
+    post(orResult);
+  }
 
 }

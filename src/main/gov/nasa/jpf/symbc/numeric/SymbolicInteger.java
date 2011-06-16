@@ -38,6 +38,7 @@ public class SymbolicInteger extends LinearIntegerExpression
 		super();
 		unique_id = MinMax.UniqueId++;
 		PathCondition.flagSolved=false;
+    name = "INT_" + hashCode(); 
 	}
 
 	public SymbolicInteger (String s) {
@@ -55,6 +56,7 @@ public class SymbolicInteger extends LinearIntegerExpression
 		_min = l;
 		_max = u;
 		PathCondition.flagSolved=false;
+    name = "INT_" + hashCode(); 
 	}
 
 	public SymbolicInteger (String s, int l, int u) {
