@@ -26,10 +26,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
+import yices.YicesLite;
+
 public class ProblemYices extends ProblemGeneral {
-  Yices yices;
+  YicesLite yices;
   int ctx;
-  static Yices oldYices;
+  static YicesLite oldYices;
   static int oldCtx;
 
   HashMap<String, String> modelMap = new HashMap<String, String>();
@@ -50,7 +52,7 @@ public class ProblemYices extends ProblemGeneral {
       }
     }
 
-    yices = new Yices();
+    yices = new YicesLite();
 
     ctx = yices.yicesl_mk_context();
     yices.yicesl_set_verbosity((short)0);
@@ -80,7 +82,7 @@ public class ProblemYices extends ProblemGeneral {
       else
         return "(/ " + dstr + " " + div + ")";
     } else
-      return "(*" + dstr + " " + power + ")"; 
+      return "(*" + dstr + " " + power + ")";
   }
 
   public double getYicesDouble(String value)
@@ -214,11 +216,11 @@ public class ProblemYices extends ProblemGeneral {
       try {
         if (bufferedReader != null) {
           bufferedReader.close();
-        }  
+        }
       } catch (IOException ex) {
         ex.printStackTrace();
       }
-    }	  
+    }
   }
 
   public double getRealValueInf(Object dpVar) {

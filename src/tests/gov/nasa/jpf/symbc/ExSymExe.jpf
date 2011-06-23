@@ -18,7 +18,8 @@ sourcepath=${jpf-symbc}/src/tests
 #symbolic.dp=no_solver
 #symbolic.dp=coral
 #symbolic.dp=choco2
-#symbolic.dp=yices
+symbolic.dp=yices
+#symbolic.dp=cvc3
 
 symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test1(sym#sym)
 #symbolic.method= gov.nasa.jpf.symbc.ExSymExeSwitch.test(sym)
