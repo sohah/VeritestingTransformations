@@ -30,4 +30,8 @@ public class MinMax {
 	public static int Debug_no_path_constraints_unsat = 0;
 
 	public static int UniqueId = 0; // Unique id for each SymbolicInteger or SymbolicReal created
+	
+	public static void reset() {
+	  UniqueId = 0;
+	}
 }

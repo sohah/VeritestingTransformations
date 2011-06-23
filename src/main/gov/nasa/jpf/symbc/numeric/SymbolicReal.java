@@ -41,6 +41,7 @@ public class SymbolicReal extends RealExpression {
 		super();
 		unique_id = MinMax.UniqueId++;
 		PathCondition.flagSolved = false;
+		name = "REAL_" + hashCode(); 
 	}
 
 	public SymbolicReal (String s) {
@@ -57,6 +58,7 @@ public class SymbolicReal extends RealExpression {
 		_min = l;
 		_max = u;
 		PathCondition.flagSolved = false;
+    name = "REAL_" + hashCode(); 
 	}
 
 	public SymbolicReal (String s, double l, double u) {
