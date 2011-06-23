@@ -1,4 +1,4 @@
-target=gov.nasa.jpf.symbc.ExSymExeSwitch
+target=gov.nasa.jpf.symbc.ExSymExe
 
 classpath=${jpf-symbc}/build/tests
 
@@ -20,8 +20,8 @@ sourcepath=${jpf-symbc}/src/tests
 #symbolic.dp=choco2
 #symbolic.dp=yices
 
-#symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test(sym#sym)
-symbolic.method= gov.nasa.jpf.symbc.ExSymExeSwitch.test(sym)
+symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test1(sym#sym)
+#symbolic.method= gov.nasa.jpf.symbc.ExSymExeSwitch.test(sym)
 #,gov.nasa.jpf.symbc.ExSymExe.test5(sym#sym)
 #listener = gov.nasa.jpf.symbc.SymbolicListener
 

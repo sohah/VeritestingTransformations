@@ -171,18 +171,28 @@ public class SymbolicSequenceListenerVeryDirtyHack extends PropertyListenerAdapt
 			Instruction insn = vm.getLastInstruction();
 			SystemState ss = vm.getSystemState();
 			ThreadInfo ti = vm.getLastThreadInfo();
+			Config conf  = vm.getConfig();
 
 			if (insn instanceof InvokeInstruction && insn.isCompleted(ti)) {
+//				InvokeInstruction md = (InvokeInstruction) insn;
+//				String methodName = md.getInvokedMethodName();
+//				// get number of arguments.
+//				// corina: changed this since it is apparently broken
+//				int numberOfArgs = md.getArgumentValues(ti).length;
+//				//int numberOfArgs = md.getInvokedMethod(ti).getArgumentTypeNames().length;
+//
+//				MethodInfo mi = md.getInvokedMethod();
+//				Config conf = ti.getVM().getConfig();
+//				//neha: full name for the method invoked symbolically
+
+
 				InvokeInstruction md = (InvokeInstruction) insn;
 				String methodName = md.getInvokedMethodName();
-				// get number of arguments.
-				// corina: changed this since it is apparently broken
 				int numberOfArgs = md.getArgumentValues(ti).length;
-				//int numberOfArgs = md.getInvokedMethod(ti).getArgumentTypeNames().length;
 
 				MethodInfo mi = md.getInvokedMethod();
-				Config conf = ti.getVM().getConfig();
-				//neha: full name for the method invoked symbolically
+
+
 				if ((BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 
 					// FIXME: get the object name?
@@ -237,19 +247,33 @@ public class SymbolicSequenceListenerVeryDirtyHack extends PropertyListenerAdapt
 
 
 	public void stateBacktracked(Search search) {
+//		JVM vm = search.getVM();
+//		Instruction insn = vm.getChoiceGenerator().getInsn();
+//		SystemState ss = vm.getSystemState();
+//		ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
+//		MethodInfo mi = insn.getMethodInfo();
+//		//neha: changed methodName to FullName
+//		String methodName = mi.getFullName();
+//		int numberOfArgs = mi.getArgumentsSize() - 1;// corina: problem here? - 1;
+//
+//		Config conf = ti.getVM().getConfig(); // Corina: added fix
+//		if (methodName.equals("strings.MSExample.IsEasyChairQuery(Ljava/lang/String;)Z")) {
+//			numberOfArgs = 1;
+//		}
+
 		JVM vm = search.getVM();
+		Config conf = vm.getConfig();
+
 		Instruction insn = vm.getChoiceGenerator().getInsn();
 		SystemState ss = vm.getSystemState();
 		ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
 		MethodInfo mi = insn.getMethodInfo();
-		//neha: changed methodName to FullName
 		String methodName = mi.getFullName();
-		int numberOfArgs = mi.getArgumentsSize() - 1;// corina: problem here? - 1;
 
-		Config conf = ti.getVM().getConfig(); // Corina: added fix
-		if (methodName.equals("strings.MSExample.IsEasyChairQuery(Ljava/lang/String;)Z")) {
-			numberOfArgs = 1;
-		}
+		int numberOfArgs = mi.getNumberOfArguments();
+
+
+
 		if (BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
 
 			ChoiceGenerator cg = vm.getChoiceGenerator();
@@ -403,10 +427,12 @@ public class SymbolicSequenceListenerVeryDirtyHack extends PropertyListenerAdapt
 	   */
 	  private void printJUnitTestClass(PrintWriter pw){
 		  // imports
+		  if(className!=null) {
 		  pw.println("import static org.junit.Assert.*;");
 		  pw.println("import org.junit.Before;");
 		  pw.println("import org.junit.Test;");
 
+		  System.out.println("className" + className);
 		  String objectName = (className.toLowerCase()).replace(".", "_");
 
 		  pw.println();
@@ -456,6 +482,7 @@ public class SymbolicSequenceListenerVeryDirtyHack extends PropertyListenerAdapt
 			  testIndex++;
 		  }
 		  pw.println("}"); // test class end
+		  }
 	  }
 
 }

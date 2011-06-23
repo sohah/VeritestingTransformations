@@ -51,9 +51,12 @@ public class ExSymExe {
 
 
   public static void test1 (int x, boolean b) {
+	  System.out.println("test1");
 	  Integer z = new Integer(x);
-	  if (z <= 1200)
+	  if (z <= 1200) {
 		  System.out.println("le 1200");
+		  }
+	  Debug.printPC("my msg");
 	  if(z >= 1200)
 		  System.out.println("ge 1200");
 	  if(b)
