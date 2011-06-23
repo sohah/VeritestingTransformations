@@ -48,12 +48,11 @@ import java.util.Map.Entry;
 // types come in and out of each particular dp !!!!!!!!!!!!!!!
 
 public class SymbolicConstraintsGeneral {
-	  ProblemGeneral pb;
-	  private Map<SymbolicReal, Object>	symRealVar; // a map between symbolic real variables and DP variables
-	  private Map<SymbolicInteger,Object>	symIntegerVar; // a map between symbolic variables and DP variables
-	  Boolean result; // tells whether result is satisfiable or not
-	  private static int tempVars = 0; //Used to construct "or" clauses
-
+	  protected ProblemGeneral pb;
+	  protected Map<SymbolicReal, Object>	symRealVar; // a map between symbolic real variables and DP variables
+	  protected Map<SymbolicInteger,Object>	symIntegerVar; // a map between symbolic variables and DP variables
+	  protected Boolean result; // tells whether result is satisfiable or not
+	  protected static int tempVars = 0; //Used to construct "or" clauses
 
 	  //	 Converts IntegerExpression's into DP's IntExp's
 	  Object getExpression(IntegerExpression eRef) {
@@ -308,7 +307,7 @@ public class SymbolicConstraintsGeneral {
 	}
 
 
-	boolean createDPMixedConstraint(MixedConstraint cRef) { // TODO
+	public boolean createDPMixedConstraint(MixedConstraint cRef) { // TODO
 
 		Comparator c_compRef = cRef.getComparator();
 		RealExpression c_leftRef = (RealExpression)cRef.getLeft();
@@ -338,7 +337,7 @@ public class SymbolicConstraintsGeneral {
 		return true;
 	}
 
-	boolean createDPRealConstraint(RealConstraint cRef) {
+	public boolean createDPRealConstraint(RealConstraint cRef) {
 
 		Comparator c_compRef = cRef.getComparator();
 		RealExpression c_leftRef = (RealExpression)cRef.getLeft();
@@ -446,7 +445,7 @@ public class SymbolicConstraintsGeneral {
 	}
 
 	//Added by Gideon, to handle CNF style constraints
-	boolean createDPLinearOrIntegerConstraint (LogicalORLinearIntegerConstraints c) {
+	public boolean createDPLinearOrIntegerConstraint (LogicalORLinearIntegerConstraints c) {
 		List<Object> orList = new ArrayList<Object>();
 
 		for (LinearIntegerConstraint cRef: c.getList()) {
@@ -654,7 +653,7 @@ public class SymbolicConstraintsGeneral {
 
 	}
 
-	boolean createDPLinearIntegerConstraint(LinearIntegerConstraint cRef) {
+	public boolean createDPLinearIntegerConstraint(LinearIntegerConstraint cRef) {
 
 		Comparator c_compRef = cRef.getComparator();
 

@@ -35,7 +35,7 @@ public class PathCondition {
 
     public Constraint header;
     int count = 0;
-    int solverCalls = 0;
+    protected int solverCalls = 0;
 
     // TODO: to review
     public StringPathCondition spc = new StringPathCondition(this);
