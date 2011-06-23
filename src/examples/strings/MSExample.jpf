@@ -40,6 +40,6 @@ symbolic.string_dp_timeout_ms=0
 
 symbolic.method= strings.MSExample.IsEasyChairQuery(sym)
 
-listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListenerVeryDirtyHack
+listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
 
 vm.storage.class=nil

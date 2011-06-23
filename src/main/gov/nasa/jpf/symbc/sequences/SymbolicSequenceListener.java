@@ -52,6 +52,7 @@ import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
+import gov.nasa.jpf.symbc.string.StringSymbolic;
 import gov.nasa.jpf.util.Pair;
 
 import java.io.BufferedWriter;
@@ -342,8 +343,10 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				String solution = "";
 				if(e instanceof IntegerExpression)
 					solution = solution+ ((IntegerExpression) e).solution();
-				else
+				else if (e instanceof RealExpression)
 					solution = solution+ ((RealExpression) e).solution();
+				else
+					solution = solution+ ((StringSymbolic) e).solution();
 				invokedMethod += solution + ",";
 			}
 			else { // parameter concrete - for a concrete parameter, the symbolic attribute is null
