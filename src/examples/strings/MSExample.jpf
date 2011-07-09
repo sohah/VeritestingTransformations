@@ -27,7 +27,7 @@ symbolic.dp=choco
 # "none" (default), "cvc" (recommended), "automata" or
 # "sat". At the moment symbolic.dp must be equal to
 # "choco" for it to work.
-symbolic.string_dp=automata
+symbolic.string_dp=z3_inc
 
 #Set the symbolic string executioner timeout (in ms)
 #zero for no timeout.

@@ -459,6 +459,7 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 	/* Symbolic String configuration */
 	static public String[] string_dp;
 	static public int stringTimeout;
+	static public boolean preprocesOnly;
 
 	/*
 	 * This is intended to serve as a catchall debug flag.
@@ -508,7 +509,7 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 		}
 		System.out.println("symbolic.string_dp="+string_dp[0]);
 
-
+		preprocesOnly = conf.getBoolean("symbolic.string_preprocess_only", false);
 
 		//Just checking if set, don't care about any values
 		String[] dummy = conf.getStringArray("symbolic.debug");
