@@ -1,0 +1,37 @@
+target=rjc.RJCMain
+
+
+classpath = ${jpf-symbc}/build/examples
+sourcepath = ${jpf-symbc}/src/examples
+
+#search.multiple_errors=true
+vm.storage.class=nil
+
+#target_args=Input1.csv, Input2.csv
+
+#log.level=config
+
+vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory
+#symbolic.method=rjc.Main0(sym#sym#sym#sym)
+symbolic.method=rjc.rjc.MainSymbolic(sym#sym#sym#sym#sym#sym#con#con)
+#symbolic.minint=-500
+#symbolic.maxint=500
+symbolic.minreal=-100.0
+symbolic.maxreal=100.0
+#symbolic.undefined=0
+#search.depth_limit=20
+#listener=gov.nasa.jpf.symbc.SymbolicListener
+listener=gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
+#,gov.nasa.jpf.listener.CoverageAnalyzer
+#listener=gov.nasa.jpf.listener.CoverageAnalyzer
+coverage.include=rjc.*
+coverage.show_methods=true
+coverage.show_bodies=true
+#report.publisher=console
+#symbolic.dp=yices
+#symbolic.dp=cvc3
+#symbolic.debug=on
+symbolic.concolic=true
+#symbolic.concolic.MAX_TRIES=3
+#choco.time_bound=200000000
+#cg.randomize_choices=random
