@@ -32,86 +32,87 @@ import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 
 /**
-* common root class for LOOKUPSWITCH and TABLESWITCH insns
-*/
+ * common root class for LOOKUPSWITCH and TABLESWITCH insns
+ */
 
 public abstract class SwitchInstruction extends gov.nasa.jpf.jvm.bytecode.SwitchInstruction {
-protected SwitchInstruction(int defaultTarget, int numberOfTargets) {
+	protected SwitchInstruction(int defaultTarget, int numberOfTargets) {
 		super(defaultTarget, numberOfTargets);
 		// TODO Auto-generated constructor stub
 	}
 
-@Override
-public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
-//return super.execute(ss,ks,ti);
-StackFrame sf = ti.getTopFrame();
-IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
+	@Override
+	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+		//return super.execute(ss,ks,ti);
+		StackFrame sf = ti.getTopFrame();
+		IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
 
-if(sym_v == null) { // the condition is concrete
-//System.out.println("Execute Switch: The condition is concrete");
-return super.execute(ss, ks, ti);
-}
-else { // the condition is symbolic
-//System.out.println("Execute Switch: The condition is symbolic");
-ChoiceGenerator<?> cg;
+		if(sym_v == null) { // the condition is concrete
+			//System.out.println("Execute Switch: The condition is concrete");
+			return super.execute(ss, ks, ti);
+		}
+		else { // the condition is symbolic
+			//System.out.println("Execute Switch: The condition is symbolic");
+			ChoiceGenerator<?> cg;
 
-if (!ti.isFirstStepInsn()) { // first time around
-cg = new PCChoiceGenerator(matches.length+1);
-ss.setNextChoiceGenerator(cg);
-return this;
-} else {  // this is what really returns results
-cg = ss.getChoiceGenerator();
-assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
-}
-sym_v = (IntegerExpression) sf.getOperandAttr();
-//System.out.println("Execute Switch: The condition is symbolic"+sym_v);
-ti.pop();
-PathCondition pc;
-//pc is updated with the pc stored in the choice generator above
-//get the path condition from the
-//previous choice generator of the same type
+			if (!ti.isFirstStepInsn()) { // first time around
+				cg = new PCChoiceGenerator(matches.length+1);
+				((PCChoiceGenerator)cg).setOffset(this.getInstructionIndex());
+				ss.setNextChoiceGenerator(cg);
+				return this;
+			} else {  // this is what really returns results
+				cg = ss.getChoiceGenerator();
+				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
+			}
+			sym_v = (IntegerExpression) sf.getOperandAttr();
+			//System.out.println("Execute Switch: The condition is symbolic"+sym_v);
+			ti.pop();
+			PathCondition pc;
+			//pc is updated with the pc stored in the choice generator above
+			//get the path condition from the
+			//previous choice generator of the same type
 
-//TODO: could be optimized to not do this for each choice
-ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
-while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-prev_cg = prev_cg.getPreviousChoiceGenerator();
-}
+			//TODO: could be optimized to not do this for each choice
+			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
+			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
+				prev_cg = prev_cg.getPreviousChoiceGenerator();
+			}
 
-if (prev_cg == null)
-pc = new PathCondition();
-else
-pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
+			if (prev_cg == null)
+				pc = new PathCondition();
+			else
+				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
 
-assert pc != null;
-//System.out.println("Execute Switch: PC"+pc);
-int idx = (Integer)cg.getNextChoice();
-//System.out.println("Execute Switch: "+ idx);
-    if (idx == matches.length){ // default branch
-      lastIdx = DEFAULT;
-      for(int i = 0; i< matches.length; i++)
-      pc._addDet(Comparator.NE, sym_v, matches[i]);
-if(!pc.simplify())  {// not satisfiable
-ss.setIgnored(true);
-} else {
-//pc.solve();
-((PCChoiceGenerator) cg).setCurrentPC(pc);
-//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
-}
-      return ti.getMethod().getInstructionAt(target);
-    } else {
-      lastIdx = idx;
-      pc._addDet(Comparator.EQ, sym_v, matches[idx]);
-if(!pc.simplify())  {// not satisfiable
-ss.setIgnored(true);
-} else {
-//pc.solve();
-((PCChoiceGenerator) cg).setCurrentPC(pc);
-//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
-}
-      return ti.getMethod().getInstructionAt(targets[idx]);
-    }
-}
-}
+			assert pc != null;
+			//System.out.println("Execute Switch: PC"+pc);
+			int idx = (Integer)cg.getNextChoice();
+			//System.out.println("Execute Switch: "+ idx);
+			if (idx == matches.length){ // default branch
+				lastIdx = DEFAULT;
+				for(int i = 0; i< matches.length; i++)
+					pc._addDet(Comparator.NE, sym_v, matches[i]);
+				if(!pc.simplify())  {// not satisfiable
+					ss.setIgnored(true);
+				} else {
+					//pc.solve();
+					((PCChoiceGenerator) cg).setCurrentPC(pc);
+					//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
+				}
+				return ti.getMethod().getInstructionAt(target);
+			} else {
+				lastIdx = idx;
+				pc._addDet(Comparator.EQ, sym_v, matches[idx]);
+				if(!pc.simplify())  {// not satisfiable
+					ss.setIgnored(true);
+				} else {
+					//pc.solve();
+					((PCChoiceGenerator) cg).setCurrentPC(pc);
+					//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
+				}
+				return ti.getMethod().getInstructionAt(targets[idx]);
+			}
+		}
+	}
 
 
 }

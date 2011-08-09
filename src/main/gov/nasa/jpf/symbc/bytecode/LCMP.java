@@ -2,12 +2,12 @@
 // Copyright (C) 2006 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration
 // (NASA).  All Rights Reserved.
-// 
+//
 // This software is distributed under the NASA Open Source Agreement
 // (NOSA), version 1.3.  The NOSA has been approved by the Open Source
 // Initiative.  See the file NOSA-1.3-JPF at the top of the distribution
 // directory tree for the complete NOSA document.
-// 
+//
 // THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY
 // KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT
 // LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO
@@ -40,18 +40,19 @@ public class LCMP extends gov.nasa.jpf.jvm.bytecode.LCMP {
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
     StackFrame sf = th.getTopFrame();
 
-    IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1); 
+    IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1);
     IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(3);
-    
+
 	if (sym_v1 == null && sym_v2 == null)  // both conditions are concrete
 		return super.execute(ss, ks, th);
 	else { // at least one condition is symbolic
-		
+
 		ChoiceGenerator<?> cg;
 		int conditionValue;
 
 		if (!th.isFirstStepInsn()) { // first time around
 			cg = new PCChoiceGenerator(3);
+			((PCChoiceGenerator)cg).setOffset(this.insnIndex);
 			ss.setNextChoiceGenerator(cg);
 			return this;
 		} else { // this is what really returns results
@@ -129,10 +130,10 @@ public class LCMP extends gov.nasa.jpf.jvm.bytecode.LCMP {
 		}
 
 		th.push(conditionValue, false);
-		//System.out.println("Execute LCMP: " + ((PCChoiceGenerator) cg).getCurrentPC());	
-		return getNext(th);	
+		//System.out.println("Execute LCMP: " + ((PCChoiceGenerator) cg).getCurrentPC());
+		return getNext(th);
 	}
-		    
+
   }
 
 }

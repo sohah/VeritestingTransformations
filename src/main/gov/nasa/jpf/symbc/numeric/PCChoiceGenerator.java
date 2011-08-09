@@ -27,6 +27,13 @@ public class PCChoiceGenerator extends IntIntervalGenerator {
 	PathCondition[] PC;
 	boolean isReverseOrder;
 
+	int offset; // to be used in the CFG
+	public int getOffset() { return offset;}
+	public void setOffset(int off) {
+		System.out.println("offset "+off);
+		offset=off;
+	}
+
 	@SuppressWarnings("deprecation")
 	public PCChoiceGenerator(int size) {
 		super(0, size - 1);
