@@ -7,6 +7,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.string.StringComparator;
@@ -21,9 +22,10 @@ import org.junit.Test;
 
 public class TestSymString {
 
+	String[] solvers = new String[]{"automata", "z3_inc"};
+	
 	@Test
 	public void Test1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -47,7 +49,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test2_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -68,7 +70,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test2_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -89,7 +91,7 @@ public class TestSymString {
 
 	@Test
 	public void Test2_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -110,7 +112,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test2_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -131,7 +133,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test3_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -152,7 +154,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test3_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -173,7 +175,7 @@ public class TestSymString {
 
 	@Test
 	public void Test3_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -194,7 +196,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test3_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -215,7 +217,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test4_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -236,7 +238,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test4_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -258,7 +260,7 @@ public class TestSymString {
 
 	@Test
 	public void Test4_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -279,7 +281,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test4_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -300,7 +302,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test5_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -321,7 +323,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test5_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -343,7 +345,7 @@ public class TestSymString {
 
 	@Test
 	public void Test5_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -364,7 +366,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test5_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -385,7 +387,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test6_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -411,7 +413,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test6_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -437,7 +439,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test6_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -463,7 +465,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test6_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -489,7 +491,7 @@ public class TestSymString {
 
 	@Test
 	public void Test6_5 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -515,7 +517,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test6_6 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -541,7 +543,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test6_7 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -567,7 +569,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test6_8 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -593,7 +595,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test7_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -614,7 +616,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test7_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			String[] options = {"+symbolic.dp=choco",
 					"+symbolic.string_dp=" + solver,
@@ -636,8 +638,7 @@ public class TestSymString {
 	@Test
 	//TODO: Could do with a speedup
 	public void Test8_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata"};
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -662,8 +663,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test8_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -688,8 +688,7 @@ public class TestSymString {
 	@Test
 	//TODO: Could do with a speedup
 	public void Test9_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata"};
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -714,8 +713,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test9_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -740,8 +739,8 @@ public class TestSymString {
 	@Test
 	//TODO: Could do with a speedup
 	public void Test10_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -769,8 +768,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test10_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -795,8 +794,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test11_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -823,8 +822,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test12_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -846,8 +845,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test12_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -860,7 +859,8 @@ public class TestSymString {
 			StringSymbolic var1 = new StringSymbolic("var1");
 			pc._addDet(Comparator.NE, var1._charAt(new IntegerConstant(1)), new IntegerConstant((int) 'a'));
 			boolean result = stringCurrentPC.simplify();
-			//System.out.printf("var1: '%s'\n", var1.solution());
+			System.out.println(pc);
+			System.out.printf("var1: '%s'\n", var1.solution());
 			Assert.assertTrue(result);
 			Assert.assertTrue(var1.solution().charAt(1) != 'a');
 		}
@@ -868,8 +868,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test13_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -892,8 +892,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test14_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -916,8 +916,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test14_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -941,8 +941,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test15_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -964,8 +964,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test15_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -987,8 +987,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test16 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1010,8 +1010,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test17 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1036,8 +1036,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test18 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1061,8 +1061,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test19_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1087,8 +1087,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test19_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1113,8 +1113,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test19_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1139,8 +1139,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test19_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1165,8 +1165,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test20_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1192,8 +1192,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test20_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1219,8 +1219,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test20_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1246,8 +1246,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test20_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1275,8 +1275,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test21_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1305,8 +1305,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test21_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1335,8 +1335,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test21_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1365,8 +1365,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test21_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1395,8 +1395,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test21_5 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1425,8 +1425,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test21_6 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1455,8 +1455,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test21_7 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1485,8 +1485,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test21_8 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1515,8 +1515,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1547,8 +1547,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1575,8 +1575,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1603,8 +1603,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1635,8 +1635,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_5 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1663,8 +1663,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_6 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1695,8 +1695,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_7 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1727,8 +1727,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_8 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1759,8 +1759,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_9 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1787,8 +1787,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_10 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1819,8 +1819,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_11 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1851,8 +1851,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_12 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1883,8 +1883,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_13 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1915,8 +1915,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_14 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1947,8 +1947,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_15 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -1979,8 +1979,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test22_16 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2011,8 +2011,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test23 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2040,8 +2040,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test24_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2065,8 +2065,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test24_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2090,8 +2090,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test25_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2115,8 +2115,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test25_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2140,8 +2140,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test26_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2165,8 +2165,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test26_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2190,8 +2190,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test27_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2216,8 +2216,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test27_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2242,8 +2242,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test28_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2267,8 +2267,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test28_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2292,8 +2292,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test28_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2317,8 +2317,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test28_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2342,8 +2342,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test29_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2367,8 +2367,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test29_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2392,8 +2392,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test29_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2417,8 +2417,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test29_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2442,8 +2442,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test30_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2467,8 +2467,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test30_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2492,8 +2492,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test30_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2515,8 +2515,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test30_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2540,8 +2540,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test31_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2566,8 +2566,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test31_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2592,8 +2592,10 @@ public class TestSymString {
 	
 	@Test
 	public void Test31_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		//Assert.assertTrue(false);
+		
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2618,8 +2620,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test31_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2644,8 +2646,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test32_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2669,8 +2671,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test32_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2694,8 +2696,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test32_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2719,8 +2721,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test32_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2744,8 +2746,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test33_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2768,8 +2770,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test33_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2792,8 +2794,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test34_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2818,8 +2820,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test34_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2844,8 +2846,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test34_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2870,8 +2872,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test34_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2896,8 +2898,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test35_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2920,8 +2922,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test35_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2944,8 +2946,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test36_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2970,8 +2972,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test36_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -2996,8 +2998,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test36_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3022,8 +3024,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test36_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3048,8 +3050,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test37 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3071,8 +3073,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test38_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3095,8 +3097,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test38_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3120,8 +3122,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test38_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3145,8 +3147,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test38_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"automata", "z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3170,8 +3172,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test39_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3193,8 +3195,8 @@ public class TestSymString {
 
 	@Test
 	public void Test39_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3218,8 +3220,8 @@ public class TestSymString {
 
 	@Test
 	public void Test39_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3243,8 +3245,8 @@ public class TestSymString {
 
 	@Test
 	public void Test39_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3268,8 +3270,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test40_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3290,8 +3292,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test40_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3312,8 +3314,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test41_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3334,8 +3336,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test41_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3356,8 +3358,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test42_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3381,8 +3383,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test42_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3408,8 +3410,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test42_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3433,8 +3435,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test42_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3462,7 +3464,7 @@ public class TestSymString {
 	//@Test
 	public void remTest43 () {
 		String[] solvers = new String[]{"automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
 		for (String solver: solvers) {
 			long startTime = System.currentTimeMillis();
 			System.out.println("Solver: " + solver);
@@ -3497,7 +3499,7 @@ public class TestSymString {
 	//@Test
 	public void remTest44 () {
 		String[] solvers = new String[]{"automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
 		for (String solver: solvers) {
 			long startTime = System.currentTimeMillis();
 			System.out.println("Solver: " + solver);
@@ -3530,8 +3532,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test45_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3552,8 +3554,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test45_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3574,8 +3576,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test46_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3598,8 +3600,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test46_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3622,8 +3624,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test46_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3646,8 +3648,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test46_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3670,8 +3672,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test47_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3692,8 +3694,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test47_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3716,8 +3718,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test47_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3740,8 +3742,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test47_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3765,8 +3767,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test48_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3789,8 +3791,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test48_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3813,8 +3815,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test48_3 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3837,8 +3839,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test48_4 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3862,8 +3864,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test49_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3886,8 +3888,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test49_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3913,8 +3915,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test50 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3935,8 +3937,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test51 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3957,8 +3959,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test52 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -3981,8 +3983,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test53_1 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -4005,8 +4007,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test53_2 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -4029,8 +4031,8 @@ public class TestSymString {
 	
 	@Test
 	public void Test54 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
-		//String[] solvers = new String[]{"z3_inc"};
+		
+		
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
 			String[] options = {"+symbolic.dp=choco",
@@ -4052,7 +4054,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test55 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		//String[] solvers = new String[]{"z3"};
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
@@ -4081,7 +4083,7 @@ public class TestSymString {
 	
 	@Test
 	public void Test56 () {
-		String[] solvers = new String[]{"z3", "automata", "z3_inc"};
+		
 		//String[] solvers = new String[]{"z3"};
 		for (String solver: solvers) {
 			System.out.println("Solver: " + solver);
@@ -4104,4 +4106,319 @@ public class TestSymString {
 			Assert.assertTrue(var3.solution().substring(0,2).equals(var1.solution()));
 		}
 	}
+	
+	@Test
+	public void Test57_1 () {
+		
+		
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringExpression var1 = new StringSymbolic("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.EQ, var2._indexOf(var1, new IntegerConstant(0)), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) == 2);
+		}
+	}
+	
+	@Test
+	public void Test57_2 () {
+		
+		
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringExpression var1 = new StringSymbolic("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.EQ, var2._indexOf(var1, new IntegerConstant(0)), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			System.out.println(String.format("var1.solution(): '%s'", var1.solution()));
+			System.out.println(String.format("var2.solution(): '%s'", var2.solution()));
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) == 2);
+		}
+	}
+	
+	@Test
+	public void Test57_3 () {
+		
+		
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringExpression var1 = new StringSymbolic("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.NE, var2._indexOf(var1, new IntegerConstant(0)), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) != 2);
+		}
+	}
+	
+	@Test
+	public void Test57_4 () {
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringExpression var1 = new StringSymbolic("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.NE, var2._indexOf(var1, new IntegerConstant(0)), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) != 2);
+		}
+	}
+	
+	@Test
+	public void Test58_1 () {
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			SymbolicInteger var1 = new SymbolicInteger("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.EQ, var2._indexOf(var1), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) == 2);
+		}
+	}
+	
+	@Test
+	public void Test58_2 () {
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			SymbolicInteger var1 = new SymbolicInteger("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.EQ, var2._indexOf(var1), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			System.out.println(String.format("var1.solution(): '%s'", var1.solution()));
+			System.out.println(String.format("var2.solution(): '%s'", var2.solution()));
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) == 2);
+		}
+	}
+	
+	@Test
+	public void Test58_3 () {
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			SymbolicInteger var1 = new SymbolicInteger("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.NE, var2._indexOf(var1), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) != 2);
+		}
+	}
+	
+	@Test
+	public void Test58_4 () {
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			SymbolicInteger var1 = new SymbolicInteger("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.NE, var2._indexOf(var1), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) != 2);
+		}
+	}
+	
+	@Test
+	public void Test59_1 () {
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			SymbolicInteger var1 = new SymbolicInteger("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.EQ, var2._indexOf(var1, new IntegerConstant(0)), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) == 2);
+		}
+	}
+	
+	@Test
+	public void Test59_2 () {
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			SymbolicInteger var1 = new SymbolicInteger("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.EQ, var2._indexOf(var1, new IntegerConstant(0)), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			System.out.println(String.format("var1.solution(): '%s'", var1.solution()));
+			System.out.println(String.format("var2.solution(): '%s'", var2.solution()));
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) == 2);
+		}
+	}
+	
+	@Test
+	public void Test59_3 () {
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			SymbolicInteger var1 = new SymbolicInteger("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.NE, var2._indexOf(var1, new IntegerConstant(0)), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) != 2);
+		}
+	}
+	
+	@Test
+	public void Test59_4 () {
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			SymbolicInteger var1 = new SymbolicInteger("var1");
+			StringExpression var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, new StringConstant("bol"), var2);
+			pc._addDet(Comparator.NE, var2._indexOf(var1, new IntegerConstant(0)), 2);
+			System.out.println(stringCurrentPC);
+			boolean result = stringCurrentPC.simplify();
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(!var2.solution().startsWith("bol"));
+			Assert.assertTrue(var2.solution().indexOf(var1.solution()) != 2);
+		}
+	}
+	
+	@Test
+	//MS_Example
+	public void Test60_1 () {	
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringExpression str = new StringSymbolic("str");
+			IntegerExpression ie1 = str._lastIndexOf(new IntegerConstant('/'));
+			pc._addDet(Comparator.GE, ie1, new IntegerConstant(0));
+			StringExpression rest = str._subString(ie1._plus(1));
+			stringCurrentPC._addDet(StringComparator.CONTAINS, new StringConstant("EasyChair"), rest);
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("http://"), str);
+			boolean result = stringCurrentPC.simplify();
+			Assert.assertTrue(solver + " failed", result);
+			Assert.assertTrue(str.solution().lastIndexOf('/') >= 0);
+			Assert.assertTrue(str.solution().substring(ie1.solution() + 1).contains("EasyChair"));
+			Assert.assertTrue(str.solution().startsWith("http://"));
+		}
+	}
+
 }

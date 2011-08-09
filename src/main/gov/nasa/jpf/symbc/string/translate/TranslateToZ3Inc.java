@@ -23,6 +23,7 @@ import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar2;
 import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOf;
 import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar2;
+import gov.nasa.jpf.symbc.string.graph.EdgeNotCharAt;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
@@ -38,6 +39,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.Map.Entry;
 
 import javax.management.RuntimeErrorException;
@@ -76,8 +78,29 @@ public class TranslateToZ3Inc {
 	
 	private static Z3Interface z3Interface;
 	
-	//most sign, first letter
+	public static long duration = 0;
+	public static long int_duration = 0;
+	public static long loops = 0;
+	
+	/*stack to keep track of what happened*/
+	static Stack<LogicalORLinearIntegerConstraints> stack1;
+	static Stack<LinearIntegerConstraint> stack2;
+	
 	public static boolean isSat (StringGraph g, PathCondition pc) {
+		stack1 = new Stack<LogicalORLinearIntegerConstraints>();
+		stack2 = new Stack<LinearIntegerConstraint>();
+		long startTime = System.currentTimeMillis();
+		boolean result = inner_isSat(g, pc);
+		duration = duration + (System.currentTimeMillis() - startTime);
+		if (result == false) {
+			//println ("Stack: [" + stack1.toString() + "]");
+		}
+		return result;
+	}
+	
+	//most sign, first letter
+	private static boolean inner_isSat (StringGraph g, PathCondition pc) {
+		loops++;
 		SymbolicStringConstraintsGeneral.checkTimeOut();
 		if (scg == null) scg = new SymbolicConstraintsGeneral();
 		Z3EverCalled = false;
@@ -85,6 +108,7 @@ public class TranslateToZ3Inc {
 		global_pc = pc;
 		expr = null;
 		//println ("[isSat] Bitvector: PC passed on: " + pc.header);
+		//println ("Entered Z3");
 		map = new HashMap<Vertex, BVExpr>();
 		
 		if (z3Interface == null) {
@@ -98,32 +122,80 @@ public class TranslateToZ3Inc {
 		
 		//println ("[isSat] Walking through the edges");
 		for (Edge e: g.getEdges()) {
+			//println ("Edge: " + e);
 			boolean result = handle(e);
 			if (result == false) {
+				//Add new constraints
+				LogicalORLinearIntegerConstraints resultloic = new LogicalORLinearIntegerConstraints();
+				for (LogicalORLinearIntegerConstraints temploic: stack1) {
+					for (LinearIntegerConstraint lic: temploic.getList()) {
+						if (lic.getComparator() == Comparator.NE) {
+							LinearIntegerConstraint reverse = new LinearIntegerConstraint(lic.getRight(), Comparator.EQ, lic.getLeft());
+							LinearIntegerConstraint tempLic = new LinearIntegerConstraint(lic.getLeft(), Comparator.EQ, lic.getRight());
+							if (!(pc.hasConstraint(tempLic) || pc.hasConstraint(reverse))) {
+								resultloic.addToList(lic);
+							}
+							else {
+								//println ("Not adding 2: " + lic);
+							}
+						}
+						else {
+							resultloic.addToList(lic);
+						}
+					}
+				}
+				for (LinearIntegerConstraint lic: stack2) {
+					if (lic.getComparator() == Comparator.NE) {
+						LinearIntegerConstraint reverse = new LinearIntegerConstraint(lic.getRight(), Comparator.EQ, lic.getLeft());
+						LinearIntegerConstraint tempLic = new LinearIntegerConstraint(lic.getLeft(), Comparator.EQ, lic.getRight());
+						if (!(pc.hasConstraint(tempLic) || pc.hasConstraint(reverse))) {
+							resultloic.addToList(lic);
+						}
+						else {
+							//println ("Not adding 2: " + lic);
+						}
+					}
+					else {
+						resultloic.addToList(lic);
+					}
+				}
+				resultloic.comment = "Removing path";
+				pc._addDet(resultloic);
+				
 				if (PathCondition.flagSolved == false) {
 					//println ("[isSat] Path Condition changed, starting integer solver...");
-					if (scg.isSatisfiable(pc)) {
+					long startTime = System.currentTimeMillis();
+					boolean int_result = scg.isSatisfiable(pc);
+					long temp_dur = (System.currentTimeMillis() - startTime);
+					int_duration = int_duration + temp_dur;
+					duration -= temp_dur;
+					if (int_result) {
 						//println ("[isSat] Found to be sat, solving...");
 						scg.solve(pc);
 						PathCondition.flagSolved = true;
 						//println ("[isSat] solved " + global_pc.header.toString());
 						z3Interface.close(); z3Interface = null;
-						return isSat (g, pc); //remove recursion
+						stack1 = new Stack<LogicalORLinearIntegerConstraints>();
+						stack2 = new Stack<LinearIntegerConstraint>();
+						
+						return inner_isSat (g, pc); //remove recursion
 					}
 					else {
 						//println ("[isSat] integer solver could not solve");
 						//println ("[isSat] string expr: " + expr.toString());
-						//println ("[isSat] constraints: " + global_pc.header.toString());
+						//println ("[isSat] not solved: " + global_pc.header.toString());
 						z3Interface.close(); z3Interface = null;
 						return false;
 					}
 				}
 				else {
+					//println ("No change to path condition");
 					z3Interface.close(); z3Interface = null;
 					return false;
 				}
 			}
 		}
+		//println ("Done with edges");
 		if (!Z3EverCalled) {
 			z3Interface.close(); z3Interface = null;
 			return true;
@@ -132,6 +204,7 @@ public class TranslateToZ3Inc {
 		//println ("[post] Formula to check: " + vc.trueExpr());
 		//println ("[post] On top of       : " + vc.getAssumptions());
 		if (z3Interface.isSAT()) {
+			//println ("Z3 interface SAT");
 			Map<String, String> ans = z3Interface.getAns();
 			
         	//println(model.toString());
@@ -148,9 +221,11 @@ public class TranslateToZ3Inc {
         	}
            // System.out.//println("Satisfiable (Invalid)\n");
         	z3Interface.close(); z3Interface = null;
+        	//println ("Returning true");
             return true;
 		}
 		else {
+			//println ("Z3 interface UNSAT");
 			z3Interface.close(); z3Interface = null;
 			return false;
 		}
@@ -187,6 +262,9 @@ public class TranslateToZ3Inc {
 		}
 		else if (e instanceof EdgeCharAt) {
 			return handleEdgeCharAt((EdgeCharAt) e);
+		}
+		else if (e instanceof EdgeNotCharAt) {
+			return handleEdgeNotCharAt((EdgeNotCharAt) e);
 		}
 		else if (e instanceof EdgeIndexOf) {
 			return handleEdgeIndexOf((EdgeIndexOf) e);
@@ -261,8 +339,10 @@ public class TranslateToZ3Inc {
 					lit = new BVAnd(lit, new BVEq(temp, new BVConst(character)));
 				}
 			}
-			//println ("[startsWith] returning: " + lit);
-			result = post (lit);
+			//println ("[startsWith] Adding lit: " + lit);
+			boolean temp_result = post (lit);
+			//println ("[startsWith] returning: " + temp_result);
+			result = temp_result;
 		}
 		else if (!e.getDest().isConstant()) {
 			//println ("startswith branch 3");
@@ -300,15 +380,20 @@ public class TranslateToZ3Inc {
 		else {
 			throw new RuntimeException("This should not be reached");
 		}
-		if (result == false) {
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		stack1.add(loic);
+		/*if (result == false) {
 			//println ("[handleEdgeStartsWith] eliminate lengths");
 			global_pc._addDet(elimanateCurrentLengthsConstraints());
 			//println ("[handleEdgeStartsWith] " + global_pc.header.toString());
-		}
+		}*/
 		//println ("[handleEdgeStartsWith] returning true");
 		return result;
 	}
 	
+	//TODO: Maybe modify path condition?
 	private static boolean handleEdgeNotStartsWith (EdgeNotStartsWith e) {
 		//println ("[handleEdgeNotStartsWith] entered");
 		if (e.getSource().getLength() < e.getDest().getLength()) return true;
@@ -455,20 +540,31 @@ public class TranslateToZ3Inc {
 	
 	private static boolean handleEdgeEndsWith (EdgeEndsWith e) {
 		boolean result = post (endsWith(e));
-		if (result == false) {
+		/*if (result == false) {
 			global_pc._addDet(elimanateCurrentLengthsConstraints());
-		}
+		}*/
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		stack1.add(loic);
 		return result;
 	}
 	
 	private static boolean handleEdgeNotEndsWith (EdgeNotEndsWith e) {
+		//println ("Entered EdgeNotsEndsWith");
 		if (e.getDest().getLength() > e.getSource().getLength()) {
+			//println ("[handleEdgeNotEndsWith] return true");
 			return true;
 		}
 		boolean result = post (new BVNot(endsWith(e)));
-		if (result == false) {
+		/*if (result == false) {
 			global_pc._addDet(elimanateCurrentLengthsConstraints());
-		}
+		}*/
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		stack1.add(loic);
+		//println ("[handleEdgeNotEndsWith] return " + result);
 		return result;
 	}
 	
@@ -521,10 +617,19 @@ public class TranslateToZ3Inc {
 	private static boolean handleEdgeNotEqual (EdgeNotEqual e) {
 		//println ("[handleEdgeNotEqual] entered");
 		if (e.getSource().getLength() != e.getDest().getLength()) {
+			//println ("[handleEdgeNotEqual] return true");
 			return true;
 		}
-		
-		return post (new BVNot(equal(e)));
+		//println ("[handleEdgeNotEqual] posting");
+		boolean result = post (new BVNot(equal(e)));
+		/*if (!result) {
+			global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}*/
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		stack1.add(loic);
+		return result;
 	}
 	
 	private static boolean handleEdgeTrim (EdgeTrimEqual e) {
@@ -619,9 +724,13 @@ public class TranslateToZ3Inc {
 		else {
 			throw new RuntimeException("This should not be reached");
 		}
-		if (result == false) {
+		/*if (result == false) {
 			global_pc._addDet(elimanateCurrentLengthsConstraints());
-		}
+		}*/
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		stack1.add(loic);
 		return result;
 	}
 	
@@ -648,25 +757,111 @@ public class TranslateToZ3Inc {
 				result = post (new BVEq(temp1, temp2));
 			}
 			else {
-				BVExpr lit = null;
+				/*BVExpr lit = null;
 				for (int i = 0; i < constant.length(); i++) {
 					BVExpr temp1 = new BVConst(constant.charAt(i));
 					BVExpr temp2 = new BVConst(c);
 					lit = and (lit, new BVNot(new BVEq(temp1, temp2)));
 				}
-				//println ("[handleEdgeCharAt] posting: " + lit.toString());
-				result = post (lit);
+				result = post (lit);*/
+				throw new RuntimeException("Impossible");
 			}
 		}
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic = new LogicalORLinearIntegerConstraints();
+		LinearIntegerConstraint temp[] = new LinearIntegerConstraint[4];
+		temp[0] = new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(e.getIndex().solution()));
+		temp[1] = new LinearIntegerConstraint(new IntegerConstant(e.getIndex().solution()), Comparator.EQ, e.getIndex());
+		temp[2] = new LinearIntegerConstraint(e.getValue(), Comparator.EQ, new IntegerConstant(e.getValue().solution()));
+		temp[3] = new LinearIntegerConstraint(new IntegerConstant(e.getValue().solution()), Comparator.EQ, e.getValue());
+		LinearIntegerConstraint toAdd1 = new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution()));
+		LinearIntegerConstraint toAdd2 = new LinearIntegerConstraint(e.getValue(), Comparator.NE, new IntegerConstant(e.getValue().solution()));
+		
+		if (!(global_pc.hasConstraint(temp[0]) || global_pc.hasConstraint(temp[1]))) {
+			loic.addToList(toAdd1);
+		}
+		else {
+			//println("Not adding: " + toAdd1);
+		}
+		if (!(global_pc.hasConstraint(temp[2]) || global_pc.hasConstraint(temp[3]))) {
+			loic.addToList(toAdd2);
+		}
+		else {
+			//println("Not adding: " + toAdd2);
+		}	
+		
+		loic.comment = "handleEdgeCharAt";
+		stack1.add(loic);
+		
+		loic.addToList(toAdd1);
+		
+		loic.addToList(toAdd2);
+		loic.comment = "handleEdgeCharAt";
 		if (result == false) {
 			//println ("[handleEdgeCharAt] returning false");
 			//LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			//println ("[handleEdgeCharAt] e.getSource().getLength(): " + e.getSource().getLength());
 			//println ("[handleEdgeCharAt] index: " + e.getIndex().solution());
-			LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
-			loic.addToList(new LinearIntegerConstraint(e.getValue(), Comparator.NE, new IntegerConstant(e.getValue().solution())));
-			global_pc._addDet(loic);
+			//global_pc._addDet(loic);
+		}
+		return result;
+	}
+	
+	private static boolean handleEdgeNotCharAt (EdgeNotCharAt e) {
+		boolean result = true;
+		if (!e.getSource().isConstant()) {
+			BVExpr source = getBVExpr(e.getSource());
+			char c = (char) e.getValue().solution();
+			int index = e.getIndex().solution();
+			//println ("[handleEdgeCharAt] " + c + " " + index);
+			BVExpr temp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
+			BVExpr cons = new BVConst (c);
+			//println ("[handleEdgeCharAt] posting: " + new BVEq(temp, cons));
+			result = post (new BVNot(new BVEq(temp, cons)));
+		}
+		else {
+			String constant = e.getSource().getSolution();
+			char c = (char) e.getValue().solution();
+			int index = e.getIndex().solution();
+			if (index > -1) {
+				BVExpr temp1 = new BVConst (constant.charAt(index));
+				BVExpr temp2 = new BVConst (c);
+				//println ("[handleEdgeCharAt] posting: " + new BVEq(temp1, temp2));
+				result = post (new BVNot(new BVEq(temp1, temp2)));
+			}
+			else {
+				/*BVExpr lit = null;
+				for (int i = 0; i < constant.length(); i++) {
+					BVExpr temp1 = new BVConst(constant.charAt(i));
+					BVExpr temp2 = new BVConst(c);
+					lit = and (lit, new BVNot(new BVEq(temp1, temp2)));
+				}
+				result = post (lit);*/
+				throw new RuntimeException("Impossible");
+			}
+		}
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic = new LogicalORLinearIntegerConstraints();
+		LinearIntegerConstraint temp[] = new LinearIntegerConstraint[2];
+		temp[0] = new LinearIntegerConstraint(e.getIndex(), Comparator.EQ, new IntegerConstant(e.getIndex().solution()));
+		temp[1] = new LinearIntegerConstraint(new IntegerConstant(e.getIndex().solution()), Comparator.EQ, e.getIndex());
+		LinearIntegerConstraint toAdd1 = new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution()));
+		
+		if (!(global_pc.hasConstraint(temp[0]) || global_pc.hasConstraint(temp[1]))) {
+			loic.addToList(toAdd1);
+		}
+		else {
+			//println("Not adding: " + toAdd1);
+		}
+		
+		loic.comment = "handleEdgeNotCharAt";
+		stack1.add(loic);
+		if (result == false) {
+			//println ("[handleEdgeCharAt] returning false");
+			//LinearOrIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+			//println ("[handleEdgeCharAt] e.getSource().getLength(): " + e.getSource().getLength());
+			//println ("[handleEdgeCharAt] index: " + e.getIndex().solution());
+			//global_pc._addDet(loic);
 		}
 		return result;
 	}
@@ -783,9 +978,14 @@ public class TranslateToZ3Inc {
 				result = post (lit);
 			}
 		}
-		if (result == false) {
+		/*if (result == false) {
 			global_pc._addDet(elimanateCurrentLengthsConstraints());
-		}
+		}*/
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSources().get(0).getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSources().get(0).getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getSources().get(1).getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSources().get(1).getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		stack1.add(loic);
 		return result;
 	}
 	
@@ -879,9 +1079,13 @@ public class TranslateToZ3Inc {
 		else {
 			result = post (contains(e));
 		}
-		if (result == false) {
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		stack1.add(loic);
+		/*if (result == false) {
 			global_pc._addDet(elimanateCurrentLengthsConstraints());
-		}
+		}*/
 		return result;
 	}
 	
@@ -889,18 +1093,31 @@ public class TranslateToZ3Inc {
 		//println ("[handleEdgeIndexOf2] entered: " + e.toString());
 		boolean result = true;
 		if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
+			//println ("branch 1");
 			BVExpr source = getBVExpr (e.getSource());
 			BVExpr dest = getBVExpr (e.getDest());
 			int index = e.getIndex().solution();
 			if (index > -1) {
-				BVExpr lit = null;
+				BVExpr totalLit = null;
+				
+				for (int i = e.getIndex().getMinIndex().solution(); i <= index - e.getDest().getLength(); i++) {
+					BVExpr lit = null;
+					for (int j = 0; j < e.getDest().getLength(); j++) {
+						int totalOffset = i + j;
+						BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - totalOffset) * 8 - 1, (e.getSource().getLength() - totalOffset) * 8 - 8);
+						BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - j) * 8 - 1, (e.getDest().getLength() - j) * 8 - 8);
+						lit = and (lit, new BVEq(sourceTemp, destTemp));
+					}
+					totalLit = and (totalLit, new BVNot(lit));
+				}
+				
 				for (int i = index; i < index + e.getDest().getLength(); i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
 					BVExpr destTemp = new BVExtract(dest, (e.getDest().getLength() - (i - index)) * 8 - 1, (e.getDest().getLength() - (i - index)) * 8 - 8);
-					lit = and (lit, new BVEq(sourceTemp, destTemp));
+					totalLit = and (totalLit, new BVEq(sourceTemp, destTemp));
 				}
 				//println ("[handleEdgeIndexOf2] posting: " + lit.toString());
-				result = post (lit);
+				result = post (totalLit);
 			}
 			else {
 				if (e.getSource().getLength() < e.getDest().getLength()) {
@@ -917,6 +1134,7 @@ public class TranslateToZ3Inc {
 			}
 		}
 		else if (!e.getSource().isConstant()) {
+			//println ("branch 2");
 			BVExpr source = getBVExpr (e.getSource());
 			String destCons = e.getDest().getSolution();
 			int index = e.getIndex().solution();
@@ -946,6 +1164,7 @@ public class TranslateToZ3Inc {
 			}
 		}
 		else if (!e.getDest().isConstant()) {
+			//println ("branch 3");
 			String sourceCons = e.getSource().getSolution();
 			
 			BVExpr dest = getBVExpr(e.getDest());
@@ -976,10 +1195,19 @@ public class TranslateToZ3Inc {
 				}
 			}
 		}
+		else {
+			throw new RuntimeException("Preprocessor should catch this");
+		}
+		//LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+		stack1.add(loic);
+		loic = elimanateCurrentLengthsConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 		if (result == false) {
-			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
-			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
-			global_pc._addDet(loic);
+			//global_pc._addDet(loic);
 		}
 		return result;
 	}
@@ -1003,7 +1231,7 @@ public class TranslateToZ3Inc {
 				result = post (lit);*/
 				
 				BVExpr totalLit = null;
-				for (int i = 0; i <= index - e.getDest().getLength(); i++) {
+				for (int i = 0; i <= index - e.getDest().getLength(); i++) { // TODO: Review
 					BVExpr lit = null;
 					for (int j = 0; j < e.getDest().getLength(); j++) {
 						int totalOffset = i + j;
@@ -1031,9 +1259,10 @@ public class TranslateToZ3Inc {
 				else {
 					result = post (new BVNot(contains(e)));
 				}
-				if (result == false) {
+				/*if (result == false) {
 					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
-				}
+				}*/
+				stack2.add(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				return result;
 			}
 		}
@@ -1077,9 +1306,10 @@ public class TranslateToZ3Inc {
 					result = post (new BVNot(contains(e)));
 					//no matter if it is false, can't fix it
 				}
-				if (result == false) {
+				/*if (result == false) {
 					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
-				}
+				}*/
+				stack2.add(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				return result;
 			}
 		}
@@ -1110,9 +1340,10 @@ public class TranslateToZ3Inc {
 				else {
 					result = post (new BVNot(contains(e)));
 				}
-				if (result == false) {
+				/*if (result == false) {
 					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
-				}
+				}*/
+				stack2.add(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				return result;
 			}
 		}
@@ -1122,15 +1353,21 @@ public class TranslateToZ3Inc {
 				return true;
 			}
 			else {
-				global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				//global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
+				stack2.add(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				return false;
 			}
 		}
-		if (result == false) {
+		/*if (result == false) {
 			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			global_pc._addDet(loic);
-		}
+		}*/
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+		stack1.add(loic);
 		return result;
 		
 	}
@@ -1142,6 +1379,7 @@ public class TranslateToZ3Inc {
 			int index = e.getIndex().solution();
 			char character = (char) e.getIndex().getExpression().solution();
 			if (index > -1) {
+				//println ("index > -1: " + index);
 				BVExpr lit = null;
 				/* no other occurences of the character may come before */
 				for (int i = 0; i < index; i++) {
@@ -1153,9 +1391,10 @@ public class TranslateToZ3Inc {
 				BVExpr constant = new BVConst (character);
 				lit = and (lit, new BVEq(sourceTemp, constant));
 				result = post (lit);
-				//println ("[handleEdgeIndexOfChar] lit: " + lit.toString());
+				//println ("[handleEdgeIndexOfChar] lit: " + lit.toString() + " " + result);
 			}
 			else {
+				//println ("index == -1");
 				BVExpr lit = null;
 				for (int i = 0; i < e.getSource().getLength(); i++) {
 					BVExpr sourceTemp = new BVExtract(source, (e.getSource().getLength() - i) * 8 - 1, (e.getSource().getLength() - i) * 8 - 8);
@@ -1163,9 +1402,10 @@ public class TranslateToZ3Inc {
 					lit = and (lit, new BVNot(new BVEq(sourceTemp, constant)));
 				}
 				result = post (lit);
-				if (result == false) {
+				/*if (result == false) {
 					global_pc._addDet(Comparator.NE, e.getIndex(), e.getIndex().solution());
-				}
+				}*/
+				stack2.add(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 				return result;
 			}
 		}
@@ -1180,11 +1420,17 @@ public class TranslateToZ3Inc {
 			}
 			else {return false;}
 		}
-		if (result == false) {
+		/*if (result == false) {
 			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			global_pc._addDet(loic);
-		}
+		}*/
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+		loic.addToList(new LinearIntegerConstraint(e.getIndex().getExpression(), Comparator.NE, new IntegerConstant(e.getIndex().getExpression().solution())));
+		stack1.add(loic);
 		return result;
 	}
 	
@@ -1246,10 +1492,18 @@ public class TranslateToZ3Inc {
 			}
 			//result = post (new BVEq(new BVConst(actualAns), new BVConst(index)));
 		}
+		//LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+		loic.addToList(new LinearIntegerConstraint(e.getIndex().getExpression(), Comparator.NE, new IntegerConstant(e.getIndex().getExpression().solution())));
+		stack1.add(loic);
+		loic = elimanateCurrentLengthsConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+		loic.addToList(new LinearIntegerConstraint(e.getIndex().getExpression(), Comparator.NE, new IntegerConstant(e.getIndex().getExpression().solution())));
 		if (result == false) {
-			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
-			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
-			global_pc._addDet(loic);
+			//global_pc._addDet(loic);
 		}
 		return result;
 	}
@@ -1259,10 +1513,14 @@ public class TranslateToZ3Inc {
 			return true;
 		}
 		boolean result = post (new BVNot(contains(e)));
-		if (result == false) {
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		stack1.add(loic);
+		/*if (result == false) {
 			//In my automata approach this never happens
-			global_pc._addDet(elimanateCurrentLengthsConstraints());
-		}
+			//global_pc._addDet(elimanateCurrentLengthsConstraints());
+		}*/
 		return result;
 	}
 	
@@ -1307,9 +1565,13 @@ public class TranslateToZ3Inc {
 		else {
 			throw new RuntimeException("Preprocessor should handle this");
 		}
-		if (result == false) {
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		stack1.add(loic);
+		/*if (result == false) {
 			global_pc._addDet(elimanateCurrentLengthsConstraints());
-		}
+		}*/
 		return result;
 	}
 	
@@ -1350,11 +1612,16 @@ public class TranslateToZ3Inc {
 			int actualAns = source.indexOf(character);
 			result = post (new BVEq(new BVConst(actualAns), new BVConst(index)));
 		}
-		if (result == false) {
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+		stack1.add(loic);
+		/*if (result == false) {
 			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			global_pc._addDet(loic);
-		}
+		}*/
 		return result;
 	}
 	
@@ -1399,12 +1666,19 @@ public class TranslateToZ3Inc {
 			int actualAns = source.lastIndexOf(character, e.getIndex().getMinDist().solution());
 			result = (index == actualAns);
 		}
-		if (result == false) {
+		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+		loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
+		loic.addToList(new LinearIntegerConstraint(e.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(e.getIndex().getMinDist().solution())));
+		stack1.add(loic);
+		
+		/*if (result == false) {
 			LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 			loic.addToList(new LinearIntegerConstraint(e.getIndex(), Comparator.NE, new IntegerConstant(e.getIndex().solution())));
 			loic.addToList(new LinearIntegerConstraint(e.getIndex().getMinDist(), Comparator.NE, new IntegerConstant(e.getIndex().getMinDist().solution())));
 			global_pc._addDet(loic);
-		}
+		}*/
 		return result;
 		
 	}
@@ -1441,9 +1715,13 @@ public class TranslateToZ3Inc {
 			else {
 				throw new RuntimeException("Preprocessor should handle this");
 			}
-			if (result == false) {
+			/*if (result == false) {
 				global_pc._addDet(elimanateCurrentLengthsConstraints());
-			}
+			}*/
+			LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+			loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+			loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+			stack1.add(loic);
 			return result;
 		}
 		else if (e.getSymbolicArgument1() == null && e.getSymbolicArgument2() != null) {
@@ -1467,9 +1745,13 @@ public class TranslateToZ3Inc {
 				int arg2 = e.getSymbolicArgument2().solution();
 				if (arg2 - arg1 != destCons.length()) {
 					//TODO: Can definitly improve here
-					LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+					//LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+					loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
 					loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(arg2)));
-					global_pc._addDet(loic);
+					stack1.add(loic);
+					//global_pc._addDet(loic);
 					return false;
 					//throw new RuntimeException((arg2 - arg1) + " is not equal to '" + destCons + "' length of " + destCons.length());
 				}
@@ -1484,14 +1766,26 @@ public class TranslateToZ3Inc {
 			else {
 				//Assume both constants
 				if (!e.getSource().getSolution().substring(e.getArgument1(),e.getSymbolicArgument2().solution()).equals((e.getDest().getSolution()))) {
-					global_pc._addDet(Comparator.NE, e.getSymbolicArgument2(), e.getSymbolicArgument2().solution());
+					//global_pc._addDet(Comparator.NE, e.getSymbolicArgument2(), e.getSymbolicArgument2().solution());
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+					loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+					//TODO: Double check?
+					loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(e.getSymbolicArgument2().solution())));
+					stack1.add(loic);
 					return false;
 				}
 			}
 			if (result == false) {
-				LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+				/*LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
 				loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(e.getSymbolicArgument2().solution())));
-				global_pc._addDet(loic);
+				global_pc._addDet(loic);*/
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+				loic.addToList(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+				//TODO: Double check?
+				loic.addToList(new LinearIntegerConstraint(e.getSymbolicArgument2(), Comparator.NE, new IntegerConstant(e.getSymbolicArgument2().solution())));
+				stack1.add(loic);
 			}
 			return result;
 		}
@@ -1519,6 +1813,7 @@ public class TranslateToZ3Inc {
 	}
 	
 	private static boolean post (BVExpr ee) {
+		
 		if (ee == null) return true;
 		if (expr == null) {
 			expr = ee;
@@ -1526,7 +1821,7 @@ public class TranslateToZ3Inc {
 		else {
 			expr = new BVAnd(ee, expr);
 		}
-			
+		//println ("Expr: " + expr);	
 		//println ("[post] Formula to check: " + ee);
 		//println ("[post] On top of       : " + vc.getAssumptions());
 		//long timing = System.currentTimeMillis();

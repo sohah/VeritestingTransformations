@@ -347,6 +347,8 @@ public class SymbolicListenerClean extends PropertyListenerAdapter implements Pu
 								testCase = testCase + "false" + ",";
 							else
 								testCase = testCase + "true" + ",";
+						} else if (actualType == Types.T_REFERENCE) {
+							testCase = testCase + val + ",";
 						}
 						else
 							throw new RuntimeException("## Error: listener does not support type other than int, long, float, double and boolean");
@@ -419,6 +421,9 @@ public class SymbolicListenerClean extends PropertyListenerAdapter implements Pu
 								testCase = testCase + "<td>false</td>";
 							else
 								testCase = testCase + "<td>true</td>";
+						}
+						else if (actualType == Types.T_REFERENCE) {
+							testCase = testCase + "<td>" + val + "</td>";
 						}
 						else
 							throw new RuntimeException("## Error: listener does not support type other than int, long, float, double and boolean");

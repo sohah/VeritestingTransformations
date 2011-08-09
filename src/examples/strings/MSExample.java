@@ -33,10 +33,10 @@ public class MSExample {
     if (!(t.equals("live.com")) && !(t.equals("google.com"))) {
       return false;
     }
-    // s survived all checks
-    //throw new RuntimeException("Give string that satisfies this");
+    // s survived all checks 
+    //throw new RuntimeException("Give string that satisfies this");*/
     return true;
-  }
+  } 
 
   public static void doTest() {
     IsEasyChairQuery(s);

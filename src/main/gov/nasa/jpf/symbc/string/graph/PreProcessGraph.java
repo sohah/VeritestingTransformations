@@ -3,6 +3,8 @@ package gov.nasa.jpf.symbc.string.graph;
 import java.util.ArrayList;
 import java.util.List;
 
+import sun.rmi.runtime.Log;
+
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
@@ -10,9 +12,11 @@ import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
 import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
+import gov.nasa.jpf.symbc.string.StringComparator;
 import gov.nasa.jpf.symbc.string.StringConstant;
 import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.StringUtility;
+import gov.nasa.jpf.symbc.string.SymbolicIndexOfInteger;
 import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
 
 /**
@@ -23,6 +27,7 @@ public class PreProcessGraph {
 	public static final int MAXIMUM_LENGTH = 30;
 	private static SymbolicConstraintsGeneral scg;
 	
+	//TODO: Add support for NoCharAt and LastIndexOf
 	/**
 	 * Preprocess given graph, and adds appropriate integer constraints to
 	 * the pathcondition.
@@ -33,29 +38,2724 @@ public class PreProcessGraph {
 	 * @param currentPC
 	 * @return
 	 */
-	public static boolean preprocess (StringGraph g, PathCondition currentPC) { 
-		//println ("[preprocess] Preprocessor running...");
+	public static boolean preprocess (StringGraph stringGraph, PathCondition pathCondition) {
+		
 		scg = new SymbolicConstraintsGeneral();
 		
-		/*if (!scg.isSatisfiable(currentPC)) {
+		if (!handleEquality(stringGraph, pathCondition)) {
+			//println ("handleEquality returned false");
 			return false;
 		}
-		else {
-			scg.solve(currentPC);
+		if (!handleBasics(stringGraph, pathCondition)) {
+			//println ("handleBasics returned false");
+			return false;
+		}
+		if (!handleBooleanConstraints(stringGraph, pathCondition)) {
+			//println ("handleBooleanConstraints returned false");
+			return false;
+		}
+		if (!handleConcat(stringGraph, pathCondition)) {
+			//println ("handleConcat returned false");
+			return false;
+		}
+		if (!handleCharAt(stringGraph, pathCondition)) {
+			//println ("handleCharAt returned false");
+			return false;
+		}
+		if (!handleSubstring(stringGraph, pathCondition)) {
+			//println ("handleSubstring returned false");
+			return false;
+		}
+		if (!handleIndexOf(stringGraph, pathCondition)) {
+			//println ("handleIndexOf returned false");
+			return false;
+		}
+		if (!handleLastIndexOf(stringGraph, pathCondition)) {
+			//println ("handleIndexOf returned false");
+			return false;
+		}
+		if (!handleConstants(stringGraph, pathCondition)) {
+			//println ("handleConstants returned false");
+			return false;
+		}
+		if (!handleTrim(stringGraph, pathCondition)) {
+			//println ("handleTrim returned false");
+			return false;
+		}
+		if (scg.isSatisfiable(pathCondition)) {
+			scg.solve(pathCondition);
+			PathCondition.flagSolved = true;
+			//println (pathCondition.toString());
+			return true;
+		} else {
+			//println (pathCondition.toString());
+			return false;
+		}
+	}
+	
+	private static boolean handleBasics (StringGraph g, PathCondition pc) {
+		for (Vertex v: g.getVertices()) {
+			pc._addDet(Comparator.GE, v.getSymbolicLength(), 1);
+			pc._addDet(Comparator.LE, v.getSymbolicLength(), MAXIMUM_LENGTH);
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOf (StringGraph g, PathCondition pc) {
+		if (!handleBasicIndexOf(g, pc)) {
+			//println ("handleBasicIndexOf returned false");
+			return false;
+		}
+		if (!handleIndexOfDependencies(g, pc)) {
+			//println ("handleIndexOfDependencies returned false");
+			return false;
+		}
+		if (!handleIndexOfStr(g, pc)) {
+			//println ("handleIndexOfStr returned false");
+			return false;
+		}
+		if (!handleIndexOfStrInt(g, pc)) {
+			//println ("handleIndexOfStr returned false");
+			return false;
+		}
+		if (!handleIndexOfChar(g, pc)) {
+			//println ("handleIndexOfStr returned false");
+			return false;
+		}
+		if (!handleIndexOfCharInt(g, pc)) {
+			//println ("handleIndexOfStr returned false");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private static boolean handleLastIndexOf (StringGraph g, PathCondition pc) {
+		if (!handleBasicLastIndexOf(g, pc)) {
+			//println ("handleBasicIndexOf returned false");
+			return false;
+		}
+		if (!handleLastIndexOfDependencies(g, pc)) {
+			//println ("handleIndexOfDependencies returned false");
+			return false;
+		}
+		if (!handleLastIndexOfChar(g, pc)) {
+			//println ("handleIndexOfStr returned false");
+			return false;
+		}
+		if (!handleLastIndexOfCharInt(g, pc)) {
+			//println ("handleIndexOfStr returned false");
+			return false;
+		}
+		/*if (!handleIndexOfStr(g, pc)) {
+			//println ("handleIndexOfStr returned false");
+			return false;
+		}
+		if (!handleIndexOfStrInt(g, pc)) {
+			//println ("handleIndexOfStr returned false");
+			return false;
+		}
+		
+		if (!handleIndexOfCharInt(g, pc)) {
+			//println ("handleIndexOfStr returned false");
+			return false;
 		}*/
 		
-		PathCondition pc = currentPC;
+		return true;
+	}
+	
+	private static boolean handleTrim (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (e instanceof EdgeTrimEqual) {
+				pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
+				//Fix a stupid bug in Trim of JSA
+				pc._addDet (Comparator.GE, e.getDest().getSymbolicLength(), new IntegerConstant(2));
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfChar (StringGraph g, PathCondition pc) {
+		if (!handleIndexOfCharBasics(g, pc)) {
+			//println ("handleIndexOfNotContains returned false");
+			return false;
+		}
+		if (!handleIndexOfCharNotContains(g, pc)) {
+			//println ("handleIndexOfNotContains returned false");
+			return false;
+		}
+		if (!handleIndexOfCharStartsWith(g, pc)) {
+			//println ("handleIndexOfStartsWith returned false");
+			return false;
+		}
+		if (!handleIndexOfCharNotStartsWith(g, pc)) {
+			//println ("handleIndexOfNotStartsWith returned false");
+			return false;
+		}
+		if (!handleIndexOfCharContains(g, pc)) {
+			//println ("handleIndexOfCharContains returned false");
+			return false;
+		}
+		if (!handleIndexOfCharCharAt(g, pc)) {
+			//println ("handleIndexOfCharAt returned false");
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharBasics (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeIndexOfChar)) continue;
+			EdgeIndexOfChar eca = (EdgeIndexOfChar) e;
+			pc._addDet(Comparator.GE, eca.getIndex().getExpression(), SymbolicStringConstraintsGeneral.MIN_CHAR);
+			pc._addDet(Comparator.LT, eca.getIndex().getExpression(), SymbolicStringConstraintsGeneral.MAX_CHAR);
+			pc._addDet(Comparator.LE, eca.getIndex(), MAXIMUM_LENGTH);
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfChar (StringGraph g, PathCondition pc) {
+		if (!handleLastIndexOfCharBasics(g, pc)) {
+			//println ("handleIndexOfNotContains returned false");
+			return false;
+		}
+		if (!handleLastIndexOfCharNotContains(g, pc)) {
+			//println ("handleIndexOfNotContains returned false");
+			return false;
+		}
+		if (!handleLastIndexOfCharContains(g, pc)) {
+			//println ("handleIndexOfCharContains returned false");
+			return false;
+		}
+		if (!handleLastIndexOfCharCharAt(g, pc)) {
+			//println ("handleIndexOfCharAt returned false");
+			return false;
+		}
+		if (!handleLastIndexOfCharEndsWith(g, pc)) {
+			//println ("handleIndexOfStartsWith returned false");
+			return false;
+		}
+		if (!handleLastIndexOfCharNotEndsWith(g, pc)) {
+			//println ("handleIndexOfNotStartsWith returned false");
+			return false;
+		}
 		
-		//Remove duplicates
-		List<Edge> temp = g.getEdges();
-		for (int i = 0; i < temp.size(); i++) {
-			for (int j = i + 1; j < temp.size(); j++) {
-				if (temp.get(i).equals(temp.get(j))) {
-					throw new RuntimeException("o oo " + temp.get(i).toString());
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharBasics (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeLastIndexOfChar)) continue;
+			EdgeLastIndexOfChar eca = (EdgeLastIndexOfChar) e;
+			pc._addDet(Comparator.GE, eca.getIndex().getExpression(), SymbolicStringConstraintsGeneral.MIN_CHAR);
+			pc._addDet(Comparator.LT, eca.getIndex().getExpression(), SymbolicStringConstraintsGeneral.MAX_CHAR);
+			pc._addDet(Comparator.LE, eca.getIndex(), MAXIMUM_LENGTH);
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharInt (StringGraph g, PathCondition pc) {
+		if (!handleLastIndexOfCharIntBasics(g, pc)) {
+			//println ("handleLastIndexOfCharIntBasics");
+			return false;
+		}
+		if (!handleLastIndexOfCharIntNotContains(g, pc)) {
+			//println ("handleIndexOfNotContains returned false");
+			return false;
+		}
+		if (!handleLastIndexOfCharIntCharAt(g, pc)) {
+			//println ("handleIndexOfCharAt returned false");
+			return false;
+		}
+		if (!handleLastIndexOfCharIntEndsWith(g, pc)) {
+			//println ("handleIndexOfStartsWith returned false");
+			return false;
+		}
+		if (!handleLastIndexOfCharIntNotEndsWith(g, pc)) {
+			//println ("handleIndexOfNotStartsWith returned false");
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharIntBasics (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeLastIndexOfChar)) continue;
+			EdgeLastIndexOfChar eca = (EdgeLastIndexOfChar) e;
+			pc._addDet(Comparator.GE, eca.getIndex().getExpression(), SymbolicStringConstraintsGeneral.MIN_CHAR);
+			pc._addDet(Comparator.LT, eca.getIndex().getExpression(), SymbolicStringConstraintsGeneral.MAX_CHAR);
+			pc._addDet(Comparator.LE, eca.getIndex(), MAXIMUM_LENGTH);
+		}
+		return true;
+	}
+
+	
+	private static boolean handleSubstring (StringGraph g, PathCondition pc) {
+		if (!handleSubstring1Basic(g, pc)) {
+			//println ("handleSubstring1Basic returned false");
+			return false;
+		}
+		if (!handleSubstring1IndexOf(g, pc)) {
+			//println ("handleSubstring1IndexOf returned false");
+			return false;
+		}
+		if (!handleSubstring1CharAt(g, pc)) {
+			//println ("handleSubstring1CharAt returned false");
+			return false;
+		}
+		if (!handleSubstring2Basic(g, pc)) {
+			//println ("handleSubstring2Basic returned false");
+			return false;
+		}
+		if (!handleSubstring2CharAt(g, pc)) {
+			//println ("handleSubstring2CharAt returned false");
+			return false;
+		}
+		if (!handleSubstring2IndexOf(g, pc)) {
+			//println ("handleSubstring2CharAt returned false");
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean handleSubstring1CharAt(StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				EdgeCharAt eca = null;
+				EdgeSubstring1Equal es1e = null;
+				
+				if (e1 instanceof EdgeCharAt && e2 instanceof EdgeSubstring1Equal) {
+					eca = (EdgeCharAt) e1;
+					es1e = (EdgeSubstring1Equal) e2;
+				} else if (e2 instanceof EdgeCharAt && e1 instanceof EdgeSubstring1Equal) {
+					eca = (EdgeCharAt) e2;
+					es1e = (EdgeSubstring1Equal) e1;
+				} else {
+					continue;
+				}
+				
+				if (es1e.getDest().isConstant()) {
+					String solution = e1.getDest().getSolution();
+					for (int k = 0; k < solution.length(); k++) {
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, new IntegerConstant(es1e.getArgument1() + k)));
+						loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(k))));
+						pc._addDet(loic);
+					}
+				}
+			}
+			//println (pc.toString());
+		}
+		return true;
+	}
+	
+	private static boolean handleSubstring1IndexOf(StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				EdgeIndexOf eio = null;
+				EdgeSubstring1Equal es1e = null;
+				
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeSubstring1Equal) {
+					eio = (EdgeIndexOf) e1;
+					es1e = (EdgeSubstring1Equal) e2;
+				} else if (e2 instanceof EdgeIndexOf && e1 instanceof EdgeSubstring1Equal) {
+					eio = (EdgeIndexOf) e2;
+					es1e = (EdgeSubstring1Equal) e1;
+				} else {
+					continue;
+				}
+				
+				if (eio.getIndex().getExpression() instanceof StringConstant && es1e.getDest().isConstant()) {
+					int possiblePos = es1e.getDest().getSolution().indexOf(eio.getIndex().getExpression().solution());
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					/* a.sw(c).indexOf(b) == j
+					 * a.indexof(b) == i
+					 * 
+					 * assume b is constant
+					 * 
+					 * 0 < i < c.length -> i == j  
+					 */
+					loic.addToList(new LinearIntegerConstraint(new IntegerConstant(es1e.a1), Comparator.GE, eio.getIndex()));
+					loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.GE, new IntegerConstant(es1e.a1)._plus(e2.getDest().getSymbolicLength())));
+					loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.EQ, new IntegerConstant(es1e.a1)._plus(new IntegerConstant (possiblePos))));
+					pc._addDet(loic);
 				}
 			}
 		}
+		return true;
+	}
+	
+	private static boolean handleSubstring2IndexOf(StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				EdgeIndexOf eio = null;
+				EdgeSubstring2Equal es2e = null;
+				
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeSubstring2Equal) {
+					eio = (EdgeIndexOf) e1;
+					es2e = (EdgeSubstring2Equal) e2;
+				} else if (e2 instanceof EdgeIndexOf && e1 instanceof EdgeSubstring2Equal) {
+					eio = (EdgeIndexOf) e2;
+					es2e = (EdgeSubstring2Equal) e1;
+				} else {
+					continue;
+				}
+				
+				if (eio.getIndex().getExpression() instanceof StringConstant && es2e.getDest().isConstant()) {
+					int possiblePos = es2e.getDest().getSolution().indexOf(eio.getIndex().getExpression().solution());
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					/* a.sw(c).indexOf(b) == j
+					 * a.indexof(b) == i
+					 * 
+					 * assume b is constant
+					 * 
+					 * 0 < i < c.length -> i == j  
+					 */
+					loic.addToList(new LinearIntegerConstraint(new IntegerConstant(es2e.getArgument1()), Comparator.GE, eio.getIndex()));
+					loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.GE, new IntegerConstant(es2e.getArgument2())));
+					loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.EQ, new IntegerConstant(es2e.getArgument1())._plus(new IntegerConstant (possiblePos))));
+					pc._addDet(loic);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleSubstring1Basic (StringGraph g, PathCondition pc) {
+		for (Edge edge: g.getEdges()){
+			if (!(edge instanceof EdgeSubstring1Equal)) {continue;}
+			EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) edge;
+			pc._addDet (Comparator.LE, edge.getDest().getSymbolicLength(), edge.getSource().getSymbolicLength());
+			if (es1e.getArgument1Symbolic() != null) {
+				pc._addDet(Comparator.GE, es1e.getArgument1Symbolic(), 0);
+			} else {
+				pc._addDet(Comparator.GE, edge.getSource().getSymbolicLength(), new IntegerConstant(es1e.a1)._plus(edge.getDest().getSymbolicLength()));
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleSubstring2Basic (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()){
+			if (!(e instanceof EdgeSubstring2Equal)) {continue;}
+			EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e;
+			if (!es2e.hasSymbolicArgs()) {
+				pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
+				pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), new IntegerConstant(es2e.getArgument2()));
+				pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.getArgument2() - es2e.getArgument1()));
+			}
+			else if (es2e.getSymbolicArgument1() == null && es2e.getSymbolicArgument2() != null){
+				pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
+				pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), es2e.getSymbolicArgument2());
+				pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), 0);
+				pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), es2e.getArgument1());
+				//pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.a2 - es2e.a1));
+			}
+			else {
+				throw new RuntimeException ("Not supported, yet");
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleSubstring2CharAt (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeSubstring2Equal es2e = null;
+				EdgeCharAt eca = null;
+				
+				if (e1 instanceof EdgeSubstring2Equal && e2 instanceof EdgeCharAt) {
+					es2e = (EdgeSubstring2Equal) e1;
+					eca = (EdgeCharAt) e2;
+				} else if (e2 instanceof EdgeSubstring2Equal && e1 instanceof EdgeCharAt) {
+					es2e = (EdgeSubstring2Equal) e2;
+					eca = (EdgeCharAt) e1;
+				} else {
+					continue;
+				}
+				
+				if (es2e.getDest().isConstant()) {
+					String solution = e1.getDest().getSolution();
+					for (int k = 0; k < solution.length(); k++) {
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, new IntegerConstant(es2e.getArgument1() + k)));
+						loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(k))));
+						pc._addDet(loic);
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharNotContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOfChar eioc = null;
+				EdgeNotContains enc = null;
+				
+				if (e1 instanceof EdgeIndexOfChar && e2 instanceof EdgeNotContains) {
+					eioc = (EdgeIndexOfChar) e1;
+					enc = (EdgeNotContains) e2;
+				} else if (e2 instanceof EdgeIndexOfChar && e1 instanceof EdgeNotContains) {
+					eioc = (EdgeIndexOfChar) e2;
+					enc = (EdgeNotContains) e1;
+				} else {
+					continue;
+				}
+				
+				if (!enc.getDest().isConstant()) {continue;}
+				String constant = enc.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharNotContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeLastIndexOfChar eioc = null;
+				EdgeNotContains enc = null;
+				
+				if (e1 instanceof EdgeLastIndexOfChar && e2 instanceof EdgeNotContains) {
+					eioc = (EdgeLastIndexOfChar) e1;
+					enc = (EdgeNotContains) e2;
+				} else if (e2 instanceof EdgeLastIndexOfChar && e1 instanceof EdgeNotContains) {
+					eioc = (EdgeLastIndexOfChar) e2;
+					enc = (EdgeNotContains) e1;
+				} else {
+					continue;
+				}
+				
+				if (!enc.getDest().isConstant()) {continue;}
+				String constant = enc.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharIntNotContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeLastIndexOfChar2 eioc = null;
+				EdgeNotContains enc = null;
+				
+				if (e1 instanceof EdgeLastIndexOfChar2 && e2 instanceof EdgeNotContains) {
+					eioc = (EdgeLastIndexOfChar2) e1;
+					enc = (EdgeNotContains) e2;
+				} else if (e2 instanceof EdgeLastIndexOfChar2 && e1 instanceof EdgeNotContains) {
+					eioc = (EdgeLastIndexOfChar2) e2;
+					enc = (EdgeNotContains) e1;
+				} else {
+					continue;
+				}
+				
+				if (!enc.getDest().isConstant()) {continue;}
+				String constant = enc.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharIntNotContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOfChar2 eioc = null;
+				EdgeNotContains enc = null;
+				
+				if (e1 instanceof EdgeIndexOfChar2 && e2 instanceof EdgeNotContains) {
+					eioc = (EdgeIndexOfChar2) e1;
+					enc = (EdgeNotContains) e2;
+				} else if (e2 instanceof EdgeIndexOfChar2 && e1 instanceof EdgeNotContains) {
+					eioc = (EdgeIndexOfChar2) e2;
+					enc = (EdgeNotContains) e1;
+				} else {
+					continue;
+				}
+				
+				if (!enc.getDest().isConstant()) {continue;}
+				String constant = enc.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharStartsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOfChar eioc = null;
+				EdgeStartsWith esw = null;
+				
+				if (e1 instanceof EdgeIndexOfChar && e2 instanceof EdgeStartsWith) {
+					eioc = (EdgeIndexOfChar) e1;
+					esw = (EdgeStartsWith) e2;
+				} else if (e2 instanceof EdgeIndexOfChar && e1 instanceof EdgeStartsWith) {
+					eioc = (EdgeIndexOfChar) e2;
+					esw = (EdgeStartsWith) e1;
+				} else {
+					continue;
+				}
+				
+				if (!esw.getDest().isConstant()) {continue;}
+				String constant = esw.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.EQ, new IntegerConstant(0)));
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.EQ, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, new IntegerConstant(0)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharEndsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeLastIndexOfChar eioc = null;
+				EdgeEndsWith esw = null;
+				
+				if (e1 instanceof EdgeLastIndexOfChar && e2 instanceof EdgeEndsWith) {
+					eioc = (EdgeLastIndexOfChar) e1;
+					esw = (EdgeEndsWith) e2;
+				} else if (e2 instanceof EdgeLastIndexOfChar && e1 instanceof EdgeEndsWith) {
+					eioc = (EdgeLastIndexOfChar) e2;
+					esw = (EdgeEndsWith) e1;
+				} else {
+					continue;
+				}
+				
+				if (!esw.getDest().isConstant()) {continue;}
+				String constant = esw.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				//TODO: Test
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.EQ, esw.getSource().getSymbolicLength()._minus(1)));
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.EQ, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, esw.getSource().getSymbolicLength()._minus(1)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharIntEndsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeLastIndexOfChar2 eioc = null;
+				EdgeEndsWith esw = null;
+				
+				if (e1 instanceof EdgeLastIndexOfChar2 && e2 instanceof EdgeEndsWith) {
+					eioc = (EdgeLastIndexOfChar2) e1;
+					esw = (EdgeEndsWith) e2;
+				} else if (e2 instanceof EdgeLastIndexOfChar2 && e1 instanceof EdgeEndsWith) {
+					eioc = (EdgeLastIndexOfChar2) e2;
+					esw = (EdgeEndsWith) e1;
+				} else {
+					continue;
+				}
+				
+				if (!esw.getDest().isConstant()) {continue;}
+				String constant = esw.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				//TODO: Test
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.EQ, esw.getSource().getSymbolicLength()._minus(1)));
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.EQ, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, esw.getSource().getSymbolicLength()._minus(1)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharIntStartsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOfChar2 eioc = null;
+				EdgeStartsWith esw = null;
+				
+				if (e1 instanceof EdgeIndexOfChar2 && e2 instanceof EdgeStartsWith) {
+					eioc = (EdgeIndexOfChar2) e1;
+					esw = (EdgeStartsWith) e2;
+				} else if (e2 instanceof EdgeIndexOfChar2 && e1 instanceof EdgeStartsWith) {
+					eioc = (EdgeIndexOfChar2) e2;
+					esw = (EdgeStartsWith) e1;
+				} else {
+					continue;
+				}
+				
+				if (!esw.getDest().isConstant()) {continue;}
+				String constant = esw.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getMinDist(), Comparator.GT, new IntegerConstant(0)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.EQ, new IntegerConstant(0)));
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getMinDist(), Comparator.GT, new IntegerConstant(0)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.EQ, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, new IntegerConstant(0)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharNotStartsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOfChar eioc = null;
+				EdgeNotStartsWith esw = null;
+				
+				if (e1 instanceof EdgeIndexOfChar && e2 instanceof EdgeNotStartsWith) {
+					eioc = (EdgeIndexOfChar) e1;
+					esw = (EdgeNotStartsWith) e2;
+				} else if (e2 instanceof EdgeIndexOfChar && e1 instanceof EdgeNotStartsWith) {
+					eioc = (EdgeIndexOfChar) e2;
+					esw = (EdgeNotStartsWith) e1;
+				} else {
+					continue;
+				}
+				
+				if (!esw.getDest().isConstant()) {continue;}
+				String constant = esw.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, new IntegerConstant(0)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharNotEndsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeLastIndexOfChar eioc = null;
+				EdgeNotEndsWith esw = null;
+				
+				if (e1 instanceof EdgeLastIndexOfChar && e2 instanceof EdgeNotEndsWith) {
+					eioc = (EdgeLastIndexOfChar) e1;
+					esw = (EdgeNotEndsWith) e2;
+				} else if (e2 instanceof EdgeLastIndexOfChar && e1 instanceof EdgeNotEndsWith) {
+					eioc = (EdgeLastIndexOfChar) e2;
+					esw = (EdgeNotEndsWith) e1;
+				} else {
+					continue;
+				}
+				
+				if (!esw.getDest().isConstant()) {continue;}
+				String constant = esw.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, esw.getSource().getSymbolicLength()._minus(1)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharIntNotEndsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeLastIndexOfChar2 eioc = null;
+				EdgeNotEndsWith esw = null;
+				
+				if (e1 instanceof EdgeLastIndexOfChar2 && e2 instanceof EdgeNotEndsWith) {
+					eioc = (EdgeLastIndexOfChar2) e1;
+					esw = (EdgeNotEndsWith) e2;
+				} else if (e2 instanceof EdgeLastIndexOfChar2 && e1 instanceof EdgeNotEndsWith) {
+					eioc = (EdgeLastIndexOfChar2) e2;
+					esw = (EdgeNotEndsWith) e1;
+				} else {
+					continue;
+				}
+				
+				if (!esw.getDest().isConstant()) {continue;}
+				String constant = esw.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, esw.getSource().getSymbolicLength()._minus(1)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharIntNotStartsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOfChar2 eioc = null;
+				EdgeNotStartsWith esw = null;
+				
+				if (e1 instanceof EdgeIndexOfChar2 && e2 instanceof EdgeNotStartsWith) {
+					eioc = (EdgeIndexOfChar2) e1;
+					esw = (EdgeNotStartsWith) e2;
+				} else if (e2 instanceof EdgeIndexOfChar2 && e1 instanceof EdgeNotStartsWith) {
+					eioc = (EdgeIndexOfChar2) e2;
+					esw = (EdgeNotStartsWith) e1;
+				} else {
+					continue;
+				}
+				
+				if (!esw.getDest().isConstant()) {continue;}
+				String constant = esw.getDest().getSolution();
+				if (constant.length() != 1) {continue;}
+				char character = constant.charAt(0);
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getMinDist(), Comparator.GT, new IntegerConstant(0)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, new IntegerConstant(0)));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOfChar eioc = null;
+				EdgeContains esw = null;
+				
+				if (e1 instanceof EdgeIndexOfChar && e2 instanceof EdgeContains) {
+					eioc = (EdgeIndexOfChar) e1;
+					esw = (EdgeContains) e2;
+				} else if (e2 instanceof EdgeIndexOfChar && e1 instanceof EdgeContains) {
+					eioc = (EdgeIndexOfChar) e2;
+					esw = (EdgeContains) e1;
+				} else {
+					continue;
+				}
+				
+				if (!esw.getDest().isConstant()) {continue;}
+				String constant = esw.getDest().getSolution();
+				for (int k = 0; k < constant.length(); k++) {
+					char character = constant.charAt(k);
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+					loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.GT, new IntegerConstant(-1)));
+					pc._addDet(loic);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeLastIndexOfChar eioc = null;
+				EdgeContains esw = null;
+				
+				if (e1 instanceof EdgeLastIndexOfChar && e2 instanceof EdgeContains) {
+					eioc = (EdgeLastIndexOfChar) e1;
+					esw = (EdgeContains) e2;
+				} else if (e2 instanceof EdgeLastIndexOfChar && e1 instanceof EdgeContains) {
+					eioc = (EdgeLastIndexOfChar) e2;
+					esw = (EdgeContains) e1;
+				} else {
+					continue;
+				}
+				
+				if (!esw.getDest().isConstant()) {continue;}
+				String constant = esw.getDest().getSolution();
+				for (int k = 0; k < constant.length(); k++) {
+					char character = constant.charAt(k);
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, new IntegerConstant(character)));
+					loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.GT, new IntegerConstant(-1)));
+					pc._addDet(loic);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharCharAt (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOfChar eioc = null;
+				EdgeCharAt esw = null;
+				
+				if (e1 instanceof EdgeIndexOfChar && e2 instanceof EdgeCharAt) {
+					eioc = (EdgeIndexOfChar) e1;
+					esw = (EdgeCharAt) e2;
+				} else if (e2 instanceof EdgeIndexOfChar && e1 instanceof EdgeCharAt) {
+					eioc = (EdgeIndexOfChar) e2;
+					esw = (EdgeCharAt) e1;
+				} else {
+					continue;
+				}
+				
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, esw.index));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.EQ, esw.value));
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, esw.value));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.LE, esw.index));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharCharAt (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeLastIndexOfChar eioc = null;
+				EdgeCharAt esw = null;
+				
+				if (e1 instanceof EdgeLastIndexOfChar && e2 instanceof EdgeCharAt) {
+					eioc = (EdgeLastIndexOfChar) e1;
+					esw = (EdgeCharAt) e2;
+				} else if (e2 instanceof EdgeLastIndexOfChar && e1 instanceof EdgeCharAt) {
+					eioc = (EdgeLastIndexOfChar) e2;
+					esw = (EdgeCharAt) e1;
+				} else {
+					continue;
+				}
+				
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, esw.index));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.EQ, esw.value));
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, esw.value));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.GE, esw.index)); //TODO: Test
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharIntCharAt (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeLastIndexOfChar2 eioc = null;
+				EdgeCharAt esw = null;
+				
+				if (e1 instanceof EdgeLastIndexOfChar2 && e2 instanceof EdgeCharAt) {
+					eioc = (EdgeLastIndexOfChar2) e1;
+					esw = (EdgeCharAt) e2;
+				} else if (e2 instanceof EdgeLastIndexOfChar2 && e1 instanceof EdgeCharAt) {
+					eioc = (EdgeLastIndexOfChar2) e2;
+					esw = (EdgeCharAt) e1;
+				} else {
+					continue;
+				}
+				
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(esw.index, Comparator.GT, eioc.getIndex().getMinDist()));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, esw.index));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.EQ, esw.value));
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(esw.index, Comparator.GT, eioc.getIndex().getMinDist()));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, esw.value));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.LE, esw.index)); //TODO: Test
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharIntCharAt (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOfChar2 eioc = null;
+				EdgeCharAt eca = null;
+				
+				if (e1 instanceof EdgeIndexOfChar2 && e2 instanceof EdgeCharAt) {
+					eioc = (EdgeIndexOfChar2) e1;
+					eca = (EdgeCharAt) e2;
+				} else if (e2 instanceof EdgeIndexOfChar2 && e1 instanceof EdgeCharAt) {
+					eioc = (EdgeIndexOfChar2) e2;
+					eca = (EdgeCharAt) e1;
+				} else {
+					continue;
+				}
+				
+				//LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				/*loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, esw.index));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.EQ, esw.value));
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex().getExpression(), Comparator.NE, esw.value));
+				loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.LE, esw.index));*/
+				
+				IntegerExpression se = eioc.getIndex().getExpression();
+				if (se instanceof IntegerConstant) {
+					//println ("[preprocess] Path followed 2");
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(se, Comparator.EQ, eca.getValue()) );
+					loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, eca.getIndex()));
+					loic.comment = "charAt and indexOfCharInt";
+					if (!pc.hasConstraint(loic)) pc._addDet(loic);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStr (StringGraph g, PathCondition pc) {
+		if (!handleIndexOfStrNotContains(g, pc)) {
+			//println ("handleIndexOfNotContains returned false");
+			return false;
+		}
+		if (!handleIndexOfStrStartsWith(g, pc)) {
+			//println ("handleIndexOfStartsWith returned false");
+			return false;
+		}
+		if (!handleIndexOfStrNotStartsWith(g, pc)) {
+			//println ("handleIndexOfNotStartsWith returned false");
+			return false;
+		}
+		if (!handleIndexOfStrContains(g, pc)) {
+			//println ("handleIndexOfContains returned false");
+			return false;
+		}
+		if (!handleIndexOfStrCharAt(g, pc)) {
+			//println ("handleIndexOfCharAt returned false");
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrInt (StringGraph g, PathCondition pc) {
+		if (!handleIndexOfStrIntNotContains(g, pc)) {
+			//println ("handleIndexOfNotContains returned false");
+			return false;
+		}
+		if (!handleIndexOfStrIntStartsWith(g, pc)) {
+			//println ("handleIndexOfStartsWith returned false");
+			return false;
+		}
+		if (!handleIndexOfStrIntNotStartsWith(g, pc)) {
+			//println ("handleIndexOfNotStartsWith returned false");
+			return false;
+		}
+		if (!handleIndexOfStrIntCharAt(g, pc)) {
+			//println ("handleIndexOfCharAt returned false");
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharInt (StringGraph g, PathCondition pc) {
+		if (!handleIndexOfCharIntBasics (g, pc)) {
+			//println ("handleIndexOfCharIntBasics");
+			return false;
+		}
+		if (!handleIndexOfCharIntNotContains(g, pc)) {
+			//println ("handleIndexOfNotContains returned false");
+			return false;
+		}
+		if (!handleIndexOfCharIntStartsWith(g, pc)) {
+			//println ("handleIndexOfStartsWith returned false");
+			return false;
+		}
+		if (!handleIndexOfCharIntNotStartsWith(g, pc)) {
+			//println ("handleIndexOfNotStartsWith returned false");
+			return false;
+		}
+		if (!handleIndexOfCharIntCharAt(g, pc)) {
+			//println ("handleIndexOfCharAt returned false");
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfDependencies (StringGraph g, PathCondition pc) {
+		if (!handleIndexOfStrDependencies(g, pc)) {
+			//println ("handleIndexOfStrDependencies returned false");
+			return false;
+		}
+		if (!handleIndexOfCharDependencies(g, pc)) {
+			//println ("handleIndexOfCharDependencies returned false");
+			return false;
+		}
+		if (!handleIndexOfCharIntDependencies(g, pc)) {
+			//println ("handleIndexOfCharIntDependencies returned false");
+			return false;
+		}
+		if (!handleIndexOfStrIntBasics(g, pc)) {
+			//println ("handleIndexOfStrIntBasics returned false");
+			return false;
+		}
+		if (!handleIndexOfCharIntBasics(g, pc)) {
+			//println ("handleIndexOfCharIntBasics returned false");
+			return false;
+		}
+		if (!handleIndexOfStrIntDependencies(g, pc)) {
+			//println ("handleIndexOfStrIntDependencies returned false");
+			return false;
+		}
+		if (!handleIndexOfStrIndexOfChar(g, pc)) {
+			//println ("handleIndexOfStrIndexOfChar returned false");
+			return false;
+		}
+		if (!handleIndexOfStrIndexOfCharInt(g, pc)) {
+			//println ("handleIndexOfStrIndexOfChar2 returned false");
+			return false;
+		}
+		if (!handleIndexOfStrIndexOfStrInt(g, pc)) {
+			//println ("handleIndexOfStrIndexOfChar2 returned false");
+			return false;
+		}
+		if (!handleIndexOfStrIntIndexOfChar(g, pc)) {
+			//println ("handleIndexOfStrIndexOfChar2 returned false");
+			return false;
+		}
+		if (!handleIndexOfStrIntIndexOfCharInt(g, pc)) {
+			//println ("handleIndexOfStrIndexOfChar2 returned false");
+			return false;
+		}
+		//TODO: Test from here
+		if (!handleIndexOfCharIndexOfCharInt(g, pc)) {
+			//println ("handleIndexOfStrIndexOfChar2 returned false");
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfDependencies (StringGraph g, PathCondition pc) {
+		if (!handleLastIndexOfCharDependencies(g, pc)) {
+			//println ("handleIndexOfStrDependencies returned false");
+			return false;
+		}
+		if (!handleLastIndexOfCharIntDependencies(g, pc)) {
+			//println ("handleIndexOfStrDependencies returned false");
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrDependencies (StringGraph g, PathCondition pc) {
+		//TODO: Think more of this
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				if (!(e1 instanceof EdgeIndexOf && e2 instanceof EdgeIndexOf)) { continue; }
+				
+				EdgeIndexOf eio1 = (EdgeIndexOf) e1;
+				EdgeIndexOf eio2 = (EdgeIndexOf) e2;
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					pc._addDet(Comparator.EQ, eio1.sioi, eio2.sioi);
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = e1.getDest().getSolution();
+					String constant2 = e2.getDest().getSolution();
+					for (int k = 0; k < constant1.length(); k++) {
+						for (int l = k; l < constant2.length(); l++) {
+							if (constant1.charAt(k) != constant2.charAt(l)) {
+								LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+								loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(l), Comparator.NE, eio2.getIndex()._plus(k)));
+								pc._addDet(loic);
+							}
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharDependencies (StringGraph g, PathCondition pc) {
+		//TODO: Think more of this
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				if (!(e1 instanceof EdgeLastIndexOfChar && e2 instanceof EdgeLastIndexOfChar)) { continue; }
+				
+				EdgeLastIndexOfChar eio1 = (EdgeLastIndexOfChar) e1;
+				EdgeLastIndexOfChar eio2 = (EdgeLastIndexOfChar) e2;
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					pc._addDet(Comparator.EQ, eio1.sioi, eio2.sioi);
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = e1.getDest().getSolution();
+					String constant2 = e2.getDest().getSolution();
+					for (int k = 0; k < constant1.length(); k++) {
+						for (int l = k; l < constant2.length(); l++) {
+							if (constant1.charAt(k) != constant2.charAt(l)) {
+								LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+								loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(l), Comparator.NE, eio2.getIndex()._plus(k)));
+								pc._addDet(loic);
+							}
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleLastIndexOfCharIntDependencies (StringGraph g, PathCondition pc) {
+		//TODO: Think more of this
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				if (!(e1 instanceof EdgeLastIndexOfChar2 && e2 instanceof EdgeLastIndexOfChar2)) { continue; }
+				
+				EdgeLastIndexOfChar2 eio1 = (EdgeLastIndexOfChar2) e1;
+				EdgeLastIndexOfChar2 eio2 = (EdgeLastIndexOfChar2) e2;
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					pc._addDet(Comparator.EQ, eio1.sioi, eio2.sioi);
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = e1.getDest().getSolution();
+					String constant2 = e2.getDest().getSolution();
+					for (int k = 0; k < constant1.length(); k++) {
+						for (int l = k; l < constant2.length(); l++) {
+							if (constant1.charAt(k) != constant2.charAt(l)) {
+								LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+								loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(l), Comparator.NE, eio2.getIndex()._plus(k)));
+								pc._addDet(loic);
+							}
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIndexOfStrInt (StringGraph g, PathCondition pc) {
 		
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf eio = null;
+				EdgeIndexOf2 eio2 = null;
+				
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeIndexOf2) {
+					eio = (EdgeIndexOf) e1;
+					eio2 = (EdgeIndexOf2) e2;
+				}
+				else if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOf) {
+					eio = (EdgeIndexOf) e2;
+					eio2 = (EdgeIndexOf2) e1;
+				} else 
+				{ continue; }
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(eio2.getIndex().getMinIndex(), Comparator.GE, eio.getIndex()));
+					loic.addToList(new LinearIntegerConstraint(eio.sioi, Comparator.EQ, eio2.sioi));
+					pc._addDet(loic);
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = e1.getDest().getSolution();
+					String constant2 = e2.getDest().getSolution();
+					for (int k = 0; k < constant1.length(); k++) {
+						for (int l = k; l < constant2.length(); l++) {
+							if (constant1.charAt(k) != constant2.charAt(l)) {
+								//TODO: Test if two overlaps
+								LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+								loic.addToList(new LinearIntegerConstraint(eio2.getIndex().getMinIndex(), Comparator.GE, eio.getIndex()));
+								loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(l), Comparator.NE, eio2.getIndex()._plus(k)));
+								pc._addDet(loic);
+							}
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIntBasics (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeIndexOf2)) {continue;}
+			EdgeIndexOf2 eio = (EdgeIndexOf2) e;
+			LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+			loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinIndex()));
+			loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+			pc._addDet(loic);
+			pc._addDet(Comparator.LE, eio.getIndex(), new IntegerConstant(MAXIMUM_LENGTH));
+			//pc._addDet(Comparator.GE, eio.getIndex(), eio.getIndex().getMinIndex());
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharIntBasics (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeIndexOfChar2)) {continue;}
+			EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e;
+			pc._addDet(Comparator.LE, eio.getIndex(), new IntegerConstant(MAXIMUM_LENGTH));
+			pc._addDet(Comparator.GE, eio.getIndex(), eio.getIndex().getMinDist());
+			pc._addDet(Comparator.LE, eio.getIndex().getExpression(), SymbolicStringConstraintsGeneral.MAX_CHAR);
+			pc._addDet(Comparator.GE, eio.getIndex().getExpression(), SymbolicStringConstraintsGeneral.MIN_CHAR);
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIntDependencies (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				if (!(e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOf2)) { continue; }
+				//println ("hierso v1");
+				EdgeIndexOf2 eio1 = (EdgeIndexOf2) e1;
+				EdgeIndexOf2 eio2 = (EdgeIndexOf2) e2;
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					pc._addDet(Comparator.EQ, eio1.sioi, eio2.sioi);
+					pc._addDet(Comparator.EQ, eio1.getIndex().getMinIndex(), eio2.getIndex().getMinIndex());
+				}
+				else { // TODO: why not isConstant?*/
+					if (!(eio1.getIndex().getExpression() instanceof StringConstant && eio2.getIndex().getExpression() instanceof StringConstant)) { continue; }
+					
+					String constant1 = e1.getDest().getSolution();
+					String constant2 = e2.getDest().getSolution();
+					for (int k = 0; k < constant1.length(); k++) {
+						for (int l = k; l < constant2.length(); l++) {
+							if (constant1.charAt(k) != constant2.charAt(l)) {
+								LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+								loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(k), Comparator.NE, eio2.getIndex()._plus(l)));
+								loic.comment = "indexOfStrInt and indexOfStrInt p1";
+								pc._addDet(loic);
+							}
+						}
+					}
+					constant1 = e2.getDest().getSolution();
+					constant2 = e1.getDest().getSolution();
+					for (int k = 0; k < constant1.length(); k++) {
+						for (int l = k; l < constant2.length(); l++) {
+							if (constant1.charAt(k) != constant2.charAt(l)) {
+								LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+								loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+								loic.addToList(new LinearIntegerConstraint(eio2.getIndex()._plus(k), Comparator.NE, eio1.getIndex()._plus(l)));
+								loic.comment = "indexOfStrInt and indexOfStrInt p2";
+								pc._addDet(loic);
+							}
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIndexOfChar (StringGraph g, PathCondition pc) {
+		
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf eio1 = null;
+				EdgeIndexOfChar eio2 = null;
+				
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeIndexOfChar) {
+					eio1 = (EdgeIndexOf) e1;
+					eio2 = (EdgeIndexOfChar) e2;
+				} else if (e2 instanceof EdgeIndexOf && e1 instanceof EdgeIndexOfChar) {
+					eio1 = (EdgeIndexOf) e2;
+					eio2 = (EdgeIndexOfChar) e1;
+				} else
+				{ continue; }
+				if (!eio1.getDest().isConstant()) {continue;}
+				String constant = eio1.getIndex().getExpression().solution();
+				
+				for (int k = 0; k < constant.length(); k++) {
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(k)), Comparator.EQ, eio2.getIndex().getExpression()));
+					loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(k), Comparator.NE, eio2.getIndex()));
+					pc._addDet(loic);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIntIndexOfChar (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf2 eio1 = null;
+				EdgeIndexOfChar eio2 = null;
+				
+				if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOfChar) {
+					eio1 = (EdgeIndexOf2) e1;
+					eio2 = (EdgeIndexOfChar) e2;
+				} else if (e2 instanceof EdgeIndexOf2 && e1 instanceof EdgeIndexOfChar) {
+					eio1 = (EdgeIndexOf2) e2;
+					eio2 = (EdgeIndexOfChar) e1;
+				} else
+				{ continue; }
+				if (!eio1.getDest().isConstant()) {continue;}
+				String constant = eio1.getIndex().getExpression().solution();
+				
+				for (int k = 0; k < constant.length(); k++) {
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(eio1.getIndex().getMinIndex(), Comparator.GE, eio2.getIndex()));
+					loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(k)), Comparator.EQ, eio2.getIndex().getExpression()));
+					loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(k), Comparator.NE, eio2.getIndex()));
+					pc._addDet(loic);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIntIndexOfCharInt (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf2 eio1 = null;
+				EdgeIndexOfChar2 eio2 = null;
+				
+				if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOfChar2) {
+					eio1 = (EdgeIndexOf2) e1;
+					eio2 = (EdgeIndexOfChar2) e2;
+				} else if (e2 instanceof EdgeIndexOf2 && e1 instanceof EdgeIndexOfChar2) {
+					eio1 = (EdgeIndexOf2) e2;
+					eio2 = (EdgeIndexOfChar2) e1;
+				} else
+				{ continue; }
+				if (!eio1.getDest().isConstant()) {continue;}
+				String constant = eio1.getIndex().getExpression().solution();
+				
+				/*for (int k = 0; k < constant.length(); k++) {
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(eio1.getIndex().getMinIndex(), Comparator.GE, eio2.getIndex()));
+					loic.addToList(new LinearIntegerConstraint(eio2.getIndex().getMinDist(), Comparator.GE, eio1.getIndex()));
+					loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(k)), Comparator.EQ, eio2.getIndex().getExpression()));
+					loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(k), Comparator.NE, eio2.getIndex()));
+					loic.comment = "indexOfStrInt and indexOfCharInt";
+					pc._addDet(loic);
+				}*/
+				for (int k = 0; k < constant.length(); k++) {
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(k)), Comparator.EQ, eio2.getIndex().getExpression()));
+					loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(k), Comparator.NE, eio2.getIndex()));
+					loic.comment = "indexOfStrInt and indexOfCharInt";
+					if (!pc.hasConstraint(loic)) pc._addDet(loic);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIndexOfCharInt (StringGraph g, PathCondition pc) {	
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf eio1 = null;
+				EdgeIndexOfChar2 eio2 = null;
+				
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeIndexOfChar2) {
+					eio1 = (EdgeIndexOf) e1;
+					eio2 = (EdgeIndexOfChar2) e2;
+				} else if (e2 instanceof EdgeIndexOf && e1 instanceof EdgeIndexOfChar2) {
+					eio1 = (EdgeIndexOf) e2;
+					eio2 = (EdgeIndexOfChar2) e1;
+				} else
+				{ continue; }
+				if (!eio1.getDest().isConstant()) {continue;}
+				String constant = eio1.getIndex().getExpression().solution();
+				
+				for (int k = 0; k < constant.length(); k++) {
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(eio2.getIndex().getMinDist(), Comparator.GE, eio1.getIndex()));
+					loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(k)), Comparator.EQ, eio2.getIndex().getExpression()));
+					loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(k), Comparator.NE, eio2.getIndex()));
+					loic.comment = "indexOfStr and indexOfCharInt";
+					pc._addDet(loic);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharDependencies (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				if (!(e1 instanceof EdgeIndexOfChar && e2 instanceof EdgeIndexOfChar)) { continue; }
+				
+				EdgeIndexOfChar eio1 = (EdgeIndexOfChar) e1;
+				EdgeIndexOfChar eio2 = (EdgeIndexOfChar) e2;
+				
+				//if (e1.getDest().equals(e2.getDest())) {
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eio1.getIndex().getExpression(), Comparator.NE, eio2.getIndex().getExpression()));
+				loic.addToList(new LinearIntegerConstraint(eio1.sioi, Comparator.EQ, eio2.sioi));
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eio1.sioi, Comparator.NE, eio2.sioi));
+				loic.addToList(new LinearIntegerConstraint(eio1.getIndex().getExpression(), Comparator.EQ, eio2.getIndex().getExpression()));
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfCharIndexOfCharInt (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOfChar eio1 = null;
+				EdgeIndexOfChar2 eio2 = null;
+				
+				if (e1 instanceof EdgeIndexOfChar && e2 instanceof EdgeIndexOfChar2) {
+					eio1 = (EdgeIndexOfChar) e1;
+					eio2 = (EdgeIndexOfChar2) e2;
+				} else if (e1 instanceof EdgeIndexOfChar2 && e2 instanceof EdgeIndexOfChar) {
+					eio2 = (EdgeIndexOfChar2) e1;
+					eio1 = (EdgeIndexOfChar) e2;
+				}
+				else
+				{ continue; }
+				
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eio2.getIndex().getMinDist(), Comparator.GE, eio1.getIndex()));
+				loic.addToList(new LinearIntegerConstraint(eio1.getIndex().getExpression(), Comparator.NE, eio2.getIndex().getExpression()));
+				loic.addToList(new LinearIntegerConstraint(eio1.sioi, Comparator.EQ, eio2.sioi));
+				loic.comment = "indexOfChar and indexOfCharInt";
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eio2.getIndex().getMinDist(), Comparator.GE, eio1.getIndex()));
+				loic.addToList(new LinearIntegerConstraint(eio1.sioi, Comparator.NE, eio2.sioi));
+				loic.addToList(new LinearIntegerConstraint(eio1.getIndex().getExpression(), Comparator.EQ, eio2.getIndex().getExpression()));
+				loic.comment = "indexOfChar and indexOfCharInt";
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+
+	
+	private static boolean handleIndexOfCharIntDependencies (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				if (!(e1 instanceof EdgeIndexOfChar2 && e2 instanceof EdgeIndexOfChar2)) { continue; }
+				
+				EdgeIndexOfChar2 eio1 = (EdgeIndexOfChar2) e1;
+				EdgeIndexOfChar2 eio2 = (EdgeIndexOfChar2) e2;
+				
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				//TODO: Could just be Greater, instead of GE
+				loic.addToList(new LinearIntegerConstraint(eio1.getIndex().getMinDist(), Comparator.GE, eio2.getIndex()));
+				loic.addToList(new LinearIntegerConstraint(eio2.getIndex().getMinDist(), Comparator.GE, eio1.getIndex()));
+				loic.addToList(new LinearIntegerConstraint(eio1.getIndex().getExpression(), Comparator.NE, eio2.getIndex().getExpression()));
+				loic.addToList(new LinearIntegerConstraint(eio1.sioi, Comparator.EQ, eio2.sioi));
+				loic.comment = "indexOfCharInt and indexOfCharInt";
+				pc._addDet(loic);
+				
+				loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eio1.getIndex().getMinDist(), Comparator.GE, eio2.getIndex()));
+				loic.addToList(new LinearIntegerConstraint(eio2.getIndex().getMinDist(), Comparator.GE, eio1.getIndex()));
+				loic.addToList(new LinearIntegerConstraint(eio1.sioi, Comparator.NE, eio2.sioi));
+				loic.addToList(new LinearIntegerConstraint(eio1.getIndex().getExpression(), Comparator.EQ, eio2.getIndex().getExpression()));
+				loic.comment = "indexOfCharInt and indexOfCharInt";
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrStartsWith (StringGraph g, PathCondition pc) {
+		//TODO: Think more of this
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf eio = null;
+				EdgeStartsWith esw = null;
+				
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeStartsWith) {
+					eio = (EdgeIndexOf) e1;
+					esw = (EdgeStartsWith) e2;
+				} else if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeIndexOf) {
+					eio = (EdgeIndexOf) e2;
+					esw = (EdgeStartsWith) e1;
+				}
+				else { continue; }
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					pc._addDet(Comparator.EQ, eio.sioi, new IntegerConstant(0));
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = eio.getDest().getSolution();
+					String constant2 = esw.getDest().getSolution();
+					int indexOf = constant2.indexOf(constant1);
+					if (indexOf > -1) {
+						pc._addDet(Comparator.EQ, eio.sioi, new IntegerConstant(indexOf));
+					} else {
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(eio.sioi, Comparator.GT,new IntegerConstant(constant2.length() - constant1.length())));
+						loic.addToList(new LinearIntegerConstraint(eio.sioi, Comparator.EQ,new IntegerConstant(-1)));
+						pc._addDet(loic);
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIntStartsWith (StringGraph g, PathCondition pc) {
+		//TODO: Think more of this
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {		
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf2 eio = null;
+				EdgeStartsWith esw = null;
+				
+				if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeStartsWith) {
+					eio = (EdgeIndexOf2) e1;
+					esw = (EdgeStartsWith) e2;
+				} else if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeIndexOf2) {
+					eio = (EdgeIndexOf2) e2;
+					esw = (EdgeStartsWith) e1;
+				}
+				else { continue; }
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinIndex(), Comparator.GT, new IntegerConstant(0)));
+					loic.addToList(new  LinearIntegerConstraint(eio.sioi, Comparator.EQ, new IntegerConstant(0)));
+					pc._addDet(loic);
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = eio.getDest().getSolution();
+					String constant2 = esw.getDest().getSolution();
+					int indexOf = constant2.indexOf(constant1);
+					if (indexOf > -1) {
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinIndex(), Comparator.GE, new IntegerConstant(indexOf)));
+						loic.addToList(new  LinearIntegerConstraint(eio.sioi, Comparator.EQ, new IntegerConstant(indexOf)));
+						pc._addDet(loic);
+						//pc._addDet(Comparator.EQ, eio.sioi, new IntegerConstant(indexOf));
+					} else {
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(eio.sioi, Comparator.GT,new IntegerConstant(constant2.length() - constant1.length())));
+						loic.addToList(new LinearIntegerConstraint(eio.sioi, Comparator.EQ,new IntegerConstant(-1)));
+						pc._addDet(loic);
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrNotContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {	
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf eio = null;
+				EdgeNotContains enc = null;
+				
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeNotContains) {
+					eio = (EdgeIndexOf) e1;
+					enc = (EdgeNotContains) e2;
+				} else if (e1 instanceof EdgeNotContains && e2 instanceof EdgeIndexOf) {
+					eio = (EdgeIndexOf) e2;
+					enc = (EdgeNotContains) e1;
+				}
+				else { continue; }
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					pc._addDet(Comparator.EQ, eio.sioi, new IntegerConstant(-1));
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = eio.getDest().getSolution();
+					String constant2 = enc.getDest().getSolution();
+					boolean contains = constant2.contains(constant1);
+					if (contains) {
+						pc._addDet(Comparator.EQ, eio.sioi, new IntegerConstant(-1));
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIntNotContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {	
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf2 eio = null;
+				EdgeNotContains enc = null;
+				
+				if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeNotContains) {
+					eio = (EdgeIndexOf2) e1;
+					enc = (EdgeNotContains) e2;
+				} else if (e1 instanceof EdgeNotContains && e2 instanceof EdgeIndexOf2) {
+					eio = (EdgeIndexOf2) e2;
+					enc = (EdgeNotContains) e1;
+				}
+				else { continue; }
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					pc._addDet(Comparator.EQ, eio.sioi, new IntegerConstant(-1));
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = eio.getDest().getSolution();
+					String constant2 = enc.getDest().getSolution();
+					boolean contains = constant2.contains(constant1);
+					if (contains) {
+						pc._addDet(Comparator.EQ, eio.sioi, new IntegerConstant(-1));
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrNotStartsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {	
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf eio = null;
+				EdgeNotStartsWith enc = null;
+				
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeNotStartsWith) {
+					eio = (EdgeIndexOf) e1;
+					enc = (EdgeNotStartsWith) e2;
+				} else if (e1 instanceof EdgeNotStartsWith && e2 instanceof EdgeIndexOf) {
+					eio = (EdgeIndexOf) e2;
+					enc = (EdgeNotStartsWith) e1;
+				}
+				else { continue; }
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					pc._addDet(Comparator.EQ, eio.sioi, new IntegerConstant(-1));
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = eio.getDest().getSolution();
+					String constant2 = enc.getDest().getSolution();
+					boolean startswith = constant2.startsWith(constant1);
+					if (startswith) {
+						pc._addDet(Comparator.EQ, eio.sioi, new IntegerConstant(-1));
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIntNotStartsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {	
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf2 eio = null;
+				EdgeNotStartsWith enc = null;
+				
+				if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeNotStartsWith) {
+					eio = (EdgeIndexOf2) e1;
+					enc = (EdgeNotStartsWith) e2;
+				} else if (e1 instanceof EdgeNotStartsWith && e2 instanceof EdgeIndexOf2) {
+					eio = (EdgeIndexOf2) e2;
+					enc = (EdgeNotStartsWith) e1;
+				}
+				else { continue; }
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinIndex(), Comparator.GT, new IntegerConstant(0)));
+					loic.addToList(new LinearIntegerConstraint(eio.sioi, Comparator.EQ, new IntegerConstant(-1)));
+					pc._addDet(loic);
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = eio.getDest().getSolution();
+					String constant2 = enc.getDest().getSolution();
+					boolean startswith = constant2.startsWith(constant1);
+					if (startswith) {
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(eio.getIndex().getMinIndex(), Comparator.GT, new IntegerConstant(0)));
+						loic.addToList(new LinearIntegerConstraint(eio.sioi, Comparator.EQ, new IntegerConstant(-1)));
+						pc._addDet(loic);
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {	
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf eio = null;
+				EdgeContains enc = null;
+				
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeContains) {
+					eio = (EdgeIndexOf) e1;
+					enc = (EdgeContains) e2;
+				} else if (e1 instanceof EdgeContains && e2 instanceof EdgeIndexOf) {
+					eio = (EdgeIndexOf) e2;
+					enc = (EdgeContains) e1;
+				}
+				else { continue; }
+				
+				if (e1.getDest().equals(e2.getDest())) {
+					pc._addDet(Comparator.GE, eio.sioi, new IntegerConstant(0));
+				}
+				else {
+					if (!(e1.getDest().isConstant() && e2.getDest().isConstant())) { continue; }
+					String constant1 = eio.getDest().getSolution();
+					String constant2 = enc.getDest().getSolution();
+					boolean contains = constant2.contains(constant1);
+					if (contains) {
+						pc._addDet(Comparator.GE, eio.sioi, new IntegerConstant(0));
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	
+	private static boolean handleIndexOfStrCharAt (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {	
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf eio = null;
+				EdgeCharAt eca = null;
+				
+				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeCharAt) {
+					eio = (EdgeIndexOf) e1;
+					eca = (EdgeCharAt) e2;
+				} else if (e1 instanceof EdgeCharAt && e2 instanceof EdgeIndexOf) {
+					eio = (EdgeIndexOf) e2;
+					eca = (EdgeCharAt) e1;
+				}
+				else { continue; }
+				
+				if (!(eio.getDest().isConstant())) { continue; }
+				String constant1 = eio.getDest().getSolution();
+				//TODO: mmm...
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.LT, eio.sioi));
+				loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.GE, eio.sioi._plus(constant1.length())));
+				for (int k = 0; k < constant1.length(); k++) {
+					char character = constant1.charAt(k);
+					loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(character)));
+				}
+				pc._addDet(loic);
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleIndexOfStrIntCharAt (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size() - 1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {	
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (!sameSource(e1,e2)) {continue;}
+				
+				EdgeIndexOf2 eio = null;
+				EdgeCharAt eca = null;
+				
+				if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeCharAt) {
+					eio = (EdgeIndexOf2) e1;
+					eca = (EdgeCharAt) e2;
+				} else if (e1 instanceof EdgeCharAt && e2 instanceof EdgeIndexOf2) {
+					eio = (EdgeIndexOf2) e2;
+					eca = (EdgeCharAt) e1;
+				}
+				else { continue; }
+				
+				if (!(eio.getDest().isConstant())) { continue; }
+				String constant1 = eio.getDest().getSolution();
+				//TODO: mmm...
+				/*LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.LT, eio.sioi));
+				loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.GE, eio.sioi._plus(constant1.length())));
+				for (int k = 0; k < constant1.length(); k++) {
+					char character = constant1.charAt(k);
+					loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(character)));
+				}*/
+				
+				LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+				loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant1.charAt(0)), Comparator.EQ, eca.getValue()) );
+				loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
+				loic.comment = "indexOfStrInt and charAt";
+				pc._addDet(loic);
+				
+				//TODO: Remove
+				if (scg.isSatisfiable(pc)) {
+					scg.solve(pc);
+					PathCondition.flagSolved = true;
+				} else {
+					return false;
+				}
+				
+				char character = (char) eca.getValue().solution();
+				int indexOf = constant1.indexOf(String.valueOf(character));
+				if (indexOf > -1) {
+					//throw new RuntimeException("reached");
+					loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.LT, eio.getIndex().getMinIndex()));
+					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE,new IntegerConstant(-1)));
+					loic.comment = "indexOfStrInt and charAt";
+					pc._addDet(loic);
+				}
+			}
+		}
+		return true;
+	}
+	
+	
+	private static boolean handleBasicIndexOf (StringGraph g, PathCondition pc) {
+		if (!handleBasicIndexOfStr(g, pc)) {
+			//println ("handleBasicIndexOfStr returned false");
+			return false;		
+		}
+		if (!handleBasicIndexOfStrInt(g, pc)) {
+			//println ("handleBasicIndexOfStrInt returned false");
+			return false;		
+		}
+		if (!handleBasicIndexOfChar(g, pc)) {
+			//println ("handleBasicIndexOfChar returned false");
+			return false;		
+		}
+		if (!handleBasicIndexOfCharInt(g, pc)) {
+			//println ("handleBasicIndexOfCharInt returned false");
+			return false;		
+		}
+		return true;
+	}
+	
+	private static boolean handleBasicLastIndexOf (StringGraph g, PathCondition pc) {
+		if (!handleBasicLastIndexOfChar(g, pc)) {
+			//println ("handleBasicIndexOfChar returned false");
+			return false;		
+		}
+		if (!handleBasicLastIndexOfCharInt(g, pc)) {
+			//println ("handleBasicIndexOfChar returned false");
+			return false;		
+		}
+		return true;
+	}
+	
+	private static boolean handleBasicIndexOfStr (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeIndexOf)) { continue; }
+			EdgeIndexOf eio = (EdgeIndexOf) e;
+			pc._addDet(Comparator.GE, eio.getSource().getSymbolicLength(), eio.getDest().getSymbolicLength()._plus(eio.getIndex()));
+		}
+		return true;
+	}
+	
+	private static boolean handleBasicIndexOfStrInt (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeIndexOf2)) { continue; }
+			EdgeIndexOf2 eio = (EdgeIndexOf2) e;
+			/*LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+			loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinIndex()));
+			loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+			loic.comment = "indexOfStrInt basic";
+			pc._addDet(loic);*/
+			
+			LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+			loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+			loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
+			loic.comment = "indexOfStrInt basic 1";
+			if (!pc.hasConstraint(loic)) pc._addDet(loic);
+			loic = new LogicalORLinearIntegerConstraints();
+			loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+			loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinIndex()));
+			loic.comment = "indexOfStrInt basic 2";
+			if (!pc.hasConstraint(loic)) pc._addDet(loic);
+			
+			pc._addDet(Comparator.GE, eio.getSource().getSymbolicLength(), eio.getDest().getSymbolicLength()._plus(eio.getIndex()));
+		}
+		return true;
+	}
+	
+	private static boolean handleBasicIndexOfChar (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeIndexOfChar)) { continue; }
+			EdgeIndexOfChar eio = (EdgeIndexOfChar) e;
+			pc._addDet(Comparator.GE, eio.getSource().getSymbolicLength(), eio.getIndex()._plus(1));
+		}
+		return true;
+	}
+	
+	private static boolean handleBasicLastIndexOfChar (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeLastIndexOfChar)) { continue; }
+			EdgeLastIndexOfChar eio = (EdgeLastIndexOfChar) e;
+			pc._addDet(Comparator.GE, eio.getSource().getSymbolicLength(), eio.getIndex()._plus(1));
+		}
+		return true;
+	}
+	
+	private static boolean handleBasicLastIndexOfCharInt (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeLastIndexOfChar2)) { continue; }
+			EdgeLastIndexOfChar2 eio = (EdgeLastIndexOfChar2) e;
+			pc._addDet(Comparator.GE, eio.getSource().getSymbolicLength(), eio.getIndex()._plus(1));
+			LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+			loic.addToList(new LinearIntegerConstraint(eio.getIndex(),Comparator.LE, eio.getIndex().getMinDist()));
+			loic.addToList(new LinearIntegerConstraint(eio.getIndex(),Comparator.EQ, new IntegerConstant(-1)));
+			pc._addDet(loic);
+		}
+		return true;
+	}
+	
+	private static boolean handleBasicIndexOfCharInt (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeIndexOfChar2)) { continue; }
+			EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e;
+			/*LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+			loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinDist()));
+			loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+			loic.comment ="indexOfCharInt basic";
+			pc._addDet(loic);*/
+			
+			LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+			loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+			loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
+			loic.comment = "indexOfCharInt basic part 1";
+			if (!pc.hasConstraint(loic)) pc._addDet(loic);
+			loic = new LogicalORLinearIntegerConstraints();
+			loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
+			loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinDist()));
+			loic.comment = "indexOfCharInt basic part 2";
+			if (!pc.hasConstraint(loic)) pc._addDet(loic);
+			
+			pc._addDet(Comparator.GE, eio.getSource().getSymbolicLength(), eio.getIndex()._plus(1));
+		}
+		return true;
+	}
+	
+	private static boolean handleBooleanConstraints (StringGraph g, PathCondition pc) {
+		 if (!handleBasicBooleanConstraints(g, pc)) {
+			 println ("handleBasicBooleanConstraints returned false");
+			 return false;
+		 }
+		 if (!handleStartsWith (g, pc)) {
+			 println ("handleStartsWith returned false");
+			 return false;
+		 }
+		 if (!handleEndsWith (g, pc)) {
+			 println ("handleStartsWith returned false");
+			 return false;
+		 }
+		 if (!handleContains (g, pc)) {
+			 println ("handleContains returned false");
+			 return false;
+		 }
+		 if (!handleStartsWithContains (g, pc)) {
+			 println ("handleStartsWithContains returned false");
+			 return false;
+		 }
+		 if (!handleEndsWithContains (g, pc)) {
+			 println ("handleEndsWithContains returned false");
+			 return false;
+		 }
+		 //TODO: Test
+		 if (!handleEndsWithCharAt(g, pc)) {
+			 println ("handleEndsWithContains returned false");
+			 return false;
+		 }
+		 return true;
+	}
+	
+	private static boolean handleEndsWithCharAt (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size()-1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				EdgeEndsWith eew = null;
+				EdgeCharAt eca = null;
+				if (e1 instanceof EdgeEndsWith && e2 instanceof EdgeCharAt) {
+					eew = (EdgeEndsWith) e1;
+					eca = (EdgeCharAt) e2;
+				} else if (e2 instanceof EdgeEndsWith && e1 instanceof EdgeCharAt) {
+					eew = (EdgeEndsWith) e2;
+					eca = (EdgeCharAt) e1;
+				} else {
+					continue;
+				}
+				
+				if (eew.getDest().isConstant()) {
+					String solution = e1.getDest().getSolution();
+					for (int k = 0; k < solution.length(); k++) {
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, eew.getSource().getSymbolicLength()._minus(solution.length() - k)));
+						loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(k))));
+						pc._addDet(loic);
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleBasicBooleanConstraints (StringGraph g, PathCondition pc) {
+		 if (!handleBasicStartsWith (g, pc)) {
+			 println ("handleBasicStartsWith returned false");
+			 return false;
+		 }
+		 if (!handleBasicEndsWith (g, pc)) {
+			 println ("handleBasicEndsWith returned false");
+			 return false;
+		 }
+		 if (!handleBasicContains (g, pc)) {
+			 println ("handleBasicContains returned false");
+			 return false;
+		 }
+		 return true;
+	}
+	
+	private static boolean handleBasicStartsWith (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (e instanceof EdgeStartsWith) {
+				pc._addDet(Comparator.GE, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleBasicEndsWith (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (e instanceof EdgeEndsWith) {
+				pc._addDet(Comparator.GE, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleBasicContains (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (e instanceof EdgeContains) {
+				pc._addDet(Comparator.GE, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleConcat (StringGraph g, PathCondition pc) {
+		if (!handleConcatBasic1(g, pc)) {
+			//println ("!handleConcatBasic returned false");
+			return false;
+		}
+		if (!handleConcatBasic2(g, pc)) {
+			//println ("!handleConcatBasic returned false");
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean handleConcatBasic1 (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (e instanceof EdgeConcat) {
+				if (e.getDest().isConstant()) {
+					String destString = e.getDest().getSolution();
+					if (e.getSources().get(0).isConstant() && e.getSources().get(1).isConstant()) {
+						//All is constant
+						String leftString = e.getSources().get(0).getSolution();
+						String rightString = e.getSources().get(1).getSolution();
+						if (!leftString.concat(rightString).equals(destString)) {
+							return false;
+						}
+					}
+					else if (e.getSources().get(0).isConstant()) {
+						//"a".concat(a) == "ab"
+						String leftString = e.getSources().get(0).getSolution();
+						if (!destString.startsWith(leftString)) {
+							return false;
+						}
+						String rightPart = StringUtility.findRightSide(destString, leftString);
+						e.getSources().get(1).setSolution(rightPart);
+						e.getSources().get(1).setConstant(true);
+						e.getSources().get(1).setLength(rightPart.length());
+					}
+					else if (e.getSources().get(1).isConstant()) {
+						//a.concat("b") == "ab"
+						String rightString = e.getSources().get(1).getSolution();
+						if (!destString.endsWith(rightString)) {
+							return false;
+						}
+						String leftPart = StringUtility.findLeftSide(destString, rightString);
+						e.getSources().get(0).setSolution(leftPart);
+						e.getSources().get(0).setConstant(true);
+						e.getSources().get(0).setLength(leftPart.length());
+					}
+				}
+				else {
+					if (e.getSources().get(0).isConstant() && e.getSources().get(1).isConstant() && !e.getDest().isConstant()) {
+						//"a".concat("b") == c
+						String leftString = e.getSources().get(0).getSolution();
+						String rightString = e.getSources().get(1).getSolution();
+						String concatString = leftString.concat(rightString);
+						e.getDest().setSolution(concatString);
+						e.getDest().setConstant(true);
+						e.getDest().setLength(concatString.length());
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleConcatBasic2 (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (e instanceof EdgeConcat) {
+				pc._addDet (Comparator.EQ, e.getSources().get(0).getSymbolicLength()._plus(e.getSources().get(1).getSymbolicLength()), e.getDest().getSymbolicLength());
+			}
+		}
+		return true;
+	}
+	
+	/***
+	 * Check if a graph has an edge StartsWith and NotStartsWith inbetween the same set
+	 * of two vertices. If that is true, then the graph can not be solved.
+	 * 
+	 * @param g
+	 * @param pc
+	 * @return
+	 */
+	private static boolean handleStartsWithContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size()-1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
+				if (!sameSource(e1,e2)) continue;
+				if (!e1.getDest().equals(e2.getDest())) continue;
+				if ((e1 instanceof EdgeStartsWith && e2 instanceof EdgeNotContains) ||
+					(e1 instanceof EdgeNotContains && e2 instanceof EdgeStartsWith)) {
+						return false;
+				}
+				else if ((e1 instanceof EdgeNotStartsWith && e2 instanceof EdgeContains) ||
+						(e1 instanceof EdgeContains && e2 instanceof EdgeNotStartsWith)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	/***
+	 * Check if a graph has an edge StartsWith and NotStartsWith inbetween the same set
+	 * of two vertices. If that is true, then the graph can not be solved.
+	 * 
+	 * @param g
+	 * @param pc
+	 * @return
+	 */
+	private static boolean handleEndsWithContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size()-1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
+				if (!sameSource(e1,e2)) continue;
+				if (!e1.getDest().equals(e2.getDest())) continue;
+				if ((e1 instanceof EdgeEndsWith && e2 instanceof EdgeNotContains) ||
+					(e1 instanceof EdgeNotContains && e2 instanceof EdgeEndsWith)) {
+						return false;
+				}
+				else if ((e1 instanceof EdgeNotEndsWith && e2 instanceof EdgeContains) ||
+						(e1 instanceof EdgeContains && e2 instanceof EdgeNotEndsWith)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	/***
+	 * Check if a graph has an edge StartsWith and NotStartsWith inbetween the same set
+	 * of two vertices. If that is true, then the graph can not be solved.
+	 * 
+	 * @param g
+	 * @param pc
+	 * @return
+	 */
+	private static boolean handleStartsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size()-1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
+				if (!sameSource(e1,e2)) continue;
+				if (!e1.getDest().equals(e2.getDest())) continue;
+				if ((e1 instanceof EdgeStartsWith && e2 instanceof EdgeNotStartsWith) ||
+					(e1 instanceof EdgeNotStartsWith && e2 instanceof EdgeStartsWith)) {
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	/***
+	 * Check if a graph has an edge EndsWith and NotEndsWith inbetween the same set
+	 * of two vertices. If that is true, then the graph can not be solved.
+	 * 
+	 * @param g
+	 * @param pc
+	 * @return
+	 */
+	private static boolean handleEndsWith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size()-1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
+				if (!sameSource(e1,e2)) continue;
+				if (!e1.getDest().equals(e2.getDest())) continue;
+				if ((e1 instanceof EdgeEndsWith && e2 instanceof EdgeNotEndsWith) ||
+					(e1 instanceof EdgeNotEndsWith && e2 instanceof EdgeEndsWith)) {
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleCharAt (StringGraph g, PathCondition pc) {
+		if (!handleCharAtBasics(g, pc)) {
+			//println ("handleCharAtBasics returned false");
+			return false;
+		}
+		if (!handleNotCharAtBasics(g, pc)) {
+			//println ("handleNotCharAtBasics returned false");
+			return false;
+		}
+		if (!handleCharAtDependencies(g, pc)) {
+			//println ("handleCharAtDependencies returned false");
+			return false;
+		}
+		if (!handleCharAtStartswith(g, pc)) {
+			//println ("handleCharAtDependencies returned false");
+			return false;
+		}
+		if (!handleCharAtEndswith(g, pc)) {
+			//println ("handleCharAtDependencies returned false");
+			return false;
+		}
+		if (!handleCharAtNotContains(g, pc)) {
+			//println ("handleCharAtNotContains returned false");
+			return false;
+		}
+		return true;
+	}
+	
+	private static boolean handleCharAtBasics (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeCharAt)) continue;
+			EdgeCharAt eca = (EdgeCharAt) e;
+			pc._addDet(Comparator.GE, eca.index, new IntegerConstant(0));
+			pc._addDet(Comparator.LT, eca.index, new IntegerConstant(MAXIMUM_LENGTH));
+			pc._addDet(Comparator.GE, eca.value, new IntegerConstant(SymbolicStringConstraintsGeneral.MIN_CHAR));
+			pc._addDet(Comparator.LE, eca.value, new IntegerConstant(SymbolicStringConstraintsGeneral.MAX_CHAR));
+			pc._addDet(Comparator.LT, eca.index, e.getSource().getSymbolicLength());
+		}
+		return true;
+	}
+	
+	private static boolean handleNotCharAtBasics (StringGraph g, PathCondition pc) {
+		for (Edge e: g.getEdges()) {
+			if (!(e instanceof EdgeNotCharAt)) continue;
+			EdgeNotCharAt eca = (EdgeNotCharAt) e;
+			pc._addDet(Comparator.GE, eca.index, new IntegerConstant(0));
+			pc._addDet(Comparator.LT, eca.index, new IntegerConstant(MAXIMUM_LENGTH));
+			pc._addDet(Comparator.GE, eca.value, new IntegerConstant(SymbolicStringConstraintsGeneral.MIN_CHAR));
+			pc._addDet(Comparator.LE, eca.value, new IntegerConstant(SymbolicStringConstraintsGeneral.MAX_CHAR));
+			pc._addDet(Comparator.LT, eca.index, e.getSource().getSymbolicLength());
+		}
+		return true;
+	}
+	
+	
+	private static boolean handleCharAtEndswith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size()-1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) {continue;}
+				if (!sameSource(e1,e2)) continue;
+				EdgeCharAt eca = null;
+				EdgeEndsWith esw = null;
+				if (e1 instanceof EdgeCharAt && e2 instanceof EdgeStartsWith) {
+					eca = (EdgeCharAt) e1;
+					esw = (EdgeEndsWith) e2;
+				}
+				else if (e1 instanceof EdgeEndsWith && e2 instanceof EdgeCharAt) {
+					eca = (EdgeCharAt) e2;
+					esw = (EdgeEndsWith) e1;
+				}
+				else {
+					continue;
+				}
+				if (!esw.getDest().isConstant()) {continue;}
+				String constantString = esw.getDest().getSolution();
+				if (eca.index instanceof IntegerConstant) {
+					int index = eca.index.solution();
+					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+					loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.LT, eca.getSource().getSymbolicLength()._minus(constantString.length())));
+					loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(constantString.charAt(index))));
+				}
+				else {
+					for (int k = 0; k < constantString.length(); k++) {
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, e1.getSource().getSymbolicLength()._minus(k)));
+						loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(constantString.charAt(constantString.length() - k - 1))));
+						pc._addDet(loic);
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleCharAtStartswith (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size()-1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) {continue;}
+				if (!sameSource(e1,e2)) continue;
+				EdgeCharAt eca = null;
+				EdgeStartsWith esw = null;
+				if (e1 instanceof EdgeCharAt && e2 instanceof EdgeStartsWith) {
+					eca = (EdgeCharAt) e1;
+					esw = (EdgeStartsWith) e2;
+				}
+				else if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeCharAt) {
+					eca = (EdgeCharAt) e2;
+					esw = (EdgeStartsWith) e1;
+				}
+				else {
+					continue;
+				}
+				if (!esw.getDest().isConstant()) {continue;}
+				String constantString = esw.getDest().getSolution();
+				if (eca.index instanceof IntegerConstant) {
+					int index = eca.index.solution();
+					if (index < constantString.length()) {
+						pc._addDet(Comparator.EQ, eca.value, new IntegerConstant(constantString.charAt(index)));
+					}
+				}
+				else {
+					for (int k = 0; k < constantString.length(); k++) {
+						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+						loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, new IntegerConstant(k)));
+						loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(constantString.charAt(k))));
+						pc._addDet(loic);
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleCharAtNotContains (StringGraph g, PathCondition pc) {
+		
+		for (int i = 0; i < g.getEdges().size()-1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) {continue;}
+				if (!sameSource(e1,e2)) continue;
+				EdgeCharAt eca = null;
+				EdgeNotContains esw = null;
+				if (e1 instanceof EdgeCharAt && e2 instanceof EdgeNotContains) {
+					eca = (EdgeCharAt) e1;
+					esw = (EdgeNotContains) e2;
+				}
+				else if (e1 instanceof EdgeNotContains && e2 instanceof EdgeCharAt) {
+					eca = (EdgeCharAt) e2;
+					esw = (EdgeNotContains) e1;
+				}
+				else {
+					continue;
+				}
+				if (!esw.getDest().isConstant()) {continue;}
+				String constantString = esw.getDest().getSolution();
+				if (constantString.length() > 1) {continue;}
+				char charConstant = constantString.charAt(0);
+				pc._addDet(Comparator.NE, eca.value, new IntegerConstant(charConstant));
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleCharAtDependencies (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size()-1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) {continue;}
+				if (!sameSource(e1,e2)) continue;
+				if (!(e1 instanceof EdgeCharAt && e2 instanceof EdgeCharAt)) {continue;}
+				EdgeCharAt eca1 = (EdgeCharAt) e1;
+				EdgeCharAt eca2 = (EdgeCharAt) e2;
+				if (eca1.index instanceof IntegerConstant && eca2.index instanceof IntegerConstant) {
+					
+					int index1 = ((IntegerConstant) eca1.index).solution();
+					int index2 = ((IntegerConstant) eca2.index).solution();
+					if (index1 != index2) continue;
+					pc._addDet(Comparator.EQ, eca1.value, eca2.value);
+				}
+			}
+		}
+		return true;
+	}
+	
+	/***
+	 * Check if a graph has an edge Contains and NotContains inbetween the same set
+	 * of two vertices. If that is true, then the graph can not be solved.
+	 * 
+	 * @param g
+	 * @param pc
+	 * @return
+	 */
+	private static boolean handleContains (StringGraph g, PathCondition pc) {
+		for (int i = 0; i < g.getEdges().size()-1; i++) {
+			for (int j = i+1; j < g.getEdges().size(); j++) {
+				Edge e1 = g.getEdges().get(i);
+				Edge e2 = g.getEdges().get(j);
+				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
+				if (!sameSource(e1,e2)) continue;
+				if (!e1.getDest().equals(e2.getDest())) continue;
+				if ((e1 instanceof EdgeContains && e2 instanceof EdgeContains) ||
+					(e1 instanceof EdgeNotContains && e2 instanceof EdgeContains)) {
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	private static boolean handleEquality (StringGraph g, PathCondition pc) {
 		//Populate with equality and merge
 		boolean change = true;
 		while (change) { 
@@ -88,849 +2788,88 @@ public class PreProcessGraph {
 				}
 			}
 		}
-		
-		//Add equality between startswiths
-		/*List<Edge> edgesToAdd = new ArrayList<Edge>();
-		for (Edge e1: g.getEdges()) {
-			for (Edge e2: g.getEdges()) {
-				if (e1.equals(e2)) continue;
-				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
-				if (!e1.getSource().equals(e2.getSource())) continue;
-				if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeStartsWith) {
-					Edge e = new EdgeEqual("SWEqual_" + e1.getDest().getName() + "_" + e2.getDest().getName(), e1.getDest(), e2.getDest());
-					if (!edgesToAdd.contains(e)) edgesToAdd.add(e);
-				}
-			}
-			
-		}
-		for (Edge e: edgesToAdd) {
-			g.addEdge(e.getSource(), e.getDest(), e);
-		}*/
-		
-		/*
-		 * Populate with equality and merge, again, due to the previous
-		 * step may have added equalities
-		 */
-		
-		change = true;
-		while (change) { 
-			change = false;
-			Vertex v1, v2;
-			for (int i = 0; i < g.getVertices().size(); i++) {
-				for (int j = i+1; j < g.getVertices().size(); j++) {
-					v1 = g.getVertices().get(i);
-					v2 = g.getVertices().get(j);
-					if (g.getEdges().contains(new EdgeEqual("", v1, v2))) {
-						if (g.getEdges().contains(new EdgeNotEqual("", v1, v2))) {
-							//println ("[preprocess] Two vertices have equality and non equality inbetween them");
-							return false;
-						}
-						//println ("[preprocess] Merging " + v1.getName() + " and " + v2.getName());
-						boolean mergeResult = g.mergeVertices (v1, v2);
-						if (!mergeResult) {
-							//println ("[preprocess] Merging returned unsat");
-							return false;
-						}
-						//println(g.toDot());
-						if (g.inconsistent()) {
-							//println ("[preprocess] Inconsistent");
-							return false;
-						}
-						change = true;
-						/* Done merging, ensure both vertices lengths are the same */
-						forceLengthsSame (v1, v2, pc);
-					}
-				}
-			}
-		}
-		
-		//Remove unnecassery concat (a + b = c, where c is constant and a xor b is constant)
-		for (Edge e: g.getEdges()) {
-			if (e instanceof EdgeConcat) {
-				if (e.getDest().isConstant()) {
-					//println ("[preprocess] Entering concat constant handling");
-					String destString = e.getDest().getSolution();
-					if (e.getSources().get(0).isConstant() && e.getSources().get(1).isConstant()) {
-						String leftString = e.getSources().get(0).getSolution();
-						String rightString = e.getSources().get(1).getSolution();
-						if (!leftString.concat(rightString).equals(destString)) {
-							return false;
-						}
-					}
-					else if (e.getSources().get(0).isConstant()) {
-						String leftString = e.getSources().get(0).getSolution();
-						if (!destString.startsWith(leftString)) {
-							return false;
-						}
-						String rightPart = StringUtility.findRightSide(destString, leftString);
-						e.getSources().get(1).setSolution(rightPart);
-						e.getSources().get(1).setConstant(true);
-						e.getSources().get(1).setLength(rightPart.length());
-					}
-					else if (e.getSources().get(1).isConstant()) {
-						String rightString = e.getSources().get(1).getSolution();
-						if (!destString.endsWith(rightString)) {
-							return false;
-						}
-						String leftPart = StringUtility.findLeftSide(destString, rightString);
-						e.getSources().get(0).setSolution(leftPart);
-						e.getSources().get(0).setConstant(true);
-						e.getSources().get(0).setLength(leftPart.length());
-					}
-				}
-				else {
-					if (e.getSources().get(0).isConstant() && e.getSources().get(1).isConstant() && !e.getDest().isConstant()) {
-						String leftString = e.getSources().get(0).getSolution();
-						String rightString = e.getSources().get(1).getSolution();
-						String concatString = leftString.concat(rightString);
-						e.getDest().setSolution(concatString);
-						e.getDest().setConstant(true);
-						e.getDest().setLength(concatString.length());
-					}
-				}
-			}
-		}
-		
-		//Sort out complicated charAt and startswith/endswith
-		for (Edge e1: g.getEdges()) {
-			for (Edge e2: g.getEdges()) {
-				if (e1.equals(e2)) continue;
-				if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeCharAt 
-					&& e1.getSource().equals(e2.getSource()) && e1.getDest().isConstant()) {
-					EdgeCharAt eca = (EdgeCharAt) e2;
-					if (eca.getIndex() instanceof IntegerConstant && eca.getValue() instanceof IntegerConstant 
-							&& eca.getIndex().solution() < e1.getDest().getSolution().length()) {
-							String startsWithString = e1.getDest().getSolution();
-							int charAtIndex = eca.getIndex().solution();
-							if (startsWithString.charAt(charAtIndex) != charAtIndex) {
-								return false;
-							}
-					}
-				}
-				//Can't say anything about endswith
-			}
-		}
-		
-		
-		
-		//Concrete startswith/endswith/substring, necassery for charAt.
-		for (Edge e1: g.getEdges()) {
-			for (Edge e2: g.getEdges()) {
-				if (e1.equals(e2)) continue;
-				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
-				if (!e1.getSource().equals(e2.getSource())) continue;
-				if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeCharAt) {
-					if (e1.getDest().isConstant()) {
-						EdgeCharAt eca = (EdgeCharAt) e2;
-						String solution = e1.getDest().getSolution();
-						for (int i = 0; i < solution.length(); i++) {
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, new IntegerConstant(i)));
-							loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(i))));
-							pc._addDet(loic);
-						}
-					}
-				}
-				else if (e1 instanceof EdgeEndsWith && e2 instanceof EdgeCharAt) {
-					if (e1.getDest().isConstant()) {
-						EdgeCharAt eca = (EdgeCharAt) e2;
-						String solution = e1.getDest().getSolution();
-						for (int i = 0; i < solution.length(); i++) {
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, e1.getSource().getSymbolicLength()._minus(solution.length() - i)));
-							loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(i))));
-							pc._addDet(loic);
-						}
-					}
-				}
-				else if (e1 instanceof EdgeSubstring1Equal && e2 instanceof EdgeCharAt) {
-					if (e1.getDest().isConstant()) {
-						EdgeCharAt eca = (EdgeCharAt) e2;
-						EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) e1;
-						String solution = e1.getDest().getSolution();
-						for (int i = 0; i < solution.length(); i++) {
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, new IntegerConstant(es1e.getArgument1() + i)));
-							loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(i))));
-							pc._addDet(loic);
-						}
-					}
-				}
-				else if (e1 instanceof EdgeSubstring2Equal && e2 instanceof EdgeCharAt) {
-					if (e1.getDest().isConstant()) {
-						EdgeCharAt eca = (EdgeCharAt) e2;
-						EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e1;
-						String solution = e1.getDest().getSolution();
-						for (int i = 0; i < solution.length(); i++) {
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(eca.index, Comparator.NE, new IntegerConstant(es2e.getArgument1() + i)));
-							loic.addToList(new LinearIntegerConstraint(eca.value, Comparator.EQ, new IntegerConstant(solution.charAt(i))));
-							pc._addDet(loic);
-						}
-					}
-				}
-			}
-		}
-		
-		//Concrete startswith, endswith, substring and charAt for indexOf (needs update for the newer indexOf constraints)
-		for (Edge e1: g.getEdges()) {
-			for (Edge e2: g.getEdges()) {
-				if (e1.equals(e2)) continue;
-				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
-				if (!e1.getSource().equals(e2.getSource())) continue;
-				if (PathCondition.flagSolved == false && scg.isSatisfiable(pc)) {
-					scg.solve(pc);
-					PathCondition.flagSolved = true;
-				}
-				else if (PathCondition.flagSolved == false){
-					//println ("[preprocess] Intermediate solving failed");
+		return true;
+	}
+	
+	private static boolean handleConstants (StringGraph g, PathCondition pc) {
+		ArrayList<Integer> edgesToRemove = new ArrayList<Integer>();
+		for (int i = 0; i < g.getEdges().size(); i++) {
+			Edge e = g.getEdges().get(i);
+			if (!e.allVertecisAreConstant()) {continue;}
+			if (e instanceof EdgeNotEqual) {
+				EdgeNotEqual edge = (EdgeNotEqual) e;
+				String source = edge.getSource().getSolution();
+				String dest = edge.getDest().getSolution();
+				if (source.equals(dest)) {
 					return false;
 				}
-				if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeIndexOf) {
-					EdgeIndexOf eio = (EdgeIndexOf) e2;
-					if (eio.getIndex().getExpression() instanceof StringConstant && e1.getDest().isConstant()) {
-						int possiblePos = e1.getDest().getSolution().indexOf(eio.getIndex().getExpression().solution());
-						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-						int lengthOfExpression = eio.getIndex().getExpression().solution().length();
-						/* a.sw(c).indexOf(b) == j
-						 * a.indexof(b) == i
-						 * 
-						 * assume b is constant
-						 * 
-						 * 0 < i < c.length -> i == j  
-						 */
-						loic.addToList(new LinearIntegerConstraint(new IntegerConstant(0), Comparator.GT, eio.getIndex()));
-						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.GT, new IntegerConstant(lengthOfExpression)));
-						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.EQ, new IntegerConstant (possiblePos)));
-						if (!pc.hasConstraint(loic)) pc._addDet(loic);
-						pc._addDet(Comparator.GE, eio.getIndex(), new IntegerConstant(possiblePos));
-					}
-				}
-				else if (e1 instanceof EdgeEndsWith && e2 instanceof EdgeIndexOf) {
-					// TODO: Rethink about the fact that indexOf returns the first occurence
-					EdgeIndexOf eio = (EdgeIndexOf) e2;
-					if (eio.getIndex().getExpression() instanceof StringConstant && e1.getDest().isConstant()) {
-						int possiblePos = e1.getDest().getSolution().indexOf(eio.getIndex().getExpression().solution());
-						int lastPossiblePos = e1.getDest().getSolution().lastIndexOf(eio.getIndex().getExpression().solution());
-						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-						int lengthOfExpression = eio.getIndex().getExpression().solution().length();
-						/* a.sw(c).indexOf(b) == j
-						 * a.indexof(b) == i
-						 * 
-						 * assume b is constant
-						 * 
-						 * 0 < i < c.length -> i == j  
-						 */
-						loic.addToList(new LinearIntegerConstraint(e1.getSource().getSymbolicLength()._minus(lengthOfExpression), Comparator.GE, eio.getIndex()));
-						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.GE, e1.getSource().getSymbolicLength()));
-						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.EQ, e1.getSource().getSymbolicLength()._minus(lengthOfExpression)._plus(new IntegerConstant (possiblePos))));
-						pc._addDet(loic);
-						pc._addDet(Comparator.LE, eio.getIndex(), e1.getSource().getSymbolicLength()._minus(lengthOfExpression - lastPossiblePos));
-					}
-				}
-				else if (e1 instanceof EdgeSubstring1Equal && e2 instanceof EdgeIndexOf) {
-					EdgeIndexOf eio = (EdgeIndexOf) e2;
-					EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) e1;
-					if (eio.getIndex().getExpression() instanceof StringConstant && e1.getDest().isConstant()) {
-						int possiblePos = e1.getDest().getSolution().indexOf(eio.getIndex().getExpression().solution());
-						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-						/* a.sw(c).indexOf(b) == j
-						 * a.indexof(b) == i
-						 * 
-						 * assume b is constant
-						 * 
-						 * 0 < i < c.length -> i == j  
-						 */
-						loic.addToList(new LinearIntegerConstraint(new IntegerConstant(es1e.a1), Comparator.GE, eio.getIndex()));
-						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.GE, new IntegerConstant(es1e.a1)._plus(e2.getDest().getSymbolicLength())));
-						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.EQ, new IntegerConstant(es1e.a1)._plus(new IntegerConstant (possiblePos))));
-						pc._addDet(loic);
-					}
-				}
-				else if (e1 instanceof EdgeSubstring2Equal && e2 instanceof EdgeIndexOf) {
-					EdgeIndexOf eio = (EdgeIndexOf) e2;
-					EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e1;
-					if (eio.getIndex().getExpression() instanceof StringConstant && e1.getDest().isConstant()) {
-						int possiblePos = e1.getDest().getSolution().indexOf(eio.getIndex().getExpression().solution());
-						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-						/* a.sw(c).indexOf(b) == j
-						 * a.indexof(b) == i
-						 * 
-						 * assume b is constant
-						 * 
-						 * 0 < i < c.length -> i == j  
-						 */
-						loic.addToList(new LinearIntegerConstraint(new IntegerConstant(es2e.getArgument1()), Comparator.GE, eio.getIndex()));
-						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.GE, new IntegerConstant(es2e.getArgument2())));
-						loic.addToList(new LinearIntegerConstraint( eio.getIndex(), Comparator.EQ, new IntegerConstant(es2e.getArgument1())._plus(new IntegerConstant (possiblePos))));
-						pc._addDet(loic);
-					}
-				}
-				else if (e1 instanceof EdgeCharAt && e2 instanceof EdgeIndexOf) {
-					//println ("[preprocess] Path followed 1");
-					EdgeIndexOf eio = (EdgeIndexOf) e2;
-					EdgeCharAt eca = (EdgeCharAt) e1;
-					StringExpression se = eio.getIndex().getExpression();
-					if (se instanceof StringConstant) {
-						//println ("[preprocess] Path followed 2");
-						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-						loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) se.solution().charAt(0)), Comparator.EQ, eca.getValue()) );
-						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
-						if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					}
-				}
-				else if (e1 instanceof EdgeCharAt && e2 instanceof EdgeIndexOf2) {
-					//println ("[preprocess] Path followed 1");
-					EdgeIndexOf2 eio = (EdgeIndexOf2) e2;
-					EdgeCharAt eca = (EdgeCharAt) e1;
-					StringExpression se = eio.getIndex().getExpression();
-					if (se instanceof StringConstant) {
-						//println ("[preprocess] Path followed 2");
-						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-						loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) se.solution().charAt(0)), Comparator.EQ, eca.getValue()) );
-						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
-						if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					}
-				}
-				else if (e1 instanceof EdgeCharAt && e2 instanceof EdgeIndexOfChar) {
-					EdgeIndexOfChar eio = (EdgeIndexOfChar) e2;
-					EdgeCharAt eca = (EdgeCharAt) e1;
-					IntegerExpression se = eio.getIndex().getExpression();
-					if (se instanceof IntegerConstant) {
-						//println ("[preprocess] Path followed 2");
-						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-						loic.addToList(new LinearIntegerConstraint(se, Comparator.EQ, eca.getValue()) );
-						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
-						if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					}
-				}
-				else if (e1 instanceof EdgeCharAt && e2 instanceof EdgeIndexOfChar2) {
-					EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e2;
-					EdgeCharAt eca = (EdgeCharAt) e1;
-					IntegerExpression se = eio.getIndex().getExpression();
-					if (se instanceof IntegerConstant) {
-						//println ("[preprocess] Path followed 2");
-						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-						loic.addToList(new LinearIntegerConstraint(se, Comparator.EQ, eca.getValue()) );
-						loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, eca.getIndex()));
-						if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					}
-				}
-				else if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeLastIndexOfChar) {
-					EdgeStartsWith esw = (EdgeStartsWith) e1;
-					EdgeLastIndexOfChar elio = (EdgeLastIndexOfChar) e2;
-					IntegerExpression ie = elio.getIndex().getExpression();
-					if (esw.getDest().isConstant() && ie instanceof IntegerConstant) {
-						String startsWith = esw.getDest().getSolution();
-						char character = (char) ie.solution();
-						LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-						if (startsWith.lastIndexOf(character) == -1) {
-							loic.addToList(new LinearIntegerConstraint(elio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-							loic.addToList(new LinearIntegerConstraint(elio.getIndex(), Comparator.GE, new IntegerConstant(startsWith.length())));
-						}
-						else {
-							loic.addToList(new LinearIntegerConstraint(elio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-							loic.addToList(new LinearIntegerConstraint(elio.getIndex(), Comparator.GE, new IntegerConstant(startsWith.lastIndexOf(character))));
-						}
-						if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					}
-				}
+				edgesToRemove.add(i); //Remove constant edge afterwards
 			}
-		}
-		
-		//Speedup dependencies between indexOf's, TODO: There's more to add
-		for (Edge e1: g.getEdges()) {
-			for (Edge e2: g.getEdges()) {
-				if (e1.equals(e2)) continue;
-				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
-				if (!e1.getSource().equals(e2.getSource())) continue;
-				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeIndexOfChar) {
-					EdgeIndexOf eio = (EdgeIndexOf) e1;
-					EdgeIndexOfChar eioc = (EdgeIndexOfChar) e2;
-					if (eio.getIndex().getExpression() instanceof StringConstant) {
-						String constant = eio.getIndex().getExpression().solution();
-						for (int i = 0; i < constant.length(); i++) {
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
-							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
-							if (!pc.hasConstraint(loic)) pc._addDet(loic);
-						}
-					}
-				}
-				else if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOfChar2) {
-					EdgeIndexOf2 eio = (EdgeIndexOf2) e1;
-					EdgeIndexOfChar2 eioc = (EdgeIndexOfChar2) e2;
-					if (eio.getIndex().getExpression() instanceof StringConstant) {
-						String constant = eio.getIndex().getExpression().solution();
-						for (int i = 0; i < constant.length(); i++) {
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
-							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
-							if (!pc.hasConstraint(loic)) pc._addDet(loic);
-						}
-					}
-				}
-				else if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOfChar) {
-					EdgeIndexOf2 eio = (EdgeIndexOf2) e1;
-					EdgeIndexOfChar eioc = (EdgeIndexOfChar) e2;
-					if (eio.getIndex().getExpression() instanceof StringConstant) {
-						String constant = eio.getIndex().getExpression().solution();
-						for (int i = 0; i < constant.length(); i++) {
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
-							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
-							if (!pc.hasConstraint(loic)) pc._addDet(loic);
-						}
-					}
-				}
-				else if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeIndexOfChar2) {
-					EdgeIndexOf eio = (EdgeIndexOf) e1;
-					EdgeIndexOfChar2 eioc = (EdgeIndexOfChar2) e2;
-					if (eio.getIndex().getExpression() instanceof StringConstant) {
-						String constant = eio.getIndex().getExpression().solution();
-						for (int i = 0; i < constant.length(); i++) {
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(new IntegerConstant((int) constant.charAt(i)), Comparator.EQ, eioc.getIndex().getExpression()));
-							loic.addToList(new LinearIntegerConstraint(eio.getIndex()._plus(i), Comparator.NE, eioc.getIndex()));
-							if (!pc.hasConstraint(loic)) pc._addDet(loic);
-						}
-					}
-				}
-				else if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeIndexOf2) {
-					EdgeIndexOf2 eio1 = (EdgeIndexOf2) e1;
-					EdgeIndexOf2 eio2 = (EdgeIndexOf2) e2;
-					if (eio1.getIndex().getExpression() instanceof StringConstant && eio2.getIndex().getExpression() instanceof StringConstant) {
-						String constant1 = eio1.getIndex().getExpression().solution();
-						String constant2 = eio2.getIndex().getExpression().solution();
-						for (int i = 0; i < constant1.length(); i++) {
-							for (int j = i; j < constant2.length(); j++) {
-								if (constant1.charAt(i) != constant2.charAt(j)) {
-									LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-									loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-									loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-									loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(i), Comparator.NE, eio2.getIndex()._plus(j)));
-									pc._addDet(loic);
-									//pc._addDet(Comparator.NE, eio1.getIndex()._plus(i), eio2.getIndex()._plus(j));
-								}
-							}
-						}
-					}
-				}
-				else if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeIndexOf) {
-					EdgeIndexOf eio1 = (EdgeIndexOf) e1;
-					EdgeIndexOf eio2 = (EdgeIndexOf) e2;
-					if (eio1.getIndex().getExpression() instanceof StringConstant && eio2.getIndex().getExpression() instanceof StringConstant) {
-						String constant1 = eio1.getIndex().getExpression().solution();
-						String constant2 = eio2.getIndex().getExpression().solution();
-						for (int i = 0; i < constant1.length(); i++) {
-							for (int j = i; j < constant2.length(); j++) {
-								if (constant1.charAt(i) != constant2.charAt(j)) {
-									LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-									loic.addToList(new LinearIntegerConstraint(eio1.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-									loic.addToList(new LinearIntegerConstraint(eio2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-									loic.addToList(new LinearIntegerConstraint(eio1.getIndex()._plus(i), Comparator.NE, eio2.getIndex()._plus(j)));
-									pc._addDet(loic);
-								}
-							}
-						}
-					}
-				}
-				else if (e1 instanceof EdgeIndexOfChar && e2 instanceof EdgeIndexOfChar2) {
-					EdgeIndexOfChar eioc = (EdgeIndexOfChar) e1;
-					EdgeIndexOfChar2 eioc2 = (EdgeIndexOfChar2) e2;
-					if (eioc.getIndex().getExpression() instanceof IntegerConstant && eioc2.getIndex().getExpression() instanceof IntegerConstant) {
-						int sol1 = eioc.getIndex().getExpression().solution();
-						int sol2 = eioc2.getIndex().getExpression().solution();
-						if (sol1 != sol2) {
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-							loic.addToList(new LinearIntegerConstraint(eioc2.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-							loic.addToList(new LinearIntegerConstraint(eioc.getIndex(), Comparator.NE, eioc2.getIndex()));
-							pc._addDet(loic);
-						}
-					}
-				}
-			}
-		}
-		
-		
-		
-		//Speedup between charAt and indexOf
-		for (Edge e1: g.getEdges()) {
-			for (Edge e2: g.getEdges()) {
-				if (PathCondition.flagSolved == false && scg.isSatisfiable(pc)) {
-					scg.solve(pc);
-					PathCondition.flagSolved = true;
-				}
-				else if (PathCondition.flagSolved == false){
-					//println ("[preprocess] Intermediate solving failed");
+			else if (e instanceof EdgeStartsWith) {
+				EdgeStartsWith edge = (EdgeStartsWith) e;
+				String source = edge.getSource().getSolution();
+				String dest = edge.getDest().getSolution();
+				if (!source.startsWith(dest)) {
 					return false;
 				}
-				if (e1.equals(e2)) continue;
-				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
-				if (!e1.getSource().equals(e2.getSource())) continue;
-				if (e1 instanceof EdgeIndexOf && e2 instanceof EdgeCharAt) {
-					EdgeIndexOf eio = (EdgeIndexOf) e1;
-					EdgeCharAt eca = (EdgeCharAt) e2;
-					if (e1.getDest().isConstant()) {
-						String solution = e1.getDest().getSolution();
-						char character = (char) eca.getValue().solution();
-						int indexOf = solution.indexOf(String.valueOf(character));
-						if (indexOf > -1) {
-							//throw new RuntimeException("reached");
-							pc._addDet(Comparator.NE,eio.getIndex(), new IntegerConstant(-1));
-						}
-						
-					}
+				edgesToRemove.add(i); //Remove constant edge afterwards
+			}
+			else if (e instanceof EdgeNotStartsWith) {
+				EdgeNotStartsWith edge = (EdgeNotStartsWith) e;
+				String source = edge.getSource().getSolution();
+				String dest = edge.getDest().getSolution();
+				if (source.startsWith(dest)) {
+					return false;
 				}
-				else if (e1 instanceof EdgeIndexOf2 && e2 instanceof EdgeCharAt) {
-					EdgeIndexOf2 eio = (EdgeIndexOf2) e1;
-					EdgeCharAt eca = (EdgeCharAt) e2;
-					if (e1.getDest().isConstant()) {
-						String solution = e1.getDest().getSolution();
-						char character = (char) eca.getValue().solution();
-						int indexOf = solution.indexOf(String.valueOf(character));
-						if (indexOf > -1) {
-							//throw new RuntimeException("reached");
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.LT, eio.getIndex().getMinIndex()));
-							loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE,new IntegerConstant(-1)));
-							pc._addDet(loic);
-						}
-						
-					}
+				edgesToRemove.add(i); //Remove constant edge afterwards
+			}
+			else if (e instanceof EdgeEndsWith) {
+				EdgeEndsWith edge = (EdgeEndsWith) e;
+				String source = edge.getSource().getSolution();
+				String dest = edge.getDest().getSolution();
+				if (!source.endsWith(dest)) {
+					return false;
 				}
-				else if (e1 instanceof EdgeIndexOfChar && e2 instanceof EdgeCharAt) {
-					EdgeIndexOfChar eio = (EdgeIndexOfChar) e1;
-					EdgeCharAt eca = (EdgeCharAt) e2;
-					if (e1.getDest().isConstant()) {
-						String solution = e1.getDest().getSolution();
-						char character = (char) eca.getValue().solution();
-						int indexOf = solution.indexOf(String.valueOf(character));
-						if (indexOf > -1) {
-							//throw new RuntimeException("reached");
-							pc._addDet(Comparator.NE,eio.getIndex(), new IntegerConstant(-1));
-						}
-						
-					}
+				edgesToRemove.add(i); //Remove constant edge afterwards
+			}
+			else if (e instanceof EdgeNotEndsWith) {
+				EdgeNotEndsWith edge = (EdgeNotEndsWith) e;
+				String source = edge.getSource().getSolution();
+				String dest = edge.getDest().getSolution();
+				if (source.endsWith(dest)) {
+					return false;
 				}
-				else if (e1 instanceof EdgeIndexOfChar2 && e2 instanceof EdgeCharAt) {
-					EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e1;
-					EdgeCharAt eca = (EdgeCharAt) e2;
-					if (e1.getDest().isConstant()) {
-						String solution = e1.getDest().getSolution();
-						char character = (char) eca.getValue().solution();
-						int indexOf = solution.indexOf(String.valueOf(character));
-						if (indexOf> -1) {
-							LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-							loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.LT, eio.getIndex().getMinDist()));
-							loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE,new IntegerConstant(-1)));
-							pc._addDet(loic);
-						}
-						
-					}
+				edgesToRemove.add(i); //Remove constant edge afterwards
+			}
+			else if (e instanceof EdgeContains) {
+				EdgeContains edge = (EdgeContains) e;
+				String source = edge.getSource().getSolution();
+				String dest = edge.getDest().getSolution();
+				if (!source.contains(dest)) {
+					return false;
 				}
+				edgesToRemove.add(i); //Remove constant edge afterwards
+			}
+			else if (e instanceof EdgeNotContains) {
+				EdgeNotContains edge = (EdgeNotContains) e;
+				String source = edge.getSource().getSolution();
+				String dest = edge.getDest().getSolution();
+				if (source.contains(dest)) {
+					return false;
+				}
+				edgesToRemove.add(i); //Remove constant edge afterwards
+			}
+			else if (e instanceof EdgeConcat) {
+				EdgeConcat edge = (EdgeConcat) e;
+				String source1 = edge.getSources().get(0).getSolution();
+				String source2 = edge.getSources().get(1).getSolution();
+				String dest = edge.getDest().getSolution();
+				if (!source1.concat(source2).equals(dest)) {
+					return false;
+				}
+				edgesToRemove.add(i); //Remove constant edge afterwards
 			}
 		}
-		
-		/*Speedup replace (big speedup)*/
-		for (Edge e1: g.getEdges()) {
-			for (Edge e2: g.getEdges()) {
-				if (e1.equals(e2)) continue;
-				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
-				if (!e1.getSource().equals(e2.getDest())) continue;
-				if (e1 instanceof EdgeContains && e2 instanceof EdgeReplaceCharChar) {
-					
-					EdgeContains ec = (EdgeContains) e1;
-					if (ec.getDest().isConstant()) {
-						String containsString = ec.getDest().getSolution();
-						EdgeReplaceCharChar ercc = (EdgeReplaceCharChar) e2;
-						char noMoreChar = ercc.getC1();
-						if (containsString.contains(String.valueOf(noMoreChar))) {
-							return false;
-						}
-					}
-				}
-			}
-		}
-		
-		//Determine size of vertecis
-		change = true;
-		
-		for (Vertex v: g.getVertices()) {
-			pc._addDet(Comparator.GE, v.getSymbolicLength(), 1);
-			pc._addDet(Comparator.LE, v.getSymbolicLength(), MAXIMUM_LENGTH);
-		}
-		//println (g.toDot());
-		//println (currentPC.header.toString());
-		while (change) {
-			change = false;
-			for (Edge e: g.getEdges()) {
-				
-				//println ("Edge: " + e);
-				if (e.allVertecisAreConstant()) {
-					//println ("all constants");
-					//Should handle all constants here
-					if (e instanceof EdgeContains) {
-						if (!e.getSource().getSolution().contains(e.getDest().getSolution())) {
-							return false;
-						}
-					}
-					else if (e instanceof EdgeNotContains) {
-						if (e.getSource().getSolution().contains(e.getDest().getSolution())) {
-							return false;
-						}
-					}
-					else if (e instanceof EdgeEndsWith) {
-						if (!e.getSource().getSolution().endsWith(e.getDest().getSolution())) {
-							return false;
-						}
-					}
-					else if (e instanceof EdgeNotEndsWith) {
-						if (e.getSource().getSolution().endsWith(e.getDest().getSolution())) {
-							return false;
-						}
-					}
-					else if (e instanceof EdgeStartsWith) {
-						if (!e.getSource().getSolution().startsWith(e.getDest().getSolution())) {
-							return false;
-						}
-					}
-					else if (e instanceof EdgeNotStartsWith) {
-						if (e.getSource().getSolution().startsWith(e.getDest().getSolution())) {
-							return false;
-						}
-					}
-					else if (e instanceof EdgeEqual) {
-						if (!e.getSource().getSolution().equals(e.getDest().getSolution())) {
-							return false;
-						}
-					}
-					else if (e instanceof EdgeNotEqual) {
-						if (e.getSource().getSolution().equals(e.getDest().getSolution())) {
-							return false;
-						}
-					}
-					else if (e instanceof EdgeSubstring1Equal) {
-						EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) e;
-						if (e.getDest().getSolution().length() + es1e.getArgument1() > e.getSource().getSolution().length()) {
-							return false;
-						}
-						if (!e.getSource().getSolution().substring(es1e.getArgument1()).equals((e.getDest().getSolution()))) {
-							return false;
-						}
-					}
-					else if (e instanceof EdgeSubstring2Equal) {
-						EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e;
-						if (es2e.getSymbolicArgument2() == null && !e.getSource().getSolution().substring(es2e.getArgument1(),es2e.getArgument2()).equals((e.getDest().getSolution()))) {
-							return false;
-						}
-					}
-					continue;
-				}
-				
-				
-				if (e instanceof EdgeEqual) {
-					pc._addDet(Comparator.EQ, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
-				}
-				else if (e instanceof EdgeEndsWith) {
-					//println ("EdgeEndsWith here");
-					pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
-				}
-				else if (e instanceof EdgeStartsWith) {
-					pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
-				}
-				else if (e instanceof EdgeSubstring1Equal) {
-					EdgeSubstring1Equal es1e = (EdgeSubstring1Equal) e;
-					pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
-					pc._addDet(Comparator.GE, e.getSource().getSymbolicLength(), new IntegerConstant(es1e.a1)._plus(e.getDest().getSymbolicLength()));
-					if (es1e.getArgument1Symbolic() != null) {
-						pc._addDet(Comparator.GE, es1e.getArgument1Symbolic(), 0);
-					}
-				}
-				else if (e instanceof EdgeSubstring2Equal) {
-					EdgeSubstring2Equal es2e = (EdgeSubstring2Equal) e;
-					if (!es2e.hasSymbolicArgs()) {
-						pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
-						pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), new IntegerConstant(es2e.getArgument2()));
-						pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.getArgument2() - es2e.getArgument1()));
-					}
-					else if (es2e.getSymbolicArgument1() == null && es2e.getSymbolicArgument2() != null){
-						pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
-						pc._addDet (Comparator.GE, e.getSource().getSymbolicLength(), es2e.getSymbolicArgument2());
-						pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), 0);
-						pc._addDet (Comparator.GE, es2e.getSymbolicArgument2(), es2e.getArgument1());
-						//pc._addDet(Comparator.EQ, e.getDest().getSymbolicLength(), new IntegerConstant(es2e.a2 - es2e.a1));
-					}
-					else {
-						throw new RuntimeException ("Not supported, yet");
-					}
-				}
-				else if (e instanceof EdgeTrimEqual) {
-					pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
-					//Fix a stupid bug in Trim of JSA
-					pc._addDet (Comparator.GE, e.getDest().getSymbolicLength(), new IntegerConstant(2));
-				}
-				else if (e instanceof EdgeConcat) {
-					/*if (e.getSources().get(0).isConstant() && e.getSources().get(1).isConstant() && e.getDest().isConstant()) {
-						if (!e.getSources().get(0).getSolution().concat(e.getSources().get(1).getSolution()).equals(e.getDest().getSolution())) {
-							return false;
-						}
-					}*/
-					pc._addDet (Comparator.EQ, e.getSources().get(0).getSymbolicLength()._plus(e.getSources().get(1).getSymbolicLength()), e.getDest().getSymbolicLength());
-				}
-				else if (e instanceof EdgeIndexOf) {
-					EdgeIndexOf eio = (EdgeIndexOf) e;
-					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-				}
-				else if (e instanceof EdgeLastIndexOf) {
-					EdgeLastIndexOf eio = (EdgeLastIndexOf) e;
-					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-				}
-				else if (e instanceof EdgeIndexOfChar) {
-					EdgeIndexOfChar eio = (EdgeIndexOfChar) e;
-					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-				}
-				else if (e instanceof EdgeLastIndexOfChar) {
-					EdgeLastIndexOfChar eio = (EdgeLastIndexOfChar) e;
-					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-				}
-				else if (e instanceof EdgeIndexOf2) {
-					EdgeIndexOf2 eio = (EdgeIndexOf2) e;
-					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinIndex()));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-				}
-				else if (e instanceof EdgeLastIndexOf2) {
-					EdgeLastIndexOf2 eio = (EdgeLastIndexOf2) e;
-					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GE, eio.getIndex()._plus(e.getDest().getSymbolicLength())));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.LE, eio.getIndex().getMinIndex()));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-				}
-				else if (e instanceof EdgeIndexOfChar2) {
-					EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e;
-					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.GE, eio.getIndex().getMinDist()));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-				}
-				else if (e instanceof EdgeLastIndexOfChar2) {
-					EdgeLastIndexOfChar2 eio = (EdgeLastIndexOfChar2) e;
-					/* Caused huge performance drop, not anymore, was due to orring with temp vars with rang 0, max */
-					LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.GT, eio.getIndex()));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-					loic = new LogicalORLinearIntegerConstraints();
-					loic.addToList (new LinearIntegerConstraint(eio.getIndex(), Comparator.EQ, new IntegerConstant(-1)));
-					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.LE, eio.getIndex().getMinDist()));
-					if (!pc.hasConstraint(loic)) pc._addDet(loic);
-				}
-				else if (e instanceof EdgeCharAt) {
-					EdgeCharAt eca = (EdgeCharAt) e;
-					pc._addDet(Comparator.GT, e.getSource().getSymbolicLength(), eca.index);
-					pc._addDet(Comparator.GE, eca.index, 0);
-					pc._addDet(Comparator.LT, eca.index, MAXIMUM_LENGTH);
-					pc._addDet(Comparator.GE, eca.value, SymbolicStringConstraintsGeneral.MIN_CHAR);
-					pc._addDet(Comparator.LT, eca.value, SymbolicStringConstraintsGeneral.MAX_CHAR);
-				}
-				else if (e instanceof EdgeContains) {
-					//println ("Here");
-					pc._addDet(Comparator.GE, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
-				}
-				else if (e instanceof EdgeReplaceCharChar) {
-					pc._addDet(Comparator.EQ, e.getSource().getSymbolicLength(), e.getDest().getSymbolicLength());
-				}
-				
-				
-			}
-		}
-		//println ("Done with loop");
-		
-		if (scg.isSatisfiable(pc)) { 
-			//println ("is Sat");
-			scg.solve(pc);
-			PathCondition.flagSolved = true;
-			if (pc.header != null) {
-				//println(pc.header.toString());
-			}
-		}
-		else {
-			//println ("[preprocess] Some constraints could not be resolved");
-			//println(pc.header.toString());
-			/*pc.header = pc.header.and;
-			while (!scg.isSatisfiable(pc) && pc.header != null) {
-				pc.header = pc.header.and;
-			}
-			if (scg.isSatisfiable(pc)) {
-				//println ("[preprocess] This was last sat:");
-				
-				//println ("is Sat");
-				scg.solve(pc);
-				PathCondition.flagSolved = true;
-				if (pc.header != null) {
-					//println(pc.header.toString());
-				}
-				for (Vertex v: g.getVertices()) {
-					if (v.getName().equals("str_1_SYMSTRING")) {
-						//println ("Forcing str_1_SYMSTRING = 21");
-						while (pc.header != null) {
-							pc._addDet(Comparator.EQ, v.getSymbolicLength(), 21);
-							if (scg.isSatisfiable(pc)) {
-								//println ("Solvable:");
-								
-								//println ("is Sat");
-								scg.solve(pc);
-								PathCondition.flagSolved = true;
-								if (pc.header != null) {
-									//println(pc.header.toString());
-								}
-							}
-							else {
-								//println ("Not solvable " + v.getSymbolicLength());
-							}
-							pc.header = pc.header.and.and;
-						}
-						throw new RuntimeException("done");
-					}
-				}
-			}*/
-			return false;
-		}
-		//println ("[preprocess] Preprocessor done");
 		return true;
 	}
 	
@@ -951,6 +2890,11 @@ public class PreProcessGraph {
 				pc._addDet(Comparator.EQ, v1.getSymbolicLength(), v2.getSymbolicLength());
 			}
 		}
+	}
+	
+	private static boolean sameSource (Edge e1, Edge e2) {
+		if (e1.isHyper() || e2.isHyper()) return false;
+		return e1.getSource().equals(e2.getSource());
 	}
 	
 	private static void println (String msg) {

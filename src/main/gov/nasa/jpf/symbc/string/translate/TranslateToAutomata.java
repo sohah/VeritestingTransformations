@@ -60,10 +60,22 @@ public class TranslateToAutomata {
 	private static boolean logging = true;
 	
 	static SymbolicConstraintsGeneral scg = new SymbolicConstraintsGeneral();
+	
+	public static long duration = 0;
+	public static long int_duration = 0;
+	public static long loops = 0;
+	
+	public static boolean isSat (StringGraph g, PathCondition pc) {
+		long starttime = System.currentTimeMillis();
+		boolean result = inner_isSat(g, pc);
+		duration = duration + (System.currentTimeMillis() - starttime);
+		return result;
+	}
+	
 	/*
 	 * The trim operation from JSA does not work with length of 1 characters!!
 	 */
-	public static boolean isSat (StringGraph g, PathCondition pc) {
+	private static boolean inner_isSat (StringGraph g, PathCondition pc) {
 		/*mapAutomaton = null;
 		if (memo == null) {
 			memo = new HashMap<List<gov.nasa.jpf.symbc.numeric.Constraint>, Map<Vertex,Automaton>>();
@@ -225,13 +237,20 @@ public class TranslateToAutomata {
 							if (!result) {
 								//Check if path condition has changed
 								if (PathCondition.flagSolved == false) {
-									//println ("[isSat] solving path condition: ");
-									//println(global_pc.header.toString());
-									if (scg.isSatisfiable(global_pc)) {
+									loops++;
+									println ("[isSat] solving path condition: ");
+									println(global_pc.header.toString());
+									long startTime = System.currentTimeMillis();
+									boolean temp_result = scg.isSatisfiable(global_pc);
+									long temp_dur = System.currentTimeMillis() - startTime;
+									int_duration += temp_dur;
+									duration -= temp_dur;
+									if (temp_result) {
 										scg.solve(global_pc);
 										//println ("[isSat] solved");
 										PathCondition.flagSolved = true;
 										//println(global_pc.header.toString());
+										restart = true;
 										result = false;
 										break;
 									}
@@ -256,11 +275,24 @@ public class TranslateToAutomata {
 			
 			//At this point the entire graph should have been mostly solved
 			
+			//println (global_pc.toString());
 			//Take care of nonequality and concat
+			//println ("Starting with not equality");
+			//boolean handleNotResult = handleNots(g);
 			boolean handleNotResult = handleNots(g);
 			if (!handleNotResult) {
+				//println ("returned no");
 				if (PathCondition.flagSolved == false) {
-					if (scg.isSatisfiable(global_pc)) {
+					println ("path condition to be solved");
+					println (global_pc.toString());
+					loops++;
+					long starttime = System.currentTimeMillis();
+					boolean int_result = scg.isSatisfiable(global_pc);
+					long temp_duration = System.currentTimeMillis() - starttime;
+					int_duration = int_duration + temp_duration;
+					duration = duration - temp_duration;
+					
+					if (int_result) {
 						scg.solve(global_pc);
 						PathCondition.flagSolved = true;
 						mapAutomaton = null;
@@ -384,22 +416,34 @@ public class TranslateToAutomata {
 		
 		int result = 0;
 		while (true) {
+			//println ("Starting with innerHandleNots");
 			result = innerHandleNots(g, toBits(numberOfNots, 0));
 			//println ("result: " + result);
 			if (result  == 2) {
 				numberOfNots++;
+				//println ("Number of nots going up");
 				continue;
 			}
 			if (PathCondition.flagSolved == false) {
-				if (scg.isSatisfiable(global_pc)) {
+				/*println ("first path condition not solved");
+				loops++;
+				long starttime = System.currentTimeMillis();
+				boolean temp_result = scg.isSatisfiable(global_pc);
+				long temp_dur = System.currentTimeMillis() - starttime;
+				int_duration += temp_dur;
+				duration -= temp_dur;
+				if (temp_result) {
+					//println ("first path solved and restarting");
 					scg.solve(global_pc);
 					PathCondition.flagSolved = true;
 					continue;
 				}
 				else {
-					//println ("[isSat] handled isnots, path condition could not be solved");
+					//println ("[handleNots] handled isnots, path condition could not be solved");
 					return false;
-				}
+				}*/
+				//println ("Not working for us: 0");
+				return false;
 			}
 			int i = 1;
 			boolean breakInnerLoop = false;
@@ -407,14 +451,22 @@ public class TranslateToAutomata {
 			while (i < numberOfNots && result == 0) {
 				//println ("in while loop");
 				if (PathCondition.flagSolved == false) {
-					if (scg.isSatisfiable(global_pc)) {
+					/*loops++;
+					long starttime = System.currentTimeMillis();
+					boolean temp_result = scg.isSatisfiable(global_pc);
+					long temp_dur = System.currentTimeMillis() - starttime;
+					int_duration += temp_dur;
+					duration -= temp_dur;
+					if (temp_result) {
 						scg.solve(global_pc);
 						PathCondition.flagSolved = true;
 					}
 					else {
 						//println ("[isSat] handled isnots, path condition could not be solved");
 						return false;
-					}
+					}*/
+					//println ("Not working for us: " + i);
+					return false;
 				}
 				
 				//println ("loop");
@@ -474,6 +526,7 @@ public class TranslateToAutomata {
 		int indexBitArray = 0;
 		boolean change = true;
 		for (int i = 0; i < bitArray.length; i++) {
+			SymbolicStringConstraintsGeneral.checkTimeOut();
 			try {
 				change = false;
 				//TODO: Add last index of, and can optimise indexOf with dest as constant
@@ -556,7 +609,7 @@ public class TranslateToAutomata {
 					}
 					else if (e instanceof EdgeNotStartsWith) {
 						if (e.getSource().getSolution().startsWith(e.getDest().getSolution())) {
-							//println (e.getSource().getName() + " (" + e.getSource().getSolution() + ") startswith " + e.getDest().getName() + " (" + e.getDest().getSolution() + ") and it shouldn't");
+							println (e.getSource().getName() + " (" + e.getSource().getSolution() + ") startswith " + e.getDest().getName() + " (" + e.getDest().getSolution() + ") and it shouldn't");
 							if (!e.getSource().isConstant() && !e.getDest().isConstant()) {
 								//println ("Here 2");
 								nonequalityFlipFlop = bitArray[indexBitArray++];
@@ -863,6 +916,17 @@ public class TranslateToAutomata {
 									global_pc._addDet(loic);
 									return 0;
 								}
+								
+								/* Check if source can't contain destination */
+								Automaton temp_destination = AutomatonExtra.makeAnyStringFixed().concatenate(Automaton.makeString(eio.getDest().getSolution())).concatenate(AutomatonExtra.makeAnyStringFixed()); 
+								Automaton temp2 = AutomatonExtra.minus(a1, temp_destination);
+								if (temp2.isEmpty()) {
+									LogicalORLinearIntegerConstraints loic = elimanateCurrentLengthsConstraints();
+									loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
+									global_pc._addDet(loic);
+									return 0;
+								}
+								
 								if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
 								mapAutomaton.put(eio.getSource(), temp);
 								boolean propResult = propagateChange(eio.getSource(), eio.getDest());
@@ -900,9 +964,9 @@ public class TranslateToAutomata {
 									Automaton a1 = mapAutomaton.get(eio.getSource());
 									Automaton toBeRemoved = AutomatonExtra.lengthAutomaton(indexOf).concatenate(Automaton.makeChar(eio.getDest().getSolution().charAt(0)).concatenate(AutomatonExtra.lengthAutomaton(e.getSource().getLength() - indexOf - 1)));
 									/*println (String.format ("1 '%s'", AutomatonExtra.lengthAutomaton(indexOf).getShortestExample(true)));
-									println (String.format ("2 '%s'", Automaton.makeChar(eio.getDest().getSolution().charAt(0)).getShortestExample(true)));
-									println (String.format ("3 '%s'", AutomatonExtra.lengthAutomaton(e.getSource().getLength() - indexOf - 1).getShortestExample(true)));
-									println (String.format ("ToBeRemoved '%s'", toBeRemoved.getShortestExample(true)));*/
+									//println (String.format ("2 '%s'", Automaton.makeChar(eio.getDest().getSolution().charAt(0)).getShortestExample(true)));
+									//println (String.format ("3 '%s'", AutomatonExtra.lengthAutomaton(e.getSource().getLength() - indexOf - 1).getShortestExample(true)));
+									//println (String.format ("ToBeRemoved '%s'", toBeRemoved.getShortestExample(true)));*/
 									Automaton temp = AutomatonExtra.minus (a1, toBeRemoved);
 									if (temp.isEmpty()) return 0;
 									if (!eio.getSource().isConstant()) eio.getSource().setSolution(temp.getShortestExample(true));
@@ -1166,7 +1230,7 @@ public class TranslateToAutomata {
 					else if (e instanceof EdgeIndexOfChar2) {
 						EdgeIndexOfChar2 eio = (EdgeIndexOfChar2) e;
 						if (eio.getIndex().solution() == -1 && eio.getSource().getSolution().indexOf(eio.getDest().getSolution(), eio.getIndex().getMinDist().solution()) > -1) {
-							//println ("[EdgeIndexOfChar2] '" + eio.getSource().getSolution() + "' contains '" + eio.getDest().getSolution() + "' after " + eio.getIndex().getMinDist().solution() + " and it should not");
+							println ("[EdgeIndexOfChar2] '" + eio.getSource().getSolution() + "' contains '" + eio.getDest().getSolution() + "' after " + eio.getIndex().getMinDist().solution() + " and it should not");
 							if (!eio.getSource().isConstant() && !eio.getDest().isConstant()) {
 								nonequalityFlipFlop = bitArray[indexBitArray++];
 								if (nonequalityFlipFlop == false) {
@@ -2382,7 +2446,7 @@ public class TranslateToAutomata {
 			//println ("[handleEdgeIndexOf] not empty");
 			mapAutomaton.put(e.getSource(), a1);
 			if (!e.getSource().isConstant()) e.getSource().setSolution(a1.getShortestExample(true));
-			println(String.format("a1 example: '%s'", a1.getShortestExample(true)));
+			//println(String.format("a1 example: '%s'", a1.getShortestExample(true)));
 			
 			
 			//Remove source.substring(0, dest.length) from dest
@@ -2390,14 +2454,14 @@ public class TranslateToAutomata {
 			if (exclude.getShortestExample(true).length() != e.getDest().getLength()) {
 				throw new RuntimeException("assumption fail");
 			}
-			println(String.format("exclude example: '%s'", exclude.getShortestExample(true)));
+			//println(String.format("exclude example: '%s'", exclude.getShortestExample(true)));
 			excludeInverse = exclude.complement().intersection(AutomatonExtra.makeAnyStringFixed());
-			println(String.format("excludeInverse example: '%s'", excludeInverse.getShortestExample(true)));
+			//println(String.format("excludeInverse example: '%s'", excludeInverse.getShortestExample(true)));
 			excludeInverse = AutomatonExtra.intersection(excludeInverse, AutomatonExtra.lengthAutomaton(e.getDest().getLength()));
-			println(String.format("excludeInverse example: '%s'", excludeInverse.getShortestExample(true)));
-			println(String.format("a2 example: '%s'", a2.getShortestExample(true)));
+			//println(String.format("excludeInverse example: '%s'", excludeInverse.getShortestExample(true)));
+			//println(String.format("a2 example: '%s'", a2.getShortestExample(true)));
 			a2 = AutomatonExtra.intersection(a2, excludeInverse);
-			println(String.format("a2 example: '%s'", a2.getShortestExample(true)));
+			//println(String.format("a2 example: '%s'", a2.getShortestExample(true)));
 			mapAutomaton.put(e.getDest(), a2);
 			if (!e.getDest().isConstant()) e.getDest().setSolution(a2.getShortestExample(true));*/
 			
@@ -3206,12 +3270,19 @@ public class TranslateToAutomata {
 	}
 	
 	private static void elimanateCurrentLengths () {
+		//println ("elimanateCurrentLengths");
 		LogicalORLinearIntegerConstraints loic = new LogicalORLinearIntegerConstraints();
+		int count = 0;
 		for (Vertex v: global_graph.getVertices()) {
 			if (v.isConstant()) continue;
 			loic.addToList(new LinearIntegerConstraint(v.getSymbolicLength(), Comparator.NE, new IntegerConstant(v.getLength())));
+			count++;
+		}
+		if (count == 1) {
+			loic.addToList(new LinearIntegerConstraint(new IntegerConstant(1), Comparator.EQ, new IntegerConstant(0)));
 		}
 		global_pc._addDet(loic);
+		//println (global_pc.toString());
 	}
 	
 	private static LogicalORLinearIntegerConstraints elimanateCurrentLengthsConstraints() {

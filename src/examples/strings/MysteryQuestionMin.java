@@ -4,7 +4,7 @@ public class MysteryQuestionMin {
 	
 	public static void main (String[] args) {
 		System.out.println("start");
-		preserveSomeHtmlTagsAndRemoveWhitespaces("<< HREF=\"\"<A HREF=\">     ");
+		preserveSomeHtmlTagsAndRemoveWhitespaces("<<<<<a href=\">    @");
 		System.out.println ("end");
 	}
 	
@@ -15,7 +15,10 @@ public class MysteryQuestionMin {
 		int i = 0;
 		int old = i - 1;
 		while (i < len) {
-			assert i >= old: "Infinite loop";
+			//assert i >= old: "Infinite loop";
+			if (i < old) {
+				throw new RuntimeException("Infinite loop");
+			}
 			old = i;
 			if (body.charAt(i) == '<') {
 				if (i + 14 < len &&

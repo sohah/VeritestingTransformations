@@ -6,6 +6,7 @@ import java.util.List;
 public class LogicalORLinearIntegerConstraints extends Constraint{
 	
 	private List<LinearIntegerConstraint> list;
+	public String comment;
 	
 	public LogicalORLinearIntegerConstraints () {
 		super (null, null, null);
@@ -19,7 +20,9 @@ public class LogicalORLinearIntegerConstraints extends Constraint{
 	
 	
 	public void addToList (LinearIntegerConstraint lic) {
-		if (!list.contains(lic)) list.add(lic);
+		if (!list.contains(lic)) {
+			list.add(lic);
+		}
 	}
 
 	public List<LinearIntegerConstraint> getList () {
@@ -44,6 +47,7 @@ public class LogicalORLinearIntegerConstraints extends Constraint{
 			sb.append (" OR ");
 			sb.append (list.get(i).toString());
 		}
+		sb.append ("(" + comment + ")");
 		if (and != null) {
 			sb.append (" && \n");
 			sb.append (and.stringPC());
