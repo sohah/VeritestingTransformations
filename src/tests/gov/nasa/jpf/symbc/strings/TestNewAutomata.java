@@ -980,4 +980,132 @@ public class TestNewAutomata {
 			
 		}
 	}
+	
+	@Test
+	public void Test14_1 () {
+		/*
+		 	"SYM_a"->"C_CONST_gLR" [label="StartsWith"]
+			"C_CONST_kR"->"SYM_a" [label="!StartsWith"]
+			"C_CONST_O4+]"->"SYM_a" [label="!StartsWith"]
+		 */
+		String[] solvers = new String[]{"automata"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("gLR"), var1);
+			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var1, new StringConstant("kR"));
+			//stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var1, new StringConstant("O4+]"));
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(var1.solution().startsWith("gLR"));
+			Assert.assertTrue(!var1.solution().startsWith("kR"));
+			
+		}
+	}
+	
+	@Test
+	public void Test14_2 () {
+		/*
+		 	"SYM_b"->"C_CONST_Y&v^" [label="EndsWith"]
+			"SYM_a"->"SYM_b" [label="!Equal", dir=both]
+			"C_CONST_N@"->"SYM_b" [label="!EndsWith"]
+		 */
+		String[] solvers = new String[]{"automata"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			stringCurrentPC._addDet(StringComparator.ENDSWITH, new StringConstant("Y&v^"), var1);
+			stringCurrentPC._addDet(StringComparator.NOTENDSWITH, var1, new StringConstant("N@"));
+			//stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var1, new StringConstant("O4+]"));
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(var1.solution().endsWith("Y&v^"));
+			Assert.assertTrue(!var1.solution().startsWith("N@"));
+			
+		}
+	}
+	
+	@Test
+	public void Test14_3 () {
+		/*
+		 	"SYM_b"->"C_CONST_9u" [label="StartsWith"]
+			"SYM_a"->"C_CONST_9u" [label="EndsWith"]
+			"SYM_a"->"SYM_b" [label="EdgeNotContains"]
+		 */
+		String[] solvers = new String[]{"automata"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var1 = new StringSymbolic("var1");
+			StringSymbolic var2 = new StringSymbolic("var2");
+			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("9u"), var1);
+			stringCurrentPC._addDet(StringComparator.ENDSWITH, new StringConstant("9u"), var2);
+			stringCurrentPC._addDet(StringComparator.NOTCONTAINS, var2, var1);
+			//stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var1, new StringConstant("O4+]"));
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(var1.solution().startsWith("9u"));
+			Assert.assertTrue(var2.solution().endsWith("9u"));
+			Assert.assertTrue(!var1.solution().contains(var2.solution()));
+		}
+	}
+	
+	@Test
+	public void Test14_4 () {
+		//(stringvar1 notequals stringvar0) && (stringvar0 endswith stringvar1) && (stringvar1 endswith CONST_M.m)
+		
+		String[] solvers = new String[]{"automata"};
+		//String[] solvers = new String[]{"automata", "z3_inc"};
+		for (String solver: solvers) {
+			System.out.println("Solver: " + solver);
+			String[] options = {"+symbolic.dp=choco",
+					"+symbolic.string_dp=" + solver,
+					"+symbolic.string_dp_timeout_ms=0"};
+			Config cfg = new Config(options);
+			new SymbolicInstructionFactory(cfg);
+			PathCondition pc = new PathCondition();
+			StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+			StringSymbolic var0 = new StringSymbolic("var0");
+			StringSymbolic var1 = new StringSymbolic("var1");
+			stringCurrentPC._addDet(StringComparator.ENDSWITH, new StringConstant("M.m"), var1);
+			stringCurrentPC._addDet(StringComparator.ENDSWITH, var1, var0);
+			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var0, var1);
+			//stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var1, new StringConstant("O4+]"));
+			boolean result = stringCurrentPC.simplify();
+			//System.out.printf("var1: '%s'\n", var1.solution());
+			System.out.println(var0.solution());
+			System.out.println(var1.solution());
+			Assert.assertTrue(result);
+			Assert.assertTrue(var1.solution().startsWith("M.m"));
+			Assert.assertTrue(var0.solution().endsWith(var1.solution()));
+			Assert.assertTrue(!var1.solution().equals(var0.solution()));
+		}
+		
+	}
 }

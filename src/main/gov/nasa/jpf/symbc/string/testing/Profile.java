@@ -40,6 +40,21 @@ public class Profile {
 		return result;
 	}
 	
+	public static int[] defaultGoodOfEdges2 () {
+		int[] result = new int [22];
+		for (int i = 0; i < result.length; i++) {
+			result[i] = 1;
+		}
+		result[6] = 0;
+		result[8] = 0;
+		result[9] = 0;
+		result[10] = 0;
+		result[11] = 0;
+		result[12] = 0;
+		result[17] = 0;
+		return result;
+	}
+	
 	public static int[] smallSetOfEdges () {
 		int[] result = new int [22];
 		result[2] = 1;

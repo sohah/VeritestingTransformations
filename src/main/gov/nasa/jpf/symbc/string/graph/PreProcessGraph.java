@@ -1596,6 +1596,9 @@ public class PreProcessGraph {
 				} else
 				{ continue; }
 				if (!eio1.getDest().isConstant()) {continue;}
+				/*System.out.println("[handleIndexOfStrIntIndexOfCharInt] eio1: " + eio1);
+				System.out.println("[handleIndexOfStrIntIndexOfCharInt] eio1.getIndex(): " + eio1.getIndex());
+				System.out.println("[handleIndexOfStrIntIndexOfCharInt] eio1.getIndex().getExpression(): " + eio1.getIndex().getExpression());*/
 				String constant = eio1.getIndex().getExpression().solution();
 				
 				/*for (int k = 0; k < constant.length(); k++) {
@@ -2502,6 +2505,14 @@ public class PreProcessGraph {
 				Edge e2 = g.getEdges().get(j);
 				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
 				if (!sameSource(e1,e2)) continue;
+				if (e1 instanceof EdgeStartsWith && e2 instanceof EdgeStartsWith &&
+						e1.getDest().isConstant() && e2.getDest().isConstant()) {
+							String e1string = e1.getDest().getSolution();
+							String e2string = e2.getDest().getSolution();
+							if (!(e1string.contains(e2string) || e2string.contains(e1string))) {
+								return false;
+							}
+				}
 				if (!e1.getDest().equals(e2.getDest())) continue;
 				if ((e1 instanceof EdgeStartsWith && e2 instanceof EdgeNotStartsWith) ||
 					(e1 instanceof EdgeNotStartsWith && e2 instanceof EdgeStartsWith)) {
@@ -2527,6 +2538,15 @@ public class PreProcessGraph {
 				Edge e2 = g.getEdges().get(j);
 				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
 				if (!sameSource(e1,e2)) continue;
+				if (e1 instanceof EdgeEndsWith && e2 instanceof EdgeEndsWith &&
+						e1.getDest().isConstant() && e2.getDest().isConstant()) {
+							String e1string = e1.getDest().getSolution();
+							String e2string = e2.getDest().getSolution();
+							if (!(e1string.contains(e2string) || e2string.contains(e1string))) {
+								return false;
+							}
+				}
+
 				if (!e1.getDest().equals(e2.getDest())) continue;
 				if ((e1 instanceof EdgeEndsWith && e2 instanceof EdgeNotEndsWith) ||
 					(e1 instanceof EdgeNotEndsWith && e2 instanceof EdgeEndsWith)) {
@@ -2602,7 +2622,7 @@ public class PreProcessGraph {
 				if (!sameSource(e1,e2)) continue;
 				EdgeCharAt eca = null;
 				EdgeEndsWith esw = null;
-				if (e1 instanceof EdgeCharAt && e2 instanceof EdgeStartsWith) {
+				if (e1 instanceof EdgeCharAt && e2 instanceof EdgeEndsWith) {
 					eca = (EdgeCharAt) e1;
 					esw = (EdgeEndsWith) e2;
 				}
@@ -2746,7 +2766,7 @@ public class PreProcessGraph {
 				if (e1 instanceof EdgeConcat || e2 instanceof EdgeConcat) continue;
 				if (!sameSource(e1,e2)) continue;
 				if (!e1.getDest().equals(e2.getDest())) continue;
-				if ((e1 instanceof EdgeContains && e2 instanceof EdgeContains) ||
+				if ((e1 instanceof EdgeContains && e2 instanceof EdgeNotContains) ||
 					(e1 instanceof EdgeNotContains && e2 instanceof EdgeContains)) {
 						return false;
 				}

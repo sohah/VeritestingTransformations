@@ -4420,5 +4420,7 @@ public class TestSymString {
 			Assert.assertTrue(str.solution().startsWith("http://"));
 		}
 	}
+	
+	
 
 }

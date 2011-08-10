@@ -160,6 +160,7 @@ public class TranslateToZ3Inc {
 					}
 				}
 				resultloic.comment = "Removing path";
+				//println ("Adding: " + resultloic);
 				pc._addDet(resultloic);
 				
 				if (PathCondition.flagSolved == false) {

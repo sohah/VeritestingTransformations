@@ -394,6 +394,7 @@ public class SymbolicStringConstraintsGeneral {
 		}
 		
 		TIMEOUT = SymbolicInstructionFactory.stringTimeout;
+		SymbolicStringConstraintsGeneral.timedOut = false;
 
 		if (TIMEOUT > 0) {
 			timedOut = false;

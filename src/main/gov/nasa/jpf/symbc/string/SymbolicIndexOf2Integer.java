@@ -10,6 +10,9 @@ public class SymbolicIndexOf2Integer extends SymbolicInteger{
 	public SymbolicIndexOf2Integer (String name, int l, int u, StringExpression source, StringExpression expression, IntegerExpression minIndex) {
 		super (name, l, u);
 		this.source = source;
+		if (expression == null) {
+			throw new RuntimeException("Inst error");
+		}
 		this.expression = expression;
 		this.minIndex = minIndex;
 	}

@@ -56,6 +56,7 @@ import gov.nasa.jpf.symbc.string.graph.StringGraph;
 import gov.nasa.jpf.symbc.string.graph.Vertex;
 import gov.nasa.jpf.symbc.string.translate.BVVar;
 import gov.nasa.jpf.symbc.string.translate.TranslateToAutomata;
+import gov.nasa.jpf.symbc.string.translate.TranslateToAutomata2;
 import gov.nasa.jpf.symbc.string.translate.TranslateToZ3;
 import gov.nasa.jpf.symbc.string.translate.TranslateToZ3Inc;
 
@@ -76,8 +77,19 @@ public class RandomTest {
 	
 	private static int TEST_TIMEOUT = 120 * 1000; //(ms)
 	
-	public static void main (String [] args) throws FileNotFoundException {
-		setUpJPF();
+	public static Profile get3smallSetOfEdges() {
+		Profile p = Profile.NewProfile();
+		p.amountOfStringCons = 5;
+		p.stringConsMaxLength = 5;
+		p.amountOfStringVar = 2;
+		p.amountOfEdges = 3;
+		p.amountOfIntegerCons = 2;
+		p.amountOfIntegerVar = 2;
+		p.listOfEdgesToBeUsed = Profile.smallSetOfEdges();
+		return p;
+	}
+	
+	public static Profile get3defaultSetOfEdges() {
 		Profile p = Profile.NewProfile();
 		p.amountOfStringCons = 5;
 		p.stringConsMaxLength = 5;
@@ -86,6 +98,29 @@ public class RandomTest {
 		p.amountOfIntegerCons = 2;
 		p.amountOfIntegerVar = 2;
 		p.listOfEdgesToBeUsed = Profile.defaultSetOfEdges2();
+		return p;
+	}
+	
+	public static Profile get3goodSetOfEdges() {
+		Profile p = Profile.NewProfile();
+		p.amountOfStringCons = 5;
+		p.stringConsMaxLength = 5;
+		p.amountOfStringVar = 2;
+		p.amountOfEdges = 3;
+		p.amountOfIntegerCons = 2;
+		p.amountOfIntegerVar = 2;
+		p.listOfEdgesToBeUsed = Profile.defaultGoodOfEdges2();
+		return p;
+	}
+	
+	public static void main (String [] args) throws FileNotFoundException {
+		setUpJPF();
+		
+		//Profile p = get3smallSetOfEdges();
+		Profile p = get3goodSetOfEdges();
+		
+		boolean showOnlyGraph = false;
+		boolean extraDetail = true;
 		
 		//args = new String[]{"4482676770472428340"};
 		//args = new String[]{"7463434583100419681"};
@@ -114,27 +149,42 @@ public class RandomTest {
 		//args = new String[]{"705452481494713414"}; good diff
 		//args = new String[]{"-1242344884180004662"};
 		//args = new String[]{ "3476996485065834879"};
-		args = new String[]{"-v", "/home/gideon/numbers"};
+		//args = new String[]{"-v", "/home/gideon/numbers"};
 		//args = new String[]{"7049847513125521827"};
 		//args = new String[]{"8911160557294150329"};
+		//args = new String[]{"-8564134299976833108"};
+		//args = new String[]{"-2483205023141871181"};
+		//args = new String[]{"1900680547994741596"};
+		//args = new String[]{"-3575625896976452488"};
+		args = new String[]{"-848008875103978746"};
 		if (args.length == 0) {
 			System.out.println("[data]," + p);
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 1000; i++) {
 				random = new Random();
 				long seed = random.nextLong();
+				System.out.println("Starting: " + seed);
 				Result z3dur = go (p, seed, Z3_Inc);
 				Result autodur = go (p, seed, Automata);
 				System.out.println("[data],\""+seed+"\","+z3dur.time+","+autodur.time);
+				
 			}
 		}
 		else if (args.length == 1) {
-			long seed = Long.parseLong(args[0]);
 			random = new Random();
-			System.out.println("[RandomTest] Calling with z3");
-			Result z3dur = go (p, seed, Z3_Inc);
-			System.out.println("[RandomTest] Calling with automata");
-			Result autodur = go (p, seed, Automata);
-			System.out.println("[data],\""+seed+"\","+z3dur.time+","+autodur.time);
+			long seed = Long.parseLong(args[0]);
+			StringGraph sg = generateRandomStringGraph (p, seed);
+			System.out.println(sg.toDot());
+			if (showOnlyGraph == false) {
+				System.out.println("[RandomTest] Calling with z3");
+				Result z3dur = go (p, seed, Z3_Inc);
+				System.out.println("[RandomTest] Calling with automata");
+				Result autodur = go (p, seed, Automata);
+				System.out.print("[data],\""+seed+"\","+z3dur.time+","+autodur.time);
+				if (extraDetail == true) {
+					System.out.print(","+z3dur.result+","+autodur.result);
+				}
+				System.out.println();
+			}
 		}
 		else {
 			Scanner scanner = new Scanner(new File(args[1]));
@@ -193,7 +243,7 @@ public class RandomTest {
 				SymbolicStringConstraintsGeneral.timer = new Timer();
 				SymbolicStringConstraintsGeneral.timer.schedule(new SymbolicStringTimeOut(), SymbolicStringConstraintsGeneral.TIMEOUT);
 				try {
-					result = TranslateToAutomata.isSat(sg, pc);
+					result = TranslateToAutomata2.isSat(sg, pc);
 					System.out.println("[RandomTest] Automata done");
 				} catch (SymbolicStringTimedOutException e) {
 					SymbolicStringConstraintsGeneral.timer.cancel();

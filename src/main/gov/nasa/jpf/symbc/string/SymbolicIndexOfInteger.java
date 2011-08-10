@@ -8,6 +8,9 @@ public class SymbolicIndexOfInteger extends SymbolicInteger{
 	public SymbolicIndexOfInteger (String name, int l, int u, StringExpression source, StringExpression expression) {
 		super (name, l, u);
 		this.source = source;
+		if (expression == null) {
+			throw new RuntimeException("Init error");
+		}
 		this.expression = expression;
 	}
 	

@@ -90,6 +90,7 @@ public class TranslateToAutomata2 {
 		resetAutomata();
 		
 		while (restart) {
+			//println ("[restart]: " + pc.toString());
 			//println ("restart");
 			/* check if there was a timeout */
 			SymbolicStringConstraintsGeneral.checkTimeOut();
@@ -197,6 +198,7 @@ public class TranslateToAutomata2 {
 				}
 				resultloic.comment = "Removing path";
 				pc._addDet(resultloic);
+				//println ("Adding: " + resultloic);
 				
 				if (PathCondition.flagSolved == false) {
 					//println ("[isSat] Path Condition changed, starting integer solver...");
@@ -325,7 +327,8 @@ public class TranslateToAutomata2 {
 		if (!e.getSource().isConstant()) e.getSource().setSolution(intersection.getShortestExample(true));
 		
 		Automaton temp = AutomatonExtra.startingSubstrings(intersection);
-		Automaton intersection2 = AutomatonExtra.intersection(temp, a2);
+		Automaton intersection2 = AutomatonExtra.intersection(temp, origDest);
+		//println ("[handleEdgeStartsWith] intersection2 example: '" + intersection2.getShortestExample(true) + "'"); 
 		if (intersection2.isEmpty()) {
 			debug_unsat_reason = "In handleEdgeStartsWith, destination intersection was empty";
 			return false;
@@ -335,13 +338,14 @@ public class TranslateToAutomata2 {
 		if (!e.getDest().isConstant()) e.getDest().setSolution(intersection2.getShortestExample(true));
 		
 		if (a1Changed || a2Changed) {
-			//println ("handleEdgeStartswith has changed something");
+			//println (String.format("handleEdgeStartswith has changed something %b, %b", a1Changed, a2Changed));
 			global_change = true;
 		}
 		return true;
 	}
 	
 	private static boolean handleEdgeEndsWith (EdgeEndsWith e) {
+		//println ("[handleEdgeEndsWith] entered");
 		unsatStack1.add(excludeVertecis(e));
 		
 		Automaton origSource = mapAutomaton.get(e.getSource());
@@ -1212,15 +1216,28 @@ public class TranslateToAutomata2 {
 			Automaton destination = mapAutomaton.get(e.getDest());
 			String source = e.getSource().getSolution();
 			
-			String prefix = source.substring(0, e.getDest().getLength());
-			destination = destination.minus(Automaton.makeString(prefix));
-			if (destination.isEmpty()) {
-				debug_unsat_reason = "Not handling of edge startswith, with source constant, lead to empty destination";
-				return false;
+			if (e.getDest().getLength() < e.getSource().getLength()) {
+				String prefix = source.substring(0, e.getDest().getLength());
+				destination = destination.minus(Automaton.makeString(prefix));
+				if (destination.isEmpty()) {
+					debug_unsat_reason = "Not handling of edge startswith, with source constant, lead to empty destination";
+					return false;
+				}
+				
+				e.getDest().setSolution(destination.getShortestExample(true));
+				mapAutomaton.put(e.getDest(), destination);
+			} else {
+				destination = destination.minus(Automaton.makeString(source));
+				if (destination.isEmpty()) {
+					debug_unsat_reason = "Not handling of edge startswith, with source constant, lead to empty destination";
+					return false;
+				}
+				
+				e.getDest().setSolution(destination.getShortestExample(true));
+				mapAutomaton.put(e.getDest(), destination);
 			}
 			
-			e.getDest().setSolution(destination.getShortestExample(true));
-			mapAutomaton.put(e.getDest(), destination);
+			
 			global_change = true;
 		} else if (!e.getSource().isConstant() && e.getDest().isConstant()) {
 			unsatStack2.add(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
@@ -1267,15 +1284,26 @@ public class TranslateToAutomata2 {
 			
 			int diffLength = e.getSource().getLength() - e.getDest().getLength();
 			
-			String suffix = source.substring(diffLength);
-			destination = destination.minus(Automaton.makeString(suffix));
-			if (destination.isEmpty()) {
-				debug_unsat_reason = "Not handling of edge endswith, with source constant, lead to empty destination";
-				return false;
+			if (diffLength >= 0) {
+				String suffix = source.substring(diffLength);
+				destination = destination.minus(Automaton.makeString(suffix));
+				if (destination.isEmpty()) {
+					debug_unsat_reason = "Not handling of edge endswith, with source constant, lead to empty destination";
+					return false;
+				}
+				
+				e.getDest().setSolution(destination.getShortestExample(true));
+				mapAutomaton.put(e.getDest(), destination);
+			} else {
+				destination = destination.minus(Automaton.makeString(source));
+				if (destination.isEmpty()) {
+					debug_unsat_reason = "Not handling of edge endswith, with source constant, lead to empty destination";
+					return false;
+				}
+				
+				e.getDest().setSolution(destination.getShortestExample(true));
+				mapAutomaton.put(e.getDest(), destination);
 			}
-			
-			e.getDest().setSolution(destination.getShortestExample(true));
-			mapAutomaton.put(e.getDest(), destination);
 			global_change = true;
 		} else if (!e.getSource().isConstant() && e.getDest().isConstant()) {
 			//println ("!e.getSource().isConstant() && e.getDest().isConstant()");
@@ -1308,6 +1336,7 @@ public class TranslateToAutomata2 {
 	}
 	
 	public static boolean handleEdgeNotContains (Edge e) {
+		//println ("[handleEdgeNotContains] entered");
 		/*if (!e.getSource().getSolution().contains(e.getDest().getSolution())) {
 			return true;
 		}*/
@@ -2287,6 +2316,16 @@ public class TranslateToAutomata2 {
 		String source = concreteMap.get(e.getSource()).get(iteration.get(sourceNum));
 		String dest = concreteMap.get(e.getDest()).get(iteration.get(destNum));
 		
+		if (source == null) {
+			unsatStack2.add(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+			return false;
+		}
+		
+		if (dest == null) {
+			unsatStack2.add(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+			return false;
+		}
+		
 		return !source.equals(dest);
 	}
 	
@@ -2296,6 +2335,16 @@ public class TranslateToAutomata2 {
 		
 		String source = concreteMap.get(e.getSource()).get(iteration.get(sourceNum));
 		String dest = concreteMap.get(e.getDest()).get(iteration.get(destNum));
+	
+		if (source == null) {
+			unsatStack2.add(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+			return false;
+		}
+		
+		if (dest == null) {
+			unsatStack2.add(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+			return false;
+		}
 		
 		return !source.startsWith(dest);
 	}
@@ -2307,15 +2356,36 @@ public class TranslateToAutomata2 {
 		String source = concreteMap.get(e.getSource()).get(iteration.get(sourceNum));
 		String dest = concreteMap.get(e.getDest()).get(iteration.get(destNum));
 		
+		if (source == null) {
+			unsatStack2.add(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+			return false;
+		}
+		
+		if (dest == null) {
+			unsatStack2.add(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+			return false;
+		}
+		
 		return !source.endsWith(dest);
 	}
 	
 	private static boolean handleEdgeNotContains (EdgeNotContains e, List<Integer> iteration, int base) {
+		//println ("[handleEdgeNotContains] entered");
 		int sourceNum = mapVertexInteger.get(e.getSource());
 		int destNum = mapVertexInteger.get(e.getDest());
 		
 		String source = concreteMap.get(e.getSource()).get(iteration.get(sourceNum));
 		String dest = concreteMap.get(e.getDest()).get(iteration.get(destNum));
+		
+		if (source == null) {
+			unsatStack2.add(new LinearIntegerConstraint(e.getSource().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getSource().getLength())));
+			return false;
+		}
+		
+		if (dest == null) {
+			unsatStack2.add(new LinearIntegerConstraint(e.getDest().getSymbolicLength(), Comparator.NE, new IntegerConstant(e.getDest().getLength())));
+			return false;
+		}
 		
 		return !source.contains(dest);
 	}
