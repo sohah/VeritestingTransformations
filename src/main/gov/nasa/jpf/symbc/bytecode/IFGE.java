@@ -50,7 +50,7 @@ public class IFGE extends gov.nasa.jpf.jvm.bytecode.IFGE {
 
 			if (!ti.isFirstStepInsn()) { // first time around
 				cg = new PCChoiceGenerator(2);
-				((PCChoiceGenerator)cg).setOffset(this.insnIndex);
+				((PCChoiceGenerator)cg).setOffset(this.position);
 				ss.setNextChoiceGenerator(cg);
 				return this;
 			} else {  // this is what really returns results

@@ -52,7 +52,7 @@ public class LCMP extends gov.nasa.jpf.jvm.bytecode.LCMP {
 
 		if (!th.isFirstStepInsn()) { // first time around
 			cg = new PCChoiceGenerator(3);
-			((PCChoiceGenerator)cg).setOffset(this.insnIndex);
+			((PCChoiceGenerator)cg).setOffset(this.position);
 			ss.setNextChoiceGenerator(cg);
 			return this;
 		} else { // this is what really returns results

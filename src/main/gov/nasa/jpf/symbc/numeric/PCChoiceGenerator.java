@@ -20,6 +20,7 @@ package gov.nasa.jpf.symbc.numeric;
 
 import gov.nasa.jpf.jvm.IntChoiceGenerator;
 import gov.nasa.jpf.jvm.choice.IntIntervalGenerator;
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 
 
 public class PCChoiceGenerator extends IntIntervalGenerator {
@@ -30,7 +31,7 @@ public class PCChoiceGenerator extends IntIntervalGenerator {
 	int offset; // to be used in the CFG
 	public int getOffset() { return offset;}
 	public void setOffset(int off) {
-		System.out.println("offset "+off);
+		if(SymbolicInstructionFactory.debugMode) System.out.println("offset "+off);
 		offset=off;
 	}
 

@@ -57,7 +57,7 @@ public class IFNE extends gov.nasa.jpf.jvm.bytecode.IFNE {
 					cg = new PCChoiceGenerator(3);
 				else
 					cg = new PCChoiceGenerator(2);
-				((PCChoiceGenerator)cg).setOffset(this.insnIndex);
+				((PCChoiceGenerator)cg).setOffset(this.position);
 				ss.setNextChoiceGenerator(cg);
 				return this;
 			} else {  // this is what really returns results
