@@ -19,6 +19,11 @@
 package gov.nasa.jpf.symbc.bytecode;
 
 import gov.nasa.jpf.JPFException;
+import gov.nasa.jpf.jvm.KernelState;
+import gov.nasa.jpf.jvm.SystemState;
+import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.jvm.bytecode.InstructionVisitor;
 
 
 /**
@@ -27,7 +32,7 @@ import gov.nasa.jpf.JPFException;
  */
 public class TABLESWITCH extends SwitchInstruction implements gov.nasa.jpf.jvm.TableSwitchInstruction{
 
-	  int min, max;
+	int min, max;
 
 	  public TABLESWITCH(int defaultTarget, int min, int max){
 	    super(defaultTarget, (max - min +1));
@@ -45,22 +50,22 @@ public class TABLESWITCH extends SwitchInstruction implements gov.nasa.jpf.jvm.T
 	    }
 	  }
 
-//	  protected Instruction executeConditional (SystemState ss, KernelState ks, ThreadInfo ti){
-//	    int value = ti.pop();
-//	    int i = value-min;
-//	    int pc;
-//
-//	    if (i>=0 && i<targets.length){
-//	      lastIdx = i;
-//	      pc = targets[i];
-//	    } else {
-//	      lastIdx = -1;
-//	      pc = target;
-//	    }
-//
-//	    // <2do> this is BAD - we should compute the target insns just once
-//	    return mi.getInstructionAt(pc);
-//	  }
+	  protected Instruction executeConditional (SystemState ss, KernelState ks, ThreadInfo ti){
+	    int value = ti.pop();
+	    int i = value-min;
+	    int pc;
+
+	    if (i>=0 && i<targets.length){
+	      lastIdx = i;
+	      pc = targets[i];
+	    } else {
+	      lastIdx = -1;
+	      pc = target;
+	    }
+
+	    // <2do> this is BAD - we should compute the target insns just once
+	    return mi.getInstructionAt(pc);
+	  }
 
 
 	  public int getLength() {
@@ -70,5 +75,10 @@ public class TABLESWITCH extends SwitchInstruction implements gov.nasa.jpf.jvm.T
 	  public int getByteCode () {
 	    return 0xAA;
 	  }
+
+	  public void accept(InstructionVisitor insVisitor) {
+		  insVisitor.visit(this);
+	  }
+
 
 }

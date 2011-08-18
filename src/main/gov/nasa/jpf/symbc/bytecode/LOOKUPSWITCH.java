@@ -18,6 +18,8 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
+import gov.nasa.jpf.jvm.bytecode.InstructionVisitor;
+
 
 /**
  * Access jump table by key match and jump
@@ -25,7 +27,7 @@ package gov.nasa.jpf.symbc.bytecode;
  */
 public class LOOKUPSWITCH extends SwitchInstruction implements gov.nasa.jpf.jvm.LookupSwitchInstruction {
 
-	  public LOOKUPSWITCH (int defaultTarget, int numberOfTargets) {
+	public LOOKUPSWITCH (int defaultTarget, int numberOfTargets) {
 	    super(defaultTarget, numberOfTargets);
 	  }
 
@@ -41,6 +43,10 @@ public class LOOKUPSWITCH extends SwitchInstruction implements gov.nasa.jpf.jvm.
 
 	  public int getByteCode () {
 	    return 0xAB;
+	  }
+
+	  public void accept(InstructionVisitor insVisitor) {
+		  insVisitor.visit(this);
 	  }
 
 }

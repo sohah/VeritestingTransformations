@@ -16,9 +16,9 @@ sourcepath=${jpf-symbc}/src/tests
 # in this particular configuration all the input
 # parameters to methods test2 and test are symbolic
 #symbolic.dp=no_solver
-symbolic.dp=coral
+#symbolic.dp=coral
 #symbolic.dp=choco2
-#symbolic.dp=yices
+symbolic.dp=yices
 #symbolic.dp=cvc3
 
 symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test1(sym#sym)

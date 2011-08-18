@@ -43,6 +43,7 @@ public abstract class SwitchInstruction extends gov.nasa.jpf.jvm.bytecode.Switch
 
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+
 		//return super.execute(ss,ks,ti);
 		StackFrame sf = ti.getTopFrame();
 		IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
