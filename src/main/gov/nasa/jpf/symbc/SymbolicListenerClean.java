@@ -321,8 +321,8 @@ public class SymbolicListenerClean extends PropertyListenerAdapter implements Pu
 			while(it.hasNext()){
 				String testCase = methodSummary.getMethodName() + "(";
 				Pair pcPair = (Pair)it.next();
-				String pc = (String)pcPair.a;
-				String errorMessage = (String)pcPair.b;
+				String pc = (String)pcPair._1;
+				String errorMessage = (String)pcPair._2;
 				String symValues = methodSummary.getSymValues();
 				String argValues = methodSummary.getArgValues();
 				String argTypes = methodSummary.getArgTypes();
@@ -395,8 +395,8 @@ public class SymbolicListenerClean extends PropertyListenerAdapter implements Pu
 			while(it.hasNext()){
 				String testCase = "<tr>";
 				Pair pcPair = (Pair)it.next();
-				String pc = (String)pcPair.a;
-				String errorMessage = (String)pcPair.b;
+				String pc = (String)pcPair._1;
+				String errorMessage = (String)pcPair._2;
 				//String symValues = methodSummary.getSymValues();
 				String argValues = methodSummary.getArgValues();
 				String argTypes = methodSummary.getArgTypes();
