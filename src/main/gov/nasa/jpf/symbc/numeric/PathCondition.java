@@ -40,6 +40,13 @@ public class PathCondition {
     // TODO: to review
     public StringPathCondition spc = new StringPathCondition(this);
 
+    
+    //added by guowei
+    public static boolean isReplay = false;
+    public static void setReplay(boolean isReplay){
+		PathCondition.isReplay = isReplay;
+	}
+	
     public PathCondition() {
     	header = null;
     }
@@ -250,7 +257,9 @@ public class PathCondition {
 	}
 
 	public boolean simplify() {
-
+		if(isReplay){
+			return true;
+		}
 
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 		boolean result1;
