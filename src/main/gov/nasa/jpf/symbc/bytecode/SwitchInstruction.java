@@ -59,6 +59,7 @@ public abstract class SwitchInstruction extends gov.nasa.jpf.jvm.bytecode.Switch
 			if (!ti.isFirstStepInsn()) { // first time around
 				cg = new PCChoiceGenerator(matches.length+1);
 				((PCChoiceGenerator)cg).setOffset(this.position);
+				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
 				ss.setNextChoiceGenerator(cg);
 				return this;
 			} else {  // this is what really returns results

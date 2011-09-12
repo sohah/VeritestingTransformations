@@ -47,6 +47,7 @@ public class IF_ICMPLT extends gov.nasa.jpf.jvm.bytecode.IF_ICMPLT{
 			if (!ti.isFirstStepInsn()) { // first time around
 				cg = new PCChoiceGenerator(2);
 				((PCChoiceGenerator)cg).setOffset(this.position);
+				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
 				ss.setNextChoiceGenerator(cg);
 				return this;
 			} else {  // this is what really returns results

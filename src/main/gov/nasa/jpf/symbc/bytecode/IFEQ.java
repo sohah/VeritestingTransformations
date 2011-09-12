@@ -59,6 +59,7 @@ public class IFEQ extends gov.nasa.jpf.jvm.bytecode.IFEQ {
 				else
 					cg = new PCChoiceGenerator(2);
 				((PCChoiceGenerator)cg).setOffset(this.position);
+				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
 				ss.setNextChoiceGenerator(cg);
 				return this;
 			} else {  // this is what really returns results
