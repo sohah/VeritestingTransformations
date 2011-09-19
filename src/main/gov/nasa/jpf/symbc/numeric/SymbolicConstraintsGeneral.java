@@ -78,8 +78,14 @@ public class SymbolicConstraintsGeneral {
 				opRef = ((BinaryLinearIntegerExpression)eRef).op;
 				e_leftRef = ((BinaryLinearIntegerExpression)eRef).left;
 				e_rightRef = ((BinaryLinearIntegerExpression)eRef).right;
-			} else {
-				throw new RuntimeException("## Error: Binary Non Linear Expression " + eRef);
+			} else { // bin non lin expr
+				if(pb instanceof ProblemCoral) {
+					opRef = ((BinaryNonLinearIntegerExpression)eRef).op;
+					e_leftRef = ((BinaryNonLinearIntegerExpression)eRef).left;
+					e_rightRef = ((BinaryNonLinearIntegerExpression)eRef).right;
+				}
+				else
+					throw new RuntimeException("## Error: Binary Non Linear Expression " + eRef);
 			}
 			switch(opRef){
 			case PLUS:
@@ -107,8 +113,12 @@ public class SymbolicConstraintsGeneral {
 					return pb.mult(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
 					return pb.mult(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
-				else
-					throw new RuntimeException("## Error: Binary Non Linear Operation");
+				else {
+					 if(pb instanceof ProblemCoral)
+						return pb.mult(getExpression(e_leftRef),getExpression(e_rightRef));
+					 else
+						throw new RuntimeException("## Error: Binary Non Linear Operation");
+				}
 			case DIV:
 				if (e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
 					throw new RuntimeException("## Error: this is not a symbolic expression"); //
@@ -116,8 +126,12 @@ public class SymbolicConstraintsGeneral {
 					return pb.div(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
 					return pb.div(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
-				else
-				    throw new RuntimeException("## Error: Binary Non Linear Operation");
+				else {
+					if(pb instanceof ProblemCoral)
+						return pb.div(getExpression(e_leftRef),getExpression(e_rightRef));
+					 else
+						throw new RuntimeException("## Error: Binary Non Linear Operation");
+				}
 			case AND:
 				if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
 					throw new RuntimeException("## Error: this is not a symbolic expression"); //
@@ -761,6 +775,113 @@ public class SymbolicConstraintsGeneral {
 		return true;
 	}
 
+	public boolean createDPNonLinearIntegerConstraint(NonLinearIntegerConstraint cRef) {
+
+		Comparator c_compRef = cRef.getComparator();
+
+		IntegerExpression c_leftRef = (IntegerExpression)cRef.getLeft();
+		IntegerExpression c_rightRef = (IntegerExpression)cRef.getRight();
+
+		switch(c_compRef){
+		case EQ:
+			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
+				if (!(((IntegerConstant) c_leftRef).value == ((IntegerConstant) c_rightRef).value))
+					return false;
+				else
+					return true;
+			}
+			else if (c_leftRef instanceof IntegerConstant) {
+				pb.post(pb.eq(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
+			}
+			else if (c_rightRef instanceof IntegerConstant) {
+				pb.post(pb.eq(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
+			}
+			else
+				pb.post(pb.eq(getExpression(c_leftRef),getExpression(c_rightRef)));
+			break;
+		case NE:
+			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
+				if (!(((IntegerConstant) c_leftRef).value != ((IntegerConstant) c_rightRef).value))
+					return false;
+				else
+					return true;
+			}
+			else if (c_leftRef instanceof IntegerConstant) {
+				pb.post(pb.neq(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
+			}
+			else if (c_rightRef instanceof IntegerConstant) {
+				pb.post(pb.neq(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
+			}
+			else
+				pb.post(pb.neq(getExpression(c_leftRef),getExpression(c_rightRef)));
+			break;
+		case LT:
+			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
+				if (!(((IntegerConstant) c_leftRef).value < ((IntegerConstant) c_rightRef).value))
+					return false;
+				else
+					return true;
+			}
+			else if (c_leftRef instanceof IntegerConstant) {
+				pb.post(pb.lt(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
+			}
+			else if (c_rightRef instanceof IntegerConstant) {
+				pb.post(pb.lt(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
+			}
+			else
+				pb.post(pb.lt(getExpression(c_leftRef),getExpression(c_rightRef)));
+			break;
+		case GE:
+			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
+				if (!(((IntegerConstant) c_leftRef).value >= ((IntegerConstant) c_rightRef).value))
+					return false;
+				else
+					return true;
+			}
+			else if (c_leftRef instanceof IntegerConstant) {
+				pb.post(pb.geq(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
+			}
+			else if (c_rightRef instanceof IntegerConstant) {
+				pb.post(pb.geq(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
+			}
+			else
+				pb.post(pb.geq(getExpression(c_leftRef),getExpression(c_rightRef)));
+			break;
+		case LE:
+			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
+				if (!(((IntegerConstant) c_leftRef).value <= ((IntegerConstant) c_rightRef).value))
+					return false;
+				else
+					return true;
+			}
+			else if (c_leftRef instanceof IntegerConstant) {
+				pb.post(pb.leq(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
+			}
+			else if (c_rightRef instanceof IntegerConstant) {
+				pb.post(pb.leq(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
+			}
+			else
+				pb.post(pb.leq(getExpression(c_leftRef),getExpression(c_rightRef)));
+			break;
+		case GT:
+			if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
+				if (!(((IntegerConstant) c_leftRef).value > ((IntegerConstant) c_rightRef).value))
+					return false;
+				else
+					return true;
+			}
+			else if (c_leftRef instanceof IntegerConstant) {
+				pb.post(pb.gt(((IntegerConstant)c_leftRef).value,getExpression(c_rightRef)));
+			}
+			else if (c_rightRef instanceof IntegerConstant) {
+				pb.post(pb.gt(getExpression(c_leftRef),((IntegerConstant)c_rightRef).value));
+			}
+			else
+				pb.post(pb.gt(getExpression(c_leftRef),getExpression(c_rightRef)));
+			break;
+		}
+		return true;
+	}
 	//static Map<String,Boolean> dpMap = new HashMap<String,Boolean>();
 
 	public boolean isSatisfiable(PathCondition pc) {
@@ -835,9 +956,13 @@ public class SymbolicConstraintsGeneral {
 				constraintResult= createDPLinearOrIntegerConstraint((LogicalORLinearIntegerConstraints)cRef);
 
 			}
-			else
-				throw new RuntimeException("## Error: Non Linear Integer Constraint not handled " + cRef);
-
+			else {
+				System.out.println("## Warning: Non Linear Integer Constraint (only coral can handle it)" + cRef);
+				if(pb instanceof ProblemCoral)
+					constraintResult= createDPNonLinearIntegerConstraint((NonLinearIntegerConstraint)cRef);
+				else
+					throw new RuntimeException("## Error: Non Linear Integer Constraint not handled " + cRef);
+			}
 			if(constraintResult == false) return false;
 
 			cRef = cRef.and;
