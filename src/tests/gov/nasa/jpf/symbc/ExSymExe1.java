@@ -14,7 +14,7 @@ public class ExSymExe1 {
    */
   public void test (int x, int z) {
 	  System.out.println("Testing ExSymExe1");
-	  //x = z++ ;
+	  x = z++ ;
 	  if (z > 0)
 		  System.out.println("branch FOO1");
 	  else

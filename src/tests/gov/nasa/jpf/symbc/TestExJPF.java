@@ -50,11 +50,11 @@ public class TestExJPF extends TestSymbolicOutput {
 
     return null;
   }
-  
+
   /**
    * Reverse a mapping. The values become the new keys
    * and the keys become the new values
-   * 
+   *
    * @param <K> Key type
    * @param <V> Value type
    * @param map Original Map
@@ -62,13 +62,13 @@ public class TestExJPF extends TestSymbolicOutput {
    */
   public static<K,V> Map<V,K> flipMap(Map<? extends K,? extends V> map) {
     Map<V,K> retmap = new TreeMap<V, K>();
-    
+
     for(K key : map.keySet())
       retmap.put(map.get(key), key);
-      
+
     return retmap;
   }
-  
+
   public String[] JPFArgs(Class<?> c) {
     LinkedList<String> args = new LinkedList<String>();
     args.addAll(config);
@@ -146,7 +146,7 @@ public class TestExJPF extends TestSymbolicOutput {
     correct2.append("branch FOO1\n");
     correct2.append("branch BOO1\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExe3\n");
     correct4.append("branch FOO2\n");
@@ -158,7 +158,7 @@ public class TestExJPF extends TestSymbolicOutput {
 
   @Test
   public void TestExSymExe13() {
- 
+
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe13.class)).values();
     StringBuffer correct2 = new StringBuffer();
@@ -166,7 +166,7 @@ public class TestExJPF extends TestSymbolicOutput {
     correct2.append("branch FOO1\n");
     correct2.append("branch BOO2\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("Testing ExSymExe13\n");
     correct3.append("branch FOO2\n");
@@ -180,11 +180,11 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExeLongBytecodes2() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExeLongBytecodes2.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("Testing ExSymExeLongBytecodes2\n");
     correct.append("branch diff <= c\n");
-    
+
     assertEquals(outputs.size(), 9);
   }
 
@@ -203,7 +203,7 @@ public class TestExJPF extends TestSymbolicOutput {
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO2\n");
     assertTrue(outputs.contains(correct3.toString()));
- 
+
     assertEquals(outputs.size(), 2);
   }
 
@@ -211,7 +211,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExeLNEG() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExeLNEG.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("Testing LNEG\nbranch -x > 0\n");
     assertTrue(outputs.contains(correct.toString()));
@@ -242,13 +242,13 @@ public class TestExJPF extends TestSymbolicOutput {
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO2\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExe26\n");
     correct4.append("branch FOO2\n");
     correct4.append("branch BOO1\n");
     assertTrue(outputs.contains(correct4.toString()));
-    
+
     assertEquals(outputs.size(), 4);
   }
 
@@ -261,13 +261,13 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExe9() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe9.class)).values();
-    
+
     StringBuffer correct2 = new StringBuffer();
     correct2.append("Testing ExSymExe9\n");
     correct2.append("branch FOO1\n");
     correct2.append("branch BOO2\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExe9\n");
     correct4.append("branch FOO2\n");
@@ -281,19 +281,19 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExe12() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe12.class)).values();
-    
+
     StringBuffer correct2 = new StringBuffer();
     correct2.append("Testing ExSymExe12\n");
     correct2.append("branch FOO1\n");
     correct2.append("branch BOO2\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("Testing ExSymExe12\n");
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO1\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExe12\n");
     correct4.append("branch FOO2\n");
@@ -307,13 +307,13 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExe2() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe2.class)).values();
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("Testing ExSymExe2\n");
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO2\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExe2\n");
     correct4.append("branch FOO1\n");
@@ -328,19 +328,19 @@ public class TestExJPF extends TestSymbolicOutput {
 	  noPropertyViolation(JPFArgs(gov.nasa.jpf.symbc.ExSymExe17.class));
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe17.class)).values();
-    
+
     StringBuffer correct2 = new StringBuffer();
     correct2.append("Testing ExSymExe17\n");
     correct2.append("branch FOO1\n");
     correct2.append("branch BOO1\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("Testing ExSymExe17\n");
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO1\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     assertEquals(outputs.size(), 2);
   }
 
@@ -353,7 +353,7 @@ public class TestExJPF extends TestSymbolicOutput {
     correct2.append("branch FOO1\n");
     correct2.append("branch BOO2\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("Testing ExSymExe11\n");
     correct3.append("branch FOO2\n");
@@ -377,7 +377,7 @@ public class TestExJPF extends TestSymbolicOutput {
     correct2.append("branch FOO1\n");
     correct2.append("branch BOO1\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("Testing ExSymExe7\n");
     correct3.append("branch FOO2\n");
@@ -391,7 +391,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExeFNEG() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExeFNEG.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("Testing FNEG\nbranch -x > 0\n");
     assertTrue(outputs.contains(correct.toString()));
@@ -405,7 +405,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExeI2F() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExeI2F.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("x >0\n");
     assertTrue(outputs.contains(correct.toString()));
@@ -419,7 +419,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExe10() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe10.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("Testing ExSymExe10\n");
     correct.append("branch FOO1\n");
@@ -437,13 +437,13 @@ public class TestExJPF extends TestSymbolicOutput {
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO2\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExe10\n");
     correct4.append("branch FOO2\n");
     correct4.append("branch BOO1\n");
     assertTrue(outputs.contains(correct4.toString()));
-    
+
     assertEquals(outputs.size(), 4);
   }
 
@@ -451,7 +451,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExe15() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe15.class)).values();
-    
+
 
     StringBuffer correct2 = new StringBuffer();
     correct2.append("Testing ExSymExe15\n");
@@ -464,7 +464,7 @@ public class TestExJPF extends TestSymbolicOutput {
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO2\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     assertEquals(outputs.size(), 2);
   }
 
@@ -476,29 +476,29 @@ public class TestExJPF extends TestSymbolicOutput {
     StringBuffer correct = new StringBuffer();
     correct.append("branch Foo0\n");
     correct.append("default2\n");
-    
+
     assertTrue(outputs.contains(correct.toString()));
-    
+
     StringBuffer correct2 = new StringBuffer();
     correct2.append("branch Foo1\n");
     correct2.append("default2\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("default1\n");
     correct3.append("branch Foo2\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("default1\n");
     correct4.append("branch Foo3000\n");
     assertTrue(outputs.contains(correct4.toString()));
-    
+
     StringBuffer correct5 = new StringBuffer();
     correct5.append("default1\n");
     correct5.append("default2\n");
     assertTrue(outputs.contains(correct5.toString()));
-    
+
     assertEquals(outputs.size(), 5);
   }
 
@@ -517,7 +517,7 @@ public class TestExJPF extends TestSymbolicOutput {
     correct2.append("branch FOO2\n");
     correct2.append("branch BOO2\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     assertEquals(outputs.size(), 2);
   }
 
@@ -525,7 +525,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExeTestAssignments() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExeTestAssignments.class)).values();
-    
+
     assertTrue(outputs.contains("branch BOO1\n"));
     assertEquals(outputs.size(), 1);
   }
@@ -534,7 +534,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExeF2L() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExeF2L.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("x >0\n");
     assertTrue(outputs.contains(correct.toString()));
@@ -566,13 +566,13 @@ public class TestExJPF extends TestSymbolicOutput {
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO2\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExe25\n");
     correct4.append("branch FOO2\n");
     correct4.append("branch BOO1\n");
     assertTrue(outputs.contains(correct4.toString()));
-    
+
     assertEquals(outputs.size(), 4);
   }
 
@@ -603,13 +603,13 @@ public class TestExJPF extends TestSymbolicOutput {
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO2\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExe19\n");
     correct4.append("branch FOO2\n");
     correct4.append("branch BOO1\n");
     assertTrue(outputs.contains(correct4.toString()));
-    
+
     assertEquals(outputs.size(), 4);
   }
 
@@ -617,7 +617,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExe20() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe20.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("Testing ExSymExe20\n");
     correct.append("branch FOO1\n");
@@ -629,13 +629,13 @@ public class TestExJPF extends TestSymbolicOutput {
     correct2.append("branch FOO2\n");
     correct2.append("branch BOO1\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("Testing ExSymExe20\n");
     correct3.append("branch FOO1\n");
     correct3.append("branch BOO1\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     assertEquals(outputs.size(), 3);
   }
 
@@ -643,7 +643,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExe28() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe28.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("Testing ExSymExe28\n");
     correct.append("branch FOO1\n");
@@ -655,13 +655,13 @@ public class TestExJPF extends TestSymbolicOutput {
     correct2.append("branch FOO2\n");
     correct2.append("branch BOO1\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("Testing ExSymExe28\n");
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO2\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExe28\n");
     correct4.append("branch FOO1\n");
@@ -675,7 +675,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExeF2I() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExeF2I.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("x >0\n");
     assertTrue(outputs.contains(correct.toString()));
@@ -689,7 +689,7 @@ public class TestExJPF extends TestSymbolicOutput {
   public void TestExSymExeD2L() {
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExeD2L.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("x >0\n");
     assertTrue(outputs.contains(correct.toString()));
@@ -701,10 +701,10 @@ public class TestExJPF extends TestSymbolicOutput {
 
   @Test
   public void TestExSymExe29() {
-    
+
     Collection<String> outputs = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe29.class)).values();
-    
+
     StringBuffer correct = new StringBuffer();
     correct.append("Testing ExSymExe29\n");
     correct.append("branch FOO1\n");
@@ -716,13 +716,13 @@ public class TestExJPF extends TestSymbolicOutput {
     correct2.append("branch FOO2\n");
     correct2.append("branch BOO1\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("Testing ExSymExe29\n");
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO2\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExe29\n");
     correct4.append("branch FOO1\n");
@@ -748,7 +748,7 @@ public class TestExJPF extends TestSymbolicOutput {
     correct2.append("branch FOO2\n");
     correct2.append("branch BOO1\n");
     assertTrue(outputs.contains(correct2.toString()));
-    
+
     StringBuffer correct3 = new StringBuffer();
     correct3.append("Testing ExSymExe16\n");
     correct3.append("branch FOO2\n");
@@ -756,7 +756,7 @@ public class TestExJPF extends TestSymbolicOutput {
     assertTrue(outputs.contains(correct3.toString()));
 
     assertEquals(outputs.size(), 3);
-    
+
   }
 
   /*
@@ -793,7 +793,7 @@ public class TestExJPF extends TestSymbolicOutput {
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe32.class)).values();
 
     StringBuffer correct = new StringBuffer();
-    
+
     correct.append("branch FOO1\n");
     correct.append("branch BOO1\n");
     assertTrue(outputs.contains(correct.toString()));
@@ -807,12 +807,12 @@ public class TestExJPF extends TestSymbolicOutput {
     correct3.append("branch FOO2\n");
     correct3.append("branch BOO2\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("branch FOO2\n");
     correct4.append("branch BOO1\n");
     assertTrue(outputs.contains(correct4.toString()));
-    
+
     assertEquals(outputs.size(), 4);
   }
 
@@ -880,19 +880,19 @@ public class TestExJPF extends TestSymbolicOutput {
     correct3.append("branch diff > c\n");
     correct3.append("branch sum >= z\n");
     assertTrue(outputs.contains(correct3.toString()));
-    
+
     StringBuffer correct4 = new StringBuffer();
     correct4.append("Testing ExSymExeLongBytecodes\n");
     correct4.append("branch diff <= c\n");
     correct4.append("branch sum < z\n");
     assertTrue(outputs.contains(correct4.toString()));
-    
+
     StringBuffer correct5 = new StringBuffer();
     correct5.append("Testing ExSymExeLongBytecodes\n");
     correct5.append("branch diff <= c\n");
     correct5.append("branch sum >= z\n");
     assertTrue(outputs.contains(correct5.toString()));
-    
+
     StringBuffer correct6 = new StringBuffer();
     correct6.append("Testing ExSymExeLongBytecodes\n");
     correct6.append("branch diff <= c\n");
@@ -916,7 +916,7 @@ public class TestExJPF extends TestSymbolicOutput {
     correct9.append("branch diff <= c\n");
     correct9.append("branch sum >= z\n");
     assertTrue(outputs.contains(correct9.toString()));
-    
+
     assertEquals(outputs.size(), 9);
   }
 
@@ -951,7 +951,7 @@ public class TestExJPF extends TestSymbolicOutput {
 
     Map<PathCondition, String> results = runSymbolicJPF(
         JPFArgs(gov.nasa.jpf.symbc.ExSymExe1.class));
-    
+
     Collection<String> outputs = results.values();
     Map<String, PathCondition>reverseResults = flipMap(results);
 
@@ -961,10 +961,10 @@ public class TestExJPF extends TestSymbolicOutput {
     correct.append("branch BOO2\n");
     assertTrue(outputs.contains(correct.toString()));
     PathCondition condition = reverseResults.get(correct.toString()).make_copy();
-    Constraint constraint = new LinearIntegerConstraint(new SymbolicInteger("z_2_SYMINT"), 
+    Constraint constraint = new LinearIntegerConstraint(new SymbolicInteger("z_2_SYMINT"),
         Comparator.LE, new IntegerConstant(0));
     //assertTrue(condition.hasConstraint(constraint));
-    
+
     condition._addDet(Comparator.EQ, new SymbolicInteger("z_2_SYMINT"), new IntegerConstant(40));
     assertTrue(new SymbolicConstraintsGeneral().isSatisfiable(condition));
     assertTrue(condition.simplify());

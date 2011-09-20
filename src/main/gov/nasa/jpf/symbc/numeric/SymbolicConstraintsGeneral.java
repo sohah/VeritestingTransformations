@@ -334,14 +334,20 @@ public class SymbolicConstraintsGeneral {
 		}
 		else if (c_leftRef instanceof SymbolicReal) { // c_rightRef is an IntegerExpression
 			Object tmpi = pb.makeIntVar(c_rightRef + "_" + c_rightRef.hashCode(),(int)(((SymbolicReal)c_leftRef)._min), (int)(((SymbolicReal)c_leftRef)._max));
-			pb.post(pb.eq(getExpression(c_rightRef),tmpi));
+			if (c_rightRef instanceof IntegerConstant)
+				pb.post(pb.eq(((IntegerConstant)c_rightRef).value,tmpi));
+			else
+				pb.post(pb.eq(getExpression(c_rightRef),tmpi));
 		    //pb.post(new MixedEqXY((RealVar)(getExpression(c_leftRef)),tmpi));
 			pb.post(pb.mixed(getExpression(c_leftRef),tmpi));
 
 		}
 		else if (c_rightRef instanceof SymbolicInteger) { // c_leftRef is a RealExpression
 			Object tmpr = pb.makeRealVar(c_leftRef + "_" + c_leftRef.hashCode(), ((SymbolicInteger)c_rightRef)._min, ((SymbolicInteger)c_rightRef)._max);
-			pb.post(pb.eq(tmpr, getExpression(c_leftRef)));
+			if(c_leftRef instanceof RealConstant)
+				pb.post(pb.eq(tmpr, ((RealConstant)c_leftRef).value));
+			else
+				pb.post(pb.eq(tmpr, getExpression(c_leftRef)));
 		    //pb.post(new MixedEqXY(tmpr,(IntDomainVar)(getExpression(c_rightRef))));
 			pb.post(pb.mixed(tmpr,getExpression(c_rightRef)));
 		}

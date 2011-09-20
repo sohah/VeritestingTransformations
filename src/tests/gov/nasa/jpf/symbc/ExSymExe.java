@@ -6,7 +6,7 @@ public class ExSymExe {
 
   public static void main (String[] args) {
 	  int x = 3; /* we want to specify in an annotation that this param should be symbolic */
-
+assert false;
 	  ExSymExe inst = new ExSymExe();
 	  field = 9;
 	  //inst.test(0, 1);
@@ -56,7 +56,7 @@ public class ExSymExe {
 	  if (z <= 1200) {
 		  System.out.println("le 1200");
 		  }
-	  Debug.printPC("my msg");
+	 // Debug.printPC("my msg");
 	  if(z >= 1200)
 		  System.out.println("ge 1200");
 	  if(b)
