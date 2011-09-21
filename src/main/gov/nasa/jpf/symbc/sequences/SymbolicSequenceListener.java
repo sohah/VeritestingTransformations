@@ -186,8 +186,18 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				InvokeInstruction md = (InvokeInstruction) insn;
 				String methodName = md.getInvokedMethodName();
 				int numberOfArgs = md.getArgumentValues(ti).length;
-
 				MethodInfo mi = md.getInvokedMethod();
+
+				StackFrame sf = ti.getTopFrame();
+				String shortName = methodName;
+				String longName = mi.getLongName();
+				if (methodName.contains("("))
+					shortName = methodName.substring(0,methodName.indexOf("("));
+				// TODO: does not work for recursive invocations of sym methods; should compare MethodInfo instead
+				if(!shortName.equals(sf.getMethodName()))
+					return;
+
+
 				if ((BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 
 					// FIXME: get the object name?
@@ -197,11 +207,6 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 					// right now I am just getting the class name
 					className = mi.getClassName();
 
-					// get method name
-					String shortName = methodName;
-					String longName = mi.getLongName();
-					if (methodName.contains("("))
-						shortName = methodName.substring(0,methodName.indexOf("("));
 
 					// get arg values
 					Object [] argValues = md.getArgumentValues(ti);
@@ -212,7 +217,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 
 					byte[] argTypes = mi.getArgumentTypes();
 					Object[] attributes = new Object[numberOfArgs];
-					StackFrame sf = ti.getTopFrame();
+
 					int count = 1 ; // we do not care about this
 					if (md instanceof INVOKESTATIC)
 						count = 0;  //no "this" reference

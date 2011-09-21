@@ -197,8 +197,18 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				ClassInfo ci = mi.getClassInfo();
 				String className = ci.getName();
 
+				StackFrame sf = ti.getTopFrame();
+				String shortName = methodName;
+				String longName = mi.getLongName();
+				if (methodName.contains("("))
+					shortName = methodName.substring(0,methodName.indexOf("("));
+				//System.out.println("method name "+methodName + " "+sf.getMethodName()+ " "+shortName+" "+longName);
+				// TODO: does not work for recursive invocations of sym methods; should compare MethodInfo instead
+				if(!shortName.equals(sf.getMethodName()))
+					return;
 				if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 						|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null)){
+
 					//get the original values and save them for restoration after
 					//we are done with symbolic execution
 					retainVal = ss.getRetainAttributes();
@@ -218,10 +228,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 //					}
 
 					MethodSummary methodSummary = new MethodSummary();
-					String shortName = methodName;
-					String longName = mi.getLongName();
-					if (methodName.contains("("))
-						shortName = methodName.substring(0,methodName.indexOf("("));
+
 					methodSummary.setMethodName(shortName);
 					Object [] argValues = md.getArgumentValues(ti);
 					String argValuesStr = "";
@@ -255,7 +262,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							sfIndex=0; // no "this" for static
 							namesIndex =0;
 					}
-					StackFrame sf = ti.getTopFrame();
+					//StackFrame sf = ti.getTopFrame();
+
 
 					for(int i=0; i < numberOfArgs; i++){
 						Expression expLocal = (Expression)sf.getLocalAttr(sfIndex);
