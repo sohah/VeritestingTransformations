@@ -202,10 +202,14 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				String longName = mi.getLongName();
 				if (methodName.contains("("))
 					shortName = methodName.substring(0,methodName.indexOf("("));
+
 				//System.out.println("method name "+methodName + " "+sf.getMethodName()+ " "+shortName+" "+longName);
-				// TODO: does not work for recursive invocations of sym methods; should compare MethodInfo instead
-				if(!shortName.equals(sf.getMethodName()))
+				// does not work for recursive invocations of sym methods; should compare MethodInfo instead
+				//if(!shortName.equals(sf.getMethodName()))
+					//return;
+				if(!mi.equals(sf.getMethodInfo()))
 					return;
+
 				if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 						|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null)){
 

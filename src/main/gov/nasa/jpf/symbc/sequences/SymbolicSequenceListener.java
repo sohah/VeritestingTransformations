@@ -23,9 +23,7 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.Property;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.DynamicArea;
-import gov.nasa.jpf.jvm.DynamicElementInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
+
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.NoUncaughtExceptionsProperty;
@@ -33,11 +31,10 @@ import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.Types;
-import gov.nasa.jpf.jvm.bytecode.IRETURN;
+
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
-import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
-import gov.nasa.jpf.jvm.bytecode.VirtualInvocation;
+
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
@@ -46,27 +43,17 @@ import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.symbc.bytecode.INVOKESTATIC;
 import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
-import gov.nasa.jpf.symbc.numeric.Expression;
+
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 import gov.nasa.jpf.symbc.string.StringSymbolic;
-import gov.nasa.jpf.util.Pair;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**
@@ -190,13 +177,14 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 
 				StackFrame sf = ti.getTopFrame();
 				String shortName = methodName;
-				String longName = mi.getLongName();
+				//String longName = mi.getLongName();
 				if (methodName.contains("("))
 					shortName = methodName.substring(0,methodName.indexOf("("));
-				// TODO: does not work for recursive invocations of sym methods; should compare MethodInfo instead
-				if(!shortName.equals(sf.getMethodName()))
+				// does not work for recursive invocations of sym methods; should compare MethodInfo instead
+				//if(!shortName.equals(sf.getMethodName()))
+					//return;
+				if(!mi.equals(sf.getMethodInfo()))
 					return;
-
 
 				if ((BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 
@@ -254,7 +242,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 
 		Instruction insn = vm.getChoiceGenerator().getInsn();
 		SystemState ss = vm.getSystemState();
-		ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
+		//ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
 		MethodInfo mi = insn.getMethodInfo();
 		String methodName = mi.getFullName();
 
