@@ -34,6 +34,7 @@ import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.heap.Helper;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
@@ -219,7 +220,8 @@ public class BytecodeUtils {
 		boolean found = (BytecodeUtils.isMethodSymbolic(conf, longName, argSize, args)
 				|| BytecodeUtils.isClassSymbolic(conf, cname, mi, mname));
 		if (found) {
-			//System.out.println("method is symbolic "+mname +" "+found + " long name " +longName);
+			if (SymbolicInstructionFactory.debugMode)
+				System.out.println("**** symbolic method "+mname +" long name " +longName);
 			// method is symbolic
 			// create a choice generator to associate the precondition with it
 			ChoiceGenerator<?> cg = null;
