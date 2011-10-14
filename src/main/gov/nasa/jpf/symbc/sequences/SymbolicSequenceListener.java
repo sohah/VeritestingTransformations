@@ -248,7 +248,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 
 		int numberOfArgs = mi.getNumberOfArguments();//mi.getArgumentsSize()- 1;// corina: problem here? - 1;
 
-		if (BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
+	//	if (BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
 
 			ChoiceGenerator<?> cg = vm.getChoiceGenerator();
 
@@ -276,7 +276,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				ChoiceGenerator<?> [] cgs = ss.getChoiceGenerators();
 				methodSequences.add(getMethodSequence(cgs));
 			}
-		}
+	//	}
 	}
 
 
