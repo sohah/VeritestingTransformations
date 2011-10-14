@@ -7,7 +7,7 @@ public class ExSymExePrecondAndMath {
 	  (new ExSymExePrecondAndMath()).test(0,x);
   }
 
-  //@Preconditions("y>5")
+  @Preconditions("y>5")
   public  int test (int y, double x) {
 
 	 if (x+y > 0) {

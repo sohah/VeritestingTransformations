@@ -223,16 +223,19 @@ public class BytecodeUtils {
 			if (SymbolicInstructionFactory.debugMode)
 				System.out.println("**** symbolic method "+mname +" long name " +longName);
 			// method is symbolic
+
 			// create a choice generator to associate the precondition with it
 			ChoiceGenerator<?> cg = null;
-			if (!th.isFirstStepInsn()) { // first time around
-				cg = new PCChoiceGenerator(1);
-				ss.setNextChoiceGenerator(cg);
-				return new InstructionOrSuper(false, invInst);
-			} else { // this is what really returns results
-				cg = ss.getChoiceGenerator();
-				if (!(cg instanceof PCChoiceGenerator)) // the choice comes from super
-					return new InstructionOrSuper(true, null);
+			if (invInst.getInvokedMethod().getAnnotation("gov.nasa.jpf.symbc.Preconditions") != null) {
+				if (!th.isFirstStepInsn()) { // first time around
+					cg = new PCChoiceGenerator(1);
+					ss.setNextChoiceGenerator(cg);
+					return new InstructionOrSuper(false, invInst);
+				} else { // this is what really returns results
+					cg = ss.getChoiceGenerator();
+					if (!(cg instanceof PCChoiceGenerator)) // the choice comes from super
+						return new InstructionOrSuper(true, null);
+				}
 			}
 
 			String outputString = "\n***Execute symbolic " + bytecodeName + ": " + mname + "  (";
@@ -404,45 +407,50 @@ public class BytecodeUtils {
 			}
 			//System.out.println(outputString);
 
+
 			//Now, set up the initial path condition for this method if the
 			//Annotation contains one
 			//we'll create a choice generator for this
 
-			AnnotationInfo ai;
-			PathCondition pc = null;
-			// TODO: should still look at prev pc if we want to generate test sequences
-			// here we should get the prev pc
-			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
-			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
-			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-				prev_cg = prev_cg.getPreviousChoiceGenerator();
-			}
-
-			if (prev_cg == null)
-				pc = new PathCondition();
-			else
-				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
-
-			assert pc != null;
-
+			// this is pretty inefficient especially when preconditions are not used -- fixed somehow -- TODO: testing
 
 			if (invInst.getInvokedMethod().getAnnotation("gov.nasa.jpf.symbc.Preconditions") != null) {
+				AnnotationInfo ai;
+				PathCondition pc = null;
+				// TODO: should still look at prev pc if we want to generate test sequences
+				// here we should get the prev pc
+				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
+				ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
+				while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
+					prev_cg = prev_cg.getPreviousChoiceGenerator();
+				}
+
+				if (prev_cg == null)
+					pc = new PathCondition();
+				else
+					pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
+
+				assert pc != null;
+
+
+
 				ai = invInst.getInvokedMethod().getAnnotation("gov.nasa.jpf.symbc.Preconditions");
 				String assumeString = (String) ai.getValue("value");
 
 				pc = (new PreCondition()).addConstraints(pc,assumeString, expressionMap);
-			}
 
 
 
-			//	should check PC for satisfiability
-			if (!pc.simplify()) {// not satisfiable
-				//System.out.println("Precondition not satisfiable");
-				ss.setIgnored(true);
-			} else {
-				//pc.solve();
-				((PCChoiceGenerator) cg).setCurrentPC(pc);
-				//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
+
+				//	should check PC for satisfiability
+				if (!pc.simplify()) {// not satisfiable
+					//System.out.println("Precondition not satisfiable");
+					ss.setIgnored(true);
+				} else {
+					//pc.solve();
+					((PCChoiceGenerator) cg).setCurrentPC(pc);
+					//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
+				}
 			}
 		}
 		return new InstructionOrSuper(true, null);
