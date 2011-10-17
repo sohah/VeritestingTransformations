@@ -92,6 +92,9 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	    }
 	 //end GETFIELD code from super
 
+	if(ei==null)
+		return super.execute(ss,ks,ti);
+
 	 Object attr = ei.getFieldAttr(fi);
 	  // check if the field is of ref type & it is symbolic (i.e. it has an attribute)
 	  // if it is we need to do lazy initialization

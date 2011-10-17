@@ -6,7 +6,6 @@ public class ExSymExe {
 
   public static void main (String[] args) {
 	  int x = 3; /* we want to specify in an annotation that this param should be symbolic */
-assert false;
 	  ExSymExe inst = new ExSymExe();
 	  field = 9;
 	  //inst.test(0, 1);

@@ -89,6 +89,9 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 		//end GETSTATIC code from super
 
+
+		if(ei==null)
+			return super.execute(ss,ks,ti);
 		Object attr = ei.getFieldAttr(fi);
 
 
