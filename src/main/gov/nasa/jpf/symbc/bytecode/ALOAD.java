@@ -11,6 +11,7 @@ import gov.nasa.jpf.jvm.KernelState;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 import gov.nasa.jpf.symbc.heap.HeapNode;
 import gov.nasa.jpf.symbc.heap.Helper;
@@ -55,13 +56,15 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 
 	//	StackFrame sf = th.getTopFrame();
 		Object attr = th.getLocalAttr(index);
-		if(attr == null) {
+		String typeOfLocalVar = super.getLocalVariableType();
+
+		if(attr == null || typeOfLocalVar.equals("?")) {
 			th.pushLocal(index);
 			return getNext(th);
 		}
-		//System.out.println("lazy initialization");
+		if(SymbolicInstructionFactory.debugMode) System.out.println("lazy initialization");
 		//int localVar = th.getLocalVariable(index);
-		String typeOfLocalVar = super.getLocalVariableType();
+		//System.out.println("typeOfLocalVar "+typeOfLocalVar);
 		ClassInfo typeClassInfo = ClassInfo.getResolvedClassInfo(typeOfLocalVar);
 
 		//System.out.println(typeClassInfo.getName() + " name of the class");
