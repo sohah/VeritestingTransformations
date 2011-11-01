@@ -31,16 +31,16 @@ public class PCChoiceGenerator extends IntIntervalGenerator {
 	int offset; // to be used in the CFG
 	public int getOffset() { return offset;}
 	public void setOffset(int off) {
-		if(SymbolicInstructionFactory.debugMode) System.out.println("offset "+off);
+		//if(SymbolicInstructionFactory.debugMode) System.out.println("offset "+off);
 		offset=off;
 	}
 	String methodName; // to be used in the CFG
 	public String getMethodName() { return methodName;}
 	public void setMethodName(String name) {
-		if(SymbolicInstructionFactory.debugMode) System.out.println("methodName "+ name);
+		//if(SymbolicInstructionFactory.debugMode) System.out.println("methodName "+ name);
 		methodName = name;
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	public PCChoiceGenerator(int size) {
 		super(0, size - 1);
