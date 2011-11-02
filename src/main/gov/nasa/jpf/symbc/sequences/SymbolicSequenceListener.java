@@ -334,8 +334,19 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				//IntegerExpression e = (IntegerExpression)attributes[i];
 				Object e = attributes[i];
 				String solution = "";
-				if(e instanceof IntegerExpression)
-					solution = solution+ ((IntegerExpression) e).solution();
+
+
+				if(e instanceof IntegerExpression) {
+					// trick to print bools correctly
+					if(argValues[i].toString()=="true" || argValues[i].toString()=="false") {
+						if(((IntegerExpression) e).solution() == 0)
+							solution = solution+ "false";
+						else
+							solution = solution+ "true";
+					}
+					else
+						solution = solution+ ((IntegerExpression) e).solution();
+				}
 				else if (e instanceof RealExpression)
 					solution = solution+ ((RealExpression) e).solution();
 				else
@@ -343,7 +354,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				invokedMethod += solution + ",";
 			}
 			else { // parameter concrete - for a concrete parameter, the symbolic attribute is null
-				invokedMethod += argValues[i];
+				invokedMethod += argValues[i] + ",";
 			}
 		}
 
