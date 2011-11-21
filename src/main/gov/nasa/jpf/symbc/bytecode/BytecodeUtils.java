@@ -284,8 +284,11 @@ public class BytecodeUtils {
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
-					} else {
+					} else if(argTypes[j].equalsIgnoreCase("int[]")){
 
+					}
+					else {
+						System.out.println("!!!! "+argTypes[j]);
                         // the argument is of reference type and it is symbolic
 						// it includes "this"
 						// these attributes are currently ignored in the bytecodes
