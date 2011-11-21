@@ -21,39 +21,13 @@ package gov.nasa.jpf.symbc.probsym;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.ListenerAdapter;
-import gov.nasa.jpf.search.*;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.MJIEnv;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.VMState;
-import gov.nasa.jpf.jvm.bytecode.GOTO;
-import gov.nasa.jpf.jvm.bytecode.IfInstruction;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
-import gov.nasa.jpf.jvm.bytecode.LocalVariableInstruction;
-import gov.nasa.jpf.jvm.bytecode.StoreInstruction;
-import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
-import gov.nasa.jpf.symbc.numeric.BinaryLinearIntegerExpression;
-import gov.nasa.jpf.symbc.numeric.Comparator;
-import gov.nasa.jpf.symbc.numeric.Constraint;
-import gov.nasa.jpf.symbc.numeric.Expression;
-import gov.nasa.jpf.symbc.numeric.IntegerConstant;
-import gov.nasa.jpf.symbc.numeric.IntegerExpression;
-import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
+import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
-import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
-import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
 
 public class ProbSymListener extends ListenerAdapter {
   

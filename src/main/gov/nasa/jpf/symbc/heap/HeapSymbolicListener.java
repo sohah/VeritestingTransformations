@@ -635,7 +635,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 									result._addDet(Comparator.EQ, sym_result, returnAttr);
 								}else{ // concrete
 									DynamicElementInfo val = (DynamicElementInfo)areturn.getReturnValue(ti);
-									Integer objRef = val.getIndex();
+									Integer objRef = val.getObjectRef();
 									if (nameMap.containsKey(objRef)){
 										SymbolicInteger name = nameMap.get(objRef);
 										assert(name != null);
