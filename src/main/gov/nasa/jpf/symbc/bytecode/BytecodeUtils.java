@@ -285,10 +285,9 @@ public class BytecodeUtils {
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if(argTypes[j].equalsIgnoreCase("int[]")){
-
+						throw new RuntimeException("## Error: parameter type not yet handled: " + argTypes[j]);
 					}
 					else {
-						System.out.println("!!!! "+argTypes[j]);
                         // the argument is of reference type and it is symbolic
 						// it includes "this"
 						// these attributes are currently ignored in the bytecodes

@@ -40,13 +40,13 @@ public class PathCondition {
     // TODO: to review
     public StringPathCondition spc = new StringPathCondition(this);
 
-    
+
     //added by guowei
     public static boolean isReplay = false;
     public static void setReplay(boolean isReplay){
 		PathCondition.isReplay = isReplay;
 	}
-	
+
     public PathCondition() {
     	header = null;
     }
@@ -272,14 +272,14 @@ public class PathCondition {
 			result1 = solver.isSatisfiable(this);
 		solverCalls++;
 		solver.cleanup();
-		
+
 		if (SymbolicInstructionFactory.debugMode) {
 			MinMax.Debug_no_path_constraints ++;
 			if (result1)
 				MinMax.Debug_no_path_constraints_sat ++;
 			else
 				MinMax.Debug_no_path_constraints_unsat ++;
-			System.out.println("### PCs: " + MinMax.Debug_no_path_constraints + " " +MinMax.Debug_no_path_constraints_sat + " " + MinMax.Debug_no_path_constraints_unsat);
+			System.out.println("### PCs: total:" + MinMax.Debug_no_path_constraints + " sat:" +MinMax.Debug_no_path_constraints_sat + " unsat:" + MinMax.Debug_no_path_constraints_unsat);
 		}
 
 		if (! result1) return false;
@@ -288,12 +288,12 @@ public class PathCondition {
 	}
 
 	public String stringPC() {
-		return "# = " + count + ((header == null) ? "" : "\n" + header.stringPC());
+		return "constraint # = " + count + ((header == null) ? "" : "\n" + header.stringPC());
 	}
 
 	public String toString() {
-		return "# = " + count + ((header == null) ? "" : "\n" + header.toString())
-					+ "\n" + spc.toString(); // TODO: to review
+		return "constraint # = " + count + ((header == null) ? "" : "\n" + header.toString());
+					//+ "\n" + spc.toString(); // TODO: to review
 	}
 
 	public static PathCondition getPC(MJIEnv env) {

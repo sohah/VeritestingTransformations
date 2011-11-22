@@ -62,7 +62,7 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 			th.pushLocal(index);
 			return getNext(th);
 		}
-		if(SymbolicInstructionFactory.debugMode) System.out.println("lazy initialization");
+		//if(SymbolicInstructionFactory.debugMode) System.out.println("lazy initialization");
 		//int localVar = th.getLocalVariable(index);
 		//System.out.println("typeOfLocalVar "+typeOfLocalVar);
 		ClassInfo typeClassInfo = ClassInfo.getResolvedClassInfo(typeOfLocalVar);
@@ -179,6 +179,8 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 
 		((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 		((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
+		if (SymbolicInstructionFactory.debugMode)
+			System.out.println("ALOAD pcHeap: " + pcHeap);
 		return getNext(th);
 	}
 

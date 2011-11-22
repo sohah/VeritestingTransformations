@@ -39,6 +39,7 @@ import gov.nasa.jpf.jvm.ReferenceFieldInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jvm.Types;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
 import gov.nasa.jpf.jvm.bytecode.IRETURN;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -50,7 +51,6 @@ import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.symbc.bytecode.INVOKESTATIC;
-import gov.nasa.jpf.symbc.bytecode.BytecodeUtils.VarType;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
@@ -78,11 +78,7 @@ import java.util.Vector;
 
 public class HeapSymbolicListener extends PropertyListenerAdapter implements PublisherExtension {
 
-	/* Locals to preserve the value that was held by JPF prior to changing it
-	 * in order to turn off state matching during symbolic execution
-	 */
-	private boolean retainVal = false;
-	private boolean forcedVal = false;
+
 
 	private Map<String,MethodSummary> allSummaries;
 	private String currentMethodName = "";
@@ -353,80 +349,46 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 	public void propertyViolated (Search search){
 		//System.out.println("--------->property violated");
 		JVM vm = search.getVM();
-		Config conf = vm.getConfig();
-		Instruction insn = vm.getLastInstruction(); //not sure this is correct
-		SystemState ss = vm.getSystemState();
-		ClassInfo ci = vm.getClassInfo();
-		String className = ci.getName();
-		ThreadInfo ti = vm.getLastThreadInfo();
-		//ThreadInfo ti = vm.getCurrentThread();
-		MethodInfo mi = ti.getMethod();
-		//neha: changed to full name
-		String methodName = mi.getFullName();
-		int numberOfArgs = mi.getNumberOfArguments();
-		if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
-				|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
-			ss.retainAttributes(retainVal);
-			ss.setForced(forcedVal);
-			ChoiceGenerator<?> cg = vm.getChoiceGenerator();
-			ChoiceGenerator<?> thisHeapCG = null;
-			boolean heapCGFound = false;
-			boolean pcCGFound = false;
-			ChoiceGenerator<?> currentCG = vm.getChoiceGenerator();
-			while ((!heapCGFound || !pcCGFound) && null != currentCG){
-				if ((currentCG instanceof HeapChoiceGenerator) && !heapCGFound){
-					thisHeapCG = currentCG;
-					heapCGFound = true;
-					currentCG = currentCG.getPreviousChoiceGenerator();
-				}else if ((currentCG instanceof PCChoiceGenerator) && !pcCGFound){
-					cg = currentCG;
-					pcCGFound = true;
-					currentCG = currentCG.getPreviousChoiceGenerator();
-				}else{
-					currentCG = currentCG.getPreviousChoiceGenerator();
-				}
-			}
-			if ((cg instanceof PCChoiceGenerator) &&
-				      ((PCChoiceGenerator) cg).getCurrentPC() != null){
-				PathCondition heapPC = null;
-				PathCondition pc = ((PCChoiceGenerator) cg).getCurrentPC();
-				if ((thisHeapCG instanceof HeapChoiceGenerator) &&(
-						(HeapChoiceGenerator) thisHeapCG).getCurrentPCheap() != null){
-					heapPC =((HeapChoiceGenerator)thisHeapCG).getCurrentPCheap();
-				}else
-					heapPC = new PathCondition();
-				String error = search.getLastError().getDetails();
-				error = "\"" + error.substring(0,error.indexOf("\n")) + "...\"";
-				PathCondition result = new PathCondition();
-				nameMap = new HashMap<Integer,SymbolicInteger>();
-				if (null != thisHeapCG){
-					SymbolicInputHeap symInputHeap =
-					 ((HeapChoiceGenerator)thisHeapCG).getCurrentSymInputHeap();
-					HeapNode node = symInputHeap.header;
-					while (null != node){
-						nameMap.put(new Integer(node.getIndex()), node.getSymbolic());
-						node = node.getNext();
-					}
-				}
-				getFieldValues(result,ti,mi, insn);
-				IntegerExpression sym_err = new SymbolicInteger("ERROR");
-				IntegerExpression sym_value = new SymbolicInteger(error);
-				result._addDet(Comparator.EQ, sym_err, sym_value);
-				//solve the path condition, then print it
-				pc.solve();
-				Pair<String,String> pcPair = new Pair<String,String>(pc.stringPC(),error);//(pc.toString(),error);
-				//String methodName = vm.getLastInstruction().getMethodInfo().getName();
-				MethodSummary methodSummary = allSummaries.get(currentMethodName);
-				methodSummary.addPathCondition(pcPair);
-				methodSummary.addHeapPC(heapPC.toString());
-				allSummaries.put(currentMethodName,methodSummary);
-				System.out.println("Property Violated: PC is "+pc.toString());
-				System.out.println("Property Violated: Heap PC is "+heapPC.toString());
-				System.out.println("Property Violated: result is  "+result.toString());
-				System.out.println("****************************");
+		HeapChoiceGenerator heapCG = vm.getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
+		PCChoiceGenerator pcCG = vm.getLastChoiceGeneratorOfType(PCChoiceGenerator.class);
+		PathCondition pc = (pcCG==null ? null : pcCG.getCurrentPC());
+		PathCondition heapPC = (heapCG==null ? null : heapCG.getCurrentPCheap());
+
+		String error = search.getLastError().getDetails();
+		error = "\"" + error.substring(0,error.indexOf("\n")) + "...\"";
+		PathCondition result = new PathCondition();
+		nameMap = new HashMap<Integer,SymbolicInteger>();
+		if (null != heapCG){
+			SymbolicInputHeap symInputHeap =
+			((HeapChoiceGenerator)heapCG).getCurrentSymInputHeap();
+			HeapNode node = symInputHeap.header;
+			while (null != node){
+				nameMap.put(new Integer(node.getIndex()), node.getSymbolic());
+				node = node.getNext();
 			}
 		}
+		//getFieldValues(result,vm.getLastThreadInfo(),vm.getLastMethodInfo(), vm.getNextInstruction());
+		IntegerExpression sym_err = new SymbolicInteger("ERROR");
+		IntegerExpression sym_value = new SymbolicInteger(error);
+		result._addDet(Comparator.EQ, sym_err, sym_value);
+		//solve the path condition, then print it
+		if(pc!=null) {
+			pc.solve();
+			String pcString =  pc.stringPC();
+			Pair<String,String> pcPair = new Pair<String,String>(pcString,error);//(pc.toString(),error);
+			//String methodName = vm.getLastInstruction().getMethodInfo().getName();
+			MethodSummary methodSummary = allSummaries.get(currentMethodName);
+			methodSummary.addPathCondition(pcPair);
+			methodSummary.addHeapPC(heapPC.toString());
+			allSummaries.put(currentMethodName,methodSummary);
+		}
+		System.out.println("Property Violated: ");
+		System.out.println("Numeric PC is "+pc);
+		System.out.println("Heap PC is "+heapPC);
+		System.out.println("result is  "+result);
+		System.out.println("****************************");
 	}
+
 
 	public void instructionExecuted(JVM vm) {
 
@@ -440,61 +402,60 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 				InvokeInstruction md = (InvokeInstruction) insn;
 				String methodName = md.getInvokedMethodName();
 				int numberOfArgs = md.getArgumentValues(ti).length;
+
 				MethodInfo mi = md.getInvokedMethod();
 				ClassInfo ci = mi.getClassInfo();
 				String className = ci.getName();
-				//neha: changed invoked method name to full name
+
+				 StackFrame sf = ti.getTopFrame();
+                 String shortName = methodName;
+                 String longName = mi.getLongName();
+                 if (methodName.contains("("))
+                         shortName = methodName.substring(0,methodName.indexOf("("));
+
+                 if(!mi.equals(sf.getMethodInfo()))
+                         return;
+
 				if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 						|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null)){
-					//get the original values and save them for restoration after
-					//we are done with symbolic execution
-					retainVal = ss.getRetainAttributes();
-					forcedVal = ss.isForced();
-					//turn off state matching
-					ss.setForced(true);
-					//make sure it stays turned off when a new state is created
-					ss.retainAttributes(true);
-					//clear the path condition when invoking a new method
-					// interacts with the pre-condition handling
 
-//					ChoiceGenerator cg = vm.getChoiceGenerator();
-//					if ((cg instanceof PCChoiceGenerator) &&(
-//							(PCChoiceGenerator) cg).getCurrentPC() != null){
-//						PathCondition pc = new PathCondition();
-//						((PCChoiceGenerator) cg).setCurrentPC(pc);
-//					}
 
 					MethodSummary methodSummary = new MethodSummary();
-					String shortName = methodName;
-					String longName = mi.getLongName();
-					if (methodName.contains("("))
-						shortName = methodName.substring(0,methodName.indexOf("("));
 					methodSummary.setMethodName(shortName);
-					Object [] args = md.getArgumentValues(ti);
-					String argValues = "";
-					for (int i=0; i<args.length; i++){
-						argValues = argValues + args[i];
-						if ((i+1) < args.length)
-							argValues = argValues + ",";
+					Object [] argValues = md.getArgumentValues(ti);
+
+					String argValuesStr = "";
+					for (int i=0; i<argValues.length; i++){
+						argValuesStr = argValuesStr + argValues[i];
+						if ((i+1) < argValues.length)
+							argValuesStr = argValuesStr + ",";
 					}
-					methodSummary.setArgValues(argValues);
-					String [] argTypeNames = md.getInvokedMethod(ti).getArgumentTypeNames();
-					String argTypes = "";
-					for (int j=0; j<argTypeNames.length; j++){
-						argTypes = argTypes + argTypeNames[j];
-						if ((j+1) < argTypeNames.length)
-							argTypes = argTypes + ",";
-					}
-					methodSummary.setArgTypes(argTypes);
+					methodSummary.setArgValues(argValuesStr);
+
+					 byte [] argTypes = mi.getArgumentTypes();
+                     String argTypesStr = "";
+                     for (int i=0; i<argTypes.length; i++){
+                             argTypesStr = argTypesStr + argTypes[i];
+                             if ((i+1) < argTypes.length)
+                                     argTypesStr = argTypesStr + ",";
+                     }
+                     methodSummary.setArgTypes(argTypesStr);
+
+
+
 					//get the symbolic values (changed from constructing them here)
-					StackFrame sf = ti.getTopFrame();
-					String symValues = "";
-					String symVarName = "";
-					int count = 1 ;
+					String symValuesStr = "";
+					String symVarNameStr = "";
+
 
 					String[] names = mi.getLocalVariableNames();
-					int sfIndex = 1;
-					int index = 0;
+					// if(names == null)
+                    //     throw new RuntimeException("ERROR: you need to turn debug option on");
+
+
+					int sfIndex = 1;//do not consider implicit param "this"
+					int namesIndex=1;
+
 					boolean usingTypes = false;
 					//if debug option was not used when compiling the class,
 					//then we do not have names of the locals and need to
@@ -502,40 +463,39 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 					if (null != names){
 						//use local names
 						if (md instanceof INVOKESTATIC){
-							count = 0;  //no this reference
-							sfIndex=0;
+							sfIndex=0; // no "this" for static
+                            namesIndex =0;
 						}
 					}else{
 						//use argument types for names (plus a unique index number)
 						names = mi.getArgumentTypeNames();
-						count = 0; //argument types does not contain "this"
+						namesIndex = 0; //argument types does not contain "this"
 						if (md instanceof INVOKESTATIC)
 							sfIndex = 1;
 						usingTypes = true;
 					}
 
-					while (count <= numberOfArgs *2){ //hack: added "*2" to account for both one slot and 2 slot arguments
-						Expression expLocal = (Expression)sf.getLocalAttr(count);
-						if (expLocal != null){
-							symVarName = expLocal.toString();
-							symValues = symValues + symVarName + ",";
+					for (int i=0; i< numberOfArgs; i++){
+						Expression expLocal = (Expression)sf.getLocalAttr(sfIndex);
+						if (expLocal != null){ // symbolic
+							symVarNameStr = expLocal.toString();
+
 						}else{
-							if (count<names.length){
-								if (usingTypes){
-									symVarName = names[count] + "_" + index + "_CONCRETE";
-									index++;
-								}else
-									symVarName = names[count] + "_CONCRETE";
-								symValues = symValues + symVarName + ",";
-							}
+								if (usingTypes)
+									symVarNameStr = names[namesIndex] + "_" + namesIndex + "_CONCRETE";
+								else
+									symVarNameStr = names[namesIndex] + "_CONCRETE";
 						}
-						count++;
+						symValuesStr = symValuesStr + symVarNameStr + ",";
+						namesIndex++;
 						sfIndex++;
+						 if(argTypes[i] == Types.T_LONG || argTypes[i] == Types.T_DOUBLE)
+                             sfIndex++;
 					}
-					if (symValues.endsWith(",")) {
-						symValues = symValues.substring(0,symValues.length()-1);
+					if (symValuesStr.endsWith(",")) {
+						symValuesStr = symValuesStr.substring(0,symValuesStr.length()-1);
 					}
-					methodSummary.setSymValues(symValues);
+					methodSummary.setSymValues(symValuesStr);
 
 					currentMethodName = longName;
 					allSummaries.put(longName,methodSummary);
@@ -552,45 +512,24 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 					//neha: changed invoked method name to full name
 					if (((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 							|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
-						//at the end of symbolic execution, set the values back
-						//to their original value
-						ss.retainAttributes(retainVal);
-						ss.setForced(forcedVal);
-						ChoiceGenerator<?> thisHeapCG = null;
-						ChoiceGenerator<?> cg = null;
-						boolean heapCGFound = false;
-						boolean pcCGFound = false;
-						ChoiceGenerator<?> currentCG = vm.getChoiceGenerator();
-						while ((!heapCGFound || !pcCGFound) && null != currentCG){
-							if ((currentCG instanceof HeapChoiceGenerator) && !heapCGFound){
-								thisHeapCG = currentCG;
-								heapCGFound = true;
-								currentCG = currentCG.getPreviousChoiceGenerator();
-							}else if ((currentCG instanceof PCChoiceGenerator) && !pcCGFound){
-								cg = currentCG;
-								pcCGFound = true;
-								currentCG = currentCG.getPreviousChoiceGenerator();
-							}else{
-								currentCG = currentCG.getPreviousChoiceGenerator();
-							}
-						}
-						if ((cg instanceof PCChoiceGenerator) &&(
-								(PCChoiceGenerator) cg).getCurrentPC() != null){
-							PathCondition heapPC = null;
-							PathCondition pc = ((PCChoiceGenerator) cg).getCurrentPC();
-							if ((thisHeapCG instanceof HeapChoiceGenerator) &&(
-									(HeapChoiceGenerator) thisHeapCG).getCurrentPCheap() != null){
-								heapPC =((HeapChoiceGenerator)thisHeapCG).getCurrentPCheap();
-							}else
-								heapPC = new PathCondition();
+
+
+
+						HeapChoiceGenerator heapCG = vm.getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
+						PCChoiceGenerator pcCG = vm.getLastChoiceGeneratorOfType(PCChoiceGenerator.class);
+						PathCondition pc = (pcCG==null ? null : pcCG.getCurrentPC());
+						PathCondition heapPC = (heapCG==null ? null : heapCG.getCurrentPCheap());
+
+
+						if(pc!=null) {
 							pc.solve(); //we only solve the pc
 							PathCondition result = new PathCondition();
 							//after the following statement is executed, the pc loses its solution
 							IntegerExpression sym_result = new SymbolicInteger("RETURN");
 							nameMap = new HashMap<Integer,SymbolicInteger>();
-							if (null != thisHeapCG){
+							if (null != heapCG){
 								SymbolicInputHeap symInputHeap =
-								 ((HeapChoiceGenerator)thisHeapCG).getCurrentSymInputHeap();
+								 ((HeapChoiceGenerator)heapCG).getCurrentSymInputHeap();
 								HeapNode node = symInputHeap.header;
 								while (null != node){
 									// why is this map necessary?
@@ -600,8 +539,10 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 							}
 							getFieldValues(result,ti,mi, insn);
 							String pcString = pc.stringPC();
+
 							Pair<String,String> pcPair = null;
-							//after the following statement is executed, the pc loses its solution
+
+
 							String returnString = "";
 							if (insn instanceof IRETURN){
 								IRETURN ireturn = (IRETURN)insn;
@@ -657,53 +598,18 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 								methodSummary.addHeapPC(heapPC.toString());
 							}
 							allSummaries.put(longName,methodSummary);
-							System.out.println("PC "+pc.toString());
-							//Hack to clear the solutions from the heapPC and result
-							//these solutions mean nothing - only the main PC solutions
-							//are useful
-
-							// where is tmp used?
-							IntegerExpression tmp = new SymbolicInteger("HACK");
-							System.out.println("Heap PC "+heapPC.toString());
-							System.out.println("Effect is  "+result.toString());
-							System.out.println("****************************");
+						}
+						System.out.println("Numeric PC "+pc);
+						System.out.println("Heap PC "+heapPC);
+						System.out.println("****************************");
 						}
 					}
 				}
 			}
 		}
-	}
 
-	  public void stateBacktracked(Search search) {
-		  JVM vm = search.getVM();
-		  Config conf = vm.getConfig();
-		  Instruction insn = vm.getChoiceGenerator().getInsn();
-		  SystemState ss = vm.getSystemState();
-		  ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
-		  MethodInfo mi = insn.getMethodInfo();
-		  String className = mi.getClassName();
-		  //neha: changed to full name
-		  String methodName = mi.getFullName();
-		  int numberOfArgs = mi.getArgumentsSize() - 1;
-		  if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
-					|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
-			//get the original values and save them for restoration after
-			//we are done with symbolic execution
-			retainVal = ss.getRetainAttributes();
-			forcedVal = ss.isForced();
-			//turn off state matching
-			ss.setForced(true);
-			//make sure it stays turned off when a new state is created
-			ss.retainAttributes(true);
-		  }
-	  }
 
-	  /*
-	   *  todo: needs to be implemented if we are going to support heuristic search
-	   */
-	  public void stateRestored(Search search) {
-		  System.err.println("Warning: State restored - heuristic search not supported");
-	  }
+
 	  /*
 	   * Save the method summaries to a file for use by others
 	   */
@@ -862,7 +768,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
       //	-------- the publisher interface
 	  public void publishFinished (Publisher publisher) {
 	    PrintWriter pw = publisher.getOut();
-
+/*
 	    publisher.publishTopicStart("Method Summaries");
 	    Iterator it = allSummaries.entrySet().iterator();
 	    while (it.hasNext()){
@@ -878,6 +784,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 	    	MethodSummary methodSummary = (MethodSummary)me.getValue();
 	    	printMethodSummaryHTML(pw, methodSummary);
 	    }
+	    */
 	  }
 
 	  protected class MethodSummary{

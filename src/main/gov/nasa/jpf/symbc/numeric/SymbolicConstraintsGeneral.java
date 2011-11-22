@@ -981,7 +981,7 @@ public class SymbolicConstraintsGeneral {
 		result = pb.solve();
 
 		if (SymbolicInstructionFactory.debugMode)
-			System.out.println(" --> " + pc + " -> " + result);
+			System.out.println("numeric PC: " + pc + " -> " + result);
 
 		if(result == null) {
 			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) "+pc);
@@ -1006,8 +1006,9 @@ public class SymbolicConstraintsGeneral {
 
 
 	public boolean solve(PathCondition pc) {
-		if (SymbolicInstructionFactory.debugMode)
-			System.out.println("solving: PC " + pc);
+		//if (SymbolicInstructionFactory.debugMode)
+			//System.out.println("solving: PC " + pc);
+
 
 		if (pc == null || pc.count == 0) return true;
 
