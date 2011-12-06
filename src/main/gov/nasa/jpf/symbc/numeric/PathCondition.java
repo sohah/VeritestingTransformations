@@ -279,7 +279,7 @@ public class PathCondition {
 				MinMax.Debug_no_path_constraints_sat ++;
 			else
 				MinMax.Debug_no_path_constraints_unsat ++;
-			System.out.println("### PCs: total:" + MinMax.Debug_no_path_constraints + " sat:" +MinMax.Debug_no_path_constraints_sat + " unsat:" + MinMax.Debug_no_path_constraints_unsat);
+			System.out.println("### PCs: total:" + MinMax.Debug_no_path_constraints + " sat:" +MinMax.Debug_no_path_constraints_sat + " unsat:" + MinMax.Debug_no_path_constraints_unsat +"\n");
 		}
 
 		if (! result1) return false;

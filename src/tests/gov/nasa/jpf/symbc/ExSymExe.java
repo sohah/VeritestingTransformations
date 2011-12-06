@@ -41,28 +41,33 @@ public class ExSymExe {
 	  System.out.println("3. >1"+(Math.sin(-10000.0)+Math.cos(-9998.118619049521)));
   }
 
-  public void test4(double x, int y) {
-	  if(x+y==0)
+  public int test4(double x, int y) {
+	  if(x+y==0) {
 		  System.out.println("eq");
-	  else
+		  return y+2;
+	  }
+	  else {
 		  System.out.println("neq");
+		  return y-4;
+	  }
   }
 
 
   public static void test1 (int x, boolean b) {
 	  System.out.println("test1");
-	  Integer z = new Integer(x);
-	  if (z <= 1200) {
+	  Integer z = new Integer((int)x);
+	  if (z <= 1200)
 		  System.out.println("le 1200");
-		  }
-	 // Debug.printPC("my msg");
 	  if(z >= 1200)
 		  System.out.println("ge 1200");
-	  if(b)
+	  if(b) {
 		  System.out.println("b true");
-	  else
-		  //System.out.println("b false");
-		  assert (false);
+		  //return (int)(x+1);
+	  }
+	  else {
+		  System.out.println("b false");
+		  //return (int)(x-1);
+	  }
   }
   public void test (int x, int z) {
 	  if (x > z)

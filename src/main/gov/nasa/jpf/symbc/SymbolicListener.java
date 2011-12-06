@@ -32,14 +32,16 @@ import gov.nasa.jpf.jvm.JVM;
 
 import gov.nasa.jpf.jvm.MethodInfo;
 
+import gov.nasa.jpf.jvm.DynamicElementInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.Types;
-//import gov.nasa.jpf.jvm.bytecode.ARETURN;
-//import gov.nasa.jpf.jvm.bytecode.IRETURN;
+import gov.nasa.jpf.jvm.bytecode.ARETURN;
+import gov.nasa.jpf.jvm.bytecode.IRETURN;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.LRETURN;
 import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
@@ -50,9 +52,13 @@ import gov.nasa.jpf.symbc.bytecode.INVOKESTATIC;
 import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
 
 
+import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.Expression;
+import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 //import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
@@ -74,11 +80,11 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	/* Locals to preserve the value that was held by JPF prior to changing it
 	 * in order to turn off state matching during symbolic execution
 	 */
-	private boolean retainVal = false;
-	private boolean forcedVal = false;
+	//private boolean retainVal = false;
+	//private boolean forcedVal = false;
 
 	private Map<String,MethodSummary> allSummaries;
-	private String currentMethodName = "";
+    private String currentMethodName = "";
 
 	public SymbolicListener(Config conf, JPF jpf) {
 		jpf.addPublisherExtension(ConsolePublisher.class, this);
@@ -184,7 +190,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 		if (!vm.getSystemState().isIgnored()) {
 			Instruction insn = vm.getLastInstruction();
-			SystemState ss = vm.getSystemState();
+		//	SystemState ss = vm.getSystemState();
 			ThreadInfo ti = vm.getLastThreadInfo();
 			Config conf = vm.getConfig();
 
@@ -206,7 +212,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				//System.out.println("method name "+methodName + " "+sf.getMethodName()+ " "+shortName+" "+longName);
 				// does not work for recursive invocations of sym methods; should compare MethodInfo instead
 				//if(!shortName.equals(sf.getMethodName()))
-					//return;
+				//return;
 				if(!mi.equals(sf.getMethodInfo()))
 					return;
 
@@ -215,21 +221,21 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 					//get the original values and save them for restoration after
 					//we are done with symbolic execution
-					retainVal = ss.getRetainAttributes();
-					forcedVal = ss.isForced();
+					//retainVal = ss.getRetainAttributes();
+					//forcedVal = ss.isForced();
 					//turn off state matching
-					ss.setForced(true);
+					//ss.setForced(true);
 					//make sure it stays turned off when a new state is created
-					ss.retainAttributes(true);
+					//ss.retainAttributes(true);
 					//clear the path condition when invoking a new method
 					// interacts with the pre-condition handling
 
-//					ChoiceGenerator cg = vm.getChoiceGenerator();
-//					if ((cg instanceof PCChoiceGenerator) &&(
-//							(PCChoiceGenerator) cg).getCurrentPC() != null){
-//						PathCondition pc = new PathCondition();
-//						((PCChoiceGenerator) cg).setCurrentPC(pc);
-//					}
+					//					ChoiceGenerator cg = vm.getChoiceGenerator();
+					//					if ((cg instanceof PCChoiceGenerator) &&(
+					//							(PCChoiceGenerator) cg).getCurrentPC() != null){
+					//						PathCondition pc = new PathCondition();
+					//						((PCChoiceGenerator) cg).setCurrentPC(pc);
+					//					}
 
 					MethodSummary methodSummary = new MethodSummary();
 
@@ -263,8 +269,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 					int sfIndex=1; //do not consider implicit param "this"
 					int namesIndex=1;
 					if (md instanceof INVOKESTATIC) {
-							sfIndex=0; // no "this" for static
-							namesIndex =0;
+						sfIndex=0; // no "this" for static
+						namesIndex =0;
 					}
 					//StackFrame sf = ti.getTopFrame();
 
@@ -305,8 +311,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 						//at the end of symbolic execution, set the values back
 						//to their original value
-						ss.retainAttributes(retainVal);
-						ss.setForced(forcedVal);
+						//ss.retainAttributes(retainVal);
+						//ss.setForced(forcedVal);
 						ChoiceGenerator <?>cg = vm.getChoiceGenerator();
 						if (!(cg instanceof PCChoiceGenerator)){
 							ChoiceGenerator <?> prev_cg = cg.getPreviousChoiceGenerator();
@@ -326,18 +332,19 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							}
 							else
 								pc.solve();
-							//C: where is result used?
-							//PathCondition result = new PathCondition();
+
+							PathCondition result = pc;//new PathCondition();
 							//after the following statement is executed, the pc loses its solution
-							// is the return always an integer??
-							//TODO: to review this part
+
 							String pcString = pc.stringPC();
 							Pair<String,String> pcPair = null;
-							//after the following statement is executed, the pc loses its solution
+
 							String returnString = "";
-/* To review
+							/* To review */
 
 
+							// here we assume the returned value is always an integer?
+							// Is it unique?
 							IntegerExpression sym_result = new SymbolicInteger("RETURN");
 
 							if (insn instanceof IRETURN){
@@ -345,33 +352,32 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 								int returnValue = ireturn.getReturnValue();
 								IntegerExpression returnAttr = (IntegerExpression) ireturn.getReturnAttr(ti);
 								if (returnAttr != null){
-										returnString = "Return Value: " + String.valueOf(returnAttr.toString());
-								}else // concrete
-									returnString = "Return Value: " + String.valueOf(returnValue);
-								if (returnAttr != null){
+									returnString = "Return Value: " + String.valueOf(returnAttr.solution());
 									result._addDet(Comparator.EQ, sym_result, returnAttr);
 								}else{ // concrete
+									returnString = "Return Value: " + String.valueOf(returnValue);
 									result._addDet(Comparator.EQ, sym_result, new IntegerConstant(returnValue));
 								}
-							}else if (insn instanceof ARETURN){
+							}
+							else if (insn instanceof ARETURN){
 								ARETURN areturn = (ARETURN)insn;
 								IntegerExpression returnAttr = (IntegerExpression) areturn.getReturnAttr(ti);
-								if (returnAttr != null)
+								if (returnAttr != null){
 									returnString = "Return Value: " + String.valueOf(returnAttr.solution());
+									result._addDet(Comparator.EQ, sym_result, returnAttr);
+								}
 								else {// concrete
 									Object val = areturn.getReturnValue(ti);
 									returnString = "Return Value: " + String.valueOf(val.toString());
+									//DynamicElementInfo val = (DynamicElementInfo)areturn.getReturnValue(ti);
+									String tmp = val.toString();
+									tmp = tmp.substring(tmp.lastIndexOf('.')+1);
+									result._addDet(Comparator.EQ, sym_result,  new SymbolicInteger(tmp));
 								}
-								if (returnAttr != null){
-									result._addDet(Comparator.EQ, sym_result, returnAttr);
-								}else{ // concrete
-									DynamicElementInfo val = (DynamicElementInfo)areturn.getReturnValue(ti);
-										String tmp = val.toString();
-										tmp = tmp.substring(tmp.lastIndexOf('.')+1);
-										result._addDet(Comparator.EQ, sym_result,  new SymbolicInteger(tmp));
-								}
-							}
+							}else //other types of return
+								returnString = "Return Value: --";
 							//pc.solve();
+							// not clear why this part is necessary
 							if (SymbolicInstructionFactory.concolicMode) { //TODO: cleaner
 								SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 								PCAnalyzer pa = new PCAnalyzer();
@@ -379,7 +385,9 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							}
 							else
 								pc.solve();
-end to review*/
+
+
+							/*end to review*/
 							pcString = pc.toString();
 							pcPair = new Pair<String,String>(pcString,returnString);
 							MethodSummary methodSummary = allSummaries.get(longName);
@@ -404,7 +412,7 @@ end to review*/
 		  Config conf = vm.getConfig();
 
 		  Instruction insn = vm.getChoiceGenerator().getInsn();
-		  SystemState ss = vm.getSystemState();
+		 // SystemState ss = vm.getSystemState();
 		  //ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
 		  MethodInfo mi = insn.getMethodInfo();
 		  String className = mi.getClassName();
@@ -417,21 +425,21 @@ end to review*/
 					|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
 			//get the original values and save them for restoration after
 			//we are done with symbolic execution
-			retainVal = ss.getRetainAttributes();
-			forcedVal = ss.isForced();
+		//	retainVal = ss.getRetainAttributes();
+		//	forcedVal = ss.isForced();
 			//turn off state matching
-			ss.setForced(true);
+		//	ss.setForced(true);
 			//make sure it stays turned off when a new state is created
-			ss.retainAttributes(true);
+		//	ss.retainAttributes(true);
 		  }
 	  }
 
 	  /*
-	   *  todo: needs to be implemented if we are going to support heuristic search
+	   *  todo: needs to be implemented if we are going to support heuristic search with fancy turnoff state matching
 	   */
-	  public void stateRestored(Search search) {
-		  System.err.println("Warning: State restored - heuristic search not supported");
-	  }
+	  //public void stateRestored(Search search) {
+		//  System.err.println("Warning: State restored - heuristic search not supported");
+	  //}
 	  /*
 	   * Save the method summaries to a file for use by others
 	   */
@@ -527,7 +535,7 @@ end to review*/
 			  StringTokenizer st = new StringTokenizer(symValues, ",");
 			  while(st.hasMoreTokens())
 				  allTestCases = allTestCases + "<td>" + st.nextToken() + "</td>";
-			  allTestCases = "<tr>" + allTestCases + "</tr>\n";
+			  allTestCases = "<tr>" + allTestCases + "<td>RETURN</td></tr>\n";
 			  while(it.hasNext()){
 				  String testCase = "<tr>";
 				  Pair pcPair = (Pair)it.next();

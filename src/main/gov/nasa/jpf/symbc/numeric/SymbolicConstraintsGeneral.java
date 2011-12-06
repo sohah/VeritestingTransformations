@@ -981,7 +981,7 @@ public class SymbolicConstraintsGeneral {
 		result = pb.solve();
 
 		if (SymbolicInstructionFactory.debugMode)
-			System.out.println("numeric PC: " + pc + " -> " + result);
+			System.out.println("numeric PC: " + pc + " -> " + result+"\n");
 
 		if(result == null) {
 			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) "+pc);
