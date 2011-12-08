@@ -195,7 +195,8 @@ public class SymbolicListenerClean extends PropertyListenerAdapter implements Pu
 						if (expLocal != null) // symbolic
 							symVarNameStr = expLocal.toString();
 						else
-							symVarNameStr = names[namesIndex] + "_CONCRETE" + ",";
+							//symVarNameStr = names[namesIndex] + "_CONCRETE" + ",";
+							symVarNameStr = "CONCRETE" + ",";
 						symValuesStr = symValuesStr + symVarNameStr + ",";
 						sfIndex++;namesIndex++;
 						if(argTypes[i] == Types.T_LONG || argTypes[i] == Types.T_DOUBLE)
