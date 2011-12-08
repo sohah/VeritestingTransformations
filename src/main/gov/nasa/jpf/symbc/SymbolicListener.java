@@ -38,6 +38,8 @@ import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.Types;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
+import gov.nasa.jpf.jvm.bytecode.DRETURN;
+import gov.nasa.jpf.jvm.bytecode.FRETURN;
 import gov.nasa.jpf.jvm.bytecode.IRETURN;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
@@ -58,7 +60,10 @@ import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.symbc.numeric.RealConstant;
+import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 //import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
@@ -280,7 +285,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						if (expLocal != null) // symbolic
 							symVarNameStr = expLocal.toString();
 						else
-							symVarNameStr = names[namesIndex] + "_CONCRETE" + ",";
+							//symVarNameStr = names[namesIndex] + "_CONCRETE" + ",";
+							symVarNameStr = "CONCRETE" + ",";
 						symValuesStr = symValuesStr + symVarNameStr + ",";
 						sfIndex++;namesIndex++;
 						if(argTypes[i] == Types.T_LONG || argTypes[i] == Types.T_DOUBLE)
@@ -333,7 +339,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							else
 								pc.solve();
 
-							PathCondition result = pc;//new PathCondition();
+							//PathCondition result = pc;
+							//PathCondition result = new PathCondition();
 							//after the following statement is executed, the pc loses its solution
 
 							String pcString = pc.stringPC();
@@ -342,29 +349,69 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							String returnString = "";
 							/* To review */
 
+							Expression result = null;
 
-							// here we assume the returned value is always an integer?
-							// Is it unique?
-							IntegerExpression sym_result = new SymbolicInteger("RETURN");
 
 							if (insn instanceof IRETURN){
+								SymbolicInteger sym_result = new SymbolicInteger("RETURN");
 								IRETURN ireturn = (IRETURN)insn;
 								int returnValue = ireturn.getReturnValue();
 								IntegerExpression returnAttr = (IntegerExpression) ireturn.getReturnAttr(ti);
 								if (returnAttr != null){
 									returnString = "Return Value: " + String.valueOf(returnAttr.solution());
-									result._addDet(Comparator.EQ, sym_result, returnAttr);
+									result = returnAttr;
 								}else{ // concrete
 									returnString = "Return Value: " + String.valueOf(returnValue);
-									result._addDet(Comparator.EQ, sym_result, new IntegerConstant(returnValue));
+									result = new IntegerConstant(returnValue);
 								}
 							}
+							else if (insn instanceof LRETURN) {
+								SymbolicInteger sym_result = new SymbolicInteger("RETURN");
+								LRETURN lreturn = (LRETURN)insn;
+								long returnValue = lreturn.getReturnValue();
+								IntegerExpression returnAttr = (IntegerExpression) lreturn.getReturnAttr(ti);
+								if (returnAttr != null){
+									returnString = "Return Value: " + String.valueOf(returnAttr.solution());
+									result = returnAttr;
+								}else{ // concrete
+									returnString = "Return Value: " + String.valueOf(returnValue);
+									result = new IntegerConstant((int)returnValue);
+								}
+							}
+							else if (insn instanceof DRETURN) {
+								SymbolicReal sym_result = new SymbolicReal("RETURN");
+								DRETURN dreturn = (DRETURN)insn;
+								double returnValue = dreturn.getReturnValue();
+								RealExpression returnAttr = (RealExpression) dreturn.getReturnAttr(ti);
+								if (returnAttr != null){
+									returnString = "Return Value: " + String.valueOf(returnAttr.solution());
+									result = returnAttr;
+								}else{ // concrete
+									returnString = "Return Value: " + String.valueOf(returnValue);
+									result = new RealConstant(returnValue);
+								}
+							}
+							else if (insn instanceof FRETURN) {
+								SymbolicReal sym_result = new SymbolicReal("RETURN");
+								FRETURN freturn = (FRETURN)insn;
+								double returnValue = freturn.getReturnValue();
+								RealExpression returnAttr = (RealExpression) freturn.getReturnAttr(ti);
+								if (returnAttr != null){
+									returnString = "Return Value: " + String.valueOf(returnAttr.solution());
+									result = returnAttr;
+								}else{ // concrete
+									returnString = "Return Value: " + String.valueOf(returnValue);
+									result = new RealConstant(returnValue);
+								}
+
+							}
 							else if (insn instanceof ARETURN){
+								IntegerExpression sym_result = new SymbolicInteger("RETURN");
 								ARETURN areturn = (ARETURN)insn;
 								IntegerExpression returnAttr = (IntegerExpression) areturn.getReturnAttr(ti);
 								if (returnAttr != null){
 									returnString = "Return Value: " + String.valueOf(returnAttr.solution());
-									result._addDet(Comparator.EQ, sym_result, returnAttr);
+									result = returnAttr;
 								}
 								else {// concrete
 									Object val = areturn.getReturnValue(ti);
@@ -372,12 +419,13 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 									//DynamicElementInfo val = (DynamicElementInfo)areturn.getReturnValue(ti);
 									String tmp = val.toString();
 									tmp = tmp.substring(tmp.lastIndexOf('.')+1);
-									result._addDet(Comparator.EQ, sym_result,  new SymbolicInteger(tmp));
+									result = new SymbolicInteger(tmp);
 								}
 							}else //other types of return
 								returnString = "Return Value: --";
 							//pc.solve();
 							// not clear why this part is necessary
+/*
 							if (SymbolicInstructionFactory.concolicMode) { //TODO: cleaner
 								SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 								PCAnalyzer pa = new PCAnalyzer();
@@ -385,7 +433,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							}
 							else
 								pc.solve();
-
+*/
 
 							/*end to review*/
 							pcString = pc.toString();
@@ -396,9 +444,10 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 								methodSummary.addPathCondition(pcPair);
 							}
 							allSummaries.put(longName,methodSummary);
-							System.out.println("PC "+pc.toString());
-							//System.out.println("Return is  "+returnString);
-							System.out.println("****************************");
+							System.out.println("*************Summary***************");
+							System.out.println("PC is:"+pc.toString());
+							System.out.println("Return is:  "+result);
+							System.out.println("***********************************");
 						}
 					}
 				}
@@ -459,7 +508,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	  private void printMethodSummary(PrintWriter pw, MethodSummary methodSummary){
 
 
-		  System.out.println("Symbolic values: " +methodSummary.getSymValues());
+		  System.out.println("Inputs: " +methodSummary.getSymValues());
 		  Vector<Pair> pathConditions = methodSummary.getPathConditions();
 		  if (pathConditions.size() > 0){
 			  Iterator it = pathConditions.iterator();
@@ -501,7 +550,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						  if (token.contains("CONCRETE"))
 							  testCase = testCase + actualValue + ",";
 						  else
-							  testCase = testCase + "don't care,";
+							  testCase = testCase + SymbolicInteger.UNDEFINED+"(don't care),";// not correct in concolic mode
 					  }
 				  }
 				  if (testCase.endsWith(","))
@@ -574,7 +623,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						  if (token.contains("CONCRETE"))
 							  testCase = testCase + "<td>" + actualValue + "</td>";
 						  else
-							  testCase = testCase + "<td>don't care</td>";
+							  testCase = testCase + "<td>"+SymbolicInteger.UNDEFINED+"(don't care)</td>"; // not correct in concolic mode
 					  }
 				  }
 

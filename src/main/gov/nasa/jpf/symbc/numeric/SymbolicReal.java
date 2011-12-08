@@ -111,7 +111,6 @@ public class SymbolicReal extends RealExpression {
 				else
 					d = _max * d;
 				solution = d;
-				return d;
 			}
 			return solution;
 		}

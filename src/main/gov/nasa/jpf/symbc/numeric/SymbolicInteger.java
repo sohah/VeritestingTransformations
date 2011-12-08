@@ -19,6 +19,8 @@
 
 package gov.nasa.jpf.symbc.numeric;
 
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+
 import java.util.Map;
 import java.util.Random;
 
@@ -96,8 +98,8 @@ public class SymbolicInteger extends LinearIntegerExpression
 
 	public int solution() {
 		if (PathCondition.flagSolved) {
-			if (solution == UNDEFINED) {
-				return (new Random().nextInt(_max-_min))+_min;
+			if (solution == UNDEFINED && SymbolicInstructionFactory.concolicMode) {
+				solution = (new Random().nextInt(_max-_min))+_min;
 			}
 			return solution;
 		}

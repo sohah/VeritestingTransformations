@@ -10,10 +10,10 @@ public class ExSymExe {
 	  field = 9;
 	  //inst.test(0, 1);
 	  //inst.test2(x,x);
-	  test1(x,true);
+	  //test1(x,true);
 	  //inst.test3(0.0, 0.0);
-	  inst.test4(0.0, 0);
-	  inst.test5(0, 0);
+	  test4(0, 0);
+	  //inst.test5(0, 0);
   }
   /* we want to let the user specify that this method should be symbolic */
   public void test5(double xm, double ym) {
@@ -41,14 +41,14 @@ public class ExSymExe {
 	  System.out.println("3. >1"+(Math.sin(-10000.0)+Math.cos(-9998.118619049521)));
   }
 
-  public int test4(double x, int y) {
-	  if(x+y==0) {
-		  System.out.println("eq");
-		  return y+2;
+  public static  int test4(int x, int y) {
+	  if(x>0 && y>0) {
+		  System.out.println("eq!");
+		  return y+x;
 	  }
 	  else {
-		  System.out.println("neq");
-		  return y-4;
+		  System.out.println("neq!");
+		  return y-x;
 	  }
   }
 

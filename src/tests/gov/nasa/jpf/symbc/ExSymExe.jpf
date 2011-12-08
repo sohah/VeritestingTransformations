@@ -24,10 +24,11 @@ sourcepath=${jpf-symbc}/src/tests
 symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test4(sym#sym)
 #symbolic.method= gov.nasa.jpf.symbc.ExSymExeSwitch.test(sym)
 #,gov.nasa.jpf.symbc.ExSymExe.test5(sym#sym)
-listener = gov.nasa.jpf.symbc.SymbolicListener
+#listener = gov.nasa.jpf.symbc.SymbolicListener
 #symbolic.lazy=true
 vm.storage.class=nil
 symbolic.minint=-10000
 symbolic.maxint=10000
 symbolic.undefined=100000
+symbolic.debug=true
 #listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener

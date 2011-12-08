@@ -221,7 +221,7 @@ public class BytecodeUtils {
 				|| BytecodeUtils.isClassSymbolic(conf, cname, mi, mname));
 		if (found) {
 			if (SymbolicInstructionFactory.debugMode)
-				System.out.println("**** symbolic method "+mname +" long name " +longName);
+				System.out.println("**** symbolic method "+mname +" long name " +longName+" "+(conf.getStringArray("symbolic.method"))[0]);
 			// method is symbolic
 
 			// create a choice generator to associate the precondition with it
@@ -238,9 +238,11 @@ public class BytecodeUtils {
 				}
 			}
 
+
 			String outputString = "\n***Execute symbolic " + bytecodeName + ": " + mname + "  (";
 
 			String[] localVars = mi.getLocalVariableNames();
+
 
 			int localVarsIdx = 0;
 			//if debug option was not used when compiling the class,
@@ -265,22 +267,23 @@ public class BytecodeUtils {
 				if (symClass || args.get(j).equalsIgnoreCase("SYM")) {
 					String name =  localVars[localVarsIdx];
 					if (argTypes[j].equalsIgnoreCase("int") || argTypes[j].equalsIgnoreCase("long")) {
-						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT));
+						//IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT));
+						IntegerExpression sym_v = new SymbolicInteger(varName("int", VarType.INT));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if (argTypes[j].equalsIgnoreCase("float") || argTypes[j].equalsIgnoreCase("double")) {
-						RealExpression sym_v = new SymbolicReal(varName(name, VarType.REAL));
+						RealExpression sym_v = new SymbolicReal(varName("real", VarType.REAL));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if (argTypes[j].equalsIgnoreCase("boolean")) {
-						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT), 0, 1); // treat boolean as an integer with range [0,1]
+						IntegerExpression sym_v = new SymbolicInteger(varName("bool", VarType.INT), 0, 1); // treat boolean as an integer with range [0,1]
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if (argTypes[j].equalsIgnoreCase("java.lang.String")) {
-						StringExpression sym_v = new StringSymbolic(varName(name, VarType.STRING));
+						StringExpression sym_v = new StringSymbolic(varName("string", VarType.STRING));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
@@ -292,7 +295,7 @@ public class BytecodeUtils {
 						// it includes "this"
 						// these attributes are currently ignored in the bytecodes
 						// so this code does not work
-						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
+						IntegerExpression sym_v = new SymbolicInteger(varName("ref", VarType.REF));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
@@ -486,23 +489,23 @@ public class BytecodeUtils {
 
 
 	public static String varName(String name, VarType type) {
-		String suffix = "";
-		switch (type) {
-		case INT:
-			suffix = "_SYMINT";
-			break;
-		case REAL:
-			suffix = "_SYMREAL";
-			break;
-		case REF:
-			suffix = "_SYMREF";
-			break;
-		case STRING:
-			suffix = "_SYMSTRING";
-			break;
-		default:
-			throw new RuntimeException("Unhandled SymVarType: " + type);
-		}
+		String suffix = "_SYM";
+//		switch (type) {
+//		case INT:
+//			suffix = "_SYMINT";
+//			break;
+//		case REAL:
+//			suffix = "_SYMREAL";
+//			break;
+//		case REF:
+//			suffix = "_SYMREF";
+//			break;
+//		case STRING:
+//			suffix = "_SYMSTRING";
+//			break;
+//		default:
+//			throw new RuntimeException("Unhandled SymVarType: " + type);
+//		}
 		return name + "_" + (symVarCounter++) + suffix;
 	}
 

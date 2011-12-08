@@ -474,7 +474,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 							sfIndex = 1;
 						usingTypes = true;
 					}
-
+// TODO: fix names
 					for (int i=0; i< numberOfArgs; i++){
 						Expression expLocal = (Expression)sf.getLocalAttr(sfIndex);
 						if (expLocal != null){ // symbolic
@@ -482,9 +482,11 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 
 						}else{
 								if (usingTypes)
-									symVarNameStr = names[namesIndex] + "_" + namesIndex + "_CONCRETE";
+									//symVarNameStr = names[namesIndex] + "_" + namesIndex + "_CONCRETE";
+									symVarNameStr = "CONCRETE";
 								else
-									symVarNameStr = names[namesIndex] + "_CONCRETE";
+									//symVarNameStr = names[namesIndex] + "_CONCRETE";
+									symVarNameStr = "CONCRETE";
 						}
 						symValuesStr = symValuesStr + symVarNameStr + ",";
 						namesIndex++;
