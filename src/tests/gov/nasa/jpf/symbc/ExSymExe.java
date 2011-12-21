@@ -12,8 +12,8 @@ public class ExSymExe {
 	  //inst.test2(x,x);
 	  //test1(x,true);
 	  //inst.test3(0.0, 0.0);
-	  test4(0, 0);
-	  //inst.test5(0, 0);
+	  //test4(0, 0);
+	  inst.test5(0, 0);
   }
   /* we want to let the user specify that this method should be symbolic */
   public void test5(double xm, double ym) {

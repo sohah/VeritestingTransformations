@@ -33,6 +33,7 @@ import gov.nasa.jpf.jvm.Fields;
 import gov.nasa.jpf.jvm.FloatFieldInfo;
 import gov.nasa.jpf.jvm.IntegerFieldInfo;
 import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.LongFieldInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.ReferenceFieldInfo;
@@ -448,10 +449,8 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 					String symVarNameStr = "";
 
 
-					String[] names = mi.getLocalVariableNames();
-					// if(names == null)
-                    //     throw new RuntimeException("ERROR: you need to turn debug option on");
-
+					String[] names = null;//mi.getLocalVariableNames();
+					LocalVarInfo[] argsInfo = mi.getArgumentLocalVars();
 
 					int sfIndex = 1;//do not consider implicit param "this"
 					int namesIndex=1;
@@ -460,7 +459,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 					//if debug option was not used when compiling the class,
 					//then we do not have names of the locals and need to
 					//use a different naming scheme
-					if (null != names){
+					if (argsInfo != null){
 						//use local names
 						if (md instanceof INVOKESTATIC){
 							sfIndex=0; // no "this" for static
@@ -482,11 +481,11 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 
 						}else{
 								if (usingTypes)
-									//symVarNameStr = names[namesIndex] + "_" + namesIndex + "_CONCRETE";
-									symVarNameStr = "CONCRETE";
+									symVarNameStr = names[namesIndex] + "_" + namesIndex + "_CONCRETE";
+									//symVarNameStr = "CONCRETE";
 								else
-									//symVarNameStr = names[namesIndex] + "_CONCRETE";
-									symVarNameStr = "CONCRETE";
+									symVarNameStr = argsInfo[namesIndex].getName() + "_CONCRETE";
+									//symVarNameStr = "CONCRETE";
 						}
 						symValuesStr = symValuesStr + symVarNameStr + ",";
 						namesIndex++;

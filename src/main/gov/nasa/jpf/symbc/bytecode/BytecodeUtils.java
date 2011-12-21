@@ -28,6 +28,7 @@ import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
 import gov.nasa.jpf.jvm.KernelState;
+import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
@@ -198,7 +199,7 @@ public class BytecodeUtils {
 		 * and the fields if they are specified as symbolic based on annotations
 		 *
 		 */
-		String shortName = mname.substring(0, mname.indexOf("("));
+
 		String longName = mi.getFullName();
 		String[] argTypes = mi.getArgumentTypeNames();
 		int argSize = argTypes.length; // does not contain "this"
@@ -208,15 +209,14 @@ public class BytecodeUtils {
 
 		// TODO: to review: this is from Fujitsu
 		/**** This is where we branch off to handle symbolic string variables *******/
-		SymbolicStringHandler a = new SymbolicStringHandler();
-		Instruction handled = a.handleSymbolicStrings(invInst, ss, th);
-		if(handled != null){ // go to next instruction as symbolic string operation was done
-				return new InstructionOrSuper(false, handled);
-		}
+//		SymbolicStringHandler a = new SymbolicStringHandler();
+//		Instruction handled = a.handleSymbolicStrings(invInst, ss, th);
+//		if(handled != null){ // go to next instruction as symbolic string operation was done
+//				return new InstructionOrSuper(false, handled);
+//		}
 		// end from Fujitsu
-		// this will change when we will move all the native classes under env
 
-		//neha: changed shortName to longName
+
 		boolean found = (BytecodeUtils.isMethodSymbolic(conf, longName, argSize, args)
 				|| BytecodeUtils.isClassSymbolic(conf, cname, mi, mname));
 		if (found) {
@@ -241,14 +241,15 @@ public class BytecodeUtils {
 
 			String outputString = "\n***Execute symbolic " + bytecodeName + ": " + mname + "  (";
 
-			String[] localVars = mi.getLocalVariableNames();
+			//String[] localVars = mi.getLocalVariableNames(); no longer works
+			LocalVarInfo[] argsInfo = mi.getArgumentLocalVars();
 
 
 			int localVarsIdx = 0;
 			//if debug option was not used when compiling the class,
 			//then we do not have names of the locals
 
-			if (null != localVars){
+			if (argsInfo != null){
 				 localVarsIdx = (isStatic ? 0 : 1); // Skip over "this" argument when non-static
 			}else{
 				throw new RuntimeException("ERROR: you need to turn debug option on");
@@ -265,25 +266,28 @@ public class BytecodeUtils {
 
 			for (int j = 0; j < argSize; j++) { // j ranges over actual arguments
 				if (symClass || args.get(j).equalsIgnoreCase("SYM")) {
-					String name =  localVars[localVarsIdx];
+					String name =  argsInfo[localVarsIdx].getName();
 					if (argTypes[j].equalsIgnoreCase("int") || argTypes[j].equalsIgnoreCase("long")) {
-						//IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT));
-						IntegerExpression sym_v = new SymbolicInteger(varName("int", VarType.INT));
+						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT));
+						// IntegerExpression sym_v = new SymbolicInteger(varName("int", VarType.INT));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if (argTypes[j].equalsIgnoreCase("float") || argTypes[j].equalsIgnoreCase("double")) {
-						RealExpression sym_v = new SymbolicReal(varName("real", VarType.REAL));
+						RealExpression sym_v = new SymbolicReal(varName(name, VarType.REAL));
+						// RealExpression sym_v = new SymbolicReal(varName("real", VarType.REAL));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if (argTypes[j].equalsIgnoreCase("boolean")) {
-						IntegerExpression sym_v = new SymbolicInteger(varName("bool", VarType.INT), 0, 1); // treat boolean as an integer with range [0,1]
+						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT));
+						// IntegerExpression sym_v = new SymbolicInteger(varName("bool", VarType.INT), 0, 1); // treat boolean as an integer with range [0,1]
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if (argTypes[j].equalsIgnoreCase("java.lang.String")) {
-						StringExpression sym_v = new StringSymbolic(varName("string", VarType.STRING));
+						StringExpression sym_v = new StringSymbolic(varName(name, VarType.STRING));
+						// StringExpression sym_v = new StringSymbolic(varName("string", VarType.STRING));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
@@ -295,7 +299,8 @@ public class BytecodeUtils {
 						// it includes "this"
 						// these attributes are currently ignored in the bytecodes
 						// so this code does not work
-						IntegerExpression sym_v = new SymbolicInteger(varName("ref", VarType.REF));
+						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
+						// IntegerExpression sym_v = new SymbolicInteger(varName("ref", VarType.REF));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
@@ -303,11 +308,10 @@ public class BytecodeUtils {
 					}
 
 				} else
-					outputString = outputString.concat(" " + localVars[localVarsIdx] +  "_CONCRETE" + ",");
+					outputString = outputString.concat(" " + argsInfo[localVarsIdx].getName() +  "_CONCRETE" + ",");
 
 				if (argTypes[j].equalsIgnoreCase("long") || argTypes[j].equalsIgnoreCase("double")) {
 					stackIdx--;
-					//localVarsIdx++;
 				}
 				stackIdx--;
 				localVarsIdx++;
@@ -489,29 +493,34 @@ public class BytecodeUtils {
 
 
 	public static String varName(String name, VarType type) {
-		String suffix = "_SYM";
-//		switch (type) {
-//		case INT:
-//			suffix = "_SYMINT";
-//			break;
-//		case REAL:
-//			suffix = "_SYMREAL";
-//			break;
-//		case REF:
-//			suffix = "_SYMREF";
-//			break;
-//		case STRING:
-//			suffix = "_SYMSTRING";
-//			break;
-//		default:
-//			throw new RuntimeException("Unhandled SymVarType: " + type);
-//		}
+		String suffix = "";
+		switch (type) {
+		case INT:
+			suffix = "_SYMINT";
+			break;
+		case REAL:
+			suffix = "_SYMREAL";
+			break;
+		case REF:
+			suffix = "_SYMREF";
+			break;
+		case STRING:
+			suffix = "_SYMSTRING";
+			break;
+		default:
+			throw new RuntimeException("Unhandled SymVarType: " + type);
+		}
 		return name + "_" + (symVarCounter++) + suffix;
 	}
 
 	//TODO: neha: FIX THIS. This is just the execute method above duplicated without the choice generator
 	// for the pre-conditions. This is just a temp hack, need to have so that at a given point multiple
 	// choices are possible.
+
+	// To review: who is needing this?
+	// the choice is created only if there is a pre-condition annotation
+	// so this should be removed
+
 	public static InstructionOrSuper execute(InvokeInstruction invInst, SystemState ss, KernelState ks, ThreadInfo th,
 																										boolean noChoice) {
 		boolean isStatic = (invInst instanceof INVOKESTATIC);

@@ -33,6 +33,7 @@ import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.MethodInfo;
 
 import gov.nasa.jpf.jvm.DynamicElementInfo;
+import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
@@ -266,9 +267,10 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 					String symValuesStr = "";
 					String symVarNameStr = "";
 
-					String[] names = mi.getLocalVariableNames(); // seems names does contain "this" so we need one more index :( namesIndex
+					//String[] names = mi.getLocalVariableNames(); // seems names does contain "this" so we need one more index :( namesIndex
+					LocalVarInfo[] argsInfo = mi.getArgumentLocalVars();
 
-					if(names == null)
+					if(argsInfo == null)
 						throw new RuntimeException("ERROR: you need to turn debug option on");
 
 					int sfIndex=1; //do not consider implicit param "this"
@@ -285,8 +287,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						if (expLocal != null) // symbolic
 							symVarNameStr = expLocal.toString();
 						else
-							//symVarNameStr = names[namesIndex] + "_CONCRETE" + ",";
-							symVarNameStr = "CONCRETE" + ",";
+							symVarNameStr = argsInfo[namesIndex].getName() + "_CONCRETE" + ",";
+							//symVarNameStr = "CONCRETE" + ",";
 						symValuesStr = symValuesStr + symVarNameStr + ",";
 						sfIndex++;namesIndex++;
 						if(argTypes[i] == Types.T_LONG || argTypes[i] == Types.T_DOUBLE)

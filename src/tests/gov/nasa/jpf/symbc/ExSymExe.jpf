@@ -21,7 +21,7 @@ sourcepath=${jpf-symbc}/src/tests
 #symbolic.dp=yices
 #symbolic.dp=cvc3
 
-symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test4(sym#sym)
+symbolic.method= gov.nasa.jpf.symbc.ExSymExe.test5(sym#sym)
 #symbolic.method= gov.nasa.jpf.symbc.ExSymExeSwitch.test(sym)
 #,gov.nasa.jpf.symbc.ExSymExe.test5(sym#sym)
 #listener = gov.nasa.jpf.symbc.SymbolicListener
