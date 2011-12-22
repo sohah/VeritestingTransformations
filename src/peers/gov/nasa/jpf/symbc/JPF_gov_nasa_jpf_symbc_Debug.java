@@ -80,7 +80,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 		if (sym_arg !=null)
 			return env.newString(sym_arg.toString());
 		else
-			return -1;
+			return env.newString(Integer.toString(v));
 	}
     public static int getSymbolicRealValue(MJIEnv env, int objRef, double v) {
     	Object [] attrs = env.getArgAttributes();
@@ -88,7 +88,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 		if (sym_arg !=null)
 			return env.newString(sym_arg.toString());
 		else
-			return -1;
+			return env.newString(Double.toString(v));
     }
     public static int getSymbolicBooleanValue(MJIEnv env, int objRef, boolean v) {
     	Object [] attrs = env.getArgAttributes();
@@ -96,7 +96,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 		if (sym_arg !=null)
 			return env.newString(sym_arg.toString());
 		else
-			return -1;
+			return env.newString(Boolean.toString(v));
     }
 
 	public static int makeSymbolicInteger(MJIEnv env, int objRef, int stringRef) {

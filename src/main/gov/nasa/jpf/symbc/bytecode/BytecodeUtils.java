@@ -24,7 +24,6 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.AnnotationInfo;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DynamicArea;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
 import gov.nasa.jpf.jvm.KernelState;
@@ -241,7 +240,6 @@ public class BytecodeUtils {
 
 			String outputString = "\n***Execute symbolic " + bytecodeName + ": " + mname + "  (";
 
-			//String[] localVars = mi.getLocalVariableNames(); no longer works
 			LocalVarInfo[] argsInfo = mi.getArgumentLocalVars();
 
 
@@ -262,32 +260,29 @@ public class BytecodeUtils {
 			// number of words; we skip over 'this' for non-static methods
 			int numStackSlots = invInst.getArgSize() - (isStatic ? 0 : 1);
 
-			int stackIdx = numStackSlots - 1; // stackIdx ranges from numStackSlots-1 to 0 ???
+			int stackIdx = numStackSlots - 1; // stackIdx ranges from numStackSlots-1 to 0
 
 			for (int j = 0; j < argSize; j++) { // j ranges over actual arguments
 				if (symClass || args.get(j).equalsIgnoreCase("SYM")) {
 					String name =  argsInfo[localVarsIdx].getName();
 					if (argTypes[j].equalsIgnoreCase("int") || argTypes[j].equalsIgnoreCase("long")) {
 						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT));
-						// IntegerExpression sym_v = new SymbolicInteger(varName("int", VarType.INT));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if (argTypes[j].equalsIgnoreCase("float") || argTypes[j].equalsIgnoreCase("double")) {
 						RealExpression sym_v = new SymbolicReal(varName(name, VarType.REAL));
-						// RealExpression sym_v = new SymbolicReal(varName("real", VarType.REAL));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if (argTypes[j].equalsIgnoreCase("boolean")) {
 						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT));
-						// IntegerExpression sym_v = new SymbolicInteger(varName("bool", VarType.INT), 0, 1); // treat boolean as an integer with range [0,1]
+						// treat boolean as an integer with range [0,1]
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if (argTypes[j].equalsIgnoreCase("java.lang.String")) {
 						StringExpression sym_v = new StringSymbolic(varName(name, VarType.STRING));
-						// StringExpression sym_v = new StringSymbolic(varName("string", VarType.STRING));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
@@ -300,7 +295,6 @@ public class BytecodeUtils {
 						// these attributes are currently ignored in the bytecodes
 						// so this code does not work
 						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
-						// IntegerExpression sym_v = new SymbolicInteger(varName("ref", VarType.REF));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
@@ -513,286 +507,5 @@ public class BytecodeUtils {
 		return name + "_" + (symVarCounter++) + suffix;
 	}
 
-	//TODO: neha: FIX THIS. This is just the execute method above duplicated without the choice generator
-	// for the pre-conditions. This is just a temp hack, need to have so that at a given point multiple
-	// choices are possible.
 
-	// To review: who is needing this?
-	// the choice is created only if there is a pre-condition annotation
-	// so this should be removed
-
-	public static InstructionOrSuper execute(InvokeInstruction invInst, SystemState ss, KernelState ks, ThreadInfo th,
-																										boolean noChoice) {
-		boolean isStatic = (invInst instanceof INVOKESTATIC);
-		String bytecodeName = invInst.getMnemonic().toUpperCase();
-		String mname = invInst.getInvokedMethodName();
-		String cname = invInst.getInvokedMethodClassName();
-
-
-		MethodInfo mi = invInst.getInvokedMethod(th);
-		//System.out.println("mi  className :" + mi.getClassName());
-		if (mi == null) {
-			return new InstructionOrSuper(false,
-					th.createAndThrowException("java.lang.NoSuchMethodException", "calling " + cname + "." + mname));
-		}
-
-		/* Here we test if the the method should be executed symbolically.
-		 * We perform two checks:
-		 * 1. Does the invoked method correspond to a method listed in the
-		 * symbolic.method property and does the number of parameters match?
-		 * 2. Is the method contained in a class that is to be executed symbolically?
-		 * If the method is symbolic, initialize the parameter attributes
-		 * and the fields if they are specified as symbolic based on annotations
-		 *
-		 */
-		String shortName = mname.substring(0, mname.indexOf("("));
-		String longName = mi.getFullName();
-		String[] argTypes = mi.getArgumentTypeNames();
-		int argSize = argTypes.length; // does not contain "this"
-
-
-		Vector<String> args = new Vector<String>();
-		Config conf = th.getVM().getConfig();
-
-		// TODO: to review: this is from Fujitsu
-		/**** This is where we branch off to handle symbolic string variables *******/
-		SymbolicStringHandler a = new SymbolicStringHandler();
-		Instruction handled = a.handleSymbolicStrings(invInst, ss, th);
-		if(handled != null){ // go to next instruction as symbolic string operation was done
-				return new InstructionOrSuper(false, handled);
-		}
-		// end from Fujitsu
-		// this will change when we will move all the native classes under env
-
-		//neha: changed shortName to longName
-		boolean found = (BytecodeUtils.isMethodSymbolic(conf, longName, argSize, args)
-				|| BytecodeUtils.isClassSymbolic(conf, cname, mi, mname));
-		if (found) {
-			//System.out.println("method is symbolic "+mname +" "+found + " long name " +longName);
-			// method is symbolic
-			// create a choice generator to associate the precondition with it
-			/**ChoiceGenerator<?> cg = null;
-			if (!th.isFirstStepInsn()) { // first time around
-				cg = new PCChoiceGenerator(1);
-				ss.setNextChoiceGenerator(cg);
-				return new InstructionOrSuper(false, invInst);
-			} else { // this is what really returns results
-				cg = ss.getChoiceGenerator();
-				if (!(cg instanceof PCChoiceGenerator)) // the choice comes from super
-					return new InstructionOrSuper(true, null);
-			}**/
-
-			String outputString = "\n***Execute symbolic " + bytecodeName + ": " + mname + "  (";
-
-			String[] localVars = mi.getLocalVariableNames();
-			int localVarsIdx = 0;
-			//if debug option was not used when compiling the class,
-			//then we do not have names of the locals
-
-			if (null != localVars){
-				 localVarsIdx = (isStatic ? 0 : 1); // Skip over "this" argument when non-static
-			}else{
-				throw new RuntimeException("ERROR: you need to turn debug option on");
-			}
-			Map<String, Expression> expressionMap = new HashMap<String, Expression>();
-
-			//take care of the method arguments
-			StackFrame sf = th.getTopFrame(); // get a hold of the stack frame of the caller
-
-			// number of words; we skip over 'this' for non-static methods
-			int numStackSlots = invInst.getArgSize() - (isStatic ? 0 : 1);
-
-			int stackIdx = numStackSlots - 1; // stackIdx ranges from numStackSlots-1 to 0 ???
-
-			for (int j = 0; j < argSize; j++) { // j ranges over actual arguments
-
-
-				if (symClass || args.get(j).equalsIgnoreCase("SYM")) {
-					String name =  localVars[localVarsIdx];
-					if (argTypes[j].equalsIgnoreCase("int") || argTypes[j].equalsIgnoreCase("long")) {
-						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT));
-						expressionMap.put(name, sym_v);
-						sf.setOperandAttr(stackIdx, sym_v);
-						outputString = outputString.concat(" " + sym_v + ",");
-					} else if (argTypes[j].equalsIgnoreCase("float") || argTypes[j].equalsIgnoreCase("double")) {
-						RealExpression sym_v = new SymbolicReal(varName(name, VarType.REAL));
-						expressionMap.put(name, sym_v);
-						sf.setOperandAttr(stackIdx, sym_v);
-						outputString = outputString.concat(" " + sym_v + ",");
-					} else if (argTypes[j].equalsIgnoreCase("boolean")) {
-						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT), 0, 1); // treat boolean as an integer with range [0,1]
-						expressionMap.put(name, sym_v);
-						sf.setOperandAttr(stackIdx, sym_v);
-						outputString = outputString.concat(" " + sym_v + ",");
-					} else if (argTypes[j].equalsIgnoreCase("java.lang.String")) {
-						StringExpression sym_v = new StringSymbolic(varName(name, VarType.STRING));
-						expressionMap.put(name, sym_v);
-						sf.setOperandAttr(stackIdx, sym_v);
-						outputString = outputString.concat(" " + sym_v + ",");
-					} else {
-
-                        // the argument is of reference type and it is symbolic
-						// it includes "this"
-						// these attributes are currently ignored in the bytecodes
-						// so this code does not work
-						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
-						expressionMap.put(name, sym_v);
-						sf.setOperandAttr(stackIdx, sym_v);
-						outputString = outputString.concat(" " + sym_v + ",");
-						//throw new RuntimeException("## Error: parameter type not yet handled: " + argTypes[j]);
-					}
-
-				} else
-					outputString = outputString.concat(" " + localVars[localVarsIdx] +  "_CONCRETE" + ",");
-
-				if (argTypes[j].equalsIgnoreCase("long") || argTypes[j].equalsIgnoreCase("double")) {
-					stackIdx--;
-					localVarsIdx++;
-				}
-				stackIdx--;
-				localVarsIdx++;
-			}
-
-			if (outputString.endsWith(","))
-				outputString = outputString.substring(0, outputString.length() - 1);
-			outputString = outputString + " )  (";
-
-
-			//now, take care of any globals that are indicated as symbolic
-			//base on annotation or on symbolic.fields property
-			//annotation will override the symbolic.fields property as a
-			//way to specify exceptions
-			String[] symFields = conf.getStringArray("symbolic.fields");
-			boolean symStatic = false;
-			boolean symInstance = false;
-			if (symFields != null){
-				List<String> symList = null;
-				symList = Arrays.asList(symFields);
-				for (int i=0; i<symList.size(); i++){
-					String s = (String)symList.get(i);
-					if (s.equalsIgnoreCase("instance"))
-						symInstance = true;
-					else if (s.equalsIgnoreCase("static"))
-						symStatic = true;
-				}
-			}
-			int index = 1;
-			ClassInfo ci = mi.getClassInfo();
-			FieldInfo[] fields = ci.getDeclaredInstanceFields();
-			ElementInfo ei;
-			if (isStatic) {
-				//DynamicArea da = th.getVM().getDynamicArea();
-				ei = th.getElementInfo(ci.getClassObjectRef());
-			} else {
-				int objRef = th.getCalleeThis(invInst.getArgSize());
-				if (objRef == -1) { // NPE
-					return new InstructionOrSuper(false,
-							th.createAndThrowException("java.lang.NullPointerException", "calling '" + mname
-							+	 "' on null object"));
-				}
-				ei = th.getElementInfo(objRef);
-			}
-
-
-			if (fields.length > 0) {
-				for (int i = 0; i < fields.length; i++) {
-					String value = "";
-					int objRef = th.getCalleeThis(invInst.getArgSize());
-					if (fields[i].getAnnotation("gov.nasa.jpf.symbc.Symbolic") != null)
-						value = fields[i].getAnnotation("gov.nasa.jpf.symbc.Symbolic").valueAsString();
-
-					else {
-						if (true == symInstance)
-							value = "true";
-						else
-							value = "false";
-					}
-					if (value.equalsIgnoreCase("true")) {
-						Expression sym_v = Helper.initializeInstanceField(fields[i], ei, "input["+objRef+"]", "");
-						String name = fields[i].getName();
-						expressionMap.put(name, sym_v);
-						outputString = outputString.concat(" " + name + ",");
-						//outputString = outputString.concat(" " + fullName + ",");
-						index++;
-					}
-				}
-			}
-
-			FieldInfo[] staticFields = ci.getDeclaredStaticFields();
-			if (staticFields.length > 0) {
-				for (int i = 0; i < staticFields.length; i++) {
-					String value = "";
-					if (staticFields[i].getAnnotation("gov.nasa.jpf.symbc.Symbolic") != null)
-						value = staticFields[i].getAnnotation("gov.nasa.jpf.symbc.Symbolic").valueAsString();
-					else{
-						if (true == symStatic)
-							value = "true";
-						else
-							value = "false";
-					}
-					if (value.equalsIgnoreCase("true")) {
-						Expression sym_v = Helper.initializeStaticField(staticFields[i], ci, th, "");
-						String name = staticFields[i].getName();
-						expressionMap.put(name, sym_v);
-						outputString = outputString.concat(" " + name + ",");
-						//outputString = outputString.concat(" " + fullName + ",");
-						index++;
-					}
-				}
-			}
-
-
-
-			if (outputString.endsWith(",")) {
-				outputString = outputString.substring(0, outputString.length() - 1);
-				outputString = outputString + " )";
-			} else {
-				if (outputString.endsWith("("))
-					outputString = outputString.substring(0, outputString.length() - 1);
-			}
-			System.out.println(outputString);
-
-			//Now, set up the initial path condition for this method if the
-			//Annotation contains one
-			//we'll create a choice generator for this
-
-			/**AnnotationInfo ai;
-			PathCondition pc = null;
-			// TODO: should still look at prev pc if we want to generate test sequences
-			// here we should get the prev pc
-			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
-			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
-			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-				prev_cg = prev_cg.getPreviousChoiceGenerator();
-			}
-
-			if (prev_cg == null)
-				pc = new PathCondition();
-			else
-				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
-
-			assert pc != null;
-
-
-			if (invInst.getInvokedMethod().getAnnotation("gov.nasa.jpf.symbc.Preconditions") != null) {
-				ai = invInst.getInvokedMethod().getAnnotation("gov.nasa.jpf.symbc.Preconditions");
-				String assumeString = (String) ai.getValue("value");
-
-				pc = (new PreCondition()).addConstraints(pc,assumeString, expressionMap);
-			}
-
-
-
-			//	should check PC for satisfiability
-			if (!pc.simplify()) {// not satisfiable
-				//System.out.println("Precondition not satisfiable");
-				ss.setIgnored(true);
-			} else {
-				//pc.solve();
-				((PCChoiceGenerator) cg).setCurrentPC(pc);
-				//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
-			} **/
-		}
-		return new InstructionOrSuper(true, null);
-	}
 }
