@@ -18,14 +18,14 @@ package gov.nasa.jpf.symbc.bytecode;
 //DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE.
 //
 
-//import static gov.nasa.jpf.symbc.bytecode.BytecodeUtils.VarType.FLOAT;
-//import static gov.nasa.jpf.symbc.bytecode.BytecodeUtils.VarType.INT;
+
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.AnnotationInfo;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.KernelState;
 import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
@@ -64,8 +64,6 @@ public class BytecodeUtils {
 	 * Matched based on method name (short version) & number of params (if any)
 	 * For methods without arguments, all methods with this name will be treated
 	 * as symbolic methods since we cannot distinguish between them;
-	 * neha: uses fully qualified name to identify the method
-	 * i.e. mi.getFullName() instead of mi.getName()
 	 */
 	public static boolean isMethodSymbolic(Config conf, String methodName, int numberOfArgs, Vector<String> args) {
 		String[] methods = conf.getStringArray("symbolic.method");
@@ -201,12 +199,13 @@ public class BytecodeUtils {
 
 		String longName = mi.getFullName();
 		String[] argTypes = mi.getArgumentTypeNames();
+
 		int argSize = argTypes.length; // does not contain "this"
 
 		Vector<String> args = new Vector<String>();
 		Config conf = th.getVM().getConfig();
 
-		// TODO: to review: this is from Fujitsu
+		// TODO: to review: this is from Fujitsu -- will cut
 		/**** This is where we branch off to handle symbolic string variables *******/
 //		SymbolicStringHandler a = new SymbolicStringHandler();
 //		Instruction handled = a.handleSymbolicStrings(invInst, ss, th);
@@ -287,7 +286,24 @@ public class BytecodeUtils {
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if(argTypes[j].equalsIgnoreCase("int[]")){
-						throw new RuntimeException("## Error: parameter type not yet handled: " + argTypes[j]);
+
+						Object[] argValues = invInst.getArgumentValues(th);
+
+
+						ElementInfo eiArray = (ElementInfo)argValues[j];
+
+						int[] arr = eiArray.asIntArray();
+						if(arr!=null)
+							for(int i =0; i< arr.length; i++) {
+								IntegerExpression sym_v = new SymbolicInteger(varName(name+i, VarType.INT));
+								expressionMap.put(name+i, sym_v);
+								eiArray.addElementAttr(i, sym_v);
+								outputString = outputString.concat(" " + sym_v + ",");
+							}
+						else
+							System.out.println("Warning: input array empty! "+name);
+
+						//throw new RuntimeException("## Error: parameter type not yet handled: " + argTypes[j]);
 					}
 					else {
                         // the argument is of reference type and it is symbolic

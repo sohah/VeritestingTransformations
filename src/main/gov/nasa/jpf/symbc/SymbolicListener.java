@@ -457,6 +457,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 		}
 	}
 
+	/*
 	  public void stateBacktracked(Search search) {
 
 		  JVM vm = search.getVM();
@@ -484,7 +485,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 		//	ss.retainAttributes(true);
 		  }
 	  }
-
+*/
 	  /*
 	   *  todo: needs to be implemented if we are going to support heuristic search with fancy turnoff state matching
 	   */

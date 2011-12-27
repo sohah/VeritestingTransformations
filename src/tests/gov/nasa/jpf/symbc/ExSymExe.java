@@ -13,8 +13,19 @@ public class ExSymExe {
 	  //test1(x,true);
 	  //inst.test3(0.0, 0.0);
 	  //test4(0, 0);
-	  inst.test5(0, 0);
+	  //inst.test5(0, 0);
+	  int[] a = new int[2];
+	  inst.testa(0,a);
   }
+  public void testa(int b, int[]a) {
+	  	  b++;
+		  if(a[0]>0)
+			  System.out.println("array0");
+		  if(a[1]>1)
+			  System.out.println("array1");
+
+  }
+
   /* we want to let the user specify that this method should be symbolic */
   public void test5(double xm, double ym) {
 //	  if(ym == (1.0 + xm) && (ym - xm) == (3.0 + ym))
