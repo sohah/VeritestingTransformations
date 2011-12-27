@@ -286,12 +286,8 @@ public class BytecodeUtils {
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if(argTypes[j].equalsIgnoreCase("int[]")){
-
 						Object[] argValues = invInst.getArgumentValues(th);
-
-
 						ElementInfo eiArray = (ElementInfo)argValues[j];
-
 						int[] arr = eiArray.asIntArray();
 						if(arr!=null)
 							for(int i =0; i< arr.length; i++) {
@@ -302,9 +298,8 @@ public class BytecodeUtils {
 							}
 						else
 							System.out.println("Warning: input array empty! "+name);
-
-						//throw new RuntimeException("## Error: parameter type not yet handled: " + argTypes[j]);
 					}
+
 					else {
                         // the argument is of reference type and it is symbolic
 						// it includes "this"
