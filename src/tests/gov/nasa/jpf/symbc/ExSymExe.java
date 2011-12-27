@@ -14,14 +14,14 @@ public class ExSymExe {
 	  //inst.test3(0.0, 0.0);
 	  //test4(0, 0);
 	  //inst.test5(0, 0);
-	  int[] a = new int[2];
+	  boolean[] a = new boolean[2];
 	  inst.testa(0,a);
   }
-  public void testa(int b, int[]a) {
+  public void testa(int b, boolean[]a) {
 	  	  b++;
-		  if(a[0]>0)
+		  if(a[0])
 			  System.out.println("array0");
-		  if(a[1]>1)
+		  if(a[1])
 			  System.out.println("array1");
 
   }

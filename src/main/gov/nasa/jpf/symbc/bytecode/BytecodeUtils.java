@@ -275,7 +275,7 @@ public class BytecodeUtils {
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
 					} else if (argTypes[j].equalsIgnoreCase("boolean")) {
-						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT));
+						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.INT),0,1);
 						// treat boolean as an integer with range [0,1]
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
@@ -285,13 +285,39 @@ public class BytecodeUtils {
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
 						outputString = outputString.concat(" " + sym_v + ",");
-					} else if(argTypes[j].equalsIgnoreCase("int[]")){
+					} else if(argTypes[j].equalsIgnoreCase("int[]") || argTypes[j].equalsIgnoreCase("long[]")){
 						Object[] argValues = invInst.getArgumentValues(th);
 						ElementInfo eiArray = (ElementInfo)argValues[j];
-						int[] arr = eiArray.asIntArray();
-						if(arr!=null)
-							for(int i =0; i< arr.length; i++) {
+
+						if(eiArray!=null)
+							for(int i =0; i< eiArray.arrayLength(); i++) {
 								IntegerExpression sym_v = new SymbolicInteger(varName(name+i, VarType.INT));
+								expressionMap.put(name+i, sym_v);
+								eiArray.addElementAttr(i, sym_v);
+								outputString = outputString.concat(" " + sym_v + ",");
+							}
+						else
+							System.out.println("Warning: input array empty! "+name);
+					} else if(argTypes[j].equalsIgnoreCase("float[]") || argTypes[j].equalsIgnoreCase("double[]")){
+						Object[] argValues = invInst.getArgumentValues(th);
+						ElementInfo eiArray = (ElementInfo)argValues[j];
+
+						if(eiArray!=null)
+							for(int i =0; i< eiArray.arrayLength(); i++) {
+								RealExpression sym_v = new SymbolicReal(varName(name+i, VarType.REAL));
+								expressionMap.put(name+i, sym_v);
+								eiArray.addElementAttr(i, sym_v);
+								outputString = outputString.concat(" " + sym_v + ",");
+							}
+						else
+							System.out.println("Warning: input array empty! "+name);
+					} else if(argTypes[j].equalsIgnoreCase("boolean[]")){
+						Object[] argValues = invInst.getArgumentValues(th);
+						ElementInfo eiArray = (ElementInfo)argValues[j];
+
+						if(eiArray!=null)
+							for(int i =0; i< eiArray.arrayLength(); i++) {
+								IntegerExpression sym_v = new SymbolicInteger(varName(name+i, VarType.INT),0,1);
 								expressionMap.put(name+i, sym_v);
 								eiArray.addElementAttr(i, sym_v);
 								outputString = outputString.concat(" " + sym_v + ",");
