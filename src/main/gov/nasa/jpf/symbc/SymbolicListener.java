@@ -132,7 +132,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 //	    }
 //	}
 
-	//not yet tested
+
 	public void propertyViolated (Search search){
 		//System.out.println("--------->property violated");
 
@@ -215,10 +215,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				if (methodName.contains("("))
 					shortName = methodName.substring(0,methodName.indexOf("("));
 
-				//System.out.println("method name "+methodName + " "+sf.getMethodName()+ " "+shortName+" "+longName);
-				// does not work for recursive invocations of sym methods; should compare MethodInfo instead
-				//if(!shortName.equals(sf.getMethodName()))
-				//return;
+
 				if(!mi.equals(sf.getMethodInfo()))
 					return;
 
@@ -267,7 +264,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 					String symValuesStr = "";
 					String symVarNameStr = "";
 
-					//String[] names = mi.getLocalVariableNames(); // seems names does contain "this" so we need one more index :( namesIndex
+
 					LocalVarInfo[] argsInfo = mi.getArgumentLocalVars();
 
 					if(argsInfo == null)
@@ -279,7 +276,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						sfIndex=0; // no "this" for static
 						namesIndex =0;
 					}
-					//StackFrame sf = ti.getTopFrame();
+
 
 
 					for(int i=0; i < numberOfArgs; i++){
@@ -288,7 +285,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							symVarNameStr = expLocal.toString();
 						else
 							symVarNameStr = argsInfo[namesIndex].getName() + "_CONCRETE" + ",";
-							//symVarNameStr = "CONCRETE" + ",";
+						// TODO: what happens if the argument is an array?
 						symValuesStr = symValuesStr + symVarNameStr + ",";
 						sfIndex++;namesIndex++;
 						if(argTypes[i] == Types.T_LONG || argTypes[i] == Types.T_DOUBLE)
@@ -341,15 +338,14 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							else
 								pc.solve();
 
-							//PathCondition result = pc;
-							//PathCondition result = new PathCondition();
+
 							//after the following statement is executed, the pc loses its solution
 
 							String pcString = pc.stringPC();
 							Pair<String,String> pcPair = null;
 
 							String returnString = "";
-							/* To review */
+
 
 							Expression result = null;
 
@@ -437,7 +433,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 								pc.solve();
 */
 
-							/*end to review*/
+
 							pcString = pc.toString();
 							pcPair = new Pair<String,String>(pcString,returnString);
 							MethodSummary methodSummary = allSummaries.get(longName);
@@ -495,12 +491,12 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	  /*
 	   * Save the method summaries to a file for use by others
 	   */
-	  public void searchFinished(Search search) {
+//	  public void searchFinished(Search search) {
 		  //writeTable();
 //		  if (search.getConfig().getStringArray("symbolic.dp")[0].equalsIgnoreCase("compare")) {
 //			  ProblemCompare.dump(search);
 //		  }
-	  }
+//	  }
 
 	  /*
 	   * The way this method works is specific to the format of the methodSummary
@@ -548,6 +544,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						  }
 						  else
 							  throw new RuntimeException("## Error: listener does not support type other than int, long, float, double and boolean");
+						  // TODO: to extend with arrays
 					  }else{
 						  //need to check if value is concrete
 						  if (token.contains("CONCRETE"))

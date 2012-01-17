@@ -543,7 +543,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 
 							Pair<String,String> pcPair = null;
 
-
+/* TODO: to review this part
 							String returnString = "";
 							if (insn instanceof IRETURN){
 								IRETURN ireturn = (IRETURN)insn;
@@ -566,7 +566,9 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 								else {// concrete
 									Object val = areturn.getReturnValue(ti);
 									String tmp = val.toString();
+									System.out.println("tmp "+tmp);
 									tmp = tmp.substring(tmp.indexOf('@')+1);
+									System.out.println("tmp "+tmp);
 									Integer index = new Integer(Integer.parseInt(tmp));
 									if (nameMap.containsKey(index))
 										returnString = "Return Value: " + nameMap.get(index);
@@ -589,6 +591,8 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 									}
 								}
 							}
+							*/
+							String returnString = "TODO";
 							pc.solve();
 							pcString = pc.toString();
 							pcPair = new Pair<String,String>(pcString,returnString);
