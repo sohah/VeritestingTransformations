@@ -8,14 +8,14 @@ public class ExSymExe {
 	  int x = 3; /* we want to specify in an annotation that this param should be symbolic */
 	  ExSymExe inst = new ExSymExe();
 	  field = 9;
-	  //inst.test(0, 1);
+	  inst.test(0, 1);
 	  //inst.test2(x,x);
 	  //test1(x,true);
 	  //inst.test3(0.0, 0.0);
 	  //test4(0, 0);
 	  //inst.test5(0, 0);
-	  boolean[] a = new boolean[2];
-	  inst.testa(0,a);
+	 // boolean[] a = new boolean[2];
+	 // inst.testa(0,a);
   }
   public void testa(int b, boolean[]a) {
 	  	  b++;
@@ -80,14 +80,16 @@ public class ExSymExe {
 		  //return (int)(x-1);
 	  }
   }
-  public void test (int x, int z) {
+  public void test (long x, int z) {
+	  x = x >>> 1;
+	  //x=x+z;
 	  if (x > z)
 		  if (z > x)
 			  System.out.println("unreachable");
-	  if (x/6 > 0)
-		  System.out.println("br1");
-	  else
-		  System.out.println("br2");
+	 // if (x/6 > 0)
+		//  System.out.println("br1");
+	  //else
+		//  System.out.println("br2");
   }
   public void test2 (int x, int z) {
 	  System.out.println("in test2 "+ x + " " +z);
