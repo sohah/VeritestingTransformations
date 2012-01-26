@@ -57,7 +57,7 @@ import java.util.Vector;
 
 public class BytecodeUtils {
 
-	static boolean symClass = false;
+	//static boolean symClass = false;
 	/*
 	 * Helper method to determine if the method just executed is one of
 	 * the ones specified in the symbolic.method property
@@ -113,7 +113,7 @@ public class BytecodeUtils {
 	 * Uses the class name to determine if a method is symbolic; use to
 	 * declare all methods in the given class as symbolic
 	 */
-	// not sure if we'll use this??
+
 	public static boolean isClassSymbolic(Config conf, String className,
 			MethodInfo mi, String methodName) {
 		String shortName = "";
@@ -128,8 +128,9 @@ public class BytecodeUtils {
 				if (className.equalsIgnoreCase(cName) &&
 						!shortName.equalsIgnoreCase("init")&& !mi.isClinit() &&
 						!methodName.equalsIgnoreCase("[clinit]<clinit>") &&
-						!methodName.equalsIgnoreCase("main")){
-					symClass = true;
+						!methodName.equalsIgnoreCase("main([Ljava/lang/String;)V")){
+					System.out.println("method name "+methodName);
+					//symClass = true;
 					return true;
 				}
 			}
@@ -215,12 +216,11 @@ public class BytecodeUtils {
 		// end from Fujitsu
 
 
+		boolean symClass = BytecodeUtils.isClassSymbolic(conf, cname, mi, mname);
 		boolean found = (BytecodeUtils.isMethodSymbolic(conf, longName, argSize, args)
-				|| BytecodeUtils.isClassSymbolic(conf, cname, mi, mname));
+				|| symClass);
 		if (found) {
-			if (SymbolicInstructionFactory.debugMode)
-				System.out.println("**** symbolic method "+mname +" long name " +longName+" "+(conf.getStringArray("symbolic.method"))[0]);
-			// method is symbolic
+						// method is symbolic
 
 			// create a choice generator to associate the precondition with it
 			ChoiceGenerator<?> cg = null;
@@ -361,8 +361,7 @@ public class BytecodeUtils {
 			boolean symStatic = false;
 			boolean symInstance = false;
 			if (symFields != null){
-				List<String> symList = null;
-				symList = Arrays.asList(symFields);
+				List<String> symList = Arrays.asList(symFields);
 				for (int i=0; i<symList.size(); i++){
 					String s = (String)symList.get(i);
 					if (s.equalsIgnoreCase("instance"))
