@@ -206,13 +206,13 @@ public class BytecodeUtils {
 		Vector<String> args = new Vector<String>();
 		Config conf = th.getVM().getConfig();
 
-		// TODO: to review: this is from Fujitsu -- will cut
+		// TODO: to review: this is from Fujitsu
 		/**** This is where we branch off to handle symbolic string variables *******/
-//		SymbolicStringHandler a = new SymbolicStringHandler();
-//		Instruction handled = a.handleSymbolicStrings(invInst, ss, th);
-//		if(handled != null){ // go to next instruction as symbolic string operation was done
-//				return new InstructionOrSuper(false, handled);
-//		}
+		SymbolicStringHandler a = new SymbolicStringHandler();
+		Instruction handled = a.handleSymbolicStrings(invInst, ss, th);
+		if(handled != null){ // go to next instruction as symbolic string operation was done
+				return new InstructionOrSuper(false, handled);
+		}
 		// end from Fujitsu
 
 
