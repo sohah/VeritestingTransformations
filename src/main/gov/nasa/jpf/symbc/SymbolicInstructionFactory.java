@@ -128,6 +128,9 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 		    return (filter.isInstrumentedClass(ci) ? new INVOKEVIRTUAL(clsName, methodName, methodSignature): super.invokevirtual(clsName, methodName, methodSignature));
 	  }
 
+	  public Instruction invokeinterface(String clsName, String methodName, String methodSignature) {
+		    return (filter.isInstrumentedClass(ci) ? new INVOKEINTERFACE(clsName, methodName, methodSignature): super.invokeinterface(clsName, methodName, methodSignature));
+	  }
 
 	  public Instruction invokespecial(String clsName, String methodName, String methodSignature) {
 		    return (filter.isInstrumentedClass(ci) ? new INVOKESPECIAL(clsName, methodName, methodSignature): super.invokespecial(clsName, methodName, methodSignature));
