@@ -51,6 +51,7 @@ import coral.util.Config;
  * (4) get*Value(): this method retrieves the solutions associated
  * with each variables if they exist.
  *
+ * For examples of use, look at src/tests/gov.nasa.jpf.symbc/ExSymExeCoral.jpf
  *
  * @author Matheus Arrais (mbas@cin.ufpe.br)
  * @author Mateus Borges (mab@cin.ufpe.br)
@@ -60,33 +61,78 @@ import coral.util.Config;
 
 public class ProblemCoral extends ProblemGeneral {
 
-	private static final long timeout = -1; //Config.timeout; // 1s default
+//	private static final long timeout = -1; //Config.timeout; // 1s default
+	private static SolverKind defaultKind;
 	private SolverKind solverKind;
 	private coral.PC pc = new coral.PC();
 	private boolean optmize;
 
 	public ProblemCoral() {
-		this(SolverKind.PSO_OPT4J, true);
+		this(defaultKind);
 	}
 
-	public ProblemCoral(SolverKind solverKind, boolean preprocOptimizations){
+	public ProblemCoral(SolverKind solverKind){
+		this.solverKind = solverKind;
+	}
+
+	public coral.PC getPc() {
+		return pc;
+	}
+	
+	/**
+	 * Set CORAL's parameters with the values from the .jpf file. 
+	 * Look at ExSymExeCoral.jpf for more information. 
+	 */
+	
+	public static void configure(gov.nasa.jpf.Config conf) {
+		long seed = conf.getLong("coral.seed",464655);
+		int nIterations = conf.getInt("coral.iterations",-1);
+		SolverKind kind = SolverKind.valueOf(conf.getString("coral.solver","PSO_OPT4J").toUpperCase());
+		boolean optimize = conf.getBoolean("coral.optimize", true);
+		String intervalSolver = conf.getString("coral.interval_solver","none").toLowerCase();
+		String intervalSolverPath = conf.getString("coral.interval_solver.path","none");
+		
+		Config.seed = seed;
+		defaultKind = kind;
+		if(optimize) {
+			Config.toggleValueInference = true;
+			Config.removeSimpleEqualities = true;
+		}
+		
+		if(!intervalSolver.equals("none")) {
+			Config.intervalSolver = intervalSolver;
+			Config.enableIntervalBasedSolver = true;
+			if(intervalSolver.equals("realpaver")) {
+				Config.realPaverLocation = intervalSolverPath;
+			} else if (intervalSolver.equals("icos")) {
+				Config.icosLocation = intervalSolverPath;
+			} else {
+				throw new RuntimeException("Unsupported interval solver!");
+			}
+			
+			Config.simplifyUsingIntervalSolver = optimize ? true : false;
+		}
+		
 		/**
 		 * setting maximum number of iterations allowed.
 		 * the solver return with no solution in that
 		 * case.  note that the constraint may still be
 		 * satisfiable.
 		 */
-		this.solverKind = solverKind;
-		this.optmize = preprocOptimizations;
-		Config.nIterationsPSO = 600;
-		/**
-		 * random seed used to generate random numbers.
-		 */
-		Config.seed = 464655;
+		if(nIterations != -1) {
+			if(kind.equals(SolverKind.PSO_OPT4J)) {
+				Config.nIterationsPSO = nIterations;
+			} else if(kind.equals(SolverKind.RANDOM)) {
+				Config.nIterationsRANDOM = nIterations;
+			} else if(kind.equals(SolverKind.AVM)) {
+				Config.nIterationsAVM = nIterations;
+			} 
+		}
 	}
-
-	public coral.PC getPc() {
-		return pc;
+	
+	public void cleanup() {
+		//reset the id generator
+		Util.resetID();
 	}
 
 	/**************************************************
@@ -588,8 +634,6 @@ public class ProblemCoral extends ProblemGeneral {
 		Solver solver = solverKind.get();
 		Boolean result = null;
 		try {
-			Config.toggleValueInference = optmize;
-			Config.removeSimpleEqualities = optmize;
 			sol = solveIt(pc, solver);
 			/**
 			 * this is to comply with the assumption
@@ -627,15 +671,15 @@ public class ProblemCoral extends ProblemGeneral {
 		 * the code spawns a timer thread.  otherwise,
 		 * it calls the run() method directly.
 		 */
-		if (timeout > 0) { // old code; not executed
-			Thread t = new Thread(solverJob);
-			t.start();
-			t.join(timeout);
-			solver.setPleaseStop(true);
-			Thread.sleep(10);
-		} else {
-			solverJob.run();
-		}
+//		if (timeout > 0) { // old code; not executed
+//			Thread t = new Thread(solverJob);
+//			t.start();
+//			t.join(timeout);
+//			solver.setPleaseStop(true);
+//			Thread.sleep(10);
+//		} else {
+		solverJob.run();
+//		}
 		return env[0];
 	}
 
@@ -687,5 +731,5 @@ public class ProblemCoral extends ProblemGeneral {
 		post(orResult);
 
 	}
-
+	
 }

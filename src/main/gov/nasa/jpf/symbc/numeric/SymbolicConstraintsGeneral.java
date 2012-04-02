@@ -1001,6 +1001,8 @@ public class SymbolicConstraintsGeneral {
    public void cleanup () {
 	   if(pb instanceof ProblemCVC3) {
 		   ((ProblemCVC3) pb).cleanup();
+	   } else if (pb instanceof ProblemCoral) {
+		   ((ProblemCoral) pb).cleanup();
 	   }
    }
 

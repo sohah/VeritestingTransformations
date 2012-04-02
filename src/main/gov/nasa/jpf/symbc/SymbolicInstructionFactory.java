@@ -27,6 +27,7 @@ import gov.nasa.jpf.symbc.numeric.MinMax;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
 import gov.nasa.jpf.util.InstructionFactoryFilter;
 
 
@@ -561,6 +562,11 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 		  ProblemChoco.timeBound = conf.getInt("symbolic.choco_time_bound", 30000);
 		  System.out.println("symbolic.choco_time_bound="+ProblemChoco.timeBound);
 		}
+		//load CORAL's parameters 
+		if (dp[0].equalsIgnoreCase("coral") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare")) {
+			ProblemCoral.configure(conf);
+		}
+			
 		String[] intmin, intmax, realmin, realmax, dontcare;
 		intmin = conf.getStringArray("symbolic.minint");
 		intmax = conf.getStringArray("symbolic.maxint");

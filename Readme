@@ -30,13 +30,13 @@ symbolic.method=test(sym#sym#con)
 You can pick which decision procedure to choose (if unspecified, choco is used
 as default):
 
-symbolic.dp=choco
+symbolic.dp=$SOLVER
 
-or
+where $SOLVER is one of the following: {no_solver,choco,choco2,iasolver,cvc3,cvc3bitvec,yices,coral}.
+Look at the "Problem*" classes in the package gov.nasa.jpf.symbc.numeric.solvers for more
+info about each one of them. 
 
-symbolic.dp=iasolver
-
-More information about choco and iasolver can be found here (other dp's will be incorporated soon):
+More information about choco and iasolver can be found here:
 
 http://choco.sourceforge.net/download.html
 
