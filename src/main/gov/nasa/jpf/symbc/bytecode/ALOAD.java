@@ -20,6 +20,7 @@ import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 
 public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
@@ -58,7 +59,10 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		Object attr = th.getLocalAttr(index);
 		String typeOfLocalVar = super.getLocalVariableType();
 
-		if(attr == null || typeOfLocalVar.equals("?")) {
+		//System.out.println("typeOfLocalVar "+typeOfLocalVar);
+		// here typeOfLocalVar could be null?
+
+		if(attr == null || typeOfLocalVar.equals("?") || attr instanceof SymbolicStringBuilder) {
 			th.pushLocal(index);
 			return getNext(th);
 		}

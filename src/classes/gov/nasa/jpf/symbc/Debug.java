@@ -29,6 +29,8 @@ public class Debug {
     native public static String getSymbolicRealValue(double v);
     native public static String getSymbolicBooleanValue(boolean v);
 
+    native public static void assume (boolean c);
+
     // puts a new symbolic value in the arg attribute
     native public static int makeSymbolicInteger(String name);
     native public static double makeSymbolicReal(String name);

@@ -277,11 +277,13 @@ public class IntegerConstant extends LinearIntegerExpression {
   }
 
   public String toString () {
-    return "CONST_" + value + "";
+    //return "CONST_" + value + "";
+	  return value + "";
   }
 
   public String stringPC () {
-    return "CONST_" + value + "";
+    //return "CONST_" + value + "";
+	  return value + "";
   }
 
   public int value () {

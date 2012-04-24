@@ -103,7 +103,7 @@ public class RealConstant extends RealExpression {
       return super._plus(e);
     }
   }
-  
+
   public RealExpression _div (double i) {
 	    assert (i!=0);
 		//simplify
@@ -121,14 +121,14 @@ public class RealConstant extends RealExpression {
 		}
 
 		if (e instanceof RealConstant) {
-	      assert(((RealConstant) e).value!=0);	
+	      assert(((RealConstant) e).value!=0);
 	      return new RealConstant(value / ((RealConstant) e).value);
 	    } else {
 	      return super._div(e);
 	    }
 	  }
 
-	public RealExpression _neg () 
+	public RealExpression _neg ()
 	{
 		if (value == 0)
 			return this;
@@ -145,17 +145,19 @@ public class RealConstant extends RealExpression {
   }
 
   public String toString () {
-    return "CONST_" + value + "";
+    //return "CONST_" + value + "";
+	  return value + "";
   }
 
   public String stringPC () {
-    return "CONST_" + value + "";
+    //return "CONST_" + value + "";
+	  return value + "";
   }
 
   public double value () {
     return value;
   }
-  
+
   public double solution() {
   		return value;
   }

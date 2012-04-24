@@ -81,8 +81,8 @@ public class ExSymExe {
 	  }
   }
   public void test (long x, int z) {
-	  x = x >>> 1;
-	  //x=x+z;
+	 // x = x >>> 1;
+	  x=x+z;
 	  if (x > z)
 		  if (z > x)
 			  System.out.println("unreachable");

@@ -66,6 +66,7 @@ public class BytecodeUtils {
 	 * as symbolic methods since we cannot distinguish between them;
 	 */
 	public static boolean isMethodSymbolic(Config conf, String methodName, int numberOfArgs, Vector<String> args) {
+		//System.out.println("method name "+methodName);
 		String[] methods = conf.getStringArray("symbolic.method");
 		boolean misMatchedArgs = false;
 		String shortName = "";
@@ -77,6 +78,7 @@ public class BytecodeUtils {
 
 			if (methodName.contains("("))
 				shortName = methodName.substring(0, methodName.indexOf("("));
+			//System.out.println("short method name "+shortName);
 			while (it.hasNext()) {
 				String m1 = (String) it.next();
 				String configMethodName = m1.substring(0, m1.indexOf("("));
@@ -85,8 +87,9 @@ public class BytecodeUtils {
 					argNum = 0;
 				else
 					argNum= m1.split("#").length; // number of args
-				if (configMethodName.equalsIgnoreCase(shortName)) {
 
+				if (configMethodName.equalsIgnoreCase(shortName)) {
+					//System.out.println("config method name "+configMethodName + " "+argNum + " "+numberOfArgs);
 					if(argNum == numberOfArgs) {
 						if (args != null) {
 							String argString = m1.substring(m1.indexOf("(") + 1, m1.indexOf(")"));

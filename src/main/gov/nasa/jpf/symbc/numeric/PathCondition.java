@@ -292,7 +292,8 @@ public class PathCondition {
 	}
 
 	public String toString() {
-		return "constraint # = " + count + ((header == null) ? "" : "\n" + header.toString());
+		//return "constraint # = " + count + ((header == null) ? "" : "\n" + header.toString());
+		return ((header == null) ? "" : " " + header.toString());
 					//+ "\n" + spc.toString(); // TODO: to review
 	}
 

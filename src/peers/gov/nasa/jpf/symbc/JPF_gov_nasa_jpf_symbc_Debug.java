@@ -56,7 +56,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 	public static void printPC(MJIEnv env, int objRef, int msgRef) {
 		PathCondition pc = getPC(env);
 		if (pc != null) {
-			pc.solve();
+			//pc.solve();
 			System.out.println(env.getStringObject(msgRef) + pc);
 		}
 		else
@@ -97,6 +97,15 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 			return env.newString(sym_arg.toString());
 		else
 			return env.newString(Boolean.toString(v));
+    }
+
+    public static void assume(MJIEnv env, int objRef, boolean c) {
+    	Object [] attrs = env.getArgAttributes();
+		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		if (sym_arg !=null)
+			System.out.println("assume "+sym_arg);
+		else
+			System.out.println("assume "+c);
     }
 
 	public static int makeSymbolicInteger(MJIEnv env, int objRef, int stringRef) {
