@@ -86,10 +86,10 @@ public class ProblemCompare extends ProblemGeneral {
 		intVars = new HashMap<String, SolverObjects>();
 		realVars = new HashMap<String, SolverObjects>();
 
-		probs[0] = new ProblemCoral(SolverKind.PSO_OPT4J, true);
-		probs[1] = new ProblemCoral(SolverKind.PSO_OPT4J, false);
-		probs[2] = new ProblemCoral(SolverKind.RANDOM, true);
-		probs[3] = new ProblemCoral(SolverKind.RANDOM, false);
+//		probs[0] = new ProblemCoral(SolverKind.PSO_OPT4J, true);
+//		probs[1] = new ProblemCoral(SolverKind.PSO_OPT4J, false);
+//		probs[2] = new ProblemCoral(SolverKind.RANDOM, true);
+//		probs[3] = new ProblemCoral(SolverKind.RANDOM, false);
 		probs[4] = new ProblemChoco();
 		probs[5] = new ProblemCVC3();
 		probs[6] = new ProblemYices();
