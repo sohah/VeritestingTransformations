@@ -112,7 +112,9 @@ public abstract class Constraint {
 
   public String toString() {
     return left.toString() + comp.toString() + right.toString()
-        + ((and == null) ? "" : " && " + and.toString());
+        //+ ((and == null) ? "" : " && " + and.toString()); -- for specialization
+        + ((and == null) ? "" : " &&\n" + and.toString());
+
   }
 
   public Constraint last() {
