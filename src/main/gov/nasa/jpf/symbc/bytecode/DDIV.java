@@ -2,12 +2,12 @@
 // Copyright (C) 2006 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration
 // (NASA).  All Rights Reserved.
-// 
+//
 // This software is distributed under the NASA Open Source Agreement
 // (NOSA), version 1.3.  The NOSA has been approved by the Open Source
 // Initiative.  See the file NOSA-1.3-JPF at the top of the distribution
 // directory tree for the complete NOSA document.
-// 
+//
 // THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY
 // KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT
 // LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO
@@ -39,58 +39,106 @@ public class DDIV extends gov.nasa.jpf.jvm.bytecode.DDIV  {
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 
-		RealExpression sym_v1 = (RealExpression) sf.getLongOperandAttr(); 
-	    double v1 = Types.longToDouble(th.longPop());
-	    RealExpression sym_v2 = (RealExpression) sf.getLongOperandAttr(); 
-	    double v2 = Types.longToDouble(th.longPop());
-	   
-	    
+		RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(1);
+	    double v1;
+	    RealExpression sym_v2 = (RealExpression) sf.getOperandAttr(3);
+	    double v2;
+
+
 	    if(sym_v1==null && sym_v2==null) {
+	    	v1 = Types.longToDouble(th.longPop());
+	    	v2 = Types.longToDouble(th.longPop());
 	    	if(v1==0)
 	    		return th.createAndThrowException("java.lang.ArithmeticException","division by 0");
 	    	double r = v2 / v1;
 	    	th.longPush(Types.doubleToLong(r));
+	    	return getNext(th);
 	    }
-	    else
-	    	th.longPush(0); 
-	    
-	    RealExpression result = null;
-		if(sym_v2!=null) {
-			if (sym_v1!=null) {
-				// here check if sym_v1 eq 0 and throw an error: to work more on it
-				ChoiceGenerator<?> prev_cg = ss.getChoiceGenerator();
-				while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-					prev_cg = prev_cg.getPreviousChoiceGenerator();
-				}
 
-				if (prev_cg != null) {
-					PathCondition pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
-					pc._addDet(Comparator.EQ, sym_v1, 0);
-					if(pc.simplify())  {// satisfiable
-						((PCChoiceGenerator) prev_cg).setCurrentPC(pc); // only for printing summary purposes
-						return th.createAndThrowException("java.lang.ArithmeticException","division by 0");
-					}
-				}
-				else
-					// no prev path conditions
-					return th.createAndThrowException("java.lang.ArithmeticException","division by 0");
-				result = sym_v2._div(sym_v1);
+	    // result is symbolic expression
+	    if(sym_v1==null && sym_v2!=null) {
+	    	v1 = Types.longToDouble(th.longPop());
+	    	v2 = Types.longToDouble(th.longPop());
+	    	if(v1==0)
+				return th.createAndThrowException("java.lang.ArithmeticException","div by 0");
+	    	th.longPush(0);
+	    	RealExpression result = sym_v2._div(v1);
+			sf.setLongOperandAttr(result);
+		    return getNext(th);
+	    }
+
+	    // div by zero check affects path condition
+	    // sym_v1 is non-null and should be checked against zero
+
+	    ChoiceGenerator<?> cg;
+	    boolean condition;
+
+		if (!th.isFirstStepInsn()) { // first time around
+			cg = new PCChoiceGenerator(2);
+			((PCChoiceGenerator)cg).setOffset(this.position);
+			((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
+			ss.setNextChoiceGenerator(cg);
+			return this;
+		} else {  // this is what really returns results
+			cg = ss.getChoiceGenerator();
+			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
+			condition = (Integer)cg.getNextChoice()==0 ? false: true;
+		}
+
+		v1 = Types.longToDouble(th.longPop());
+    	v2 = Types.longToDouble(th.longPop());
+		th.longPush(0);
+
+		PathCondition pc;
+		ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
+
+		while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
+			prev_cg = prev_cg.getPreviousChoiceGenerator();
+		}
+		if (prev_cg == null)
+			pc = new PathCondition();
+		else
+			pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
+
+		assert pc != null;
+
+		if(condition) { // check div by zero
+			pc._addDet(Comparator.EQ, sym_v1, 0);
+			if(pc.simplify())  { // satisfiable
+				((PCChoiceGenerator) cg).setCurrentPC(pc);
+
+				return th.createAndThrowException("java.lang.ArithmeticException","div by 0");
 			}
-			else { // v1 is concrete 
-				if(v1==0)
-					return th.createAndThrowException("java.lang.ArithmeticException","division by 0");
-				result = sym_v2._div(v1);
+			else {
+				ss.setIgnored(true);
+				return getNext(th);
 			}
 		}
-		else if (sym_v1!=null)
-			result = sym_v1._div_reverse(v2);
-		
-		sf.setLongOperandAttr(result);
-		
-		//System.out.println("Execute DDIV: "+ sf.getLongOperandAttr());
+		else {
+			pc._addDet(Comparator.NE, sym_v1, 0);
+			if(pc.simplify())  { // satisfiable
+				((PCChoiceGenerator) cg).setCurrentPC(pc);
 
-	    return getNext(th);  
-		
+				// set the result
+				RealExpression result;
+				if(sym_v2!=null)
+					result = sym_v2._div(sym_v1);
+				else
+					result = sym_v1._div_reverse(v2);
+
+				sf = th.getTopFrame();
+				sf.setLongOperandAttr(result);
+			    return getNext(th);
+
+			}
+			else {
+				ss.setIgnored(true);
+				return getNext(th);
+			}
+		}
+
+
+
 	}
 
 }
