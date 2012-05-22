@@ -80,12 +80,12 @@ public class ExSymExe {
 		  //return (int)(x-1);
 	  }
   }
-  public void test (long x, int z) {
+  public void test (float x, float z) {
 	 // x = x >>> 1;
 	  x=x+z;
-	  if (x > z)
-		  if (z > x)
-			  System.out.println("unreachable");
+	  //if (x > z)
+		//  if (z > x)
+		//	  System.out.println("unreachable");
 	 // if (x/6 > 0)
 		//  System.out.println("br1");
 	  //else
