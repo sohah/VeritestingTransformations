@@ -28,7 +28,6 @@ public enum MathFunction{
 	
 	
 	SQRT(" sqrt "),
-	ROUND(" round"),
 	EXP(" exp "),
 	ASIN(" asin "),
 	ACOS(" acos "),

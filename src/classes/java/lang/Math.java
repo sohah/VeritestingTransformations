@@ -71,12 +71,20 @@ public class Math {
 	  public static long min ( long a, long b) {
 		  return (a <= b) ? a : b;
 	  }
-
+	  
+	  public static long round ( double d) {
+	  if (d > 0) {
+	        return (long) (d + 0.5d);
+	    } else {
+	        return (long) (d - 0.5d);
+	    }
+	  }
+	  
 	  public native static double sqrt ( double a) ;
 
 	  public native static double random ();
 
-	  public native static long round ( double a) ;
+	  
 
 	  public native static double exp ( double a) ;
 

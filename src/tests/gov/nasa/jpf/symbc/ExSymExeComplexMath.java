@@ -16,7 +16,7 @@ public class ExSymExeComplexMath {
 
   /* we want to let the user specify that this method should be symbolic */
   public void test2(double in) {
-  if (Math.pow (in,2.0) > 16.0)
+  if (Math.round (in) > 16.0)
 	  System.out.println("do1()");
 	else
 	  System.out.println("do2()");

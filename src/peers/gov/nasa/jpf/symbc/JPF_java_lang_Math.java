@@ -122,21 +122,7 @@ public class JPF_java_lang_Math {
     return Math.random();
   }
 
-  public static long round__D__J (MJIEnv env, int clsObjRef, double a){
-      Object [] attrs = env.getArgAttributes();
-      if (attrs==null) // concrete? I think
-    	  return Math.round(a);
-	  RealExpression sym_arg = (RealExpression) attrs[0];
-	  if (sym_arg == null) { // concrete
-		  return Math.round(a);
-	  }
-	  else {
-		  RealExpression result = new MathRealExpression(MathFunction.ROUND,sym_arg);
-		  env.setReturnAttribute(result);
-		  // System.out.println("result "+result);
-		  return 0;
-	  }
-  }
+  
 
   public static double exp__D__D (MJIEnv env, int clsObjRef, double a) {
       Object [] attrs = env.getArgAttributes();

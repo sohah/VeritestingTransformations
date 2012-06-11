@@ -32,7 +32,7 @@ public class MathRealExpression extends RealExpression
 	{
 		assert
 		o == MathFunction.SIN || o == MathFunction.COS ||
-		o == MathFunction.ROUND || o == MathFunction.EXP ||
+		o == MathFunction.EXP ||
 		o == MathFunction.ASIN || o == MathFunction.ACOS ||
 		o == MathFunction.ATAN || o == MathFunction.LOG ||
 		o == MathFunction.TAN  || o == MathFunction.SQRT;
@@ -99,7 +99,6 @@ public class MathRealExpression extends RealExpression
 		switch(op){
 		   case COS:  return Math.cos(a1);
 		   case SIN:  return Math.sin(a1);
-		   case ROUND: return Math.round(a1);
 		   case EXP: return Math.exp(a1);
 		   case ASIN: return Math.asin(a1);
 		   case ACOS: return Math.acos(a1);
@@ -121,7 +120,7 @@ public class MathRealExpression extends RealExpression
 
 	public String stringPC() {
 		if (op == MathFunction.SIN || op == MathFunction.COS ||
-			op == MathFunction.ROUND || op == MathFunction.EXP ||
+			op == MathFunction.EXP ||
 			op == MathFunction.ASIN || op == MathFunction.ACOS ||
 			op == MathFunction.ATAN || op == MathFunction.LOG ||
 			op == MathFunction.TAN || op == MathFunction.SQRT)
@@ -132,7 +131,7 @@ public class MathRealExpression extends RealExpression
 
 	public String toString () {
 		if (op == MathFunction.SIN || op == MathFunction.COS ||
-				op == MathFunction.ROUND || op == MathFunction.EXP ||
+				op == MathFunction.EXP ||
 				op == MathFunction.ASIN || op == MathFunction.ACOS ||
 				op == MathFunction.ATAN || op == MathFunction.LOG ||
 				op == MathFunction.TAN || op == MathFunction.SQRT)
