@@ -243,7 +243,15 @@
           <exclude name="**/JPF_*.class"/>
           <include name="**/Test*.class"/>
           <exclude name="**/TestBitwise*.class"/>
-		  <exclude name="/gov/nasa/jpf/symbc/strings/*.class"/>
+          <exclude name="**/TestCoverage.class"/>  
+          <exclude name="**/TestDIV.class"/> 
+          <exclude name="**/TestExJPF.class"/> 
+          <exclude name="**/TestLazy*.class"/> 
+          <exclude name="**/TestLazy*.class"/> 
+          <exclude name="**/TestPathCondition.class"/> 
+          <exclude name="**/TestStringBuilder.class"/>
+          <exclude name="**/strings/*.class"/>
+          <exclude name="/gov/nasa/jpf/symbc/strings/*.class"/>
           <exclude name="**/Test*$*.class"/>
           <exclude name="**/TestSymbolicListener.class"/>
           <exclude name="**/TestSymbolicOutput.class"/>
