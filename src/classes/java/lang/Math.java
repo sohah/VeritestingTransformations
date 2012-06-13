@@ -80,6 +80,13 @@ public class Math {
 	    }
 	  }
 	  
+	  public static int round ( float d) {
+		  if (d > 0) {
+		        return (int) (d + 0.5d);
+		    } else {
+		        return (int) (d - 0.5d);
+		    }
+		  }
 	  public native static double sqrt ( double a) ;
 
 	  public native static double random ();
