@@ -281,7 +281,6 @@ public class SymbolicConstraintsGeneral {
 			switch(funRef){
 			case SIN: return pb.sin(getExpression(e_arg1Ref));
 			case COS: return pb.cos(getExpression(e_arg1Ref));
-			case ROUND: return pb.round(getExpression(e_arg1Ref));
 			case EXP: return pb.exp(getExpression(e_arg1Ref));
 			case ASIN: return pb.asin(getExpression(e_arg1Ref));
 			case ACOS:return pb.acos(getExpression(e_arg1Ref));

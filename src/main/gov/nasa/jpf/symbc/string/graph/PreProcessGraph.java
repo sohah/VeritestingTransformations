@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.string.graph;
 
 import java.util.ArrayList;
-import java.util.List;
-
-import sun.rmi.runtime.Log;
 
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;

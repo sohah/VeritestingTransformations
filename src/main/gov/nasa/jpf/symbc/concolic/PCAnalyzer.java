@@ -257,7 +257,6 @@ public class PCAnalyzer {
 			switch(funRef){
 			case SIN:
 			case COS:
-			case ROUND:
 			case EXP:
 			case ASIN:
 			case ACOS:
