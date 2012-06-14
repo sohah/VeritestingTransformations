@@ -21,6 +21,7 @@ package gov.nasa.jpf.symbc.bytecode;
 // need to fix names
 
 import gov.nasa.jpf.jvm.KernelState;
+import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -36,7 +37,12 @@ public class INVOKESPECIAL extends gov.nasa.jpf.jvm.bytecode.INVOKESPECIAL {
 	  }
 	@Override
 	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
+		MethodInfo mi = getInvokedMethod(th);
 
+	    if (mi == null){
+	      return th.createAndThrowException("java.lang.NoSuchMethodException!*", "Calling " + cname + '.' + mname);
+	    }
+	    
 		BytecodeUtils.InstructionOrSuper nextInstr = BytecodeUtils.execute(this, ss, ks, th);
         if (nextInstr.callSuper) {
             return super.execute(ss, ks, th);

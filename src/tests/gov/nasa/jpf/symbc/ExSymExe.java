@@ -83,9 +83,9 @@ public class ExSymExe {
   public void test (float x, float z) {
 	 // x = x >>> 1;
 	  x=x+z;
-	  //if (x > z)
-		//  if (z > x)
-		//	  System.out.println("unreachable");
+	  if (x > z)
+		  if (z > x)
+			  System.out.println("unreachable");
 	 // if (x/6 > 0)
 		//  System.out.println("br1");
 	  //else

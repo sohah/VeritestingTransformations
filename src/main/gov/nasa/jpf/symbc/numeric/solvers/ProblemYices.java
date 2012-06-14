@@ -109,8 +109,8 @@ public class ProblemYices extends ProblemGeneral {
 
   public String makeIntVar(String name, int min, int max) {
     yices.yicesl_read(ctx,"(define "+name+"::int)");
-    yices.yicesl_read(ctx,"(assert (> "+ name + " " + min +"))");
-    yices.yicesl_read(ctx,"(assert (< "+ name + " " + max +"))");
+    yices.yicesl_read(ctx,"(assert (>= "+ name + " " + min +"))");
+    yices.yicesl_read(ctx,"(assert (<= "+ name + " " + max +"))");
     return name;
   }
 
@@ -258,7 +258,7 @@ public class ProblemYices extends ProblemGeneral {
   public Boolean solve() {
     //        pb.getSolver().setTimeLimit(30000);
     //		yices.yicesl_read(ctx,"(dump-context)");
-
+	yices.yicesl_read(ctx, "(check)"); // ??
     int sat = yices.yicesl_inconsistent(ctx);
     if(sat == 0) {
       String workingDir = System.getProperty("user.dir");

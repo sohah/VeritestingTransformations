@@ -20,7 +20,9 @@ package gov.nasa.jpf.symbc.bytecode;
 
 // need to fix names
 
+import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.KernelState;
+import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -31,7 +33,16 @@ public class INVOKESTATIC extends gov.nasa.jpf.jvm.bytecode.INVOKESTATIC {
 	  }
 	@Override
 	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
+		ClassInfo clsInfo = getClassInfo();
+	    if (clsInfo == null){
+	      return th.createAndThrowException("java.lang.NoClassDefFoundError", cname);
+	    }
 
+	    MethodInfo callee = getInvokedMethod(th);
+	    if (callee == null) {
+	      return th.createAndThrowException("java.lang.NoSuchMethodException!!",
+	                                   cname + '.' + mname);
+	    }
         BytecodeUtils.InstructionOrSuper nextInstr = BytecodeUtils.execute(this, ss, ks, th);
         if (nextInstr.callSuper) {
             return super.execute(ss, ks, th);

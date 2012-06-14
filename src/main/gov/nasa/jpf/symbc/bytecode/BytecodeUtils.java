@@ -185,7 +185,7 @@ public class BytecodeUtils {
 
 
 		MethodInfo mi = invInst.getInvokedMethod(th);
-		//System.out.println("mi  className :" + mi.getClassName());
+		
 		if (mi == null) {
 			return new InstructionOrSuper(false,
 					th.createAndThrowException("java.lang.NoSuchMethodException", "calling " + cname + "." + mname));

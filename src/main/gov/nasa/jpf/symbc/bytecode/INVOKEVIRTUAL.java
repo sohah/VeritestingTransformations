@@ -21,6 +21,7 @@ package gov.nasa.jpf.symbc.bytecode;
 // need to fix names
 
 import gov.nasa.jpf.jvm.KernelState;
+import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -31,7 +32,20 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 	  }
 	@Override
 	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
+		int objRef = th.getCalleeThis(getArgSize());
 
+	    if (objRef == -1) {
+	      lastObj = -1;
+	      return th.createAndThrowException("java.lang.NullPointerException", "Calling '" + mname + "' on null object");
+	    }
+
+	    MethodInfo mi = getInvokedMethod(th, objRef);
+
+	    if (mi == null) {
+	      String clsName = th.getClassInfo(objRef).getName();
+	      return th.createAndThrowException("java.lang.NoSuchMethodError", clsName + '.' + mname);
+	    }
+	    
 		BytecodeUtils.InstructionOrSuper nextInstr = BytecodeUtils.execute(this, ss, ks, th);
         if (nextInstr.callSuper) {
             return super.execute(ss, ks, th);
