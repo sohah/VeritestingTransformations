@@ -139,4 +139,49 @@ public class MathRealExpression extends RealExpression
 		else //op == MathFunction.POW || op == MathFunction.ATAN2
 			return  op.toString() + "(" + arg1.toString() + "," + arg2.toString() + ")";
 	}
+	
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		if (arg1 != null) {
+			arg1.accept(visitor);
+		}
+		if (arg2 != null) {
+			arg2.accept(visitor);
+		}
+		visitor.postVisit(this);
+	}
+
+	@Override
+	public int compareTo(Expression expr) {
+		if (expr instanceof MathRealExpression) {
+			MathRealExpression e = (MathRealExpression) expr;
+			int r = getOp().compareTo(e.getOp());
+			if (r == 0) {
+				if (getArg1() != null) {
+					if (e.getArg1() == null) {
+						r = 1;
+					} else {
+						r = getArg1().compareTo(e.getArg1());
+					}
+				} else if (e.getArg1() != null) {
+					r = -1;
+				}
+			}
+			if (r == 0) {
+				if (getArg2() != null) {
+					if (e.getArg2() == null) {
+						r = 1;
+					} else {
+						r = getArg2().compareTo(e.getArg2());
+					}
+				} else if (e.getArg2() != null) {
+					r = -1;
+				}
+			}
+			return r;
+		} else {
+			return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+		}
+	}
 }

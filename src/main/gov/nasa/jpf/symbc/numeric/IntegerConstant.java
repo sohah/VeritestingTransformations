@@ -268,6 +268,7 @@ public class IntegerConstant extends LinearIntegerExpression {
 		return new BinaryLinearIntegerExpression(this, SHIFTUR, e);
 	}
 
+	@Override
   public boolean equals (Object o) {
     if (!(o instanceof IntegerConstant)) {
       return false;
@@ -276,14 +277,17 @@ public class IntegerConstant extends LinearIntegerExpression {
     return value == ((IntegerConstant) o).value;
   }
 
+	@Override
+  public int hashCode() {
+	  return value;
+  }
+ 
   public String toString () {
-      return "CONST_" + value + "";
-	  // return value + ""; -- for specialization
+    return "CONST_" + value + "";
   }
 
   public String stringPC () {
-      return "CONST_" + value + "";
-	  // return value + ""; -- for specialization
+    return "CONST_" + value + "";
   }
 
   public int value () {
@@ -295,4 +299,24 @@ public class IntegerConstant extends LinearIntegerExpression {
   }
 
   public void getVarsVals(Map<String,Object> varsVals) {}
+  
+	// JacoGeldenhuys
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		visitor.postVisit(this);
+	}
+
+	@Override
+	public int compareTo(Expression expr) {
+		if (expr instanceof IntegerConstant) {
+			IntegerConstant e = (IntegerConstant) expr;
+			int a = value();
+			int b = e.value();
+			return (a < b) ? -1 : (a > b) ? 1 : 0;
+		} else {
+			return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+		}
+	}
+
 }

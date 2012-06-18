@@ -68,4 +68,31 @@ public class BinaryNonLinearIntegerExpression extends NonLinearIntegerExpression
 	public String toString() {
 		return "(" + left.toString() + op.toString() + right.toString() + ")";
 	}
+
+	// JacoGeldenhuys
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		left.accept(visitor);
+		right.accept(visitor);
+		visitor.postVisit(this);
+	}
+
+	@Override
+	public int compareTo(Expression expr) {
+		if (expr instanceof BinaryNonLinearIntegerExpression) {
+			BinaryNonLinearIntegerExpression e = (BinaryNonLinearIntegerExpression) expr;
+			int r = op.compareTo(e.op);
+			if (r == 0) {
+				r = left.compareTo(e.left);
+			}
+			if (r == 0) {
+				r = right.compareTo(e.right);
+			}
+			return r;
+		} else {
+			return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+		}
+	}
+
 }

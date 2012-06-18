@@ -73,4 +73,30 @@ public class BinaryRealExpression extends RealExpression
 	public RealExpression getRight() {
 		return right;
 	}
+
+	// JacoGeldenhuys
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		left.accept(visitor);
+		right.accept(visitor);
+		visitor.postVisit(this);
+	}
+
+	@Override
+	public int compareTo(Expression expr) {
+		if (expr instanceof BinaryRealExpression) {
+			BinaryRealExpression e = (BinaryRealExpression) expr;
+			int r = getOp().compareTo(e.getOp());
+			if (r == 0) {
+				r = getLeft().compareTo(e.getLeft());
+			}
+			if (r == 0) {
+				r = getRight().compareTo(e.getRight());
+			}
+			return r;
+		} else {
+			return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+		}
+	}
 }

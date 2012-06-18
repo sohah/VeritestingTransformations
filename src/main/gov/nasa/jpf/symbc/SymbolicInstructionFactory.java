@@ -566,7 +566,10 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 		if (dp[0].equalsIgnoreCase("coral") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare")) {
 			ProblemCoral.configure(conf);
 		}
-			
+	
+		MinMax.collectMinMaxInformation(conf);
+		/* no longer required here, now read in MinMax, see line above
+		 
 		String[] intmin, intmax, realmin, realmax, dontcare;
 		intmin = conf.getStringArray("symbolic.minint");
 		intmax = conf.getStringArray("symbolic.maxint");
@@ -594,7 +597,7 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 		if((SymbolicInteger.UNDEFINED >= MinMax.MININT && SymbolicInteger.UNDEFINED <= MinMax.MAXINT) &&
 			(SymbolicInteger.UNDEFINED >= MinMax.MINDOUBLE && SymbolicInteger.UNDEFINED <= MinMax.MAXDOUBLE))
 			System.err.println("Warning: undefined value should be outside  min..max ranges");
-
+		 */
 	}
 
 

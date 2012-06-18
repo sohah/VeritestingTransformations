@@ -35,6 +35,8 @@ package gov.nasa.jpf.symbc.mixednumstrg;
 import java.util.Map;
 
 
+import gov.nasa.jpf.symbc.numeric.ConstraintExpressionVisitor;
+import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.string.StringExpression;
 
@@ -70,4 +72,25 @@ public class SpecialIntegerExpression extends IntegerExpression {
 	  public String toString() {
 		    return op.toString() + "__" + opr.toString() + "__";
 		  }
+	// JacoGeldenhuys
+		@Override
+		public void accept(ConstraintExpressionVisitor visitor) {
+			visitor.preVisit(this);
+			opr.accept(visitor);
+			visitor.postVisit(this);
+		}
+
+		@Override
+		public int compareTo(Expression expr) {
+			if (expr instanceof SpecialIntegerExpression) {
+				SpecialIntegerExpression e = (SpecialIntegerExpression) expr;
+				int r = op.compareTo(e.op);
+				if (r == 0) {
+					r = opr.compareTo(e.opr);
+				}
+				return r;
+			} else {
+				return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+			}
+		}
 }

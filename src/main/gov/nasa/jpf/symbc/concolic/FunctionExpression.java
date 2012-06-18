@@ -22,6 +22,7 @@ package gov.nasa.jpf.symbc.concolic;
 
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.symbc.numeric.Constraint;
+import gov.nasa.jpf.symbc.numeric.ConstraintExpressionVisitor;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
@@ -148,6 +149,47 @@ public class FunctionExpression extends RealExpression
     			result = result + sym_args[i].toString() + " ";
 		return "(" + class_name +"." + method_name + "(" + result + ")";
 	}
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		for (Expression arg : sym_args) {
+			arg.accept(visitor);
+		}
+		visitor.postVisit(this);
+	}
 
+	@Override
+	public int compareTo(Expression expr) {
+		if (expr instanceof FunctionExpression) {
+			FunctionExpression e = (FunctionExpression) expr;
+			int r = class_name.compareTo(e.class_name);
+			if (r == 0) {
+				r = method_name.compareTo(e.method_name);
+				if (r == 0) {
+					if (sym_args != null) {
+						if (e.sym_args == null) {
+							r = 1;
+						} else {
+							int a = sym_args.length;
+							int b = e.sym_args.length;
+							r = (a < b) ? -1 : (a > b) ? 1 : 0;
+							if (r == 0) {
+								int i = 0;
+								while ((r == 0) && (i < a)) {
+									r = sym_args[i].compareTo(e.sym_args[i]);
+									i++;
+								}
+							}
+						}
+					} else if (e.sym_args != null) {
+						r = -1;
+					}
+				}
+			}
+			return r;
+		} else {
+			return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+		}
+	}
 
 }

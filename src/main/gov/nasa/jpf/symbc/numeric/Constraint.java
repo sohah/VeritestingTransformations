@@ -21,7 +21,7 @@ package gov.nasa.jpf.symbc.numeric;
 
 import java.util.Map;
 
-public abstract class Constraint {
+public abstract class Constraint implements Comparable<Constraint> {
   private final Expression left;
 
   private Comparator comp;
@@ -110,11 +110,36 @@ public abstract class Constraint {
 	  //return left.hashCode() ^ comp.hashCode() ^ right.hashCode();
   }
 
+  /**
+	 * Compare two constraints for orderedness. The function views each
+	 * constraint as a triple ({@code left}, {@code comp}, {@code right}). The
+	 * triples are compared lexicographically. Similarly, one element is less
+	 * than another if and only if (1) the first is {@code null} and the second
+	 * isn't, or (2) both are non-null and the hash code of the first is less
+	 * than the hash code of the second.
+	 * 
+	 * @param c
+	 *            the constraint to compare to
+	 * @return -1 if this constraint is less than the other, +1 if it is
+	 *         greater, and 0 if they are equal
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public final int compareTo(Constraint c) {
+		int r = comp.compareTo(c.getComparator());
+		if (r == 0) {
+			r = left.compareTo(c.getLeft());
+			if (r == 0) {
+				r = right.compareTo(c.getRight());
+			}
+		}
+		return r;
+	}
+  
   public String toString() {
     return left.toString() + comp.toString() + right.toString()
         //+ ((and == null) ? "" : " && " + and.toString()); -- for specialization
         + ((and == null) ? "" : " &&\n" + and.toString());
-
   }
 
   public Constraint last() {
@@ -124,4 +149,13 @@ public abstract class Constraint {
       }
       return c;
   }
+  
+//JacoGeldenhuys
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		left.accept(visitor);
+		right.accept(visitor);
+		visitor.postVisit(this);
+	}
+
 }

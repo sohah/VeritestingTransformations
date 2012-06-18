@@ -26,9 +26,9 @@ import java.util.Random;
 
 public class SymbolicInteger extends LinearIntegerExpression
 {
-	public static int UNDEFINED = MinMax.MININT;
-	public int _min = MinMax.MININT;
-	public int _max = MinMax.MAXINT;
+	public static int UNDEFINED = Integer.MIN_VALUE;;
+	public int _min = 0;
+	public int _max = 0;
 	public int solution = UNDEFINED; // C
 
 	int unique_id;
@@ -40,7 +40,9 @@ public class SymbolicInteger extends LinearIntegerExpression
 		super();
 		unique_id = MinMax.UniqueId++;
 		PathCondition.flagSolved=false;
-    name = "INT_" + hashCode();
+		name = "INT_" + hashCode();
+		_min = MinMax.getVarMinInt(name);
+		_max = MinMax.getVarMaxInt(name);
 	}
 
 	public SymbolicInteger (String s) {
@@ -48,6 +50,8 @@ public class SymbolicInteger extends LinearIntegerExpression
 		unique_id = MinMax.UniqueId++;
 		//PathCondition.flagSolved=false;
 		name = s;
+		_min = MinMax.getVarMinInt(name);
+		_max = MinMax.getVarMaxInt(name);
 		//trackedSymVars.add(fixName(name));
 
 	}
@@ -142,4 +146,22 @@ public class SymbolicInteger extends LinearIntegerExpression
     protected void finalize() throws Throwable {
     	//System.out.println("Finalized " + this);
     }
+    
+    @Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		visitor.postVisit(this);
+	}
+
+	@Override
+	public int compareTo(Expression expr) {
+		if (expr instanceof SymbolicInteger) {
+			SymbolicInteger e = (SymbolicInteger) expr;
+			int a = unique_id;
+			int b = e.unique_id;
+			return (a < b) ? -1 : (a > b) ? 1 : 0;
+		} else {
+			return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+		}
+	}
 }

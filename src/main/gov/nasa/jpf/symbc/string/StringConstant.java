@@ -32,6 +32,8 @@ TERMINATION OF THIS AGREEMENT.
 
 package gov.nasa.jpf.symbc.string;
 
+import gov.nasa.jpf.symbc.numeric.ConstraintExpressionVisitor;
+
 import java.util.Map;
 
 public class StringConstant extends StringExpression {
@@ -87,5 +89,11 @@ public class StringConstant extends StringExpression {
 
 	  public void getVarsVals(Map<String, Object> varsVals) {
 	  }
+
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		visitor.postVisit(this);
+	}
 
 }

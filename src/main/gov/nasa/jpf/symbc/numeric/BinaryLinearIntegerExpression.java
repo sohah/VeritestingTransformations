@@ -34,6 +34,31 @@ public class BinaryLinearIntegerExpression extends LinearIntegerExpression
 		right = r;
 	}
 
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		left.accept(visitor);
+		right.accept(visitor);
+		visitor.postVisit(this);
+	}
+
+	@Override
+	public int compareTo(Expression expr) {
+		if (expr instanceof BinaryLinearIntegerExpression) {
+			BinaryLinearIntegerExpression e = (BinaryLinearIntegerExpression) expr;
+			int r = getOp().compareTo(e.getOp());
+			if (r == 0) {
+				r = getLeft().compareTo(e.getLeft());
+			}
+			if (r == 0) {
+				r = getRight().compareTo(e.getRight());
+			}
+			return r;
+		} else {
+			return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+		}
+	}
+
 	public int solution()
 	{
 		int l = left.solution();
@@ -58,6 +83,11 @@ public class BinaryLinearIntegerExpression extends LinearIntegerExpression
     	right.getVarsVals(varsVals);
     }
 
+	@Override
+	public int hashCode() {
+		return 23232 ^ (left.hashCode() << 2) ^ (op.hashCode() << 4) ^ (right.hashCode() << 7);
+	}
+	
 	public String toString ()
 	{
 		return "(" + left.toString() + op.toString() + right.toString() + ")";
@@ -80,6 +110,7 @@ public class BinaryLinearIntegerExpression extends LinearIntegerExpression
 	    return op;
 	}
 
+	@Override
 	public boolean equals(Object o) {
 	    return ((o instanceof BinaryLinearIntegerExpression) &&
 	            ((BinaryLinearIntegerExpression) o).left.equals(this.left) &&

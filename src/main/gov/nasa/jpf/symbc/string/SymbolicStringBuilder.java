@@ -31,6 +31,8 @@ TERMINATION OF THIS AGREEMENT. */
 package gov.nasa.jpf.symbc.string;
 
 import java.util.Map;
+
+import gov.nasa.jpf.symbc.numeric.ConstraintExpressionVisitor;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
@@ -133,5 +135,23 @@ public class SymbolicStringBuilder extends Expression {
   public void putstr(StringExpression s){
 	  str = s;
   }
+
+	// JacoGeldenhuys
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		str.accept(visitor);
+		visitor.postVisit(this);
+	}
+
+	@Override
+	public int compareTo(Expression expr) {
+		if (expr instanceof SymbolicStringBuilder) {
+			SymbolicStringBuilder s = (SymbolicStringBuilder) expr;
+			return getstr().compareTo(s.getstr());
+		} else {
+			return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+		}
+	}
 
 }

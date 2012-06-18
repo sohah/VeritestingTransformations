@@ -25,9 +25,9 @@ import java.util.Map;
 import java.util.Random;
 
 public class SymbolicReal extends RealExpression {
-	public static double UNDEFINED = MinMax.MINDOUBLE;
-	public double _min = MinMax.MINDOUBLE;
-	public double _max = MinMax.MAXDOUBLE;
+	public static double UNDEFINED = Double.MIN_VALUE;
+	public double _min = 0;
+	public double _max = 0;
 	public double solution = UNDEFINED; // C
 	public double solution_inf = UNDEFINED; // C
 	public double solution_sup = UNDEFINED; // C
@@ -42,6 +42,8 @@ public class SymbolicReal extends RealExpression {
 		unique_id = MinMax.UniqueId++;
 		//PathCondition.flagSolved = false;
 		name = "REAL_" + hashCode();
+		_min = MinMax.getVarMinDouble(name);
+		_max = MinMax.getVarMaxDouble(name);
 	}
 
 	public SymbolicReal (String s) {
@@ -49,6 +51,8 @@ public class SymbolicReal extends RealExpression {
 		unique_id = MinMax.UniqueId++;
 		//PathCondition.flagSolved = false;
 		name = s;
+		_min = MinMax.getVarMinDouble(name);
+		_max = MinMax.getVarMaxDouble(name);
 		//trackedSymVars.add(fixName(name));
 	}
 
@@ -148,4 +152,23 @@ public class SymbolicReal extends RealExpression {
       //return Integer.toHexString(_min ^ _max).hashCode();
   	return unique_id;
   }
+  
+//	JacoGeldenhuys
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		visitor.postVisit(this);
+	}
+
+	@Override
+	public int compareTo(Expression expr) {
+		if (expr instanceof SymbolicReal) {
+			SymbolicReal e = (SymbolicReal) expr;
+			int a = unique_id;
+			int b = e.unique_id;
+			return (a < b) ? -1 : (a > b) ? 1 : 0;
+		} else {
+			return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+		}
+	}
 }

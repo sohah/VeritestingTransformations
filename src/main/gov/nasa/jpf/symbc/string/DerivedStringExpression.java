@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import gov.nasa.jpf.symbc.numeric.ConstraintExpressionVisitor;
 import gov.nasa.jpf.symbc.numeric.Expression;
 
 public class DerivedStringExpression extends StringExpression {
@@ -187,6 +188,14 @@ public class DerivedStringExpression extends StringExpression {
 
     return "STRING_" + name;
   }
+
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		left.accept(visitor);
+		right.accept(visitor);
+		visitor.postVisit(this);
+	}
   
 }
 

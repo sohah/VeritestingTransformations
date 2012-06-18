@@ -24,7 +24,7 @@ public class Vertex {
 		this.name = name;
 		this.constant = false;
 		//symbolic_length = new SymbolicInteger(name + ".length_" +count+ "_", 0, MinMax.MAXINT); //Must start with 0, for concat
-		symbolic_length = sig.create (name, 0, MinMax.MAXINT);
+		symbolic_length = sig.create (name, 0, MinMax.getVarMaxInt(""));
 		this.uniqueNumber = count++;
 	}
 	

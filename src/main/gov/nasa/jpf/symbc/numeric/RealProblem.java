@@ -67,7 +67,7 @@ public class RealProblem extends Problem {
 
 	 public RealExp div(RealExp x, RealExp y) {
 		 // check for y neq 0 done in DDIV and FDIV?
-		 RealVar res = makeRealVar(MinMax.MINDOUBLE,MinMax.MAXDOUBLE); // res = x/y
+		 RealVar res = makeRealVar(MinMax.getVarMinDouble(""),MinMax.getVarMaxDouble("")); // res = x/y
 		 post(eq(mult(res,y), x));
 	     return res;
 	 }

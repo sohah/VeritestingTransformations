@@ -40,4 +40,33 @@ public enum Comparator {
    public String toString() {
 	 return str;
    }
+
+	/**
+	 * Apply this comparator to the given operands.
+	 * 
+	 * @param left
+	 *            the left operand
+	 * @param right
+	 *            the right operand
+	 * @return <code>true</code> if and only if the operands satisfy this
+	 *         comparator
+	 */
+	public boolean evaluate(double left, double right) {
+		switch (this) {
+		case EQ:
+			return left == right;
+		case NE:
+			return left != right;
+		case LT:
+			return left < right;
+		case LE:
+			return left <= right;
+		case GT:
+			return left > right;
+		case GE:
+			return left >= right;
+		default:
+			return false;
+		}
+	}
 }

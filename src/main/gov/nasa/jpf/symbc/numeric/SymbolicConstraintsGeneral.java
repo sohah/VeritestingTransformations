@@ -483,22 +483,22 @@ public class SymbolicConstraintsGeneral {
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_rightRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar, part1));
 					Object cc = pb.eq(((IntegerConstant)c_leftRef).value, tempVar);
 					orList.add(cc);
 				}
 				else if (c_rightRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_leftRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT);
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt(""));
 					pb.post(pb.eq(tempVar, part1)); tempVars++;
 					orList.add(pb.eq(tempVar,((IntegerConstant)c_rightRef).value));
 				}
 				else {
 					Object part1 = getExpression(c_leftRef);
 					Object part2 = getExpression(c_rightRef);
-					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
-					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
+					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar1, part1));
 					pb.post(pb.eq(tempVar2, part2));
 					orList.add(pb.eq(tempVar1,tempVar2));
@@ -514,22 +514,22 @@ public class SymbolicConstraintsGeneral {
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_rightRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar, part1));
 					Object cc = pb.neq(((IntegerConstant)c_leftRef).value, tempVar);
 					orList.add(cc);
 				}
 				else if (c_rightRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_leftRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT);
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt(""));
 					pb.post(pb.eq(tempVar, part1)); tempVars++;
 					orList.add(pb.neq(tempVar,((IntegerConstant)c_rightRef).value));
 				}
 				else {
 					Object part1 = getExpression(c_leftRef);
 					Object part2 = getExpression(c_rightRef);
-					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
-					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
+					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar1, part1));
 					pb.post(pb.eq(tempVar2, part2));
 					orList.add(pb.neq(tempVar1,tempVar2));
@@ -545,22 +545,22 @@ public class SymbolicConstraintsGeneral {
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_rightRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar, part1));
 					Object cc = pb.lt(((IntegerConstant)c_leftRef).value, tempVar);
 					orList.add(cc);
 				}
 				else if (c_rightRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_leftRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT);
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt(""));
 					pb.post(pb.eq(tempVar, part1)); tempVars++;
 					orList.add(pb.lt(tempVar,((IntegerConstant)c_rightRef).value));
 				}
 				else {
 					Object part1 = getExpression(c_leftRef);
 					Object part2 = getExpression(c_rightRef);
-					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
-					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
+					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar1, part1));
 					pb.post(pb.eq(tempVar2, part2));
 					orList.add(pb.lt(tempVar1,tempVar2));
@@ -576,22 +576,22 @@ public class SymbolicConstraintsGeneral {
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_rightRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar, part1));
 					Object cc = pb.geq(((IntegerConstant)c_leftRef).value, tempVar);
 					orList.add(cc);
 				}
 				else if (c_rightRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_leftRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT);
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt(""));
 					pb.post(pb.eq(tempVar, part1)); tempVars++;
 					orList.add(pb.geq(tempVar,((IntegerConstant)c_rightRef).value));
 				}
 				else {
 					Object part1 = getExpression(c_leftRef);
 					Object part2 = getExpression(c_rightRef);
-					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
-					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
+					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar1, part1));
 					pb.post(pb.eq(tempVar2, part2));
 					orList.add(pb.geq(tempVar1,tempVar2));
@@ -607,22 +607,22 @@ public class SymbolicConstraintsGeneral {
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_rightRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar, part1));
 					Object cc = pb.leq(((IntegerConstant)c_leftRef).value, tempVar);
 					orList.add(cc);
 				}
 				else if (c_rightRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_leftRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT);
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt(""));
 					pb.post(pb.eq(tempVar, part1)); tempVars++;
 					orList.add(pb.leq(tempVar,((IntegerConstant)c_rightRef).value));
 				}
 				else {
 					Object part1 = getExpression(c_leftRef);
 					Object part2 = getExpression(c_rightRef);
-					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
-					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
+					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar1, part1));
 					pb.post(pb.eq(tempVar2, part2));
 					orList.add(pb.leq(tempVar1,tempVar2));
@@ -638,22 +638,22 @@ public class SymbolicConstraintsGeneral {
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_rightRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar, part1));
 					Object cc = pb.gt(((IntegerConstant)c_leftRef).value, tempVar);
 					orList.add(cc);
 				}
 				else if (c_rightRef instanceof IntegerConstant) {
 					Object part1 = getExpression(c_leftRef);
-					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT);
+					Object tempVar = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt(""));
 					pb.post(pb.eq(tempVar, part1)); tempVars++;
 					orList.add(pb.gt(tempVar,((IntegerConstant)c_rightRef).value));
 				}
 				else {
 					Object part1 = getExpression(c_leftRef);
 					Object part2 = getExpression(c_rightRef);
-					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
-					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.MININT, MinMax.MAXINT); tempVars++;
+					Object tempVar1 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
+					Object tempVar2 = pb.makeIntVar("mytemp" + tempVars, MinMax.getVarMinInt(""), MinMax.getVarMaxInt("")); tempVars++;
 					pb.post(pb.eq(tempVar1, part1));
 					pb.post(pb.eq(tempVar2, part2));
 					orList.add(pb.gt(tempVar1,tempVar2));
@@ -996,7 +996,32 @@ public class SymbolicConstraintsGeneral {
 
 	}
 
+	public boolean isSatisfiableGreen(PathCondition pc) {
+		if (pc == null || pc.count == 0) {
+			if (SymbolicInstructionFactory.debugMode)
+				System.out.println("## Warning: empty path condition");
+			return true;
+		}
+		result = pc.solve();
 
+		if (SymbolicInstructionFactory.debugMode)
+			System.out.println(" --> " + pc + " -> " + result);
+
+		if(result == null) {
+			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) "+pc);
+			return false;
+		}
+		if (result == Boolean.TRUE) {
+			return true;
+		}
+		else {
+			return false;
+		}
+
+
+	}
+	
+	
    public void cleanup () {
 	   if(pb instanceof ProblemCVC3) {
 		   ((ProblemCVC3) pb).cleanup();

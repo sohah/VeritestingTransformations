@@ -31,6 +31,8 @@ TERMINATION OF THIS AGREEMENT. */
 package gov.nasa.jpf.symbc.string;
 
 import java.util.Map;
+
+import gov.nasa.jpf.symbc.numeric.ConstraintExpressionVisitor;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
@@ -102,5 +104,11 @@ public class StringSymbolic extends StringExpression {
 	  public String solution() {
 	    return solution;
 	  }
+
+	@Override
+	public void accept(ConstraintExpressionVisitor visitor) {
+		visitor.preVisit(this);
+		visitor.postVisit(this);
+	}
 
 }
