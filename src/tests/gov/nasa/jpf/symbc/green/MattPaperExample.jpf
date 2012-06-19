@@ -6,6 +6,7 @@ sourcepath=${jpf-symbc}/src/tests
 symbolic.method=gov.nasa.jpf.symbc.green.MattPaperExample.m(sym#sym);
 
 symbolic.green=true
+listener = .symbc.GreenListener
 
 symbolic.solver.slicing = true
 symbolic.solver.canonization = true

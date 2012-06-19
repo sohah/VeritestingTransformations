@@ -287,11 +287,11 @@ public class PathCondition implements Comparable<PathCondition> {
 				if (o instanceof SymbolicReal) {
 					SymbolicReal r = (SymbolicReal) o;
 					r.solution = instance.getRealValue((RealVariable) v);
-					System.out.println("r = " + r.solution);
+					//System.out.println("r = " + r.solution);
 				} else if (o instanceof SymbolicInteger) {
 					SymbolicInteger r = (SymbolicInteger) o;
 					r.solution = instance.getIntValue((IntVariable) v);
-					System.out.println("r = " + r.solution);
+					//System.out.println("r = " + r.solution);
 				}
 			}
 		}
