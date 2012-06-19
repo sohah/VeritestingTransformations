@@ -19,27 +19,32 @@
 
 package gov.nasa.jpf.symbc.numeric;
 
+import za.ac.sun.cs.solver.Instance;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.MJIEnv;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
+import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.string.StringPathCondition;
 
 import gov.nasa.jpf.symbc.concolic.*;
 
 // path condition contains mixed constraints of integers and reals
 
-public class PathCondition {
+public class PathCondition implements Comparable<PathCondition> {
     public static boolean flagSolved = false;
 
     public Constraint header;
     int count = 0;
     protected int solverCalls = 0;
 
+    private Instance instance = null;
+    
     // TODO: to review
     public StringPathCondition spc = new StringPathCondition(this);
 
+    private Integer hashCode = null;
 
     //added by guowei
     public static boolean isReplay = false;
@@ -51,6 +56,13 @@ public class PathCondition {
     	header = null;
     }
 
+    public Instance getInstance() {
+		if (instance == null) {
+			instance = SolverTranslator.createInstance(header);
+		}
+		return instance;
+	}
+    
     public int getSolverCalls(){
     	return this.solverCalls;
     }
@@ -177,7 +189,10 @@ public class PathCondition {
      * Returns whether the condition was extended with the constraint.
      */
     public boolean prependUnlessRepeated(Constraint t) {
-        if (!hasConstraint(t)) {
+    	// if Green is used and slicing is on then we always add the constraint
+    	// since we assume the last constraint added is always the header
+        if ((SymbolicInstructionFactory.solver != null && SymbolicInstructionFactory.solver.isSlicing())
+        		|| !hasConstraint(t)) {
             t.and = header;
             header = t;
             count++;
@@ -243,7 +258,38 @@ public class PathCondition {
 		return last;
 	}
 
-	public boolean solve() {// warning: solve calls simplify
+	public boolean solve() {
+		if (SymbolicInstructionFactory.solver == null)
+			return solveOld();
+		else 
+			return solveGreen();			
+	}
+	
+	public boolean simplify() {
+		if (SymbolicInstructionFactory.solver == null)
+			return simplifyOld();
+		else 
+			return simplifyGreen();
+	}
+	
+	public boolean solveGreen() {// warning: solve calls simplify
+		if (instance == null) {
+			instance = SolverTranslator.createInstance(header);
+		}
+		return instance.isSatisfiable() /*&& spc.simplify()*/; // strings are not supported by Green for now
+	}
+
+	public boolean simplifyGreen() {
+		if (isReplay) {
+			return true;
+		}
+		if (instance == null) {
+			instance = SolverTranslator.createInstance(header);
+		}
+		return instance.isSatisfiable() /*&& spc.simplify()*/; // strings are not supported by Green for now
+	}
+	
+	public boolean solveOld() {// warning: solve calls simplify
 
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 
@@ -256,7 +302,7 @@ public class PathCondition {
 		return result1 && result2;
 	}
 
-	public boolean simplify() {
+	public boolean simplifyOld() {
 		if(isReplay){
 			return true;
 		}
@@ -313,6 +359,134 @@ public class PathCondition {
 	    } else {
 	        return null;
 	    }
+	}
+
+	/**
+	 * Indicates whether some other object is "equal to" this one.
+	 * 
+	 * Note: Technically, this routine is incomplete and should take the string
+	 * path condition stored in field {@code spc} into account.
+	 * 
+	 * @param obj
+	 *            the reference object with which to compare
+	 * @return {@code true} if this object is the same as the obj argument;
+	 *         {@code false} otherwise.
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		PathCondition p = (PathCondition) obj;
+		if (count != p.count) {
+			return false;
+		}
+		Constraint c = header;
+		Constraint pc = p.header;
+		while (c != null) {
+			if (pc == null) {
+				return false;
+			}
+			if (!c.equals(pc)) {
+				return false;
+			}
+			c = c.getTail();
+			pc = pc.getTail();
+		}
+		if (pc != null) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Compare two path conditions for orderedness. The function is based on the
+	 * hash codes of the path conditions. In the event that the hash codes are
+	 * equal, a lexicographic comparison is made between the constraints of the
+	 * path conditions.
+	 * 
+	 * @param pc
+	 *            the path condition to compare to
+	 * @return -1 if this path condition is less than the other, +1 if it is
+	 *         greater, and 0 if they are equal
+	 */
+	@Override
+	public int compareTo(PathCondition pc) {
+		int hc1 = hashCode();
+		int hc2 = pc.hashCode();
+		if (hc1 < hc2) {
+			return -1;
+		} else if (hc1 > hc2) {
+			return 1;
+		} else {
+			// perform a lexicographic comparison
+			Constraint c1 = header;
+			Constraint c2 = pc.header;
+			while (c1 != null) {
+				if (c2 == null) {
+					return 1;
+				}
+				int r = c1.compareTo(c2);
+				if (r != 0) {
+					return r;
+				}
+				c1 = c1.getTail();
+				c2 = c2.getTail();
+			}
+			return (c2 == null) ? 0 : -1;
+		}
+	}
+
+	/**
+	 * Returns a hash code value for the object.
+	 * 
+	 * Note: Technically, this routine is incomplete and should take the string
+	 * path condition stored in field {@code spc} into account.
+	 * 
+	 * @return a hash code value for this object
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		if (hashCode == null) {
+			hashCode = new Integer(0);
+			Constraint c = header;
+			while (c != null) {
+				hashCode = hashCode ^ c.hashCode();
+				c = c.getTail();
+			}
+		}
+		return hashCode;
+	}
+
+	/**
+	 * Sometimes we violate our abstraction and fiddle with the fields of a path
+	 * condition. Whenever the list of constraints rooted in {@link #header} is
+	 * modified in any way, this routine should be called to force the
+	 * re-computation of the hash value of the path condition.
+	 */
+	public void resetHashCode() {
+		hashCode = null;
+	}
+
+	/**
+	 * Recompute the value of {@link #count}, based on the actual list of
+	 * constraints.
+	 */
+	public void recomputeCount() {
+		count = 0;
+		for (Constraint c = header; c != null; c = c.getTail()) {
+			count++;
+		}
+	}
+
+	/**
+	 * Remove the header of the path condition, update the count, and reset the
+	 * hash code.
+	 */
+	public void removeHeader() {
+		assert header != null;
+		header = header.and;
+		count--;
+		resetHashCode();
 	}
 
 

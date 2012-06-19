@@ -25,5 +25,6 @@
 	<classpathentry kind="lib" path="lib/bcel.jar"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/junit-4.10.jar"/>
 	<classpathentry kind="lib" path="lib/opt4j-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/solver.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

@@ -19,6 +19,15 @@
 
 package gov.nasa.jpf.symbc;
 
+import za.ac.sun.cs.solver.Solver;
+import za.ac.sun.cs.solver.canonization.DefaultCanonizer;
+import za.ac.sun.cs.solver.csp.CVC3;
+import za.ac.sun.cs.solver.csp.Choco;
+import za.ac.sun.cs.solver.csp.LattE;
+import za.ac.sun.cs.solver.slicing.DefaultSlicer;
+import za.ac.sun.cs.solver.store.RedisLevelStore;
+import za.ac.sun.cs.solver.store.RedisStore;
+import za.ac.sun.cs.solver.store.Store;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -474,6 +483,12 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 	static public boolean debugMode;
 
 	/*
+	 * If Green is enabled this solver will be used
+	 * Later we just check if this is null to know if Green is enabled
+	 */
+	static public Solver solver = null;
+	
+	/*
 	 * Concolic mode where we concrete execute for now
 	 * only Math operations
 	 */
@@ -491,31 +506,186 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 		    this.ci = ci;
 	 }
 
+	 private void setupGreen(Config conf) {
+		//------------------------------------
+			// Construct the solver
+			//------------------------------------
+			solver = new Solver();
+
+			// Slicing
+			String s = conf.getProperty("symbolic.solver.slicing");
+			Boolean b = (s != null) && (s.equals("true") || s.equals("yes") || s.equals("on"));
+			System.out.println("symbolic.solver.slicing=" + b);
+			if (b) {
+				solver.setSlicer(new DefaultSlicer());
+			}
+
+			// Canonization
+			s = conf.getProperty("symbolic.solver.canonization");
+			b = (s != null) && (s.equals("true") || s.equals("yes") || s.equals("on"));
+			System.out.println("symbolic.solver.canonization=" + b);
+			if (b) {
+				solver.setCanonizer(new DefaultCanonizer());
+			}
+			Boolean canonization = b;
+
+			// Decision procedure
+			s = conf.getProperty("symbolic.solver.dp");
+			if (s == null) {
+				System.out.println("symbolic.solver.dp=<<NONE>>");
+			} else if (s.equals("cvc3")) {
+				CVC3 cvc3 = new CVC3();
+				solver.setDecisionProcedure(cvc3);
+				solver.setConstraintSolver(cvc3);
+				System.out.println("symbolic.solver.dp=" + s);
+			} else if (s.equals("choco")) {
+				Choco choco = new Choco();
+				solver.setDecisionProcedure(choco);
+				solver.setConstraintSolver(choco);
+				System.out.println("symbolic.solver.dp=" + s);
+			} else {
+				System.out.println("symbolic.solver.dp=" + s + " <--- UNSUPPORTED");
+			}
+
+			// Store
+			Store store = null;
+			s = conf.getProperty("symbolic.solver.store");
+			if (s == null) {
+				System.out.println("symbolic.solver.store=<<NONE>>");
+			} else if (s.equals("redis")) {
+				String h = conf.getProperty("symbolic.solver.store.redis.host", "localhost");
+				int p = conf.getInt("symbolic.solver.store.redis.port", 6379);
+				RedisStore redis = new RedisStore(h, p);
+				solver.setStore(redis);
+				String d = conf.getProperty("symbolic.solver.store.redis.delay");
+				b = (d != null) && (d.equals("true") || d.equals("yes") || d.equals("on"));
+				redis.setDelayedWrites(b);
+				System.out.println("symbolic.solver.store=" + s);
+				System.out.println("symbolic.solver.store.redis.host=" + h);
+				System.out.println("symbolic.solver.store.redis.port=" + p);
+				System.out.println("symbolic.solver.store.redis.delay=" + b);
+				store = redis;
+			} else if (s.equals("redislevel")) {
+				String[] h = conf.getStringArray("symbolic.solver.store.redislevel.host", new String[] { "localhost" } );
+				int p[] = conf.getIntArray("symbolic.solver.store.redislevel.port", new int[] { 6379 } );
+				RedisLevelStore redisLevel = new RedisLevelStore(h, p);
+				solver.setStore(redisLevel);
+				System.out.println("symbolic.solver.store=" + s);
+				int n = h.length;
+				if (p.length > n) {
+					n = p.length;
+				}
+				if (n == 0) {
+					System.out.println("symbolic.solver.store.redislevel.host[0]=localhost");
+					System.out.println("symbolic.solver.store.redislevel.port[0]=6379");
+				} else {
+					for (int i = 0; i < n; i++) {
+						String hh = (i < h.length) ? h[i] : "localhost";
+						int pp = (i < p.length) ? p[i] : 6379;
+						System.out.println("symbolic.solver.store.redislevel.host[" + i + "]=" + hh);
+						System.out.println("symbolic.solver.store.redislevel.port[" + i + "]=" + pp);
+					}
+				}
+				store = redisLevel;
+			} else {
+				System.out.println("symbolic.solver.store=" + s + " <--- UNSUPPORTED");
+			}
+//			s = conf.getProperty("symbolic.pcstore.no");
+//			dontStoreInDB = (s != null) && (s.equals("true") || s.equals("yes") || s.equals("on"));
+//			System.out.println("symbolic.pcstore.no=" + dontStoreInDB);
+
+			// Model counter
+			s = conf.getProperty("symbolic.solver.mc");
+			if (s == null) {
+				System.out.println("symbolic.solver.mc=<<NONE>>");
+			} else if (s.equals("latte")) {
+				String x = conf.getProperty("symbolic.solver.mc.tool", "count");
+				LattE latte = new LattE(store);
+				latte.setLatteExecutable(x);
+				solver.setModelCounter(latte);
+				System.out.println("symbolic.solver.mc=" + s);
+				System.out.println("symbolic.solver.mc.tool=" + x);
+				assert canonization : ">>> LattE cannot operate without canonization! <<<";
+			} else {
+				System.out.println("symbolic.solver.mc=" + s + " <--- UNSUPPORTED");
+			}
+	 }
+	 
 	 public  SymbolicInstructionFactory (Config conf){
 
 		System.out.println("Running Symbolic PathFinder ...");
 
 		filter = new InstructionFactoryFilter(null, new String[] {/*"java.*",*/ "javax.*" },null, null);
 
-		dp = conf.getStringArray("symbolic.dp");
-		if (dp == null) {
-			dp = new String[1];
-			dp[0] = "choco";
+		if (conf.getBoolean("symbolic.green", false)) {
+			System.out.println("Using Green Framework...");
+			setupGreen(conf);
+		} else {
+			dp = conf.getStringArray("symbolic.dp");
+			if (dp == null) {
+				dp = new String[1];
+				dp[0] = "choco";
+			}
+			System.out.println("symbolic.dp="+dp[0]);
+
+			stringTimeout = conf.getInt("symbolic.string_dp_timeout_ms");
+			System.out.println("symbolic.string_dp_timeout_ms="+stringTimeout);
+
+			string_dp = conf.getStringArray("symbolic.string_dp");
+			if (string_dp == null) {
+				string_dp = new String[1];
+				string_dp[0] = "none";
+			}
+			System.out.println("symbolic.string_dp="+string_dp[0]);
+
+			preprocesOnly = conf.getBoolean("symbolic.string_preprocess_only", false);
+			String[] concolic  = conf.getStringArray("symbolic.concolic");
+			if (concolic != null) {
+				concolicMode = true;
+				System.out.println("symbolic.concolic=true");
+			} else {
+				concolicMode = false;
+			}
+
+			String[] concolicMaxTries  = conf.getStringArray("symbolic.concolic.MAX_TRIES");
+			if (concolicMaxTries != null) {
+				MaxTries = Integer.parseInt(concolicMaxTries[0]);
+				assert (MaxTries > 0);
+				System.out.println("symbolic.concolic.MAX_TRIES=" + MaxTries);
+			} else {
+				MaxTries = 1;
+			}
+
+			String[] heuristicRandom  = conf.getStringArray("symbolic.heuristicRandom");
+			if (heuristicRandom != null) {
+				heuristicRandomMode = true;
+				System.out.println("symbolic.heuristicRandom=true");
+			} else {
+				heuristicRandomMode = false;
+			}
+
+			String[] heuristicPartition  = conf.getStringArray("symbolic.heuristicPartition");
+			if (heuristicPartition != null) {
+				assert(! heuristicRandomMode);
+				heuristicPartitionMode = true;
+				System.out.println("symbolic.heuristicPartition=true");
+			} else {
+				heuristicPartitionMode = false;
+			}
+
+			if(dp[0].equalsIgnoreCase("choco") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare") || dp == null) { // default is choco
+			  ProblemChoco.timeBound = conf.getInt("symbolic.choco_time_bound", 30000);
+			  System.out.println("symbolic.choco_time_bound="+ProblemChoco.timeBound);
+			}
+			//load CORAL's parameters 
+			if (dp[0].equalsIgnoreCase("coral") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare")) {
+				ProblemCoral.configure(conf);
+			}
+	
 		}
-		System.out.println("symbolic.dp="+dp[0]);
-
-		stringTimeout = conf.getInt("symbolic.string_dp_timeout_ms");
-		System.out.println("symbolic.string_dp_timeout_ms="+stringTimeout);
-
-		string_dp = conf.getStringArray("symbolic.string_dp");
-		if (string_dp == null) {
-			string_dp = new String[1];
-			string_dp[0] = "none";
-		}
-		System.out.println("symbolic.string_dp="+string_dp[0]);
-
-		preprocesOnly = conf.getBoolean("symbolic.string_preprocess_only", false);
-
+		
+		
+		
 		//Just checking if set, don't care about any values
 		String[] dummy = conf.getStringArray("symbolic.debug");
 		if (dummy != null) {
@@ -524,48 +694,6 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 			debugMode = false;
 		}
 
-		String[] concolic  = conf.getStringArray("symbolic.concolic");
-		if (concolic != null) {
-			concolicMode = true;
-			System.out.println("symbolic.concolic=true");
-		} else {
-			concolicMode = false;
-		}
-
-		String[] concolicMaxTries  = conf.getStringArray("symbolic.concolic.MAX_TRIES");
-		if (concolicMaxTries != null) {
-			MaxTries = Integer.parseInt(concolicMaxTries[0]);
-			assert (MaxTries > 0);
-			System.out.println("symbolic.concolic.MAX_TRIES=" + MaxTries);
-		} else {
-			MaxTries = 1;
-		}
-
-		String[] heuristicRandom  = conf.getStringArray("symbolic.heuristicRandom");
-		if (heuristicRandom != null) {
-			heuristicRandomMode = true;
-			System.out.println("symbolic.heuristicRandom=true");
-		} else {
-			heuristicRandomMode = false;
-		}
-
-		String[] heuristicPartition  = conf.getStringArray("symbolic.heuristicPartition");
-		if (heuristicPartition != null) {
-			assert(! heuristicRandomMode);
-			heuristicPartitionMode = true;
-			System.out.println("symbolic.heuristicPartition=true");
-		} else {
-			heuristicPartitionMode = false;
-		}
-
-		if(dp[0].equalsIgnoreCase("choco") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare") || dp == null) { // default is choco
-		  ProblemChoco.timeBound = conf.getInt("symbolic.choco_time_bound", 30000);
-		  System.out.println("symbolic.choco_time_bound="+ProblemChoco.timeBound);
-		}
-		//load CORAL's parameters 
-		if (dp[0].equalsIgnoreCase("coral") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare")) {
-			ProblemCoral.configure(conf);
-		}
 	
 		MinMax.collectMinMaxInformation(conf);
 		/* no longer required here, now read in MinMax, see line above
