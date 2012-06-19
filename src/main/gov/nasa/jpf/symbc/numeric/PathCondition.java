@@ -282,7 +282,7 @@ public class PathCondition implements Comparable<PathCondition> {
 		}
 		boolean isSat = instance.isSatisfiable() /*&& spc.simplify()*/; // strings are not supported by Green for now
 		if (isSat) {
-			for (Variable v : instance.getAllVariables()) {
+			for (Variable v : instance.getSlicedVariables()) {
 				Object o = v.getOriginal();
 				if (o instanceof SymbolicReal) {
 					SymbolicReal r = (SymbolicReal) o;
