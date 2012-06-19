@@ -281,6 +281,8 @@ public class PathCondition implements Comparable<PathCondition> {
 			instance = SolverTranslator.createInstance(header);
 		}
 		boolean isSat = instance.isSatisfiable() /*&& spc.simplify()*/; // strings are not supported by Green for now
+		/*
+		 * This is untested and have shown a few issues so needs fixing first
 		if (isSat) {
 			for (Variable v : instance.getSlicedVariables()) {
 				Object o = v.getOriginal();
@@ -295,6 +297,7 @@ public class PathCondition implements Comparable<PathCondition> {
 				}
 			}
 		}
+		*/
 		return isSat;
 	}
 	
