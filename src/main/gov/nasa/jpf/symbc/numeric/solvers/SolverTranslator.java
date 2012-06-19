@@ -156,7 +156,7 @@ public class SolverTranslator {
 
 		@Override
 		public void postVisit(SymbolicInteger node) {
-			stack.push(new IntVariable(node.getName(), node._min, node._max));
+			stack.push(new IntVariable(node.getName(), node, node._min, node._max));
 		}
 
 	}

@@ -20,12 +20,16 @@
 package gov.nasa.jpf.symbc.numeric;
 
 import za.ac.sun.cs.solver.Instance;
+import za.ac.sun.cs.solver.expr.IntVariable;
+import za.ac.sun.cs.solver.expr.RealVariable;
+import za.ac.sun.cs.solver.expr.Variable;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.MJIEnv;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
+import gov.nasa.jpf.symbc.numeric.visitors.CollectVariableVisitor;
 import gov.nasa.jpf.symbc.string.StringPathCondition;
 
 import gov.nasa.jpf.symbc.concolic.*;
@@ -272,21 +276,37 @@ public class PathCondition implements Comparable<PathCondition> {
 			return simplifyGreen();
 	}
 	
-	public boolean solveGreen() {// warning: solve calls simplify
+	private boolean solveWithSolution() {
 		if (instance == null) {
 			instance = SolverTranslator.createInstance(header);
 		}
-		return instance.isSatisfiable() /*&& spc.simplify()*/; // strings are not supported by Green for now
+		boolean isSat = instance.isSatisfiable() /*&& spc.simplify()*/; // strings are not supported by Green for now
+		if (isSat) {
+			for (Variable v : instance.getAllVariables()) {
+				Object o = v.getOriginal();
+				if (o instanceof SymbolicReal) {
+					SymbolicReal r = (SymbolicReal) o;
+					r.solution = instance.getRealValue((RealVariable) v);
+					System.out.println("r = " + r.solution);
+				} else if (o instanceof SymbolicInteger) {
+					SymbolicInteger r = (SymbolicInteger) o;
+					r.solution = instance.getIntValue((IntVariable) v);
+					System.out.println("r = " + r.solution);
+				}
+			}
+		}
+		return isSat;
+	}
+	
+	public boolean solveGreen() {// warning: solve calls simplify
+		return solveWithSolution();
 	}
 
 	public boolean simplifyGreen() {
 		if (isReplay) {
 			return true;
 		}
-		if (instance == null) {
-			instance = SolverTranslator.createInstance(header);
-		}
-		return instance.isSatisfiable() /*&& spc.simplify()*/; // strings are not supported by Green for now
+		return solveWithSolution();
 	}
 	
 	public boolean solveOld() {// warning: solve calls simplify
