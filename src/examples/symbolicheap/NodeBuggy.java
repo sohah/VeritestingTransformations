@@ -15,20 +15,6 @@ public class NodeBuggy {
     	left = null;
     	right = null;
     }
-    
-	void addSimple2() {
-    	int depth = 2;
-    	NodeBuggy bigson = this;
-    	while ((bigson.left != null || bigson.right != null) && depth > 0) {
-    		depth--;
-    		System.out.println("depth = " + depth);
-    		if (bigson.right != null) {
-    			bigson = bigson.right;			
-    		} else {
-    			bigson = bigson.left;
-    		}
-		}
-	}
 	
 	void addSimple3() {
 		int depth = 0;
@@ -64,17 +50,16 @@ public class NodeBuggy {
 	}
 	
 	public static void runTest(int x) {
-    	System.out.println("doing ExLazy.Node RunTest!!!!");
     	NodeBuggy X = new NodeBuggy(5);
         X = (NodeBuggy) Debug.makeSymbolicRef("input_X", X);
         if (X != null) {
-            X.addSimple3();
+            X.addSimple3();//broken
+            //X.addSimple4(); //working
         }
         Debug.printSymbolicRef(X, "node = ");
     }
 	
 	public static void main(String[] args) {	
-		System.out.println("Please just do something");
 		runTest(1);
 	}
 
