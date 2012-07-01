@@ -30,13 +30,13 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 	}
 
 	private HeapNode[] prevSymRefs;
-	private ChoiceGenerator<?> prevHeapCG;
+	//private ChoiceGenerator<?> prevHeapCG;
 	private int numSymRefs = 0;
     private int numNewRefs = 0; // # of new reference objects to account for polymorphism (neha)
     boolean abstractClass = false;
 
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-
+		ChoiceGenerator<?> prevHeapCG = null;
 		Config conf = th.getVM().getConfig();
 		String[] lazy = conf.getStringArray("symbolic.lazy");
 		if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
@@ -124,6 +124,16 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 			ss.setNextChoiceGenerator(thisHeapCG);
 			return this;
 		} else {
+			
+			//Willem's Fix to make sure prevHeapCG is always set correctly
+			  prevHeapCG = ss.getChoiceGenerator();
+			  if (prevHeapCG != null) {
+				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
+			  }
+			  while (!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
+				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
+			  }
+			
 			//this is what returns the results
 			thisHeapCG = ss.getChoiceGenerator();
 			assert(thisHeapCG instanceof HeapChoiceGenerator) :

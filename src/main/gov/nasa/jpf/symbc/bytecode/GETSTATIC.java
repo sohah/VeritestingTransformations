@@ -50,12 +50,13 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
 	private int numSymRefs = 0; // # of prev. initialized objects
 	private int numNewRefs = 0; // # of new reference objects to account for polymorphism (neha)
-	ChoiceGenerator<?> prevHeapCG;
+	//ChoiceGenerator<?> prevHeapCG;
 	 boolean abstractClass = false;
 
 
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+		ChoiceGenerator<?> prevHeapCG;
 		Config conf = ti.getVM().getConfig();
 		String[] lazy = conf.getStringArray("symbolic.lazy");
 		if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
@@ -159,6 +160,16 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			ss.setNextChoiceGenerator(heapCG);
 			return this;
 		} else {  // this is what really returns results
+			
+			//Willem's Fix to make sure prevHeapCG is always set correctly
+			  prevHeapCG = ss.getChoiceGenerator();
+			  if (prevHeapCG != null) {
+				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
+			  }
+			  while (!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
+				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
+			  }
+			
 			heapCG = ss.getChoiceGenerator();
 			assert (heapCG instanceof HeapChoiceGenerator) : "expected HeapChoiceGenerator, got: " + heapCG;
 			currentChoice = ((HeapChoiceGenerator)heapCG).getNextChoice();

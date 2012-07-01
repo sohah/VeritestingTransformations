@@ -48,12 +48,13 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
   private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
   private int numSymRefs = 0; // # of prev. initialized objects
-  ChoiceGenerator<?> prevHeapCG;
+  //ChoiceGenerator<?> prevHeapCG = null; // Willem moved this local, since it get "remembered" during backtracking
   boolean abstractClass = false;
 
 
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+	  ChoiceGenerator<?> prevHeapCG = null;
 	  Config conf = ti.getVM().getConfig();
 	  String[] lazy = conf.getStringArray("symbolic.lazy");
 	  if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
@@ -83,12 +84,16 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	    return ti.createAndThrowException("java.lang.NoSuchFieldError",
 	                              "referencing field '" + fname + "' in " + ei);
 	 }
+	 
 	// check if this breaks the current transition
 	    if (isNewPorFieldBoundary(ti, fi, objRef)) {
 	      if (createAndSetFieldCG(ss, ei, ti)) {
 	        return this;
 	      }
 	    }
+	    
+	    
+	    
 	 //end GETFIELD code from super
 
 	if(ei==null)
@@ -118,6 +123,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  ClassInfo typeClassInfo = fi.getTypeClassInfo(); // use this instead of fullType
 
 
+	  
 
 	  // first time around, get previous heapCG (if any) size so we know
 	  // how big to make this heapCG
@@ -172,7 +178,39 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  return this;
 	  }
 	  else {//this is what really returns results
-
+		  /* Willem's debugging code to find the issue with prevHeapCG being "remembered incorrectly
+		  if (prevHeapCG != null) {
+			  System.out.println("There is a prevHeapPC = " + prevHeapCG);
+			  System.out.println("prevHeapCG syninputheap " + ((HeapChoiceGenerator)prevHeapCG).getCurrentSymInputHeap());
+			  
+			  // now find it via the state of the system
+			  ChoiceGenerator<?> hcgTemp = ss.getChoiceGenerator();
+			  if (hcgTemp != null) {
+				  hcgTemp = hcgTemp.getPreviousChoiceGenerator();
+			  }
+			  while (!((hcgTemp == null) || (hcgTemp instanceof HeapChoiceGenerator))) {
+				  hcgTemp = hcgTemp.getPreviousChoiceGenerator();
+			  }
+			  System.out.println("prevHeapCG in ss = " + hcgTemp);
+			  System.out.println("ss.prevHeapCG syninputheap " + ((HeapChoiceGenerator)hcgTemp).getCurrentSymInputHeap());
+			  if (prevHeapCG != hcgTemp) {
+				  System.out.println("DIFFERENT");
+			  }
+			  else {
+				  System.out.println("THE SAME");
+			  }
+		  }
+		  */
+		  
+		  //Willem's Fix to make sure prevHeapCG is always set correctly
+		  prevHeapCG = ss.getChoiceGenerator();
+		  if (prevHeapCG != null) {
+			  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
+		  }
+		  while (!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
+			  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
+		  }
+		  
 		  //from original GETFIELD bytecode
 		  ti.pop(); // Ok, now we can remove the object ref from the stack
 
@@ -192,7 +230,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
 	  // pcHeap is updated with the pcHeap stored in the choice generator above
 	  // get the pcHeap from the previous choice generator of the same type
-	  if (prevHeapCG == null){
+	  if (prevHeapCG == null){ // Willem: this is now and was always unreachable!
 		  pcHeap = new PathCondition();
 		  symInputHeap = new SymbolicInputHeap();
 	  }
