@@ -47,8 +47,8 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	  }
 
 
-	private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
-	private int numSymRefs = 0; // # of prev. initialized objects
+	//private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
+	//private int numSymRefs = 0; // # of prev. initialized objects
 	private int numNewRefs = 0; // # of new reference objects to account for polymorphism (neha)
 	//ChoiceGenerator<?> prevHeapCG;
 	 boolean abstractClass = false;
@@ -56,7 +56,9 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
-		ChoiceGenerator<?> prevHeapCG;
+		ChoiceGenerator<?> prevHeapCG = null;
+		HeapNode[] prevSymRefs = null;
+		int numSymRefs = 0;
 		Config conf = ti.getVM().getConfig();
 		String[] lazy = conf.getStringArray("symbolic.lazy");
 		if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
@@ -169,7 +171,27 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			  while (!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
 				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
 			  }
-			
+			  if (prevHeapCG != null) {
+					// collect candidates for lazy initialization
+					  SymbolicInputHeap symInputHeap =
+						  ((HeapChoiceGenerator)prevHeapCG).getCurrentSymInputHeap();
+
+					  prevSymRefs = new HeapNode[symInputHeap.count()]; // estimate of size; should be changed
+					  HeapNode n = symInputHeap.header();
+					  while (null != n){
+						 // String t = (String)n.getType();
+						  ClassInfo tClassInfo = n.getType();
+						  //reference only objects of same type
+						  // now we handle sub-classing
+						  //if (fullType.equals(t)){
+						  //if (typeClassInfo.isInstanceOf(tClassInfo)) {
+						  if (tClassInfo.isInstanceOf(typeClassInfo)) {
+							  prevSymRefs[numSymRefs] = n;
+							  numSymRefs++;
+						  }
+						  n = n.getNext();
+					  }
+			}
 			heapCG = ss.getChoiceGenerator();
 			assert (heapCG instanceof HeapChoiceGenerator) : "expected HeapChoiceGenerator, got: " + heapCG;
 			currentChoice = ((HeapChoiceGenerator)heapCG).getNextChoice();

@@ -46,14 +46,16 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	    super(fieldName, clsName, fieldDescriptor);
 	  }
 
-  private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
-  private int numSymRefs = 0; // # of prev. initialized objects
+  //private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
+  //private int numSymRefs = 0; // # of prev. initialized objects
   //ChoiceGenerator<?> prevHeapCG = null; // Willem moved this local, since it get "remembered" during backtracking
   boolean abstractClass = false;
 
 
   @Override
   public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+	  HeapNode[] prevSymRefs = null; // previously initialized objects of same type: candidates for lazy init
+	  int numSymRefs = 0; // # of prev. initialized objects
 	  ChoiceGenerator<?> prevHeapCG = null;
 	  Config conf = ti.getVM().getConfig();
 	  String[] lazy = conf.getStringArray("symbolic.lazy");
@@ -202,7 +204,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  }
 		  */
 		  
-		  //Willem's Fix to make sure prevHeapCG is always set correctly
+		  //Willem's Fix to make sure prevHeapCG, prevSymRefs and numSymRefs are always set correctly
 		  prevHeapCG = ss.getChoiceGenerator();
 		  if (prevHeapCG != null) {
 			  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
@@ -210,6 +212,26 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  while (!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
 			  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
 		  }
+		  
+		  if (prevHeapCG != null) {
+			  SymbolicInputHeap symInputHeap =
+					  ((HeapChoiceGenerator)prevHeapCG).getCurrentSymInputHeap();
+
+				  prevSymRefs = new HeapNode[symInputHeap.count()]; // estimate of size; should be changed
+				  HeapNode n = symInputHeap.header();
+				  while (null != n){
+					  //String t = (String)n.getType();
+					  ClassInfo tClassInfo = n.getType();
+					  //reference only objects of same class or super
+					  //if (fullType.equals(t)){
+					  //if (typeClassInfo.isInstanceOf(tClassInfo)) {
+					  if (tClassInfo.isInstanceOf(typeClassInfo)) {
+						  prevSymRefs[numSymRefs] = n;
+						  numSymRefs++;
+					  }
+					  n = n.getNext();
+				  }
+		  }  
 		  
 		  //from original GETFIELD bytecode
 		  ti.pop(); // Ok, now we can remove the object ref from the stack

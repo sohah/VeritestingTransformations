@@ -29,14 +29,16 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 	    super(localVarIndex);
 	}
 
-	private HeapNode[] prevSymRefs;
+	//private HeapNode[] prevSymRefs;
 	//private ChoiceGenerator<?> prevHeapCG;
-	private int numSymRefs = 0;
+	//private int numSymRefs = 0;
     private int numNewRefs = 0; // # of new reference objects to account for polymorphism (neha)
     boolean abstractClass = false;
 
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
 		ChoiceGenerator<?> prevHeapCG = null;
+		HeapNode[] prevSymRefs = null;
+		int numSymRefs = 0;
 		Config conf = th.getVM().getConfig();
 		String[] lazy = conf.getStringArray("symbolic.lazy");
 		if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
@@ -133,7 +135,23 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 			  while (!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
 				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
 			  }
-			
+			  if (prevHeapCG != null) {
+					// collect candidates for lazy initialization
+					SymbolicInputHeap symInputHeap =
+						((HeapChoiceGenerator)prevHeapCG).getCurrentSymInputHeap();
+
+					prevSymRefs = new HeapNode[symInputHeap.count()]; // estimate of size; should be changed
+					HeapNode n = symInputHeap.header();
+					while (null != n){
+						ClassInfo tClassInfo = n.getType();
+						if (tClassInfo.isInstanceOf(typeClassInfo)) {
+
+							prevSymRefs[numSymRefs] = n;
+							numSymRefs++;
+						}
+						n = n.getNext();
+					}
+				}
 			//this is what returns the results
 			thisHeapCG = ss.getChoiceGenerator();
 			assert(thisHeapCG instanceof HeapChoiceGenerator) :
