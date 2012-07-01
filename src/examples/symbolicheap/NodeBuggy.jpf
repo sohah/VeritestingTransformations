@@ -8,6 +8,8 @@ target=symbolicheap.NodeBuggy
 
 symbolic.method=symbolicheap.NodeBuggy.runTest(con)
 
+listener = gov.nasa.jpf.listener.ExecTracker
+
 symbolic.green = false
 
 symbolic.lazy = true

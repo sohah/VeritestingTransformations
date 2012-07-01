@@ -30,6 +30,21 @@ public class NodeBuggy {
     			return;
 		}
 	}
+
+	void addSimple3b() {
+		int depth = 2;
+    	NodeBuggy bigson = this;
+    	while (((bigson.left != null || bigson.right != null)) && depth > 0) {
+    		if (bigson.right != null) {
+    			bigson = bigson.right;			
+    		} else {
+    			bigson = bigson.left;
+    		}
+    		depth--;
+		}
+	}
+
+	
 	
 	void addSimple4() {
     	NodeBuggy bigson = this;
@@ -53,10 +68,10 @@ public class NodeBuggy {
     	NodeBuggy X = new NodeBuggy(5);
         X = (NodeBuggy) Debug.makeSymbolicRef("input_X", X);
         if (X != null) {
-            X.addSimple3();//broken
+            X.addSimple3b();//broken
             //X.addSimple4(); //working
         }
-        Debug.printSymbolicRef(X, "node = ");
+        //Debug.printSymbolicRef(X, "node = ");
     }
 	
 	public static void main(String[] args) {	
