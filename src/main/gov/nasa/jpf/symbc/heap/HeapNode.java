@@ -69,7 +69,10 @@ public class HeapNode {
   }
 
   public String toString() {
-	    return "[ref=" + index + ", symName=" + sym_v.getName() + ", type=" + typeClassInfo.getName() + "]";
+	    String result = "[ref=" + index + ", symName=" + sym_v.getName() + ", type=" + typeClassInfo.getName() + "]";
+	    if(and!=null)
+	    	result = result +and.toString();
+	    return result;
   }
 
 

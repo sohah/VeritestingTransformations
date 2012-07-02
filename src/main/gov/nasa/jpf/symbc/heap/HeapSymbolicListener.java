@@ -354,7 +354,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 		PCChoiceGenerator pcCG = vm.getLastChoiceGeneratorOfType(PCChoiceGenerator.class);
 		PathCondition pc = (pcCG==null ? null : pcCG.getCurrentPC());
 		PathCondition heapPC = (heapCG==null ? null : heapCG.getCurrentPCheap());
-
+		
 		String error = search.getLastError().getDetails();
 		error = "\"" + error.substring(0,error.indexOf("\n")) + "...\"";
 		PathCondition result = new PathCondition();
@@ -521,7 +521,6 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 						PathCondition pc = (pcCG==null ? null : pcCG.getCurrentPC());
 						PathCondition heapPC = (heapCG==null ? null : heapCG.getCurrentPCheap());
 
-
 						if(pc!=null) {
 							pc.solve(); //we only solve the pc
 							PathCondition result = new PathCondition();
@@ -600,6 +599,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 							Vector<Pair> pcs = methodSummary.getPathConditions();
 							if ((!pcs.contains(pcPair)) && (pcString.contains("SYM"))) {
 								methodSummary.addPathCondition(pcPair);
+								
 								methodSummary.addHeapPC(heapPC.toString());
 							}
 							allSummaries.put(longName,methodSummary);

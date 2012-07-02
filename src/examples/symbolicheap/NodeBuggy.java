@@ -43,7 +43,19 @@ public class NodeBuggy {
     		depth--;
 		}
 	}
-
+	static void addSimple(NodeBuggy n) {
+		if(n==null) return;
+		int depth = 2;
+    	NodeBuggy bigson = n;
+    	while (((bigson.left != null || bigson.right != null)) && depth > 0) {
+    		if (bigson.right != null) {
+    			bigson = bigson.right;			
+    		} else {
+    			bigson = bigson.left;
+    		}
+    		depth--;
+		}
+	}
 	
 	
 	void addSimple4() {
@@ -75,7 +87,8 @@ public class NodeBuggy {
     }
 	
 	public static void main(String[] args) {	
-		runTest(1);
+		addSimple(null);
+		//runTest(1);
 	}
 
 }

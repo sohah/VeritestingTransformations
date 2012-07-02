@@ -19,6 +19,8 @@
 
 package gov.nasa.jpf.symbc.heap;
 
+import gov.nasa.jpf.jvm.ClassInfo;
+
 public class SymbolicInputHeap {
 
     HeapNode header;
@@ -66,7 +68,41 @@ public class SymbolicInputHeap {
 
 		return false;
 	}
-
+	
+	public HeapNode[] getNodesOfType(ClassInfo type) {
+		  
+		  int numSymRefs = 0;
+		  HeapNode n = header;
+		  while (null != n){
+			  //String t = (String)n.getType();
+			  ClassInfo tClassInfo = n.getType();
+			  //reference only objects of same class or super
+			  //if (fullType.equals(t)){
+			  //if (typeClassInfo.isInstanceOf(tClassInfo)) {
+			  if (tClassInfo.isInstanceOf(type)) {
+				  numSymRefs++;
+			  }
+			  n = n.getNext();
+		  }
+		  
+		  n = header;
+		  HeapNode[] nodes = new HeapNode[numSymRefs]; // estimate of size; should be changed
+		  int i = 0;
+		  while (null != n){
+			  //String t = (String)n.getType();
+			  ClassInfo tClassInfo = n.getType();
+			  //reference only objects of same class or super
+			  //if (fullType.equals(t)){
+			  //if (typeClassInfo.isInstanceOf(tClassInfo)) {
+			  if (tClassInfo.isInstanceOf(type)) {
+				  nodes[i] = n;
+				  i++;
+			  }
+			  n = n.getNext();
+		  }
+		  return nodes;
+	}
+	
 	public String toString() {
 		return "SymbolicInputHeap = " + count + ((header == null) ? "" : "\n" + header.toString());
 	}

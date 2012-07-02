@@ -76,6 +76,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 
 	public static int getSymbolicIntegerValue(MJIEnv env, int objRef, int v) {
 		Object [] attrs = env.getArgAttributes();
+		
 		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
 		if (sym_arg !=null)
 			return env.newString(sym_arg.toString());
