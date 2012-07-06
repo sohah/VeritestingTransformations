@@ -609,6 +609,9 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 			} else {
 				System.out.println("symbolic.solver.mc=" + s + " <--- UNSUPPORTED");
 			}
+			
+			// fix to make sure when Green is used there is no NPE when poking at dp[0] in some bytecodes
+			dp = new String[] {"green"};
 	 }
 	 
 	 public  SymbolicInstructionFactory (Config conf){
