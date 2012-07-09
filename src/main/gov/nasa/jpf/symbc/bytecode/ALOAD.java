@@ -3,10 +3,7 @@ package gov.nasa.jpf.symbc.bytecode;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.ChoiceGenerator;
 import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DynamicArea;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.Fields;
+
 import gov.nasa.jpf.jvm.KernelState;
 import gov.nasa.jpf.jvm.SystemState;
 import gov.nasa.jpf.jvm.ThreadInfo;
@@ -20,6 +17,7 @@ import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 
@@ -29,92 +27,66 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 	    super(localVarIndex);
 	}
 
-	//private HeapNode[] prevSymRefs;
-	//private ChoiceGenerator<?> prevHeapCG;
-	//private int numSymRefs = 0;
-    private int numNewRefs = 0; // # of new reference objects to account for polymorphism (neha)
-    boolean abstractClass = false;
+	
+    //private int numNewRefs = 0; // # of new reference objects to account for polymorphism -- work of Neha Rungta -- needs to be updated
+      boolean abstractClass = false;
 
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-		ChoiceGenerator<?> prevHeapCG = null;
-		HeapNode[] prevSymRefs = null;
-		int numSymRefs = 0;
+		HeapNode[] prevSymRefs = null; // previously initialized objects of same type: candidates for lazy init
+        int numSymRefs = 0; // # of prev. initialized objects
+        ChoiceGenerator<?> prevHeapCG = null;
+
 		Config conf = th.getVM().getConfig();
 		String[] lazy = conf.getStringArray("symbolic.lazy");
 		if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
 			return super.execute(ss,ks,th);
 
-		//neha: check whether the subtypes from polymorphism need to added
-		// when instantiating "new" objects during lazy-initialization.
-		// the configuration allows to consider all subtypes during the
-		// instantiation. In aliasing all subtypes are considered by default.
-
-		// TODO: fix get rid of subtypes
-
-		String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
+		// TODO: fix handle polymorphism
+		
+		//String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
 		//if(!subtypes.equals("false") &&
 			//	TypeHierarchy.typeHierarchies == null) {
 			//TypeHierarchy.buildTypeHierarchy(th);
 		//}
 
-	//	StackFrame sf = th.getTopFrame();
 		Object attr = th.getLocalAttr(index);
 		String typeOfLocalVar = super.getLocalVariableType();
 
-		//System.out.println("typeOfLocalVar "+typeOfLocalVar);
-		// here typeOfLocalVar could be null?
 
-		if(attr == null || typeOfLocalVar.equals("?") || attr instanceof SymbolicStringBuilder) {
-			th.pushLocal(index);
-			return getNext(th);
+		if(attr == null || typeOfLocalVar.equals("?") || attr instanceof SymbolicStringBuilder || attr instanceof StringExpression) {
+			return super.execute(ss,ks,th);
 		}
-		//if(SymbolicInstructionFactory.debugMode) System.out.println("lazy initialization");
-		//int localVar = th.getLocalVariable(index);
-		//System.out.println("typeOfLocalVar "+typeOfLocalVar);
+		
 		ClassInfo typeClassInfo = ClassInfo.getResolvedClassInfo(typeOfLocalVar);
-
-		//System.out.println(typeClassInfo.getName() + " name of the class");
-
 
 		int currentChoice;
 		ChoiceGenerator<?> thisHeapCG;
-
+		
 		if(!th.isFirstStepInsn()) {
-			//System.out.println("the first whatever");
+			//System.out.println("the first time");
 
 			prevSymRefs = null;
 			numSymRefs = 0;
 			prevHeapCG = null;
 
-			prevHeapCG = ss.getChoiceGenerator();
-			while(!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
-				prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
-			}
+			prevHeapCG = ss.getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
 
 			if (prevHeapCG != null) {
-				// collect candidates for lazy initialization
+				// determine # of candidates for lazy initialization
 				SymbolicInputHeap symInputHeap =
 					((HeapChoiceGenerator)prevHeapCG).getCurrentSymInputHeap();
 
-				prevSymRefs = new HeapNode[symInputHeap.count()]; // estimate of size; should be changed
-				HeapNode n = symInputHeap.header();
-				while (null != n){
-					ClassInfo tClassInfo = n.getType();
-					if (tClassInfo.isInstanceOf(typeClassInfo)) {
+				prevSymRefs = symInputHeap.getNodesOfType(typeClassInfo);
+                numSymRefs = prevSymRefs.length;
 
-						prevSymRefs[numSymRefs] = n;
-						numSymRefs++;
-					}
-					n = n.getNext();
-				}
 			}
 			int increment = 2;
 			if(typeClassInfo.isAbstract()) {
 				 abstractClass = true;
 				 increment = 1; // only null
 			}
-			//neha: if subtypes are to be considered
-			// TODO fix
+			
+			// TODO fix: subtypes
 //			if(!subtypes.equals("false")) {
 //				// get the number of subtypes that exist, and add the number in
 //				// the choice generator in addition to the ones that were there
@@ -125,33 +97,7 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 			//}
 			ss.setNextChoiceGenerator(thisHeapCG);
 			return this;
-		} else {
-			
-			//Willem's Fix to make sure prevHeapCG is always set correctly
-			  prevHeapCG = ss.getChoiceGenerator();
-			  if (prevHeapCG != null) {
-				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
-			  }
-			  while (!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
-				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
-			  }
-			  if (prevHeapCG != null) {
-					// collect candidates for lazy initialization
-					SymbolicInputHeap symInputHeap =
-						((HeapChoiceGenerator)prevHeapCG).getCurrentSymInputHeap();
-
-					prevSymRefs = new HeapNode[symInputHeap.count()]; // estimate of size; should be changed
-					HeapNode n = symInputHeap.header();
-					while (null != n){
-						ClassInfo tClassInfo = n.getType();
-						if (tClassInfo.isInstanceOf(typeClassInfo)) {
-
-							prevSymRefs[numSymRefs] = n;
-							numSymRefs++;
-						}
-						n = n.getNext();
-					}
-				}
+		} else { 
 			//this is what returns the results
 			thisHeapCG = ss.getChoiceGenerator();
 			assert(thisHeapCG instanceof HeapChoiceGenerator) :
@@ -162,6 +108,13 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		PathCondition pcHeap;
 		SymbolicInputHeap symInputHeap;
 
+		// pcHeap is updated with the pcHeap stored in the choice generator above
+        // get the pcHeap from the previous choice generator of the same type
+        // can not simply re-use prevHeapCG from above because it might have changed during re-execution
+        // bug reported by Willem Visser
+        prevHeapCG = thisHeapCG.getPreviousChoiceGeneratorOfType(HeapChoiceGenerator.class);
+
+		
 		if(prevHeapCG == null) {
 			pcHeap = new PathCondition();
 			symInputHeap = new SymbolicInputHeap();
@@ -172,6 +125,9 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 
 		assert pcHeap != null;
 		assert symInputHeap != null;
+		
+		prevSymRefs = symInputHeap.getNodesOfType(typeClassInfo);
+        numSymRefs = prevSymRefs.length;
 
 		int daIndex = 0; //index into JPF's dynamic area
 

@@ -75,26 +75,26 @@ public class SpecialRealExpression extends RealExpression {
 //		    return "." + op.toString() + "[" + opr.toString() + "]";
       return op.toString() + "__" + opr.toString() + "__";
 		  }
-
-	@Override
-	public void accept(ConstraintExpressionVisitor visitor) {
-		visitor.preVisit(this);
-		opr.accept(visitor);
-		visitor.postVisit(this);
-	}
-
-	@Override
-	public int compareTo(Expression expr) {
-		if (expr instanceof SpecialRealExpression) {
-			SpecialRealExpression e = (SpecialRealExpression) expr;
-			int r = op.compareTo(e.op);
-			if (r == 0) {
-				r = opr.compareTo(e.opr);
-			}
-			return r;
-		} else {
-			return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+	  
+	
+		@Override
+		public void accept(ConstraintExpressionVisitor visitor) {
+			visitor.preVisit(this);
+			opr.accept(visitor);
+			visitor.postVisit(this);
 		}
-	}
 
+		@Override
+		public int compareTo(Expression expr) {
+			if (expr instanceof SpecialRealExpression) {
+				SpecialRealExpression e = (SpecialRealExpression) expr;
+				int r = op.compareTo(e.op);
+				if (r == 0) {
+					r = opr.compareTo(e.opr);
+				}
+				return r;
+			} else {
+				return getClass().getCanonicalName().compareTo(expr.getClass().getCanonicalName());
+			}
+		}
 }

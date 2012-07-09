@@ -255,6 +255,7 @@
           <exclude name="**/Test*$*.class"/>
           <exclude name="**/TestSymbolicListener.class"/>
           <exclude name="**/TestSymbolicOutput.class"/>
+          <exclude name="**/TestSymbolicJPF.class"/>
         </fileset>
       </batchtest>
 

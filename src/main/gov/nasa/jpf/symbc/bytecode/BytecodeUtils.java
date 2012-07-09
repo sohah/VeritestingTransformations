@@ -333,8 +333,7 @@ public class BytecodeUtils {
 					else {
                         // the argument is of reference type and it is symbolic
 						// it includes "this"
-						// these attributes are currently ignored in the bytecodes
-						// so this code does not work
+						
 						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
 						expressionMap.put(name, sym_v);
 						sf.setOperandAttr(stackIdx, sym_v);
@@ -448,7 +447,7 @@ public class BytecodeUtils {
 				if (outputString.endsWith("("))
 					outputString = outputString.substring(0, outputString.length() - 1);
 			}
-			//System.out.println(outputString);
+			System.out.println(outputString);
 
 
 			//Now, set up the initial path condition for this method if the

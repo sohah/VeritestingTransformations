@@ -46,12 +46,9 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	    super(fieldName, clsName, fieldDescriptor);
 	  }
 
-
-	//private HeapNode[] prevSymRefs; // previously initialized objects of same type: candidates for lazy init
-	//private int numSymRefs = 0; // # of prev. initialized objects
-	private int numNewRefs = 0; // # of new reference objects to account for polymorphism (neha)
-	//ChoiceGenerator<?> prevHeapCG;
-	 boolean abstractClass = false;
+	//private int numNewRefs = 0; // # of new reference objects to account for polymorphism -- work of Neha Rungta -- needs to be updated
+	 
+	boolean abstractClass = false;
 
 
 	@Override
@@ -59,16 +56,12 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		ChoiceGenerator<?> prevHeapCG = null;
 		HeapNode[] prevSymRefs = null;
 		int numSymRefs = 0;
+		
 		Config conf = ti.getVM().getConfig();
 		String[] lazy = conf.getStringArray("symbolic.lazy");
 		if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
 			return super.execute(ss,ks,ti);
-
-		//neha: check whether the subtypes from polymorphism need to added
-		// when instantiating "new" objects during lazy-initialization.
-		// the configuration allows to consider all subtypes during the
-		// instantiation. In aliasing all subtypes are considered by default.
-//TODO: fix
+//TODO: fix polymorphism and subtypes
 //		String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
 //		if(!subtypes.equals("false") &&
 //				TypeHierarchy.typeHierarchies == null) {
@@ -91,16 +84,11 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 		//end GETSTATIC code from super
 
-
-		if(ei==null)
-			return super.execute(ss,ks,ti);
 		Object attr = ei.getFieldAttr(fi);
-
 
 		if (!(fi.isReference() && attr != null && attr != Helper.SymbolicNull))
 			return super.execute(ss,ks,ti);
 
-		//if(fi.getTypeClassInfo().getName().equals("java.lang.String"))
 		if(attr instanceof StringExpression || attr instanceof SymbolicStringBuilder)
 				return super.execute(ss,ks,ti); // Strings are handled specially
 
@@ -109,47 +97,27 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		int currentChoice;
 		ChoiceGenerator<?> heapCG;
 
-		//String fullType = fi.getType(); //fully qualified type of this ref field
 		ClassInfo typeClassInfo = fi.getTypeClassInfo(); // use this instead of fullType
 
 
 		// first time around
+		
 		if (!ti.isFirstStepInsn()) {
 			prevSymRefs = null;
 			numSymRefs = 0;
-			prevHeapCG = null;
-
-			prevHeapCG = ss.getChoiceGenerator();
-			while (!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
-				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
-			}
+			
+			prevHeapCG = ss.getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
 
 			if (prevHeapCG != null) {
 					// collect candidates for lazy initialization
 					  SymbolicInputHeap symInputHeap =
 						  ((HeapChoiceGenerator)prevHeapCG).getCurrentSymInputHeap();
 
-					  prevSymRefs = new HeapNode[symInputHeap.count()]; // estimate of size; should be changed
-					  HeapNode n = symInputHeap.header();
-					  while (null != n){
-						 // String t = (String)n.getType();
-						  ClassInfo tClassInfo = n.getType();
-						  //reference only objects of same type
-						  // now we handle sub-classing
-						  //if (fullType.equals(t)){
-						  //if (typeClassInfo.isInstanceOf(tClassInfo)) {
-						  if (tClassInfo.isInstanceOf(typeClassInfo)) {
-							  prevSymRefs[numSymRefs] = n;
-							  numSymRefs++;
-						  }
-						  n = n.getNext();
-					  }
+					  prevSymRefs = symInputHeap.getNodesOfType(typeClassInfo);
+					  numSymRefs = prevSymRefs.length;
+					  
 			}
-			int increment = 2;
-			if(typeClassInfo.isAbstract()) {
-				abstractClass = true;
-				increment = 1; // only null
-			}
+			
 			// TODO: fix
 //			if(!subtypes.equals("false")) {
 //				// get the number of subtypes that exist, and add the number in
@@ -162,46 +130,22 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			ss.setNextChoiceGenerator(heapCG);
 			return this;
 		} else {  // this is what really returns results
-			
-			//Willem's Fix to make sure prevHeapCG is always set correctly
-			  prevHeapCG = ss.getChoiceGenerator();
-			  if (prevHeapCG != null) {
-				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
-			  }
-			  while (!((prevHeapCG == null) || (prevHeapCG instanceof HeapChoiceGenerator))) {
-				  prevHeapCG = prevHeapCG.getPreviousChoiceGenerator();
-			  }
-			  if (prevHeapCG != null) {
-					// collect candidates for lazy initialization
-					  SymbolicInputHeap symInputHeap =
-						  ((HeapChoiceGenerator)prevHeapCG).getCurrentSymInputHeap();
-
-					  prevSymRefs = new HeapNode[symInputHeap.count()]; // estimate of size; should be changed
-					  HeapNode n = symInputHeap.header();
-					  while (null != n){
-						 // String t = (String)n.getType();
-						  ClassInfo tClassInfo = n.getType();
-						  //reference only objects of same type
-						  // now we handle sub-classing
-						  //if (fullType.equals(t)){
-						  //if (typeClassInfo.isInstanceOf(tClassInfo)) {
-						  if (tClassInfo.isInstanceOf(typeClassInfo)) {
-							  prevSymRefs[numSymRefs] = n;
-							  numSymRefs++;
-						  }
-						  n = n.getNext();
-					  }
-			}
 			heapCG = ss.getChoiceGenerator();
 			assert (heapCG instanceof HeapChoiceGenerator) : "expected HeapChoiceGenerator, got: " + heapCG;
 			currentChoice = ((HeapChoiceGenerator)heapCG).getNextChoice();
 		}
 
+		
 		PathCondition pcHeap; //this pc contains only the constraints on the heap
 		SymbolicInputHeap symInputHeap;
 
 		// pcHeap is updated with the pcHeap stored in the choice generator above
 		// get the pcHeap from the previous choice generator of the same type
+		
+		// can not simply re-use prevHeapCG from above because it might have changed during re-execution
+        // bug reported by Willem Visser
+		
+		prevHeapCG = heapCG.getPreviousChoiceGeneratorOfType(HeapChoiceGenerator.class);
 
 		if (prevHeapCG == null){
 			pcHeap = new PathCondition();
@@ -214,7 +158,9 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		assert pcHeap != null;
 		assert symInputHeap != null;
 
-
+		 prevSymRefs = symInputHeap.getNodesOfType(typeClassInfo);
+         numSymRefs = prevSymRefs.length;
+		
 
 		int daIndex = 0; //index into JPF's dynamic area
 		if (currentChoice < numSymRefs) { // lazy initialization
