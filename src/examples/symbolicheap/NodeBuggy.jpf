@@ -4,8 +4,8 @@ sourcepath=${jpf-symbc}/src/examples
 
 target=symbolicheap.NodeBuggy
 
-symbolic.method = symbolicheap.NodeBuggy.addSimple(sym);
-
+#symbolic.method = symbolicheap.NodeBuggy.addSimple(sym);
+symbolic.method = symbolicheap.NodeBuggy.addGCIssue();
 #symbolic.method=symbolicheap.NodeBuggy.runTest(con)
 
 #listener = gov.nasa.jpf.listener.ExecTracker
