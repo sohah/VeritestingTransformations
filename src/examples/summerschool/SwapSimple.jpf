@@ -1,0 +1,10 @@
+target=summerschool.SwapSimple
+
+classpath=${jpf-symbc}/build/examples
+sourcepath=${jpf-symbc}/src/examples
+
+symbolic.method = summerschool.SwapSimple.test(sym#sym)
+#symbolic.dp=no_solver
+symbolic.dp=cvc3
+symbolic.debug=true
+#listener = gov.nasa.jpf.symbc.SymbolicListener

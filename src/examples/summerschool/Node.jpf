@@ -1,0 +1,11 @@
+target=summerschool.Node
+
+classpath=${jpf-symbc}/build/examples
+sourcepath=${jpf-symbc}/src/examples
+
+symbolic.method = summerschool.Node.swapNode()
+#symbolic.dp=no_solver
+symbolic.dp=cvc3
+#symbolic.debug=true
+symbolic.lazy = true
+#listener = gov.nasa.jpf.symbc.SymbolicListener
