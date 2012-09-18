@@ -222,8 +222,8 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  ti.push(ei.getReferenceField(fi), fi.isReference());
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
-	  if (SymbolicInstructionFactory.debugMode)
-			System.out.println("GETFIELD pcHeap: " + pcHeap);
+	  //if (SymbolicInstructionFactory.debugMode)
+		//	System.out.println("GETFIELD pcHeap: " + pcHeap);
 	  return getNext(ti);
   }
 

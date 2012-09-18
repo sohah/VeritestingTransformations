@@ -1,5 +1,7 @@
 package gov.nasa.jpf.symbc.concolic;
 
+
+
 import java.lang.reflect.*;
 
 public class TestMain {
@@ -23,7 +25,7 @@ public class TestMain {
 	public static void test_concolic(int x, int y) {
 		int path = 0;
 		if (x > 0) {
-			if (y == hash(x)) {
+			if (y == hash_java(x)) {
 				System.out.println("S0");
 				path = 1;
 			}

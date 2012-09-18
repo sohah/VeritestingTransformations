@@ -13,6 +13,7 @@ public class SwapSimple {
 			x = x + y; 
 			y = x - y;
 			x = x - y;
+			assert false;
 		}
 		
 		if (x > y) 

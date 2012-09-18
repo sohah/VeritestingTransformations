@@ -4,8 +4,8 @@ classpath=${jpf-symbc}/build/examples
 sourcepath=${jpf-symbc}/src/examples
 
 symbolic.method = summerschool.Loop.test(sym)
-#symbolic.dp=no_solver
-symbolic.dp=cvc3
+
 symbolic.debug=true
 #search.depth_limit=10
 listener = gov.nasa.jpf.symbc.SymbolicListener
+

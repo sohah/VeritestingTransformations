@@ -10,7 +10,7 @@ symbolic.method=concolic.DART.test(sym#sym)
 
 symbolic.concolic=true
 
-symbolic.debug=on
+#symbolic.debug=on
 
 #symbolic.minreal=-10.0
 

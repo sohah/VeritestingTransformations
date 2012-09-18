@@ -1,7 +1,5 @@
 package summerschool;
 
-import gov.nasa.jpf.symbc.Debug;
-
 public class Loop {
 
 	static void test(int n) {
