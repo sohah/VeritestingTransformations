@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.string.graph;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class EdgeNotEqual implements Edge{
 	Vertex v1, v2;
@@ -114,6 +115,8 @@ public class EdgeNotEqual implements Edge{
 		return v1.isConstant() && v2.isConstant();
 	}
 
-	
-	
+	@Override
+	public Edge cloneAndSwapVertices(Map<Vertex, Vertex> oldToNew) {
+		return new EdgeNotEqual(name, oldToNew.get(v1), oldToNew.get(v2));
+	}
 }

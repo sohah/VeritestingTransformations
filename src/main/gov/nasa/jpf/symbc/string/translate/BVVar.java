@@ -7,9 +7,9 @@ public class BVVar implements BVExpr{
 	String name;
 	int size;
 	
-	public static Map<String, Character> map;
-	static Map<Character, String> reverseMap;
-	static char startChar;
+	public static Map<String, Integer> map;
+	static Map<Integer, String> reverseMap;
+	static int startInteger;
 	
 	public BVVar(String name, int size) {
 		this.name = name;
@@ -22,30 +22,30 @@ public class BVVar implements BVExpr{
 	
 	public String toSMTLibDec () {
 		
-		char currentChar;
+		int currentInteger;
 		if (map == null) {
-			map = new HashMap<String, Character>();
-			reverseMap = new HashMap<Character, String>();
-			startChar = 'a';
-			currentChar = 'a';
-			map.put(name, startChar);
-			reverseMap.put(startChar, name);
-			startChar++;
+			map = new HashMap<String, Integer>();
+			reverseMap = new HashMap<Integer, String>();
+			startInteger = 1;
+			currentInteger = 1;
+			map.put(name, startInteger);
+			reverseMap.put(startInteger, name);
+			startInteger++;
 		}
 		else if (map.get(name) != null) {
-			currentChar = map.get(name);
+			currentInteger = map.get(name);
 		}
 		else {
-			map.put(name, startChar);
-			reverseMap.put(startChar, name);
-			currentChar = startChar;
-			startChar++;
+			map.put(name, startInteger);
+			reverseMap.put(startInteger, name);
+			currentInteger = startInteger;
+			startInteger++;
 		}
 		//println ("map: " + map);
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append ("(declare-fun "); 
-		sb.append (currentChar);		
+		sb.append ("(declare-fun fun"); 
+		sb.append (currentInteger);		
 		sb.append (" () (_ BitVec ");
 		sb.append (size);
 		sb.append ("))");
@@ -58,6 +58,6 @@ public class BVVar implements BVExpr{
 	}
 	
 	public String toSMTLib () {
-		return String.valueOf(map.get(name));
+		return "fun" + String.valueOf(map.get(name));
 	}
 }

@@ -28,13 +28,9 @@ symbolic.string_dp=automata
 # "Verify..." does not work. In order to run cvc3
 # you need to go through "Run Configuration"
 
-#symbolic.method= strings.Tricky.test(sym)
+symbolic.method= strings.Tricky.test(sym)
 
-#listener = gov.nasa.jpf.symbc.SymbolicListenerClean
-
-listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListenerVeryDirtyHack
-#listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
-#listener = gov.nasa.jpf.symbc.SymbolicListener
+listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
 
 vm.storage.class=nil
 

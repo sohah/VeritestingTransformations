@@ -4,8 +4,9 @@ import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class EdgeCharAt implements Edge{
+public class EdgeCharAt implements EdgeChar {
 
 	Vertex v1, v2;
 	String name;
@@ -100,12 +101,20 @@ public class EdgeCharAt implements Edge{
 		
 	}
 	
+	@Override
 	public IntegerExpression getIndex() {
 		return index;
 	}
 	
+	@Override
 	public IntegerExpression getValue() {
 		return value;
+	}
+
+	@Override
+	public Edge cloneAndSwapVertices(Map<Vertex, Vertex> oldToNew) {
+		return new EdgeCharAt(name, oldToNew.get(v1), oldToNew.get(v2), index,
+				value);
 	}
 
 }

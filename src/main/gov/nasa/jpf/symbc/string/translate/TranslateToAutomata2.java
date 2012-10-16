@@ -471,6 +471,11 @@ public class TranslateToAutomata2 {
 		Automaton a2 = mapAutomaton.get(e.getSources().get(1));
 		Automaton a3 = mapAutomaton.get(e.getDest());
 		
+		//TODO remove concatenations with empty strings while preprocessing the constraint
+		if(a1.isEmptyString() || a2.isEmptyString()) { //concatenation with empty string
+			return true;
+		}
+		
 		boolean a3changed = false;
 		Automaton concatA = a1.concatenate(a2);
 		Automaton intersection = AutomatonExtra.intersection(concatA, a3);

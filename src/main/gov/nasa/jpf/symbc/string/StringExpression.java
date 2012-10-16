@@ -33,7 +33,9 @@ TERMINATION OF THIS AGREEMENT.
 package gov.nasa.jpf.symbc.string;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import gov.nasa.jpf.symbc.mixednumstrg.*;
 
@@ -54,11 +56,11 @@ public abstract class StringExpression extends Expression {
   Map<StringExpression, SymbolicIndexOfInteger> indexOf = null;
   Map<StringExpression, SymbolicLastIndexOfInteger> lastIndexOf = null;
   Map<StringExpression, SymbolicLastIndexOf2Integer> lastIndexOf2 = null;
-  Map<StringExpression, SymbolicIndexOf2Integer> indexOf2 = null;
+  Map<StringExpression, Set<SymbolicIndexOf2Integer>> indexOf2 = null;
   Map<IntegerExpression, SymbolicIndexOfCharInteger> indexOfChar = null;
   Map<IntegerExpression, SymbolicLastIndexOfCharInteger> lastIndexOfChar = null;
   Map<IntegerExpression, SymbolicLastIndexOfChar2Integer> lastIndexOfChar2 = null;
-  Map<IntegerExpression, SymbolicIndexOfChar2Integer> indexOfChar2 = null;
+  Map<IntegerExpression,Set<SymbolicIndexOfChar2Integer>> indexOfChar2 = null;
 
 //   protected StringDependentNode dependentsHead = null;
 //   protected StringRelationshipNode relationshipsHead = null;
@@ -96,14 +98,18 @@ public abstract class StringExpression extends Expression {
   /* TODO: should take exp and ie into account, not just exp */
   public IntegerExpression _indexOf(StringExpression exp, IntegerExpression ie) {
 	    if (indexOf2 == null) {
-	      indexOf2 = new HashMap<StringExpression, SymbolicIndexOf2Integer>();
+	      indexOf2 = new HashMap<StringExpression, Set<SymbolicIndexOf2Integer>>();
 	    }
-	    SymbolicIndexOf2Integer sioi = indexOf2.get(exp);
-	    if (sioi == null) {
-	    	//-1 Should make our lifes much easier
-	    	sioi = new SymbolicIndexOf2Integer("IndexOf2_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp, ie);
+	    Set<SymbolicIndexOf2Integer> sioiSet = indexOf2.get(exp);
+	    //-1 Should make our lifes much easier
+	    SymbolicIndexOf2Integer sioi = new SymbolicIndexOf2Integer("IndexOf2_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp, ie);
+	    if (sioiSet == null) {
+	    	sioiSet = new HashSet<SymbolicIndexOf2Integer>();
+	    	sioiSet.add(sioi);
 	    	lengthcount++;
-	    	indexOf2.put(exp, sioi);
+	    	indexOf2.put(exp, sioiSet);
+	    } else if (sioiSet.add(sioi)) {
+	    	lengthcount++;
 	    }
 	    return sioi;
 	  }
@@ -199,14 +205,19 @@ public abstract class StringExpression extends Expression {
   /* indexof (char, int) */
   public IntegerExpression _indexOf(IntegerExpression exp, IntegerExpression minIndex) {
 	    if (indexOfChar2 == null) {
-	    	indexOfChar2 = new HashMap<IntegerExpression, SymbolicIndexOfChar2Integer>();
+	    	indexOfChar2 = new HashMap<IntegerExpression, Set<SymbolicIndexOfChar2Integer>>();
 	    }
-	    SymbolicIndexOfChar2Integer sioi = indexOfChar2.get(exp);
-	    if (sioi == null) {
-	    	//-1 Should make our lifes much easier
-	    	sioi = new SymbolicIndexOfChar2Integer("IndexOf2_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp, minIndex);
+	    Set<SymbolicIndexOfChar2Integer> setSioi = indexOfChar2.get(exp);
+	    //-1 Should make our lifes much easier
+	    SymbolicIndexOfChar2Integer sioi = new SymbolicIndexOfChar2Integer("IndexOf2_" + lengthcount + "_", -1, PreProcessGraph.MAXIMUM_LENGTH, this, exp, minIndex); 
+	    
+	    if (setSioi == null) {
+	    	setSioi = new HashSet<SymbolicIndexOfChar2Integer>();
+	    	setSioi.add(sioi);
 	    	lengthcount++;
-	    	indexOfChar2.put(exp, sioi);
+	    	indexOfChar2.put(exp, setSioi);
+	    } else if (setSioi.add(sioi)) { //increment the length if sioi isn't in the set
+	    	lengthcount++;
 	    }
 	    return sioi;
 	  }

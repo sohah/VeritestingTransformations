@@ -4,6 +4,7 @@ import gov.nasa.jpf.symbc.string.SymbolicLastIndexOfCharInteger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class EdgeLastIndexOfChar implements Edge{
 	Vertex source, dest;
@@ -97,6 +98,12 @@ public class EdgeLastIndexOfChar implements Edge{
 		} else if (!source.equals(other.source))
 			return false;
 		return true;
+	}
+
+	@Override
+	public Edge cloneAndSwapVertices(Map<Vertex, Vertex> oldToNew) {
+		return new EdgeLastIndexOfChar(name, oldToNew.get(source),
+				oldToNew.get(dest), sioi);
 	}
 
 }

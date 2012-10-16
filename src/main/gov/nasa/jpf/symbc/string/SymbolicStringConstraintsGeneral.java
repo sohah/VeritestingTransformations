@@ -102,6 +102,7 @@ public class SymbolicStringConstraintsGeneral {
 	public static final String CVC_INC = "CVC_Inc";
 	public static final String Z3 = "Z3";
 	public static final String Z3_INC = "Z3_INC";
+	public static final String WRAPPER = "WRAPPER"; //automata+z3
 	
 	/* Default solver */
 	public static String solver = AUTOMATA;
@@ -386,8 +387,9 @@ public class SymbolicStringConstraintsGeneral {
 		}
 		else if (string_dp[0].equals("z3_inc")) {
 			solver = Z3_INC;
-		}
-		else {
+		} else if (string_dp[0].equals("wrapper")) {
+			solver = WRAPPER;
+		} else {
 			/* No solver, return true */
 			//println ("[isSatisfiable] No Solver");
 			return true;
@@ -471,9 +473,9 @@ public class SymbolicStringConstraintsGeneral {
 			//println (pc.npc.toString());
 			//println ("++++++++++++++++++");
 			boolean resultOfPp = PreProcessGraph.preprocess(global_graph, pc.npc);
-			/*if (!resultOfPp) {
+			if (!resultOfPp) {
 				System.out.println("Preprocessor found unsat");
-			}*/
+			}
 			//println (pc.npc.toString());
 			//println (global_graph.toDot());
 			
@@ -489,6 +491,11 @@ public class SymbolicStringConstraintsGeneral {
 			if (!resultOfPp) {
 				//println ("[isSat] Preprocessor gave Unsat");
 				cancelTimer();
+				if (SymbolicInstructionFactory.regressMode) {
+					String output = "##STRING PC: (UNSAT) " + pc;
+					System.out.println(output);
+				}
+
 				return false;
 			}
 			//println ("After preproccess");
@@ -531,6 +538,33 @@ public class SymbolicStringConstraintsGeneral {
 					int_duration += TranslateToZ3Inc.int_duration ;
 					//System.out.println("Loops: " + TranslateToZ3Inc.loops);
 					timeInvoked++;
+				} else if (solver.equals(WRAPPER)) {
+					StringGraph cloneGraph = new StringGraph(global_graph);
+					PathCondition cloneNpc = pc.npc.make_copy();
+					boolean pcSolved = PathCondition.flagSolved;
+					//start with z3, and swap to automata if something goes wrong
+					try {
+						decisionProcedure = TranslateToZ3.isSat(global_graph, pc.npc);
+					} catch (Exception e) {
+						println("wrapper-z3 throwed exception; " + e.getMessage());
+					} 
+					try {
+						if (decisionProcedure == false) {
+							println("z3 failed; restoring graph/pc and trying again with automata...");
+							global_graph = cloneGraph;
+							pc.npc = cloneNpc;
+							PathCondition.flagSolved = pcSolved;
+							
+							TranslateToAutomata.duration = 0;
+							TranslateToAutomata.int_duration = 0;
+							TranslateToAutomata.loops = 0;
+							decisionProcedure = TranslateToAutomata2.isSat(
+									global_graph, pc.npc);
+							timeInvoked++;
+						}
+					} catch (Exception e) {
+						println("wrapper-automata throwed exception; " + e.getMessage());
+					}
 				}
 				else {
 					throw new RuntimeException("Unknown string solver!!!");
@@ -544,6 +578,12 @@ public class SymbolicStringConstraintsGeneral {
 			if (!decisionProcedure) {
 				//println ("[isSatisfiable] Decision procedure gave unsat");
 				cancelTimer();
+				
+				if (SymbolicInstructionFactory.regressMode) {
+					String output = "##STRING PC: (UNSAT) " + pc;
+					System.out.println(output);
+				}
+				
 				return false;
 			}
 			/* check if there was a timeout */
@@ -644,10 +684,20 @@ public class SymbolicStringConstraintsGeneral {
 			StringPathCondition.flagSolved = true;
 			//println ("StringPC: " + getSolution());
 			cancelTimer();
+			if (SymbolicInstructionFactory.regressMode) {
+				String output = "##STRING PC: (SOLVED) " + pc;
+				System.out.println(output);
+			}
 			return true;
 		} catch (SymbolicStringTimedOutException e) {
 			System.err.println("Symbolic String Executioner timed out");
 			timedOut = false;
+			
+			if (SymbolicInstructionFactory.regressMode) {
+				String output = "##STRING PC: (TIMEOUT) " + pc;
+				System.out.println(output);
+			}
+			
 			return false; // or return true?
 		}
 	}
@@ -694,6 +744,7 @@ public class SymbolicStringConstraintsGeneral {
 				Vertex v2 = global_graph.findVertex(scai.se.getName());
 				global_graph.addEdge(v2, v1, new EdgeNotCharAt("NotCharAt_" + scai.index.solution() + "_" + scai.solution(), v2, v1, scai.index, scai));
 				//Necassery hack
+				//TODO MAB: what is the function of this hack? it makes the preprocessor return UNSAT on some valid constraints!
 				origConstraint.setComparator(Comparator.EQ);
 				global_spc.npc.flagSolved = false;
 			}

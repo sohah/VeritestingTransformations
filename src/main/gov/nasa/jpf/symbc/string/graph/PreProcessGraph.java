@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.string.graph;
 
 import java.util.ArrayList;
 
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
@@ -38,6 +39,8 @@ public class PreProcessGraph {
 	public static boolean preprocess (StringGraph stringGraph, PathCondition pathCondition) {
 		
 		scg = new SymbolicConstraintsGeneral();
+		
+		if(!scg.isSatisfiable(pathCondition)) {println("unsat here");};
 		
 		if (!handleEquality(stringGraph, pathCondition)) {
 			//println ("handleEquality returned false");
@@ -92,8 +95,12 @@ public class PreProcessGraph {
 	
 	private static boolean handleBasics (StringGraph g, PathCondition pc) {
 		for (Vertex v: g.getVertices()) {
-			pc._addDet(Comparator.GE, v.getSymbolicLength(), 1);
-			pc._addDet(Comparator.LE, v.getSymbolicLength(), MAXIMUM_LENGTH);
+			/* according to gideon's thesis, this applies only to non-constant
+			 * vertexes (page 55, table 3.1)*/
+			if(!v.constant) { 
+				pc._addDet(Comparator.GE, v.getSymbolicLength(), 1);
+				pc._addDet(Comparator.LE, v.getSymbolicLength(), MAXIMUM_LENGTH);
+			}
 		}
 		return true;
 	}
@@ -165,8 +172,11 @@ public class PreProcessGraph {
 		for (Edge e: g.getEdges()) {
 			if (e instanceof EdgeTrimEqual) {
 				pc._addDet (Comparator.LE, e.getDest().getSymbolicLength(), e.getSource().getSymbolicLength());
+				//TODO discover what is the bug mentioned below.  
 				//Fix a stupid bug in Trim of JSA
-				pc._addDet (Comparator.GE, e.getDest().getSymbolicLength(), new IntegerConstant(2));
+				if(SymbolicInstructionFactory.string_dp[0].equals("automata")) {
+					pc._addDet (Comparator.GE, e.getDest().getSymbolicLength(), new IntegerConstant(2));
+				}
 			}
 		}
 		return true;
