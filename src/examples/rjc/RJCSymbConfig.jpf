@@ -19,7 +19,7 @@ symbolic.method=rjc.rjc.MainSymbolic(sym#sym#sym#sym#sym#sym#con#con)
 #symbolic.minreal=-100.0
 #symbolic.maxreal=100.0
 #symbolic.undefined=0
-search.depth_limit=50
+#search.depth_limit=50
 listener=gov.nasa.jpf.symbc.SymbolicListener
 #listener=gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
 

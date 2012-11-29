@@ -590,6 +590,7 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 			} else {
 				System.out.println("symbolic.solver.store=" + s + " <--- UNSUPPORTED");
 			}
+			dp = new String[] {"green"};
 //			s = conf.getProperty("symbolic.pcstore.no");
 //			dontStoreInDB = (s != null) && (s.equals("true") || s.equals("yes") || s.equals("on"));
 //			System.out.println("symbolic.pcstore.no=" + dontStoreInDB);

@@ -217,7 +217,12 @@ public abstract class IntegerExpression extends Expression {
 	{
 		throw new RuntimeException( "## Error: Operation not supported!" );
 	}
-
+	
+	public IntegerExpression _rem_reverse(int i)
+	{
+		throw new RuntimeException( "## Error: Operation not supported!" );
+	}
+	
 	public IntegerExpression _rem(IntegerExpression i)
 	{
 		throw new RuntimeException( "## Error: Operation not supported!" );
