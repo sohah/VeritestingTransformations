@@ -28,14 +28,16 @@ public class Debug {
     native public static String getSymbolicIntegerValue(int v);
     native public static String getSymbolicRealValue(double v);
     native public static String getSymbolicBooleanValue(boolean v);
-
+    native public static String getSymbolicStringValue(String v);
+    
     native public static void assume (boolean c);
 
     // puts a new symbolic value in the arg attribute
     native public static int makeSymbolicInteger(String name);
     native public static double makeSymbolicReal(String name);
     native public static boolean makeSymbolicBoolean(String name);
-
+    native public static String makeSymbolicString(String name);
+    
     // makes v a symbolic object
     public static Object makeSymbolicRef(String name, Object v) {
     	assert (v!=null); // needed for type info
