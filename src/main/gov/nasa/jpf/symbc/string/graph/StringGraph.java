@@ -1,7 +1,9 @@
 package gov.nasa.jpf.symbc.string.graph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StringGraph {
 	private List<Vertex> vertices; /* Maybe make this a hashmap */
@@ -10,6 +12,36 @@ public class StringGraph {
 	public StringGraph () {
 		vertices = new ArrayList<Vertex>();
 		edges = new ArrayList<Edge>();
+	}
+
+	/**
+	 * Create a new StringGraph that is a deep clone of 'toClone'
+	 * 
+	 * @param toClone
+	 *            Graph to be cloned
+	 */
+	public StringGraph (StringGraph toClone) {
+		List<Vertex> originalVertices = toClone.getVertices();
+		List<Edge> originalEdges = toClone.getEdges();
+		this.vertices = new ArrayList<Vertex>(originalVertices.size());
+		this.edges = new ArrayList<Edge>(originalEdges.size());
+		
+		// we need to replace original vertices with the cloned ones
+		// in the edges
+		Map<Vertex,Vertex> oldToNew = new HashMap<Vertex,Vertex>(); 
+		
+		//clone vertices
+		for(Vertex v : originalVertices) {
+			Vertex newVertex = new Vertex(v);
+			this.vertices.add(newVertex);
+			oldToNew.put(v, newVertex);
+		}
+		
+		//clone edges
+		for(Edge e : originalEdges) {
+			Edge newEdge = e.cloneAndSwapVertices(oldToNew);
+			this.edges.add(newEdge);
+		}
 	}
 	
 	/*public void addEquals (String n1, String n2) {
@@ -548,4 +580,59 @@ public class StringGraph {
 		}
 		return result;
 	}
+	
+	/*private static Edge cloneAndSwapVertices(Edge e, Map<Vertex, Vertex> oldToNew) {
+		Edge newEdge;
+		
+		//possible edges
+		if (e instanceof EdgeCharAt) {
+			
+		} else if (e instanceof EdgeConcat) {
+			
+		} else if (e instanceof EdgeContains) {
+			
+		} else if (e instanceof EdgeEndsWith) {
+			
+		} else if (e instanceof EdgeEqual) {
+			
+		} else if (e instanceof EdgeIndexOf) {
+			
+		} else if (e instanceof EdgeIndexOf2) {
+			
+		} else if (e instanceof EdgeIndexOfChar) {
+			
+		} else if (e instanceof EdgeIndexOfChar2) {
+			
+		} else if (e instanceof EdgeLastIndexOf) {
+			
+		} else if (e instanceof EdgeLastIndexOf2) {
+			
+		} else if (e instanceof EdgeLastIndexOfChar) {
+			
+		} else if (e instanceof EdgeLastIndexOfChar2) {
+			
+		} else if (e instanceof EdgeNoCharAt) {
+			
+		} else if (e instanceof EdgeNotCharAt) {
+			
+		} else if (e instanceof EdgeNotContains) {
+			
+		} else if (e instanceof EdgeNotEndsWith) {
+			
+		} else if (e instanceof EdgeNotEqual) {
+			
+		} else if (e instanceof EdgeReplaceCharChar) {
+			
+		} else if (e instanceof EdgeStartsWith) {
+			
+		} else if (e instanceof EdgeSubstring1Equal) {
+			
+		} else if (e instanceof EdgeSubstring2Equal) {
+			
+		} else if (e instanceof EdgeTrimEqual) {
+			
+		} else {
+			throw new UnsupportedOperationException("missing case:" + e.getClass());
+		}
+	}*/
 }

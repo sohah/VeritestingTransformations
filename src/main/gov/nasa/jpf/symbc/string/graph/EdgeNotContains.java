@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.string.graph;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class EdgeNotContains implements Edge{
 
@@ -113,7 +114,10 @@ public class EdgeNotContains implements Edge{
 		
 		return false;
 	}
-	
-	
 
+	@Override
+	public Edge cloneAndSwapVertices(Map<Vertex, Vertex> oldToNew) {
+		return new EdgeNotContains(name, oldToNew.get(source),
+				oldToNew.get(dest));
+	}
 }

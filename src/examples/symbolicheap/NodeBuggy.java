@@ -16,6 +16,22 @@ public class NodeBuggy {
     	right = null;
     }
 	
+    void addGCIssue() {
+
+       // this.left = (NodeBuggy) Debug.makeSymbolicRef("tmp", new NodeBuggy(5));
+        Debug.printSymbolicRef(left, "left = ");
+        this.left = null;
+
+        if (this.right != null) {
+
+        
+        Debug.printSymbolicRef(right, "right = ");
+        System.out.println(this.right.left);
+        }
+
+}
+
+
 	void addSimple3() {
 		int depth = 0;
     	NodeBuggy bigson = this;
@@ -87,8 +103,11 @@ public class NodeBuggy {
     }
 	
 	public static void main(String[] args) {	
-		addSimple(null);
+		//addSimple(null);
 		//runTest(1);
+		NodeBuggy X = new NodeBuggy(5);
+        X = (NodeBuggy) Debug.makeSymbolicRef("input_X", X);
+		if(X!=null) X.addGCIssue();
 	}
 
 }

@@ -21,7 +21,10 @@ symbolic.dp=choco
 # "none" (default), "cvc", "automata" (recommended) or
 # "sat". At the moment symbolic.dp must be equal to
 # "choco" for it to work.
-symbolic.string_dp=z3_inc
+#symbolic.string_dp=z3_inc
+symbolic.string_dp=automata
+symbolic.string_dp_timeout_ms=3000
+symbolic.debug=true
 # As a side note for eclipse users, to run cvc3
 # enabled programs, the eclipse plugin which allows
 # you to right click on a .jpf test file and click
@@ -29,7 +32,8 @@ symbolic.string_dp=z3_inc
 # you need to go through "Run Configuration"
 
 symbolic.method= strings.WU_FTPD.site_exec(sym)
-
+search.depth_limit = 10
+search.multiple_errors=true
 #listener = gov.nasa.jpf.symbc.SymbolicListenerClean
 listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
 vm.storage.class=nil

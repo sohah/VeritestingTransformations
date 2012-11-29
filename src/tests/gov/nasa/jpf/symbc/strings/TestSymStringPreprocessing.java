@@ -3193,6 +3193,26 @@ public class TestSymStringPreprocessing {
 	}
 	
 	@Test
+	public void Test46_2 () {
+		String[] options = {"+symbolic.dp=choco",
+				"+symbolic.string_dp=automata",
+				"+symbolic.string_dp_timeout_ms=0",
+				"+symbolic.string_preprocess_only=true"};
+		Config cfg = new Config(options);
+		new SymbolicInstructionFactory(cfg);
+		PathCondition pc = new PathCondition();
+		StringPathCondition stringCurrentPC = new StringPathCondition(pc);
+		StringSymbolic var1 = new StringSymbolic("var1");
+		pc._addDet(Comparator.EQ, var1._charAt(new IntegerConstant(5)), new IntegerConstant('a'));
+		pc._addDet(Comparator.NE, var1._charAt(new IntegerConstant(5)), new IntegerConstant('b'));
+		System.out.println(stringCurrentPC);
+		boolean result = stringCurrentPC.simplify();
+		Assert.assertTrue(result);
+		SymbolicConstraintsGeneral scg = new SymbolicConstraintsGeneral();
+		Assert.assertTrue(scg.isSatisfiable(pc));
+	}
+	
+	@Test
 	public void Test47_1 () {
 		String[] options = {"+symbolic.dp=choco",
 				"+symbolic.string_dp=automata",

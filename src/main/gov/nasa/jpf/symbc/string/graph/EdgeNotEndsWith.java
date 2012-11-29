@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.string.graph;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class EdgeNotEndsWith implements Edge{
 	Vertex v1, v2;
@@ -112,5 +113,10 @@ public class EdgeNotEndsWith implements Edge{
 	@Override
 	public boolean allVertecisAreConstant() {
 		return v1.isConstant() && v2.isConstant();
+	}
+
+	@Override
+	public Edge cloneAndSwapVertices(Map<Vertex, Vertex> oldToNew) {
+		return new EdgeNotEndsWith(name, oldToNew.get(v1), oldToNew.get(v2));
 	}
 }

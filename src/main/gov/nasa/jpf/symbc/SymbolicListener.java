@@ -310,8 +310,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 					String methodName = mi.getName();
 					String longName = mi.getLongName();
 					int numberOfArgs = mi.getNumberOfArguments();
-					//int numberOfArgs = mi.getArgumentsSize() - 1;
-					//neha: changed invoked method to full name
+					
 					if (((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 							|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
 						//at the end of symbolic execution, set the values back
@@ -351,7 +350,6 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 
 							if (insn instanceof IRETURN){
-								SymbolicInteger sym_result = new SymbolicInteger("RETURN");
 								IRETURN ireturn = (IRETURN)insn;
 								int returnValue = ireturn.getReturnValue();
 								IntegerExpression returnAttr = (IntegerExpression) ireturn.getReturnAttr(ti);
@@ -364,7 +362,6 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 								}
 							}
 							else if (insn instanceof LRETURN) {
-								SymbolicInteger sym_result = new SymbolicInteger("RETURN");
 								LRETURN lreturn = (LRETURN)insn;
 								long returnValue = lreturn.getReturnValue();
 								IntegerExpression returnAttr = (IntegerExpression) lreturn.getReturnAttr(ti);
@@ -377,7 +374,6 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 								}
 							}
 							else if (insn instanceof DRETURN) {
-								SymbolicReal sym_result = new SymbolicReal("RETURN");
 								DRETURN dreturn = (DRETURN)insn;
 								double returnValue = dreturn.getReturnValue();
 								RealExpression returnAttr = (RealExpression) dreturn.getReturnAttr(ti);
@@ -390,7 +386,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 								}
 							}
 							else if (insn instanceof FRETURN) {
-								SymbolicReal sym_result = new SymbolicReal("RETURN");
+								
 								FRETURN freturn = (FRETURN)insn;
 								double returnValue = freturn.getReturnValue();
 								RealExpression returnAttr = (RealExpression) freturn.getReturnAttr(ti);
@@ -404,7 +400,6 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 							}
 							else if (insn instanceof ARETURN){
-								IntegerExpression sym_result = new SymbolicInteger("RETURN");
 								ARETURN areturn = (ARETURN)insn;
 								IntegerExpression returnAttr = (IntegerExpression) areturn.getReturnAttr(ti);
 								if (returnAttr != null){
@@ -413,11 +408,12 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 								}
 								else {// concrete
 									Object val = areturn.getReturnValue(ti);
-									returnString = "Return Value: " + String.valueOf(val.toString());
+									returnString = "Return Value: " + String.valueOf(val);
 									//DynamicElementInfo val = (DynamicElementInfo)areturn.getReturnValue(ti);
-									String tmp = val.toString();
+									String tmp = String.valueOf(val);
 									tmp = tmp.substring(tmp.lastIndexOf('.')+1);
 									result = new SymbolicInteger(tmp);
+									
 								}
 							}else //other types of return
 								returnString = "Return Value: --";

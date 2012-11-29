@@ -4,6 +4,7 @@ import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class EdgeSubstring1Equal implements Edge{
 	Vertex v1, v2;
@@ -124,6 +125,14 @@ public class EdgeSubstring1Equal implements Edge{
 	
 	public IntegerExpression getArgument1Symbolic() {
 		return ie_a1;
+	}
+
+	@Override
+	public Edge cloneAndSwapVertices(Map<Vertex, Vertex> oldToNew) {
+		EdgeSubstring1Equal result = new EdgeSubstring1Equal(name, a1,
+				oldToNew.get(v1), oldToNew.get(v2));
+		result.ie_a1 = this.ie_a1;
+		return result;
 	}
 	
 }

@@ -467,6 +467,14 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 	  public Instruction ifnull(int targetPc) {
 		  return  (filter.isInstrumentedClass(ci) ?  new IFNULL(targetPc): super.ifnull(targetPc));
 		  }
+	  
+	  public Instruction newarray(int typeCode) {
+		  return (filter.isInstrumentedClass(ci) ? new NEWARRAY(typeCode) : super.newarray(typeCode));
+	      }
+	  
+	  public Instruction multianewarray(String clsName, int dimensions){
+		  return (filter.isInstrumentedClass(ci) ? new MULTIANEWARRAY(clsName,dimensions) : super.multianewarray(clsName,dimensions));
+	      }
 
 	static public String[] dp;
 
@@ -482,6 +490,11 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 	 */
 	static public boolean debugMode;
 
+	/*
+	 * Enable logging of info used to detect regressions 
+	 */
+	static public boolean regressMode;
+	
 	/*
 	 * If Green is enabled this solver will be used
 	 * Later we just check if this is null to know if Green is enabled
@@ -610,6 +623,9 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 			} else {
 				System.out.println("symbolic.solver.mc=" + s + " <--- UNSUPPORTED");
 			}
+			
+			// fix to make sure when Green is used there is no NPE when poking at dp[0] in some bytecodes
+			dp = new String[] {"green"};
 	 }
 	 
 	 public  SymbolicInstructionFactory (Config conf){
@@ -685,7 +701,12 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 	
 		}
 		
-		
+		String regress = conf.getProperty("symbolic.regression_output");
+		if (regress != null && regress.equals("true")) {
+			regressMode = true;
+		} else {
+			regressMode = false;
+		}
 		
 		//Just checking if set, don't care about any values
 		String[] dummy = conf.getStringArray("symbolic.debug");

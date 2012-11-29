@@ -4,6 +4,7 @@ import gov.nasa.jpf.symbc.string.SymbolicLastIndexOfInteger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class EdgeLastIndexOf implements Edge {
 
@@ -98,6 +99,12 @@ public class EdgeLastIndexOf implements Edge {
 		} else if (!source.equals(other.source))
 			return false;
 		return true;
+	}
+
+	@Override
+	public Edge cloneAndSwapVertices(Map<Vertex, Vertex> oldToNew) {
+		return new EdgeLastIndexOf(name, oldToNew.get(source),
+				oldToNew.get(dest), sioi);
 	}
 
 }

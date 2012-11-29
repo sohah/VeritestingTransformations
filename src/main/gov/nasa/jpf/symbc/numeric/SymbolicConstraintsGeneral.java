@@ -975,12 +975,17 @@ public class SymbolicConstraintsGeneral {
 
 		//pb.getSolver().setTimeLimit(30000);
 
-
-
 		result = pb.solve();
 
 		if (SymbolicInstructionFactory.debugMode)
 			System.out.println("numeric PC: " + pc + " -> " + result+"\n");
+		
+		if (SymbolicInstructionFactory.regressMode) {
+			String output = "##NUMERIC PC: ";
+			output = output + (result == Boolean.TRUE ? "(SOLVED)" : "(UNSOLVED)");
+			output = output + " " + pc;
+			System.out.println(output);
+		}
 
 		if(result == null) {
 			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) "+pc);

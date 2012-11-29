@@ -4,6 +4,7 @@ import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class EdgeConcat implements Edge{
 	Vertex left, right, dest;
@@ -111,4 +112,9 @@ public class EdgeConcat implements Edge{
 		return left.isConstant() && right.isConstant() && dest.isConstant();
 	}
 
+	@Override
+	public Edge cloneAndSwapVertices(Map<Vertex, Vertex> oldToNew) {
+		return new EdgeConcat(name, oldToNew.get(left), oldToNew.get(right),
+				oldToNew.get(dest));
+	}
 }

@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.string.graph;
 
 import java.util.List;
+import java.util.Map;
 
 public class EdgeReplaceCharChar implements Edge{
 
@@ -122,6 +123,12 @@ public class EdgeReplaceCharChar implements Edge{
 	
 	public char getC2 () {
 		return c2;
+	}
+
+	@Override
+	public Edge cloneAndSwapVertices(Map<Vertex, Vertex> oldToNew) {
+		return new EdgeReplaceCharChar(name, oldToNew.get(v1),
+				oldToNew.get(v2), c1, c2);
 	}
 
 }

@@ -54,6 +54,7 @@ import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
 
 import gov.nasa.jpf.symbc.string.*;
@@ -71,12 +72,22 @@ public class SymbolicStringHandler {
 	public boolean isMethodStringSymbolic(InvokeInstruction invInst, ThreadInfo th) {
 		String cname = invInst.getInvokedMethodClassName();
 
-		if (cname.equals("java.lang.String") || cname.equals("java.lang.StringBuilder")
-				|| cname.equals("java.lang.StringBuffer") || cname.equals("java.io.PrintStream")
-				|| cname.equals("java.lang.Integer") || cname.equals("java.lang.Float") || cname.equals("java.lang.Double")
-				|| cname.equals("java.lang.Long") || cname.equals("java.lang.Short") || cname.equals("java.lang.Byte")
-				|| cname.equals("java.lang.Char") || cname.equals("java.lang.Boolean") || cname.equals("java.lang.Object")) {
-			StackFrame sf = th.getTopFrame();
+		if (cname.equals("java.lang.String")
+				|| cname.equals("java.lang.StringBuilder")
+				|| cname.equals("java.lang.StringBuffer")
+				|| cname.equals("java.lang.CharSequence")
+				|| cname.equals("java.lang.Appendable")
+				|| cname.equals("java.io.PrintStream")
+				|| cname.equals("java.lang.Integer")
+				|| cname.equals("java.lang.Float")
+				|| cname.equals("java.lang.Double")
+				|| cname.equals("java.lang.Long")
+				|| cname.equals("java.lang.Short")
+				|| cname.equals("java.lang.Byte")
+				|| cname.equals("java.lang.Char")
+				|| cname.equals("java.lang.Boolean")
+				|| cname.equals("java.lang.Object")) {
+	StackFrame sf = th.getTopFrame();
 
 			int numStackSlots = invInst.getArgSize();
 
@@ -89,6 +100,9 @@ public class SymbolicStringHandler {
 						// empty attribute
 						if (((SymbolicStringBuilder) sym_v1).getstr() != null)
 							return true;
+					}  else if (sym_v1 instanceof SymbolicInteger && cname.equals("java.lang.StringBuilder")){
+						//concrete stringbuffers won't be handled here
+						return false;
 					} else {
 						return true;
 					}
@@ -163,7 +177,10 @@ public class SymbolicStringHandler {
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals("append")) {
-				handleAppend(invInst, th);
+				Instruction handled = handleAppend(invInst, th);
+				if (handled != null) {
+					return handled;
+				}
 			} else if (shortName.equals("length")) {
 				handleLength(invInst, th);
 			} else if (shortName.equals("indexOf")) {
@@ -2309,11 +2326,36 @@ public class SymbolicStringHandler {
 */
 	}
 
-	public void handleAppend(InvokeInstruction invInst, ThreadInfo th) {
+	public Instruction handleAppend(InvokeInstruction invInst, ThreadInfo th) {
+		Instruction handled = null;
+		
 		MethodInfo mi = invInst.getInvokedMethod(th);
 		String[] argTypes = mi.getArgumentTypeNames();
 		// System.out.println(argTypes[0]);
-		if (argTypes[0].equals("java.lang.String")) {
+		
+		boolean isCharSequence = false;
+		//check what is the concrete type of the charsequence
+		if(argTypes[0].equals("java.lang.CharSequence")) {
+			isCharSequence = true;
+			StackFrame sf = th.getTopFrame();
+			int firstParamIndex = mi.isStatic() ? 0 : 1;
+			Object firstParam = sf.getArgumentAttrs(mi)[firstParamIndex]; 
+			if(firstParam instanceof StringExpression || firstParam == null /*possibly an string constant*/) {
+				argTypes[0] = "java.lang.String";
+			} else if (firstParam instanceof SymbolicStringBuilder) {
+				//TODO and if it is a StringBuffer?
+				argTypes[0] = "java.lang.StringBuilder"; 
+			} else {
+				throw new RuntimeException("Unhandled CharSequence at Symbolic String Append; concrete type is:" + firstParam.getClass());
+			}
+		}
+		if (isCharSequence && argTypes.length == 3) { //append(charSequence,int,int)
+			if(argTypes[0].equals("java.lang.String")) {
+				handled = handleStringAppend3(invInst, th);
+			} else { //stringbuilder
+				handled = handleStringBuilderAppend3(invInst, th);
+			}
+		} else if (argTypes[0].equals("java.lang.String")) {
 			handleStringAppend(invInst, th);
 		} else if ((argTypes[0].equals("java.lang.StringBuilder")) || (argTypes[0].equals("java.lang.StringBuffer"))) {
 			handleStringBuilderAppend(invInst, th);
@@ -2339,10 +2381,10 @@ public class SymbolicStringHandler {
 			System.err.println("ERROR: Input parameter type not handled in Symbolic String Append");
 		}
 
+		return handled;
 	}
 
 	public void handleStringAppend(InvokeInstruction invInst, ThreadInfo th) {
-
 		StackFrame sf = th.getTopFrame();
 		// int objRef = sf.getThis();
 		// ElementInfo ei = th.getElementInfo(objRef);
@@ -2379,6 +2421,88 @@ public class SymbolicStringHandler {
 
 			sf.setOperandAttr(sym_v2);
 		}
+	}
+	
+	public Instruction handleStringAppend3(InvokeInstruction invInst, ThreadInfo th) {
+		StackFrame sf = th.getTopFrame();
+		
+		IntegerExpression sym_end = (IntegerExpression) sf.getOperandAttr(0);
+		IntegerExpression sym_start = (IntegerExpression) sf.getOperandAttr(1);
+		StringExpression sym_string = (StringExpression) sf.getOperandAttr(2);
+		SymbolicStringBuilder sym_builder = (SymbolicStringBuilder) sf.getOperandAttr(3);
+
+		if (sym_builder == null) {
+			sym_builder = new SymbolicStringBuilder();
+		}
+		
+		//check if all parameters are concrete
+		boolean concreteSubstring = (sym_end == null & sym_start == null & sym_string == null);
+		
+		if (concreteSubstring & sym_builder.getstr() == null) {
+			System.err.println("ERROR: symbolic string method must have one symbolic operand: HandleStringAppend3");
+		} else {
+			int endRef = th.pop();
+			int startRef = th.pop();
+			int stringRef = th.pop();
+			int builderRef = th.pop();
+	
+			//prepare the substring
+			StringExpression substring;
+			if(concreteSubstring) {
+				try {
+					ElementInfo eiString = th.getElementInfo(stringRef);
+					String concreteString = eiString.asString();
+					String slice = concreteString.substring(startRef, endRef);
+					substring = new StringConstant(slice);
+				} catch (IndexOutOfBoundsException e) {
+					return th.createAndThrowException("java.lang.IndexOutOfBoundsException",e.getMessage());
+				}
+			} else {
+				if(sym_string == null) { 
+					ElementInfo eString = th.getElementInfo(stringRef);
+					String concreteString = eString.asString();
+					sym_string = new StringConstant(concreteString);
+				}
+				substring = createSymbolicSubstring(sym_string, sym_start, sym_end, startRef, endRef);
+			}
+			
+			//append to the symbolic string
+			if(sym_builder.getstr() == null) { //stringbuilder is concrete 
+				ElementInfo eiBuilder = th.getElementInfo(builderRef);
+				String builderContents = getStringEquiv(eiBuilder);
+				sym_builder.putstr(new StringConstant(builderContents));
+			}
+			
+			sym_builder._append(substring);
+			th.push(builderRef,true); 
+		}
+		
+		sf.setOperandAttr(sym_builder);
+		
+		return null;
+	}
+	
+	//helper
+	private StringExpression createSymbolicSubstring(StringExpression sym_str,
+			IntegerExpression sym_start, IntegerExpression sym_end,
+			int startRef, int endRef) {
+		
+		StringExpression result;
+		
+		//'end' is the first parameter (something with stack representation, maybe?) 
+		if(sym_start == null && sym_end == null) { 
+			result = sym_str._subString(endRef, startRef);
+		} else if (sym_start == null) {
+			result = sym_str._subString(sym_end, startRef);
+		} else { //sym_end == null
+			result = sym_str._subString(endRef, sym_start);
+		}
+		
+		return result;
+	}
+	
+	public Instruction handleStringBuilderAppend3(InvokeInstruction invInst, ThreadInfo th) {
+		throw new RuntimeException("implement this");
 	}
 
 	public void setVariableAttribute(ElementInfo ei, InvokeInstruction invInst, ThreadInfo th, StackFrame sf, int idx,
@@ -2721,7 +2845,8 @@ public class SymbolicStringHandler {
 			int s1 = th.pop();
 			ElementInfo e2 = th.getElementInfo(s1);
 			int s2 = th.pop();
-			if (sym_v1 == null) { // operand 0 is concrete
+			if (sym_v1 == null || (sym_v1 instanceof SymbolicStringBuilder 
+					&& ((SymbolicStringBuilder) sym_v1).getstr() == null)) { // operand 0 is concrete
 				String val = getStringEquiv(e2);
 				sym_v2._append(val);
 				th.push(s2, true); /* symbolic string Builder element */
@@ -2739,29 +2864,7 @@ public class SymbolicStringHandler {
 				}
 				// setVariableAttribute(ei, invInst, th, sf, s2, sym_v2); //set the
 				// value of the attribute of local StringBuilder element as sym_v2
-				th.push(s2, true); /* symbolic string Builder element *//*
-																																	 * String s1 =
-																																	 * AbstractionUtilityMethods
-																																	 * .
-																																	 * unknownString
-																																	 * (); String
-																																	 * s2 =
-																																	 * AbstractionUtilityMethods
-																																	 * .
-																																	 * unknownString
-																																	 * (); String
-																																	 * s4 =
-																																	 * AbstractionUtilityMethods
-																																	 * .
-																																	 * unknownString
-																																	 * (); String
-																																	 * s5 =
-																																	 * AbstractionUtilityMethods
-																																	 * .
-																																	 * unknownString
-																																	 * ();
-																																	 */
-
+				th.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				if (sym_v1 instanceof SymbolicStringBuilder)
 					sym_v2._append((SymbolicStringBuilder) sym_v1);

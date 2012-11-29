@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.string.translate;
 
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
 import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
@@ -10,6 +11,7 @@ import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.string.StringUtility;
 import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
 import gov.nasa.jpf.symbc.string.graph.Edge;
+import gov.nasa.jpf.symbc.string.graph.EdgeChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeCharAt;
 import gov.nasa.jpf.symbc.string.graph.EdgeConcat;
 import gov.nasa.jpf.symbc.string.graph.EdgeContains;
@@ -21,6 +23,7 @@ import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeIndexOfChar2;
 import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar;
 import gov.nasa.jpf.symbc.string.graph.EdgeLastIndexOfChar2;
+import gov.nasa.jpf.symbc.string.graph.EdgeNotCharAt;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotContains;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEndsWith;
 import gov.nasa.jpf.symbc.string.graph.EdgeNotEqual;
@@ -82,8 +85,19 @@ public class TranslateToZ3 {
 	
 	private static Z3Interface z3Interface;
 	
+	private static final int MAX_ITERATIONS = 100; //number of symbolic string expansions to try 
+	private static int remainingIterations = MAX_ITERATIONS; //quick fix to prevent stack overflows
+	
 	//most sign, first letter
 	public static boolean isSat (StringGraph g, PathCondition pc) {
+		remainingIterations--;
+		if(remainingIterations < 0) {
+			remainingIterations = MAX_ITERATIONS;
+//			println("no more iterations remains");
+			return false;
+		}
+		
+//		System.out.println("#STRING-Z3 solving new graph:" + g);		
 		/* check if there was a timeout */
 		SymbolicStringConstraintsGeneral.checkTimeOut();
 		//println ("[isSat] graph after preprocessing: " + g.toDot());
@@ -121,6 +135,9 @@ public class TranslateToZ3 {
 			}
 			else if (e instanceof EdgeCharAt) {
 				handleEdgeCharAt((EdgeCharAt) e);
+			}
+			else if (e instanceof EdgeNotCharAt) {
+				handleEdgeNotCharAt((EdgeNotCharAt) e);
 			}
 			else if (e instanceof EdgeConcat) {
 				handleEdgeConcat((EdgeConcat) e);
@@ -203,8 +220,8 @@ public class TranslateToZ3 {
             		loic.addToList(new LinearIntegerConstraint(v.getSymbolicLength(), Comparator.NE, new IntegerConstant(v.getSymbolicLength().solution())));
             }
             for (Edge e: g.getEdges()) {
-            	if (e instanceof EdgeCharAt) {
-            		EdgeCharAt eca = (EdgeCharAt) e;
+            	if (e instanceof EdgeChar) {
+            		EdgeChar eca = (EdgeChar) e;
             		loic.addToList(new LinearIntegerConstraint(eca.getIndex(), Comparator.NE, new IntegerConstant(eca.getIndex().solution())));
             		loic.addToList(new LinearIntegerConstraint(eca.getValue(), Comparator.NE, new IntegerConstant(eca.getValue().solution())));
             	}
@@ -215,6 +232,8 @@ public class TranslateToZ3 {
             	else if (e instanceof EdgeIndexOfChar) {
             		EdgeIndexOfChar eio = (EdgeIndexOfChar) e;
 					loic.addToList(new LinearIntegerConstraint(eio.getIndex(), Comparator.NE, new IntegerConstant(eio.getIndex().solution())));
+					IntegerExpression charSought = eio.getIndex().getExpression();
+					loic.addToList(new LinearIntegerConstraint(charSought, Comparator.NE, new IntegerConstant(charSought.solution())));
             	}
             	else if (e instanceof EdgeLastIndexOfChar) {
             		EdgeLastIndexOfChar eio = (EdgeLastIndexOfChar) e;
@@ -273,12 +292,15 @@ public class TranslateToZ3 {
         	//println(model.toString());
         	
         	for (Entry<String, String> entry: ans.entrySet()) {
-        		String vertexName = BVVar.reverseMap.get(entry.getKey().charAt(0));
+        		int reverseMapKey = Integer.parseInt(entry.getKey().substring(3));
+        		String vertexName = BVVar.reverseMap.get(reverseMapKey);
         		String rawData = entry.getValue();
         		rawData = fromRawData(rawData);
         		////println (vertexName + " = " + rawData);
         		Vertex v = g.findVertex(vertexName);
-        		v.setSolution(rawData);
+        		if(!v.isConstant()) {
+        			v.setSolution(rawData);
+        		}
         	}
            // System.out.//println("Satisfiable (Invalid)\n");
             return true;
@@ -288,7 +310,7 @@ public class TranslateToZ3 {
 		
 		//return true;
 	}
-	
+
 	private static String fromRawData (String data) {
 		StringBuilder result = new StringBuilder ();
 		StringBuilder word = new StringBuilder();
@@ -400,10 +422,14 @@ public class TranslateToZ3 {
 		BVExpr setOflit = null;
 		BVExpr lit;
 		//println ("[handleEdgeReplaceCharChar] e.getSource().getLength(): " + e.getSource().getLength());
+		//if s[i] == toReplace then d[i] == replacedChar otherwise s[i] == d[i]
 		for (int i = 1; i <= e.getSource().getLength(); i++) {
-			lit = new BVITE(new BVEq(new BVExtract(source, i * 8 - 1, i * 8 - 8), new BVConst(e.getC1())), 
-					   new BVEq(new BVExtract(dest, i * 8 - 1, i * 8 - 8), new BVConst(e.getC2())),
-					   new BVTrue());
+			BVExpr extSrc = new BVExtract(source, i * 8 - 1, i * 8 - 8);
+			BVExpr extDst = new BVExtract(dest, i * 8 - 1, i * 8 - 8);
+			lit = new BVITE(
+					   new BVEq(extSrc, new BVConst(e.getC1())), 
+					   new BVEq(extDst, new BVConst(e.getC2())),
+					   new BVEq(extSrc,extDst));
 			setOflit = and (setOflit, lit);
 		}
 		//println ("[handleEdgeReplaceCharChar] setOflit: " + setOflit);
@@ -662,30 +688,73 @@ public class TranslateToZ3 {
 	
 	public static void handleEdgeCharAt (EdgeCharAt e) {
 		if (!e.getSource().isConstant()) {
-			BVExpr source = getBVExpr(e.getSource());
-			char c = (char) e.getValue().solution();
-			int index = e.getIndex().solution();
-			BVExpr temp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
-			BVExpr cons = new BVConst(c);
-			post (new BVEq(temp, cons));
+			BVExpr eqExpr = prepareEqSymbolicSrc(e);
+			post (eqExpr);
 		}
 		else {
-			String constant = e.getSource().getSolution();
-			char c = (char) e.getValue().solution();
-			int index = e.getIndex().solution();
-			if (index > -1) {
-				BVExpr temp1 = new BVConst(constant.charAt(index));
-				BVExpr temp2 = new BVConst(c);
-				post (new BVEq(temp1, temp2));
-			}
-			else {
-				for (int i = 0; i < constant.length(); i++) {
-					BVExpr temp1 = new BVConst(constant.charAt(i));
-					BVExpr temp2 = new BVConst(c);
-					post (new BVNot(new BVEq(temp1, temp2)));
-				}
+			List<BVExpr> exps = prepareEqConstantSrc(e);
+			for (BVExpr exp : exps) {
+				post(exp);
 			}
 		}
+	}
+	
+	private static void handleEdgeNotCharAt(EdgeNotCharAt e) {
+		if (!e.getSource().isConstant()) {
+			BVExpr eqExpr = prepareEqSymbolicSrc(e);
+			post (new BVNot(eqExpr));
+			
+		} else {
+			List<BVExpr> exps = prepareEqConstantSrc(e);
+			
+			if(exps.size() == 1) { 
+				BVExpr exp = exps.get(0);
+				post(new BVNot(exp));
+				
+			} else { //apply De Morgan' law
+				BVExpr first = ((BVNot) exps.get(0)).expr;
+				BVExpr second = ((BVNot) exps.get(1)).expr;
+				
+				BVOr orExpr = new BVOr(first, second);
+				for (int i = 2; i < exps.size(); i++) {
+					BVExpr exp = ((BVNot) exps.get(i)).expr; 
+					orExpr = new BVOr(exp, orExpr);
+				}
+				post(new BVNot(orExpr));
+			}
+		}
+	}
+
+	private static List<BVExpr> prepareEqConstantSrc(EdgeChar e) {
+		List<BVExpr> exprs = new ArrayList<BVExpr>();
+		
+		String constant = e.getSource().getSolution();
+		char c = (char) e.getValue().solution();
+		int index = e.getIndex().solution();
+		if (index > -1) { //char c is present at the string 
+			BVExpr temp1 = new BVConst(constant.charAt(index));
+			BVExpr temp2 = new BVConst(c);
+			exprs.add(new BVEq(temp1, temp2));
+		}
+		else { //char c is not present at the string
+			for (int i = 0; i < constant.length(); i++) {
+				BVExpr temp1 = new BVConst(constant.charAt(i));
+				BVExpr temp2 = new BVConst(c);
+				exprs.add((new BVNot(new BVEq(temp1, temp2))));
+			}
+		}
+		
+		return exprs;
+	}
+
+	private static BVExpr prepareEqSymbolicSrc(EdgeChar e) {
+		BVExpr source = getBVExpr(e.getSource());
+		char c = (char) e.getValue().solution();
+		int index = e.getIndex().solution();
+		BVExpr temp = new BVExtract(source, (e.getSource().getLength() - index) * 8 - 1, (e.getSource().getLength() - index) * 8 - 8);
+		BVExpr cons = new BVConst(c);
+		BVExpr eqExpr = new BVEq(temp, cons);
+		return eqExpr;
 	}
 	
 	private static void handleEdgeConcat (EdgeConcat e) {
@@ -1402,7 +1471,15 @@ public class TranslateToZ3 {
 				else {
 					lit = new BVAnd(lit, new BVAnd(cons1, cons2));
 				}
-			}
+				if(v.isConstant()) {
+					//the strings are stored in reverse in the bitvector
+					String vertexString = v.getSolution();
+					int charIndex = (vertexString.length() - 1) - i;
+					char currentChar = vertexString.charAt(charIndex);
+					BVEq consEq = new BVEq(temp, new BVConst(currentChar));
+					lit = new BVAnd(lit, consEq);
+				}
+			}			
 			post (lit);
 		}
 		return result;

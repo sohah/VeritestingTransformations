@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.string.graph;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class EdgeNoCharAt implements Edge{
 
@@ -60,6 +61,11 @@ public class EdgeNoCharAt implements Edge{
 	@Override
 	public void setSource(Vertex v) {
 		v1 = v;
+	}
+
+	@Override
+	public Edge cloneAndSwapVertices(Map<Vertex, Vertex> oldToNew) {
+		return new EdgeNoCharAt(name, oldToNew.get(v1), oldToNew.get(v2));
 	}
 
 }

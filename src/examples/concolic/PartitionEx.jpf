@@ -12,7 +12,7 @@ symbolic.method=concolic.PartitionEx.runSymbolic(sym)
 symbolic.heuristcPartition=true
 symbolic.concolic=true
 
-symbolic.debug=on
+#symbolic.debug=on
 
 listener = .symbc.concolic.ConcreteExecutionListener
 

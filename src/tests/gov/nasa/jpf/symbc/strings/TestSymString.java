@@ -22,7 +22,7 @@ import org.junit.Test;
 
 public class TestSymString {
 
-	String[] solvers = new String[]{"automata", "z3_inc"};
+	String[] solvers = new String[]{"automata","z3" /* "z3_inc" */};
 	
 	@Test
 	public void Test1 () {
@@ -2611,7 +2611,7 @@ public class TestSymString {
 			pc._addDet(Comparator.NE, var1._charAt(si), (int) 'a');
 			System.out.println(stringCurrentPC);
 			boolean result = stringCurrentPC.simplify();
-			//System.out.printf("var1: '%s'\n", var1.solution());
+			System.out.printf("var1: '%s'\n", var1.solution());
 			Assert.assertTrue(solver + " failed", result);
 			Assert.assertTrue(var1.solution().startsWith("aa"));
 			Assert.assertTrue(var1.solution().charAt(si.solution()) != 'a');
@@ -4155,7 +4155,8 @@ public class TestSymString {
 			System.out.println(String.format("var2.solution(): '%s'", var2.solution()));
 			Assert.assertTrue(solver + " failed", result);
 			Assert.assertTrue(!var2.solution().startsWith("bol"));
-			Assert.assertTrue(var2.solution().indexOf(var1.solution()) == 2);
+//			Assert.assertTrue(var2.solution().indexOf(var1.solution()) == 2);
+			Assert.assertTrue(var2.solution().indexOf(var1.solution(),2) == 2);
 		}
 	}
 	

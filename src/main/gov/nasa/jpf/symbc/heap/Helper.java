@@ -105,6 +105,7 @@ public class Helper {
 			  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap,
 			  int numSymRefs, HeapNode[] prevSymRefs ) {
 		  daIndex = ks.heap.newObject(typeClassInfo, ti);
+		  ks.heap.registerPinDown(daIndex);
 		  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
 		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
 		  ElementInfo eiRef = ti.getElementInfo(daIndex);
