@@ -32,6 +32,8 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
+import gov.nasa.jpf.symbc.string.StringExpression;
+import gov.nasa.jpf.symbc.string.StringSymbolic;
 
 public class JPF_gov_nasa_jpf_symbc_Debug {
 	public static PathCondition getPC(MJIEnv env) {
@@ -100,6 +102,15 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 			return env.newString(Boolean.toString(v));
     }
 
+    public static int getSymbolicStringValue(MJIEnv env, int objRef, int stringRef) {
+    	Object [] attrs = env.getArgAttributes();
+		StringExpression sym_arg = (StringExpression)attrs[0];
+		String string_concrete = env.getStringObject(stringRef);
+		if (sym_arg !=null)
+			return env.newString(sym_arg.toString());
+		else
+			return env.newString(string_concrete);
+    }
     public static void assume(MJIEnv env, int objRef, boolean c) {
     	Object [] attrs = env.getArgAttributes();
 		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
@@ -127,6 +138,12 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 		return false;
 	}
 
+	public static int makeSymbolicString(MJIEnv env, int objRef, int stringRef) {
+		String name = env.getStringObject(stringRef);
+		env.setReturnAttribute(new StringSymbolic(name));
+		return env.newString("");
+	}
+	
 //	public static int makeSymbolicRef(MJIEnv env, int objRef, int stringRef, int objvRef) {
 //		String name = env.getStringObject(stringRef);
 //		env.setReturnAttribute(new SymbolicInteger(name,0,1));
