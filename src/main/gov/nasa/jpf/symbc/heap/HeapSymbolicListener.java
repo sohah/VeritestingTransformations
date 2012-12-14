@@ -380,7 +380,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 			//String methodName = vm.getLastInstruction().getMethodInfo().getName();
 			MethodSummary methodSummary = allSummaries.get(currentMethodName);
 			methodSummary.addPathCondition(pcPair);
-			methodSummary.addHeapPC(heapPC.toString());
+			methodSummary.addHeapPC(String.valueOf(heapPC));
 			allSummaries.put(currentMethodName,methodSummary);
 		}
 		System.out.println("Property Violated: ");
@@ -600,7 +600,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 							if ((!pcs.contains(pcPair)) && (pcString.contains("SYM"))) {
 								methodSummary.addPathCondition(pcPair);
 								
-								methodSummary.addHeapPC(heapPC.toString());
+								methodSummary.addHeapPC(String.valueOf(heapPC));
 							}
 							allSummaries.put(longName,methodSummary);
 						}
