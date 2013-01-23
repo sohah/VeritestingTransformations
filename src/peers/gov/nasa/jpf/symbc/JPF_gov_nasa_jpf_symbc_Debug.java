@@ -114,10 +114,11 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
     public static void assume(MJIEnv env, int objRef, boolean c) {
     	Object [] attrs = env.getArgAttributes();
 		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
-		if (sym_arg !=null)
-			System.out.println("assume "+sym_arg);
-		else
-			System.out.println("assume "+c);
+		assert(sym_arg==null);
+		if(!c) {// instruct JPF to backtrack
+			SystemState ss = env.getSystemState();
+			ss.setIgnored(true);
+		}
     }
 
 	public static int makeSymbolicInteger(MJIEnv env, int objRef, int stringRef) {
