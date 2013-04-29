@@ -21,7 +21,6 @@ package gov.nasa.jpf.symbc.numeric;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import gov.nasa.jpf.Config;
 
 public class MinMax {

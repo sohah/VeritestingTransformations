@@ -43,17 +43,13 @@ public abstract class SwitchInstruction extends gov.nasa.jpf.jvm.bytecode.Switch
 
 	@Override
 	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
-
-		//return super.execute(ss,ks,ti);
 		StackFrame sf = ti.getTopFrame();
 		IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
-
+		
 		if(sym_v == null) { // the condition is concrete
-			//System.out.println("Execute Switch: The condition is concrete");
 			return super.execute(ss, ks, ti);
 		}
 		else { // the condition is symbolic
-			//System.out.println("Execute Switch: The condition is symbolic");
 			ChoiceGenerator<?> cg;
 
 			if (!ti.isFirstStepInsn()) { // first time around
@@ -67,7 +63,6 @@ public abstract class SwitchInstruction extends gov.nasa.jpf.jvm.bytecode.Switch
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			}
 			sym_v = (IntegerExpression) sf.getOperandAttr();
-			//System.out.println("Execute Switch: The condition is symbolic"+sym_v);
 			ti.pop();
 			PathCondition pc;
 			//pc is updated with the pc stored in the choice generator above
@@ -103,7 +98,10 @@ public abstract class SwitchInstruction extends gov.nasa.jpf.jvm.bytecode.Switch
 				return ti.getMethod().getInstructionAt(target);
 			} else {
 				lastIdx = idx;
+				System.out.println("index "+idx);
 				pc._addDet(Comparator.EQ, sym_v, matches[idx]);
+				System.out.println(sym_v + "eq"+ matches[idx]);
+				System.out.println("pc after "+pc);
 				if(!pc.simplify())  {// not satisfiable
 					ss.setIgnored(true);
 				} else {

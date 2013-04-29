@@ -191,7 +191,37 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 			}
 		//}
 	}
-
+	
+	/*
+	public void choiceGeneratorAdvanced(JVM vm) {
+		System.out.println("choice advanced advanced here.");
+		ChoiceGenerator<?> cg = vm.getSystemState().getChoiceGenerator();
+		int n = cg.getTotalNumberOfChoices();
+		if (cg instanceof PCChoiceGenerator) {
+			System.out.println("got a PC choice generator "+ n + " "+
+			((PCChoiceGenerator) cg).getNextChoice());//getCurrentPC());
+		}
+	}
+	*/
+	
+	public void stateAdvanced(Search search) {
+		//super.stateAdvanced(search);
+		//System.out.println("State advanced here.");
+		ChoiceGenerator<?> cg = search.getVM().getSystemState().getChoiceGenerator();
+		int n = cg.getTotalNumberOfChoices();
+		if (cg instanceof PCChoiceGenerator) {
+			//System.out.println("got a PC choice generator "+ n + " "+
+			//((PCChoiceGenerator) cg).getNextChoice() + " "+((PCChoiceGenerator) cg).getCurrentPC());
+		
+		if(((PCChoiceGenerator) cg).getNextChoice()==1) {
+			//System.out.println("backtrack");
+			//search.requestBacktrack(); //;.getVM().getSystemState().setIgnored(true);
+			search.getVM().getSystemState().setIgnored(true);
+		}
+		
+		}
+	}
+	
 	public void instructionExecuted(JVM vm) {
 
 		if (!vm.getSystemState().isIgnored()) {
@@ -437,11 +467,16 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							if ((!pcs.contains(pcPair)) && (pcString.contains("SYM"))) {
 								methodSummary.addPathCondition(pcPair);
 							}
+							
+							if(allSummaries.get(longName)!=null) // recursive call
+								longName = longName + methodSummary.hashCode(); // differentiate the key for recursive calls
 							allSummaries.put(longName,methodSummary);
 							System.out.println("*************Summary***************");
 							System.out.println("PC is:"+pc.toString());
-							System.out.println("Return is:  "+result);
-							System.out.println("***********************************");
+							if(result!=null){
+								System.out.println("Return is:  "+result);
+								System.out.println("***********************************");
+							}
 						}
 					}
 				}
