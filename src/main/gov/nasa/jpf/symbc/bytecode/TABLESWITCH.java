@@ -35,7 +35,7 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
  * Access jump table by index and jump
  *   ..., index  ...
  */
-public class TABLESWITCH extends gov.nasa.jpf.jvm.bytecode.SwitchInstruction implements gov.nasa.jpf.jvm.TableSwitchInstruction{
+public class TABLESWITCH extends SwitchInstruction implements gov.nasa.jpf.jvm.TableSwitchInstruction{
 
 	int min, max;
 
@@ -121,7 +121,7 @@ public class TABLESWITCH extends gov.nasa.jpf.jvm.bytecode.SwitchInstruction imp
 	  }
 
 	  protected Instruction executeConditional (SystemState ss, KernelState ks, ThreadInfo ti){
-			assert(false); // should not be called;
+			
 		    int value = ti.pop();
 		    int i = value-min;
 		    int pc;
