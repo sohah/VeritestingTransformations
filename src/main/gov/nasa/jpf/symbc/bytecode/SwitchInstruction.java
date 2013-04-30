@@ -98,10 +98,10 @@ public abstract class SwitchInstruction extends gov.nasa.jpf.jvm.bytecode.Switch
 				return ti.getMethod().getInstructionAt(target);
 			} else {
 				lastIdx = idx;
-				System.out.println("index "+idx);
+				//System.out.println("index "+idx);
 				pc._addDet(Comparator.EQ, sym_v, matches[idx]);
-				System.out.println(sym_v + "eq"+ matches[idx]);
-				System.out.println("pc after "+pc);
+				//System.out.println(sym_v + "eq"+ matches[idx]);
+				//System.out.println("pc after "+pc);
 				if(!pc.simplify())  {// not satisfiable
 					ss.setIgnored(true);
 				} else {
