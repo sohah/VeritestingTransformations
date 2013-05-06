@@ -20,7 +20,7 @@
 package gov.nasa.jpf.symbc.concolic;
 // support for arbitrary external functions
 
-import gov.nasa.jpf.jvm.ClassInfo;
+
 import gov.nasa.jpf.symbc.numeric.Constraint;
 import gov.nasa.jpf.symbc.numeric.ConstraintExpressionVisitor;
 import gov.nasa.jpf.symbc.numeric.Expression;
@@ -28,6 +28,7 @@ import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.util.FileUtils;
+import gov.nasa.jpf.vm.ClassInfo;
 
 import java.util.ArrayList;
 import java.util.Map;

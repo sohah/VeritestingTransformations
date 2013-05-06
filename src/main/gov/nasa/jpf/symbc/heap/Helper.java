@@ -2,18 +2,6 @@ package gov.nasa.jpf.symbc.heap;
 
 
 
-import gov.nasa.jpf.jvm.BooleanFieldInfo;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DoubleFieldInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.FloatFieldInfo;
-import gov.nasa.jpf.jvm.IntegerFieldInfo;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.LongFieldInfo;
-import gov.nasa.jpf.jvm.ReferenceFieldInfo;
-import gov.nasa.jpf.jvm.StaticElementInfo;
-import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
@@ -21,6 +9,17 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 import gov.nasa.jpf.symbc.string.StringSymbolic;
+import gov.nasa.jpf.vm.BooleanFieldInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.DoubleFieldInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.FloatFieldInfo;
+import gov.nasa.jpf.vm.IntegerFieldInfo;
+import gov.nasa.jpf.vm.KernelState;
+import gov.nasa.jpf.vm.LongFieldInfo;
+import gov.nasa.jpf.vm.ReferenceFieldInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 public class Helper {
 
@@ -101,7 +100,7 @@ public class Helper {
 	  //neha: added the code to intansiate an new heap in a separate procedure. There are multiple
 	  //bytecodes that need access to the same code. Lazy initialization and uber-lazy initialization
 	  // generate a new HeapNode in the same way. This can be used across different init algorithms.
-	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
+	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, ElementInfo daIndex, Object attr,
 			  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap,
 			  int numSymRefs, HeapNode[] prevSymRefs ) {
 		  daIndex = ks.heap.newObject(typeClassInfo, ti);

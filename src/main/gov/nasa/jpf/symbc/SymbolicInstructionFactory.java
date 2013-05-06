@@ -29,15 +29,13 @@ import za.ac.sun.cs.solver.store.RedisLevelStore;
 import za.ac.sun.cs.solver.store.RedisStore;
 import za.ac.sun.cs.solver.store.Store;
 import gov.nasa.jpf.Config;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.bytecode.*;
 import gov.nasa.jpf.symbc.numeric.MinMax;
-import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
-import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
 import gov.nasa.jpf.util.InstructionFactoryFilter;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.Instruction;
 
 
 public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.InstructionFactory {

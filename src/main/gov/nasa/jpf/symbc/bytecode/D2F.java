@@ -18,14 +18,12 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
+
 
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 
 /**
@@ -35,15 +33,15 @@ import gov.nasa.jpf.symbc.numeric.*;
 public class D2F extends gov.nasa.jpf.jvm.bytecode.D2F {
  
 
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-	  StackFrame sf = th.getTopFrame();
+  public Instruction execute (ThreadInfo th) {
+	  StackFrame sf = th.getModifiableTopFrame();
 	  Expression sym_val = (Expression) sf.getLongOperandAttr();
 		
 	  if(sym_val == null) {
-		  return super.execute(ss,ks,th); 
+		  return super.execute(th); 
 	  }
 	  else {//symbolic
-		  Instruction result = super.execute(ss,ks,th);
+		  Instruction result = super.execute(th);
 		  sf.setOperandAttr(sym_val);
 		  return result;
 	  }

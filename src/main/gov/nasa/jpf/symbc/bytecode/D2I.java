@@ -19,14 +19,10 @@
 package gov.nasa.jpf.symbc.bytecode;
 
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
  * Convert double to int
@@ -34,12 +30,12 @@ import gov.nasa.jpf.symbc.numeric.*;
  */
 public class D2I extends gov.nasa.jpf.jvm.bytecode.D2I {
 
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-	  RealExpression sym_dval = (RealExpression) th.getTopFrame().getLongOperandAttr();
+  public Instruction execute (ThreadInfo th) {
+	  RealExpression sym_dval = (RealExpression) th.getModifiableTopFrame().getLongOperandAttr();
 		
 	  if(sym_dval == null) {
 		  //System.out.println("Execute concrete D2I");
-		  return super.execute(ss,ks,th); 
+		  return super.execute(th); 
 	  }
 	  else {
 		  //System.out.println("Execute symbolic D2I");
@@ -47,7 +43,7 @@ public class D2I extends gov.nasa.jpf.jvm.bytecode.D2I {
 		  // here we get a hold of the current path condition and 
 		  // add an extra mixed constraint sym_dval==sym_ival
 
-		    ChoiceGenerator<?> cg; 
+		    ChoiceGenerator cg; 
 			if (!th.isFirstStepInsn()) { // first time around
 				cg = new PCChoiceGenerator(1); // only one choice 
 				ss.setNextChoiceGenerator(cg);
