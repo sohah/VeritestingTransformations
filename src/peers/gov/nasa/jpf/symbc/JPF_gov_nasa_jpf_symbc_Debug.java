@@ -3,22 +3,7 @@ package gov.nasa.jpf.symbc;
 import java.util.HashSet;
 import java.util.Set;
 
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DoubleFieldInfo;
-import gov.nasa.jpf.jvm.DynamicArea;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.FloatFieldInfo;
-import gov.nasa.jpf.jvm.IntegerFieldInfo;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.LongFieldInfo;
-import gov.nasa.jpf.jvm.MJIEnv;
-import gov.nasa.jpf.jvm.ReferenceFieldInfo;
-import gov.nasa.jpf.jvm.StaticArea;
-import gov.nasa.jpf.jvm.StaticElementInfo;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
+
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 import gov.nasa.jpf.symbc.heap.HeapNode;
 import gov.nasa.jpf.symbc.heap.Helper;
@@ -34,10 +19,21 @@ import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.StringSymbolic;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.MJIEnv;
+import gov.nasa.jpf.vm.NativePeer;
+import gov.nasa.jpf.vm.ReferenceFieldInfo;
+import gov.nasa.jpf.vm.StaticElementInfo;
+import gov.nasa.jpf.vm.SystemState;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.VM;
 
-public class JPF_gov_nasa_jpf_symbc_Debug {
+public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	public static PathCondition getPC(MJIEnv env) {
-		JVM vm = env.getVM();
+		VM vm = env.getVM();
 		ChoiceGenerator<?> cg = vm.getChoiceGenerator();
 		PathCondition pc = null;
 
@@ -157,7 +153,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 		// introduce a heap choice generator for the element in the heap
 		ThreadInfo ti = env.getVM().getCurrentThread();
 		SystemState ss = env.getVM().getSystemState();
-		ChoiceGenerator<?> cg;
+		ChoiceGenerator cg;
 
 		if (!ti.isFirstStepInsn()) {
 			  cg = new HeapChoiceGenerator(1);  //new
@@ -262,7 +258,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 
 		SymbolicInteger newSymRef = new SymbolicInteger( refChain);
 		//ElementInfo eiRef = DynamicArea.getHeap().get(objvRef);
-		ElementInfo eiRef = JVM.getVM().getHeap().get(objvRef);
+		ElementInfo eiRef = VM.getVM().getHeap().get(objvRef);
 		Helper.initializeInstanceFields(fields, eiRef, refChain);
 		Helper.initializeStaticFields(staticFields, ci, ti);
 
@@ -312,7 +308,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 	public static void printHeapPC(MJIEnv env, int objRef, int msgRef) {
 		// should first solve the pc's!!!!
 
-		JVM vm = env.getVM();
+		VM vm = env.getVM();
 		ChoiceGenerator<?> cg = vm.getChoiceGenerator();
 		PathCondition pc = null;
 
@@ -360,7 +356,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug {
 		else{
 			ClassInfo ci = env.getClassInfo(objvRef);
 			//ElementInfo ei = DynamicArea.getHeap().get(objvRef);
-			ElementInfo ei = JVM.getVM().getHeap().get(objvRef);
+			ElementInfo ei = VM.getVM().getHeap().get(objvRef);
 			sequence += "["+objvRef+"]";
 			if (!discovered.contains(new Integer(objvRef))){
 				discovered.add(new Integer(objvRef));

@@ -18,32 +18,32 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.Types;
+
 
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 
 public class DADD extends gov.nasa.jpf.jvm.bytecode.DADD {
 
-	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
+	@Override
+	public Instruction execute(ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 
 		RealExpression sym_v1 = (RealExpression) sf.getLongOperandAttr();
-		double v1 = Types.longToDouble(th.longPop());
+		double v1 = Types.longToDouble(sf.popLong());
 
 		RealExpression sym_v2 = (RealExpression) sf.getLongOperandAttr();
-		double v2 = Types.longToDouble(th.longPop());
+		double v2 = Types.longToDouble(sf.popLong());
 
 		double r = v1 + v2;
 
 		if (sym_v1 == null && sym_v2 == null)
-			th.longPush(Types.doubleToLong(r));
+			sf.pushLong(Types.doubleToLong(r));
 		else
-			th.longPush(0);
+			sf.pushLong(0);
 
 		RealExpression result = null;
 		if (sym_v1 != null) {

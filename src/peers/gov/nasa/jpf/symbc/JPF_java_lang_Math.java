@@ -19,15 +19,16 @@
 
 package gov.nasa.jpf.symbc;
 
-import gov.nasa.jpf.jvm.MJIEnv;
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.MJIEnv;
+import gov.nasa.jpf.vm.NativePeer;
 
 /**
  * MJI NativePeer class for java.lang.Math library abstraction
  */
 
 // simple functions abs, min, max
-public class JPF_java_lang_Math {
+public class JPF_java_lang_Math extends NativePeer{
 
   // <2do> those are here to hide their implementation from traces, not to
   // increase performance. If we want to do that, we should probably inline

@@ -19,14 +19,13 @@
 package gov.nasa.jpf.symbc.bytecode;
 
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
+
 
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 
 
@@ -36,11 +35,12 @@ import gov.nasa.jpf.symbc.numeric.*;
  */
 public class D2L extends gov.nasa.jpf.jvm.bytecode.D2L {
 
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
+  @Override
+  public Instruction execute (ThreadInfo th) {
 	  RealExpression sym_dval = (RealExpression) th.getTopFrame().getLongOperandAttr();
 		
 	  if(sym_dval == null) {
-		  return super.execute(ss,ks,th); 
+		  return super.execute(th); 
 	  }
 	  else {
 		  //throw new RuntimeException("## Error: symbolic D2L not yet hanled ");
@@ -50,13 +50,13 @@ public class D2L extends gov.nasa.jpf.jvm.bytecode.D2L {
 		  // here we get a hold of the current path condition and 
 		  // add an extra mixed constraint sym_dval==sym_ival
 
-		    ChoiceGenerator<?> cg; 
+		    ChoiceGenerator cg; 
 			if (!th.isFirstStepInsn()) { // first time around
 				cg = new PCChoiceGenerator(1); // only one choice 
-				ss.setNextChoiceGenerator(cg);
+				th.getVM().getSystemState().setNextChoiceGenerator(cg);
 				return this;  	      
 			} else {  // this is what really returns results
-				cg = ss.getChoiceGenerator();
+				cg = th.getVM().getSystemState().getChoiceGenerator();
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			}	
 			
@@ -75,16 +75,16 @@ public class D2L extends gov.nasa.jpf.jvm.bytecode.D2L {
 				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
 			assert pc != null;
 			
-			th.longPop();
-			th.longPush(0); // for symbolic expressions, the concrete value does not matter
-			SymbolicInteger sym_ival = new SymbolicInteger();
 			StackFrame sf = th.getTopFrame();
+			sf.popLong();
+			sf.pushLong(0); // for symbolic expressions, the concrete value does not matter
+			SymbolicInteger sym_ival = new SymbolicInteger();
 			sf.setLongOperandAttr(sym_ival);
 			
 			pc._addDet(Comparator.EQ, sym_dval, sym_ival);
 			
 			if(!pc.simplify())  { // not satisfiable
-				ss.setIgnored(true);
+				th.getVM().getSystemState().setIgnored(true);
 			} else {
 				//pc.solve();
 				((PCChoiceGenerator) cg).setCurrentPC(pc);

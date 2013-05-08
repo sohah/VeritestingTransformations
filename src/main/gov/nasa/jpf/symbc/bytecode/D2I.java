@@ -22,6 +22,7 @@ package gov.nasa.jpf.symbc.bytecode;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
@@ -30,6 +31,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public class D2I extends gov.nasa.jpf.jvm.bytecode.D2I {
 
+  @Override
   public Instruction execute (ThreadInfo th) {
 	  RealExpression sym_dval = (RealExpression) th.getModifiableTopFrame().getLongOperandAttr();
 		
@@ -46,10 +48,10 @@ public class D2I extends gov.nasa.jpf.jvm.bytecode.D2I {
 		    ChoiceGenerator cg; 
 			if (!th.isFirstStepInsn()) { // first time around
 				cg = new PCChoiceGenerator(1); // only one choice 
-				ss.setNextChoiceGenerator(cg);
+				th.getVM().getSystemState().setNextChoiceGenerator(cg);
 				return this;  	      
 			} else {  // this is what really returns results
-				cg = ss.getChoiceGenerator();
+				cg = th.getVM().getSystemState().getChoiceGenerator();
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			}	
 			
@@ -67,17 +69,18 @@ public class D2I extends gov.nasa.jpf.jvm.bytecode.D2I {
 			else 
 				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
 			assert pc != null;
+			StackFrame sf = th.getModifiableTopFrame();
 			
-			th.longPop();
-			th.push(0,false); // for symbolic expressions, the concrete value does not matter
+			sf.popLong();
+			sf.push(0,false); // for symbolic expressions, the concrete value does not matter
 			SymbolicInteger sym_ival = new SymbolicInteger();
-			StackFrame sf = th.getTopFrame();
+			
 			sf.setOperandAttr(sym_ival);
 			
 			pc._addDet(Comparator.EQ, sym_dval, sym_ival);
 			
 			if(!pc.simplify())  { // not satisfiable
-				ss.setIgnored(true);
+				th.getVM().getSystemState().setIgnored(true);
 			} else {
 				//pc.solve();
 				((PCChoiceGenerator) cg).setCurrentPC(pc);

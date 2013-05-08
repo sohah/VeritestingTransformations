@@ -29,6 +29,7 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.util.FileUtils;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -71,7 +72,7 @@ public class FunctionExpression extends RealExpression
 		try {
 			if(clsLoader == null) {
 				ArrayList<String> list = new ArrayList<String>();
-				String[] cp = ClassInfo.getClassPathElements();
+				String[] cp = ClassLoaderInfo.getCurrentClassLoader().getClassPathElements();
 				cp = FileUtils.expandWildcards(cp);
 				for (String e : cp) {
 					list.add(e);

@@ -19,6 +19,7 @@ import gov.nasa.jpf.vm.IntegerFieldInfo;
 import gov.nasa.jpf.vm.KernelState;
 import gov.nasa.jpf.vm.LongFieldInfo;
 import gov.nasa.jpf.vm.ReferenceFieldInfo;
+import gov.nasa.jpf.vm.StaticElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 public class Helper {
@@ -100,14 +101,15 @@ public class Helper {
 	  //neha: added the code to intansiate an new heap in a separate procedure. There are multiple
 	  //bytecodes that need access to the same code. Lazy initialization and uber-lazy initialization
 	  // generate a new HeapNode in the same way. This can be used across different init algorithms.
-	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, ElementInfo daIndex, Object attr,
+	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
 			  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap,
 			  int numSymRefs, HeapNode[] prevSymRefs ) {
-		  daIndex = ks.heap.newObject(typeClassInfo, ti);
+		  daIndex = ks.heap.newObject(typeClassInfo, ti).getObjectRef();
 		  ks.heap.registerPinDown(daIndex);
 		  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
 		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
-		  ElementInfo eiRef = ti.getElementInfo(daIndex);
+		  ElementInfo eiRef =  ti.getElementInfo(daIndex); // TODO to review!
+//daIndex.getObjectRef() -> number
 
 		  // neha: this change allows all the fields in the class hierarchy of the
 		  // object to be initialized as symbolic and not just its instance fields
