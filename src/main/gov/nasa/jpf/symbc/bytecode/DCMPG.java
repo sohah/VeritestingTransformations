@@ -66,10 +66,8 @@ public class DCMPG extends gov.nasa.jpf.jvm.bytecode.DCMPG {
 			// get the path condition from the
 			// previous choice generator of the same type
 
-			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
-			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-				prev_cg = prev_cg.getPreviousChoiceGenerator();
-			}
+			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
+			
 
 			if (prev_cg == null)
 				pc = new PathCondition();

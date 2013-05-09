@@ -18,13 +18,12 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.Types;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.numeric.RealExpression;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 
 /**
  * Remainder double
@@ -32,23 +31,24 @@ import gov.nasa.jpf.symbc.numeric.RealExpression;
  */
 public class DREM extends gov.nasa.jpf.jvm.bytecode.DREM  {
 
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
+  @Override
+  public Instruction execute (ThreadInfo th) {
    
     StackFrame sf = th.getTopFrame();
 
 	RealExpression sym_v1 = (RealExpression) sf.getLongOperandAttr(); 
-	double v1 = Types.longToDouble(th.longPop());
+	double v1 = Types.longToDouble(sf.popLong());
 		
 	RealExpression sym_v2 = (RealExpression) sf.getLongOperandAttr();
-	double v2 = Types.longToDouble(th.longPop());
+	double v2 = Types.longToDouble(sf.popLong());
 	    
     if(sym_v1==null && sym_v2==null){
         if (v1 == 0){
             return th.createAndThrowException("java.lang.ArithmeticException","division by zero");
         } 
-        th.longPush(Types.doubleToLong(v2 % v1));
+        sf.pushLong(Types.doubleToLong(v2 % v1));
     }else {
-    	th.longPush(0);
+    	sf.pushLong(0);
         throw new RuntimeException("## Error: SYMBOLIC DREM not supported");
     }
     return getNext(th);

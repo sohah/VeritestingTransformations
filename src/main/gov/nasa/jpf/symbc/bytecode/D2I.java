@@ -59,10 +59,8 @@ public class D2I extends gov.nasa.jpf.jvm.bytecode.D2I {
 			// previous choice generator of the same type 
 
 		    PathCondition pc;
-			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
-			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-				prev_cg = prev_cg.getPreviousChoiceGenerator();
-			}
+			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
+			
 
 			if (prev_cg == null)
 				pc = new PathCondition(); // TODO: handling of preconditions needs to be changed
