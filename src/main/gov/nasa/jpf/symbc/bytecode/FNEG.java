@@ -18,13 +18,11 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.Types;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 
 
 /**
@@ -34,16 +32,16 @@ import gov.nasa.jpf.symbc.numeric.RealExpression;
 public class FNEG extends gov.nasa.jpf.jvm.bytecode.FNEG  {
 
   @Override
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
+  public Instruction execute (ThreadInfo th) {
 	  
 	  StackFrame sf = th.getTopFrame();
 	  RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(); 
-	  float v1 = Types.intToFloat(th.pop());
+	  float v1 = Types.intToFloat(sf.pop());
 	  
 	  if (sym_v1 == null)
-		  th.push(Types.floatToInt(-v1), false);
+		  sf.push(Types.floatToInt(-v1), false);
 	  else {
-		  th.push(0, false);
+		  sf.push(0, false);
 		  RealExpression result = sym_v1._neg();
 		  sf.setOperandAttr(result);
 	  }

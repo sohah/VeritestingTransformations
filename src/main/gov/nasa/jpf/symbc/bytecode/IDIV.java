@@ -74,11 +74,9 @@ public class IDIV extends gov.nasa.jpf.jvm.bytecode.IDIV {
 		sf.push(0, false);
 
 		PathCondition pc;
-		ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
+		ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
 
-		while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-			prev_cg = prev_cg.getPreviousChoiceGenerator();
-		}
+		
 		if (prev_cg == null)
 			pc = new PathCondition();
 		else

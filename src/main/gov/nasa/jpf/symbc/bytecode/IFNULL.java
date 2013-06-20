@@ -17,12 +17,11 @@
 
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.numeric.Expression;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 
 // we should factor out some of the code and put it in a parent class for all "if statements"
@@ -33,16 +32,16 @@ public class IFNULL extends gov.nasa.jpf.jvm.bytecode.IFNULL {
 	    super(targetPc);
 	  }
 	@Override
-	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+	public Instruction execute (ThreadInfo ti) {
 
 		StackFrame sf = ti.getTopFrame();
 		Expression sym_v = (Expression) sf.getOperandAttr();
 		if(sym_v == null) { // the condition is concrete
 			//System.out.println("Execute IFEQ: The condition is concrete");
-			return super.execute(ss, ks, ti);
+			return super.execute(ti);
 		}
 		else { // the condition is symbolic
-			ti.pop();
+			sf.pop();
 			return getNext(ti);
 			}
 		}

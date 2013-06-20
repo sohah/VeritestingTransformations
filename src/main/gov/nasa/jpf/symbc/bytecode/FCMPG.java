@@ -18,17 +18,15 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.Types;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 
 /**
  * Compare float ..., value1, value2 => ..., result
@@ -36,14 +34,14 @@ import gov.nasa.jpf.symbc.numeric.RealExpression;
 public class FCMPG extends gov.nasa.jpf.jvm.bytecode.FCMPG {
 
     @Override
-	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
+	public Instruction execute(ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 
 		RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(0);
 		RealExpression sym_v2 = (RealExpression) sf.getOperandAttr(1);
 
 		if (sym_v1 == null && sym_v2 == null) { // both conditions are concrete
-			return super.execute(ss, ks, th);
+			return super.execute( th);
 		} else { // at least one condition is symbolic
 			ChoiceGenerator<?> cg;
 			int conditionValue;
@@ -52,27 +50,20 @@ public class FCMPG extends gov.nasa.jpf.jvm.bytecode.FCMPG {
 				cg = new PCChoiceGenerator(3);
 				((PCChoiceGenerator)cg).setOffset(this.position);
 				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
-				ss.setNextChoiceGenerator(cg);
+				th.getVM().getSystemState().setNextChoiceGenerator(cg);
 				return this;
 			} else { // this is what really returns results
-				cg = ss.getChoiceGenerator();
+				cg = th.getVM().getSystemState().getChoiceGenerator();
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = ((PCChoiceGenerator) cg).getNextChoice() - 1;
 			}
 
-			float v1 = Types.intToFloat(th.pop());
-			float v2 = Types.intToFloat(th.pop());
+			float v1 = Types.intToFloat(sf.pop());
+			float v2 = Types.intToFloat(sf.pop());
 
-			// System.out.println("Execute FCMPG: "+ conditionValue);
 			PathCondition pc;
 
-			// pc is updated with the pc stored in the choice generator above get
-			// the path condition from the previous CG of the same type
-
-			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
-			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-				prev_cg = prev_cg.getPreviousChoiceGenerator();
-			}
+			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
 
 			if (prev_cg == null)
 				pc = new PathCondition();
@@ -90,11 +81,9 @@ public class FCMPG extends gov.nasa.jpf.jvm.bytecode.FCMPG {
 					pc._addDet(Comparator.LT, sym_v2, v1);
 
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
-					// pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
-					// System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
 				}
 			} else if (conditionValue == 0) {
 				if (sym_v1 != null) {
@@ -105,11 +94,9 @@ public class FCMPG extends gov.nasa.jpf.jvm.bytecode.FCMPG {
 				} else
 					pc._addDet(Comparator.EQ, v1, sym_v2);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
-					// pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
-					// System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
 				}
 			} else { // 1
 				if (sym_v1 != null) {
@@ -120,17 +107,13 @@ public class FCMPG extends gov.nasa.jpf.jvm.bytecode.FCMPG {
 				} else
 					pc._addDet(Comparator.GT, sym_v2, v1);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
-					// pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
-					// System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
 				}
 			}
 
-			th.push(conditionValue, false);
-
-			//System.out.println("Execute FCMPG: " + ((PCChoiceGenerator) cg).getCurrentPC());
+			sf.push(conditionValue, false);
 			return getNext(th);
 		}
 	}

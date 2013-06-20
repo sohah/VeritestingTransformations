@@ -17,17 +17,16 @@
 
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 // we should factor out some of the code and put it in a parent class for all "if statements"
 
@@ -36,14 +35,14 @@ public class IFNE extends gov.nasa.jpf.jvm.bytecode.IFNE {
 	    super(targetPosition);
 	  }
 	@Override
-	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+	public Instruction execute (ThreadInfo ti) {
 
 		StackFrame sf = ti.getTopFrame();
 		IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
 
 		if(sym_v == null) { // the condition is concrete
 			//System.out.println("Execute IFNE: The condition is concrete");
-			return super.execute(ss, ks, ti);
+			return super.execute(ti);
 		}
 		else { // the condition is symbolic
 
@@ -59,15 +58,15 @@ public class IFNE extends gov.nasa.jpf.jvm.bytecode.IFNE {
 					cg = new PCChoiceGenerator(2);
 				((PCChoiceGenerator)cg).setOffset(this.position);
 				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
-				ss.setNextChoiceGenerator(cg);
+				ti.getVM().getSystemState().setNextChoiceGenerator(cg);
 				return this;
 			} else {  // this is what really returns results
-				cg = ss.getChoiceGenerator();
+				cg = ti.getVM().getSystemState().getChoiceGenerator();
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer)cg.getNextChoice()==0 ? false: true;
 			}
 
-			ti.pop();
+			sf.pop();
 			//System.out.println("Execute IFNE: "+ conditionValue);
 			PathCondition pc;
 
@@ -99,7 +98,7 @@ public class IFNE extends gov.nasa.jpf.jvm.bytecode.IFNE {
 				else
 					pc._addDet(Comparator.NE, sym_v, 0);
 				if(!pc.simplify())  {// not satisfiable
-					ss.setIgnored(true);
+					ti.getVM().getSystemState().setIgnored(true);
 				}else{
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
 					//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
@@ -108,7 +107,7 @@ public class IFNE extends gov.nasa.jpf.jvm.bytecode.IFNE {
 			} else {
 				pc._addDet(Comparator.EQ, sym_v, 0);
 				if(!pc.simplify())  {// not satisfiable
-					ss.setIgnored(true);
+					ti.getVM().getSystemState().setIgnored(true);
 				}else{
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
 					//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());

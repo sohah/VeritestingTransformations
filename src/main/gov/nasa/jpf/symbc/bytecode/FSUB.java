@@ -18,13 +18,11 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.Types;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 
 
 /**
@@ -34,20 +32,20 @@ import gov.nasa.jpf.symbc.numeric.RealExpression;
 public class FSUB extends gov.nasa.jpf.jvm.bytecode.FSUB {
 
   @Override
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
+  public Instruction execute (ThreadInfo th) {
 	  
 	StackFrame sf = th.getTopFrame();
 	
 	RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(); 
-    float v1 = Types.intToFloat(th.pop());
+    float v1 = Types.intToFloat(sf.pop());
     RealExpression sym_v2 = (RealExpression) sf.getOperandAttr();
-    float v2 = Types.intToFloat(th.pop());
+    float v2 = Types.intToFloat(sf.pop());
     
     float r = v2 - v1;
     if(sym_v1==null && sym_v2==null)
-    	th.push(Types.floatToInt(r), false); 
+    	sf.push(Types.floatToInt(r), false); 
     else
-    	th.push(0, false); 
+    	sf.push(0, false); 
 
     RealExpression result = null;
 	if(sym_v2!=null) {
@@ -59,8 +57,6 @@ public class FSUB extends gov.nasa.jpf.jvm.bytecode.FSUB {
 		result = sym_v1._minus_reverse(v2);
 	
 	sf.setOperandAttr(result);
-	
-	//System.out.println("Execute FSUB: "+ result);
 
 
     return getNext(th);

@@ -18,14 +18,10 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 
 /**
@@ -34,16 +30,16 @@ import gov.nasa.jpf.symbc.numeric.*;
  */
 public class F2D extends gov.nasa.jpf.jvm.bytecode.F2D {
  
-
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
+  @Override
+  public Instruction execute (ThreadInfo th) {
 	  StackFrame sf = th.getTopFrame();
 	  Expression sym_val = (Expression) sf.getOperandAttr();
 		
 	  if(sym_val == null) {
-		  return super.execute(ss,ks,th); 
+		  return super.execute(th); 
 	  }
 	  else {//symbolic
-		  Instruction result = super.execute(ss,ks,th);
+		  Instruction result = super.execute(th);
 		  sf.setLongOperandAttr(sym_val);
 		  return result;
 	  }

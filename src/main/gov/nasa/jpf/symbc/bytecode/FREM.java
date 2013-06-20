@@ -18,13 +18,11 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.Types;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 
 
 /**
@@ -34,15 +32,15 @@ import gov.nasa.jpf.symbc.numeric.RealExpression;
 public class FREM extends gov.nasa.jpf.jvm.bytecode.FREM  {
 
   @Override
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
+  public Instruction execute (ThreadInfo th) {
    
     StackFrame sf = th.getTopFrame();
 
 	RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(); 
-	float v1 = Types.intToFloat(th.pop());
+	float v1 = Types.intToFloat(sf.pop());
 		
 	RealExpression sym_v2 = (RealExpression) sf.getOperandAttr();
-	float v2 = Types.intToFloat(th.pop());
+	float v2 = Types.intToFloat(sf.pop());
 	    
     if(sym_v1==null && sym_v2==null){
         if (v1 == 0){
@@ -50,7 +48,7 @@ public class FREM extends gov.nasa.jpf.jvm.bytecode.FREM  {
         } 
         th.push(Types.floatToInt(v2 % v1), false);
     }else {
-    	th.push(0, false);
+    	sf.push(0, false);
     	throw new RuntimeException("## Error: SYMBOLIC FREM not supported");
     }
 	

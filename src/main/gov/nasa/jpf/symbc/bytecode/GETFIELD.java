@@ -20,14 +20,6 @@ package gov.nasa.jpf.symbc.bytecode;
 
 
 import gov.nasa.jpf.Config;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 import gov.nasa.jpf.symbc.heap.HeapNode;
@@ -39,7 +31,14 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	public GETFIELD(String fieldName, String clsName, String fieldDescriptor){
@@ -52,7 +51,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
 
   @Override
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+  public Instruction execute (ThreadInfo ti) {
 	  HeapNode[] prevSymRefs = null; // previously initialized objects of same type: candidates for lazy init
 	  int numSymRefs = 0; // # of prev. initialized objects
 	  ChoiceGenerator<?> prevHeapCG = null;
@@ -60,7 +59,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  Config conf = ti.getVM().getConfig();
 	  String[] lazy = conf.getStringArray("symbolic.lazy");
 	  if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
-		  return super.execute(ss,ks,ti);
+		  return super.execute(ti);
 
 //TODO: fix: polymorphism and subtypes
 //	  String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
@@ -85,7 +84,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	 
 	 // check if this breaks the current transition
 	    if (isNewPorFieldBoundary(ti, fi, objRef)) {
-	      if (createAndSetFieldCG(ss, ei, ti)) {
+	      if (createAndSetFieldCG(ti.getVM().getSystemState(), ei, ti)) {
 	        return this;
 	      }
 	    }
@@ -99,11 +98,11 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  // if it is we need to do lazy initialization
 
 	  if (!(fi.isReference() && attr != null)) {
-		  return super.execute(ss,ks,ti);
+		  return super.execute(ti);
 	  }
 
 	  if(attr instanceof StringExpression || attr instanceof SymbolicStringBuilder)
-			return super.execute(ss,ks,ti); // Strings are handled specially
+			return super.execute(ti); // Strings are handled specially
 
 	  // else: lazy initialization
 
@@ -119,7 +118,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  prevSymRefs = null;
 		  numSymRefs = 0;
 		  
-		  prevHeapCG = ss.getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
+		  prevHeapCG = ti.getVM().getSystemState().getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
 		  
 
 		  if (prevHeapCG != null) {
@@ -143,15 +142,16 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 //		  } else {
 			  thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment);  //+null,new
 //		  }
-		  ss.setNextChoiceGenerator(thisHeapCG);
+		  ti.getVM().getSystemState().setNextChoiceGenerator(thisHeapCG);
 		  return this;
 	  }
 	  else {//this is what really returns results
 		 
 		  //from original GETFIELD bytecode
-		  ti.pop(); // Ok, now we can remove the object ref from the stack
+		  StackFrame sf = ti.getTopFrame();
+		  sf.pop(); // Ok, now we can remove the object ref from the stack
 
-		  thisHeapCG = ss.getChoiceGenerator();
+		  thisHeapCG = ti.getVM().getSystemState().getChoiceGenerator();
 		  assert (thisHeapCG instanceof HeapChoiceGenerator) :
 			  "expected HeapChoiceGenerator, got: " + thisHeapCG;
 		  currentChoice = ((HeapChoiceGenerator) thisHeapCG).getNextChoice();
@@ -219,7 +219,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  ei.setReferenceField(fi,daIndex );
 	  ei.setFieldAttr(fi, null);
 
-	  ti.push(ei.getReferenceField(fi), fi.isReference());
+	  ti.getTopFrame().push(ei.getReferenceField(fi), fi.isReference());
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
 	  //if (SymbolicInstructionFactory.debugMode)
