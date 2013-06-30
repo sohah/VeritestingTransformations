@@ -265,6 +265,17 @@ public class BytecodeUtils {
 
 			int stackIdx = numStackSlots - 1; // stackIdx ranges from numStackSlots-1 to 0
 
+			// special treatment of "this"
+            if(!isStatic) {
+                   
+                	String name = "this";
+                    IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
+                    expressionMap.put(name, sym_v);
+                    sf.setOperandAttr(0, sym_v);
+                    outputString = outputString.concat(" " + sym_v + ",");
+            }
+
+			
 			for (int j = 0; j < argSize; j++) { // j ranges over actual arguments
 				if (symClass || args.get(j).equalsIgnoreCase("SYM")) {
 					String name =  argsInfo[localVarsIdx].getName();

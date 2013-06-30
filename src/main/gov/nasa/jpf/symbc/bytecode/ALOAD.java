@@ -15,6 +15,7 @@ import gov.nasa.jpf.symbc.heap.Helper;
 import gov.nasa.jpf.symbc.heap.SymbolicInputHeap;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.string.StringExpression;
@@ -81,9 +82,9 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 
 			}
 			int increment = 2;
-			if(typeClassInfo.isAbstract()) {
+			if(typeClassInfo.isAbstract() || (((IntegerExpression)attr).toString()).contains("this")) {
 				 abstractClass = true;
-				 increment = 1; // only null
+				 increment = 1; // only null for abstract, non null for this
 			}
 			
 			// TODO fix: subtypes
@@ -137,11 +138,11 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 			pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, candidateNode.getSymbolic());
 			daIndex = candidateNode.getIndex();
 		}
-		else if (currentChoice == numSymRefs){ //null object
+		else if (currentChoice == numSymRefs && !(((IntegerExpression)attr).toString()).contains("this")){ //null object
 			pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
 			daIndex = -1;
 		}
-		else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
+		else if ((currentChoice == (numSymRefs + 1) && !abstractClass) | (currentChoice == numSymRefs && (((IntegerExpression)attr).toString()).contains("this"))) {
 			//creates a new object with all fields symbolic
 			daIndex = Helper.addNewHeapNode(typeClassInfo, th, daIndex, attr, ks, pcHeap,
 							symInputHeap, numSymRefs, prevSymRefs);
