@@ -32,7 +32,7 @@ public class F2D extends gov.nasa.jpf.jvm.bytecode.F2D {
  
   @Override
   public Instruction execute (ThreadInfo th) {
-	  StackFrame sf = th.getTopFrame();
+	  StackFrame sf = th.getModifiableTopFrame();
 	  Expression sym_val = (Expression) sf.getOperandAttr();
 		
 	  if(sym_val == null) {

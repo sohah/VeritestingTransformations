@@ -37,7 +37,7 @@ public class LDIV extends gov.nasa.jpf.jvm.bytecode.LDIV  {
 
 	@Override
 	public Instruction execute (ThreadInfo th) {
-		StackFrame sf = th.getTopFrame();
+		StackFrame sf = th.getModifiableTopFrame();
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1);
 		IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(3);
 		long v1, v2;
@@ -118,7 +118,7 @@ public class LDIV extends gov.nasa.jpf.jvm.bytecode.LDIV  {
 				else
 					result = sym_v1._div_reverse(v2);
 
-				sf = th.getTopFrame();
+				sf = th.getModifiableTopFrame();
 				sf.setLongOperandAttr(result);
 				return getNext(th);
 

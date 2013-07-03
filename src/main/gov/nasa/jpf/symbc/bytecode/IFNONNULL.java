@@ -33,7 +33,7 @@ public class IFNONNULL extends gov.nasa.jpf.jvm.bytecode.IFNONNULL {
 	@Override
 	public Instruction execute (ThreadInfo ti) {
 
-		StackFrame sf = ti.getTopFrame();
+		StackFrame sf = ti.getModifiableTopFrame();
 		Expression sym_v = (Expression) sf.getOperandAttr();
 		if(sym_v == null) { // the condition is concrete
 			//System.out.println("Execute IFEQ: The condition is concrete");

@@ -37,7 +37,7 @@ public class D2L extends gov.nasa.jpf.jvm.bytecode.D2L {
 
   @Override
   public Instruction execute (ThreadInfo th) {
-	  RealExpression sym_dval = (RealExpression) th.getTopFrame().getLongOperandAttr();
+	  RealExpression sym_dval = (RealExpression) th.getModifiableTopFrame().getLongOperandAttr();
 		
 	  if(sym_dval == null) {
 		  return super.execute(th); 
@@ -72,7 +72,7 @@ public class D2L extends gov.nasa.jpf.jvm.bytecode.D2L {
 				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
 			assert pc != null;
 			
-			StackFrame sf = th.getTopFrame();
+			StackFrame sf = th.getModifiableTopFrame();
 			sf.popLong();
 			sf.pushLong(0); // for symbolic expressions, the concrete value does not matter
 			SymbolicInteger sym_ival = new SymbolicInteger();

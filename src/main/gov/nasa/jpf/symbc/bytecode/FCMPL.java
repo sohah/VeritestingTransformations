@@ -36,7 +36,7 @@ public class FCMPL extends gov.nasa.jpf.jvm.bytecode.FCMPL {
 
     @Override
 	public Instruction execute(ThreadInfo th) {
-		StackFrame sf = th.getTopFrame();
+		StackFrame sf = th.getModifiableTopFrame();
 
 		RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(0);
 		RealExpression sym_v2 = (RealExpression) sf.getOperandAttr(1);

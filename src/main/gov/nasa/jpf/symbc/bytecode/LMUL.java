@@ -18,12 +18,11 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 
 /**
@@ -33,18 +32,18 @@ import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 public class LMUL extends gov.nasa.jpf.jvm.bytecode.LMUL {
 
   @Override
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-	  	StackFrame sf = th.getTopFrame();
+  public Instruction execute (ThreadInfo th) {
+	  	StackFrame sf = th.getModifiableTopFrame();
 	  
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1);
 		IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(3);
 	    
 	    if(sym_v1==null && sym_v2==null)
-	        return super.execute(ss, ks, th);// we'll still do the concrete execution
+	        return super.execute(th);// we'll still do the concrete execution
 	    else {
-	    	long v1 = th.longPop();
-	    	long v2 = th.longPop();
-	    	th.longPush(0); // for symbolic expressions, the concrete value does not matter
+	    	long v1 = sf.popLong();
+	    	long v2 = sf.popLong();
+	    	sf.pushLong(0); // for symbolic expressions, the concrete value does not matter
 
 	    	IntegerExpression result = null;
 	    	if(sym_v1!=null) {

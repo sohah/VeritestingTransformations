@@ -33,7 +33,7 @@ public class F2L extends gov.nasa.jpf.jvm.bytecode.F2L {
 	
 	
 	public Instruction execute (ThreadInfo th) {
-		RealExpression sym_fval = (RealExpression) th.getTopFrame().getOperandAttr(); 
+		RealExpression sym_fval = (RealExpression) th.getModifiableTopFrame().getOperandAttr(); 
 		
 		if(sym_fval == null) {
 			  return super.execute(th); 
@@ -62,7 +62,7 @@ public class F2L extends gov.nasa.jpf.jvm.bytecode.F2L {
 					pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
 				assert pc != null;
 				
-				StackFrame sf = th.getTopFrame();
+				StackFrame sf = th.getModifiableTopFrame();
 				sf.pop();
 				sf.pushLong(0); // for symbolic expressions, the concrete value does not matter
 				SymbolicInteger sym_lval = new SymbolicInteger();

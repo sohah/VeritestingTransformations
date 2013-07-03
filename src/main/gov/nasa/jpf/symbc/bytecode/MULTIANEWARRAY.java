@@ -1,12 +1,12 @@
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.string.SymbolicLengthInteger;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
  * Symbolic version of the MULTIANEWARRAY class from jpf-core. Like NEWARRAY,
@@ -14,6 +14,7 @@ import gov.nasa.jpf.symbc.string.SymbolicLengthInteger;
  * variable is being used as the size of the new array, and treat it accordingly.
  * 
  * And someone should review this one too :)
+ * TODO: to review
  */
 
 public class MULTIANEWARRAY extends gov.nasa.jpf.jvm.bytecode.MULTIANEWARRAY {
@@ -23,20 +24,20 @@ public class MULTIANEWARRAY extends gov.nasa.jpf.jvm.bytecode.MULTIANEWARRAY {
 	}
 
 	@Override
-	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo ti) {
+	public Instruction execute(ThreadInfo ti) {
 		arrayLengths = new int[dimensions];
-
+		StackFrame sf = ti.getModifiableTopFrame();
 		for (int i = dimensions - 1; i >= 0; i--) {
-			Object attr = ti.getOperandAttr();
+			Object attr = sf.getOperandAttr();
 			
 			if(attr instanceof SymbolicLengthInteger) {
 				arrayLengths[i] = ((SymbolicLengthInteger) attr).solution;
-				ti.pop();
+				sf.pop();
 			} else 	if(attr instanceof IntegerExpression) {
 				arrayLengths[i] = ((IntegerExpression) attr).solution();
-				ti.pop();
+				sf.pop();
 			} else {
-				arrayLengths[i] = ti.pop();
+				arrayLengths[i] = sf.pop();
 			}
 		}
 
@@ -53,7 +54,7 @@ public class MULTIANEWARRAY extends gov.nasa.jpf.jvm.bytecode.MULTIANEWARRAY {
 		int arrayRef = allocateArray(ti.getHeap(), type, arrayLengths, ti, 0);
 
 		// put the result (the array reference) on the stack
-		ti.push(arrayRef, true);
+		sf.push(arrayRef, true);
 
 		return getNext(ti);
 	}

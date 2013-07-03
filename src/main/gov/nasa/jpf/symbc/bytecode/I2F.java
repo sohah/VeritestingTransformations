@@ -34,7 +34,7 @@ public class I2F extends gov.nasa.jpf.jvm.bytecode.I2F {
 
 	public Instruction execute (ThreadInfo th) {
 		  
-		  IntegerExpression sym_ival = (IntegerExpression) th.getTopFrame().getOperandAttr(); 
+		  IntegerExpression sym_ival = (IntegerExpression) th.getModifiableTopFrame().getOperandAttr(); 
 			
 		  if(sym_ival == null) {
 			  	  // System.out.println("Execute concrete I2F");
@@ -67,7 +67,7 @@ public class I2F extends gov.nasa.jpf.jvm.bytecode.I2F {
 						pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
 					assert pc != null;
 					
-					StackFrame sf = th.getTopFrame();
+					StackFrame sf = th.getModifiableTopFrame();
 					sf.pop();
 					sf.push(0,false); // for symbolic expressions, the concrete value does not matter
 					SymbolicReal sym_dval = new SymbolicReal();

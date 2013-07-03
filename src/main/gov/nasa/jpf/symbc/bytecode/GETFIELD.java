@@ -69,7 +69,8 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 //	  }
 
 	  //original GETFIELD code from super
-	 int objRef = ti.peek(); // don't pop yet, we might re-execute
+	 StackFrame frame = ti.getModifiableTopFrame();
+	 int objRef = frame.peek(); // don't pop yet, we might re-execute
 	 lastThis = objRef;
 	 if (objRef == -1) {
 		 return ti.createAndThrowException("java.lang.NullPointerException",
@@ -82,13 +83,14 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	                              "referencing field '" + fname + "' in " + ei);
 	 }
 	 
-	 // check if this breaks the current transition
+	 
+	    	    
+	    // check if this breaks the current transition
 	    if (isNewPorFieldBoundary(ti, fi, objRef)) {
-	      if (createAndSetFieldCG(ti.getVM().getSystemState(), ei, ti)) {
+	      if (createAndSetSharedFieldAccessCG( ei, ti)) {
 	        return this;
 	      }
 	    }
-	    	    
 	 //end GETFIELD code from super
 
 	
@@ -148,7 +150,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  else {//this is what really returns results
 		 
 		  //from original GETFIELD bytecode
-		  StackFrame sf = ti.getTopFrame();
+		  StackFrame sf = ti.getModifiableTopFrame();
 		  sf.pop(); // Ok, now we can remove the object ref from the stack
 
 		  thisHeapCG = ti.getVM().getSystemState().getChoiceGenerator();
@@ -200,7 +202,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  }
 	  else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 		  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
-		  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
+		  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, pcHeap,
 				  		symInputHeap, numSymRefs, prevSymRefs);
 	  } else {
 		  System.err.println("subtyping not handled");
@@ -219,7 +221,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  ei.setReferenceField(fi,daIndex );
 	  ei.setFieldAttr(fi, null);
 
-	  ti.getTopFrame().push(ei.getReferenceField(fi), fi.isReference());
+	  ti.getModifiableTopFrame().push(ei.getReferenceField(fi), fi.isReference());
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
 	  //if (SymbolicInstructionFactory.debugMode)

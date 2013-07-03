@@ -33,7 +33,7 @@ public class DNEG extends gov.nasa.jpf.jvm.bytecode.DNEG {
 	@Override
 	public Instruction execute(ThreadInfo th) {
 
-		StackFrame sf = th.getTopFrame();
+		StackFrame sf = th.getModifiableTopFrame();
 		RealExpression sym_v1 = (RealExpression) sf.getLongOperandAttr();
 		double v1 = Types.longToDouble(sf.popLong());
 

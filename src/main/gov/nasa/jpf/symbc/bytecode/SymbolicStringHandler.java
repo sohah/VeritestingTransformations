@@ -35,17 +35,20 @@ package gov.nasa.jpf.symbc.bytecode;
 
 
 
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.Types;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.SystemState;
+import gov.nasa.jpf.vm.Types;
+import gov.nasa.jpf.vm.VM;
+
+import gov.nasa.jpf.vm.StackFrame;
+
+import gov.nasa.jpf.vm.ThreadInfo;
+
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.symbc.mixednumstrg.SpecialRealExpression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
@@ -60,6 +63,8 @@ import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.string.*;
 import gov.nasa.jpf.symbc.mixednumstrg.*;
 
+
+// Corina: this code is strange; I need to revise it carefully
 public class SymbolicStringHandler {
 	static int handlerStep = 0;
 	static Instruction handlerStepSavedNext = null;
@@ -300,15 +305,15 @@ public class SymbolicStringHandler {
 	}
 
 	private boolean handleCharAt (InvokeInstruction invInst, ThreadInfo th) {
-		StackFrame sf = th.getTopFrame();
+		StackFrame sf = th.getModifiableTopFrame();
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0);
 		StringExpression sym_v2 = (StringExpression) sf.getOperandAttr(1);
 		boolean bresult = false;
 		if ((sym_v1 == null) & (sym_v2 == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: HandleSubString1");
 		} else {
-			int s1 = th.pop();
-			int s2 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
 
 			IntegerExpression result = null;
 			if (sym_v1 == null) { // operand 0 is concrete
@@ -333,7 +338,7 @@ public class SymbolicStringHandler {
 				//th.push(0, false);
 			}
 			//th.push(objRef, true);
-			th.push(0, false);
+			sf.push(0, false);
 			sf.setOperandAttr(result);
 		}
 		return bresult;
@@ -346,8 +351,8 @@ public class SymbolicStringHandler {
 		if (sym_v1 == null) {
 			System.err.println("ERROR: symbolic method must have symbolic string operand: hanldeLength");
 		} else {
-			th.pop();
-			th.push(0, false); /* dont care value for length */
+			sf.pop();
+			sf.push(0, false); /* dont care value for length */
 			IntegerExpression sym_v2 = sym_v1._length();
 			sf.setOperandAttr(sym_v2);
 		}
@@ -389,11 +394,11 @@ public class SymbolicStringHandler {
 
 
 			boolean s1char = true; //argument is char
-			if (th.isOperandRef()) {
+			if (sf.isOperandRef()) {
 				s1char = false; //argument is string
 			}
-			int s1 = th.pop();
-			int s2 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
 
 			IntegerExpression result = null;
 			//if (conditionValue) {
@@ -446,7 +451,7 @@ public class SymbolicStringHandler {
 					//pc.spc._addDet(comp, val, sym_v2);
 				}
 			}*/
-			th.push(0, false);
+			sf.push(0, false);
 			sf.setOperandAttr(result);
 			/*if (!pc.simplify()) {// not satisfiable
 				System.out.println("Not sat");
@@ -496,11 +501,11 @@ public class SymbolicStringHandler {
 
 
 			boolean s1char = true; //argument is char
-			if (th.isOperandRef()) {
+			if (sf.isOperandRef()) {
 				s1char = false; //argument is string
 			}
-			int s1 = th.pop();
-			int s2 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
 
 			IntegerExpression result = null;
 			//if (conditionValue) {
@@ -553,7 +558,7 @@ public class SymbolicStringHandler {
 					//pc.spc._addDet(comp, val, sym_v2);
 				}
 			}*/
-			th.push(0, false);
+			sf.push(0, false);
 			sf.setOperandAttr(result);
 			/*if (!pc.simplify()) {// not satisfiable
 				System.out.println("Not sat");
@@ -584,17 +589,17 @@ public class SymbolicStringHandler {
 		if (sym_v1 == null && sym_v2 == null && intExp == null) {
 			System.err.println("ERROR: symbolic method must have symbolic string operand: hanldeLength");
 		} else {
-			int i1 = th.pop();
+			int i1 = sf.pop();
 			boolean s2char = true;
-			if (th.isOperandRef()) {
+			if (th.getModifiableTopFrame().isOperandRef()) {
 				//System.out.println("[handleIndexOf2] string detected");
 				s2char = false;
 			}
 			else {
 				//System.out.println("[handleIndexOf2] char detected");
 			}
-			int s2 = th.pop();
-			int s1 = th.pop();
+			int s2 = sf.pop();
+			int s1 = sf.pop();
 
 			IntegerExpression result = null;
 			if (intExp != null) {
@@ -668,7 +673,7 @@ public class SymbolicStringHandler {
 			/* Not quite sure yet why this works */
 			//int objRef = th.getVM().getDynamicArea().newString("", th);
 			//th.push(objRef, true);
-			th.push(0, false);
+			sf.push(0, false);
 			assert result != null;
 			sf.setOperandAttr(result);
 
@@ -717,17 +722,17 @@ public class SymbolicStringHandler {
 		} else {
 
 
-			int i1 = th.pop();
+			int i1 = sf.pop();
 			boolean s2char = true;
-			if (th.isOperandRef()) {
+			if (sf.isOperandRef()) {
 				//System.out.println("[handleIndexOf2] string detected");
 				s2char = false;
 			}
 			else {
 				//System.out.println("[handleIndexOf2] char detected");
 			}
-			int s2 = th.pop();
-			int s1 = th.pop();
+			int s2 = sf.pop();
+			int s1 = sf.pop();
 
 			IntegerExpression result = null;
 			if (intExp != null) {
@@ -809,7 +814,7 @@ public class SymbolicStringHandler {
 			/* Not quite sure yet why this works */
 			//int objRef = th.getVM().getDynamicArea().newString("", th);
 			//th.push(objRef, true);
-			th.push(0, false);
+			sf.push(0, false);
 			assert result != null;
 			sf.setOperandAttr(result);
 
@@ -825,8 +830,8 @@ public class SymbolicStringHandler {
 		} else {
 			if (sym_v3 instanceof IntegerExpression) {
 				IntegerExpression sym_v2 = (IntegerExpression) sym_v3;
-				th.pop();
-				th.push(0, false);
+				sf.pop();
+				sf.push(0, false);
 				sf.setOperandAttr(sym_v2);
 			} else {
 				System.err.println("ERROR: operand type not tackled - booleanValue");
@@ -845,8 +850,8 @@ public class SymbolicStringHandler {
 		} else {
 			if (sym_v3 instanceof IntegerExpression) {
 				IntegerExpression sym_v2 = (IntegerExpression) sym_v3;
-				th.pop();
-				th.push(0, false);
+				sf.pop();
+				sf.push(0, false);
 				sf.setOperandAttr(sym_v2);
 			} else {
 				th.printStackTrace();
@@ -864,8 +869,8 @@ public class SymbolicStringHandler {
 		} else {
 			if (sym_v3 instanceof IntegerExpression) {
 				IntegerExpression sym_v2 = (IntegerExpression) sym_v3;
-				th.pop();
-				th.longPush((long) 0);
+				sf.pop();
+				sf.pushLong((long) 0);
 				sf.setLongOperandAttr(sym_v2);
 			} else {
 				System.err.println("ERROR: operand type not tackled - longValue");
@@ -884,8 +889,8 @@ public class SymbolicStringHandler {
 		} else {
 			if (sym_v3 instanceof RealExpression) {
 				RealExpression sym_v2 = (RealExpression) sym_v3;
-				th.pop();
-				th.push(0, false);
+				sf.pop();
+				sf.push(0, false);
 				sf.setOperandAttr(sym_v2);
 			} else {
 				System.err.println("ERROR: operand type not tackled - floatValue");
@@ -904,8 +909,8 @@ public class SymbolicStringHandler {
 		} else {
 			if (sym_v3 instanceof RealExpression) {
 				RealExpression sym_v2 = (RealExpression) sym_v3;
-				th.pop();
-				th.longPush((long) 0);
+				sf.pop();
+				sf.pushLong((long) 0);
 				sf.setLongOperandAttr(sym_v2);
 			} else {
 				System.err.println("ERROR: operand type not tackled - doubleValue");
@@ -930,8 +935,8 @@ public class SymbolicStringHandler {
 			if (sym_v1 == null) {
 				System.err.println("ERROR: symbolic StringBuilder method must have one symbolic operand in Init");
 			} else {
-				th.pop(); /* string object */
-				th.pop(); /* one stringBuilder Object */
+				sf.pop(); /* string object */
+				sf.pop(); /* one stringBuilder Object */
 				sym_v2.putstr(sym_v1);
 				sf.setOperandAttr(sym_v2);
 				return invInst.getNext();
@@ -965,8 +970,8 @@ public class SymbolicStringHandler {
 
 			// System.out.println("conditionValue: " + conditionValue);
 
-			int s1 = th.pop();
-			int s2 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
 			PathCondition pc;
 
 			// pc is updated with the pc stored in the choice generator above
@@ -1029,7 +1034,7 @@ public class SymbolicStringHandler {
 				}
 			}
 
-			th.push(conditionValue ? 1 : 0, true);
+			sf.push(conditionValue ? 1 : 0, true);
 
 		}
 
@@ -1064,9 +1069,9 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2 == null) & (sym_v3 == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: HandleReplace");
 		} else {
-			int s1 = th.pop();
-			int s2 = th.pop();
-			int s3 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
+			int s3 = sf.pop();
 			//System.out.println("[handleReplace] " + s1 + " " + s2 + " " + s3);
 			StringExpression result = null;
 			if (sym_v1 == null) { // operand 0 is concrete
@@ -1111,12 +1116,12 @@ public class SymbolicStringHandler {
 					}
 				}
 			}
-			int objRef = th.getHeap().newString("", th); /*
+			ElementInfo objRef = th.getHeap().newString("", th); /*
 																																	 * dummy
 																																	 * String
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef.getIndex(), true);
 			sf.setOperandAttr(result);
 		}
 		return null;
@@ -1139,8 +1144,8 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2 == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: HandleSubString1");
 		} else {
-			int s1 = th.pop();
-			int s2 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
 
 			StringExpression result = null;
 			if (sym_v1 == null) { // operand 0 is concrete
@@ -1156,12 +1161,12 @@ public class SymbolicStringHandler {
 					result = sym_v2._subString(sym_v1);
 				}
 			}
-			int objRef = th.getHeap().newString("", th); /*
+			ElementInfo objRef = th.getHeap().newString("", th); /*
 																																	 * dummy
 																																	 * String
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef.getIndex(), true);
 			sf.setOperandAttr(result);
 		}
 		return null;
@@ -1177,9 +1182,9 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2 == null) & (sym_v3 == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: HandleSubString2");
 		} else {
-			int s1 = th.pop();
-			int s2 = th.pop();
-			int s3 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
+			int s3 = sf.pop();
 			//System.out.printf("[SymbolicStringHandler] popped %d %d %d\n", s1, s2, s3);
 			StringExpression result = null;
 			if (sym_v1 == null) { // operand 0 is concrete
@@ -1191,7 +1196,7 @@ public class SymbolicStringHandler {
 					/* Only if both arguments are concrete, something else needs
 					 * to be pushed?
 					 */
-					th.push(s3, true); /* symbolic string element */
+					sf.push(s3, true); /* symbolic string element */
 				} else {
 					if (sym_v3 == null) { // only sym_v2 is symbolic
 						ElementInfo e3 = th.getElementInfo(s3);
@@ -1225,9 +1230,9 @@ public class SymbolicStringHandler {
 					}
 				}
 			}
-			int objRef = th.getHeap().newString("", th);
+			ElementInfo objRef = th.getHeap().newString("", th);
 			//System.out.println("[SymbolicStringHandler] " + sf.toString());
-			th.push(objRef, true);
+			sf.push(objRef.getIndex(), true);
 			//System.out.println("[SymbolicStringHandler] " + sf.toString());
 			sf.setOperandAttr(result);
 		}
@@ -1244,9 +1249,9 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2 == null) & (sym_v3 == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: HanldeReplaceFirst");
 		} else {
-			int s1 = th.pop();
-			int s2 = th.pop();
-			int s3 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
+			int s3 = sf.pop();
 
 			StringExpression result = null;
 			if (sym_v1 == null) { // operand 0 is concrete
@@ -1292,12 +1297,12 @@ public class SymbolicStringHandler {
 					}
 				}
 			}
-			int objRef = th.getHeap().newString("", th); /*
+			ElementInfo objRef = th.getHeap().newString("", th); /*
 																																	 * dummy
 																																	 * String
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef.getIndex(), true);
 			sf.setOperandAttr(result);
 		}
 		return null;
@@ -1307,7 +1312,7 @@ public class SymbolicStringHandler {
 		// System.err.println("ERROR: symbolic string method not Implemented - Trim");
 		StackFrame sf = th.getTopFrame();
 		StringExpression sym_v1 = (StringExpression) sf.getOperandAttr(0);
-		int s1 = th.pop();
+		int s1 = sf.pop();
 
 		if (sym_v1 == null) {
 			ElementInfo e1 = th.getElementInfo(s1);
@@ -1316,11 +1321,11 @@ public class SymbolicStringHandler {
 		}
 		StringExpression result = sym_v1._trim();
 
-		int objRef = th.getHeap().newString("", th); /*
+		ElementInfo  objRef = th.getHeap().newString("", th); /*
 																																 * dummy String
 																																 * Object
 																																 */
-		th.push(objRef, true);
+		sf.push(objRef.getIndex(), true);
 		sf.setOperandAttr(result);
 	}
 
@@ -1431,9 +1436,9 @@ public class SymbolicStringHandler {
 		} else {
 			if (sym_v3 instanceof IntegerExpression) {
 				IntegerExpression sym_v2 = (IntegerExpression) sym_v3;
-				th.longPop();
+				sf.popLong();
 				int objRef = getNewObjRef(invInst, th); /* dummy Long Object */
-				th.push(objRef, true);
+				sf.push(objRef, true);
 				sf.setOperandAttr(sym_v2);
 			} else {
 				IntegerExpression result = null;
@@ -1444,7 +1449,7 @@ public class SymbolicStringHandler {
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
 
-				th.pop();
+				sf.pop();
 				PathCondition pc;
 
 				ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
@@ -1468,7 +1473,7 @@ public class SymbolicStringHandler {
 						result = ((StringExpression) sym_v3)._IvalueOf();
 						sf = th.getTopFrame();
 						int objRef = getNewObjRef(invInst, th); /* dummy Long Object */
-						th.push(objRef, true);
+						sf.push(objRef, true);
 						sf.setOperandAttr(result);
 					}
 				} else {
@@ -1478,7 +1483,7 @@ public class SymbolicStringHandler {
 					} else {
 						System.err.println("ERROR: Long Format Type Exception");
 						ss.setIgnored(true);
-						th.push(0, true);
+						sf.push(0, true);
 					}
 				}
 			}
@@ -1494,9 +1499,9 @@ public class SymbolicStringHandler {
 		} else {
 			if (sym_v3 instanceof IntegerExpression) {
 				IntegerExpression sym_v2 = (IntegerExpression) sym_v3;
-				th.pop();
+				sf.pop();
 				int objRef = getNewObjRef(invInst, th); /* dummy Boolean Object */
-				th.push(objRef, true);
+				sf.push(objRef, true);
 				sf.setOperandAttr(sym_v2);
 			} else {
 				IntegerExpression result = null;
@@ -1507,7 +1512,7 @@ public class SymbolicStringHandler {
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
 
-				th.pop();
+				sf.pop();
 				PathCondition pc;
 
 				ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
@@ -1531,7 +1536,7 @@ public class SymbolicStringHandler {
 						result = ((StringExpression) sym_v3)._IvalueOf();
 						sf = th.getTopFrame();
 						int objRef = getNewObjRef(invInst, th); /* dummy Boolean Object */
-						th.push(objRef, true);
+						sf.push(objRef, true);
 						sf.setOperandAttr(result);
 					}
 				} else {
@@ -1541,7 +1546,7 @@ public class SymbolicStringHandler {
 					} else {
 						System.err.println("ERROR: Boolean Format Type Exception");
 						ss.setIgnored(true);
-						th.push(0, true);
+						sf.push(0, true);
 					}
 				}
 			}
@@ -1557,9 +1562,9 @@ public class SymbolicStringHandler {
 		} else {
 			if (sym_v3 instanceof IntegerExpression) {
 				IntegerExpression sym_v2 = (IntegerExpression) sym_v3;
-				th.pop();
+				sf.pop();
 				int objRef = getNewObjRef(invInst, th); /* dummy Integer Object */
-				th.push(objRef, true);
+				sf.push(objRef, true);
 				sf.setOperandAttr(sym_v2);
 			} else {
 				IntegerExpression result = null;
@@ -1570,7 +1575,7 @@ public class SymbolicStringHandler {
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
 
-				th.pop();
+				sf.pop();
 				PathCondition pc;
 
 				ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
@@ -1594,7 +1599,7 @@ public class SymbolicStringHandler {
 						result = ((StringExpression) sym_v3)._IvalueOf();
 						sf = th.getTopFrame();
 						int objRef = getNewObjRef(invInst, th); /* dummy Integer Object */
-						th.push(objRef, true);
+						sf.push(objRef, true);
 						sf.setOperandAttr(result);
 					}
 				} else {
@@ -1604,7 +1609,7 @@ public class SymbolicStringHandler {
 					} else {
 						System.err.println("ERROR: Integer Format Type Exception");
 						ss.setIgnored(true);
-						th.push(0, true);
+						sf.push(0, true);
 					}
 				}
 			}
@@ -1626,7 +1631,7 @@ public class SymbolicStringHandler {
 			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
 
-			th.pop();
+			sf.pop();
 			PathCondition pc;
 			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
 			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
@@ -1647,7 +1652,7 @@ public class SymbolicStringHandler {
 				} else {
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
 					result = ((StringExpression) sym_v3)._IvalueOf();
-					th.push(0, false); /* Result is don't care and an int */
+					sf.push(0, false); /* Result is don't care and an int */
 					sf = th.getTopFrame();
 					sf.setOperandAttr(result);
 				}
@@ -1658,7 +1663,7 @@ public class SymbolicStringHandler {
 				} else {
 					System.err.println("ERROR: Integer Format Type Exception");
 					ss.setIgnored(true);
-					th.push(0, true);
+					sf.push(0, true);
 				}
 			}
 		}
@@ -1680,7 +1685,7 @@ public class SymbolicStringHandler {
 			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
 
-			th.pop();
+			sf.pop();
 			PathCondition pc;
 			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
 			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
@@ -1700,7 +1705,7 @@ public class SymbolicStringHandler {
 				} else {
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
 					result = ((StringExpression) sym_v3)._RvalueOf();
-					th.push(0, false); /* Result is don't care and a float */
+					sf.push(0, false); /* Result is don't care and a float */
 					sf = th.getTopFrame();
 					sf.setOperandAttr(result);
 				}
@@ -1727,9 +1732,9 @@ public class SymbolicStringHandler {
 		} else {
 			if (sym_v3 instanceof RealExpression) {
 				RealExpression sym_v2 = (RealExpression) sym_v3;
-				th.pop();
+				sf.pop();
 				int objRef = getNewObjRef(invInst, th); /* dummy Float Object */
-				th.push(objRef, true);
+				sf.push(objRef, true);
 				sf.setOperandAttr(sym_v2);
 			} else {
 				RealExpression result = null;
@@ -1740,7 +1745,7 @@ public class SymbolicStringHandler {
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
 
-				th.pop();
+				sf.pop();
 				PathCondition pc;
 				ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
 				while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
@@ -1761,7 +1766,7 @@ public class SymbolicStringHandler {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						result = ((StringExpression) sym_v3)._RvalueOf();
 						int objRef = getNewObjRef(invInst, th); /* dummy Float Object */
-						th.push(objRef, true);
+						sf.push(objRef, true);
 						sf = th.getTopFrame();
 						sf.setOperandAttr(result);
 					}
@@ -1789,9 +1794,9 @@ public class SymbolicStringHandler {
 		} else {
 			if (sym_v3 instanceof RealExpression) {
 				RealExpression sym_v2 = (RealExpression) sym_v3;
-				th.longPop();
+				sf.popLong();
 				int objRef = getNewObjRef(invInst, th); /* dummy Double Object */
-				th.push(objRef, true);
+				sf.push(objRef, true);
 				sf.setOperandAttr(sym_v2);
 			} else {
 				RealExpression result = null;
@@ -1802,7 +1807,7 @@ public class SymbolicStringHandler {
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
 
-				th.pop();
+				sf.pop();
 				PathCondition pc;
 				ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
 				while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
@@ -1824,7 +1829,7 @@ public class SymbolicStringHandler {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						result = ((StringExpression) sym_v3)._RvalueOf();
 						int objRef = getNewObjRef(invInst, th); /* dummy Double Object */
-						th.push(objRef, true);
+						sf.push(objRef, true);
 						sf = th.getTopFrame();
 						sf.setOperandAttr(result);
 					}
@@ -1835,7 +1840,7 @@ public class SymbolicStringHandler {
 					} else {
 						System.err.println("ERROR: Double Format Type Exception");
 						ss.setIgnored(true);
-						th.push(0, true);
+						sf.push(0, true);
 					}
 				}
 			}
@@ -1860,7 +1865,7 @@ public class SymbolicStringHandler {
 
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
-				th.pop();
+				sf.pop();
 				PathCondition pc;
 
 				ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
@@ -1882,8 +1887,8 @@ public class SymbolicStringHandler {
 					} else {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						RealExpression sym_v2 = new SpecialRealExpression(sym_v1);
-						th.longPush((long) 0); /* Result is don't care and 0 */
-						sf = th.getTopFrame();
+						sf.pushLong((long) 0); /* Result is don't care and 0 */
+						//sf = th.getTopFrame(); ??
 						sf.setLongOperandAttr(sym_v2);
 					}
 				} else {
@@ -1916,7 +1921,7 @@ public class SymbolicStringHandler {
 
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
-				th.pop();
+				sf.pop();
 				PathCondition pc;
 
 				ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
@@ -1938,8 +1943,8 @@ public class SymbolicStringHandler {
 					} else {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						IntegerExpression sym_v2 = new SpecialIntegerExpression(sym_v1);
-						th.longPush((long) 0); /* result is don't care */
-						sf = th.getTopFrame();
+						sf.pushLong((long) 0); /* result is don't care */
+						//sf = th.getTopFrame(); ??
 						sf.setLongOperandAttr(sym_v2);
 					}
 				} else {
@@ -1968,7 +1973,7 @@ public class SymbolicStringHandler {
 
 			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
-			th.pop();
+			sf.pop();
 			PathCondition pc;
 
 			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
@@ -1990,7 +1995,7 @@ public class SymbolicStringHandler {
 				} else {
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
 					IntegerExpression sym_v2 = new SpecialIntegerExpression(sym_v1);
-					th.push(0, false); /* result is don't care and 0 */
+					sf.push(0, false); /* result is don't care and 0 */
 					sf = th.getTopFrame();
 					sf.setOperandAttr(sym_v2);
 				}
@@ -2007,12 +2012,12 @@ public class SymbolicStringHandler {
 	}
 
 	public int getNewObjRef(InvokeInstruction invInst, ThreadInfo th) {
-		int objRef;
+		
 		//DynamicArea da = th.getVM().getDynamicArea();
 		MethodInfo mi = invInst.getInvokedMethod();
 		ClassInfo ci = ClassInfo.getResolvedClassInfo(mi.getReturnTypeName());
-		objRef = th.getHeap().newObject(ci, th);
-		return objRef;
+		ElementInfo objRef = th.getHeap().newObject(ci, th);
+		return objRef.getIndex();
 	}
 
 	// works for BigDecimal
@@ -2046,14 +2051,14 @@ public class SymbolicStringHandler {
 		if (sym_v1 == null) {
 			System.err.println("ERROR: symbolic string method must have symbolic operand: handleIntValueOf");
 		} else {
-			th.pop();
+			sf.pop();
 			StringExpression sym_v2 = StringExpression._valueOf(sym_v1);
-			int objRef = th.getHeap().newString("", th); /*
+			int objRef = th.getHeap().newString("", th).getIndex(); /*
 																																	 * dummy
 																																	 * string
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef, true);
 			sf.setOperandAttr(sym_v2);
 		}
 		return null;
@@ -2066,14 +2071,14 @@ public class SymbolicStringHandler {
 		if (sym_v1 == null) {
 			System.err.println("ERROR: symbolic string method must have symbolic operand: handleFloatValueOf");
 		} else {
-			th.pop();
+			sf.pop();
 			StringExpression sym_v2 = StringExpression._valueOf(sym_v1);
-			int objRef = th.getHeap().newString("", th); /*
+			int objRef = th.getHeap().newString("", th).getIndex(); /*
 																																	 * dummy
 																																	 * string
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef, true);
 			sf.setOperandAttr(sym_v2);
 		}
 		return null;
@@ -2086,14 +2091,14 @@ public class SymbolicStringHandler {
 		if (sym_v1 == null) {
 			System.err.println("ERROR: symbolic string method must have symbolic operand: handleLongValueOf");
 		} else {
-			th.longPop();
+			sf.popLong();
 			StringExpression sym_v2 = StringExpression._valueOf(sym_v1);
-			int objRef = th.getHeap().newString("", th); /*
+			int objRef = th.getHeap().newString("", th).getIndex(); /*
 																																	 * dummy
 																																	 * string
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef, true);
 			sf.setOperandAttr(sym_v2);
 		}
 		return null;
@@ -2106,14 +2111,14 @@ public class SymbolicStringHandler {
 		if (sym_v1 == null) {
 			System.err.println("ERROR: symbolic string method must have symbolic operand: handleDoubleValueOf");
 		} else {
-			th.longPop();
+			sf.popLong();
 			StringExpression sym_v2 = StringExpression._valueOf(sym_v1);
-			int objRef = th.getHeap().newString("", th); /*
+			int objRef = th.getHeap().newString("", th).getIndex(); /*
 																																	 * dummy
 																																	 * string
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef, true);
 			sf.setOperandAttr(sym_v2);
 		}
 		return null;
@@ -2126,14 +2131,14 @@ public class SymbolicStringHandler {
 		if (sym_v1 == null) {
 			System.err.println("ERROR: symbolic string method must have symbolic operand: handleBooleanValueOf");
 		} else {
-			th.pop();
+			sf.pop();
 			StringExpression sym_v2 = StringExpression._valueOf(sym_v1);
-			int objRef = th.getHeap().newString("", th); /*
+			int objRef = th.getHeap().newString("", th).getIndex(); /*
 																																	 * dummy
 																																	 * string
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef, true);
 			sf.setOperandAttr(sym_v2);
 		}
 		return null;
@@ -2153,25 +2158,25 @@ public class SymbolicStringHandler {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v1 = (Expression) sf.getOperandAttr(0);
 		if (sym_v1 instanceof SymbolicStringBuilder) {
-			th.pop();
+			sf.pop();
 			SymbolicStringBuilder sym_v3 = (SymbolicStringBuilder) sym_v1;
 			StringExpression sym_v2 = StringExpression._valueOf((StringExpression) sym_v3.getstr());
-			int objRef = th.getHeap().newString("", th); /*
+			int objRef = th.getHeap().newString("", th).getIndex(); /*
 																																	 * dummy
 																																	 * String
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef, true);
 			sf.setOperandAttr(sym_v2);
 		} else if (sym_v1 instanceof StringExpression) {
-			th.pop();
+			sf.pop();
 			StringExpression sym_v2 = StringExpression._valueOf((StringExpression) sym_v1);
-			int objRef = th.getHeap().newString("", th); /*
+			int objRef = th.getHeap().newString("", th).getIndex(); /*
 																																	 * dummy
 																																	 * String
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef, true);
 			sf.setOperandAttr(sym_v2);
 		} else {
 			System.err.println("ERROR: symbolic string method not Implemented - ObjectValueof");
@@ -2187,8 +2192,8 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2 == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: handleConcat");
 		} else {
-			int s1 = th.pop();
-			int s2 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
 
 			StringExpression result = null;
 			if (sym_v1 == null) { // operand 0 is concrete
@@ -2203,12 +2208,12 @@ public class SymbolicStringHandler {
 			} else { // both operands are symbolic
 				result = sym_v2._concat(sym_v1);
 			}
-			int objRef = th.getHeap().newString("", th); /*
+			int objRef = th.getHeap().newString("", th).getIndex(); /*
 																																	 * dummy
 																																	 * String
 																																	 * Object
 																																	 */
-			th.push(objRef, true);
+			sf.push(objRef, true);
 			sf.setOperandAttr(result);
 		}
 		return null;
@@ -2397,14 +2402,14 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2.getstr() == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: handleStringAppend");
 		} else {
-			int s1 = th.pop();
-			int s2 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
 
 			if (sym_v1 == null) { // operand 0 is concrete
 				ElementInfo e1 = th.getElementInfo(s1);
 				String val = e1.asString();
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
@@ -2413,10 +2418,10 @@ public class SymbolicStringHandler {
 				sym_v2._append(sym_v1);
 				// setVariableAttribute(ei, invInst, th, sf, s2, sym_v2); //set the
 				// value of the attribute of local StringBuilder element as sym_v2
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 
 			sf.setOperandAttr(sym_v2);
@@ -2441,10 +2446,10 @@ public class SymbolicStringHandler {
 		if (concreteSubstring & sym_builder.getstr() == null) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: HandleStringAppend3");
 		} else {
-			int endRef = th.pop();
-			int startRef = th.pop();
-			int stringRef = th.pop();
-			int builderRef = th.pop();
+			int endRef = sf.pop();
+			int startRef = sf.pop();
+			int stringRef = sf.pop();
+			int builderRef = sf.pop();
 	
 			//prepare the substring
 			StringExpression substring;
@@ -2474,7 +2479,7 @@ public class SymbolicStringHandler {
 			}
 			
 			sym_builder._append(substring);
-			th.push(builderRef,true); 
+			sf.push(builderRef,true); 
 		}
 		
 		sf.setOperandAttr(sym_builder);
@@ -2560,22 +2565,22 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2.getstr() == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: handleCharAppend");
 		} else {
-			char s1 = (char) th.pop();
-			int s2 = th.pop();
+			char s1 = (char) sf.pop();
+			int s2 = sf.pop();
 			if (sym_v1 == null) { // operand 0 is concrete
 				String val = Character.toString(s1);
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
 				String val = getStringEquiv(e1);
 				sym_v2.putstr(new StringConstant(val));
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 
 			sf.setOperandAttr(sym_v2);
@@ -2593,22 +2598,22 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2.getstr() == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: handleByteAppend");
 		} else {
-			byte s1 = (byte) th.pop();
-			int s2 = th.pop();
+			byte s1 = (byte) sf.pop();
+			int s2 = sf.pop();
 			if (sym_v1 == null) { // operand 0 is concrete
 				String val = Byte.toString(s1);
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
 				String val = getStringEquiv(e1);
 				sym_v2.putstr(new StringConstant(val));
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 
 			sf.setOperandAttr(sym_v2);
@@ -2626,22 +2631,22 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2.getstr() == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: handleShortAppend");
 		} else {
-			short s1 = (short) th.pop();
-			int s2 = th.pop();
+			short s1 = (short) sf.pop();
+			int s2 = sf.pop();
 			if (sym_v1 == null) { // operand 0 is concrete
 				String val = Short.toString(s1);
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
 				String val = getStringEquiv(e1);
 				sym_v2.putstr(new StringConstant(val));
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 
 			sf.setOperandAttr(sym_v2);
@@ -2659,22 +2664,22 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2.getstr() == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: hanldeIntAppend");
 		} else {
-			int s1 = th.pop();
-			int s2 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
 			if (sym_v1 == null) { // operand 0 is concrete
 				String val = Integer.toString(s1);
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
 				String val = getStringEquiv(e1);
 				sym_v2.putstr(new StringConstant(val));
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 
 			sf.setOperandAttr(sym_v2);
@@ -2692,22 +2697,22 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2.getstr() == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: hanldeFloatAppend");
 		} else {
-			float s1 = Types.intToFloat(th.pop());
-			int s2 = th.pop();
+			float s1 = Types.intToFloat(sf.pop());
+			int s2 = sf.pop();
 			if (sym_v1 == null) { // operand 0 is concrete
 				String val = Float.toString(s1);
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
 				String val = getStringEquiv(e1);
 				sym_v2.putstr(new StringConstant(val));
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 
 			sf.setOperandAttr(sym_v2);
@@ -2724,12 +2729,12 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2.getstr() == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: hanldeBooleanAppend");
 		} else {
-			boolean s1 = Types.intToBoolean(th.pop());
-			int s2 = th.pop();
+			boolean s1 = Types.intToBoolean(sf.pop());
+			int s2 = sf.pop();
 			if (sym_v1 == null) { // operand 0 is concrete
 				String val = Boolean.toString(s1);
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
@@ -2746,10 +2751,10 @@ public class SymbolicStringHandler {
 																 * AbstractionUtilityMethods.unknownString();
 																 */
 
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 
 			sf.setOperandAttr(sym_v2);
@@ -2767,22 +2772,22 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) & (sym_v2.getstr() == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: handleLongAppend");
 		} else {
-			long s1 = th.longPop();
-			int s2 = th.pop();
+			long s1 = sf.popLong();
+			int s2 = sf.pop();
 			if (sym_v1 == null) { // operand 0 is concrete
 				String val = Long.toString(s1);
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
 				String val = getStringEquiv(e1);
 				sym_v2.putstr(new StringConstant(val));
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 
 			sf.setOperandAttr(sym_v2);
@@ -2794,9 +2799,9 @@ public class SymbolicStringHandler {
 		StackFrame sf = th.getTopFrame();
 
 		RealExpression sym_v1 = (RealExpression) sf.getLongOperandAttr();
-		double s1 = Types.longToDouble(th.longPop());
+		double s1 = Types.longToDouble(sf.popLong());
 		SymbolicStringBuilder sym_v2 = (SymbolicStringBuilder) sf.getOperandAttr();
-		int s2 = th.pop();
+		int s2 = sf.pop();
 
 		if (sym_v2 == null)
 			sym_v2 = new SymbolicStringBuilder();
@@ -2807,17 +2812,17 @@ public class SymbolicStringHandler {
 			if (sym_v1 == null) { // operand 0 is concrete
 				String val = Double.toString(s1);
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
 				String val = getStringEquiv(e1);
 				sym_v2.putstr(new StringConstant(val));
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 
 			sf.setOperandAttr(sym_v2);
@@ -2842,14 +2847,14 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null) && (sym_v2.getstr() == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: handleObjectAppend");
 		} else {
-			int s1 = th.pop();
+			int s1 = sf.pop();
 			ElementInfo e2 = th.getElementInfo(s1);
-			int s2 = th.pop();
+			int s2 = sf.pop();
 			if (sym_v1 == null || (sym_v1 instanceof SymbolicStringBuilder 
 					&& ((SymbolicStringBuilder) sym_v1).getstr() == null)) { // operand 0 is concrete
 				String val = getStringEquiv(e2);
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
@@ -2864,7 +2869,7 @@ public class SymbolicStringHandler {
 				}
 				// setVariableAttribute(ei, invInst, th, sf, s2, sym_v2); //set the
 				// value of the attribute of local StringBuilder element as sym_v2
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				if (sym_v1 instanceof SymbolicStringBuilder)
 					sym_v2._append((SymbolicStringBuilder) sym_v1);
@@ -2874,7 +2879,7 @@ public class SymbolicStringHandler {
 					System.err.println("Object not handled in ObjectAppend");
 				}
 
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 			sf.setOperandAttr(sym_v2);
 		}
@@ -2894,24 +2899,24 @@ public class SymbolicStringHandler {
 		if ((sym_v1.getstr() == null) & (sym_v2.getstr() == null)) {
 			System.err.println("ERROR: symbolic string method must have one symbolic operand: hanldeStringBuilderAppend");
 		} else {
-			int s1 = th.pop();
-			int s2 = th.pop();
+			int s1 = sf.pop();
+			int s2 = sf.pop();
 
 			if (sym_v1.getstr() == null) { // operand 0 is concrete
 				ElementInfo e1 = th.getElementInfo(s1);
 				String val = getStringEquiv(e1);
 				sym_v2._append(val);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else if (sym_v2.getstr() == null) { // operand 1 is concrete; get string
 				// from String builder object
 				ElementInfo e1 = th.getElementInfo(s2);
 				String val = getStringEquiv(e1);
 				sym_v2.putstr(new StringConstant(val));
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* symbolic string Builder element */
+				sf.push(s2, true); /* symbolic string Builder element */
 			} else { // both operands are symbolic
 				sym_v2._append(sym_v1);
-				th.push(s2, true); /* string Builder element can continue */
+				sf.push(s2, true); /* string Builder element can continue */
 			}
 
 			sf.setOperandAttr(sym_v2);
@@ -2923,14 +2928,14 @@ public class SymbolicStringHandler {
 		if (objectType.equals("Ljava/lang/StringBuilder;")) {
 			int idx = ei.getReferenceField("value");
 			int length = ei.getIntField("count");
-			ElementInfo e1 = JVM.getVM().getHeap().get(idx);
+			ElementInfo e1 = VM.getVM().getHeap().get(idx);
 			char[] str = e1.asCharArray();
 			String val = new String(str, 0, length);
 			return val;
 		} else if (objectType.equals("Ljava/lang/StringBuffer;")) {
 			int idx = ei.getReferenceField("value");
 			int length = ei.getIntField("count");
-			ElementInfo e1 = JVM.getVM().getHeap().get(idx);
+			ElementInfo e1 = VM.getVM().getHeap().get(idx);
 			char[] str = e1.asCharArray();
 			String val = new String(str, 0, length);
 			return val;
@@ -2972,9 +2977,10 @@ public class SymbolicStringHandler {
 		if ((sym_v1 == null)) {
 			System.err.println("ERROR: symbolic string method must have symbolic operand: toString");
 		} else {
-			th.pop();
-			int objRef = th.getHeap().newString("", th);
-			th.push(objRef, true);
+			sf.pop();
+			ElementInfo ei = th.getHeap().newString("", th);
+			int objRef = ei.getIndex();
+			sf.push(objRef, true);
 			sf.setOperandAttr(sym_v1);
 		}
 		return null;
@@ -2997,17 +3003,17 @@ public class SymbolicStringHandler {
 			System.err.println("ERROR: symbolic string method must have symbolic operand: println");
 		} else {
 			if (flag)
-				th.longPop();
+				sf.popLong();
 			else
-				th.pop(); // clear out operand stack
-			th.pop();
+				sf.pop(); // clear out operand stack
+			sf.pop();
 			String result = sym_v1.toString();
 			if (doPrintln) {
 				System.out.println("Symbolic Exp [ " + result + "]");
 			} else {
 				System.out.print("Symbolic Exp [ " + result + " ]");
 			}
-			int objRef = th.getHeap().newString("", th);
+			th.getHeap().newString("", th); //Corina this code is so broken
 			//th.push(objRef, true);
 			//sf.setOperandAttr(sym_v1);
 		}

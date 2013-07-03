@@ -26,7 +26,7 @@ public class IAND extends gov.nasa.jpf.jvm.bytecode.IAND {
 
 	@Override
 	public Instruction execute (ThreadInfo th) {
-		StackFrame sf = th.getTopFrame();
+		StackFrame sf = th.getModifiableTopFrame();
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0); 
 		IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(1);
 		

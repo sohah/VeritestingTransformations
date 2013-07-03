@@ -18,16 +18,15 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 
 /**
@@ -37,14 +36,14 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 public class LCMP extends gov.nasa.jpf.jvm.bytecode.LCMP {
 
   @Override
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-    StackFrame sf = th.getTopFrame();
+  public Instruction execute (ThreadInfo th) {
+    StackFrame sf = th.getModifiableTopFrame();
 
     IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1);
     IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(3);
 
 	if (sym_v1 == null && sym_v2 == null)  // both conditions are concrete
-		return super.execute(ss, ks, th);
+		return super.execute(th);
 	else { // at least one condition is symbolic
 
 		ChoiceGenerator<?> cg;
@@ -54,16 +53,16 @@ public class LCMP extends gov.nasa.jpf.jvm.bytecode.LCMP {
 			cg = new PCChoiceGenerator(3);
 			((PCChoiceGenerator)cg).setOffset(this.position);
 			((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
-			ss.setNextChoiceGenerator(cg);
+			th.getVM().getSystemState().setNextChoiceGenerator(cg);
 			return this;
 		} else { // this is what really returns results
-			cg = ss.getChoiceGenerator();
+			cg = th.getVM().getSystemState().getChoiceGenerator();
 			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			conditionValue = ((PCChoiceGenerator) cg).getNextChoice() -1;
 		}
 
-		long v1 = th.longPop();
-		long v2 = th.longPop();
+		long v1 = sf.popLong();
+		long v2 = sf.popLong();
 
 		// System.out.println("Execute LCMP: "+ conditionValue);
 		PathCondition pc;
@@ -92,7 +91,7 @@ public class LCMP extends gov.nasa.jpf.jvm.bytecode.LCMP {
 				pc._addDet(Comparator.LT, sym_v2, v1);
 
 			if (!pc.simplify()) {// not satisfiable
-				ss.setIgnored(true);
+				th.getVM().getSystemState().setIgnored(true);
 			} else {
 				// pc.solve();
 				((PCChoiceGenerator) cg).setCurrentPC(pc);
@@ -107,7 +106,7 @@ public class LCMP extends gov.nasa.jpf.jvm.bytecode.LCMP {
 			} else
 				pc._addDet(Comparator.EQ, v1, sym_v2);
 			if (!pc.simplify()) {// not satisfiable
-				ss.setIgnored(true);
+				th.getVM().getSystemState().setIgnored(true);
 			} else {
 				// pc.solve();
 				((PCChoiceGenerator) cg).setCurrentPC(pc);
@@ -122,7 +121,7 @@ public class LCMP extends gov.nasa.jpf.jvm.bytecode.LCMP {
 			} else
 				pc._addDet(Comparator.GT, sym_v2, (int)v1);
 			if (!pc.simplify()) {// not satisfiable
-				ss.setIgnored(true);
+				th.getVM().getSystemState().setIgnored(true);
 			} else {
 				// pc.solve();
 				((PCChoiceGenerator) cg).setCurrentPC(pc);
@@ -130,7 +129,7 @@ public class LCMP extends gov.nasa.jpf.jvm.bytecode.LCMP {
 			}
 		}
 
-		th.push(conditionValue, false);
+		sf.push(conditionValue, false);
 		//System.out.println("Execute LCMP: " + ((PCChoiceGenerator) cg).getCurrentPC());
 		return getNext(th);
 	}

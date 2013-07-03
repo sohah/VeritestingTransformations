@@ -18,14 +18,13 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
+
 
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 
 
@@ -35,11 +34,11 @@ import gov.nasa.jpf.symbc.numeric.*;
  * ..., value => ..., result
  */
 public class L2D extends gov.nasa.jpf.jvm.bytecode.L2D {
- 
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-	  IntegerExpression sym_lval = (IntegerExpression) th.getTopFrame().getLongOperandAttr();
+	@Override
+  public Instruction execute (ThreadInfo th) {
+	  IntegerExpression sym_lval = (IntegerExpression) th.getModifiableTopFrame().getLongOperandAttr();
 	  if(sym_lval == null) {
-		  return super.execute(ss,ks,th); 
+		  return super.execute(th); 
 	  }
 	  else {
 			//  System.out.println("Execute symbolic L2D");
@@ -50,10 +49,10 @@ public class L2D extends gov.nasa.jpf.jvm.bytecode.L2D {
 			    ChoiceGenerator<?> cg; 
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(1); // only one choice 
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().getSystemState().setNextChoiceGenerator(cg);
 					return this;  	      
 				} else {  // this is what really returns results
-					cg = ss.getChoiceGenerator();
+					cg = th.getVM().getSystemState().getChoiceGenerator();
 					assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				}	
 				
@@ -71,17 +70,16 @@ public class L2D extends gov.nasa.jpf.jvm.bytecode.L2D {
 				else 
 					pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
 				assert pc != null;
-				
-				th.longPop();
-				th.longPush(0); // for symbolic expressions, the concrete value does not matter
+				StackFrame sf = th.getModifiableTopFrame();
+				sf.popLong();
+				sf.pushLong(0); // for symbolic expressions, the concrete value does not matter
 				SymbolicReal sym_dval = new SymbolicReal();
-				StackFrame sf = th.getTopFrame();
 				sf.setLongOperandAttr(sym_dval);
 				
 				pc._addDet(Comparator.EQ, sym_dval, sym_lval);
 				
 				if(!pc.simplify())  { // not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					//pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);

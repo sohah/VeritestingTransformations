@@ -28,7 +28,7 @@ public class IDIV extends gov.nasa.jpf.jvm.bytecode.IDIV {
 
 	@Override
 	public Instruction execute (ThreadInfo th) {
-		StackFrame sf = th.getTopFrame();
+		StackFrame sf = th.getModifiableTopFrame();
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0);
 		IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(1);
 		int v1, v2;
@@ -108,7 +108,7 @@ public class IDIV extends gov.nasa.jpf.jvm.bytecode.IDIV {
 				else
 					result = sym_v1._div_reverse(v2);
 
-				sf = th.getTopFrame();
+				sf = th.getModifiableTopFrame();
 				sf.setOperandAttr(result);
 			    return getNext(th);
 

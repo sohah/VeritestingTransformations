@@ -32,7 +32,7 @@ public class I2C extends gov.nasa.jpf.jvm.bytecode.I2C {
  
   @Override
   public Instruction execute (ThreadInfo th) {
-	  StackFrame sf = th.getTopFrame();
+	  StackFrame sf = th.getModifiableTopFrame();
 	  Expression sym_val = (Expression) sf.getOperandAttr();
 		
 	  if(sym_val == null) {

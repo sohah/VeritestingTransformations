@@ -23,27 +23,29 @@ package gov.nasa.jpf.symbc.heap;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DoubleFieldInfo;
-import gov.nasa.jpf.jvm.DynamicElementInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.Fields;
-import gov.nasa.jpf.jvm.FloatFieldInfo;
-import gov.nasa.jpf.jvm.IntegerFieldInfo;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.LocalVarInfo;
-import gov.nasa.jpf.jvm.LongFieldInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.ReferenceFieldInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.Types;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.DoubleFieldInfo;
+import gov.nasa.jpf.vm.DynamicElementInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.Fields;
+import gov.nasa.jpf.vm.FloatFieldInfo;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.IntegerFieldInfo;
+import gov.nasa.jpf.vm.VM;
+
+import gov.nasa.jpf.vm.LocalVarInfo;
+import gov.nasa.jpf.vm.LongFieldInfo;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.ReferenceFieldInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.SystemState;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
 import gov.nasa.jpf.jvm.bytecode.IRETURN;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
 import gov.nasa.jpf.report.ConsolePublisher;
@@ -347,9 +349,10 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 	}
 
 	//not yet tested
+	@Override
 	public void propertyViolated (Search search){
 		//System.out.println("--------->property violated");
-		JVM vm = search.getVM();
+		VM vm = search.getVM();
 		HeapChoiceGenerator heapCG = vm.getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
 		PCChoiceGenerator pcCG = vm.getLastChoiceGeneratorOfType(PCChoiceGenerator.class);
 		PathCondition pc = (pcCG==null ? null : pcCG.getCurrentPC());
@@ -391,12 +394,13 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 	}
 
 
-	public void instructionExecuted(JVM vm) {
+	@Override
+	public void instructionExecuted(VM vm, ThreadInfo currentThread, Instruction nextInstruction, Instruction executedInstruction) {
 
 		if (!vm.getSystemState().isIgnored()) {
-			Instruction insn = vm.getLastInstruction();
+			Instruction insn = executedInstruction;
 			SystemState ss = vm.getSystemState();
-			ThreadInfo ti = vm.getLastThreadInfo();
+			ThreadInfo ti = currentThread;
 			Config conf = vm.getConfig();
 
 			if (insn instanceof InvokeInstruction) {

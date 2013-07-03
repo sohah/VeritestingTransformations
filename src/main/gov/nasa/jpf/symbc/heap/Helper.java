@@ -102,10 +102,10 @@ public class Helper {
 	  //bytecodes that need access to the same code. Lazy initialization and uber-lazy initialization
 	  // generate a new HeapNode in the same way. This can be used across different init algorithms.
 	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
-			  KernelState ks, PathCondition pcHeap, SymbolicInputHeap symInputHeap,
+			  PathCondition pcHeap, SymbolicInputHeap symInputHeap,
 			  int numSymRefs, HeapNode[] prevSymRefs ) {
-		  daIndex = ks.heap.newObject(typeClassInfo, ti).getObjectRef();
-		  ks.heap.registerPinDown(daIndex);
+		  daIndex = ti.getHeap().newObject(typeClassInfo, ti).getObjectRef();
+		  ti.getHeap().registerPinDown(daIndex);
 		  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
 		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
 		  ElementInfo eiRef =  ti.getElementInfo(daIndex); // TODO to review!

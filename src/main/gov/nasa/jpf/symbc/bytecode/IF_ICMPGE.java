@@ -33,7 +33,7 @@ public class IF_ICMPGE extends gov.nasa.jpf.jvm.bytecode.IF_ICMPGE{
 	@Override
 	public Instruction execute (ThreadInfo ti) {
 
-		StackFrame sf = ti.getTopFrame();
+		StackFrame sf = ti.getModifiableTopFrame();
 
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1);
 		IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(0);

@@ -33,7 +33,7 @@ public class FDIV extends gov.nasa.jpf.jvm.bytecode.FDIV  {
 	@Override
 	public Instruction execute (ThreadInfo th) {
 
-		StackFrame sf = th.getTopFrame();
+		StackFrame sf = th.getModifiableTopFrame();
 		//sf.printStackContent();
 
 		RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(0);
@@ -123,7 +123,7 @@ public class FDIV extends gov.nasa.jpf.jvm.bytecode.FDIV  {
 				else
 					result = sym_v1._div_reverse(v2);
 
-				sf = th.getTopFrame();
+				sf = th.getModifiableTopFrame();
 				sf.setOperandAttr(result);
 				return getNext(th);
 

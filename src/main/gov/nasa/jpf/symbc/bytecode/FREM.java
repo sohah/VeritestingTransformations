@@ -34,7 +34,7 @@ public class FREM extends gov.nasa.jpf.jvm.bytecode.FREM  {
   @Override
   public Instruction execute (ThreadInfo th) {
    
-    StackFrame sf = th.getTopFrame();
+    StackFrame sf = th.getModifiableTopFrame();
 
 	RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(); 
 	float v1 = Types.intToFloat(sf.pop());
@@ -46,7 +46,7 @@ public class FREM extends gov.nasa.jpf.jvm.bytecode.FREM  {
         if (v1 == 0){
             return th.createAndThrowException("java.lang.ArithmeticException","division by zero");
         } 
-        th.push(Types.floatToInt(v2 % v1), false);
+        sf.push(Types.floatToInt(v2 % v1), false);
     }else {
     	sf.push(0, false);
     	throw new RuntimeException("## Error: SYMBOLIC FREM not supported");

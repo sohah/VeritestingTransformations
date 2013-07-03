@@ -28,7 +28,7 @@ public class FADD extends gov.nasa.jpf.jvm.bytecode.FADD {
 
   @Override
   public Instruction execute (ThreadInfo th) {
-	StackFrame sf = th.getTopFrame();
+	StackFrame sf = th.getModifiableTopFrame();
 
 	RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(); 
 	float v1 = Types.intToFloat(sf.pop());

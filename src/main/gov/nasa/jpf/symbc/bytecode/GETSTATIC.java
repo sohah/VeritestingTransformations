@@ -34,6 +34,7 @@ import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
@@ -73,13 +74,16 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		}
 
 		ClassInfo ci = fi.getClassInfo();
-		// start: not sure if this code should stay here
-		//	    if (!mi.isClinit(ci) && requiresClinitCalls(ti, ci))
-		//			  return ti.getPC();
-		// end: not sure if this code should stay here
+		// not sure if this code should stay here    
 
-		ElementInfo ei = ks.statics.get(ci.getName());
+	
+		if (!mi.isClinit(ci) && requiresClinitExecution(ti,ci)) {
+		      // note - this returns the next insn in the topmost clinit that just got pushed
+		      return ti.getPC();
+		    }
 
+		ElementInfo ei = ci.getStaticElementInfo();
+		    
 		//end GETSTATIC code from super
 
 		Object attr = ei.getFieldAttr(fi);
@@ -172,7 +176,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			daIndex = -1;
 		} else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 			  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
-			  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
+			  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, pcHeap,
 					  		symInputHeap, numSymRefs, prevSymRefs);
 		  } else {
 			  //TODO: fix
@@ -191,7 +195,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 		ei.setReferenceField(fi,daIndex );
 		ei.setFieldAttr(fi, Helper.SymbolicNull); // was null
-		ti.push( ei.getReferenceField(fi), fi.isReference());
+		ti.getModifiableTopFrame().push( ei.getReferenceField(fi), fi.isReference());
 		((HeapChoiceGenerator)heapCG).setCurrentPCheap(pcHeap);
 		((HeapChoiceGenerator)heapCG).setCurrentSymInputHeap(symInputHeap);
 		if (SymbolicInstructionFactory.debugMode)

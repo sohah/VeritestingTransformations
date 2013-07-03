@@ -35,7 +35,7 @@ public class I2D extends gov.nasa.jpf.jvm.bytecode.I2D {
   @Override
   public Instruction execute (ThreadInfo th) {
 	  
-	  IntegerExpression sym_ival = (IntegerExpression) th.getTopFrame().getOperandAttr(); 
+	  IntegerExpression sym_ival = (IntegerExpression) th.getModifiableTopFrame().getOperandAttr(); 
 		
 	  if(sym_ival == null) {
 		  return super.execute(th); 
@@ -67,7 +67,7 @@ public class I2D extends gov.nasa.jpf.jvm.bytecode.I2D {
 				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
 			assert pc != null;
 			
-			StackFrame sf = th.getTopFrame();
+			StackFrame sf = th.getModifiableTopFrame();
 			sf.pop();
 			sf.pushLong(0); // for symbolic expressions, the concrete value does not matter
 			SymbolicReal sym_dval = new SymbolicReal();

@@ -21,6 +21,8 @@ import gov.nasa.jpf.vm.SystemState;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 import gov.nasa.jpf.vm.ThreadInfo;
 
+// Corina: I need to add the latest fix from the v6 to treat properly "this"
+
 public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 
 	public ALOAD(int localVarIndex) {

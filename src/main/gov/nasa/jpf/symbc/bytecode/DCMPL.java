@@ -32,7 +32,7 @@ import gov.nasa.jpf.vm.Types;
 public class DCMPL extends gov.nasa.jpf.jvm.bytecode.DCMPL {
 	@Override
 	public Instruction execute(ThreadInfo th) {
-		StackFrame sf = th.getTopFrame();
+		StackFrame sf = th.getModifiableTopFrame();
 
 		RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(1);
 		RealExpression sym_v2 = (RealExpression) sf.getOperandAttr(3);
