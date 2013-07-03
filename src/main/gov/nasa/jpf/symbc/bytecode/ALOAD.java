@@ -147,7 +147,7 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		}
 		else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 			//creates a new object with all fields symbolic
-			daIndex = Helper.addNewHeapNode(typeClassInfo, th, daIndex, attr, th.getVM().getKernelState(), pcHeap,
+			daIndex = Helper.addNewHeapNode(typeClassInfo, th, daIndex, attr, pcHeap,
 							symInputHeap, numSymRefs, prevSymRefs);
 		} else {
 			//TODO: fix subtypes

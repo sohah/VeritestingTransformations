@@ -2028,8 +2028,9 @@ public class SymbolicStringHandler {
 		if (miInit == null) {
 			return null;
 		}
-		Instruction initPC = miInit.execute(th);
-		return initPC;
+		//Instruction initPC = miInit.execute(th);
+		//return initPC;
+		throw new RuntimeException("not handled; to review");
 	}
 
 	// works for String, StringBuilder, StringBuffer
@@ -2040,8 +2041,9 @@ public class SymbolicStringHandler {
 		if (miInit == null) {
 			return null;
 		}
-		Instruction initPC = miInit.execute(th);
-		return initPC;
+		//Instruction initPC = miInit.execute(th); // TODO: to review
+		//return initPC;
+		throw new RuntimeException("not handled; to review");
 	}
 
 	public Instruction handleIntValueOf(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
