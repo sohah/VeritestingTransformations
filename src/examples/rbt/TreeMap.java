@@ -2,7 +2,7 @@ package rbt;
 // From William Deng
 
 //package intkey;
-import gov.nasa.jpf.jvm.Verify;
+import gov.nasa.jpf.vm.Verify;
 
 //import cute.Cute;
 import java.util.NoSuchElementException;

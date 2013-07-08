@@ -9,7 +9,7 @@ import java.lang.reflect.*;
 import java.text.*;
 import java.util.Random;
 
-import gov.nasa.jpf.jvm.Verify;
+import gov.nasa.jpf.vm.Verify;
 
 /**
  * @author Mithun Acharya

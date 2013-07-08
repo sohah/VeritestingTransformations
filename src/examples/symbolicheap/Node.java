@@ -1,6 +1,6 @@
 package symbolicheap;
 
-import gov.nasa.jpf.jvm.Verify;
+import gov.nasa.jpf.vm.Verify;
 import gov.nasa.jpf.symbc.Debug;
 
 import java.util.HashSet;

@@ -18,7 +18,9 @@
 //
 package gov.nasa.jpf.symbc;
 
-import gov.nasa.jpf.jvm.Verify;
+import gov.nasa.jpf.vm.Verify;
+
+
 
 
 //import gov.nasa.jpf.extendedtestgen.Debug;

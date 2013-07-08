@@ -1,6 +1,8 @@
 
 
-import gov.nasa.jpf.jvm.Verify;
+
+
+import gov.nasa.jpf.vm.Verify;
 
 import java.util.EnumSet;
 

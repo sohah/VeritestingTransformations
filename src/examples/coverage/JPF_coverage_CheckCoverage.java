@@ -1,6 +1,6 @@
 package coverage;
 
-import gov.nasa.jpf.jvm.MJIEnv;
+import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 
 import java.util.HashMap;

@@ -1,5 +1,6 @@
-import gov.nasa.jpf.jvm.Verify;
+
 import gov.nasa.jpf.symbc.Debug;
+import gov.nasa.jpf.vm.Verify;
 
 public class MyClass2 {
 	// The method you need tests for
