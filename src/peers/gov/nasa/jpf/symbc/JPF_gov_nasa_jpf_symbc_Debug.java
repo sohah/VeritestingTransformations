@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 
+import gov.nasa.jpf.annotation.MJI;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 import gov.nasa.jpf.symbc.heap.HeapNode;
 import gov.nasa.jpf.symbc.heap.Helper;
@@ -32,6 +33,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
 public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
+	@MJI
 	public static PathCondition getPC(MJIEnv env) {
 		VM vm = env.getVM();
 		ChoiceGenerator<?> cg = vm.getChoiceGenerator();
@@ -50,7 +52,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		}
 		return pc;
 	}
-
+	@MJI
 	public static void printPC(MJIEnv env, int objRef, int msgRef) {
 		PathCondition pc = getPC(env);
 		if (pc != null) {
@@ -60,7 +62,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		else
 			System.out.println(env.getStringObject(msgRef) + " PC is null");
 	}
-
+	@MJI
 	public static int getSolvedPC(MJIEnv env, int objRef) {
 		PathCondition pc = getPC(env);
 		if (pc != null) {
@@ -71,7 +73,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	}
 
 
-
+	@MJI
 	public static int getSymbolicIntegerValue(MJIEnv env, int objRef, int v) {
 		Object [] attrs = env.getArgAttributes();
 		
@@ -81,6 +83,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		else
 			return env.newString(Integer.toString(v));
 	}
+	@MJI
     public static int getSymbolicRealValue(MJIEnv env, int objRef, double v) {
     	Object [] attrs = env.getArgAttributes();
 		RealExpression sym_arg = (RealExpression)attrs[0];
@@ -89,6 +92,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		else
 			return env.newString(Double.toString(v));
     }
+	@MJI
     public static int getSymbolicBooleanValue(MJIEnv env, int objRef, boolean v) {
     	Object [] attrs = env.getArgAttributes();
 		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
@@ -97,7 +101,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		else
 			return env.newString(Boolean.toString(v));
     }
-
+	@MJI
     public static int getSymbolicStringValue(MJIEnv env, int objRef, int stringRef) {
     	Object [] attrs = env.getArgAttributes();
 		StringExpression sym_arg = (StringExpression)attrs[0];
@@ -107,6 +111,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		else
 			return env.newString(string_concrete);
     }
+	@MJI
     public static void assume(MJIEnv env, int objRef, boolean c) {
     	Object [] attrs = env.getArgAttributes();
 		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
@@ -116,25 +121,25 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 			ss.setIgnored(true);
 		}
     }
-
+	@MJI
 	public static int makeSymbolicInteger(MJIEnv env, int objRef, int stringRef) {
 		String name = env.getStringObject(stringRef);
 		env.setReturnAttribute(new SymbolicInteger(name));
 		return 0;
 	}
-
+	@MJI
 	public static double makeSymbolicReal(MJIEnv env, int objRef, int stringRef) {
 		String name = env.getStringObject(stringRef);
 		env.setReturnAttribute(new SymbolicReal(name));
 		return 0.0;
 	}
-
+	@MJI
 	public static boolean makeSymbolicBoolean(MJIEnv env, int objRef, int stringRef) {
 		String name = env.getStringObject(stringRef);
 		env.setReturnAttribute(new SymbolicInteger(name,0,1));
 		return false;
 	}
-
+	@MJI
 	public static int makeSymbolicString(MJIEnv env, int objRef, int stringRef) {
 		String name = env.getStringObject(stringRef);
 		env.setReturnAttribute(new StringSymbolic(name));
@@ -148,6 +153,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 //	}
 
 	// the purpose of this method is to set the PCheap to the "eq null" constraint for the input specified w/ stringRef
+	@MJI
 	public static int makeSymbolicNull(MJIEnv env, int objRef, int stringRef) {
 
 		// introduce a heap choice generator for the element in the heap
@@ -207,7 +213,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	// moreover it adds this object to the symbolic heap to participate in lazy initialization
 	// -- useful for debugging
 
-
+	@MJI
 	public static void makeFieldsSymbolic(MJIEnv env, int objRef, int stringRef, int objvRef) {
 		// makes all the fields of obj v symbolic and adds obj v to the symbolic heap to kick off lazy initialization
 		if (objvRef == -1)
@@ -304,7 +310,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 
 
 
-
+	@MJI
 	public static void printHeapPC(MJIEnv env, int objRef, int msgRef) {
 		// should first solve the pc's!!!!
 
@@ -338,6 +344,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 
 	// goes through heap rooted in objvRef in DFS order and prints the symbolic heap
 	// does not print the static fields
+	@MJI
 	public static void printSymbolicRef(MJIEnv env, int objRef, int objvRef, int msgRef) {
 		discovered = new HashSet<Integer>();
 		discoveredClasses = new HashSet<ClassInfo>();
@@ -645,6 +652,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	 * Performs abstract matching
 	 *
 	 */
+	@MJI
 	public static boolean matchAbstractState(MJIEnv env, int objRef, int objvRef) {
 		// get the sequence for the abstracted state
 		String abstractedState = getAbstractedState(env, objvRef);
