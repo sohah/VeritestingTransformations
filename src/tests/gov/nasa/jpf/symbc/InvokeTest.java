@@ -4,7 +4,7 @@ import gov.nasa.jpf.util.test.TestJPF;
 
 public class InvokeTest extends TestJPF {
 
-  protected static final String INSN_FACTORY = "+vm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory";
+  protected static final String INSN_FACTORY = "+jvm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory";
 
   protected static String makePCAssertString(String location, String goodPC, String badPC) {
     return String.format("Bad Path condition in %s:\nEXPECTED:\n%s\nACTUAL:\n%s\n", location, goodPC, badPC);
