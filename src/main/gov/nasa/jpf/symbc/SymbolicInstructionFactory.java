@@ -512,11 +512,6 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 	ClassInfo ci;
 	InstructionFactoryFilter filter;
 
-	 @Override
-	 public void setClassInfoContext(ClassInfo ci){
-		    this.ci = ci;
-	 }
-
 	 private void setupGreen(Config conf) {
 		//------------------------------------
 			// Construct the solver
