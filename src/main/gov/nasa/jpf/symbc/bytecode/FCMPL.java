@@ -50,7 +50,7 @@ public class FCMPL extends gov.nasa.jpf.jvm.bytecode.FCMPL {
 			if (!th.isFirstStepInsn()) { // first time around
 				cg = new PCChoiceGenerator(3);
 				((PCChoiceGenerator)cg).setOffset(this.position);
-				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
+				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getFullName());
 				th.getVM().getSystemState().setNextChoiceGenerator(cg);
 				return this;
 			} else { // this is what really returns results
