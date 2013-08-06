@@ -37,6 +37,7 @@ package gov.nasa.jpf.symbc.bytecode;
 
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
@@ -2015,7 +2016,7 @@ public class SymbolicStringHandler {
 		
 		//DynamicArea da = th.getVM().getDynamicArea();
 		MethodInfo mi = invInst.getInvokedMethod();
-		ClassInfo ci = ClassInfo.getResolvedClassInfo(mi.getReturnTypeName());
+		ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(mi.getReturnTypeName());
 		ElementInfo objRef = th.getHeap().newObject(ci, th);
 		return objRef.getIndex();
 	}
