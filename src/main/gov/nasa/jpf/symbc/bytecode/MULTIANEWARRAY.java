@@ -4,6 +4,7 @@ package gov.nasa.jpf.symbc.bytecode;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.string.SymbolicLengthInteger;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -45,7 +46,7 @@ public class MULTIANEWARRAY extends gov.nasa.jpf.jvm.bytecode.MULTIANEWARRAY {
 		
 		// there is no clinit for array classes, but we still have  to create a class object
 		// since its a builtin class, we also don't have to bother with NoClassDefFoundErrors
-		ClassInfo ci = ClassInfo.getResolvedClassInfo(type);
+		ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(type);
 		if (!ci.isRegistered()) {
 			ci.registerClass(ti);
 			ci.setInitialized();

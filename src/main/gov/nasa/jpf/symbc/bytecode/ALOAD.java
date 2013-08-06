@@ -14,6 +14,7 @@ import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.KernelState;
 import gov.nasa.jpf.vm.StackFrame;
@@ -61,7 +62,7 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 			return super.execute(th);
 		}
 		
-		ClassInfo typeClassInfo = ClassInfo.getResolvedClassInfo(typeOfLocalVar);
+		ClassInfo typeClassInfo = ClassLoaderInfo.getCurrentResolvedClassInfo(typeOfLocalVar);
 
 		int currentChoice;
 		ChoiceGenerator<?> thisHeapCG;
