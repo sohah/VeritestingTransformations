@@ -264,7 +264,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 
 		SymbolicInteger newSymRef = new SymbolicInteger( refChain);
 		//ElementInfo eiRef = DynamicArea.getHeap().get(objvRef);
-		ElementInfo eiRef = VM.getVM().getHeap().get(objvRef);
+		ElementInfo eiRef = VM.getVM().getHeap().getModifiable(objvRef);
 		Helper.initializeInstanceFields(fields, eiRef, refChain);
 		Helper.initializeStaticFields(staticFields, ci, ti);
 
