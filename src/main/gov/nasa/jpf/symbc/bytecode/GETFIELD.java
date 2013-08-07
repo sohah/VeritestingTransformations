@@ -76,7 +76,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		 return ti.createAndThrowException("java.lang.NullPointerException",
 	                        "referencing field '" + fname + "' on null object");
 	 }
-	 ElementInfo ei = ti.getElementInfo(objRef);
+	 ElementInfo ei = ti.getModifiableElementInfo(objRef);
 	 FieldInfo fi = getFieldInfo();
 	 if (fi == null) {
 	    return ti.createAndThrowException("java.lang.NoSuchFieldError",
