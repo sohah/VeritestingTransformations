@@ -29,8 +29,12 @@ public class SeqInstructionReduction implements IRTOptimization, SymbolicExecuti
 	
 	@Override
 	public void conductOptimization(SymbolicExecutionTree tree) {
-		this.tree = tree;
-		tree.accept(this);
+		Node randomNode = tree.getRootNode();
+		if(randomNode instanceof IHasWCET ||
+		   randomNode instanceof IHasBCET) {
+			this.tree = tree;
+			tree.accept(this);
+		}
 	}
 
 	@Override
