@@ -18,10 +18,11 @@ public class TestSimpleSys extends InvokeTest {
 	
 	private static final String LISTENER = "+listener = gov.nasa.jpf.symbc.realtime.UppaalTranslationListener";
 	private static final String REALTIME_PLATFORM = "+symbolic.realtime.platform = jop";
-	private static final String TETASARTS = "+symbolic.realtime.tetasarts = false";
+	private static final String TETASARTS = "+symbolic.realtime.targettetasarts = false";
 	private static final String REALTIME_PATH = "+symbolic.realtime.outputpath = ${jpf-symbc}/";
 	private static final String OPTIMIZE = "+symbolic.realtime.optimize = true";
 	
+	private static final String SOLVER = "+symbolic.dp=choco";
 	
 	
 	//remember the nosolver option is like a cfg traversal!
@@ -34,7 +35,8 @@ public class TestSimpleSys extends InvokeTest {
 											  SYM_METHOD, 
 											  OPTIMIZE, 
 											  REALTIME_PATH, 
-											  REALTIME_PLATFORM};
+											  REALTIME_PLATFORM,
+											  SOLVER};
 
 	
 	public static void main(String[] args) {
