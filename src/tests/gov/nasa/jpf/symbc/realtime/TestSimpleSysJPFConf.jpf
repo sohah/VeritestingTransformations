@@ -1,0 +1,18 @@
+target=gov.nasa.jpf.symbc.realtime.TestSimpleSys
+
+classpath=${jpf-symbc}/build/tests
+
+sourcepath=${jpf-symbc}/src/tests
+
+#symbolic.minint=-25
+#symbolic.maxint=25
+#symbolic.undefined=-100
+symbolic.method = gov.nasa.jpf.symbc.realtime.TestSimpleSys.computation(sym)
+listener = gov.nasa.jpf.symbc.realtime.UppaalTranslationListener
+symbolic.realtime = true
+symbolic.realtime.outputpath = ${jpf-symbc}/simpleSysModel.xml
+symbolic.realtime.concretemodel = false
+symbolic.realtime.platform = jop
+
+#listener = gov.nasa.jpf.symbc.SymbolicListener
+#symbolic.debug=true	

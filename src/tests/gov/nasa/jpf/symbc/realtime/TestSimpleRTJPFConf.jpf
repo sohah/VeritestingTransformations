@@ -1,0 +1,13 @@
+target=gov.nasa.jpf.symbc.realtime.TestSimpleRT
+
+classpath=${jpf-symbc}/build/tests
+
+sourcepath=${jpf-symbc}/src/tests
+
+#symbolic.minint=-25
+#symbolic.maxint=25
+#symbolic.undefined=-100
+symbolic.method = gov.nasa.jpf.symbc.realtime.TestSimpleRT.computation(sym)
+listener = gov.nasa.jpf.symbc.SymbolicListener
+symbolic.realtime = true
+symbolic.debug=true	
