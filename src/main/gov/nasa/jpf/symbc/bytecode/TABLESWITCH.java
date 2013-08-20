@@ -61,7 +61,7 @@ public class TABLESWITCH extends SwitchInstruction implements gov.nasa.jpf.vm.Ta
 		if (!ti.isFirstStepInsn()) { // first time around
 			cg = new PCChoiceGenerator(targets.length+1);
 			((PCChoiceGenerator)cg).setOffset(this.position);
-			((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
+			((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getFullName());
 			ti.getVM().getSystemState().setNextChoiceGenerator(cg);
 			return this;
 		} else {  // this is what really returns results

@@ -1122,7 +1122,7 @@ public class SymbolicStringHandler {
 																																	 * String
 																																	 * Object
 																																	 */
-			sf.push(objRef.getIndex(), true);
+			sf.push(objRef.getObjectRef(), true);
 			sf.setOperandAttr(result);
 		}
 		return null;
@@ -1167,7 +1167,7 @@ public class SymbolicStringHandler {
 																																	 * String
 																																	 * Object
 																																	 */
-			sf.push(objRef.getIndex(), true);
+			sf.push(objRef.getObjectRef(), true);
 			sf.setOperandAttr(result);
 		}
 		return null;
@@ -1233,7 +1233,7 @@ public class SymbolicStringHandler {
 			}
 			ElementInfo objRef = th.getHeap().newString("", th);
 			//System.out.println("[SymbolicStringHandler] " + sf.toString());
-			sf.push(objRef.getIndex(), true);
+			sf.push(objRef.getObjectRef(), true);
 			//System.out.println("[SymbolicStringHandler] " + sf.toString());
 			sf.setOperandAttr(result);
 		}
@@ -1303,7 +1303,7 @@ public class SymbolicStringHandler {
 																																	 * String
 																																	 * Object
 																																	 */
-			sf.push(objRef.getIndex(), true);
+			sf.push(objRef.getObjectRef(), true);
 			sf.setOperandAttr(result);
 		}
 		return null;
@@ -1326,7 +1326,7 @@ public class SymbolicStringHandler {
 																																 * dummy String
 																																 * Object
 																																 */
-		sf.push(objRef.getIndex(), true);
+		sf.push(objRef.getObjectRef(), true);
 		sf.setOperandAttr(result);
 	}
 
@@ -2018,7 +2018,7 @@ public class SymbolicStringHandler {
 		MethodInfo mi = invInst.getInvokedMethod();
 		ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(mi.getReturnTypeName());
 		ElementInfo objRef = th.getHeap().newObject(ci, th);
-		return objRef.getIndex();
+		return objRef.getObjectRef();
 	}
 
 	// works for BigDecimal
@@ -2056,7 +2056,7 @@ public class SymbolicStringHandler {
 		} else {
 			sf.pop();
 			StringExpression sym_v2 = StringExpression._valueOf(sym_v1);
-			int objRef = th.getHeap().newString("", th).getIndex(); /*
+			int objRef = th.getHeap().newString("", th).getObjectRef(); /*
 																																	 * dummy
 																																	 * string
 																																	 * Object
@@ -2076,7 +2076,7 @@ public class SymbolicStringHandler {
 		} else {
 			sf.pop();
 			StringExpression sym_v2 = StringExpression._valueOf(sym_v1);
-			int objRef = th.getHeap().newString("", th).getIndex(); /*
+			int objRef = th.getHeap().newString("", th).getObjectRef(); /*
 																																	 * dummy
 																																	 * string
 																																	 * Object
@@ -2096,7 +2096,7 @@ public class SymbolicStringHandler {
 		} else {
 			sf.popLong();
 			StringExpression sym_v2 = StringExpression._valueOf(sym_v1);
-			int objRef = th.getHeap().newString("", th).getIndex(); /*
+			int objRef = th.getHeap().newString("", th).getObjectRef(); /*
 																																	 * dummy
 																																	 * string
 																																	 * Object
@@ -2116,7 +2116,7 @@ public class SymbolicStringHandler {
 		} else {
 			sf.popLong();
 			StringExpression sym_v2 = StringExpression._valueOf(sym_v1);
-			int objRef = th.getHeap().newString("", th).getIndex(); /*
+			int objRef = th.getHeap().newString("", th).getObjectRef(); /*
 																																	 * dummy
 																																	 * string
 																																	 * Object
@@ -2136,7 +2136,7 @@ public class SymbolicStringHandler {
 		} else {
 			sf.pop();
 			StringExpression sym_v2 = StringExpression._valueOf(sym_v1);
-			int objRef = th.getHeap().newString("", th).getIndex(); /*
+			int objRef = th.getHeap().newString("", th).getObjectRef(); /*
 																																	 * dummy
 																																	 * string
 																																	 * Object
@@ -2164,7 +2164,7 @@ public class SymbolicStringHandler {
 			sf.pop();
 			SymbolicStringBuilder sym_v3 = (SymbolicStringBuilder) sym_v1;
 			StringExpression sym_v2 = StringExpression._valueOf((StringExpression) sym_v3.getstr());
-			int objRef = th.getHeap().newString("", th).getIndex(); /*
+			int objRef = th.getHeap().newString("", th).getObjectRef(); /*
 																																	 * dummy
 																																	 * String
 																																	 * Object
@@ -2174,7 +2174,7 @@ public class SymbolicStringHandler {
 		} else if (sym_v1 instanceof StringExpression) {
 			sf.pop();
 			StringExpression sym_v2 = StringExpression._valueOf((StringExpression) sym_v1);
-			int objRef = th.getHeap().newString("", th).getIndex(); /*
+			int objRef = th.getHeap().newString("", th).getObjectRef(); /*
 																																	 * dummy
 																																	 * String
 																																	 * Object
@@ -2211,7 +2211,7 @@ public class SymbolicStringHandler {
 			} else { // both operands are symbolic
 				result = sym_v2._concat(sym_v1);
 			}
-			int objRef = th.getHeap().newString("", th).getIndex(); /*
+			int objRef = th.getHeap().newString("", th).getObjectRef(); /*
 																																	 * dummy
 																																	 * String
 																																	 * Object
@@ -2982,7 +2982,7 @@ public class SymbolicStringHandler {
 		} else {
 			sf.pop();
 			ElementInfo ei = th.getHeap().newString("", th);
-			int objRef = ei.getIndex();
+			int objRef = ei.getObjectRef();
 			sf.push(objRef, true);
 			sf.setOperandAttr(sym_v1);
 		}
