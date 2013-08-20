@@ -13,7 +13,7 @@ import org.junit.Test;
  *
  */
 public class TestPrintSimpleSys extends InvokeTest {
-	private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.realtime.SimpleSys.computation(sym#sym)";
+	private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.realtime.SimpleSys.computation(sym#sym#sym)";
 		
 	private static final String CLASSPATH_UPDATED = "+classpath=${jpf-symbc}/build/tests;${jpf-symbc}/../SARTSBenchmarks/bin;${jpf-symbc}/../scjNoRelativeTime/bin;${jpf-symbc}/../JOP/bin";
 	
@@ -44,7 +44,7 @@ public class TestPrintSimpleSys extends InvokeTest {
 	public void mainTest() {
 		if (verifyNoPropertyViolation(JPF_ARGS)) {
 			SimpleSys test = new SimpleSys();
-			test.computation(false, true);
+			test.computation(false, true, 2);
 		}
 	}
 }

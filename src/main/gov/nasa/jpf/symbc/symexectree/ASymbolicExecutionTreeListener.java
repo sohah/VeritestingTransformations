@@ -11,7 +11,8 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.symbc.realtime.RealTimeUtils;
+import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
+import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.util.ObjectList.Iterator;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
@@ -42,16 +43,14 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 		if (!vm.getSystemState().isIgnored()) {
 			MethodInfo mi = instructionToExecute.getMethodInfo();
 			
-			//TODO: move methods from realtimeutils
-			if(RealTimeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
+			if(SymExecTreeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
 				if(!(instructionToExecute instanceof IfInstruction) ||
 				    (instructionToExecute instanceof IfInstruction) &&
 					 !currentThread.isFirstStepInsn()) {
-					this.SETGenerator.build(new InstrContext(instructionToExecute, currentThread.getTopFrame()));
+					this.SETGenerator.build(new InstrContext(instructionToExecute, 
+															 currentThread.getTopFrame(),
+															 PathCondition.getPC(vm)));
 				}
-				/*if(instructionToExecute.getMethodInfo().getLastInsn().equals(instructionToExecute)) {
-					this.translator.finalizeAutomatonConstruction(currentThread.getTopFrame());
-				}*/
 			}
 		}
 	}
@@ -65,16 +64,19 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 	@Override
 	public void choiceGeneratorRegistered(VM vm, ChoiceGenerator<?> nextCG, ThreadInfo currentThread, Instruction executedInstruction) {
 		MethodInfo mi = executedInstruction.getMethodInfo();
-		if(RealTimeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
-			this.SETGenerator.addChoice(new InstrContext(executedInstruction, currentThread.getTopFrame()));
+		if(SymExecTreeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
+			this.SETGenerator.addChoice(new InstrContext(executedInstruction, 
+														 currentThread.getTopFrame(),
+														 PathCondition.getPC(vm)));
 		}
 	}
 	
 	@Override
 	public void stateBacktracked(Search search) {
-		if(RealTimeUtils.isInSymbolicCallChain(search.getVM().getInstruction().getMethodInfo(), search.getVM().getCurrentThread().getTopFrame(), this.jpfConf)) {
-			this.SETGenerator.restoreChoice(new InstrContext(search.getVM().getInstruction(), search.getVM().getCurrentThread().getTopFrame()));
+		if(SymExecTreeUtils.isInSymbolicCallChain(search.getVM().getInstruction().getMethodInfo(), search.getVM().getCurrentThread().getTopFrame(), this.jpfConf)) {
+			this.SETGenerator.restoreChoice(new InstrContext(search.getVM().getInstruction(), 
+											search.getVM().getCurrentThread().getTopFrame(),
+											PathCondition.getPC(search.getVM())));
 		}
-	}
-	
+	}	
 }

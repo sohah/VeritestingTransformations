@@ -3,6 +3,7 @@
  */
 package gov.nasa.jpf.symbc.symexectree;
 
+import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 
@@ -14,10 +15,16 @@ public class InstrContext {
 	
 	private final Instruction instr;
 	private final StackFrame frame;
-
+	private final PathCondition pc;
+	
 	public InstrContext(Instruction instr, StackFrame frame) {
+		this(instr, frame, null);
+	}
+	
+	public InstrContext(Instruction instr, StackFrame frame, PathCondition pc) {
 		this.instr = instr;
 		this.frame = frame;
+		this.pc = pc;
 	}
 	
 	public Instruction getInstr() {
@@ -26,6 +33,10 @@ public class InstrContext {
 	
 	public StackFrame getFrame() {
 		return frame;
+	}
+	
+	public PathCondition getPathCondition() {
+		return this.pc;
 	}
 	
 	@Override

@@ -6,9 +6,12 @@ package gov.nasa.jpf.symbc.symexectree.visualizer;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
+import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.symexectree.SymbolicExecutionTree;
 import gov.nasa.jpf.symbc.symexectree.Transition;
+import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
 
 import java.awt.Color;
 import java.io.File;
@@ -18,6 +21,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.commons.lang.SystemUtils;
 
 import att.grappa.Attribute;
 import att.grappa.Edge;
@@ -64,6 +69,10 @@ public class SETPrettyPrinter {
 			e.printStackTrace();
 		}
 		if(format != PRETTYPRINTER_FORMAT.DOT) {
+			if(!(SystemUtils.IS_OS_LINUX ||
+				 SystemUtils.IS_OS_MAC_OSX ||
+				 SystemUtils.IS_OS_MAC))
+				throw new PrettyPrinterException("UNIX-like OS required for outputting symbolic execution tree as " + format.getFormat());
 			convertDotFile(file, format);
 			file.delete();
 		}
@@ -89,13 +98,14 @@ public class SETPrettyPrinter {
 		Node targetNode = new Node(grappaGraph, instr.getMnemonic() + this.uniqueID++);
 		
 		LinkedList<Attribute> attrs = new LinkedList<>();
-		attrs.add(new Attribute(Attribute.NODE, Attribute.LABEL_ATTR, this.getLabelString(treeNode)));
 		if(instr instanceof InvokeInstruction) {
 			attrs.addAll(this.getInvokeNodeAttr(treeNode));
 		} else if(instr instanceof ReturnInstruction) {
 			attrs.addAll(this.getReturnNodeAttr(treeNode));
 		} else if(instr instanceof IfInstruction) {
 			attrs.addAll(this.getIfNodeAttr(treeNode));
+		} else {
+			attrs.addAll(this.getNormalNodeAttr(treeNode));
 		}
 		for(Attribute attr : attrs)
 			targetNode.setAttribute(attr);
@@ -111,15 +121,36 @@ public class SETPrettyPrinter {
 	}
 	
 	/**
-	 * Override this method if you want a different label string
-	 * for the nodes in the graph. Each line MUST end with a '\r'
+	 * Override this method if you want different attributes
+	 * for the 'normal' nodes (e.g. aload, istore) in the graph.
 	 * @param treeNode
 	 * @return
 	 */
-	protected String getLabelString(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(treeNode.getInstructionContext().getInstr().getMnemonic() + "\r");
-		return sb.toString();
+	protected LinkedList<Attribute> getNormalNodeAttr(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
+		LinkedList<Attribute> attrs = new LinkedList<>();
+		
+		StringBuilder lblBuilder = new StringBuilder();
+		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n");
+		
+		for(Transition in : treeNode.getIncomingTransitions()) {
+			gov.nasa.jpf.symbc.symexectree.Node srcNode = in.getSrcNode();
+			if(srcNode.getInstructionContext().getInstr() instanceof IfInstruction) {
+				PathCondition pc = treeNode.getInstructionContext().getPathCondition();
+				if(pc != null) {
+					lblBuilder.append("Path condition:\\n");
+					String[] pcs = pc.header.stringPC().split("&&");	
+					for(int i = 0; i < pcs.length; i++) {
+						lblBuilder.append(pcs[i]);
+						if(i != pcs.length - 1)
+							lblBuilder.append(" &&\\n");
+					}
+					lblBuilder.append("\r");
+				}
+			}
+		}
+		attrs.add(new Attribute(Attribute.NODE, Attribute.LABEL_ATTR, lblBuilder.toString()));
+		
+		return attrs;
 	}
 	
 	/**
@@ -130,6 +161,17 @@ public class SETPrettyPrinter {
 	 */
 	protected LinkedList<Attribute> getInvokeNodeAttr(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
 		LinkedList<Attribute> attrs = new LinkedList<>();
+		
+		StringBuilder lblBuilder = new StringBuilder();
+		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n");
+		
+		Instruction instr = treeNode.getInstructionContext().getInstr();
+		if(instr instanceof InvokeInstruction) { // Should not be necessary, but better safe than sorry
+			InvokeInstruction invokeInstr = (InvokeInstruction) instr;
+			lblBuilder.append("Calling: ")
+					  .append(invokeInstr.getInvokedMethod().getBaseName());
+		}
+		attrs.add(new Attribute(Attribute.NODE, Attribute.LABEL_ATTR, lblBuilder.toString()));
 		attrs.add(new Attribute(Attribute.NODE, Attribute.COLOR_ATTR, Color.red));
 		attrs.add(new Attribute(Attribute.NODE, Attribute.SHAPE_ATTR, Attribute.BOX_SHAPE));
 		return attrs;
@@ -143,6 +185,17 @@ public class SETPrettyPrinter {
 	 */
 	protected LinkedList<Attribute> getReturnNodeAttr(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
 		LinkedList<Attribute> attrs = new LinkedList<>();
+		
+		StringBuilder lblBuilder = new StringBuilder();
+		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n");
+		
+		Instruction instr = treeNode.getInstructionContext().getInstr();
+		if(instr instanceof ReturnInstruction) { // Should not be necessary, but better safe than sorry
+			StackFrame frame = treeNode.getInstructionContext().getFrame().getPrevious();
+			if(frame != null)
+				lblBuilder.append("Returning to: ").append(frame.getMethodInfo().getBaseName());
+		}
+		attrs.add(new Attribute(Attribute.NODE, Attribute.LABEL_ATTR, lblBuilder.toString()));
 		attrs.add(new Attribute(Attribute.NODE, Attribute.COLOR_ATTR, Color.red));
 		attrs.add(new Attribute(Attribute.NODE, Attribute.SHAPE_ATTR, Attribute.BOX_SHAPE));
 		return attrs;
@@ -156,6 +209,12 @@ public class SETPrettyPrinter {
 	 */
 	protected LinkedList<Attribute> getIfNodeAttr(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
 		LinkedList<Attribute> attrs = new LinkedList<>();
+		Instruction instr = treeNode.getInstructionContext().getInstr();
+		StringBuilder lblBuilder = new StringBuilder();
+		lblBuilder.append(instr.getMnemonic()).append("\\n");
+		lblBuilder.append("(").append(instr.getFilePos()).append(")");
+		
+		attrs.add(new Attribute(Attribute.NODE, Attribute.LABEL_ATTR, lblBuilder.toString()));
 		attrs.add(new Attribute(Attribute.NODE, Attribute.COLOR_ATTR, Color.blue));
 		attrs.add(new Attribute(Attribute.NODE, Attribute.SHAPE_ATTR, Attribute.DIAMOND_SHAPE));
 		return attrs;

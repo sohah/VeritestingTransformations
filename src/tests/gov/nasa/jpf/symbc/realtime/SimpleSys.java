@@ -34,7 +34,7 @@ public class SimpleSys extends PeriodicThread {
 		RealtimeSystem.start();
 	}
 
-	public int computation(boolean cond, boolean cond2) {
+	public int computation(boolean cond, boolean cond2, int a) {
 		int b = 0;
 		if(cond) {
 			cond2 = !cond;
@@ -52,6 +52,13 @@ public class SimpleSys extends PeriodicThread {
 				b = callee(42);
 			}
 		}
+		if(a > 10)
+			b = callee(42);
+		else {
+			b = callee(42);
+			b = callee(42);
+			b = callee(42);
+		}
 		return b;
 	}
 	
@@ -61,7 +68,7 @@ public class SimpleSys extends PeriodicThread {
 
 	@Override
 	protected boolean run() {
-		computation(false, true);
+		computation(false, true, 2);
 		return false;
 	}
 }

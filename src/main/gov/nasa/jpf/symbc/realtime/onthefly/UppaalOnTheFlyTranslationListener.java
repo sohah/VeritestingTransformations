@@ -12,8 +12,8 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.symbc.realtime.RealTimeUtils;
 import gov.nasa.jpf.symbc.realtime.TimingDocException;
+import gov.nasa.jpf.symbc.symexectree.SymExecTreeUtils;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
@@ -34,7 +34,7 @@ public class UppaalOnTheFlyTranslationListener extends PropertyListenerAdapter {
 	 * Used for constructing an NTA model amenable to model checking using UPPAAL.
 	 * This constructs the TA on the fly as opposed to UppaalTranslationListener, which contains
 	 * an intermediate step - the construction of the symbolic execution tree - before translation.
-	 * This 'branch' is not maintained.
+	 * This 'branch' is likely to not be maintained (e.g. it does not apply optimizations as the other branch).
 	 * @param conf
 	 * @param jpf
 	 */
@@ -66,7 +66,7 @@ public class UppaalOnTheFlyTranslationListener extends PropertyListenerAdapter {
 	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
 		if (!vm.getSystemState().isIgnored()) {
 			MethodInfo mi = instructionToExecute.getMethodInfo();
-			if(RealTimeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
+			if(SymExecTreeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
 				if(!(instructionToExecute instanceof IfInstruction) ||
 				    (instructionToExecute instanceof IfInstruction) &&
 					 !currentThread.isFirstStepInsn()) {
@@ -88,14 +88,14 @@ public class UppaalOnTheFlyTranslationListener extends PropertyListenerAdapter {
 	@Override
 	public void choiceGeneratorRegistered(VM vm, ChoiceGenerator<?> nextCG, ThreadInfo currentThread, Instruction executedInstruction) {
 		MethodInfo mi = executedInstruction.getMethodInfo();
-		if(RealTimeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
+		if(SymExecTreeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
 			this.translator.addChoice(executedInstruction, currentThread.getTopFrame());
 		}
 	}
 	
 	@Override
 	public void stateBacktracked(Search search) {
-		if(RealTimeUtils.isInSymbolicCallChain(search.getVM().getInstruction().getMethodInfo(), search.getVM().getCurrentThread().getTopFrame(), this.jpfConf)) {
+		if(SymExecTreeUtils.isInSymbolicCallChain(search.getVM().getInstruction().getMethodInfo(), search.getVM().getCurrentThread().getTopFrame(), this.jpfConf)) {
 			this.translator.backTracked(search.getVM().getInstruction(), search.getVM().getCurrentThread().getTopFrame());
 		}
 	}

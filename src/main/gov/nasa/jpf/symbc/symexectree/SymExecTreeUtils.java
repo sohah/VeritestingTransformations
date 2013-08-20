@@ -1,7 +1,7 @@
 /**
  * 
  */
-package gov.nasa.jpf.symbc.realtime;
+package gov.nasa.jpf.symbc.symexectree;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -9,13 +9,14 @@ import java.util.List;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
+import gov.nasa.jpf.symbc.realtime.MethodDesc;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 /**
  * @author Kasper S. Luckow <luckow@cs.aau.dk>
  *
  */
-public class RealTimeUtils {
+public class SymExecTreeUtils {
 	
 	/*
 	 * TODO: We should remove the use of the jpfConfig and replace it with a list of MethodDesc
@@ -28,8 +29,8 @@ public class RealTimeUtils {
 	
 	public static boolean isInCallStackOfTargetMethod(Config jpfConf, StackFrame frame) {
 		String[] methods = jpfConf.getStringArray("symbolic.method");
-		List<MethodDesc> symBcDescs = RealTimeUtils.convertJPFConfSymbcDescs(methods);
-		return RealTimeUtils.getTargetMethodOfFrame(symBcDescs, frame) != null;
+		List<MethodDesc> symBcDescs = SymExecTreeUtils.convertJPFConfSymbcDescs(methods);
+		return SymExecTreeUtils.getTargetMethodOfFrame(symBcDescs, frame) != null;
 	}
 	
 	public static MethodDesc getTargetMethodOfFrame(List<MethodDesc> targetMethods, StackFrame frame) {
@@ -37,7 +38,7 @@ public class RealTimeUtils {
 			return null;
 		StackFrame prevStackFrame = frame;
 		while(prevStackFrame != null) {
-			MethodDesc mi = RealTimeUtils.convertMethodInfo(prevStackFrame.getMethodInfo());
+			MethodDesc mi = SymExecTreeUtils.convertMethodInfo(prevStackFrame.getMethodInfo());
 			for(MethodDesc targetMethod : targetMethods) {
 				if(targetMethod.equals(mi)) {
 					return mi;

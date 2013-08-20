@@ -6,7 +6,7 @@ package gov.nasa.jpf.symbc.realtime.onthefly;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.realtime.MethodDesc;
-import gov.nasa.jpf.symbc.realtime.RealTimeUtils;
+import gov.nasa.jpf.symbc.symexectree.SymExecTreeUtils;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 
@@ -47,7 +47,7 @@ public abstract class AUPPAALTranslator {
 		this.jpfConf = jpfConf;	
 		this.targetTetaSARTS = targetTetaSARTS;
 		String[] methods = this.jpfConf.getStringArray("symbolic.method");
-		this.symbolicMethods = RealTimeUtils.convertJPFConfSymbcDescs(methods);
+		this.symbolicMethods = SymExecTreeUtils.convertJPFConfSymbcDescs(methods);
 		this.methodAutomatonMap = new HashMap<MethodDesc, TranslationUnit>();
 		for(MethodDesc m : this.symbolicMethods) {
 			TranslationUnit tu = new TranslationUnit(m, this.targetTetaSARTS);
@@ -67,13 +67,13 @@ public abstract class AUPPAALTranslator {
 	}
 	
 	public void finalizeAutomatonConstruction(StackFrame frame) {
-		MethodDesc mi = RealTimeUtils.getTargetMethodOfFrame(this.symbolicMethods, frame);
+		MethodDesc mi = SymExecTreeUtils.getTargetMethodOfFrame(this.symbolicMethods, frame);
 		TranslationUnit tu = this.methodAutomatonMap.get(mi);
 		constructTransition(this.previouslyExecutedInstr, tu.getPrevLoc(), tu.getFinalLoc(), tu.getAutomaton(), this.targetTetaSARTS);
 	}
 	
 	public void translateInstruction(Instruction instr, StackFrame frame) {
-		MethodDesc mi = RealTimeUtils.getTargetMethodOfFrame(this.symbolicMethods, frame);
+		MethodDesc mi = SymExecTreeUtils.getTargetMethodOfFrame(this.symbolicMethods, frame);
 		TranslationUnit tu = this.methodAutomatonMap.get(mi);
 		Location nxtLoc = null;
 		if(instr instanceof IfInstruction) {
@@ -101,13 +101,13 @@ public abstract class AUPPAALTranslator {
 	}
 	
 	public void addChoice(Instruction instr, StackFrame frame) {
-		MethodDesc mi = RealTimeUtils.getTargetMethodOfFrame(this.symbolicMethods, frame);
+		MethodDesc mi = SymExecTreeUtils.getTargetMethodOfFrame(this.symbolicMethods, frame);
 		TranslationUnit tu = this.methodAutomatonMap.get(mi);
 		tu.addChoice(instr);
 	}
 	
 	public void backTracked(Instruction instr, StackFrame frame) {
-		MethodDesc mi = RealTimeUtils.getTargetMethodOfFrame(this.symbolicMethods, frame);
+		MethodDesc mi = SymExecTreeUtils.getTargetMethodOfFrame(this.symbolicMethods, frame);
 		TranslationUnit tu = this.methodAutomatonMap.get(mi);
 		tu.restoreToPrevChoice();
 	}

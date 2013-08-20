@@ -10,7 +10,6 @@ import java.util.Stack;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.realtime.MethodDesc;
-import gov.nasa.jpf.symbc.realtime.RealTimeUtils;
 import gov.nasa.jpf.vm.Instruction;
 
 /**
@@ -34,7 +33,7 @@ public class SymbolicExecutionTreeGenerator {
 		this.previouslyExecutedInstr = null;
 		
 		String[] methods = this.jpfConf.getStringArray("symbolic.method");
-		this.symbolicMethods = RealTimeUtils.convertJPFConfSymbcDescs(methods);
+		this.symbolicMethods = SymExecTreeUtils.convertJPFConfSymbcDescs(methods);
 		this.methTUMap = new HashMap<MethodDesc, TranslationUnit>();
 		for(MethodDesc m : this.symbolicMethods) {
 			TranslationUnit tu = new TranslationUnit(m);
@@ -43,7 +42,7 @@ public class SymbolicExecutionTreeGenerator {
 	}
 	
 	public void build(InstrContext instrCtx) {
-		MethodDesc mi = RealTimeUtils.getTargetMethodOfFrame(this.symbolicMethods, instrCtx.getFrame());
+		MethodDesc mi = SymExecTreeUtils.getTargetMethodOfFrame(this.symbolicMethods, instrCtx.getFrame());
 		TranslationUnit tu = this.methTUMap.get(mi);
 		Node nxtNode = null;
 		if(instrCtx.getInstr() instanceof IfInstruction) {
@@ -67,13 +66,13 @@ public class SymbolicExecutionTreeGenerator {
 	}
 	
 	public void addChoice(InstrContext instrCtx) {
-		MethodDesc mi = RealTimeUtils.getTargetMethodOfFrame(this.symbolicMethods, instrCtx.getFrame());
+		MethodDesc mi = SymExecTreeUtils.getTargetMethodOfFrame(this.symbolicMethods, instrCtx.getFrame());
 		TranslationUnit tu = this.methTUMap.get(mi);
 		tu.addChoice(instrCtx);
 	}
 	
 	public void restoreChoice(InstrContext instrCtx) {
-		MethodDesc mi = RealTimeUtils.getTargetMethodOfFrame(this.symbolicMethods, instrCtx.getFrame());
+		MethodDesc mi = SymExecTreeUtils.getTargetMethodOfFrame(this.symbolicMethods, instrCtx.getFrame());
 		TranslationUnit tu = this.methTUMap.get(mi);
 		tu.restoreToPrevChoice();
 	}
