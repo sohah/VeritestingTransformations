@@ -12,9 +12,9 @@ import org.junit.Test;
  * @author Kasper S. Luckow <luckow@cs.aau.dk>
  *
  */
-public class TestPrintSimpleSys extends InvokeTest {
-	private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.realtime.SimpleSys.computation(sym#sym#sym)";
-		
+public class TestConcurrentVisualization extends InvokeTest {
+	private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.symexectree.visualizer.TestConcurrentVisualization$ConcCompute.run()";
+	
 	private static final String CLASSPATH_UPDATED = "+classpath=${jpf-symbc}/build/tests;${jpf-symbc}/../SARTSBenchmarks/bin;${jpf-symbc}/../scjNoRelativeTime/bin;${jpf-symbc}/../JOP/bin";
 	
 	private static final String LISTENER = "+listener = gov.nasa.jpf.symbc.symexectree.visualizer.SymExecTreeVisualizerListener";
@@ -35,16 +35,38 @@ public class TestPrintSimpleSys extends InvokeTest {
 											  };
 
 	
-	public static void main(String[] args) {
-		TestPrintSimpleSys testInvocation = new TestPrintSimpleSys();
+	/*public static void main(String[] args) {
+		TestConcurrentVisualization testInvocation = new TestConcurrentVisualization();
 		testInvocation.mainTest();		
-	}
+	}*/
 	
 	@Test
 	public void mainTest() {
 		if (verifyNoPropertyViolation(JPF_ARGS)) {
-			SimpleSys test = new SimpleSys();
-			test.computation(false, true, 2);
+			Thread t1 = new Thread(new ConcCompute());
+			Thread t2 = new Thread(new ConcCompute());
+			
+			t1.start();
+			t2.start();
 		}
+	}
+	private static boolean cond = false;
+	
+	private class ConcCompute implements Runnable {
+
+		@Override
+		public void run() {
+			if(TestConcurrentVisualization.cond) {
+				this.computation(1,3);
+			} else {
+				TestConcurrentVisualization.cond = true;
+			}
+			
+		}
+		
+		private int computation(int a, int b) {
+			return a +b+a+b+b+b+b+b+b;
+		}
+		
 	}
 }

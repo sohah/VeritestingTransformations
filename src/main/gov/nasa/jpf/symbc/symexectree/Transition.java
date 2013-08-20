@@ -16,7 +16,7 @@ public class Transition implements ISymbolicExecutionTreeElement {
 	
 	public Transition(Node src, Node dst) {
 		this.srcNode = src;
-		this.srcNode.addOugoingTransitions(this);;
+		this.srcNode.addOugoingTransitions(this);
 		this.dstNode = dst;
 		this.dstNode.addIncomingTransition(this);
 	}

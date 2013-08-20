@@ -22,20 +22,15 @@ public class SymExecTreeVisualizerListener extends ASymbolicExecutionTreeListene
 	private SETPrettyPrinter dotPrinter;
 	/**
 	 * Convert DOT file:
-	 * symbolic.visualiser.outputformat = [png|eps|dot]		(default: dot)
+	 * symbolic.visualiser.outputformat = [png|eps|dot|pdf]		(default: dot)
 	 */
 	public SymExecTreeVisualizerListener(Config conf, JPF jpf) {
 		super(conf, jpf);
 		this.dotFileOutputPath = conf.getString("symbolic.visualiser.basepath");
 		if(this.dotFileOutputPath == null)
 			throw new SymExecTreeVisualierException("symbolic.visualiser.basepath has not been set");
-		String outputFormat = conf.getString("symbolic.visualiser.outputformat", "");
-		PRETTYPRINTER_FORMAT format;
-		if(outputFormat == "") {
-			format = PRETTYPRINTER_FORMAT.DOT;
-		} else {
-			format = PRETTYPRINTER_FORMAT.valueOf("DOT");
-		}
+		String outputFormat = conf.getString("symbolic.visualiser.outputformat", "dot");
+		PRETTYPRINTER_FORMAT format = PRETTYPRINTER_FORMAT.valueOf(outputFormat.toUpperCase());
 		this.dotPrinter = new SETPrettyPrinter(format);
 	}
 

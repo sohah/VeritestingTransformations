@@ -225,7 +225,7 @@ public class SETPrettyPrinter {
 	 * @throws InterruptedException
 	 */
 	private void convertDotFile(File file, PRETTYPRINTER_FORMAT format) throws InterruptedException {
-		String dotCmd = "dot " + file.getAbsolutePath() + " -T" + format.getFormat() + "-o " + file.getAbsolutePath().replace(".dot", ".png");
+		String dotCmd = "dot " + file.getPath() + " -T" + format.getFormat() + " -o " + file.getPath().replace(".dot", "." + format.getFormat());
 		try {
 			Process p = Runtime.getRuntime().exec(dotCmd);
 			p.waitFor();

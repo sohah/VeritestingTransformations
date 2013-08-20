@@ -21,16 +21,12 @@ public class SymbolicExecutionTreeGenerator {
 	private Config jpfConf;
 	private NodeFactory nodeFactory;
 	
-	private Instruction previouslyExecutedInstr;
-	private SymbolicExecutionTree tree;
 	private LinkedList<MethodDesc> symbolicMethods;
 	private HashMap<MethodDesc, TranslationUnit> methTUMap;
 	
 	public SymbolicExecutionTreeGenerator(Config jpfConf, NodeFactory nodeFactory) {
 		this.jpfConf = jpfConf;
 		this.nodeFactory = nodeFactory;
-		
-		this.previouslyExecutedInstr = null;
 		
 		String[] methods = this.jpfConf.getStringArray("symbolic.method");
 		this.symbolicMethods = SymExecTreeUtils.convertJPFConfSymbcDescs(methods);
@@ -56,13 +52,10 @@ public class SymbolicExecutionTreeGenerator {
 			nxtNode = this.nodeFactory.constructNode(instrCtx, tu.getSymTree());
 		}
 		
-		if(this.previouslyExecutedInstr != null) {
+		if(tu.getPrevNode() != null) {
 			new Transition(tu.getPrevNode(), nxtNode, tu.getSymTree());
 		}
 		tu.setPrevNode(nxtNode);
-		
-		//TODO: Do we need this one?
-		this.previouslyExecutedInstr = instrCtx.getInstr();
 	}
 	
 	public void addChoice(InstrContext instrCtx) {

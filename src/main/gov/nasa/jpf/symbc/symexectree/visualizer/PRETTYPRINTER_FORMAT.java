@@ -12,7 +12,8 @@ package gov.nasa.jpf.symbc.symexectree.visualizer;
 public enum PRETTYPRINTER_FORMAT {
 	DOT("dot"),
 	PNG("png"),
-	EPS("eps");
+	EPS("eps"),
+	PDF("pdf");
 	
 	private String format;
 
