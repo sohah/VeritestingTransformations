@@ -21,8 +21,8 @@ public class SymExecTreeVisualizerListener extends ASymbolicExecutionTreeListene
 	private String dotFileOutputPath;
 	private SETPrettyPrinter dotPrinter;
 	/**
-	 * Convert DOT file:
 	 * symbolic.visualiser.outputformat = [png|eps|dot|pdf|ps|svg]		(default: dot)
+	 * symbolic.visualizer.basepath = <output_path>
 	 */
 	public SymExecTreeVisualizerListener(Config conf, JPF jpf	) {
 		super(conf, jpf);
