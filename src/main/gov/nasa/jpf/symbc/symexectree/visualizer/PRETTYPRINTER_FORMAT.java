@@ -13,7 +13,9 @@ public enum PRETTYPRINTER_FORMAT {
 	DOT("dot"),
 	PNG("png"),
 	EPS("eps"),
-	PDF("pdf");
+	PDF("pdf"),
+	PS("ps"),
+	SVG("svg");
 	
 	private String format;
 

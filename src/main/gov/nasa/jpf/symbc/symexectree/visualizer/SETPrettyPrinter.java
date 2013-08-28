@@ -59,7 +59,7 @@ public class SETPrettyPrinter {
 		Graph grappaGraph = makeGrappaGraph(tree);
 		File file = new File(dotOutputBasePath + 
 							 ((dotOutputBasePath.endsWith("/")) ? "" : "/") + 
-							 tree.getTargetMethod().getShortMethodName() + ".dot"); 
+							 tree.getTargetMethod().getMethodName() + ".dot"); 
 		FileOutputStream fo = new FileOutputStream(file);
 		grappaGraph.printGraph(fo);
 		
@@ -98,15 +98,20 @@ public class SETPrettyPrinter {
 		Node targetNode = new Node(grappaGraph, instr.getMnemonic() + this.uniqueID++);
 		
 		LinkedList<Attribute> attrs = new LinkedList<>();
-		if(instr instanceof InvokeInstruction) {
-			attrs.addAll(this.getInvokeNodeAttr(treeNode));
-		} else if(instr instanceof ReturnInstruction) {
-			attrs.addAll(this.getReturnNodeAttr(treeNode));
-		} else if(instr instanceof IfInstruction) {
-			attrs.addAll(this.getIfNodeAttr(treeNode));
-		} else {
-			attrs.addAll(this.getNormalNodeAttr(treeNode));
+		if(treeNode.getOutgoingTransitions().size() == 0)
+			attrs.addAll(this.getFinalNodeAttr(treeNode));
+		else {
+			if(instr instanceof InvokeInstruction) {
+				attrs.addAll(this.getInvokeNodeAttr(treeNode));
+			} else if(instr instanceof ReturnInstruction) {
+				attrs.addAll(this.getReturnNodeAttr(treeNode));
+			} else if(instr instanceof IfInstruction) {
+				attrs.addAll(this.getIfNodeAttr(treeNode));
+			} else {
+				attrs.addAll(this.getNormalNodeAttr(treeNode));
+			}
 		}
+		
 		for(Attribute attr : attrs)
 			targetNode.setAttribute(attr);
 			
@@ -130,22 +135,14 @@ public class SETPrettyPrinter {
 		LinkedList<Attribute> attrs = new LinkedList<>();
 		
 		StringBuilder lblBuilder = new StringBuilder();
-		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n");
-		
+		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n")
+				  .append("(").append(treeNode.getInstructionContext().getInstr().getFilePos()).append(")\\n");
 		for(Transition in : treeNode.getIncomingTransitions()) {
 			gov.nasa.jpf.symbc.symexectree.Node srcNode = in.getSrcNode();
-			if(srcNode.getInstructionContext().getInstr() instanceof IfInstruction) {
+			Instruction instr = srcNode.getInstructionContext().getInstr();
+			if(instr instanceof IfInstruction) {
 				PathCondition pc = treeNode.getInstructionContext().getPathCondition();
-				if(pc != null) {
-					lblBuilder.append("Path condition:\\n");
-					String[] pcs = pc.header.stringPC().split("&&");	
-					for(int i = 0; i < pcs.length; i++) {
-						lblBuilder.append(pcs[i]);
-						if(i != pcs.length - 1)
-							lblBuilder.append(" &&\\n");
-					}
-					lblBuilder.append("\r");
-				}
+				lblBuilder.append(getPathConditionString(pc));
 			}
 		}
 		attrs.add(new Attribute(Attribute.NODE, Attribute.LABEL_ATTR, lblBuilder.toString()));
@@ -168,8 +165,8 @@ public class SETPrettyPrinter {
 		Instruction instr = treeNode.getInstructionContext().getInstr();
 		if(instr instanceof InvokeInstruction) { // Should not be necessary, but better safe than sorry
 			InvokeInstruction invokeInstr = (InvokeInstruction) instr;
-			lblBuilder.append("Calling: ")
-					  .append(invokeInstr.getInvokedMethod().getBaseName());
+			lblBuilder.append("Calling:\\n")
+					  .append(invokeInstr.getInvokedMethod().getFullName());
 		}
 		attrs.add(new Attribute(Attribute.NODE, Attribute.LABEL_ATTR, lblBuilder.toString()));
 		attrs.add(new Attribute(Attribute.NODE, Attribute.COLOR_ATTR, Color.red));
@@ -193,7 +190,7 @@ public class SETPrettyPrinter {
 		if(instr instanceof ReturnInstruction) { // Should not be necessary, but better safe than sorry
 			StackFrame frame = treeNode.getInstructionContext().getFrame().getPrevious();
 			if(frame != null)
-				lblBuilder.append("Returning to: ").append(frame.getMethodInfo().getBaseName());
+				lblBuilder.append("Returning to:\\n").append(frame.getMethodInfo().getFullName());
 		}
 		attrs.add(new Attribute(Attribute.NODE, Attribute.LABEL_ATTR, lblBuilder.toString()));
 		attrs.add(new Attribute(Attribute.NODE, Attribute.COLOR_ATTR, Color.red));
@@ -218,6 +215,40 @@ public class SETPrettyPrinter {
 		attrs.add(new Attribute(Attribute.NODE, Attribute.COLOR_ATTR, Color.blue));
 		attrs.add(new Attribute(Attribute.NODE, Attribute.SHAPE_ATTR, Attribute.DIAMOND_SHAPE));
 		return attrs;
+	}
+	
+	/**
+	 *  Override this method if you want different attributes
+	 * for the 'final' nodes in the graph.
+	 * @param treeNode
+	 * @return
+	 */
+	protected LinkedList<Attribute> getFinalNodeAttr(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
+		LinkedList<Attribute> attrs = new LinkedList<>();
+		Instruction instr = treeNode.getInstructionContext().getInstr();
+		StringBuilder lblBuilder = new StringBuilder();
+		lblBuilder.append(instr.getMnemonic()).append("\\n");
+		lblBuilder.append("(").append(instr.getFilePos()).append(")").append("\\n")
+				  .append(this.getPathConditionString(treeNode.getInstructionContext().getPathCondition()));
+		
+		attrs.add(new Attribute(Attribute.NODE, Attribute.LABEL_ATTR, lblBuilder.toString()));
+		attrs.add(new Attribute(Attribute.NODE, Attribute.COLOR_ATTR, Color.red));
+		return attrs;
+	}
+	
+	private String getPathConditionString(PathCondition pc) {
+		if(pc != null) {
+			StringBuilder pcBuilder = new StringBuilder();
+			pcBuilder.append("Path condition:\\n");
+			String[] pcs = pc.header.stringPC().split("&&");	
+			for(int i = 0; i < pcs.length; i++) {
+				pcBuilder.append(pcs[i]);
+				if(i != pcs.length - 1)
+					pcBuilder.append(" &&\\n");
+			}
+			return pcBuilder.append("\r").toString();
+		} else
+			return "";
 	}
 	
 	/**
