@@ -17,7 +17,6 @@ public class Node implements ISymbolicExecutionTreeElement {
 	private final InstrContext instructionContext;
 	private LinkedList<Transition> incomingTransitions;
 	private LinkedList<Transition> outgoingTransitions;
-	
 
 	public Node(InstrContext instructionContext) {
 		this.instructionContext = instructionContext;
