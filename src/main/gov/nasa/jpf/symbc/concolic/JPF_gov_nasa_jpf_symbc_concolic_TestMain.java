@@ -1,13 +1,14 @@
 package gov.nasa.jpf.symbc.concolic;
 
 
-import gov.nasa.jpf.jvm.MJIEnv;
+import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.RealConstant;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.concolic.FunctionExpression;
+import gov.nasa.jpf.vm.NativePeer;
 
-public class JPF_gov_nasa_jpf_symbc_concolic_TestMain {
+public class JPF_gov_nasa_jpf_symbc_concolic_TestMain extends NativePeer{
 
 	public static double hash__D__D (MJIEnv env, int clsObjRef, double a) {
 		  System.out.println("inside model function hash");

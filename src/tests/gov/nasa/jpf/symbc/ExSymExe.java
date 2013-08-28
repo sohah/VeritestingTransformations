@@ -87,9 +87,10 @@ public class ExSymExe {
 		  //if (z > x)
 			  System.out.println("unreachable");
 	 if (x+6 > 0)
-		  assert false;
+		 System.out.println("br3");//assert false;
 	 else
 		  System.out.println("br2");
+	 System.out.println("PC "+ Debug.getSolvedPC());
   }
   public void test2 (int x, int z) {
 	  System.out.println("in test2 "+ x + " " +z);

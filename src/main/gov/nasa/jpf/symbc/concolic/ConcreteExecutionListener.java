@@ -10,19 +10,20 @@ import java.util.Map;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
-import gov.nasa.jpf.jvm.AnnotationInfo;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.LocalVarInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.RealConstant;
+import gov.nasa.jpf.vm.AnnotationInfo;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.LocalVarInfo;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.VM;
+
 public class ConcreteExecutionListener extends PropertyListenerAdapter {
 
 	Config config;
@@ -41,14 +42,16 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 		this.config = conf;
 	}
 
-	public void instructionExecuted(JVM vm) {
-		Instruction lastInsn =  vm.getLastInstruction();
-		MethodInfo mi = vm.getCurrentThread().getMethod();
+	@Override
+	public void instructionExecuted(VM vm, ThreadInfo currentThread, Instruction nextInstruction, Instruction executedInstruction) {
+
+		Instruction lastInsn =  executedInstruction;
+		MethodInfo mi = executedInstruction.getMethodInfo();
 		if(lastInsn != null && lastInsn instanceof InvokeInstruction) {
 			boolean foundAnote = checkConcreteAnnotation(mi);
 			if(foundAnote) {
 				ThreadInfo ti = vm.getCurrentThread();
-				StackFrame sf = ti.popFrame();
+				StackFrame sf = ti.popAndGetModifiableTopFrame();
 				FunctionExpression result =
 					generateFunctionExpression(mi, (InvokeInstruction)
 													lastInsn, ti);
@@ -135,13 +138,14 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 
 	private void checkReturnType(ThreadInfo ti, MethodInfo mi, Object resultAttr) {
 		String retTypeName = mi.getReturnTypeName();
-		ti.removeArguments(mi);
+		StackFrame sf = ti.getModifiableTopFrame();
+		sf.removeArguments(mi);
 		if(retTypeName.equals("double") || retTypeName.equals("long")) {
-			ti.longPush(0);
-			ti.setLongOperandAttr(resultAttr);
+			sf.pushLong(0);
+			sf.setLongOperandAttr(resultAttr);
 		} else {
-			ti.push(0);
-			ti.setOperandAttr(resultAttr);
+			sf.push(0);
+			sf.setOperandAttr(resultAttr);
 		}
 	}
 

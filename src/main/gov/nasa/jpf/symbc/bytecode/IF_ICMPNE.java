@@ -17,13 +17,12 @@
 
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 //we should factor out some of the code and put it in a parent class for all "if statements"
 
@@ -32,33 +31,33 @@ public class IF_ICMPNE extends gov.nasa.jpf.jvm.bytecode.IF_ICMPNE{
 	    super(targetPosition);
 	  }
 	@Override
-	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+	public Instruction execute (ThreadInfo ti) {
 
-		StackFrame sf = ti.getTopFrame();
+		StackFrame sf = ti.getModifiableTopFrame();
 
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1);
 		IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(0);
 
 		if ((sym_v1 == null) && (sym_v2 == null)) { // both conditions are concrete
 			//System.out.println("Execute IF_ICMPNE: The conditions are concrete");
-			return super.execute(ss, ks, ti);
+			return super.execute(ti);
 		}else{ // at least one condition is symbolic
 			ChoiceGenerator<?> cg;
 
 			if (!ti.isFirstStepInsn()) { // first time around
 				cg = new PCChoiceGenerator(2);
 				((PCChoiceGenerator)cg).setOffset(this.position);
-				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
-				ss.setNextChoiceGenerator(cg);
+				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getFullName());
+				ti.getVM().getSystemState().setNextChoiceGenerator(cg);
 				return this;
 			} else {  // this is what really returns results
-				cg = ss.getChoiceGenerator();
+				cg = ti.getVM().getSystemState().getChoiceGenerator();
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer)cg.getNextChoice()==0 ? false: true;
 			}
 
-			int	v2 = ti.pop();
-			int	v1 = ti.pop();
+			int	v2 = sf.pop();
+			int	v1 = sf.pop();
 			//System.out.println("Execute IF_ICMPNE: "+ conditionValue);
 			PathCondition pc;
 
@@ -87,7 +86,7 @@ public class IF_ICMPNE extends gov.nasa.jpf.jvm.bytecode.IF_ICMPNE{
 				}else
 					pc._addDet(Comparator.NE, v1, sym_v2);
 				if(!pc.simplify())  {// not satisfiable
-					ss.setIgnored(true);
+					ti.getVM().getSystemState().setIgnored(true);
 				}else{
 					//pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
@@ -103,7 +102,7 @@ public class IF_ICMPNE extends gov.nasa.jpf.jvm.bytecode.IF_ICMPNE{
 				}else
 					pc._addDet(Comparator.EQ, v1, sym_v2);
 				if(!pc.simplify())  {// not satisfiable
-					ss.setIgnored(true);
+					ti.getVM().getSystemState().setIgnored(true);
 				}else {
 					//pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);

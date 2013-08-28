@@ -18,17 +18,16 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.Types;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 
 /**
  * Divide 2 doubles
@@ -36,8 +35,9 @@ import gov.nasa.jpf.symbc.numeric.RealExpression;
  */
 public class DDIV extends gov.nasa.jpf.jvm.bytecode.DDIV  {
 
-	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-		StackFrame sf = th.getTopFrame();
+	@Override
+	public Instruction execute (ThreadInfo th) {
+		StackFrame sf = th.getModifiableTopFrame();
 
 		RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(1);
 	    double v1;
@@ -46,22 +46,22 @@ public class DDIV extends gov.nasa.jpf.jvm.bytecode.DDIV  {
 
 
 	    if(sym_v1==null && sym_v2==null) {
-	    	v1 = Types.longToDouble(th.longPop());
-	    	v2 = Types.longToDouble(th.longPop());
+	    	v1 = Types.longToDouble(sf.popLong());
+	    	v2 = Types.longToDouble(sf.popLong());
 	    	if(v1==0)
 	    		return th.createAndThrowException("java.lang.ArithmeticException","division by 0");
 	    	double r = v2 / v1;
-	    	th.longPush(Types.doubleToLong(r));
+	    	sf.pushLong(Types.doubleToLong(r));
 	    	return getNext(th);
 	    }
 
 	    // result is symbolic expression
 	    if(sym_v1==null && sym_v2!=null) {
-	    	v1 = Types.longToDouble(th.longPop());
-	    	v2 = Types.longToDouble(th.longPop());
+	    	v1 = Types.longToDouble(sf.popLong());
+	    	v2 = Types.longToDouble(sf.popLong());
 	    	if(v1==0)
 				return th.createAndThrowException("java.lang.ArithmeticException","div by 0");
-	    	th.longPush(0);
+	    	sf.pushLong(0);
 	    	RealExpression result = sym_v2._div(v1);
 			sf.setLongOperandAttr(result);
 		    return getNext(th);
@@ -76,25 +76,23 @@ public class DDIV extends gov.nasa.jpf.jvm.bytecode.DDIV  {
 		if (!th.isFirstStepInsn()) { // first time around
 			cg = new PCChoiceGenerator(2);
 			((PCChoiceGenerator)cg).setOffset(this.position);
-			((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
-			ss.setNextChoiceGenerator(cg);
+			((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getFullName());
+			th.getVM().getSystemState().setNextChoiceGenerator(cg);
 			return this;
 		} else {  // this is what really returns results
-			cg = ss.getChoiceGenerator();
+			cg = th.getVM().getSystemState().getChoiceGenerator();
 			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			condition = (Integer)cg.getNextChoice()==0 ? false: true;
 		}
 
-		v1 = Types.longToDouble(th.longPop());
-    	v2 = Types.longToDouble(th.longPop());
-		th.longPush(0);
+		v1 = Types.longToDouble(sf.popLong());
+    	v2 = Types.longToDouble(sf.popLong());
+		sf.pushLong(0);
 
 		PathCondition pc;
-		ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
+		ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
 
-		while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-			prev_cg = prev_cg.getPreviousChoiceGenerator();
-		}
+		
 		if (prev_cg == null)
 			pc = new PathCondition();
 		else
@@ -110,7 +108,7 @@ public class DDIV extends gov.nasa.jpf.jvm.bytecode.DDIV  {
 				return th.createAndThrowException("java.lang.ArithmeticException","div by 0");
 			}
 			else {
-				ss.setIgnored(true);
+				th.getVM().getSystemState().setIgnored(true);
 				return getNext(th);
 			}
 		}
@@ -126,13 +124,13 @@ public class DDIV extends gov.nasa.jpf.jvm.bytecode.DDIV  {
 				else
 					result = sym_v1._div_reverse(v2);
 
-				sf = th.getTopFrame();
+				sf = th.getModifiableTopFrame();
 				sf.setLongOperandAttr(result);
 			    return getNext(th);
 
 			}
 			else {
-				ss.setIgnored(true);
+				th.getVM().getSystemState().setIgnored(true);
 				return getNext(th);
 			}
 		}

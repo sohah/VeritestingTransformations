@@ -20,21 +20,8 @@ package gov.nasa.jpf.symbc.bytecode;
 
 
 import gov.nasa.jpf.Config;
-import gov.nasa.jpf.jvm.AnnotationInfo;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.LocalVarInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
-import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.heap.Helper;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
@@ -46,6 +33,17 @@ import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.StringSymbolic;
+import gov.nasa.jpf.vm.AnnotationInfo;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.LocalVarInfo;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.SystemState;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -177,7 +175,7 @@ public class BytecodeUtils {
 	 * @param th The current thread info
 	 * @return an InstructionOrSuper instance saying what to do next.
 	 */
-	public static InstructionOrSuper execute(InvokeInstruction invInst, SystemState ss, KernelState ks, ThreadInfo th) {
+	public static InstructionOrSuper execute(InvokeInstruction invInst, ThreadInfo th) {
 		boolean isStatic = (invInst instanceof INVOKESTATIC);
 		String bytecodeName = invInst.getMnemonic().toUpperCase();
 		String mname = invInst.getInvokedMethodName();
@@ -210,14 +208,7 @@ public class BytecodeUtils {
 		Vector<String> args = new Vector<String>();
 		Config conf = th.getVM().getConfig();
 
-		// TODO: to review: this is from Fujitsu
-		/**** This is where we branch off to handle symbolic string variables *******/
-		SymbolicStringHandler a = new SymbolicStringHandler();
-		Instruction handled = a.handleSymbolicStrings(invInst, ss, th);
-		if(handled != null){ // go to next instruction as symbolic string operation was done
-				return new InstructionOrSuper(false, handled);
-		}
-		// end from Fujitsu
+		
 
 
 		boolean symClass = BytecodeUtils.isClassSymbolic(conf, cname, mi, mname);
@@ -231,10 +222,10 @@ public class BytecodeUtils {
 			if (invInst.getInvokedMethod().getAnnotation("gov.nasa.jpf.symbc.Preconditions") != null) {
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(1);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return new InstructionOrSuper(false, invInst);
 				} else { // this is what really returns results
-					cg = ss.getChoiceGenerator();
+					cg = th.getVM().getChoiceGenerator();
 					if (!(cg instanceof PCChoiceGenerator)) // the choice comes from super
 						return new InstructionOrSuper(true, null);
 				}
@@ -258,7 +249,7 @@ public class BytecodeUtils {
 			Map<String, Expression> expressionMap = new HashMap<String, Expression>();
 
 			//take care of the method arguments
-			StackFrame sf = th.getTopFrame(); // get a hold of the stack frame of the caller
+			StackFrame sf = th.getModifiableTopFrame();// get a hold of the stack frame of the caller
 
 			// number of words; we skip over 'this' for non-static methods
 			int numStackSlots = invInst.getArgSize() - (isStatic ? 0 : 1);
@@ -389,7 +380,6 @@ public class BytecodeUtils {
 			FieldInfo[] fields = ci.getDeclaredInstanceFields();
 			ElementInfo ei;
 			if (isStatic) {
-				//DynamicArea da = th.getVM().getDynamicArea();
 				ei = th.getElementInfo(ci.getClassObjectRef());
 			} else {
 				int objRef = th.getCalleeThis(invInst.getArgSize());
@@ -498,7 +488,7 @@ public class BytecodeUtils {
 				//	should check PC for satisfiability
 				if (!pc.simplify()) {// not satisfiable
 					//System.out.println("Precondition not satisfiable");
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					//pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);

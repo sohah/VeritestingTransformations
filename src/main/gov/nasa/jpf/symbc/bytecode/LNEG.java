@@ -18,12 +18,11 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 
 /**
@@ -33,18 +32,18 @@ import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 public class LNEG extends gov.nasa.jpf.jvm.bytecode.LNEG {
 
   @Override
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-    StackFrame sf = th.getTopFrame();
+  public Instruction execute (ThreadInfo th) {
+    StackFrame sf = th.getModifiableTopFrame();
 
     IntegerExpression sym_v1 = (IntegerExpression) sf.getLongOperandAttr();
-    long v1 = th.longPop();
+    long v1 = sf.popLong();
     
   //System.out.println("Execute LNEG: "+Helper.get(index));
     
     if(sym_v1==null)
-        th.longPush(-v1); // we'll still do the concrete execution
+        sf.pushLong(-v1); // we'll still do the concrete execution
     else
-        th.longPush(0);
+        sf.pushLong(0);
     
     IntegerExpression result = null;
     if(sym_v1!=null) {

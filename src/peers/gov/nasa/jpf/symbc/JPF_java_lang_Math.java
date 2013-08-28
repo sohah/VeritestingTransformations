@@ -19,15 +19,17 @@
 
 package gov.nasa.jpf.symbc;
 
-import gov.nasa.jpf.jvm.MJIEnv;
+import gov.nasa.jpf.annotation.MJI;
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.MJIEnv;
+import gov.nasa.jpf.vm.NativePeer;
 
 /**
  * MJI NativePeer class for java.lang.Math library abstraction
  */
 
 // simple functions abs, min, max
-public class JPF_java_lang_Math {
+public class JPF_java_lang_Math extends NativePeer{
 
   // <2do> those are here to hide their implementation from traces, not to
   // increase performance. If we want to do that, we should probably inline
@@ -101,7 +103,7 @@ public class JPF_java_lang_Math {
 //	  System.err.println("Warning: Math.min not modeled yet");
 //	  return Math.min(a, b);
 //  }
-
+  @MJI
   public static double sqrt__D__D (MJIEnv env, int clsObjRef, double a) {
 	  Object [] attrs = env.getArgAttributes();
 	  if (attrs==null) // concrete? I think
@@ -117,13 +119,13 @@ public class JPF_java_lang_Math {
 		  return 0;
 	  }
   }
-
+  @MJI
   public static double random____D (MJIEnv env, int clsObjRef) {
     return Math.random();
   }
 
   
-
+  @MJI
   public static double exp__D__D (MJIEnv env, int clsObjRef, double a) {
       Object [] attrs = env.getArgAttributes();
       if (attrs==null) // concrete? I think
@@ -139,7 +141,7 @@ public class JPF_java_lang_Math {
 		  return 0;
 	  }
   }
-
+  @MJI
   public static double asin__D__D (MJIEnv env, int clsObjRef, double a) {
 	  Object [] attrs = env.getArgAttributes();
 	  if (attrs==null) // concrete? I think
@@ -155,7 +157,7 @@ public class JPF_java_lang_Math {
 		  return 0;
 	  }
   }
-
+  @MJI
   public static double acos__D__D (MJIEnv env, int clsObjRef, double a) {
 	  Object [] attrs = env.getArgAttributes();
 	  if (attrs==null) // concrete? I think
@@ -172,7 +174,7 @@ public class JPF_java_lang_Math {
 	  }
 
   }
-
+  @MJI
   public static double atan__D__D (MJIEnv env, int clsObjRef, double a) {
       Object [] attrs = env.getArgAttributes();
       if (attrs==null) // concrete? I think
@@ -188,7 +190,7 @@ public class JPF_java_lang_Math {
 		  return 0;
 	  }
   }
-
+  @MJI
   public static double atan2__DD__D (MJIEnv env, int clsObjRef, double a, double b) {
       Object [] attrs = env.getArgAttributes();
       if (attrs==null) // concrete? I think
@@ -224,7 +226,7 @@ public class JPF_java_lang_Math {
 //	  System.err.println("Warning: Math.floor not modeled yet");
 //      return Math.floor(a);
 //  }
-
+  @MJI
   public static double log__D__D (MJIEnv env, int clsObjRef, double a) {
       Object [] attrs = env.getArgAttributes();
       if (attrs==null) // concrete? I think
@@ -240,7 +242,7 @@ public class JPF_java_lang_Math {
 		  return 0;
 	  }
   }
-
+  @MJI
   public static double log10__D__D (MJIEnv env, int clsObjRef, double a) {
 	      Object [] attrs = env.getArgAttributes();
 	      if (attrs==null) // concrete? I think
@@ -262,7 +264,7 @@ public class JPF_java_lang_Math {
 //	  System.err.println("Warning: Math.rint not modeled yet");
 //	  return Math.rint(a);
 //  }
-
+  @MJI
   public static double tan__D__D (MJIEnv env, int clsObjRef, double a) {
 	  Object [] attrs = env.getArgAttributes();
 	  if (attrs==null) // concrete? I think
@@ -278,7 +280,7 @@ public class JPF_java_lang_Math {
 		  return 0;
 	  }
   }
-
+  @MJI
   public static double sin__D__D (MJIEnv env, int clsObjRef, double a) {
 	  Object [] attrs = env.getArgAttributes();
 	  if (attrs==null) // concrete? I think
@@ -295,7 +297,7 @@ public class JPF_java_lang_Math {
 	  }
 
   }
-
+  @MJI
   public static double cos__D__D (MJIEnv env, int clsObjRef, double a) {
 	  Object [] attrs = env.getArgAttributes();
 	  if (attrs==null) // concrete? I think
@@ -310,7 +312,7 @@ public class JPF_java_lang_Math {
 		  return 0;
 	  }
   }
-
+  @MJI
   public static double pow__DD__D (MJIEnv env, int clsObjRef, double a, double b) {
 	  System.out.println("here!!!!!");
 	  Object [] attrs = env.getArgAttributes();

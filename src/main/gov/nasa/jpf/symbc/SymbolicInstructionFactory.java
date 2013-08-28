@@ -29,427 +29,425 @@ import za.ac.sun.cs.solver.store.RedisLevelStore;
 import za.ac.sun.cs.solver.store.RedisStore;
 import za.ac.sun.cs.solver.store.Store;
 import gov.nasa.jpf.Config;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.bytecode.*;
 import gov.nasa.jpf.symbc.numeric.MinMax;
-import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
-import gov.nasa.jpf.symbc.numeric.SymbolicReal;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
-import gov.nasa.jpf.util.InstructionFactoryFilter;
+import gov.nasa.jpf.util.ClassInfoFilter;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.Instruction;
 
 
 public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.InstructionFactory {
 
 	  public Instruction aload(int localVarIndex) {
-	    return filter.isInstrumentedClass(ci) ? new ALOAD(localVarIndex) : super.aload(localVarIndex);
+	    return filter.isPassing(ci) ? new ALOAD(localVarIndex) : super.aload(localVarIndex);
 	  }
 
 
 
 	  public Instruction aload_0() {
-	    return (filter.isInstrumentedClass(ci) ? new ALOAD(0): super.aload_0());
+	    return (filter.isPassing(ci) ? new ALOAD(0): super.aload_0());
 	  }
 
 
 	  public Instruction aload_1() {
-	    return (filter.isInstrumentedClass(ci) ? new ALOAD(1): super.aload_1());
+	    return (filter.isPassing(ci) ? new ALOAD(1): super.aload_1());
 	  }
 
 
 	  public Instruction aload_2() {
-	    return (filter.isInstrumentedClass(ci) ? new ALOAD(2): super.aload_2());
+	    return (filter.isPassing(ci) ? new ALOAD(2): super.aload_2());
 	  }
 
 
 	  public Instruction aload_3() {
-	    return (filter.isInstrumentedClass(ci) ? new ALOAD(3): super.aload_3());
+	    return (filter.isPassing(ci) ? new ALOAD(3): super.aload_3());
 	  }
 
 
 	  public Instruction iadd() {
-	    return (filter.isInstrumentedClass(ci) ? new IADD(): super.iadd());
+	    return (filter.isPassing(ci) ? new IADD(): super.iadd());
 	  }
 
 
 	  public Instruction iand() {
-	    return (filter.isInstrumentedClass(ci) ? new IAND(): super.iand()) ;
+	    return (filter.isPassing(ci) ? new IAND(): super.iand()) ;
 	  }
 
 
 	  public Instruction iinc(int localVarIndex, int incConstant) {
-		    return (filter.isInstrumentedClass(ci) ? new IINC(localVarIndex, incConstant) :super.iinc(localVarIndex, incConstant));
+		    return (filter.isPassing(ci) ? new IINC(localVarIndex, incConstant) :super.iinc(localVarIndex, incConstant));
 	  }
 
 
 	  public Instruction isub() {
-	    return (filter.isInstrumentedClass(ci) ? new ISUB() : super.isub());
+	    return (filter.isPassing(ci) ? new ISUB() : super.isub());
 	  }
 
 
 	  public Instruction imul() {
-	    return (filter.isInstrumentedClass(ci) ? new IMUL() : super.imul());
+	    return (filter.isPassing(ci) ? new IMUL() : super.imul());
 	  }
 
 
 	  public Instruction ineg() {
-	    return (filter.isInstrumentedClass(ci) ? new INEG() : super.ineg());
+	    return (filter.isPassing(ci) ? new INEG() : super.ineg());
 	  }
 
 
 	  public Instruction ifle(int targetPc) {
-	    return (filter.isInstrumentedClass(ci) ? new IFLE(targetPc) : super.ifle(targetPc));
+	    return (filter.isPassing(ci) ? new IFLE(targetPc) : super.ifle(targetPc));
 	  }
 
 
 	  public Instruction iflt(int targetPc) {
-	    return (filter.isInstrumentedClass(ci) ? new IFLT(targetPc) : super.iflt(targetPc));
+	    return (filter.isPassing(ci) ? new IFLT(targetPc) : super.iflt(targetPc));
 	  }
 
 
 	  public Instruction ifge(int targetPc) {
-	    return (filter.isInstrumentedClass(ci) ? new IFGE(targetPc): super.ifge(targetPc));
+	    return (filter.isPassing(ci) ? new IFGE(targetPc): super.ifge(targetPc));
 	  }
 
 
 	  public Instruction ifgt(int targetPc) {
-	    return (filter.isInstrumentedClass(ci) ? new IFGT(targetPc): super.ifgt(targetPc));
+	    return (filter.isPassing(ci) ? new IFGT(targetPc): super.ifgt(targetPc));
 	  }
 
 
 	  public Instruction ifeq(int targetPc) {
-	    return (filter.isInstrumentedClass(ci) ? new IFEQ(targetPc): super.ifeq(targetPc));
+	    return (filter.isPassing(ci) ? new IFEQ(targetPc): super.ifeq(targetPc));
 	  }
 
 
 	  public Instruction ifne(int targetPc) {
-	    return (filter.isInstrumentedClass(ci) ? new IFNE(targetPc): super.ifne(targetPc));
+	    return (filter.isPassing(ci) ? new IFNE(targetPc): super.ifne(targetPc));
 	  }
 
 
 	  public Instruction invokestatic(String clsName, String methodName, String methodSignature) {
-	    return (filter.isInstrumentedClass(ci) ? new INVOKESTATIC(clsName, methodName, methodSignature): super.invokestatic(clsName, methodName, methodSignature))
+	    return (filter.isPassing(ci) ? new INVOKESTATIC(clsName, methodName, methodSignature): super.invokestatic(clsName, methodName, methodSignature))
 	    		;
 	  }
 
 
 	  public Instruction invokevirtual(String clsName, String methodName, String methodSignature) {
-		    return (filter.isInstrumentedClass(ci) ? new INVOKEVIRTUAL(clsName, methodName, methodSignature): super.invokevirtual(clsName, methodName, methodSignature));
+		    return (filter.isPassing(ci) ? new INVOKEVIRTUAL(clsName, methodName, methodSignature): super.invokevirtual(clsName, methodName, methodSignature));
 	  }
 
 	  public Instruction invokeinterface(String clsName, String methodName, String methodSignature) {
-		    return (filter.isInstrumentedClass(ci) ? new INVOKEINTERFACE(clsName, methodName, methodSignature): super.invokeinterface(clsName, methodName, methodSignature));
+		    return (filter.isPassing(ci) ? new INVOKEINTERFACE(clsName, methodName, methodSignature): super.invokeinterface(clsName, methodName, methodSignature));
 	  }
 
 	  public Instruction invokespecial(String clsName, String methodName, String methodSignature) {
-		    return (filter.isInstrumentedClass(ci) ? new INVOKESPECIAL(clsName, methodName, methodSignature): super.invokespecial(clsName, methodName, methodSignature));
+		    return (filter.isPassing(ci) ? new INVOKESPECIAL(clsName, methodName, methodSignature): super.invokespecial(clsName, methodName, methodSignature));
 	  }
 
 
 	  public Instruction if_icmpge(int targetPc) {
-		    return (filter.isInstrumentedClass(ci) ? new IF_ICMPGE(targetPc): super.if_icmpge(targetPc));
+		    return (filter.isPassing(ci) ? new IF_ICMPGE(targetPc): super.if_icmpge(targetPc));
 	  }
 
 
 	  public Instruction if_icmpgt(int targetPc) {
-		    return (filter.isInstrumentedClass(ci) ? new IF_ICMPGT(targetPc): super.if_icmpgt(targetPc));
+		    return (filter.isPassing(ci) ? new IF_ICMPGT(targetPc): super.if_icmpgt(targetPc));
 	  }
 
 
 	  public Instruction if_icmple(int targetPc) {
-		    return (filter.isInstrumentedClass(ci) ? new IF_ICMPLE(targetPc): super.if_icmple(targetPc));
+		    return (filter.isPassing(ci) ? new IF_ICMPLE(targetPc): super.if_icmple(targetPc));
 	  }
 
 
 	  public Instruction if_icmplt(int targetPc) {
-		    return (filter.isInstrumentedClass(ci) ? new IF_ICMPLT(targetPc): super.if_icmplt(targetPc));
+		    return (filter.isPassing(ci) ? new IF_ICMPLT(targetPc): super.if_icmplt(targetPc));
 	  }
 
 
 	  public Instruction idiv() {
-	    return (filter.isInstrumentedClass(ci) ? new IDIV(): super.idiv());
+	    return (filter.isPassing(ci) ? new IDIV(): super.idiv());
 	  }
 
 
 	  public Instruction ishl() {
-	    return (filter.isInstrumentedClass(ci) ? new ISHL(): super.ishl());
+	    return (filter.isPassing(ci) ? new ISHL(): super.ishl());
 	  }
 
 
 	  public Instruction ishr() {
-	    return (filter.isInstrumentedClass(ci) ? new ISHR(): super.ishr());
+	    return (filter.isPassing(ci) ? new ISHR(): super.ishr());
 	  }
 
 
 	  public Instruction iushr() {
-	    return (filter.isInstrumentedClass(ci) ? new IUSHR(): super.iushr());
+	    return (filter.isPassing(ci) ? new IUSHR(): super.iushr());
 	  }
 
 
 	  public Instruction ixor() {
-	    return (filter.isInstrumentedClass(ci) ? new IXOR(): super.ixor());
+	    return (filter.isPassing(ci) ? new IXOR(): super.ixor());
 	  }
 
 
 	  public Instruction ior() {
-	    return (filter.isInstrumentedClass(ci) ? new IOR(): super.ior());
+	    return (filter.isPassing(ci) ? new IOR(): super.ior());
 	  }
 
 
 	  public Instruction irem() {
-	    return (filter.isInstrumentedClass(ci) ? new IREM(): super.irem());
+	    return (filter.isPassing(ci) ? new IREM(): super.irem());
 	  }
 
 
 	  public Instruction if_icmpeq(int targetPc) {
-		    return (filter.isInstrumentedClass(ci) ? new IF_ICMPEQ(targetPc): super.if_icmpeq(targetPc));
+		    return (filter.isPassing(ci) ? new IF_ICMPEQ(targetPc): super.if_icmpeq(targetPc));
 	  }
 
 
 	  public Instruction if_icmpne(int targetPc) {
-		    return (filter.isInstrumentedClass(ci) ? new IF_ICMPNE(targetPc): super.if_icmpne(targetPc));
+		    return (filter.isPassing(ci) ? new IF_ICMPNE(targetPc): super.if_icmpne(targetPc));
 	  }
 
 
 
 	  public Instruction fadd() {
-	    return (filter.isInstrumentedClass(ci) ? new FADD(): super.fadd());
+	    return (filter.isPassing(ci) ? new FADD(): super.fadd());
 	  }
 
 
 	  public Instruction fdiv() {
-	    return (filter.isInstrumentedClass(ci) ? new FDIV(): super.fdiv());
+	    return (filter.isPassing(ci) ? new FDIV(): super.fdiv());
 	  }
 
 
 	  public Instruction fmul() {
-	    return (filter.isInstrumentedClass(ci) ? new FMUL(): super.fmul());
+	    return (filter.isPassing(ci) ? new FMUL(): super.fmul());
 	  }
 
 
 	  public Instruction fneg() {
-	    return (filter.isInstrumentedClass(ci) ? new FNEG(): super.fneg());
+	    return (filter.isPassing(ci) ? new FNEG(): super.fneg());
 	  }
 
 
 	  public Instruction frem() {
-	    return (filter.isInstrumentedClass(ci) ? new FREM(): super.frem());
+	    return (filter.isPassing(ci) ? new FREM(): super.frem());
 	  }
 
 
 	  public Instruction fsub() {
-	    return (filter.isInstrumentedClass(ci) ? new FSUB(): super.fsub());
+	    return (filter.isPassing(ci) ? new FSUB(): super.fsub());
 	  }
 
 
 	  public Instruction fcmpg() {
-	    return (filter.isInstrumentedClass(ci) ? new FCMPG(): super.fcmpg())
+	    return (filter.isPassing(ci) ? new FCMPG(): super.fcmpg())
 	    		;
 	  }
 
 
 	  public Instruction fcmpl() {
-		    return (filter.isInstrumentedClass(ci) ? new FCMPL(): super.fcmpl());
+		    return (filter.isPassing(ci) ? new FCMPL(): super.fcmpl());
 		  }
 
 
 	  public Instruction dadd() {
-		    return (filter.isInstrumentedClass(ci) ? new DADD(): super.dadd());
+		    return (filter.isPassing(ci) ? new DADD(): super.dadd());
 		  }
 
 
 	  public Instruction dcmpg() {
-		    return (filter.isInstrumentedClass(ci) ? new DCMPG(): super.dcmpg());
+		    return (filter.isPassing(ci) ? new DCMPG(): super.dcmpg());
 		  }
 
 
 	  public Instruction dcmpl() {
-		    return (filter.isInstrumentedClass(ci) ? new DCMPL(): super.dcmpl());
+		    return (filter.isPassing(ci) ? new DCMPL(): super.dcmpl());
 		  }
 
 
 	  public Instruction ddiv() {
-		    return (filter.isInstrumentedClass(ci) ? new DDIV(): super.ddiv());
+		    return (filter.isPassing(ci) ? new DDIV(): super.ddiv());
 		  }
 
 
 	  public Instruction dmul() {
-		    return (filter.isInstrumentedClass(ci) ? new DMUL(): super.dmul());
+		    return (filter.isPassing(ci) ? new DMUL(): super.dmul());
 		  }
 
 
 	  public Instruction dneg() {
-		    return (filter.isInstrumentedClass(ci) ? new DNEG(): super.dneg());
+		    return (filter.isPassing(ci) ? new DNEG(): super.dneg());
 		  }
 
 
 	  public Instruction drem() {
-		    return (filter.isInstrumentedClass(ci) ? new DREM(): super.drem());
+		    return (filter.isPassing(ci) ? new DREM(): super.drem());
 		  }
 
 
 	  public Instruction dsub() {
-		    return (filter.isInstrumentedClass(ci) ? new DSUB(): super.dsub());
+		    return (filter.isPassing(ci) ? new DSUB(): super.dsub());
 		  }
 
 
 	  public Instruction ladd() {
-		    return (filter.isInstrumentedClass(ci) ? new LADD(): super.ladd());
+		    return (filter.isPassing(ci) ? new LADD(): super.ladd());
 		  }
 
 
 	  public Instruction land() {
-		    return  (filter.isInstrumentedClass(ci) ? new LAND(): super.land());
+		    return  (filter.isPassing(ci) ? new LAND(): super.land());
 		  }
 
 
 	  public Instruction lcmp() {
-		    return (filter.isInstrumentedClass(ci) ? new LCMP(): super.lcmp());
+		    return (filter.isPassing(ci) ? new LCMP(): super.lcmp());
 		  }
 
 
 	  public Instruction ldiv() {
-		    return (filter.isInstrumentedClass(ci) ? new LDIV(): super.ldiv());
+		    return (filter.isPassing(ci) ? new LDIV(): super.ldiv());
 		  }
 
 
 	  public Instruction lmul() {
-		    return (filter.isInstrumentedClass(ci) ? new LMUL(): super.lmul());
+		    return (filter.isPassing(ci) ? new LMUL(): super.lmul());
 		  }
 
 
 	  public Instruction lneg() {
-		    return (filter.isInstrumentedClass(ci) ? new LNEG(): super.lneg());
+		    return (filter.isPassing(ci) ? new LNEG(): super.lneg());
 		  }
 
 
 	  public Instruction lor() {
-		  return (filter.isInstrumentedClass(ci) ? new LOR(): super.lor());
+		  return (filter.isPassing(ci) ? new LOR(): super.lor());
 		  }
 
 
 	  public Instruction lrem() {
-		  return (filter.isInstrumentedClass(ci) ? new LREM(): super.lrem());
+		  return (filter.isPassing(ci) ? new LREM(): super.lrem());
 		  }
 
 
 	  public Instruction lshl() {
-		  return (filter.isInstrumentedClass(ci) ? new LSHL(): super.lshl());
+		  return (filter.isPassing(ci) ? new LSHL(): super.lshl());
 		  }
 
 
 	  public Instruction lshr() {
-		  return (filter.isInstrumentedClass(ci) ? new LSHR(): super.lshr());
+		  return (filter.isPassing(ci) ? new LSHR(): super.lshr());
 		  }
 
 
 	  public Instruction lsub() {
-		  return (filter.isInstrumentedClass(ci) ? new LSUB(): super.lsub());
+		  return (filter.isPassing(ci) ? new LSUB(): super.lsub());
 		  }
 
 
 	  public Instruction lushr() {
-		  return (filter.isInstrumentedClass(ci) ? new LUSHR(): super.lushr());
+		  return (filter.isPassing(ci) ? new LUSHR(): super.lushr());
 		  }
 
 
 	  public Instruction lxor() {
-		  return (filter.isInstrumentedClass(ci) ? new LXOR(): super.lxor());
+		  return (filter.isPassing(ci) ? new LXOR(): super.lxor());
 		  }
 
 
 	  public Instruction i2d() {
-		  return (filter.isInstrumentedClass(ci) ? new I2D(): super.i2d());
+		  return (filter.isPassing(ci) ? new I2D(): super.i2d());
 		  }
 
 
 	  public Instruction d2i() {
-		  return (filter.isInstrumentedClass(ci) ? new D2I(): super.d2i());
+		  return (filter.isPassing(ci) ? new D2I(): super.d2i());
 		  }
 
 
 	  public Instruction d2l() {
-		  return (filter.isInstrumentedClass(ci) ?  new D2L(): super.d2l());
+		  return (filter.isPassing(ci) ?  new D2L(): super.d2l());
 		  }
 
 
 	  public Instruction i2f() {
-		  return (filter.isInstrumentedClass(ci) ?  new I2F(): super.i2f());
+		  return (filter.isPassing(ci) ?  new I2F(): super.i2f());
 		  }
 
 
 	  public Instruction l2d() {
-		  return (filter.isInstrumentedClass(ci) ?  new L2D(): super.l2d());
+		  return (filter.isPassing(ci) ?  new L2D(): super.l2d());
 		  }
 
 
 	  public Instruction l2f() {
-		  return (filter.isInstrumentedClass(ci) ?  new L2F(): super.l2f());
+		  return (filter.isPassing(ci) ?  new L2F(): super.l2f());
 		  }
 
 
 	  public Instruction f2l() {
-		  return (filter.isInstrumentedClass(ci) ?  new F2L(): super.f2l());
+		  return (filter.isPassing(ci) ?  new F2L(): super.f2l());
 		  }
 
 
 	  public Instruction f2i() {
-		  return (filter.isInstrumentedClass(ci) ?  new F2I(): super.f2i());
+		  return (filter.isPassing(ci) ?  new F2I(): super.f2i());
 		  }
 
 
 	  public Instruction lookupswitch(int defaultTargetPc, int nEntries) {
-		  return (filter.isInstrumentedClass(ci) ?  new LOOKUPSWITCH(defaultTargetPc, nEntries): super.lookupswitch(defaultTargetPc, nEntries));
+		  return (filter.isPassing(ci) ?  new LOOKUPSWITCH(defaultTargetPc, nEntries): super.lookupswitch(defaultTargetPc, nEntries));
 		  }
 
 
 	  public Instruction tableswitch(int defaultTargetPc, int low, int high) {
-		  return (filter.isInstrumentedClass(ci) ?  new TABLESWITCH(defaultTargetPc, low, high): super.tableswitch(defaultTargetPc, low, high));
+		  return (filter.isPassing(ci) ?  new TABLESWITCH(defaultTargetPc, low, high): super.tableswitch(defaultTargetPc, low, high));
 		  }
 
 
 	  public Instruction d2f() {
-		  return (filter.isInstrumentedClass(ci) ?  new D2F(): super.d2f());
+		  return (filter.isPassing(ci) ?  new D2F(): super.d2f());
 		  }
 
 
 	  public Instruction f2d() {
-		  return (filter.isInstrumentedClass(ci) ?  new F2D(): super.f2d());
+		  return (filter.isPassing(ci) ?  new F2D(): super.f2d());
 		  }
 
 
 	  public Instruction i2b() {
-		  return (filter.isInstrumentedClass(ci) ?  new I2B(): super.i2b());
+		  return (filter.isPassing(ci) ?  new I2B(): super.i2b());
 		  }
 
 
 	  public Instruction i2c() {
-		  return  (filter.isInstrumentedClass(ci) ?  new I2C(): super.i2c());
+		  return  (filter.isPassing(ci) ?  new I2C(): super.i2c());
 		  }
 
 
 	  public Instruction i2s() {
-		  return (filter.isInstrumentedClass(ci) ?  new I2S(): super.i2s());
+		  return (filter.isPassing(ci) ?  new I2S(): super.i2s());
 		  }
 
 
 	  public Instruction i2l() {
-		  return  (filter.isInstrumentedClass(ci) ?  new I2L(): super.i2l());
+		  return  (filter.isPassing(ci) ?  new I2L(): super.i2l());
 		  }
 
 
 	  public Instruction l2i() {
-		  return  (filter.isInstrumentedClass(ci) ?  new L2I(): super.l2i());
+		  return  (filter.isPassing(ci) ?  new L2I(): super.l2i());
 		  }
 
 
 	  public Instruction getfield(String fieldName, String clsName, String fieldDescriptor){
-		  return (filter.isInstrumentedClass(ci) ?  new GETFIELD(fieldName, clsName, fieldDescriptor): super.getfield(fieldName, clsName, fieldDescriptor));
+		  return (filter.isPassing(ci) ?  new GETFIELD(fieldName, clsName, fieldDescriptor): super.getfield(fieldName, clsName, fieldDescriptor));
 		  }
 
 	  public Instruction getstatic(String fieldName, String clsName, String fieldDescriptor){
-		  return (filter.isInstrumentedClass(ci) ?  new GETSTATIC(fieldName, clsName, fieldDescriptor): super.getstatic(fieldName, clsName, fieldDescriptor));
+		  return (filter.isPassing(ci) ?  new GETSTATIC(fieldName, clsName, fieldDescriptor): super.getstatic(fieldName, clsName, fieldDescriptor));
 		  }
 
 		//TODO: to review
@@ -457,23 +455,23 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 
 
 	  public Instruction new_(String clsName) {
-		  return  (filter.isInstrumentedClass(ci) ?  new NEW(clsName): super.new_(clsName));
+		  return  (filter.isPassing(ci) ?  new NEW(clsName): super.new_(clsName));
 		  }
 
 	  public Instruction ifnonnull(int targetPc) {
-		  return  (filter.isInstrumentedClass(ci) ?  new IFNONNULL(targetPc): super.ifnonnull(targetPc));
+		  return  (filter.isPassing(ci) ?  new IFNONNULL(targetPc): super.ifnonnull(targetPc));
 		  }
 
 	  public Instruction ifnull(int targetPc) {
-		  return  (filter.isInstrumentedClass(ci) ?  new IFNULL(targetPc): super.ifnull(targetPc));
+		  return  (filter.isPassing(ci) ?  new IFNULL(targetPc): super.ifnull(targetPc));
 		  }
-	  
+
 	  public Instruction newarray(int typeCode) {
-		  return (filter.isInstrumentedClass(ci) ? new NEWARRAY(typeCode) : super.newarray(typeCode));
+		  return (filter.isPassing(ci) ? new NEWARRAY(typeCode) : super.newarray(typeCode));
 	      }
-	  
+
 	  public Instruction multianewarray(String clsName, int dimensions){
-		  return (filter.isInstrumentedClass(ci) ? new MULTIANEWARRAY(clsName,dimensions) : super.multianewarray(clsName,dimensions));
+		  return (filter.isPassing(ci) ? new MULTIANEWARRAY(clsName,dimensions) : super.multianewarray(clsName,dimensions));
 	      }
 
 	static public String[] dp;
@@ -491,16 +489,16 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 	static public boolean debugMode;
 
 	/*
-	 * Enable logging of info used to detect regressions 
+	 * Enable logging of info used to detect regressions
 	 */
 	static public boolean regressMode;
-	
+
 	/*
 	 * If Green is enabled this solver will be used
 	 * Later we just check if this is null to know if Green is enabled
 	 */
 	static public Solver solver = null;
-	
+
 	/*
 	 * Concolic mode where we concrete execute for now
 	 * only Math operations
@@ -512,12 +510,7 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 	static public int MaxTries = 1;
 
 	ClassInfo ci;
-	InstructionFactoryFilter filter;
-
-	 @Override
-	 public void setClassInfoContext(ClassInfo ci){
-		    this.ci = ci;
-	 }
+	ClassInfoFilter filter; // TODO: fix; do we still need this?
 
 	 private void setupGreen(Config conf) {
 		//------------------------------------
@@ -623,16 +616,16 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 			} else {
 				System.out.println("symbolic.solver.mc=" + s + " <--- UNSUPPORTED");
 			}
-			
+
 			// fix to make sure when Green is used there is no NPE when poking at dp[0] in some bytecodes
 			dp = new String[] {"green"};
 	 }
-	 
+
 	 public  SymbolicInstructionFactory (Config conf){
 
 		System.out.println("Running Symbolic PathFinder ...");
 
-		filter = new InstructionFactoryFilter(null, new String[] {/*"java.*",*/ "javax.*" },null, null);
+		filter = new ClassInfoFilter(null, new String[] {/*"java.*",*/ "javax.*" },null, null);
 
 		if (conf.getBoolean("symbolic.green", false)) {
 			System.out.println("Using Green Framework...");
@@ -694,20 +687,20 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 			  ProblemChoco.timeBound = conf.getInt("symbolic.choco_time_bound", 30000);
 			  System.out.println("symbolic.choco_time_bound="+ProblemChoco.timeBound);
 			}
-			//load CORAL's parameters 
+			//load CORAL's parameters
 			if (dp[0].equalsIgnoreCase("coral") || dp[0].equalsIgnoreCase("debug") || dp[0].equalsIgnoreCase("compare")) {
 				ProblemCoral.configure(conf);
 			}
-	
+
 		}
-		
+
 		String regress = conf.getProperty("symbolic.regression_output");
 		if (regress != null && regress.equals("true")) {
 			regressMode = true;
 		} else {
 			regressMode = false;
 		}
-		
+
 		//Just checking if set, don't care about any values
 		String[] dummy = conf.getStringArray("symbolic.debug");
 		if (dummy != null) {
@@ -716,10 +709,10 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 			debugMode = false;
 		}
 
-	
+
 		MinMax.collectMinMaxInformation(conf);
 		/* no longer required here, now read in MinMax, see line above
-		 
+
 		String[] intmin, intmax, realmin, realmax, dontcare;
 		intmin = conf.getStringArray("symbolic.minint");
 		intmax = conf.getStringArray("symbolic.maxint");

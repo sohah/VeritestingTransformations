@@ -18,28 +18,27 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.Types;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 
 public class DCMPL extends gov.nasa.jpf.jvm.bytecode.DCMPL {
-
-	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
-		StackFrame sf = th.getTopFrame();
+	@Override
+	public Instruction execute(ThreadInfo th) {
+		StackFrame sf = th.getModifiableTopFrame();
 
 		RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(1);
 		RealExpression sym_v2 = (RealExpression) sf.getOperandAttr(3);
 
 		if (sym_v1 == null && sym_v2 == null) { // both conditions are concrete
-			return super.execute(ss, ks, th);
+			return super.execute(th);
 		} else { // at least one condition is symbolic
 			ChoiceGenerator<Integer> cg;
 			int conditionValue;
@@ -47,18 +46,18 @@ public class DCMPL extends gov.nasa.jpf.jvm.bytecode.DCMPL {
 			if (!th.isFirstStepInsn()) { // first time around
 				cg = new PCChoiceGenerator(3);
 				((PCChoiceGenerator)cg).setOffset(this.position);
-				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getCompleteName());
-				ss.setNextChoiceGenerator(cg);
+				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getFullName());
+				th.getVM().getSystemState().setNextChoiceGenerator(cg);
 				return this;
 			} else { // this is what really returns results
-        ChoiceGenerator<?> curCg = ss.getChoiceGenerator();
+        ChoiceGenerator<?> curCg = th.getVM().getSystemState().getChoiceGenerator();
         assert (curCg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + curCg;
         cg = (PCChoiceGenerator)curCg;
 				conditionValue = cg.getNextChoice().intValue() -1;
 			}
 
-			double v1 = Types.longToDouble(th.longPop());
-			double v2 = Types.longToDouble(th.longPop());
+			double v1 = Types.longToDouble(sf.popLong());
+			double v2 = Types.longToDouble(sf.popLong());
 			//System.out.println("Execute DCMPL: " + conditionValue);
 			PathCondition pc;
 
@@ -66,10 +65,8 @@ public class DCMPL extends gov.nasa.jpf.jvm.bytecode.DCMPL {
 			// get the path condition from the
 			// previous choice generator of the same type
 
-			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
-			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-				prev_cg = prev_cg.getPreviousChoiceGenerator();
-			}
+			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
+			
 
 			if (prev_cg == null)
 				pc = new PathCondition();
@@ -89,7 +86,7 @@ public class DCMPL extends gov.nasa.jpf.jvm.bytecode.DCMPL {
 				} else
 					pc._addDet(Comparator.LT, sym_v2, v1);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					// pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
@@ -104,7 +101,7 @@ public class DCMPL extends gov.nasa.jpf.jvm.bytecode.DCMPL {
 				} else
 					pc._addDet(Comparator.EQ, v1, sym_v2);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					// pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
@@ -119,14 +116,14 @@ public class DCMPL extends gov.nasa.jpf.jvm.bytecode.DCMPL {
 				} else
 					pc._addDet(Comparator.GT, sym_v2, v1);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					// pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
 					// System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
 				}
 			}
-			th.push(conditionValue, false);
+			sf.push(conditionValue, false);
 			return getNext(th);
 		}
 	}

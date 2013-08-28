@@ -18,8 +18,9 @@
 //
 package gov.nasa.jpf.symbc.heap;
 
-import gov.nasa.jpf.jvm.choice.IntIntervalGenerator;
+
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.vm.choice.IntIntervalGenerator;
 
 
 public class HeapChoiceGenerator extends IntIntervalGenerator {

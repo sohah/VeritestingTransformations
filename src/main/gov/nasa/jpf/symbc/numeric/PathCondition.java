@@ -23,9 +23,7 @@ import za.ac.sun.cs.solver.Instance;
 import za.ac.sun.cs.solver.expr.IntVariable;
 import za.ac.sun.cs.solver.expr.RealVariable;
 import za.ac.sun.cs.solver.expr.Variable;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.MJIEnv;
+
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
@@ -33,6 +31,9 @@ import gov.nasa.jpf.symbc.numeric.visitors.CollectVariableVisitor;
 import gov.nasa.jpf.symbc.string.StringPathCondition;
 
 import gov.nasa.jpf.symbc.concolic.*;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.MJIEnv;
+import gov.nasa.jpf.vm.VM;
 
 // path condition contains mixed constraints of integers and reals
 
@@ -367,11 +368,11 @@ public class PathCondition implements Comparable<PathCondition> {
 	}
 
 	public static PathCondition getPC(MJIEnv env) {
-	   JVM vm = env.getVM();
+	   VM vm = env.getVM();
 	   return getPC(vm);
 	}
 
-	public static PathCondition getPC(JVM vm) {
+	public static PathCondition getPC(VM vm) {
 	    ChoiceGenerator<?> cg = vm.getChoiceGenerator();
 	    if (cg != null && !(cg instanceof PCChoiceGenerator)) {
 	        cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry excluding="gov/nasa/jpf/symbc/SymbolicListenerClean.java" kind="src" output="build/main" path="src/main"/>
+	<classpathentry kind="src" output="build/examples" path="src/examples"/>
+	<classpathentry kind="src" output="build/peers" path="src/peers"/>
+	<classpathentry kind="src" output="build/tests" path="src/tests"/>
+	<classpathentry kind="src" output="build/annotations" path="src/annotations"/>
+	<classpathentry kind="src" output="build/classes" path="src/classes"/>
 	<classpathentry kind="lib" path="lib/automaton.jar"/>
 	<classpathentry kind="lib" path="lib/choco-1_2_04.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.4.jar"/>
@@ -10,12 +15,6 @@
 	<classpathentry kind="lib" path="lib/scale.jar"/>
 	<classpathentry kind="lib" path="lib/STPJNI.jar"/>
 	<classpathentry kind="lib" path="lib/string.jar"/>
-	<classpathentry kind="src" output="build/main" path="src/main"/>
-	<classpathentry kind="src" output="build/examples" path="src/examples"/>
-	<classpathentry kind="src" output="build/peers" path="src/peers"/>
-	<classpathentry kind="src" output="build/tests" path="src/tests"/>
-	<classpathentry kind="src" output="build/annotations" path="src/annotations"/>
-	<classpathentry kind="src" output="build/classes" path="src/classes"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jpf-core"/>
 	<classpathentry kind="lib" path="lib/coral.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math-1.2.jar"/>
@@ -26,5 +25,8 @@
 	<classpathentry kind="lib" path="lib/opt4j-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/solver.jar"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/junit-4.10.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/grappa.jar"/>
+	<classpathentry kind="lib" path="lib/jaxen.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

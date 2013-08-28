@@ -18,16 +18,9 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.Config;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
 
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.Config;
+
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 import gov.nasa.jpf.symbc.heap.HeapNode;
@@ -39,7 +32,13 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.Instruction;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	public GETSTATIC(String fieldName, String clsName, String fieldDescriptor){
@@ -52,7 +51,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 
 	@Override
-	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo ti) {
+	public Instruction execute (ThreadInfo ti) {
 		ChoiceGenerator<?> prevHeapCG = null;
 		HeapNode[] prevSymRefs = null;
 		int numSymRefs = 0;
@@ -60,7 +59,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		Config conf = ti.getVM().getConfig();
 		String[] lazy = conf.getStringArray("symbolic.lazy");
 		if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
-			return super.execute(ss,ks,ti);
+			return super.execute(ti);
 //TODO: fix polymorphism and subtypes
 //		String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
 //		if(!subtypes.equals("false") &&
@@ -75,22 +74,25 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		}
 
 		ClassInfo ci = fi.getClassInfo();
-		// start: not sure if this code should stay here
-		//	    if (!mi.isClinit(ci) && requiresClinitCalls(ti, ci))
-		//			  return ti.getPC();
-		// end: not sure if this code should stay here
+		// not sure if this code should stay here    
 
-		ElementInfo ei = ks.statics.get(ci.getName());
+	
+		if (!mi.isClinit(ci) && requiresClinitExecution(ti,ci)) {
+		      // note - this returns the next insn in the topmost clinit that just got pushed
+		      return ti.getPC();
+		    }
 
+		ElementInfo ei = ci.getModifiableStaticElementInfo();
+		    
 		//end GETSTATIC code from super
 
 		Object attr = ei.getFieldAttr(fi);
 
 		if (!(fi.isReference() && attr != null && attr != Helper.SymbolicNull))
-			return super.execute(ss,ks,ti);
+			return super.execute(ti);
 
 		if(attr instanceof StringExpression || attr instanceof SymbolicStringBuilder)
-				return super.execute(ss,ks,ti); // Strings are handled specially
+				return super.execute(ti); // Strings are handled specially
 
 		// else: lazy initialization
 
@@ -106,7 +108,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			prevSymRefs = null;
 			numSymRefs = 0;
 			
-			prevHeapCG = ss.getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
+			prevHeapCG = ti.getVM().getSystemState().getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
 
 			if (prevHeapCG != null) {
 					// collect candidates for lazy initialization
@@ -127,10 +129,10 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 //			} else {
 				heapCG = new HeapChoiceGenerator(numSymRefs+2);  //+null,new
 			//}
-			ss.setNextChoiceGenerator(heapCG);
+			ti.getVM().getSystemState().setNextChoiceGenerator(heapCG);
 			return this;
 		} else {  // this is what really returns results
-			heapCG = ss.getChoiceGenerator();
+			heapCG = ti.getVM().getSystemState().getChoiceGenerator();
 			assert (heapCG instanceof HeapChoiceGenerator) : "expected HeapChoiceGenerator, got: " + heapCG;
 			currentChoice = ((HeapChoiceGenerator)heapCG).getNextChoice();
 		}
@@ -174,7 +176,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			daIndex = -1;
 		} else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 			  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
-			  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, ks, pcHeap,
+			  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, pcHeap,
 					  		symInputHeap, numSymRefs, prevSymRefs);
 		  } else {
 			  //TODO: fix
@@ -193,7 +195,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 		ei.setReferenceField(fi,daIndex );
 		ei.setFieldAttr(fi, Helper.SymbolicNull); // was null
-		ti.push( ei.getReferenceField(fi), fi.isReference());
+		ti.getModifiableTopFrame().push( ei.getReferenceField(fi), fi.isReference());
 		((HeapChoiceGenerator)heapCG).setCurrentPCheap(pcHeap);
 		((HeapChoiceGenerator)heapCG).setCurrentSymInputHeap(symInputHeap);
 		if (SymbolicInstructionFactory.debugMode)

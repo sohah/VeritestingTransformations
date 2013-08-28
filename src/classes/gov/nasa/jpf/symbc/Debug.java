@@ -19,7 +19,7 @@
 
 package gov.nasa.jpf.symbc;
 
-import gov.nasa.jpf.jvm.Verify;
+import gov.nasa.jpf.vm.Verify;
 
 public class Debug {
     native public static void printPC(String msg);

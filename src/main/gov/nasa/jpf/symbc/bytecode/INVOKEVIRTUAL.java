@@ -18,20 +18,20 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
+
 // need to fix names
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 
 public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 	public INVOKEVIRTUAL(String clsName, String methodName, String methodSignature) {
 	    super(clsName, methodName, methodSignature);
 	  }
 	@Override
-	public Instruction execute(SystemState ss, KernelState ks, ThreadInfo th) {
+	public Instruction execute( ThreadInfo th) {
 		int objRef = th.getCalleeThis(getArgSize());
 
 	    if (objRef == -1) {
@@ -46,9 +46,9 @@ public class INVOKEVIRTUAL extends gov.nasa.jpf.jvm.bytecode.INVOKEVIRTUAL {
 	      return th.createAndThrowException("java.lang.NoSuchMethodError", clsName + '.' + mname);
 	    }
 	    
-		BytecodeUtils.InstructionOrSuper nextInstr = BytecodeUtils.execute(this, ss, ks, th);
+		BytecodeUtils.InstructionOrSuper nextInstr = BytecodeUtils.execute(this,  th);
         if (nextInstr.callSuper) {
-            return super.execute(ss, ks, th);
+            return super.execute(th);
         } else {
             return nextInstr.inst;
         }

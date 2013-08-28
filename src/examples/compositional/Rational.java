@@ -4,7 +4,7 @@ package compositional;
 // 2. we only do one check
 
 
-import gov.nasa.jpf.jvm.Verify;
+import gov.nasa.jpf.vm.Verify;
 import gov.nasa.jpf.symbc.Preconditions;
 
 public class Rational{

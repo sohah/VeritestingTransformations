@@ -1,13 +1,6 @@
 package gov.nasa.jpf.symbc.bytecode;
 
 import gov.nasa.jpf.Config;
-import gov.nasa.jpf.jvm.ChoiceGenerator;
-import gov.nasa.jpf.jvm.ClassInfo;
-
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 import gov.nasa.jpf.symbc.heap.HeapNode;
@@ -20,7 +13,17 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
+import gov.nasa.jpf.vm.ChoiceGenerator;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.KernelState;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.SystemState;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
+import gov.nasa.jpf.vm.ThreadInfo;
+
+// Corina: I need to add the latest fix from the v6 to treat properly "this"
 
 public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 
@@ -32,7 +35,8 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
     //private int numNewRefs = 0; // # of new reference objects to account for polymorphism -- work of Neha Rungta -- needs to be updated
       boolean abstractClass = false;
 
-	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
+    @Override
+	public Instruction execute (ThreadInfo th) {
 		HeapNode[] prevSymRefs = null; // previously initialized objects of same type: candidates for lazy init
         int numSymRefs = 0; // # of prev. initialized objects
         ChoiceGenerator<?> prevHeapCG = null;
@@ -40,7 +44,7 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		Config conf = th.getVM().getConfig();
 		String[] lazy = conf.getStringArray("symbolic.lazy");
 		if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
-			return super.execute(ss,ks,th);
+			return super.execute(th);
 
 		// TODO: fix handle polymorphism
 		
@@ -50,15 +54,16 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 			//TypeHierarchy.buildTypeHierarchy(th);
 		//}
 
-		Object attr = th.getLocalAttr(index);
+		StackFrame sf = th.getModifiableTopFrame();
+		Object attr = sf.getLocalAttr(index);
 		String typeOfLocalVar = super.getLocalVariableType();
 
 
 		if(attr == null || typeOfLocalVar.equals("?") || attr instanceof SymbolicStringBuilder || attr instanceof StringExpression) {
-			return super.execute(ss,ks,th);
+			return super.execute(th);
 		}
 		
-		ClassInfo typeClassInfo = ClassInfo.getResolvedClassInfo(typeOfLocalVar);
+		ClassInfo typeClassInfo = ClassLoaderInfo.getCurrentResolvedClassInfo(typeOfLocalVar);
 
 		int currentChoice;
 		ChoiceGenerator<?> thisHeapCG;
@@ -70,7 +75,7 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 			numSymRefs = 0;
 			prevHeapCG = null;
 
-			prevHeapCG = ss.getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
+			prevHeapCG = th.getVM().getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
 
 			if (prevHeapCG != null) {
 				// determine # of candidates for lazy initialization
@@ -96,11 +101,11 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 //			} else {
 				thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment);  //+null,new
 			//}
-			ss.setNextChoiceGenerator(thisHeapCG);
+			th.getVM().setNextChoiceGenerator(thisHeapCG);
 			return this;
 		} else { 
 			//this is what returns the results
-			thisHeapCG = ss.getChoiceGenerator();
+			thisHeapCG = th.getVM().getChoiceGenerator();
 			assert(thisHeapCG instanceof HeapChoiceGenerator) :
 				"expected HeapChoiceGenerator, got:" + thisHeapCG;
 			currentChoice = ((HeapChoiceGenerator) thisHeapCG).getNextChoice();
@@ -144,7 +149,7 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		}
 		else if ((currentChoice == (numSymRefs + 1) && !abstractClass) | (currentChoice == numSymRefs && (((IntegerExpression)attr).toString()).contains("this"))) {
 			//creates a new object with all fields symbolic
-			daIndex = Helper.addNewHeapNode(typeClassInfo, th, daIndex, attr, ks, pcHeap,
+			daIndex = Helper.addNewHeapNode(typeClassInfo, th, daIndex, attr, pcHeap,
 							symInputHeap, numSymRefs, prevSymRefs);
 		} else {
 			//TODO: fix subtypes
@@ -162,9 +167,9 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		}
 
 
-		th.setLocalVariable(index, daIndex, true);
-		th.setLocalAttr(index, null);
-		th.push(daIndex, true);
+		sf.setLocalVariable(index, daIndex, true);
+		sf.setLocalAttr(index, null);
+		sf.push(daIndex, true);
 
 		((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 		((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);

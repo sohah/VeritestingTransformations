@@ -18,30 +18,29 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 public class INEG extends gov.nasa.jpf.jvm.bytecode.INEG{
 	
 	@Override
-	public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
+	public Instruction execute (ThreadInfo th) {
 		//return super.execute(ss, ks, th);
 		
-		StackFrame sf = th.getTopFrame();
+		StackFrame sf = th.getModifiableTopFrame();
 
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(); 
-		int v1 = th.pop();
+		int v1 = sf.pop();
 		
 		//System.out.println("Execute INEG: "+Helper.get(index));
 		
 		if(sym_v1==null)
-			th.push(-v1, false); // we'll still do the concrete execution
+			sf.push(-v1, false); // we'll still do the concrete execution
 		else
-			th.push(0, false);
+			sf.push(0, false);
 		
 		IntegerExpression result = null;
 		if(sym_v1!=null) {

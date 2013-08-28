@@ -18,33 +18,30 @@
 //
 package gov.nasa.jpf.symbc.bytecode;
 
-import gov.nasa.jpf.jvm.KernelState;
-import gov.nasa.jpf.jvm.SystemState;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.Types;
-
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 
 public class FADD extends gov.nasa.jpf.jvm.bytecode.FADD {
 
   @Override
-  public Instruction execute (SystemState ss, KernelState ks, ThreadInfo th) {
-	StackFrame sf = th.getTopFrame();
+  public Instruction execute (ThreadInfo th) {
+	StackFrame sf = th.getModifiableTopFrame();
 
 	RealExpression sym_v1 = (RealExpression) sf.getOperandAttr(); 
-	float v1 = Types.intToFloat(th.pop());
+	float v1 = Types.intToFloat(sf.pop());
 		
 	RealExpression sym_v2 = (RealExpression) sf.getOperandAttr();
-	float v2 = Types.intToFloat(th.pop());
+	float v2 = Types.intToFloat(sf.pop());
 	
     float r = v1 + v2;
     
     if(sym_v1==null && sym_v2==null)
-    	th.push(Types.floatToInt(r), false); 
+    	sf.push(Types.floatToInt(r), false); 
     else
-    	th.push(0, false); 
+    	sf.push(0, false); 
     
     RealExpression result = null;
 	if(sym_v1!=null) {
@@ -56,8 +53,6 @@ public class FADD extends gov.nasa.jpf.jvm.bytecode.FADD {
 		result = sym_v2._plus(v1);
 	
 	sf.setOperandAttr(result);
-	
-	//System.out.println("Execute FADD: "+ result);
 	
 	return getNext(th);
     

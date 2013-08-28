@@ -19,8 +19,9 @@
 
 package gov.nasa.jpf.symbc.heap;
 
-import gov.nasa.jpf.jvm.ClassInfo;
+
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+import gov.nasa.jpf.vm.ClassInfo;
 
 
 public class HeapNode {
