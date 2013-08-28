@@ -4,7 +4,6 @@
 package gov.nasa.jpf.symbc.symexectree.visualizer;
 
 import gov.nasa.jpf.symbc.InvokeTest;
-import gov.nasa.jpf.symbc.realtime.SimpleSys;
 
 import org.junit.Test;
 

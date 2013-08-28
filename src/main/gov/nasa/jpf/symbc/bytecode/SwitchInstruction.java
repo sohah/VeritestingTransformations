@@ -43,11 +43,9 @@ public abstract class SwitchInstruction extends gov.nasa.jpf.jvm.bytecode.Switch
 	@SuppressWarnings("deprecation")
 	@Override
 	public Instruction execute ( ThreadInfo ti) {
-
-	
 		StackFrame sf = ti.getModifiableTopFrame();
 		IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
-
+		
 		if(sym_v == null) { // the condition is concrete
 			return super.execute( ti);
 		}
@@ -65,7 +63,6 @@ public abstract class SwitchInstruction extends gov.nasa.jpf.jvm.bytecode.Switch
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			}
 			sym_v = (IntegerExpression) sf.getOperandAttr();
-			;
 			sf.pop();
 			PathCondition pc;
 			//pc is updated with the pc stored in the choice generator above
@@ -96,7 +93,10 @@ public abstract class SwitchInstruction extends gov.nasa.jpf.jvm.bytecode.Switch
 				return mi.getInstructionAt(target);
 			} else {
 				lastIdx = idx;
+				//System.out.println("index "+idx);
 				pc._addDet(Comparator.EQ, sym_v, matches[idx]);
+				//System.out.println(sym_v + "eq"+ matches[idx]);
+				//System.out.println("pc after "+pc);
 				if(!pc.simplify())  {// not satisfiable
 					ti.getVM().getSystemState().setIgnored(true);
 				} else {

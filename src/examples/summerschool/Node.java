@@ -19,13 +19,11 @@ public class Node {
 	
 	public static void main(String[] args) {	
 		Node n = new Node();
-		n = (Node) Debug.makeSymbolicRef("input", n);
 		if (n!=null) {
 			Node result =n.swapNode();
 			Debug.printPC("PC");
 			Debug.printHeapPC("heap PC");
-			Debug.printSymbolicRef(result, "result list");
-			
+			Debug.printSymbolicRef(result, "result list");	
 		}
 	}
 }

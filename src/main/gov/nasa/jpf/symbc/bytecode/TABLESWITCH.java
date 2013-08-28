@@ -19,12 +19,13 @@
 package gov.nasa.jpf.symbc.bytecode;
 
 import gov.nasa.jpf.JPFException;
-
 import gov.nasa.jpf.jvm.bytecode.InstructionVisitor;
+
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
+
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
@@ -45,8 +46,6 @@ public class TABLESWITCH extends SwitchInstruction implements gov.nasa.jpf.vm.Ta
 	    this.max = max;
 	  }
 
-
-		 
 	  @Override
 	  public Instruction execute (ThreadInfo ti) {  
 		StackFrame sf = ti.getModifiableTopFrame();

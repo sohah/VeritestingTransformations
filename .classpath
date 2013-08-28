@@ -24,11 +24,8 @@
 	<classpathentry kind="lib" path="lib/bcel.jar"/>
 	<classpathentry kind="lib" path="lib/opt4j-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/solver.jar"/>
-	<classpathentry kind="lib" path="lib/scjNoRelativeTime_1.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/juppaal_1.0.0.jar"/>
 	<classpathentry kind="lib" path="/jpf-core/lib/junit-4.10.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="lib" path="lib/grappa.jar"/>
 	<classpathentry kind="lib" path="lib/jaxen.jar"/>
 	<classpathentry kind="output" path="build"/>
