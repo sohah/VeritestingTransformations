@@ -30,7 +30,14 @@ public class Debug {
     native public static String getSymbolicBooleanValue(boolean v);
     native public static String getSymbolicStringValue(String v);
     
-    native public static void assume (boolean c);
+    native public static boolean checkAccuracy(double v, double err); 
+    // check accuracy of floating point computation
+    // wrt given error
+    
+    public static void assume (boolean c) {
+    	if(!c)
+    		Verify.ignoreIf(true);
+    }
 
     // puts a new symbolic value in the arg attribute
     native public static int makeSymbolicInteger(String name);
