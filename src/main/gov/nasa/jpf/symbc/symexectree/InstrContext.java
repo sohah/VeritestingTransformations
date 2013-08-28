@@ -57,16 +57,21 @@ public class InstrContext {
 		if (getClass() != obj.getClass())
 			return false;
 		InstrContext other = (InstrContext) obj;
+
 		if (frame == null) {
 			if (other.frame != null)
 				return false;
-		} else if (!frame.equals(other.frame))
+		} else if (!frame.equals(other.frame)) {
 			return false;
+		}
 		if (instr == null) {
 			if (other.instr != null)
 				return false;
-		} else if (!instr.equals(other.instr))
+		} else if(!instr.getMnemonic().equals(other.instr.getMnemonic())) {
 			return false;
+		} else if(!instr.getFilePos().equals(other.instr.getFilePos())) {
+			return false;
+		}
 		return true;
 	}
 }

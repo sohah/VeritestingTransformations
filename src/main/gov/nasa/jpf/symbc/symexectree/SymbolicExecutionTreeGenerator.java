@@ -37,7 +37,7 @@ public class SymbolicExecutionTreeGenerator {
 		}
 	}
 	
-	public void build(InstrContext instrCtx) {
+	public void generate(InstrContext instrCtx) {
 		MethodDesc mi = SymExecTreeUtils.getTargetMethodOfFrame(this.symbolicMethods, instrCtx.getFrame());
 		TranslationUnit tu = this.methTUMap.get(mi);
 		Node nxtNode = null;
@@ -53,9 +53,16 @@ public class SymbolicExecutionTreeGenerator {
 		}
 		
 		if(tu.getPrevNode() != null) {
-			new Transition(tu.getPrevNode(), nxtNode, tu.getSymTree());
+			if(!skipTransition(tu.getPrevNode(), nxtNode))
+				new Transition(tu.getPrevNode(), nxtNode, tu.getSymTree());
 		}
 		tu.setPrevNode(nxtNode);
+	}
+	
+	//We skip the construction of some transitions; if-instructions create
+	// loops to themselves because of the way JPF executes them
+	private boolean skipTransition(Node prevNode, Node nxtNode) {
+		return prevNode == nxtNode;
 	}
 	
 	public void addChoice(InstrContext instrCtx) {

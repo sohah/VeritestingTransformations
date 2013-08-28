@@ -33,6 +33,17 @@ public class SymExecTreeUtils {
 		return SymExecTreeUtils.getTargetMethodOfFrame(symBcDescs, frame) != null;
 	}
 	
+	public static boolean isMethodInfoSymbolicTarget(MethodInfo methInfo, Config jpfConf) {
+		MethodDesc mDesc = convertMethodInfo(methInfo);
+		String[] methods = jpfConf.getStringArray("symbolic.method");
+		List<MethodDesc> symBcDescs = SymExecTreeUtils.convertJPFConfSymbcDescs(methods);
+		for(MethodDesc symbTarget : symBcDescs) {
+			if(symbTarget.equals(mDesc))
+				return true;
+		}
+		return false;
+	}
+	
 	public static MethodDesc getTargetMethodOfFrame(List<MethodDesc> targetMethods, StackFrame frame) {
 		if(frame == null)
 			return null;

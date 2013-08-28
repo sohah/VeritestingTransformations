@@ -78,7 +78,7 @@ public class Node implements ISymbolicExecutionTreeElement {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		/*if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -87,5 +87,7 @@ public class Node implements ISymbolicExecutionTreeElement {
 								  .append(outgoingTransitions, other.outgoingTransitions)
 								  .append(instructionContext, other.instructionContext)
 								  .isEquals();
+								  */
+		return false;
 	}
 }
