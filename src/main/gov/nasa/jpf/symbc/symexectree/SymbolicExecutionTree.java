@@ -5,7 +5,6 @@ package gov.nasa.jpf.symbc.symexectree;
 
 import java.util.LinkedList;
 
-import gov.nasa.jpf.symbc.realtime.MethodDesc;
 import gov.nasa.jpf.vm.MethodInfo;
 
 /**

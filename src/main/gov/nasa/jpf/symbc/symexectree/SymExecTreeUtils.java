@@ -9,7 +9,6 @@ import java.util.List;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
-import gov.nasa.jpf.symbc.realtime.MethodDesc;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 /**
