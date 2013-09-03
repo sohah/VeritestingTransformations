@@ -3,9 +3,6 @@
  */
 package gov.nasa.jpf.symbc.symexectree.visualizer;
 
-import javax.scj.PeriodicParameters;
-import javax.scj.PeriodicThread;
-import javax.scj.RealtimeSystem;
 
 /**
  * @author Kasper S. Luckow <luckow@cs.aau.dk>

@@ -5,7 +5,6 @@ package gov.nasa.jpf.symbc.symexectree;
 
 import java.util.LinkedList;
 
-import uppaal.NTA;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
