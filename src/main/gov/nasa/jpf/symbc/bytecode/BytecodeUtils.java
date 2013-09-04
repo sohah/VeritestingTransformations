@@ -257,15 +257,18 @@ public class BytecodeUtils {
 			int stackIdx = numStackSlots - 1; // stackIdx ranges from numStackSlots-1 to 0
 
 			// special treatment of "this"
-            if(!isStatic) {
-                   
-                	String name = "this";
-                    IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
-                    expressionMap.put(name, sym_v);
-                    sf.setOperandAttr(0, sym_v);
-                    outputString = outputString.concat(" " + sym_v + ",");
-            }
-
+			String lazy[] = conf.getStringArray("symbolic.lazy");
+			if(lazy != null) {
+				if(lazy[0].equalsIgnoreCase("true")) {
+		            if(!isStatic) {
+	                	String name = "this";
+	                    IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
+	                    expressionMap.put(name, sym_v);
+	                    sf.setOperandAttr(0, sym_v);
+	                    outputString = outputString.concat(" " + sym_v + ",");
+		            }
+				}
+			}
 			
 			for (int j = 0; j < argSize; j++) { // j ranges over actual arguments
 				if (symClass || args.get(j).equalsIgnoreCase("SYM")) {
@@ -334,12 +337,14 @@ public class BytecodeUtils {
 
 					else {
                         // the argument is of reference type and it is symbolic
-						// it includes "this"
-						
-						IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
-						expressionMap.put(name, sym_v);
-						sf.setOperandAttr(stackIdx, sym_v);
-						outputString = outputString.concat(" " + sym_v + ",");
+						if(lazy != null) {
+							if(lazy[0].equalsIgnoreCase("true")) {
+								IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
+								expressionMap.put(name, sym_v);
+								sf.setOperandAttr(stackIdx, sym_v);
+								outputString = outputString.concat(" " + sym_v + ",");
+							}
+						}
 						//throw new RuntimeException("## Error: parameter type not yet handled: " + argTypes[j]);
 					}
 
