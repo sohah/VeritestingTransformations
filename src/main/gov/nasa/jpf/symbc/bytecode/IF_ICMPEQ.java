@@ -17,6 +17,7 @@
 
 package gov.nasa.jpf.symbc.bytecode;
 
+import gov.nasa.jpf.symbc.bytecode.util.IFInstrSymbHelper;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Instruction;
@@ -42,71 +43,14 @@ public class IF_ICMPEQ extends gov.nasa.jpf.jvm.bytecode.IF_ICMPEQ{
 			//System.out.println("Execute IF_ICMPEQ: The conditions are concrete");
 			return super.execute(ti);
 		}else{ // at least one condition is symbolic
-			ChoiceGenerator<?> cg;
+			Instruction nxtInstr = IFInstrSymbHelper.getNextInstructionAndSetPCChoice(ti, 
+																					  this, 
+																					  sym_v1,
+																					  sym_v2,
+																					  Comparator.EQ, 
+																					  Comparator.NE);
 
-			if (!ti.isFirstStepInsn()) { // first time around
-				cg = new PCChoiceGenerator(2);
-				((PCChoiceGenerator)cg).setOffset(this.position);
-				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getFullName());
-				ti.getVM().getSystemState().setNextChoiceGenerator(cg);
-				return this;
-			} else {  // this is what really returns results
-				cg = ti.getVM().getSystemState().getChoiceGenerator();
-				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
-				conditionValue = (Integer)cg.getNextChoice()==0 ? false: true;
-			}
-
-			int	v2 = sf.pop();
-			int	v1 = sf.pop();
-			//System.out.println("Execute IF_ICMPEQ: "+ conditionValue);
-			PathCondition pc;
-
-			// pc is updated with the pc stored in the choice generator above
-			// get the path condition from the
-			// previous choice generator of the same type
-
-			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
-
-			if (prev_cg == null)
-				pc = new PathCondition();
-			else
-				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
-
-			assert pc != null;
-
-			if (conditionValue) {
-				if (sym_v1 != null){
-					if (sym_v2 != null){ //both are symbolic values
-						pc._addDet(Comparator.EQ,sym_v1,sym_v2);
-					}else
-						pc._addDet(Comparator.EQ,sym_v1,v2);
-				}else
-					pc._addDet(Comparator.EQ, v1, sym_v2);
-				if(!pc.simplify())  {// not satisfiable
-					ti.getVM().getSystemState().setIgnored(true);
-				}else{
-					//pc.solve();
-					((PCChoiceGenerator) cg).setCurrentPC(pc);
-				//	System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
-				}
-				return getTarget();
-			} else {
-				if (sym_v1 != null){
-					if (sym_v2 != null){ //both are symbolic values
-						pc._addDet(Comparator.NE,sym_v1,sym_v2);
-					}else
-						pc._addDet(Comparator.NE,sym_v1,v2);
-				}else
-					pc._addDet(Comparator.NE, v1, sym_v2);
-				if(!pc.simplify())  {// not satisfiable
-					ti.getVM().getSystemState().setIgnored(true);
-				}else {
-					//pc.solve();
-					((PCChoiceGenerator) cg).setCurrentPC(pc);
-					//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
-				}
-				return getNext(ti);
-			}
+			return nxtInstr;
 		}
 	}
 }

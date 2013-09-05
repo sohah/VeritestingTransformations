@@ -19,6 +19,7 @@
 package gov.nasa.jpf.symbc.bytecode;
 
 
+import gov.nasa.jpf.symbc.bytecode.util.IFInstrSymbHelper;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
@@ -45,61 +46,13 @@ public class IFGE extends gov.nasa.jpf.jvm.bytecode.IFGE {
 			return super.execute( ti);
 		}
 		else { // the condition is symbolic
-			ChoiceGenerator<?> cg;
+			Instruction nxtInstr = IFInstrSymbHelper.getNextInstructionAndSetPCChoice(ti, 
+																					  this, 
+																					  sym_v, 
+																					  Comparator.GE, 
+																					  Comparator.LT);
 
-			if (!ti.isFirstStepInsn()) { // first time around
-				cg = new PCChoiceGenerator(2);
-				((PCChoiceGenerator)cg).setOffset(this.position);
-				((PCChoiceGenerator)cg).setMethodName(this.getMethodInfo().getFullName());
-				ti.getVM().getSystemState().setNextChoiceGenerator(cg);
-				return this;
-			} else {  // this is what really returns results
-				cg = ti.getVM().getSystemState().getChoiceGenerator();
-				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
-				conditionValue = (Integer)cg.getNextChoice()==0 ? false: true;
-			}
-
-			sf.pop();
-			//System.out.println("Execute IFGE: "+ conditionValue);
-			PathCondition pc;
-
-			// pc is updated with the pc stored in the choice generator above
-			// get the path condition from the
-			// previous choice generator of the same type
-
-			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
-			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-				prev_cg = prev_cg.getPreviousChoiceGenerator();
-			}
-
-			if (prev_cg == null)
-				pc = new PathCondition();
-			else
-				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
-
-			assert pc != null;
-
-			if (conditionValue) {
-				pc._addDet(Comparator.GE, sym_v, 0);
-				if(!pc.simplify())  {// not satisfiable
-					ti.getVM().getSystemState().setIgnored(true);
-				}else{
-					//pc.solve();
-					((PCChoiceGenerator) cg).setCurrentPC(pc);
-					//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
-				}
-				return getTarget();
-			} else {
-				pc._addDet(Comparator.LT, sym_v, 0);
-				if(!pc.simplify())  {// not satisfiable
-					ti.getVM().getSystemState().setIgnored(true);
-				}else {
-					//pc.solve();
-					((PCChoiceGenerator) cg).setCurrentPC(pc);
-					//System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
-				}
-				return getNext(ti);
-			}
+			return nxtInstr;
 		}
 	}
 }
