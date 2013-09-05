@@ -18,7 +18,7 @@ public class TestConcSimpleNonShared extends InvokeTest {
 	
 	private static final String LISTENER = "+listener = gov.nasa.jpf.symbc.symexectree.visualizer.SymExecTreeVisualizerListener";
 	//private static final String LISTENER = "+listener = gov.nasa.jpf.symbc.singlethreadanalysis.SingleThreadListener";
-	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ./prettyprint";
+	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ${jpf-symbc}/prettyprint";
 	private static final String FORMAT = "+symbolic.visualizer.outputformat = pdf";
 	private static final String DEBUG = "+symbolic.debug = true";
 	private static final String SHAREDPOLICY = "+vm.por.shared.class = gov.nasa.jpf.vm.GlobalTrackingPolicy";

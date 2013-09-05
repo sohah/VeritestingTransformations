@@ -12,12 +12,12 @@ import org.junit.Test;
  *
  */
 public class TestPrintSimpleSys extends InvokeTest {
-	private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.realtime.SimpleSys.compAB(sym#sym)";
+	private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.symexectree.visualizer.SimpleSys.compAB(sym#sym)";
 		
 	private static final String CLASSPATH_UPDATED = "+classpath=${jpf-symbc}/build/tests;${jpf-symbc}/../SARTSBenchmarks/bin;${jpf-symbc}/../scjNoRelativeTime/bin;${jpf-symbc}/../JOP/bin";
 	
 	private static final String LISTENER = "+listener = gov.nasa.jpf.symbc.symexectree.visualizer.SymExecTreeVisualizerListener";
-	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ./prettyprint";
+	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ${jpf-symbc}/prettyprint";
 	private static final String FORMAT = "+symbolic.visualizer.outputformat = pdf";
 	
 	

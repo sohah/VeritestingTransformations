@@ -17,7 +17,7 @@ private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.sy
 	
 	private static final String LISTENER = "+listener = gov.nasa.jpf.symbc.symexectree.visualizer.SymExecTreeVisualizerListener";
 	//private static final String LISTENER = "+listener = gov.nasa.jpf.symbc.singlethreadanalysis.SingleThreadListener";
-	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ./prettyprint";
+	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ${jpf-symbc}/prettyprint";
 	private static final String FORMAT = "+symbolic.visualizer.outputformat = pdf";
 	private static final String DEBUG = "+symbolic.debug = true";
 

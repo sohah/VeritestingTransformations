@@ -17,7 +17,7 @@ public class TestPrintLoopSys extends InvokeTest {
 	private static final String CLASSPATH_UPDATED = "+classpath=${jpf-symbc}/build/tests";
 	
 	private static final String LISTENER = "+listener = gov.nasa.jpf.symbc.symexectree.visualizer.SymExecTreeVisualizerListener";
-	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ./prettyprint";
+	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ${jpf-symbc}/prettyprint";
 	private static final String FORMAT = "+symbolic.visualizer.outputformat = pdf";
 	
 	
