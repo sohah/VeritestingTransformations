@@ -4,7 +4,7 @@ classpath = ${jpf-symbc}/build/examples
 
 sourcepath = ${jpf-symbc}/src/examples
 
-symbolic.method = sequences.BankAccount.deposit(sym),sequences.BankAccount.withdraw(sym),sequences.BankAccountDriverSeqSymCGOptimization.flag(sym),sequences.BankAccountDriverSeqSymCGOptimization.cond(sym)
+symbolic.method = sequences.BankAccount.deposit(sym),sequences.BankAccount.withdraw(sym),sequences.BankAccountDriverSeqSymCGOptimization.flag(sym)
 
 coverage.include=*.BankAccount
 coverage.show_methods=true
