@@ -81,13 +81,7 @@ public class SymbolicInteger extends LinearIntegerExpression
 	}
 
 	public String stringPC () {
-		if (!PathCondition.flagSolved) {
-			return (name != null) ? name : "INT_" + hashCode();
-
-		} else {
-			return (name != null) ? name + "[" + solution + "]" :
-				"INT_" + hashCode() + "[" + solution + "]";
-		}
+		return (name != null) ? name : "INT_" + hashCode();
 	}
 
 	public String toString () {
