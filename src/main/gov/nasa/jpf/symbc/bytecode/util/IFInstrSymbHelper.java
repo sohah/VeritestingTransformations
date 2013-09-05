@@ -79,33 +79,36 @@ public class IFInstrSymbHelper {
 					if(thirdSat) {
 						newPCChoice = new PCChoiceGenerator(3);
 					} else {
-						newPCChoice = new PCChoiceGenerator(2);
+						//newPCChoice = new PCChoiceGenerator(2);
+						throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
 					}
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else if(thirdSat) {
-					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
+					/*PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
-					return instr;
+					return instr;*/
+					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
 				} else {
-					((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(firstPC);
+					prevPcGen.setCurrentPC(firstPC);
 				}
 			} else if(secSat) {
 				if(thirdSat) {
-					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
+					/*PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
-					return instr;
+					return instr;*/
+					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
 				} else {
-					((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(secPC);
+					prevPcGen.setCurrentPC(secPC);
 				}
 			} else if(thirdSat) {
-				((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(thirdPC);
+				prevPcGen.setCurrentPC(thirdPC);
 			} else {
 				ti.getVM().getSystemState().setIgnored(true);
 			}
@@ -214,33 +217,36 @@ public class IFInstrSymbHelper {
 						newPCChoice = new PCChoiceGenerator(3);
 						
 					} else {
-						newPCChoice = new PCChoiceGenerator(2);
+						//newPCChoice = new PCChoiceGenerator(2);
+						throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
 					}
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else if(thirdSat) {
-					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
+					/*PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
-					return instr;
+					return instr;*/
+					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
 				} else {
-					((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(firstPC);
+					prevPcGen.setCurrentPC(firstPC);
 				}
 			} else if(secSat) {
 				if(thirdSat) {
-					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
+					/*PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
-					return instr;
+					return instr;*/
+					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
 				} else {
-					((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(secPC);
+					prevPcGen.setCurrentPC(secPC);
 				}
 			} else if(thirdSat) {
-				((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(thirdPC);
+				prevPcGen.setCurrentPC(thirdPC);
 			} else {
 				ti.getVM().getSystemState().setIgnored(true);
 			}
@@ -364,7 +370,7 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;*/
 				} else {
-					((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(firstPC);
+					prevPcGen.setCurrentPC(firstPC);
 				}
 			} else if(secSat) {
 				if(thirdSat) {
@@ -376,10 +382,10 @@ public class IFInstrSymbHelper {
 					return instr;*/
 					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
 				} else {
-					((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(secPC);
+					prevPcGen.setCurrentPC(secPC);
 				}
 			} else if(thirdSat) {
-				((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(thirdPC);
+				prevPcGen.setCurrentPC(thirdPC);
 			} else {
 				ti.getVM().getSystemState().setIgnored(true);
 			}
@@ -472,13 +478,13 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(eqPC);
+					prevPcGen.setCurrentPC(eqPC);
 					ti.getModifiableTopFrame().pop();
 					return instr.getTarget();
 				}
 			} else {
 				if(neSat) {
-					((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(nePC);
+					prevPcGen.setCurrentPC(nePC);
 				} else {
 					ti.getVM().getSystemState().setIgnored(true);
 				}
@@ -558,14 +564,14 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(eqPC);
+					prevPcGen.setCurrentPC(eqPC);
 					ti.getModifiableTopFrame().pop();
 					ti.getModifiableTopFrame().pop();
 					return instr.getTarget();
 				}
 			} else {
 				if(neSat) {
-					((PCChoiceGenerator)ti.getVM().getChoiceGenerator()).setCurrentPC(nePC);
+					prevPcGen.setCurrentPC(nePC);
 				} else {
 					ti.getVM().getSystemState().setIgnored(true);
 				}
