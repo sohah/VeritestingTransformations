@@ -4,6 +4,7 @@
 package gov.nasa.jpf.symbc.symexectree.visualizer;
 
 import gov.nasa.jpf.symbc.InvokeTest;
+import gov.nasa.jpf.vm.Verify;
 
 import org.junit.Test;
 
@@ -40,11 +41,12 @@ public class TestCGOptimization extends InvokeTest {
 	public void mainTest() {
 		if (verifyNoPropertyViolation(JPF_ARGS)) {
 			TestSystem test = new TestSystem();
-			test.testIF_ICMPEQ(-1,2);
+			test.driver(200);
 		}
 	}
 	
-	private class TestSystem {
+	private class TestSystem {	
+		
 		public void testIFEQ(int cond) {
 			if(cond != 0) {
 				int b = 90 + 28 + 34 +34 +34+34+34;
@@ -58,6 +60,14 @@ public class TestCGOptimization extends InvokeTest {
 			int c = 2;
 			c += 2;
 		}
+		
+		public void driver(int length) {
+			for(int i = 0; i < length; i++) {
+				testIF_ICMPEQ(1,2);
+			}
+		}
+		
+		private int counter = 0;
 		public void testIF_ICMPEQ(int cond, int cond2) {
 			if(cond != 230) {
 				int b = 90 + 28 + 34 +34 +34+34+34;
@@ -72,10 +82,11 @@ public class TestCGOptimization extends InvokeTest {
 				} else {
 					b = 100;
 				}
-				
+				counter += b;
 			}
 			int c = 2;
 			c += 2;
+			counter += c;
 		}
 		
 	}
