@@ -11,34 +11,32 @@ public class BankAccountDriverSeqSymCGOptimization {
 	public static void testDriver(int length){
 		BankAccount b = new BankAccount(0);
 		for (int i=0; i<length; i++){
-			Verify.beginAtomic();
+			//Verify.beginAtomic();
 			
-			if(flag(true) == 1) {
+			boolean res = flag(true);
+			if(res) {
 				b.deposit(10);
-				if(flag(true) != 1) {
+				if(!res) {
 					int a = 42;
 				}
 				
-			} else if(flag(true) == 0) {
+			} else if(res) {
 				b.withdraw(1);
-				if(flag(true) != 0) {
+				if(!res) {
 					int a = 42;
 				}
 			}
-			Verify.endAtomic();
+			//Verify.endAtomic();
 		}
 	}
 	
-	public static int flag(boolean x) {
-	if (x)
-		return 1;
-	else
-		return 0;
+	public static boolean flag(boolean x) {
+		return x;
 	}
 
 	public static void main(String[] args){
-		testDriver(2);
-		Debug.printPC("Path Condition: ");
-		System.out.println();
+		testDriver(11);
+		//Debug.printPC("Path Condition: ");
+		//System.out.println();
 	}
 }

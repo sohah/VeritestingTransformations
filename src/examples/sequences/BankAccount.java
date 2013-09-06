@@ -21,19 +21,19 @@ public class BankAccount {
     //@Preconditions("amount<1000&&amount>-1000")
 	public void deposit(int amount){
 		if (amount>0)
-			System.out.println("I am easily reachable in deposit");
+			//System.out.println("I am easily reachable in deposit");
 			balance = balance + amount;
 	}
 
     //@Preconditions("amount<1000&&amount>-1000")
 	public void withdraw(int amount){
 		if(amount>balance){
-			System.out.println("I am easily reachable in withdraw");
+			//System.out.println("I am easily reachable in withdraw");
 			return;
 		}
 		if (numberOfWithdrawals>=5){// was 10
 			assert(false);
-			System.out.println("I am very hard to reach in withdraw");
+			//System.out.println("I am very hard to reach in withdraw");
 			return;
 		}
 		balance = balance - amount;
