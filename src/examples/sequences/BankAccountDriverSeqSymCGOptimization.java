@@ -11,22 +11,19 @@ public class BankAccountDriverSeqSymCGOptimization {
 	public static void testDriver(int length){
 		BankAccount b = new BankAccount(0);
 		for (int i=0; i<length; i++){
-			//Verify.beginAtomic();
-			
 			boolean res = flag(true);
 			if(res) {
 				b.deposit(10);
 				if(!res) {
-					int a = 42;
+					b.deposit(5);
 				}
 				
 			} else if(res) {
 				b.withdraw(1);
 				if(!res) {
-					int a = 42;
+					b.withdraw(1);
 				}
 			}
-			//Verify.endAtomic();
 		}
 	}
 	
