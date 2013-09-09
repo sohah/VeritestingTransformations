@@ -1,7 +1,12 @@
 /**
  * 
  */
-package gov.nasa.jpf.symbc.symexectree;
+package gov.nasa.jpf.symbc.symexectree.structure;
+
+import gov.nasa.jpf.symbc.symexectree.ISymbolicExecutionTreeElement;
+import gov.nasa.jpf.symbc.symexectree.InstrContext;
+import gov.nasa.jpf.symbc.symexectree.SymbolicExecutionTreeVisitor;
+import gov.nasa.jpf.symbc.symexectree.Transition;
 
 import java.util.LinkedList;
 
@@ -12,7 +17,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * @author Kasper S. Luckow <luckow@cs.aau.dk>
  *
  */
-public class Node implements ISymbolicExecutionTreeElement {
+public abstract class Node implements ISymbolicExecutionTreeElement {
 	
 	private final InstrContext instructionContext;
 	private LinkedList<Transition> incomingTransitions;

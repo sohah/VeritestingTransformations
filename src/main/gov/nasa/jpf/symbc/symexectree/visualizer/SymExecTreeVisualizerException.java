@@ -11,17 +11,17 @@ import gov.nasa.jpf.symbc.symexectree.SymbolicExecutionTreeRuntimeException;
  * @author Kasper S. Luckow <luckow@cs.aau.dk>
  *
  */
-public class SymExecTreeVisualierException extends SymbolicExecutionTreeRuntimeException {
+public class SymExecTreeVisualizerException extends SymbolicExecutionTreeRuntimeException {
 
-	public SymExecTreeVisualierException (String details) {
+	public SymExecTreeVisualizerException (String details) {
 		super(details);
 	}
 
-	public SymExecTreeVisualierException (Throwable cause) {
+	public SymExecTreeVisualizerException (Throwable cause) {
 		super(cause);
 	}
 
-	public SymExecTreeVisualierException (String details, Throwable cause){
+	public SymExecTreeVisualizerException (String details, Throwable cause){
 		super(details, cause);
 	}
 	

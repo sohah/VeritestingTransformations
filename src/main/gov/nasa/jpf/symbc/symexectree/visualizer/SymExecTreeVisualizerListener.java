@@ -10,7 +10,7 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.symbc.symexectree.ASymbolicExecutionTreeListener;
 import gov.nasa.jpf.symbc.symexectree.DefaultNodeFactory;
 import gov.nasa.jpf.symbc.symexectree.NodeFactory;
-import gov.nasa.jpf.symbc.symexectree.SymbolicExecutionTree;
+import gov.nasa.jpf.symbc.symexectree.structure.SymbolicExecutionTree;
 
 /**
  * @author Kasper S. Luckow <luckow@cs.aau.dk>
@@ -28,7 +28,7 @@ public class SymExecTreeVisualizerListener extends ASymbolicExecutionTreeListene
 		super(conf, jpf);
 		this.dotFileOutputPath = conf.getString("symbolic.visualizer.basepath");
 		if(this.dotFileOutputPath == null)
-			throw new SymExecTreeVisualierException("symbolic.visualizer.basepath has not been set");
+			throw new SymExecTreeVisualizerException("symbolic.visualizer.basepath has not been set");
 		String outputFormat = conf.getString("symbolic.visualizer.outputformat", "dot");
 		PRETTYPRINTER_FORMAT format = PRETTYPRINTER_FORMAT.valueOf(outputFormat.toUpperCase());
 		this.dotPrinter = new SETPrettyPrinter(format);

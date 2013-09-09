@@ -7,8 +7,12 @@ import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
-import gov.nasa.jpf.symbc.symexectree.SymbolicExecutionTree;
 import gov.nasa.jpf.symbc.symexectree.Transition;
+import gov.nasa.jpf.symbc.symexectree.structure.IfNode;
+import gov.nasa.jpf.symbc.symexectree.structure.InvokeNode;
+import gov.nasa.jpf.symbc.symexectree.structure.ReturnNode;
+import gov.nasa.jpf.symbc.symexectree.structure.StdNode;
+import gov.nasa.jpf.symbc.symexectree.structure.SymbolicExecutionTree;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
@@ -35,7 +39,7 @@ import att.grappa.Node;
  */
 public class SETPrettyPrinter {
 	
-	private HashMap<gov.nasa.jpf.symbc.symexectree.Node, Node> visitedTreeNodesMap;
+	private HashMap<gov.nasa.jpf.symbc.symexectree.structure.Node, Node> visitedTreeNodesMap;
 	private PRETTYPRINTER_FORMAT format;
 
 	private int uniqueID;
@@ -79,7 +83,7 @@ public class SETPrettyPrinter {
 	}
 	
 	private Graph makeGrappaGraph(SymbolicExecutionTree tree) {
-		visitedTreeNodesMap = new HashMap<gov.nasa.jpf.symbc.symexectree.Node, Node>();
+		visitedTreeNodesMap = new HashMap<gov.nasa.jpf.symbc.symexectree.structure.Node, Node>();
 		Graph grappaGraph = new Graph(tree.getTargetMethod().getShortMethodName());
 		Attribute graphAttr = new Attribute(Attribute.SUBGRAPH, 
 										   	Attribute.LABEL_ATTR, 
@@ -90,7 +94,7 @@ public class SETPrettyPrinter {
 		return grappaGraph;
 	}
 	
-	private Node recursivelyTraverseSymTree(gov.nasa.jpf.symbc.symexectree.Node treeNode, Graph grappaGraph) {
+	private Node recursivelyTraverseSymTree(gov.nasa.jpf.symbc.symexectree.structure.Node treeNode, Graph grappaGraph) {
 		if(visitedTreeNodesMap.containsKey(treeNode)) {
 			return visitedTreeNodesMap.get(treeNode);
 		}
@@ -101,14 +105,16 @@ public class SETPrettyPrinter {
 		if(treeNode.getOutgoingTransitions().size() == 0)
 			attrs.addAll(this.getFinalNodeAttr(treeNode));
 		else {
-			if(instr instanceof InvokeInstruction) {
-				attrs.addAll(this.getInvokeNodeAttr(treeNode));
-			} else if(instr instanceof ReturnInstruction) {
-				attrs.addAll(this.getReturnNodeAttr(treeNode));
-			} else if(instr instanceof IfInstruction) {
-				attrs.addAll(this.getIfNodeAttr(treeNode));
+			if(treeNode instanceof InvokeNode) {
+				attrs.addAll(this.getNodeAttr((InvokeNode)treeNode));
+			} else if(treeNode instanceof ReturnNode) {
+				attrs.addAll(this.getNodeAttr((ReturnNode)treeNode));
+			} else if(treeNode instanceof IfNode) {
+				attrs.addAll(this.getNodeAttr((IfNode)treeNode));
+			} else if(treeNode instanceof StdNode){
+				attrs.addAll(this.getNodeAttr((StdNode)treeNode));
 			} else {
-				attrs.addAll(this.getNormalNodeAttr(treeNode));
+				throw new SymExecTreeVisualizerException("Node with type: " + treeNode.getClass().getCanonicalName() + " is not supported");
 			}
 		}
 		
@@ -131,14 +137,14 @@ public class SETPrettyPrinter {
 	 * @param treeNode
 	 * @return
 	 */
-	protected LinkedList<Attribute> getNormalNodeAttr(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
+	protected LinkedList<Attribute> getNodeAttr(StdNode treeNode) {
 		LinkedList<Attribute> attrs = new LinkedList<>();
 		
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n")
 				  .append("(").append(treeNode.getInstructionContext().getInstr().getFilePos()).append(")\\n");
 		for(Transition in : treeNode.getIncomingTransitions()) {
-			gov.nasa.jpf.symbc.symexectree.Node srcNode = in.getSrcNode();
+			gov.nasa.jpf.symbc.symexectree.structure.Node srcNode = in.getSrcNode();
 			Instruction instr = srcNode.getInstructionContext().getInstr();
 			if(instr instanceof IfInstruction) {
 				PathCondition pc = treeNode.getInstructionContext().getPathCondition();
@@ -156,7 +162,7 @@ public class SETPrettyPrinter {
 	 * @param treeNode
 	 * @return
 	 */
-	protected LinkedList<Attribute> getInvokeNodeAttr(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
+	protected LinkedList<Attribute> getNodeAttr(InvokeNode treeNode) {
 		LinkedList<Attribute> attrs = new LinkedList<>();
 		
 		StringBuilder lblBuilder = new StringBuilder();
@@ -180,7 +186,7 @@ public class SETPrettyPrinter {
 	 * @param treeNode
 	 * @return
 	 */
-	protected LinkedList<Attribute> getReturnNodeAttr(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
+	protected LinkedList<Attribute> getNodeAttr(ReturnNode treeNode) {
 		LinkedList<Attribute> attrs = new LinkedList<>();
 		
 		StringBuilder lblBuilder = new StringBuilder();
@@ -204,7 +210,7 @@ public class SETPrettyPrinter {
 	 * @param treeNode
 	 * @return
 	 */
-	protected LinkedList<Attribute> getIfNodeAttr(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
+	protected LinkedList<Attribute> getNodeAttr(IfNode treeNode) {
 		LinkedList<Attribute> attrs = new LinkedList<>();
 		Instruction instr = treeNode.getInstructionContext().getInstr();
 		StringBuilder lblBuilder = new StringBuilder();
@@ -223,7 +229,7 @@ public class SETPrettyPrinter {
 	 * @param treeNode
 	 * @return
 	 */
-	protected LinkedList<Attribute> getFinalNodeAttr(gov.nasa.jpf.symbc.symexectree.Node treeNode) {
+	protected LinkedList<Attribute> getFinalNodeAttr(gov.nasa.jpf.symbc.symexectree.structure.Node treeNode) {
 		LinkedList<Attribute> attrs = new LinkedList<>();
 		Instruction instr = treeNode.getInstructionContext().getInstr();
 		StringBuilder lblBuilder = new StringBuilder();

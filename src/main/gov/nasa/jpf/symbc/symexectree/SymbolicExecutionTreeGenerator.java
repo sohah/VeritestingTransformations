@@ -9,6 +9,10 @@ import java.util.Stack;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
+import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
+import gov.nasa.jpf.symbc.symexectree.structure.Node;
+import gov.nasa.jpf.symbc.symexectree.structure.SymbolicExecutionTree;
 import gov.nasa.jpf.vm.Instruction;
 
 /**
@@ -44,11 +48,11 @@ public class SymbolicExecutionTreeGenerator {
 			if(tu.hasIfInstrBeenTranslated(instrCtx)) {
 				nxtNode = tu.getIfInstrNode(instrCtx);
 			} else {
-				nxtNode = this.nodeFactory.constructNode(instrCtx, tu.getSymTree());
+				nxtNode = this.constructNode(instrCtx, tu.getSymTree());
 				tu.addIfInstrCtx(instrCtx, nxtNode);
 			}
 		} else {
-			nxtNode = this.nodeFactory.constructNode(instrCtx, tu.getSymTree());
+			nxtNode = this.constructNode(instrCtx, tu.getSymTree());
 		}
 		
 		if(tu.getPrevNode() != null) {
@@ -56,6 +60,19 @@ public class SymbolicExecutionTreeGenerator {
 				new Transition(tu.getPrevNode(), nxtNode, tu.getSymTree());
 		}
 		tu.setPrevNode(nxtNode);
+	}
+	
+	private Node constructNode(InstrContext instrCtx, SymbolicExecutionTree tree) {
+		Instruction instr = instrCtx.getInstr();
+		if(instr instanceof IfInstruction) {
+			return this.nodeFactory.constructIfNode(instrCtx, tree);
+		} else if(instr instanceof InvokeInstruction) {
+			return this.nodeFactory.constructInvokeNode(instrCtx, tree);
+		} else if(instr instanceof ReturnInstruction) {
+			return this.nodeFactory.constructReturnNode(instrCtx, tree);
+		} else {
+			return this.nodeFactory.constructStdNode(instrCtx, tree);
+		}
 	}
 	
 	//We skip the construction of some transitions; if-instructions create

@@ -3,6 +3,9 @@
  */
 package gov.nasa.jpf.symbc.symexectree;
 
+import gov.nasa.jpf.symbc.symexectree.structure.Node;
+import gov.nasa.jpf.symbc.symexectree.structure.SymbolicExecutionTree;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 /**

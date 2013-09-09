@@ -1,10 +1,14 @@
 /**
  * 
  */
-package gov.nasa.jpf.symbc.symexectree;
+package gov.nasa.jpf.symbc.symexectree.structure;
 
 import java.util.LinkedList;
 
+import gov.nasa.jpf.symbc.symexectree.ISymbolicExecutionTreeElement;
+import gov.nasa.jpf.symbc.symexectree.MethodDesc;
+import gov.nasa.jpf.symbc.symexectree.SymbolicExecutionTreeVisitor;
+import gov.nasa.jpf.symbc.symexectree.Transition;
 import gov.nasa.jpf.vm.MethodInfo;
 
 /**
