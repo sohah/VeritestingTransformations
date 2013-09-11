@@ -14,5 +14,9 @@ public class ReturnNode extends Node {
 	public ReturnNode(InstrContext instructionContext) {
 		super(instructionContext);
 	}
+	
+	public ReturnNode(InstrContext instructionContext, SymbolicExecutionTree tree) {
+		super(instructionContext, tree);
+	}
 
 }

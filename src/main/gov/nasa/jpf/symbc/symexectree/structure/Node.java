@@ -31,7 +31,8 @@ public abstract class Node implements ISymbolicExecutionTreeElement {
 	
 	public Node(InstrContext instructionContext, SymbolicExecutionTree tree) {
 		this(instructionContext);
-		tree.addNode(this);
+		if(tree != null)
+			tree.addNode(this);
 	}
 	
 	public void addIncomingTransition(Transition incomingTrans) {

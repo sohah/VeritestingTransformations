@@ -14,5 +14,9 @@ public class InvokeNode extends Node {
 	public InvokeNode(InstrContext instructionContext) {
 		super(instructionContext);
 	}
+	
+	public InvokeNode(InstrContext instructionContext, SymbolicExecutionTree tree) {
+		super(instructionContext, tree);
+	}
 
 }

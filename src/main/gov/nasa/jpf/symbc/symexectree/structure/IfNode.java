@@ -15,4 +15,8 @@ public class IfNode extends Node {
 		super(instructionContext);
 	}
 
+	public IfNode(InstrContext instructionContext, SymbolicExecutionTree tree) {
+		super(instructionContext, tree);
+	}
+	
 }

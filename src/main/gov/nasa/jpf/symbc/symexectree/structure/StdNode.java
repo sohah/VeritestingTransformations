@@ -14,5 +14,9 @@ public class StdNode extends Node {
 	public StdNode(InstrContext instructionContext) {
 		super(instructionContext);
 	}
+	
+	public StdNode(InstrContext instructionContext, SymbolicExecutionTree tree) {
+		super(instructionContext, tree);
+	}
 
 }
