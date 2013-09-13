@@ -20,7 +20,7 @@ public class TestPrintSimpleSys extends InvokeTest {
 	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ${jpf-symbc}/prettyprint";
 	private static final String FORMAT = "+symbolic.visualizer.outputformat = pdf";
 	
-	
+	protected static final String INSN_FACTORY = "+jvm.insn_factory.class=gov.nasa.jpf.symbc.SymbolicInstructionFactory";
 	
 	//remember the nosolver option is like a cfg traversal!
 	

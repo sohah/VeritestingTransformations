@@ -3,6 +3,10 @@
  */
 package gov.nasa.jpf.symbc.bytecode.util;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
+import aima.core.search.framework.PathCostFunction;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.bytecode.DCMPG;
 import gov.nasa.jpf.symbc.bytecode.DCMPL;
@@ -21,7 +25,7 @@ import gov.nasa.jpf.vm.Types;
 /**
  * @author Kasper S. Luckow <luckow@cs.aau.dk>
  * 
- * Deals with how symbolic conditions are handled. Currently a lot(!!) of repetition. Furthermore, parts of it
+ * Deals with how symbolic conditions are handled. Currently a lot(!!) of redundancy. Furthermore, parts of it
  * are so ugly that my eyes bleed. Should be refactored into a generic method.
  */
 public class IFInstrSymbHelper {
@@ -33,19 +37,25 @@ public class IFInstrSymbHelper {
 															   Comparator firstComparator,
 															   Comparator secondComparator,
 															   Comparator thirdComparator) {
-		int conditionValue;
+		int conditionValue = -3; //bogus value
 		if(!ti.isFirstStepInsn()) { // first time around
 			PCChoiceGenerator prevPcGen;
 			ChoiceGenerator<?> cg = ti.getVM().getChoiceGenerator();
 			if(cg instanceof PCChoiceGenerator)
 				prevPcGen = (PCChoiceGenerator)cg;
-			else
+			else {
 				prevPcGen = (PCChoiceGenerator)cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
-			PathCondition pc;
-			if(prevPcGen != null) {
-				pc = prevPcGen.getCurrentPC();
-			} else
-				pc = new PathCondition();
+				if(prevPcGen == null) {
+					prevPcGen = new PCChoiceGenerator(1);
+					prevPcGen.setOffset(instr.getPosition());
+					prevPcGen.setMethodName(instr.getMethodInfo().getFullName());
+					ti.getVM().getSystemState().setNextChoiceGenerator(prevPcGen);
+					prevPcGen.advance();
+					prevPcGen.setCurrentPC(new PathCondition());
+				}
+			}
+			PathCondition pc = prevPcGen.getCurrentPC();
+			
 			PathCondition firstPC = pc.make_copy();
 			PathCondition secPC = pc.make_copy();
 			PathCondition thirdPC = pc.make_copy();
@@ -79,40 +89,43 @@ public class IFInstrSymbHelper {
 					if(thirdSat) {
 						newPCChoice = new PCChoiceGenerator(3);
 					} else {
-						//newPCChoice = new PCChoiceGenerator(2);
-						throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
+						//LE (choice 0) == true, EQ (choice 1)== true
+						newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 1)));
 					}
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else if(thirdSat) {
-					/*PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
+					//LE (choice 0) == true, GT (choice 2)== true
+					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 2)));
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
-					return instr;*/
-					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
+					return instr;
 				} else {
 					prevPcGen.setCurrentPC(firstPC);
+					conditionValue = -1;
 				}
 			} else if(secSat) {
 				if(thirdSat) {
-					/*PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
+					//EQ (choice 1) == true, GT (choice 2)== true
+					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(1, 2)));
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
-					return instr;*/
-					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
+					return instr;
 				} else {
 					prevPcGen.setCurrentPC(secPC);
+					conditionValue = 0;
 				}
 			} else if(thirdSat) {
 				prevPcGen.setCurrentPC(thirdPC);
+				conditionValue = 1;
 			} else {
 				ti.getVM().getSystemState().setIgnored(true);
 			}
-			conditionValue = -1;
+			
 		} else { //This branch will only be taken if there is a choice
 			
 			long v1 = ti.getModifiableTopFrame().peekLong();
@@ -170,19 +183,25 @@ public class IFInstrSymbHelper {
 																   Comparator firstComparator,
 																   Comparator secondComparator,
 																   Comparator thirdComparator) {
-		int conditionValue;
+		int conditionValue = -3; //bogus value
 		if(!ti.isFirstStepInsn()) { // first time around
 			PCChoiceGenerator prevPcGen;
 			ChoiceGenerator<?> cg = ti.getVM().getChoiceGenerator();
 			if(cg instanceof PCChoiceGenerator)
 				prevPcGen = (PCChoiceGenerator)cg;
-			else
+			else {
 				prevPcGen = (PCChoiceGenerator)cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
-			PathCondition pc;
-			if(prevPcGen != null) {
-				pc = prevPcGen.getCurrentPC();
-			} else
-				pc = new PathCondition();
+				if(prevPcGen == null) {
+					prevPcGen = new PCChoiceGenerator(1);
+					prevPcGen.setOffset(instr.getPosition());
+					prevPcGen.setMethodName(instr.getMethodInfo().getFullName());
+					ti.getVM().getSystemState().setNextChoiceGenerator(prevPcGen);
+					prevPcGen.advance();
+					prevPcGen.setCurrentPC(new PathCondition());
+				}
+			}
+			PathCondition pc = prevPcGen.getCurrentPC();
+			
 			PathCondition firstPC = pc.make_copy();
 			PathCondition secPC = pc.make_copy();
 			PathCondition thirdPC = pc.make_copy();
@@ -208,49 +227,50 @@ public class IFInstrSymbHelper {
 			
 			boolean firstSat = firstPC.solve();
 			boolean secSat = secPC.solve();
-			boolean thirdSat = thirdPC.solve();
+			boolean thirdSat = thirdPC.solve(); 
 			
 			if(firstSat) {
 				if(secSat) {
 					PCChoiceGenerator newPCChoice;
 					if(thirdSat) {
 						newPCChoice = new PCChoiceGenerator(3);
-						
 					} else {
-						//newPCChoice = new PCChoiceGenerator(2);
-						throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
+						//LE (choice 0) == true, EQ (choice 1)== true
+						newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 1)));
 					}
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else if(thirdSat) {
-					/*PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
+					//LE (choice 0) == true, GT (choice 2)== true
+					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 2)));
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
-					return instr;*/
-					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
+					return instr;
 				} else {
 					prevPcGen.setCurrentPC(firstPC);
+					conditionValue = -1;
 				}
 			} else if(secSat) {
 				if(thirdSat) {
-					/*PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
+					//EQ (choice 1) == true, GT (choice 2)== true
+					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(1, 2)));
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
-					return instr;*/
-					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
+					return instr;
 				} else {
 					prevPcGen.setCurrentPC(secPC);
+					conditionValue = 0;
 				}
 			} else if(thirdSat) {
 				prevPcGen.setCurrentPC(thirdPC);
+				conditionValue = 1;
 			} else {
 				ti.getVM().getSystemState().setIgnored(true);
 			}
-			conditionValue = -1;
 		} else { //This branch will only be taken if there is a choice
 			
 			float v1 = Types.intToFloat(ti.getModifiableTopFrame().peek());
@@ -309,19 +329,25 @@ public class IFInstrSymbHelper {
 															   Comparator firstComparator,
 															   Comparator secondComparator,
 															   Comparator thirdComparator) {
-		int conditionValue;
+		int conditionValue = -3; //bogus value
 		if(!ti.isFirstStepInsn()) { // first time around
 			PCChoiceGenerator prevPcGen;
 			ChoiceGenerator<?> cg = ti.getVM().getChoiceGenerator();
 			if(cg instanceof PCChoiceGenerator)
 				prevPcGen = (PCChoiceGenerator)cg;
-			else
+			else {
 				prevPcGen = (PCChoiceGenerator)cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
-			PathCondition pc;
-			if(prevPcGen != null) {
-				pc = prevPcGen.getCurrentPC();
-			} else
-				pc = new PathCondition();
+				if(prevPcGen == null) {
+					prevPcGen = new PCChoiceGenerator(1);
+					prevPcGen.setOffset(instr.getPosition());
+					prevPcGen.setMethodName(instr.getMethodInfo().getFullName());
+					ti.getVM().getSystemState().setNextChoiceGenerator(prevPcGen);
+					prevPcGen.advance();
+					prevPcGen.setCurrentPC(new PathCondition());
+				}
+			}
+			PathCondition pc = prevPcGen.getCurrentPC();
+			
 			PathCondition firstPC = pc.make_copy();
 			PathCondition secPC = pc.make_copy();
 			PathCondition thirdPC = pc.make_copy();
@@ -355,41 +381,42 @@ public class IFInstrSymbHelper {
 					if(thirdSat) {
 						newPCChoice = new PCChoiceGenerator(3);
 					} else {
-						//newPCChoice = new PCChoiceGenerator(2);
-						throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
+						//LE (choice 0) == true, EQ (choice 1)== true
+						newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 1)));
 					}
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else if(thirdSat) {
-					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
-					/*PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
+					//LE (choice 0) == true, GT (choice 2)== true
+					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 2)));
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
-					return instr;*/
+					return instr;
 				} else {
 					prevPcGen.setCurrentPC(firstPC);
+					conditionValue = -1;
 				}
 			} else if(secSat) {
 				if(thirdSat) {
-					/*
-					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(2);
+					//EQ (choice 1) == true, GT (choice 2)== true
+					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(1, 2)));
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
-					return instr;*/
-					throw new PCChoiceGeneratorException("Cannot have two choices. Either 3 or 1.");
+					return instr;
 				} else {
 					prevPcGen.setCurrentPC(secPC);
+					conditionValue = 0;
 				}
 			} else if(thirdSat) {
 				prevPcGen.setCurrentPC(thirdPC);
+				conditionValue = 1;
 			} else {
 				ti.getVM().getSystemState().setIgnored(true);
 			}
-			conditionValue = -1;
 		} else { //This branch will only be taken if there is a choice
 			
 			double v1 = Types.longToDouble(ti.getModifiableTopFrame().peekLong());

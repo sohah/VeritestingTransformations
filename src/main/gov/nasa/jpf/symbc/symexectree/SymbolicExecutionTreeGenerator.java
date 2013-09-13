@@ -11,6 +11,11 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
+import gov.nasa.jpf.symbc.bytecode.DCMPG;
+import gov.nasa.jpf.symbc.bytecode.DCMPL;
+import gov.nasa.jpf.symbc.bytecode.FCMPG;
+import gov.nasa.jpf.symbc.bytecode.FCMPL;
+import gov.nasa.jpf.symbc.bytecode.LCMP;
 import gov.nasa.jpf.symbc.symexectree.structure.Node;
 import gov.nasa.jpf.symbc.symexectree.structure.SymbolicExecutionTree;
 import gov.nasa.jpf.vm.Instruction;
@@ -44,12 +49,12 @@ public class SymbolicExecutionTreeGenerator {
 		MethodDesc mi = SymExecTreeUtils.getTargetMethodOfFrame(this.symbolicMethods, instrCtx.getFrame());
 		TranslationUnit tu = this.methTUMap.get(mi);
 		Node nxtNode = null;
-		if(instrCtx.getInstr() instanceof IfInstruction) {
-			if(tu.hasIfInstrBeenTranslated(instrCtx)) {
-				nxtNode = tu.getIfInstrNode(instrCtx);
+		if(this.isBranchingInstr(instrCtx.getInstr())) {
+			if(tu.hasBranchingInstrBeenTranslated(instrCtx)) {
+				nxtNode = tu.getBranchingInstrNode(instrCtx);
 			} else {
 				nxtNode = this.constructNode(instrCtx, tu.getSymTree());
-				tu.addIfInstrCtx(instrCtx, nxtNode);
+				tu.addBranchingInstrCtx(instrCtx, nxtNode);
 			}
 		} else {
 			nxtNode = this.constructNode(instrCtx, tu.getSymTree());
@@ -60,6 +65,15 @@ public class SymbolicExecutionTreeGenerator {
 				new Transition(tu.getPrevNode(), nxtNode, tu.getSymTree());
 		}
 		tu.setPrevNode(nxtNode);
+	}
+	
+	private boolean isBranchingInstr(Instruction instr) {
+		return instr instanceof IfInstruction || // ifle, ifgt if_cmple etc.
+			   instr instanceof LCMP ||
+			   instr instanceof FCMPL ||
+			   instr instanceof FCMPG ||
+			   instr instanceof DCMPG ||
+			   instr instanceof DCMPL;
 	}
 	
 	private Node constructNode(InstrContext instrCtx, SymbolicExecutionTree tree) {
@@ -105,21 +119,21 @@ public class SymbolicExecutionTreeGenerator {
 		private SymbolicExecutionTree tree;
 		private Node prevNode;
 		
-		private HashMap<InstrContext, Node> ifInstrToNodeMap;
+		private HashMap<InstrContext, Node> branchingInstrToNodeMap;
 		
 		public TranslationUnit(MethodDesc method) {	
 			this.tree = new SymbolicExecutionTree(method);
 			this.choices = new Stack<InstrContext>();
-			this.ifInstrToNodeMap = new HashMap<InstrContext, Node>();
+			this.branchingInstrToNodeMap = new HashMap<InstrContext, Node>();
 			this.prevNode = null;
 		}
 		
-		public boolean hasIfInstrBeenTranslated(InstrContext instrCtx) {
-			return this.ifInstrToNodeMap.containsKey(instrCtx);
+		public boolean hasBranchingInstrBeenTranslated(InstrContext instrCtx) {
+			return this.branchingInstrToNodeMap.containsKey(instrCtx);
 		}
 		
-		public Node getIfInstrNode(InstrContext instrCtx) {
-			return this.ifInstrToNodeMap.get(instrCtx);
+		public Node getBranchingInstrNode(InstrContext instrCtx) {
+			return this.branchingInstrToNodeMap.get(instrCtx);
 		}
 		
 		public Node getPrevNode() {
@@ -134,13 +148,13 @@ public class SymbolicExecutionTreeGenerator {
 			this.choices.add(choice);
 		}
 		
-		public void addIfInstrCtx(InstrContext ifInstrCtx, Node node) {
-			this.ifInstrToNodeMap.put(ifInstrCtx, node);
+		public void addBranchingInstrCtx(InstrContext ifInstrCtx, Node node) {
+			this.branchingInstrToNodeMap.put(ifInstrCtx, node);
 		}
 		
 		public void restoreToPrevChoice() {
 			if(this.choices.size() > 0) {
-				this.prevNode = this.ifInstrToNodeMap.get(this.choices.pop());
+				this.prevNode = this.branchingInstrToNodeMap.get(this.choices.pop());
 			}
 		}
 		
