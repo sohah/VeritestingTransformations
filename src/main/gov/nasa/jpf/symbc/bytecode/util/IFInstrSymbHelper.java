@@ -79,9 +79,9 @@ public class IFInstrSymbHelper {
 				thirdPC._addDet(thirdComparator,sym_v2,v1);
 			}
 			
-			boolean firstSat = firstPC.solve();
-			boolean secSat = secPC.solve();
-			boolean thirdSat = thirdPC.solve();
+			boolean firstSat = firstPC.simplify();
+			boolean secSat = secPC.simplify();
+			boolean thirdSat = thirdPC.simplify();
 			
 			if(firstSat) {
 				if(secSat) {
@@ -90,7 +90,7 @@ public class IFInstrSymbHelper {
 						newPCChoice = new PCChoiceGenerator(3);
 					} else {
 						//LE (choice 0) == true, EQ (choice 1)== true
-						newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 1)));
+						newPCChoice = new PCChoiceGenerator(2);
 					}
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
@@ -98,7 +98,7 @@ public class IFInstrSymbHelper {
 					return instr;
 				} else if(thirdSat) {
 					//LE (choice 0) == true, GT (choice 2)== true
-					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 2)));
+					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(0, 2, 2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
@@ -110,7 +110,7 @@ public class IFInstrSymbHelper {
 			} else if(secSat) {
 				if(thirdSat) {
 					//EQ (choice 1) == true, GT (choice 2)== true
-					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(1, 2)));
+					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(1, 2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
@@ -138,7 +138,7 @@ public class IFInstrSymbHelper {
 			if(prevCg == null )
 				pc = new PathCondition();
 			else
-				pc = prevCg.getCurrentPC();
+				pc = ((PCChoiceGenerator)prevCg).getCurrentPC();
 			
 			conditionValue = ((PCChoiceGenerator) curCg).getNextChoice() -1;
 			if (conditionValue == -1) {
@@ -225,9 +225,9 @@ public class IFInstrSymbHelper {
 				thirdPC._addDet(thirdComparator,sym_v2,v1);
 			}
 			
-			boolean firstSat = firstPC.solve();
-			boolean secSat = secPC.solve();
-			boolean thirdSat = thirdPC.solve(); 
+			boolean firstSat = firstPC.simplify();
+			boolean secSat = secPC.simplify();
+			boolean thirdSat = thirdPC.simplify(); 
 			
 			if(firstSat) {
 				if(secSat) {
@@ -236,7 +236,7 @@ public class IFInstrSymbHelper {
 						newPCChoice = new PCChoiceGenerator(3);
 					} else {
 						//LE (choice 0) == true, EQ (choice 1)== true
-						newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 1)));
+						newPCChoice = new PCChoiceGenerator(2);
 					}
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
@@ -244,7 +244,7 @@ public class IFInstrSymbHelper {
 					return instr;
 				} else if(thirdSat) {
 					//LE (choice 0) == true, GT (choice 2)== true
-					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 2)));
+					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(0, 2, 2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
@@ -256,7 +256,7 @@ public class IFInstrSymbHelper {
 			} else if(secSat) {
 				if(thirdSat) {
 					//EQ (choice 1) == true, GT (choice 2)== true
-					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(1, 2)));
+					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(1, 2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
@@ -371,9 +371,9 @@ public class IFInstrSymbHelper {
 				thirdPC._addDet(thirdComparator,sym_v2,v1);
 			}
 			
-			boolean firstSat = firstPC.solve();
-			boolean secSat = secPC.solve();
-			boolean thirdSat = thirdPC.solve();
+			boolean firstSat = firstPC.simplify();
+			boolean secSat = secPC.simplify();
+			boolean thirdSat = thirdPC.simplify();
 			
 			if(firstSat) {
 				if(secSat) {
@@ -382,7 +382,7 @@ public class IFInstrSymbHelper {
 						newPCChoice = new PCChoiceGenerator(3);
 					} else {
 						//LE (choice 0) == true, EQ (choice 1)== true
-						newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 1)));
+						newPCChoice = new PCChoiceGenerator(2);
 					}
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
@@ -390,7 +390,7 @@ public class IFInstrSymbHelper {
 					return instr;
 				} else if(thirdSat) {
 					//LE (choice 0) == true, GT (choice 2)== true
-					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(0, 2)));
+					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(0, 2, 2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
@@ -402,7 +402,7 @@ public class IFInstrSymbHelper {
 			} else if(secSat) {
 				if(thirdSat) {
 					//EQ (choice 1) == true, GT (choice 2)== true
-					PCChoiceGenerator newPCChoice = new ExplicitPCChoiceGenerator(2, new HashSet<>(Arrays.asList(1, 2)));
+					PCChoiceGenerator newPCChoice = new PCChoiceGenerator(1, 2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
@@ -493,8 +493,8 @@ public class IFInstrSymbHelper {
 			eqPC._addDet(trueComparator, sym_v, 0);
 			nePC._addDet(falseComparator, sym_v, 0);
 			
-			boolean eqSat = eqPC.solve();
-			boolean neSat = nePC.solve();
+			boolean eqSat = eqPC.simplify();
+			boolean neSat = nePC.simplify();
 			
 			if(eqSat) {
 				if(neSat) {
@@ -580,8 +580,8 @@ public class IFInstrSymbHelper {
 				nePC._addDet(falseComparator, v1, sym_v2);
 			}
 
-			boolean eqSat = eqPC.solve();
-			boolean neSat = nePC.solve();
+			boolean eqSat = eqPC.simplify();
+			boolean neSat = nePC.simplify();
 			
 			if(eqSat) {
 				if(neSat) {
