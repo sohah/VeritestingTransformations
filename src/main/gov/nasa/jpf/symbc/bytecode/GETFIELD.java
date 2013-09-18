@@ -69,22 +69,23 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 //	  }
 
 	  //original GETFIELD code from super
-	 StackFrame frame = ti.getModifiableTopFrame();
-	 int objRef = frame.peek(); // don't pop yet, we might re-execute
-	 lastThis = objRef;
-	 if (objRef == -1) {
-		 return ti.createAndThrowException("java.lang.NullPointerException",
-	                        "referencing field '" + fname + "' on null object");
-	 }
-	 ElementInfo ei = ti.getModifiableElementInfo(objRef);
-	 FieldInfo fi = getFieldInfo();
-	 if (fi == null) {
-	    return ti.createAndThrowException("java.lang.NoSuchFieldError",
-	                              "referencing field '" + fname + "' in " + ei);
-	 }
-	 
-	 
-	    	    
+	    StackFrame frame = ti.getModifiableTopFrame();
+	    
+	    int objRef = frame.peek(); // don't pop yet, we might re-enter
+	    lastThis = objRef;
+	    if (objRef == -1) {
+	      return ti.createAndThrowException("java.lang.NullPointerException",
+	                                        "referencing field '" + fname + "' on null object");
+	    }
+
+	    ElementInfo ei = ti.getElementInfoWithUpdatedSharedness(objRef);
+
+	    FieldInfo fi = getFieldInfo();
+	    if (fi == null) {
+	      return ti.createAndThrowException("java.lang.NoSuchFieldError",
+	                                        "referencing field '" + fname + "' in " + ei);
+	    }
+	    
 	    // check if this breaks the current transition
 	    if (isNewPorFieldBoundary(ti, fi, objRef)) {
 	      if (createAndSetSharedFieldAccessCG( ei, ti)) {

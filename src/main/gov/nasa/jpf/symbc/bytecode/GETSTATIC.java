@@ -20,7 +20,7 @@ package gov.nasa.jpf.symbc.bytecode;
 
 
 import gov.nasa.jpf.Config;
-
+import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
 import gov.nasa.jpf.symbc.heap.HeapNode;
@@ -37,6 +37,7 @@ import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.LoadOnJPFRequired;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -67,23 +68,39 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 //			TypeHierarchy.buildTypeHierarchy(ti);
 //		}
 
-		FieldInfo fi = getFieldInfo();
-		if (fi == null) {
-			return ti.createAndThrowException("java.lang.NoSuchFieldException",
-					(className + '.' + fname));
-		}
+	    ClassInfo ciField;
+	    FieldInfo fieldInfo;
+	    
+	    try {
+	      fieldInfo = getFieldInfo();
+	    } catch(LoadOnJPFRequired lre) {
+	      return ti.getPC();
+	    }
+	    
+	    if (fieldInfo == null) {
+	      return ti.createAndThrowException("java.lang.NoSuchFieldError",
+	          (className + '.' + fname));
+	    }
+		
+		ciField = fieldInfo.getClassInfo();
+	    
+	    if (!mi.isClinit(ciField) && ciField.pushRequiredClinits(ti)) {
+	      // note - this returns the next insn in the topmost clinit that just got pushed
+	      return ti.getPC();
+	    }
 
-		ClassInfo ci = fi.getClassInfo();
-		// not sure if this code should stay here    
+	    ElementInfo ei = ciField.getStaticElementInfo();
+	    ei = ei.getInstanceWithUpdatedSharedness(ti);
 
-	
-		if (!mi.isClinit(ci) && requiresClinitExecution(ti,ci)) {
-		      // note - this returns the next insn in the topmost clinit that just got pushed
-		      return ti.getPC();
-		    }
+	    if (ei == null){
+	      throw new JPFException("attempt to access field: " + fname + " of uninitialized class: " + ciField.getName());
+	    }
 
-		ElementInfo ei = ci.getModifiableStaticElementInfo();
-		    
+	    if (isNewPorFieldBoundary(ti)) {
+	      if (createAndSetSharedFieldAccessCG( ei, ti)) {
+	        return this;
+	      }
+	    }
 		//end GETSTATIC code from super
 
 		Object attr = ei.getFieldAttr(fi);
