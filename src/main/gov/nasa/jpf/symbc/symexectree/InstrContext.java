@@ -6,6 +6,7 @@ package gov.nasa.jpf.symbc.symexectree;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
  * @author Kasper S. Luckow <luckow@cs.aau.dk>
@@ -16,15 +17,19 @@ public class InstrContext {
 	private final Instruction instr;
 	private final StackFrame frame;
 	private final PathCondition pc;
+	private final ThreadInfo threadInfo;
+	private final int execInstrNum;
 	
-	public InstrContext(Instruction instr, StackFrame frame) {
-		this(instr, frame, null);
+	public InstrContext(Instruction instr, StackFrame frame, ThreadInfo threadInfo) {
+		this(instr, frame, threadInfo, null);
 	}
 	
-	public InstrContext(Instruction instr, StackFrame frame, PathCondition pc) {
+	public InstrContext(Instruction instr, StackFrame frame, ThreadInfo threadInfo, PathCondition pc) {
 		this.instr = instr;
 		this.frame = frame;
 		this.pc = pc;
+		this.threadInfo = threadInfo;
+		execInstrNum = threadInfo.getExecutedInstructions();
 	}
 	
 	public Instruction getInstr() {
@@ -37,6 +42,10 @@ public class InstrContext {
 	
 	public PathCondition getPathCondition() {
 		return this.pc;
+	}
+	
+	public ThreadInfo getThreadInfo() {
+		return this.threadInfo;
 	}
 	
 	@Override
@@ -64,12 +73,23 @@ public class InstrContext {
 		} else if (!frame.equals(other.frame)) {
 			return false;
 		}
+		
+		if (pc == null) {
+			if (other.pc != null)
+				return false;
+		} else if(pc != null) {
+			if (other.pc == null)
+				return false;
+			if(!this.pc.equals(other.pc))
+				return false;
+		}
+		
 		if (instr == null) {
 			if (other.instr != null)
 				return false;
 		} else if(!instr.getMnemonic().equals(other.instr.getMnemonic())) {
 			return false;
-		} else if(!instr.getFilePos().equals(other.instr.getFilePos())) {
+		} else if(instr.getInstructionIndex() != other.instr.getInstructionIndex()) {
 			return false;
 		}
 		return true;

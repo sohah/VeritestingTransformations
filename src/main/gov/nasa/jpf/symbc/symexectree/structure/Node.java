@@ -87,6 +87,15 @@ public abstract class Node implements ISymbolicExecutionTreeElement {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
+		
+		Node other = (Node) obj;
+		
+		if(!other.getInstructionContext().equals(this.instructionContext))
+			return false;*/
+		/*if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
 		Node other = (Node) obj;
 		return new EqualsBuilder().append(incomingTransitions, other.incomingTransitions)
 								  .append(outgoingTransitions, other.outgoingTransitions)
