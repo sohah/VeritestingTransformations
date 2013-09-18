@@ -37,10 +37,17 @@ import gov.nasa.jpf.vm.choice.ThreadChoiceFromSet;
  */
 public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAdapter {
 
+	private boolean noMoreChoicesForTarget;
+	private boolean targetHasStarted;
+	private int injectedSymbID;
+	
 	private SymbolicExecutionTreeGenerator SETGenerator;
 	protected Config jpfConf;
 	
 	public ASymbolicExecutionTreeListener(Config conf, JPF jpf) {
+		this.noMoreChoicesForTarget = this.targetHasStarted = false;
+		this.injectedSymbID = 0;
+		
 		this.jpfConf = conf;
 		this.SETGenerator = new SymbolicExecutionTreeGenerator(conf, this.getNodeFactory());
 	}
@@ -64,8 +71,7 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 								if(ei.isShared()) {
 									if(!ei.hasFieldAttr(Expression.class) && !ei.isFrozen()) {//Assuming the if the field already has an attr of type Expression, it is symbolic.
 										FieldInfo fi = fieldInstr.getFieldInfo();
-										System.out.println("GETFIELD SYMBOLIC INTEGER");
-										ei.addFieldAttr(fi, new SymbolicInteger("SHARED SYMB " + symbID++));								
+										ei.addFieldAttr(fi, new SymbolicInteger("SHARED SYMB " + this.injectedSymbID++));								
 									}
 								}
 							}
@@ -81,7 +87,6 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 		if (!vm.getSystemState().isIgnored()) {
 			MethodInfo mi = instructionToExecute.getMethodInfo();
 			if(SymExecTreeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
-				System.out.println("To be executed: " + instructionToExecute.getMnemonic() + " (" + instructionToExecute.getFileLocation() + ":" + instructionToExecute.getPosition() + ")");
 				this.SETGenerator.generate(new InstrContext(instructionToExecute, 
 															 currentThread.getTopFrame().clone(),
 															 currentThread,
@@ -95,13 +100,13 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 		LinkedList<SymbolicExecutionTree> trees = this.SETGenerator.getTrees();
 		doneConstructingSymbExecTree(trees);
 	}
+	
 	@Override
 	public void choiceGeneratorRegistered(VM vm, ChoiceGenerator<?> nextCG, ThreadInfo currentThread, Instruction executedInstruction) {
 		if (!vm.getSystemState().isIgnored()) { //Not sure if this check is necessary...
 			if(nextCG instanceof PCChoiceGenerator) {
 				MethodInfo mi = executedInstruction.getMethodInfo();
 				if(SymExecTreeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
-					System.out.println("PC CHOICE REGISTERED");
 					this.SETGenerator.addChoice(new InstrContext(executedInstruction, 
 																 currentThread.getTopFrame().clone(),
 																 currentThread,
@@ -114,21 +119,22 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 	
 	@Override
 	public void stateBacktracked(Search search) {
-		System.out.println("BACKTRACKED");
-		if (!search.getVM().getSystemState().isIgnored()) {
+		//if (!search.getVM().getSystemState().isIgnored()) {
 			if(search.getVM().getChoiceGenerator() instanceof PCChoiceGenerator) {
 				if(SymExecTreeUtils.isInSymbolicCallChain(search.getVM().getInstruction().getMethodInfo(), search.getVM().getCurrentThread().getTopFrame(), this.jpfConf)) {
-					this.SETGenerator.restoreChoice(new InstrContext(search.getVM().getInstruction(), 
-													search.getVM().getCurrentThread().getTopFrame().clone(),
-													search.getVM().getCurrentThread(),
-													PathCondition.getPC(search.getVM())));
+					InstrContext instrCtx = new InstrContext(search.getVM().getInstruction(), 
+							search.getVM().getCurrentThread().getTopFrame().clone(),
+							search.getVM().getCurrentThread(),
+							PathCondition.getPC(search.getVM()));
+					this.SETGenerator.restoreChoice(instrCtx);
+					if(this.SETGenerator.getChoices(instrCtx).isEmpty())
+						noMoreChoicesForTarget = true;
 				}
 			}
-		}
+	//	}
 	}
 	
-	private int symbID = 0;
-	private boolean hasStarted = false;
+
 	@Override
 	public void choiceGeneratorAdvanced (VM vm, ChoiceGenerator<?> currentCG) {
 		if (!vm.getSystemState().isIgnored()) { //Not sure if this check is necessary...
@@ -140,15 +146,15 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 						MethodInfo mInfos[] = tiChoices[i].getTopFrame().getClassInfo().getDeclaredMethodInfos();
 						for(MethodInfo mInfo : mInfos) {
 							if(SymExecTreeUtils.isMethodInfoSymbolicTarget(mInfo, this.jpfConf)) {
-								System.out.println("executes thread on: " + tc.getInsn().getFilePos());
 								tc.select(i);
-								hasStarted = true;
+								this.targetHasStarted = true;
 								return;
 							}
 						}
 					}
 				}
-				if(hasStarted)
+				if(this.targetHasStarted || 
+				   this.noMoreChoicesForTarget)
 					vm.ignoreState(true);
 			}
 		}

@@ -51,9 +51,10 @@ public class SymbolicExecutionTreeGenerator {
 		MethodDesc mi = SymExecTreeUtils.getTargetMethodOfFrame(this.symbolicMethods, instrCtx.getFrame());
 		TranslationUnit tu = this.methTUMap.get(mi);
 		Node nxtNode = null;
+		if(instrCtx.getThreadInfo().isFirstStepInsn()) { //this might cause issues
+			return;
+		}
 		if(this.isBranchingInstr(instrCtx.getInstr())) {
-			if(instrCtx.getThreadInfo().isFirstStepInsn()) //this might cause issues!
-				return;
 			if(tu.hasBranchingInstrBeenTranslated(instrCtx)) {
 				nxtNode = tu.getBranchingInstrNode(instrCtx);
 			} else {
@@ -67,8 +68,6 @@ public class SymbolicExecutionTreeGenerator {
 		if(tu.getPrevNode() != null) {
 			if(!skipTransition(tu.getPrevNode(), nxtNode))
 				new Transition(tu.getPrevNode(), nxtNode, tu.getSymTree());
-		} else {
-			System.out.println("PREVNODE IS NULL");
 		}
 		tu.setPrevNode(nxtNode);
 	}
@@ -173,10 +172,8 @@ public class SymbolicExecutionTreeGenerator {
 				ChoiceContext choiceCtx = this.choices.peek();
 				this.prevNode = this.branchingInstrToNodeMap.get(choiceCtx.getInstrCtx());
 				PCChoiceGenerator cg = choiceCtx.getCg();
-				if(cg.getProcessedNumberOfChoices() >= cg.getTotalNumberOfChoices()) {
+				if(cg.getProcessedNumberOfChoices() >= cg.getTotalNumberOfChoices())
 					this.choices.pop();
-					System.out.println("POP: " + cg.getTotalNumberOfChoices());
-				}
 			}
 		}
 		
@@ -202,6 +199,4 @@ public class SymbolicExecutionTreeGenerator {
 			return instrCtx;
 		}
 	}
-	
-	
 }
