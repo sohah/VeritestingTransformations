@@ -19,7 +19,7 @@ private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.sy
 	//private static final String LISTENER = "+listener = gov.nasa.jpf.symbc.singlethreadanalysis.SingleThreadListener";
 	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ${jpf-symbc}/prettyprint";
 	private static final String FORMAT = "+symbolic.visualizer.outputformat = pdf";
-	private static final String DEBUG = "+symbolic.debug = true";
+	//private static final String DEBUG = "+symbolic.debug = false";
 
 	private static final String[] JPF_ARGS = {INSN_FACTORY, 
 											  LISTENER, 
@@ -27,7 +27,7 @@ private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.sy
 											  SYM_METHOD,
 											  OUTPUTPATH,
 											  FORMAT,
-											  DEBUG
+											//  DEBUG
 											  };
 
 	
@@ -53,10 +53,10 @@ private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.sy
 		@Override
 		public void run() {
 			if(cond) {
-				System.out.println("Cond is true");
+				//System.out.println("Cond is true");
 				int ta = 3 + 2;
 			}else {
-				System.out.println("Cond is false");
+				//System.out.println("Cond is false");
 				int b = 4 + 2;
 				b = 4 + 2;
 			}

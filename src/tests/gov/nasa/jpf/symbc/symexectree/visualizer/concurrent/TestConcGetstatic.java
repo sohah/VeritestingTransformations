@@ -31,11 +31,14 @@ private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.sy
 											  };
 
 	
-	public static void main(String[] args) {		
+	public static void main(String[] args) {
+		TestClass testClass = new TestClass();
 		Thread t1 = new Thread(new ConcCompute());
-		Thread t2 = new Thread(new Racer());
+		ConcCompute.testClass = testClass;
+		//Thread t2 = new Thread(new Racer());
+		testClass.field = 20;
 		t1.start();
-		t2.start();
+		//t2.start();
 	}
 	
 	@Test
@@ -45,12 +48,19 @@ private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.sy
 		}
 	}
 	public static boolean cond = false;
+	
+	
 	static class ConcCompute implements Runnable {
 		
+		public static TestClass testClass;
+		
+		public ConcCompute() {
+
+		}
 		
 		@Override
 		public void run() {
-			if(cond) {
+			if(testClass.field > 20) {
 				System.out.println("Cond is true");
 				int ta = 3 + 2;
 			}else {
@@ -59,6 +69,10 @@ private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.sy
 				b = 4 + 2;
 			}
 		}
+	}
+	
+	static class TestClass {
+		public int field;
 	}
 	
 	static class Racer implements Runnable {

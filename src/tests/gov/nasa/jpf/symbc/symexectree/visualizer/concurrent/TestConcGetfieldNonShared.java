@@ -51,20 +51,11 @@ private static final String SYM_METHOD = "+symbolic.method=gov.nasa.jpf.symbc.sy
 		
 		@Override
 		public void run() {
-			if(cond) {
-				System.out.println("Cond is true");
-				if(cond2) {
-					int a = 2;
-				}
-				int ta = 3 + 2;
+			if(this.cond) {
+				int a = 2 +2 ;
+
 			}else {
-				System.out.println("Cond is false");
-				cond2 = true;
-				if(cond2) {
-					int d = 2;
-				}
-				int b = 4 + 2;
-				b = 4 + 2;
+				int a = 2;
 			}
 		}
 	}

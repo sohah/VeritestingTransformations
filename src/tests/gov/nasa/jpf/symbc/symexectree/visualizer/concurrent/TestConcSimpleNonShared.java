@@ -20,7 +20,7 @@ public class TestConcSimpleNonShared extends InvokeTest {
 	//private static final String LISTENER = "+listener = gov.nasa.jpf.symbc.singlethreadanalysis.SingleThreadListener";
 	private static final String OUTPUTPATH = "+symbolic.visualizer.basepath = ${jpf-symbc}/prettyprint";
 	private static final String FORMAT = "+symbolic.visualizer.outputformat = pdf";
-	private static final String DEBUG = "+symbolic.debug = true";
+	//private static final String DEBUG = "+symbolic.debug = true";
 	private static final String SHAREDPOLICY = "+vm.por.shared.class = gov.nasa.jpf.vm.GlobalTrackingPolicy";
 
 	private static final String[] JPF_ARGS = {INSN_FACTORY, 
@@ -29,7 +29,7 @@ public class TestConcSimpleNonShared extends InvokeTest {
 											  SYM_METHOD,
 											  OUTPUTPATH,
 											  FORMAT,
-											  DEBUG,
+										//	  DEBUG,
 										//	  SHAREDPOLICY
 											  };
 
@@ -37,10 +37,7 @@ public class TestConcSimpleNonShared extends InvokeTest {
 	public static void main(String[] args) {
 		Computation comp = new Computation();
 		Thread t1 = new Thread(comp);
-		Thread t2 = new Thread(new Racer(comp));
 		t1.start();
-		t2.start();
-		comp.setCond(true);
 	}
 	
 	@Test
@@ -53,9 +50,6 @@ public class TestConcSimpleNonShared extends InvokeTest {
 	static class Computation implements Runnable {
 		private boolean cond = false;
 		
-		public void setCond(boolean cond) {
-			this.cond = cond;
-		}
 		@Override
 		public void run() {
 			int a = 0;
@@ -64,20 +58,6 @@ public class TestConcSimpleNonShared extends InvokeTest {
 			} else {
 				a = 4;
 			}
-			setCond(true);
-		}
-	}
-	
-	static class Racer implements Runnable {
-		private Computation comp;
-		public Racer(Computation comp) {
-			this.comp = comp;
-		}
-		
-		@Override
-		public void run() {
-			int a = 0;
-			comp.setCond(true);
 		}
 	}
 }
