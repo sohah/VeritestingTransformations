@@ -25,7 +25,7 @@ public class TestMissedPaths extends InvokeTest {
 	private static final String LAZY = "+symbolic.lazy = true";
 
 	private static final String[] JPF_ARGS = {INSN_FACTORY, 
-											  LISTENER, 
+											//  LISTENER, 
 											  CLASSPATH_UPDATED, 
 											  SYM_METHOD,
 											  OUTPUTPATH,

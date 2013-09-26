@@ -16,7 +16,7 @@ class InstanceFieldPropagation extends Thread {
 	public void run() {
 		//myX = (X) Debug.makeSymbolicRef("SYMB", myX);
 		if(myX != null){
-			System.out.println("T: accessed global myX");
+			//System.out.println("T: accessed global myX");
 			if (!myX.pass){  // (2) won't fail unless main is between (0) and (1)
 				//throw new AssertionError("gotcha");
 				System.out.println("Gotcha!");
