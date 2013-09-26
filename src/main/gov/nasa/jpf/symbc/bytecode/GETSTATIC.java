@@ -38,6 +38,7 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.LoadOnJPFRequired;
+import gov.nasa.jpf.vm.StackFrame;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -53,6 +54,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 	@Override
 	public Instruction execute (ThreadInfo ti) {
+	   
 		ChoiceGenerator<?> prevHeapCG = null;
 		HeapNode[] prevSymRefs = null;
 		int numSymRefs = 0;
@@ -61,12 +63,6 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		String[] lazy = conf.getStringArray("symbolic.lazy");
 		if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
 			return super.execute(ti);
-//TODO: fix polymorphism and subtypes
-//		String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
-//		if(!subtypes.equals("false") &&
-//				TypeHierarchy.typeHierarchies == null) {
-//			TypeHierarchy.buildTypeHierarchy(ti);
-//		}
 
 	    ClassInfo ciField;
 	    FieldInfo fieldInfo;
@@ -96,22 +92,26 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	      throw new JPFException("attempt to access field: " + fname + " of uninitialized class: " + ciField.getName());
 	    }
 
-	    if (isNewPorFieldBoundary(ti)) {
-	      if (createAndSetSharedFieldAccessCG( ei, ti)) {
-	        return this;
-	      }
-	    }
-		//end GETSTATIC code from super
-
 		Object attr = ei.getFieldAttr(fi);
 
-		if (!(fi.isReference() && attr != null && attr != Helper.SymbolicNull))
+		if (!(fi.isReference() && attr != null))
 			return super.execute(ti);
 
 		if(attr instanceof StringExpression || attr instanceof SymbolicStringBuilder)
 				return super.execute(ti); // Strings are handled specially
 
+		
 		// else: lazy initialization
+		if (SymbolicInstructionFactory.debugMode)
+			  System.out.println("lazy initialization");
+		
+		// may introduce thread choices
+		 if (isNewPorFieldBoundary(ti)) {
+		      if (createAndSetSharedFieldAccessCG( ei, ti)) {
+		        //return this; // not yet because well create the heap cg
+		      }
+		    }  
+		   
 
 		int currentChoice;
 		ChoiceGenerator<?> heapCG;
@@ -137,20 +137,14 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 					  
 			}
 			
-			// TODO: fix
-//			if(!subtypes.equals("false")) {
-//				// get the number of subtypes that exist, and add the number in
-//				// the choice generator in addition to the ones that were there
-//				numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
-//				heapCG = new HeapChoiceGenerator(numSymRefs+increment+numNewRefs); // +null,new
-//			} else {
-				heapCG = new HeapChoiceGenerator(numSymRefs+2);  //+null,new
-			//}
+			// TODO: fix subtypes
+            heapCG = new HeapChoiceGenerator(numSymRefs+2);  //+null,new
 			ti.getVM().getSystemState().setNextChoiceGenerator(heapCG);
 			return this;
 		} else {  // this is what really returns results
-			heapCG = ti.getVM().getSystemState().getChoiceGenerator();
-			assert (heapCG instanceof HeapChoiceGenerator) : "expected HeapChoiceGenerator, got: " + heapCG;
+			heapCG = ti.getVM().getSystemState().getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
+			assert (heapCG !=null && heapCG instanceof HeapChoiceGenerator) :
+				  "expected HeapChoiceGenerator, got: " + heapCG;
 			currentChoice = ((HeapChoiceGenerator)heapCG).getNextChoice();
 		}
 
@@ -160,9 +154,6 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 
 		// pcHeap is updated with the pcHeap stored in the choice generator above
 		// get the pcHeap from the previous choice generator of the same type
-		
-		// can not simply re-use prevHeapCG from above because it might have changed during re-execution
-        // bug reported by Willem Visser
 		
 		prevHeapCG = heapCG.getPreviousChoiceGeneratorOfType(HeapChoiceGenerator.class);
 
@@ -198,26 +189,19 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		  } else {
 			  //TODO: fix
 			  System.err.println("subtyping not handled");
-//			  int counter;
-//			  if(abstractClass) {
-//					counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
-//			  } else {
-//					counter = currentChoice - (numSymRefs+1) - 1;
-//			  }
-//			  ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
-//			  daIndex = Helper.addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap,
-//					  		symInputHeap, numSymRefs, prevSymRefs);
 		  }
 
 
-		ei.setReferenceField(fi,daIndex );
-		ei.setFieldAttr(fi, Helper.SymbolicNull); // was null
-		ti.getModifiableTopFrame().push( ei.getReferenceField(fi), fi.isReference());
+		//ei.setReferenceField(fi,daIndex );
+		//ei.setFieldAttr(fi, Helper.SymbolicNull); // was null
+		StackFrame frame = ti.getModifiableTopFrame();
+		frame.pushRef(daIndex);
 		((HeapChoiceGenerator)heapCG).setCurrentPCheap(pcHeap);
 		((HeapChoiceGenerator)heapCG).setCurrentSymInputHeap(symInputHeap);
 		if (SymbolicInstructionFactory.debugMode)
 			System.out.println("GETSTATIC pcHeap: " + pcHeap);
 		return getNext(ti);
+
 	}
 
 

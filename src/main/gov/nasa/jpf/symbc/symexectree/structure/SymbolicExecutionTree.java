@@ -24,8 +24,8 @@ public class SymbolicExecutionTree implements ISymbolicExecutionTreeElement {
 	
 	public SymbolicExecutionTree(MethodDesc targetMethod) {
 		this.targetMethod = targetMethod;
-		this.nodes = new LinkedList<>();
-		this.transitions = new LinkedList<>();
+		this.nodes = new LinkedList();
+		this.transitions = new LinkedList();
 		this.rootNode = null;
 	}
 	

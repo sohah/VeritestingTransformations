@@ -101,7 +101,7 @@ public class SETPrettyPrinter {
 		Instruction instr = treeNode.getInstructionContext().getInstr();
 		Node targetNode = new Node(grappaGraph, instr.getMnemonic() + this.uniqueID++);
 		
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList();
 		if(treeNode.getOutgoingTransitions().size() == 0)
 			attrs.addAll(this.getFinalNodeAttr(treeNode));
 		else {
@@ -138,7 +138,7 @@ public class SETPrettyPrinter {
 	 * @return
 	 */
 	protected LinkedList<Attribute> getNodeAttr(StdNode treeNode) {
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList();
 		
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n")
@@ -163,7 +163,7 @@ public class SETPrettyPrinter {
 	 * @return
 	 */
 	protected LinkedList<Attribute> getNodeAttr(InvokeNode treeNode) {
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList();
 		
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n");
@@ -187,7 +187,7 @@ public class SETPrettyPrinter {
 	 * @return
 	 */
 	protected LinkedList<Attribute> getNodeAttr(ReturnNode treeNode) {
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList();
 		
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n");
@@ -211,7 +211,7 @@ public class SETPrettyPrinter {
 	 * @return
 	 */
 	protected LinkedList<Attribute> getNodeAttr(IfNode treeNode) {
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList();
 		Instruction instr = treeNode.getInstructionContext().getInstr();
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(instr.getMnemonic()).append("\\n");
@@ -230,7 +230,7 @@ public class SETPrettyPrinter {
 	 * @return
 	 */
 	protected LinkedList<Attribute> getFinalNodeAttr(gov.nasa.jpf.symbc.symexectree.structure.Node treeNode) {
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList();
 		Instruction instr = treeNode.getInstructionContext().getInstr();
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(instr.getMnemonic()).append("\\n");

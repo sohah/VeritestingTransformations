@@ -24,7 +24,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
 
 public class Helper {
 
-	public static SymbolicInteger SymbolicNull = new SymbolicInteger("SymbolicNull"); // hack for handling static fields
+	//public static SymbolicInteger SymbolicNull = new SymbolicInteger("SymbolicNull"); // hack for handling static fields; may no longer need it
 
 	public static Expression initializeInstanceField(FieldInfo field, ElementInfo eiRef,
 			String refChain, String suffix){
@@ -78,7 +78,7 @@ public class Helper {
 				//						treat boolean as an integer with range [0,1]
 				sym_v = new SymbolicInteger(fullName, 0, 1);
 		}
-		StaticElementInfo sei = ci.getStaticElementInfo();
+		StaticElementInfo sei = ci.getModifiableStaticElementInfo();
 		if (sei == null) {
 			ci.registerClass(ti);
 			sei = ci.getStaticElementInfo();
