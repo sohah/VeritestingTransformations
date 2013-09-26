@@ -39,6 +39,7 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.choice.IntChoiceFromSet;
 
 public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	public GETFIELD(String fieldName, String clsName, String fieldDescriptor){
@@ -52,25 +53,20 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 
   @Override
   public Instruction execute (ThreadInfo ti) {
+	  
 	  HeapNode[] prevSymRefs = null; // previously initialized objects of same type: candidates for lazy init
 	  int numSymRefs = 0; // # of prev. initialized objects
 	  ChoiceGenerator<?> prevHeapCG = null;
 
 	  Config conf = ti.getVM().getConfig();
 	  String[] lazy = conf.getStringArray("symbolic.lazy");
-	  if (lazy == null || !lazy[0].equalsIgnoreCase("true"))
+	  if (lazy == null || !lazy[0].equalsIgnoreCase("true")){
 		  return super.execute(ti);
+	  }
 
-//TODO: fix: polymorphism and subtypes
-//	  String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
-//	  if(!subtypes.equals("false") &&
-//			  TypeHierarchy.typeHierarchies == null) {
-//		  TypeHierarchy.buildTypeHierarchy(ti);
-//	  }
+	  
 
-	  //original GETFIELD code from super
 	    StackFrame frame = ti.getModifiableTopFrame();
-	    
 	    int objRef = frame.peek(); // don't pop yet, we might re-enter
 	    lastThis = objRef;
 	    if (objRef == -1) {
@@ -78,24 +74,14 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	                                        "referencing field '" + fname + "' on null object");
 	    }
 
+	    
 	    ElementInfo ei = ti.getElementInfoWithUpdatedSharedness(objRef);
-
 	    FieldInfo fi = getFieldInfo();
 	    if (fi == null) {
 	      return ti.createAndThrowException("java.lang.NoSuchFieldError",
 	                                        "referencing field '" + fname + "' in " + ei);
 	    }
 	    
-	    // check if this breaks the current transition
-	    if (isNewPorFieldBoundary(ti, fi, objRef)) {
-	      if (createAndSetSharedFieldAccessCG( ei, ti)) {
-	        return this;
-	      }
-	    }
-	 //end GETFIELD code from super
-
-	
-
 	 Object attr = ei.getFieldAttr(fi);
 	  // check if the field is of ref type & it is symbolic (i.e. it has an attribute)
 	  // if it is we need to do lazy initialization
@@ -107,22 +93,51 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  if(attr instanceof StringExpression || attr instanceof SymbolicStringBuilder)
 			return super.execute(ti); // Strings are handled specially
 
+	  if (SymbolicInstructionFactory.debugMode)
+		  System.out.println("lazy initialization");
 	  // else: lazy initialization
 
+	// check if this breaks the current transition//
+	// may introduce thread choice
+	    if (isNewPorFieldBoundary(ti, fi, objRef)) {
+	      if (createAndSetSharedFieldAccessCG( ei, ti)) {
+	      //  return this; 
+	      }
+	    }
+	  
 	  int currentChoice;
 	  ChoiceGenerator<?> thisHeapCG;
 	  
 	  ClassInfo typeClassInfo = fi.getTypeClassInfo(); // use this instead of fullType
 
-	  // first time around, get previous heapCG (if any) size so we know
-	  // how big to make this heapCG
+	  // need to introduce a new choice for heap pc
+	  // the problem is that we might have had a previous thread choice here
+	  // so we have to do something else
+	  
+	  // also compute how big to make this heapCG
 	  // we do not collect now  the candidates for lazy initialization
-	  if (!ti.isFirstStepInsn()) {
-		  prevSymRefs = null;
+	  
+	  // the problem is that we might have had a previous thread choice here
+	  
+	  /*
+	  HeapChoiceGenerator cg = ti.getVM().getSystemState().getCurrentChoiceGeneratorOfType(HeapChoiceGenerator.class);
+      if (cg == null){
+
+        
+       if (!ti.willReExecuteInstruction()){
+          // restore old operand stack contents
+          StackFrame frame_new = ti.getModifiableTopFrame();
+
+          frame_new.pop();
+          frame_new.pushRef( getLastThis());
+        }
+        */
+	  if(!ti.isFirstStepInsn()){
+          prevSymRefs = null;
 		  numSymRefs = 0;
 		  
 		  prevHeapCG = ti.getVM().getSystemState().getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
-		  
+		  // to check if this still works in the case of cascaded choices...
 
 		  if (prevHeapCG != null) {
 			// determine # of candidates for lazy initialization
@@ -136,26 +151,22 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 			  abstractClass = true;
 			  increment = 1; // only null
 		  }
-		  //TODO: fix subtypes
-//		  if(!subtypes.equals("false")) {
-//			  // get the number of subtypes that exist, and add the number in
-//			  // the choice generator inaddition to the ones that were there
-//			  int numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
-//			  thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment+numNewRefs); // +null, (no new)
-//		  } else {
-			  thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment);  //+null,new
-//		  }
-		  ti.getVM().getSystemState().setNextChoiceGenerator(thisHeapCG);
-		  return this;
-	  }
-	  else {//this is what really returns results
-		 
-		  //from original GETFIELD bytecode
-		  StackFrame sf = ti.getModifiableTopFrame();
-		  sf.pop(); // Ok, now we can remove the object ref from the stack
 
-		  thisHeapCG = ti.getVM().getSystemState().getChoiceGenerator();
-		  assert (thisHeapCG instanceof HeapChoiceGenerator) :
+		  thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment);  //+null,new
+		  ti.getVM().getSystemState().setNextChoiceGenerator(thisHeapCG);
+          //ti.reExecuteInstruction();
+		  if (SymbolicInstructionFactory.debugMode)
+			  System.out.println("# heap cg registered: " + thisHeapCG);
+          return this;
+
+      } else { //this is what really returns results
+		 // here we can have 2 choice generators: thread and heappc at the same time?
+		  
+		
+		  frame.pop(); // Ok, now we can remove the object ref from the stack
+
+		  thisHeapCG = ti.getVM().getSystemState().getLastChoiceGeneratorOfType(HeapChoiceGenerator.class);
+		  assert (thisHeapCG !=null && thisHeapCG instanceof HeapChoiceGenerator) :
 			  "expected HeapChoiceGenerator, got: " + thisHeapCG;
 		  currentChoice = ((HeapChoiceGenerator) thisHeapCG).getNextChoice();
 	  }
@@ -167,11 +178,6 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  // 0 .. numymRefs -1, or to null or to a new object of the respective type, where we set all its
 	  // fields to be symbolic
 
-
-	  // pcHeap is updated with the pcHeap stored in the choice generator above
-	  // get the pcHeap from the previous choice generator of the same type
-	  // can not simply re-use prevHeapCG from above because it might have changed during re-execution
-	  // bug reported by Willem Visser
 	  prevHeapCG = thisHeapCG.getPreviousChoiceGeneratorOfType(HeapChoiceGenerator.class);
 	  
 	  
@@ -207,26 +213,18 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 				  		symInputHeap, numSymRefs, prevSymRefs);
 	  } else {
 		  System.err.println("subtyping not handled");
-		  //TODO: fix
-//		  int counter;
-//		  if(abstractClass) {
-//				counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
-//		  } else {
-//				counter = currentChoice - (numSymRefs+1) - 1;
-//		  }
-//		  ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
-//		  daIndex = Helper.addNewHeapNode(subClassInfo, ti, daIndex, attr, ks, pcHeap,
-//				  		symInputHeap, numSymRefs, prevSymRefs);
 	  }
 
-	  ei.setReferenceField(fi,daIndex );
-	  ei.setFieldAttr(fi, null);
+	  
+	  //ei.setReferenceField(fi,daIndex );
+	  //ei.setFieldAttr(fi, null);
 
-	  ti.getModifiableTopFrame().push(ei.getReferenceField(fi), fi.isReference());
+	  frame.pushRef(daIndex);
+      
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentPCheap(pcHeap);
 	  ((HeapChoiceGenerator)thisHeapCG).setCurrentSymInputHeap(symInputHeap);
-	  //if (SymbolicInstructionFactory.debugMode)
-		//	System.out.println("GETFIELD pcHeap: " + pcHeap);
+	  if (SymbolicInstructionFactory.debugMode)
+		  System.out.println("GETFIELD pcHeap: " + pcHeap);
 	  return getNext(ti);
   }
 
