@@ -49,7 +49,7 @@ public class PCChoiceGenerator extends IntIntervalGenerator {
 	@SuppressWarnings("deprecation")
 	public PCChoiceGenerator(int size) {
 		super(0, size - 1);
-		PC = new HashMap<>();
+		PC = new HashMap();
 		for(int i = 0; i < size; i++)
 			PC.put(i, new PathCondition());
 		isReverseOrder = false;
@@ -62,7 +62,7 @@ public class PCChoiceGenerator extends IntIntervalGenerator {
 	@SuppressWarnings("deprecation")
 	public PCChoiceGenerator(int min, int max, int delta) {
 		super(min, max, delta);
-		PC = new HashMap<>();
+		PC = new HashMap();
 		for(int i = min; i <= max; i += delta)
 			PC.put(i, new PathCondition());
 		isReverseOrder = false;
@@ -77,7 +77,7 @@ public class PCChoiceGenerator extends IntIntervalGenerator {
 	@SuppressWarnings("deprecation")
 	public PCChoiceGenerator(int size, boolean reverseOrder) {
 		super(0, size - 1, reverseOrder ? -1 : 1);
-		PC = new HashMap<>();
+		PC = new HashMap();
 		for(int i = 0; i < size; i++)
 			PC.put(i, new PathCondition());
 		isReverseOrder = reverseOrder;

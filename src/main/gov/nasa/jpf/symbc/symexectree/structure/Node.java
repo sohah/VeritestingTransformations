@@ -25,8 +25,8 @@ public abstract class Node implements ISymbolicExecutionTreeElement {
 
 	public Node(InstrContext instructionContext) {
 		this.instructionContext = instructionContext;
-		this.incomingTransitions = new LinkedList<>();
-		this.outgoingTransitions = new LinkedList<>();
+		this.incomingTransitions = new LinkedList();
+		this.outgoingTransitions = new LinkedList();
 	}
 	
 	public Node(InstrContext instructionContext, SymbolicExecutionTree tree) {

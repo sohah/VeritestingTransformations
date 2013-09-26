@@ -119,7 +119,7 @@ public class SymbolicExecutionTreeGenerator {
 	}
 	
 	public LinkedList<SymbolicExecutionTree> getTrees() {
-		LinkedList<SymbolicExecutionTree> trees = new LinkedList<>();
+		LinkedList<SymbolicExecutionTree> trees = new LinkedList<SymbolicExecutionTree>();
 		for(TranslationUnit tu : this.methTUMap.values())
 			trees.add(tu.getSymTree());
 		return trees;
@@ -134,7 +134,7 @@ public class SymbolicExecutionTreeGenerator {
 		
 		public TranslationUnit(MethodDesc method) {	
 			this.tree = new SymbolicExecutionTree(method);
-			this.choices = new Stack<>();
+			this.choices = new Stack();
 			this.branchingInstrToNodeMap = new HashMap<InstrContext, Node>();
 			this.prevNode = null;
 		}
