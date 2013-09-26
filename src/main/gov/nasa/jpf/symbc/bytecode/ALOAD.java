@@ -48,11 +48,6 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 
 		// TODO: fix handle polymorphism
 		
-		//String subtypes = conf.getString("symbolic.lazy.subtypes", "false");
-		//if(!subtypes.equals("false") &&
-			//	TypeHierarchy.typeHierarchies == null) {
-			//TypeHierarchy.buildTypeHierarchy(th);
-		//}
 
 		StackFrame sf = th.getModifiableTopFrame();
 		Object attr = sf.getLocalAttr(index);
@@ -93,14 +88,9 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 			}
 			
 			// TODO fix: subtypes
-//			if(!subtypes.equals("false")) {
-//				// get the number of subtypes that exist, and add the number in
-//				// the choice generator in addition to the ones that were there
-//				numNewRefs = TypeHierarchy.getNumOfElements(typeClassInfo.getName());
-//				thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment+numNewRefs); // +null,new
-//			} else {
+
 				thisHeapCG = new HeapChoiceGenerator(numSymRefs+increment);  //+null,new
-			//}
+			
 			th.getVM().setNextChoiceGenerator(thisHeapCG);
 			return this;
 		} else { 
@@ -154,16 +144,6 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		} else {
 			//TODO: fix subtypes
 			System.err.println("subtypes not handled");
-//			int counter;
-//			if(abstractClass) {
-//				counter = currentChoice - (numSymRefs+1) ; //index to the sub-class
-//			} else {
-//				counter = currentChoice - (numSymRefs+1) - 1;
-//			}
-//			ClassInfo subClassInfo = TypeHierarchy.getClassInfo(typeClassInfo.getName(), counter);
-//			daIndex = Helper.addNewHeapNode(subClassInfo, th, daIndex, attr, ks, pcHeap,
-//							symInputHeap, numSymRefs, prevSymRefs);
-
 		}
 
 
