@@ -209,8 +209,9 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  }
 	  else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 		  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
+		  
 		  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, pcHeap,
-				  		symInputHeap, numSymRefs, prevSymRefs);
+				  		symInputHeap, numSymRefs, prevSymRefs, ei.isShared());
 	  } else {
 		  System.err.println("subtyping not handled");
 	  }

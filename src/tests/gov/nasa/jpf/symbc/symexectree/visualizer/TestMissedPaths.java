@@ -24,14 +24,17 @@ public class TestMissedPaths extends InvokeTest {
 	private static final String DEBUG = "+symbolic.debug = true";
 	private static final String LAZY = "+symbolic.lazy = true";
 
+	//private static final String SEARCH = "+search.multiple_errors = true";
+	
 	private static final String[] JPF_ARGS = {INSN_FACTORY, 
-											//  LISTENER, 
+		  									  LISTENER, 
 											  CLASSPATH_UPDATED, 
 											  SYM_METHOD,
 											  OUTPUTPATH,
 											  FORMAT,
 											  DEBUG,
-											  LAZY
+											  LAZY,
+										//	  SEARCH
 											  };
 
 	

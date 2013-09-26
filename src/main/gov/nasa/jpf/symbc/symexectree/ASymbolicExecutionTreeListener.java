@@ -3,8 +3,10 @@
  */
 package gov.nasa.jpf.symbc.symexectree;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 
+import scale.common.RuntimeException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
@@ -12,6 +14,8 @@ import gov.nasa.jpf.jvm.bytecode.FieldInstruction;
 import gov.nasa.jpf.jvm.bytecode.GETFIELD;
 import gov.nasa.jpf.jvm.bytecode.GETSTATIC;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
+import gov.nasa.jpf.jvm.bytecode.PUTFIELD;
+import gov.nasa.jpf.jvm.bytecode.PUTSTATIC;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
@@ -24,6 +28,7 @@ import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
@@ -60,24 +65,7 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 		if (!vm.getSystemState().isIgnored()) {
 			MethodInfo mi = executedInstruction.getMethodInfo();
 			if(SymExecTreeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
-				if(executedInstruction instanceof GETFIELD ||
-				   executedInstruction instanceof GETSTATIC) {
-					ThreadInfo ti = vm.getCurrentThread();
-					if(ti.getTopFrame() != null) {
-						if(ti.getTopFrame().getSlots().length > 0) {
-							FieldInstruction fieldInstr = (FieldInstruction) executedInstruction;
-							ElementInfo ei = fieldInstr.peekElementInfo(ti);
-							if(ei != null) {
-								if(ei.isShared()) {
-									if(!ei.hasFieldAttr(Expression.class) && !ei.isFrozen()) {//Assuming the if the field already has an attr of type Expression, it is symbolic.
-										FieldInfo fi = fieldInstr.getFieldInfo();
-										ei.addFieldAttr(fi, new SymbolicInteger("SHARED SYMB " + this.injectedSymbID++));								
-									}
-								}
-							}
-						}
-					}
-				}
+				
 			}
 		}
 	}
@@ -87,10 +75,83 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 		if (!vm.getSystemState().isIgnored()) {
 			MethodInfo mi = instructionToExecute.getMethodInfo();
 			if(SymExecTreeUtils.isInSymbolicCallChain(mi, currentThread.getTopFrame(), this.jpfConf)) {
+				if(instructionToExecute instanceof GETFIELD ||
+					instructionToExecute instanceof GETSTATIC) {
+						ThreadInfo ti = vm.getCurrentThread();
+						if(ti.getTopFrame() != null) {
+							if(ti.getTopFrame().getSlots().length > 0) {
+								FieldInstruction fieldInstr = (FieldInstruction) instructionToExecute;
+								ElementInfo ei = fieldInstr.peekElementInfo(ti);
+								if(ei != null) {
+									if(ei.isShared()) {
+										if(!ei.hasFieldAttr(Expression.class) && !ei.isFrozen()) {//Assuming the if the field already has an attr of type Expression, it is symbolic.
+											FieldInfo fi = fieldInstr.getFieldInfo();
+											System.out.println("is shared: " + fi.getFullName());
+											ei.addFieldAttr(fi, new SymbolicInteger("SHARED SYMB " + this.injectedSymbID++));
+										}
+									}
+								}
+							}
+						}
+					}
+
+				if(instructionToExecute instanceof PUTFIELD ||
+				   instructionToExecute instanceof PUTSTATIC) {
+						ThreadInfo ti = vm.getCurrentThread();
+						FieldInstruction putInstr = (FieldInstruction) instructionToExecute;
+						
+						ElementInfo eiOwner = putInstr.peekElementInfo(ti);
+						FieldInfo fi = putInstr.getFieldInfo();
+						
+						if(eiOwner == null || fi == null) {
+							System.out.println("this guy is null: " + ((eiOwner == null) ? "eiOwner" : "fi"));
+							return;
+						}
+						System.out.println("eiOwner " + eiOwner.toString() + " is shared: " + eiOwner.isShared());
+						System.out.println("fi " + fi.getFullName());
+						if(fi.isReference() && eiOwner.isShared()) {
+							int objRef = ti.getTopFrame().peek();
+							if(objRef == -1) {
+								//do some clever stuff
+							} else {
+								ElementInfo ei = ti.getElementInfo(objRef);
+								ei.setShared(true);
+								System.out.println("setting shared in put");
+								this.setSharedness(ei, ti);
+							}
+						}					
+					}
+				
 				this.SETGenerator.generate(new InstrContext(instructionToExecute, 
 															 currentThread.getTopFrame().clone(),
 															 currentThread,
 															 PathCondition.getPC(vm)));
+			}
+		}
+	}
+	
+	private void setSharedness(ElementInfo ei, ThreadInfo ti) {
+		this.visitedEi.clear();
+		recursivelySetSharedness(ei, ti);
+	}
+	
+	private HashSet<ElementInfo> visitedEi = new HashSet<ElementInfo>();
+	private void recursivelySetSharedness(ElementInfo ei, ThreadInfo ti) {
+		if(visitedEi.contains(ei))
+			return;
+		ClassInfo ci = ei.getClassInfo();
+		FieldInfo[] fis = ci.getDeclaredInstanceFields();
+		for(FieldInfo fi : fis) {
+			if(fi.isReference()) {
+				int objRef = ei.getReferenceField(fi);
+				if(objRef == -1)
+					return;
+				ElementInfo thisEi = ti.getElementInfo(objRef);
+				if(thisEi == null)
+					throw new RuntimeException("ElementInfo is null!");
+				thisEi.setShared(true);
+				visitedEi.add(thisEi);
+				recursivelySetSharedness(thisEi, ti);
 			}
 		}
 	}

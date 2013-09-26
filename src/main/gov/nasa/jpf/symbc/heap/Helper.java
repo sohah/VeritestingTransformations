@@ -103,13 +103,16 @@ public class Helper {
 	  // generate a new HeapNode in the same way. This can be used across different init algorithms.
 	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
 			  PathCondition pcHeap, SymbolicInputHeap symInputHeap,
-			  int numSymRefs, HeapNode[] prevSymRefs ) {
+			  int numSymRefs, HeapNode[] prevSymRefs, boolean setShared) {
 		  daIndex = ti.getHeap().newObject(typeClassInfo, ti).getObjectRef();
 		  ti.getHeap().registerPinDown(daIndex);
 		  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
 		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
-		  ElementInfo eiRef =  ti.getElementInfo(daIndex); // TODO to review!
-//daIndex.getObjectRef() -> number
+		  ElementInfo eiRef =  ti.getModifiableElementInfo(daIndex);//ti.getElementInfo(daIndex); // TODO to review!
+		  if(setShared) {
+			  eiRef.setShared(true);
+		  }
+		  //daIndex.getObjectRef() -> number
 
 		  // neha: this change allows all the fields in the class hierarchy of the
 		  // object to be initialized as symbolic and not just its instance fields
