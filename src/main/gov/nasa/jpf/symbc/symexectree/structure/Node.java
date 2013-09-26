@@ -19,9 +19,9 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  */
 public abstract class Node implements ISymbolicExecutionTreeElement {
 	
-	private final InstrContext instructionContext;
-	private LinkedList<Transition> incomingTransitions;
-	private LinkedList<Transition> outgoingTransitions;
+	protected final InstrContext instructionContext;
+	protected LinkedList<Transition> incomingTransitions;
+	protected LinkedList<Transition> outgoingTransitions;
 
 	public Node(InstrContext instructionContext) {
 		this.instructionContext = instructionContext;

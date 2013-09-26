@@ -5,6 +5,8 @@ package gov.nasa.jpf.symbc.symexectree;
 
 import gov.nasa.jpf.symbc.symexectree.structure.IfNode;
 import gov.nasa.jpf.symbc.symexectree.structure.InvokeNode;
+import gov.nasa.jpf.symbc.symexectree.structure.MonitorEnterNode;
+import gov.nasa.jpf.symbc.symexectree.structure.MonitorExitNode;
 import gov.nasa.jpf.symbc.symexectree.structure.Node;
 import gov.nasa.jpf.symbc.symexectree.structure.ReturnNode;
 import gov.nasa.jpf.symbc.symexectree.structure.SymbolicExecutionTree;
@@ -18,6 +20,9 @@ public abstract class NodeFactory {
 	public NodeFactory() {
 		
 	}
+	public abstract MonitorEnterNode constructMonitorEnterNode(InstrContext instrCtx);
+	
+	public abstract MonitorExitNode constructMonitorExitNode(InstrContext instrCtx);
 	
 	public abstract Node constructStdNode(InstrContext instrCtx);
 	
@@ -26,6 +31,18 @@ public abstract class NodeFactory {
 	public abstract InvokeNode constructInvokeNode(InstrContext instrCtx);
 
 	public abstract ReturnNode constructReturnNode(InstrContext instrCtx);
+	
+	public final MonitorEnterNode constructMonitorEnterNode(InstrContext instrCtx, SymbolicExecutionTree tree) {
+		MonitorEnterNode n = this.constructMonitorEnterNode(instrCtx);
+		tree.addNode(n);
+		return n;
+	}
+	
+	public final MonitorExitNode constructMonitorExitNode(InstrContext instrCtx, SymbolicExecutionTree tree) {
+		MonitorExitNode n = this.constructMonitorExitNode(instrCtx);
+		tree.addNode(n);
+		return n;
+	}	
 	
 	public final Node constructStdNode(InstrContext instrCtx, SymbolicExecutionTree tree) {
 		Node n = this.constructStdNode(instrCtx);

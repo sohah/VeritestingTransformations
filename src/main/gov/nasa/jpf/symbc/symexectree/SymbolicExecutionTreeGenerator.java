@@ -15,8 +15,11 @@ import gov.nasa.jpf.jvm.bytecode.FCMPL;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.jvm.bytecode.LCMP;
+import gov.nasa.jpf.jvm.bytecode.MONITORENTER;
+import gov.nasa.jpf.jvm.bytecode.MONITOREXIT;
 import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
+import gov.nasa.jpf.symbc.symexectree.structure.MonitorEnterNode;
 import gov.nasa.jpf.symbc.symexectree.structure.Node;
 import gov.nasa.jpf.symbc.symexectree.structure.SymbolicExecutionTree;
 import gov.nasa.jpf.vm.ChoiceGenerator;
@@ -89,6 +92,10 @@ public class SymbolicExecutionTreeGenerator {
 			return this.nodeFactory.constructInvokeNode(instrCtx, tree);
 		} else if(instr instanceof ReturnInstruction) {
 			return this.nodeFactory.constructReturnNode(instrCtx, tree);
+		} else if(instr instanceof MONITORENTER) {
+			return this.nodeFactory.constructMonitorEnterNode(instrCtx, tree);
+		} else if(instr instanceof MONITOREXIT) {
+			return this.nodeFactory.constructMonitorExitNode(instrCtx, tree);
 		} else {
 			return this.nodeFactory.constructStdNode(instrCtx, tree);
 		}
