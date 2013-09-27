@@ -133,19 +133,22 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 	private void setSharedness(ElementInfo ei, ThreadInfo ti) {
 		this.visitedEi.clear();
 		recursivelySetSharedness(ei, ti);
+		// TODO: are the static fields shared anyway?
 	}
 	
 	private HashSet<ElementInfo> visitedEi = new HashSet<ElementInfo>();
+	
 	private void recursivelySetSharedness(ElementInfo ei, ThreadInfo ti) {
 		if(visitedEi.contains(ei))
 			return;
 		ClassInfo ci = ei.getClassInfo();
 		FieldInfo[] fis = ci.getDeclaredInstanceFields();
+		
 		for(FieldInfo fi : fis) {
 			if(fi.isReference()) {
 				int objRef = ei.getReferenceField(fi);
 				if(objRef == -1)
-					return;
+					continue;
 				ElementInfo thisEi = ti.getElementInfo(objRef);
 				if(thisEi == null)
 					throw new RuntimeException("ElementInfo is null!");
