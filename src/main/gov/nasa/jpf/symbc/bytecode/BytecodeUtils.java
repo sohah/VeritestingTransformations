@@ -258,17 +258,18 @@ public class BytecodeUtils {
 
 			// special treatment of "this"
 			String lazy[] = conf.getStringArray("symbolic.lazy");
-			if(lazy != null) {
-				if(lazy[0].equalsIgnoreCase("true")) {
-		            if(!isStatic) {
-	                	String name = "this";
-	                    IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
-	                    expressionMap.put(name, sym_v);
-	                    sf.setOperandAttr(0, sym_v);
-	                    outputString = outputString.concat(" " + sym_v + ",");
-		            }
-				}
-			}
+			//TODO: to review
+//			if(lazy != null) {
+//				if(lazy[0].equalsIgnoreCase("true")) {
+//		            if(!isStatic) {
+////	                	String name = "this";
+////	                    IntegerExpression sym_v = new SymbolicInteger(varName(name, VarType.REF));
+////	                    expressionMap.put(name, sym_v);
+////	                    sf.setOperandAttr(0, sym_v);
+////	                    outputString = outputString.concat(" " + sym_v + ",");
+//		            }
+//				}
+//			}
 			
 			for (int j = 0; j < argSize; j++) { // j ranges over actual arguments
 				if (symClass || args.get(j).equalsIgnoreCase("SYM")) {

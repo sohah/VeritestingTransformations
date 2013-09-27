@@ -98,13 +98,11 @@ public class Helper {
 		}
 	}
 
-	  //neha: added the code to intansiate an new heap in a separate procedure. There are multiple
-	  //bytecodes that need access to the same code. Lazy initialization and uber-lazy initialization
-	  // generate a new HeapNode in the same way. This can be used across different init algorithms.
-	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, int daIndex, Object attr,
+
+	  public static int addNewHeapNode(ClassInfo typeClassInfo, ThreadInfo ti, Object attr,
 			  PathCondition pcHeap, SymbolicInputHeap symInputHeap,
 			  int numSymRefs, HeapNode[] prevSymRefs, boolean setShared) {
-		  daIndex = ti.getHeap().newObject(typeClassInfo, ti).getObjectRef();
+		  int daIndex = ti.getHeap().newObject(typeClassInfo, ti).getObjectRef();
 		  ti.getHeap().registerPinDown(daIndex);
 		  String refChain = ((SymbolicInteger) attr).getName() + "[" + daIndex + "]"; // do we really need to add daIndex here?
 		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);

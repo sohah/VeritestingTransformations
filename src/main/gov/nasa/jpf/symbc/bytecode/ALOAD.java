@@ -16,6 +16,7 @@ import gov.nasa.jpf.symbc.string.SymbolicStringBuilder;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.KernelState;
 import gov.nasa.jpf.vm.StackFrame;
@@ -50,6 +51,8 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		
 
 		StackFrame sf = th.getModifiableTopFrame();
+		int objRef = sf.peek();
+		ElementInfo ei = th.getElementInfo(objRef);
 		Object attr = sf.getLocalAttr(index);
 		String typeOfLocalVar = super.getLocalVariableType();
 
@@ -104,10 +107,6 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		PathCondition pcHeap;
 		SymbolicInputHeap symInputHeap;
 
-		// pcHeap is updated with the pcHeap stored in the choice generator above
-        // get the pcHeap from the previous choice generator of the same type
-        // can not simply re-use prevHeapCG from above because it might have changed during re-execution
-        // bug reported by Willem Visser
         prevHeapCG = thisHeapCG.getPreviousChoiceGeneratorOfType(HeapChoiceGenerator.class);
 
 		
@@ -139,8 +138,9 @@ public class ALOAD extends gov.nasa.jpf.jvm.bytecode.ALOAD {
 		}
 		else if ((currentChoice == (numSymRefs + 1) && !abstractClass) | (currentChoice == numSymRefs && (((IntegerExpression)attr).toString()).contains("this"))) {
 			//creates a new object with all fields symbolic
-			daIndex = Helper.addNewHeapNode(typeClassInfo, th, daIndex, attr, pcHeap,
-							symInputHeap, numSymRefs, prevSymRefs);
+			boolean shared = (ei == null? false: ei.isShared());
+			daIndex = Helper.addNewHeapNode(typeClassInfo, th, attr, pcHeap,
+							symInputHeap, numSymRefs, prevSymRefs, shared);
 		} else {
 			//TODO: fix subtypes
 			System.err.println("subtypes not handled");

@@ -184,8 +184,8 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			daIndex = -1;
 		} else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 			  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
-			  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, pcHeap,
-					  		symInputHeap, numSymRefs, prevSymRefs);
+			  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, attr, pcHeap,
+					  		symInputHeap, numSymRefs, prevSymRefs, ei.isShared());
 		  } else {
 			  //TODO: fix
 			  System.err.println("subtyping not handled");
