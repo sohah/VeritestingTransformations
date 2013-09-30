@@ -208,6 +208,15 @@ public class BytecodeUtils {
 		Vector<String> args = new Vector<String>();
 		Config conf = th.getVM().getConfig();
 
+		// Start string handling
+		/**** This is where we branch off to handle symbolic string variables *******/
+		SymbolicStringHandler a = new SymbolicStringHandler();
+		Instruction handled = a.handleSymbolicStrings(invInst, th);
+		if(handled != null){ // go to next instruction as symbolic string operation was done
+			System.out.println("Symbolic string analysis");	
+			return new InstructionOrSuper(false, handled);
+		}
+		// End string handling
 		
 
 

@@ -119,7 +119,7 @@ public class SymbolicStringHandler {
 			return false;
 	}
 
-	public Instruction handleSymbolicStrings(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public Instruction handleSymbolicStrings(InvokeInstruction invInst, ThreadInfo th) {
 
 		boolean needToHandle = isMethodStringSymbolic(invInst, th);
 
@@ -136,50 +136,50 @@ public class SymbolicStringHandler {
 				ChoiceGenerator<?> cg;
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(2);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return invInst;
 				} else {
-					handleObjectEquals(invInst, ss, th);
+					handleObjectEquals(invInst, th);
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals("equalsIgnoreCase")) {
 				ChoiceGenerator<?> cg;
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(2);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return invInst;
 				} else {
-					handleEqualsIgnoreCase(invInst, ss, th);
+					handleEqualsIgnoreCase(invInst,  th);
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals("endsWith")) {
 				ChoiceGenerator<?> cg;
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(2);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return invInst;
 				} else {
-					handleEndsWith(invInst, ss, th);
+					handleEndsWith(invInst, th);
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals("startsWith")) {
 				ChoiceGenerator<?> cg;
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(2);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return invInst;
 				} else {
-					handleStartsWith(invInst, ss, th);
+					handleStartsWith(invInst, th);
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals ("contains")) {
 				ChoiceGenerator<?> cg;
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(2);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return invInst;
 				} else {
-					handleContains(invInst, ss, th);
+					handleContains(invInst, th);
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals("append")) {
@@ -214,7 +214,7 @@ public class SymbolicStringHandler {
 					return handled;
 				}
 			} else if (shortName.equals("valueOf")) {
-				Instruction handled = handleValueOf(invInst, ss, th);
+				Instruction handled = handleValueOf(invInst, th);
 				if (handled != null) {
 					return handled;
 				}
@@ -222,54 +222,54 @@ public class SymbolicStringHandler {
 				ChoiceGenerator<?> cg;
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(2);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return invInst;
 				} else {
-					handleParseInt(invInst, ss, th);
+					handleParseInt(invInst, th);
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals("parseFloat")) {
 				ChoiceGenerator<?> cg;
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(2);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return invInst;
 				} else {
-					handleParseFloat(invInst, ss, th);
+					handleParseFloat(invInst, th);
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals("parseLong")) {
 				ChoiceGenerator<?> cg;
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(2);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return invInst;
 				} else {
-					handleParseLong(invInst, ss, th);
+					handleParseLong(invInst, th);
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals("parseDouble")) {
 				ChoiceGenerator<?> cg;
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(2);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return invInst;
 				} else {
-					handleParseDouble(invInst, ss, th);
+					handleParseDouble(invInst, th);
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals("parseBoolean")) {
 				ChoiceGenerator<?> cg;
 				if (!th.isFirstStepInsn()) { // first time around
 					cg = new PCChoiceGenerator(2);
-					ss.setNextChoiceGenerator(cg);
+					th.getVM().setNextChoiceGenerator(cg);
 					return invInst;
 				} else {
-					handleParseBoolean(invInst, ss, th);
+					handleParseBoolean(invInst, th);
 					return invInst.getNext(th);
 				}
 			} else if (shortName.equals("toString")) {
-				Instruction handled = handletoString(invInst, ss, th);
+				Instruction handled = handletoString(invInst, th);
 				if (handled != null) {
 					return handled;
 				}
@@ -278,22 +278,22 @@ public class SymbolicStringHandler {
 			} else if (shortName.equals("print")) {
 				handleprintln(invInst, th, false);
 			} else if (shortName.equals("<init>")) {
-				Instruction handled = handleInit(invInst, ss, th);
+				Instruction handled = handleInit(invInst, th);
 				if (handled != null) {
 					return handled;
 				} else {
 					return null;
 				}
 			} else if (shortName.equals("intValue")) {
-				handleintValue(invInst, ss, th);
+				handleintValue(invInst, th);
 			} else if (shortName.equals("floatValue")) {
-				handlefloatValue(invInst, ss, th);
+				handlefloatValue(invInst, th);
 			} else if (shortName.equals("longValue")) {
-				handlelongValue(invInst, ss, th);
+				handlelongValue(invInst, th);
 			} else if (shortName.equals("doubleValue")) {
-				handledoubleValue(invInst, ss, th);
+				handledoubleValue(invInst, th);
 			} else if (shortName.equals("booleanValue")) {
-				handlefloatValue(invInst, ss, th);
+				handlefloatValue(invInst, th);
 			} else {
 				System.err.println("ERROR: symbolic method not handled: " + shortName);
 				return null;
@@ -842,7 +842,7 @@ public class SymbolicStringHandler {
 
 	}
 
-	public void handleintValue(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleintValue(InvokeInstruction invInst,  ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -861,7 +861,7 @@ public class SymbolicStringHandler {
 		}
 	}
 
-	public void handlelongValue(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handlelongValue(InvokeInstruction invInst,  ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -881,7 +881,7 @@ public class SymbolicStringHandler {
 
 	}
 
-	public void handlefloatValue(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handlefloatValue(InvokeInstruction invInst,  ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -901,7 +901,7 @@ public class SymbolicStringHandler {
 
 	}
 
-	public void handledoubleValue(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handledoubleValue(InvokeInstruction invInst,  ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -926,7 +926,7 @@ public class SymbolicStringHandler {
 	 * primitives
 	 */
 
-	public Instruction handleInit(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public Instruction handleInit(InvokeInstruction invInst,  ThreadInfo th) {
 
 		String cname = invInst.getInvokedMethodClassName();
 		if (cname.equals("java.lang.StringBuilder") || cname.equals("java.lang.StringBuffer")) {
@@ -954,7 +954,7 @@ public class SymbolicStringHandler {
 	/***************************** Symbolic Big Decimal Routines end ****************/
 
 
-	private void handleBooleanStringInstructions(InvokeInstruction invInst, SystemState ss, ThreadInfo th, StringComparator comp) {
+	private void handleBooleanStringInstructions(InvokeInstruction invInst,  ThreadInfo th, StringComparator comp) {
 		StackFrame sf = th.getTopFrame();
 		StringExpression sym_v1 = (StringExpression) sf.getOperandAttr(0);
 		StringExpression sym_v2 = (StringExpression) sf.getOperandAttr(1);
@@ -965,7 +965,7 @@ public class SymbolicStringHandler {
 			ChoiceGenerator<?> cg;
 			boolean conditionValue;
 
-			cg = ss.getChoiceGenerator();
+			cg = th.getVM().getChoiceGenerator();
 			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
 
@@ -1007,7 +1007,7 @@ public class SymbolicStringHandler {
 					pc.spc._addDet(comp, val, sym_v2);
 				}
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					// pc.solve();
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
@@ -1029,7 +1029,7 @@ public class SymbolicStringHandler {
 					pc.spc._addDet(comp.not(), val, sym_v2);
 				}
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
 				}
@@ -1041,23 +1041,23 @@ public class SymbolicStringHandler {
 
 	}
 
-	public void handleEqualsIgnoreCase(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleEqualsIgnoreCase(InvokeInstruction invInst,  ThreadInfo th) {
 		System.err.println("ERROR: symbolic string method not Implemented - EqualsIgnoreCase");
 	}
 
-	public void handleEndsWith(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleEndsWith(InvokeInstruction invInst,  ThreadInfo th) {
 		//System.err.println("ERROR: symbolic string method not Implemented - EndsWith");
-		handleBooleanStringInstructions(invInst, ss, th, StringComparator.ENDSWITH);
+		handleBooleanStringInstructions(invInst,  th, StringComparator.ENDSWITH);
 	}
 
-	public void handleContains (InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
-		handleBooleanStringInstructions(invInst, ss, th, StringComparator.CONTAINS);
+	public void handleContains (InvokeInstruction invInst,  ThreadInfo th) {
+		handleBooleanStringInstructions(invInst,  th, StringComparator.CONTAINS);
 	}
 
 
-	public void handleStartsWith(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleStartsWith(InvokeInstruction invInst,  ThreadInfo th) {
 		//System.err.println("ERROR: symbolic string method not Implemented - StartsWith");
-		handleBooleanStringInstructions(invInst, ss, th, StringComparator.STARTSWITH);
+		handleBooleanStringInstructions(invInst, th, StringComparator.STARTSWITH);
 	}
 
 	//Only supports character for character
@@ -1330,14 +1330,14 @@ public class SymbolicStringHandler {
 		sf.setOperandAttr(result);
 	}
 
-	public Instruction handleValueOf(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public Instruction handleValueOf(InvokeInstruction invInst,  ThreadInfo th) {
 		MethodInfo mi = invInst.getInvokedMethod(th);
 		String cname = invInst.getInvokedMethodClassName();
 		String[] argTypes = mi.getArgumentTypeNames();
 		if (cname.equals("java.lang.String")) {
 			// System.out.println(argTypes[0]);
 			if (argTypes[0].equals("int")) {
-				return handleIntValueOf(invInst, ss, th);
+				return handleIntValueOf(invInst,  th);
 			} else if (argTypes[0].equals("float")) {
 				return handleFloatValueOf(invInst, th);
 			} else if (argTypes[0].equals("long")) {
@@ -1361,65 +1361,65 @@ public class SymbolicStringHandler {
 					ChoiceGenerator<?> cg;
 					if (!th.isFirstStepInsn()) { // first time around
 						cg = new PCChoiceGenerator(2);
-						ss.setNextChoiceGenerator(cg);
+						th.getVM().setNextChoiceGenerator(cg);
 						return invInst;
 					} else {
-						handleParseIntValueOf(invInst, ss, th);
+						handleParseIntValueOf(invInst, th);
 					}
 				} else { // converting int to Integer
-					handleParseIntValueOf(invInst, ss, th);
+					handleParseIntValueOf(invInst,  th);
 				}
 			} else if (cname.equals("java.lang.Float")) {
 				if (!(argTypes[0].equals("float"))) { // converting String to Float
 					ChoiceGenerator<?> cg;
 					if (!th.isFirstStepInsn()) { // first time around
 						cg = new PCChoiceGenerator(2);
-						ss.setNextChoiceGenerator(cg);
+						th.getVM().setNextChoiceGenerator(cg);
 						return invInst;
 					} else {
-						handleParseFloatValueOf(invInst, ss, th);
+						handleParseFloatValueOf(invInst, th);
 					}
 				} else { // converting int to Integer
-					handleParseFloatValueOf(invInst, ss, th);
+					handleParseFloatValueOf(invInst, th);
 				}
 			} else if (cname.equals("java.lang.Long")) {
 				if (!(argTypes[0].equals("long"))) { // converting String to Long
 					ChoiceGenerator<?> cg;
 					if (!th.isFirstStepInsn()) { // first time around
 						cg = new PCChoiceGenerator(2);
-						ss.setNextChoiceGenerator(cg);
+						th.getVM().setNextChoiceGenerator(cg);
 						return invInst;
 					} else {
-						handleParseLongValueOf(invInst, ss, th);
+						handleParseLongValueOf(invInst, th);
 					}
 				} else { // converting int to Integer
-					handleParseLongValueOf(invInst, ss, th);
+					handleParseLongValueOf(invInst, th);
 				}
 			} else if (cname.equals("java.lang.Double")) {
 				if (!(argTypes[0].equals("double"))) { // converting String to Double
 					ChoiceGenerator<?> cg;
 					if (!th.isFirstStepInsn()) { // first time around
 						cg = new PCChoiceGenerator(2);
-						ss.setNextChoiceGenerator(cg);
+						th.getVM().getSystemState().setNextChoiceGenerator(cg);
 						return invInst;
 					} else {
-						handleParseDoubleValueOf(invInst, ss, th);
+						handleParseDoubleValueOf(invInst, th);
 					}
 				} else { // converting int to Integer
-					handleParseLongValueOf(invInst, ss, th);
+					handleParseLongValueOf(invInst, th);
 				}
 			} else if (cname.equals("java.lang.Boolean")) {
 				if (!(argTypes[0].equals("boolean"))) { // converting String to Boolean
 					ChoiceGenerator<?> cg;
 					if (!th.isFirstStepInsn()) { // first time around
 						cg = new PCChoiceGenerator(2);
-						ss.setNextChoiceGenerator(cg);
+						th.getVM().setNextChoiceGenerator(cg);
 						return invInst;
 					} else {
-						handleParseBooleanValueOf(invInst, ss, th);
+						handleParseBooleanValueOf(invInst, th);
 					}
 				} else { // converting int to Integer
-					handleParseBooleanValueOf(invInst, ss, th);
+					handleParseBooleanValueOf(invInst, th);
 				}
 			} else {
 				System.err.println("ERROR: Type not handled in Symbolic Type ValueOf: " + cname);
@@ -1428,7 +1428,7 @@ public class SymbolicStringHandler {
 		return null;
 	}
 
-	public void handleParseLongValueOf(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleParseLongValueOf(InvokeInstruction invInst,  ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -1445,7 +1445,7 @@ public class SymbolicStringHandler {
 				IntegerExpression result = null;
 				ChoiceGenerator<?> cg;
 				boolean conditionValue;
-				cg = ss.getChoiceGenerator();
+				cg = th.getVM().getChoiceGenerator();
 
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
@@ -1468,7 +1468,7 @@ public class SymbolicStringHandler {
 				if (conditionValue) {
 					pc.spc._addDet(StringComparator.ISLONG, (StringExpression) sym_v3);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						result = ((StringExpression) sym_v3)._IvalueOf();
@@ -1480,10 +1480,10 @@ public class SymbolicStringHandler {
 				} else {
 					pc.spc._addDet(StringComparator.NOTLONG, (StringExpression) sym_v3);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						System.err.println("ERROR: Long Format Type Exception");
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 						sf.push(0, true);
 					}
 				}
@@ -1491,7 +1491,7 @@ public class SymbolicStringHandler {
 		}
 	}
 
-	public void handleParseBooleanValueOf(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleParseBooleanValueOf(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -1508,7 +1508,7 @@ public class SymbolicStringHandler {
 				IntegerExpression result = null;
 				ChoiceGenerator<?> cg;
 				boolean conditionValue;
-				cg = ss.getChoiceGenerator();
+				cg = th.getVM().getChoiceGenerator();
 
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
@@ -1531,7 +1531,7 @@ public class SymbolicStringHandler {
 				if (conditionValue) {
 					pc.spc._addDet(StringComparator.ISBOOLEAN, (StringExpression) sym_v3);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						result = ((StringExpression) sym_v3)._IvalueOf();
@@ -1543,10 +1543,10 @@ public class SymbolicStringHandler {
 				} else {
 					pc.spc._addDet(StringComparator.NOTBOOLEAN, (StringExpression) sym_v3);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
-						System.err.println("ERROR: Boolean Format Type Exception");
-						ss.setIgnored(true);
+						System.err.println("ERROR: Boolean Format Type Exception"); // TODO: to review; there should be no backtracking here
+						th.getVM().getSystemState().setIgnored(true);
 						sf.push(0, true);
 					}
 				}
@@ -1554,7 +1554,7 @@ public class SymbolicStringHandler {
 		}
 	}
 
-	public void handleParseIntValueOf(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleParseIntValueOf(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -1571,7 +1571,7 @@ public class SymbolicStringHandler {
 				IntegerExpression result = null;
 				ChoiceGenerator<?> cg;
 				boolean conditionValue;
-				cg = ss.getChoiceGenerator();
+				cg = th.getVM().getChoiceGenerator();
 
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
@@ -1594,7 +1594,7 @@ public class SymbolicStringHandler {
 				if (conditionValue) {
 					pc.spc._addDet(StringComparator.ISINTEGER, (StringExpression) sym_v3);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						result = ((StringExpression) sym_v3)._IvalueOf();
@@ -1606,10 +1606,10 @@ public class SymbolicStringHandler {
 				} else {
 					pc.spc._addDet(StringComparator.NOTINTEGER, (StringExpression) sym_v3);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						System.err.println("ERROR: Integer Format Type Exception");
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 						sf.push(0, true);
 					}
 				}
@@ -1617,7 +1617,7 @@ public class SymbolicStringHandler {
 		}
 	}
 
-	public void handleParseInt(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleParseInt(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -1627,7 +1627,7 @@ public class SymbolicStringHandler {
 			IntegerExpression result = null;
 			ChoiceGenerator<?> cg;
 			boolean conditionValue;
-			cg = ss.getChoiceGenerator();
+			cg = th.getVM().getChoiceGenerator();
 
 			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
@@ -1649,7 +1649,7 @@ public class SymbolicStringHandler {
 			if (conditionValue) {
 				pc.spc._addDet(StringComparator.ISINTEGER, (StringExpression) sym_v3);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
 					result = ((StringExpression) sym_v3)._IvalueOf();
@@ -1660,10 +1660,10 @@ public class SymbolicStringHandler {
 			} else {
 				pc.spc._addDet(StringComparator.NOTINTEGER, (StringExpression) sym_v3);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					System.err.println("ERROR: Integer Format Type Exception");
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 					sf.push(0, true);
 				}
 			}
@@ -1671,7 +1671,7 @@ public class SymbolicStringHandler {
 
 	}
 
-	public void handleParseFloat(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleParseFloat(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -1681,7 +1681,7 @@ public class SymbolicStringHandler {
 			RealExpression result = null;
 			ChoiceGenerator<?> cg;
 			boolean conditionValue;
-			cg = ss.getChoiceGenerator();
+			cg = th.getVM().getChoiceGenerator();
 
 			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
@@ -1702,7 +1702,7 @@ public class SymbolicStringHandler {
 			if (conditionValue) {
 				pc.spc._addDet(StringComparator.ISFLOAT, (StringExpression) sym_v3);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
 					result = ((StringExpression) sym_v3)._RvalueOf();
@@ -1713,18 +1713,18 @@ public class SymbolicStringHandler {
 			} else {
 				pc.spc._addDet(StringComparator.NOTFLOAT, (StringExpression) sym_v3);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					System.err.println("ERROR: Possible Float Format Type Exception - Path Terminated");
 					System.out.println("********************************************************");
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				}
 			}
 		}
 
 	}
 
-	public void handleParseFloatValueOf(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleParseFloatValueOf(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -1741,7 +1741,7 @@ public class SymbolicStringHandler {
 				RealExpression result = null;
 				ChoiceGenerator<?> cg;
 				boolean conditionValue;
-				cg = ss.getChoiceGenerator();
+				cg = th.getVM().getChoiceGenerator();
 
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
@@ -1762,7 +1762,7 @@ public class SymbolicStringHandler {
 				if (conditionValue) {
 					pc.spc._addDet(StringComparator.ISFLOAT, (StringExpression) sym_v3);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						result = ((StringExpression) sym_v3)._RvalueOf();
@@ -1774,11 +1774,11 @@ public class SymbolicStringHandler {
 				} else {
 					pc.spc._addDet(StringComparator.NOTFLOAT, (StringExpression) sym_v3);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						System.err.println("ERROR: Possible Float Format Type Exception - Path Terminated");
 						System.out.println("********************************************************");
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					}
 				}
 			}
@@ -1786,7 +1786,7 @@ public class SymbolicStringHandler {
 
 	}
 
-	public void handleParseDoubleValueOf(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleParseDoubleValueOf(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -1803,7 +1803,7 @@ public class SymbolicStringHandler {
 				RealExpression result = null;
 				ChoiceGenerator<?> cg;
 				boolean conditionValue;
-				cg = ss.getChoiceGenerator();
+				cg = th.getVM().getChoiceGenerator();
 
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
@@ -1825,7 +1825,7 @@ public class SymbolicStringHandler {
 				if (conditionValue) {
 					pc.spc._addDet(StringComparator.ISDOUBLE, (StringExpression) sym_v3);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						result = ((StringExpression) sym_v3)._RvalueOf();
@@ -1837,11 +1837,11 @@ public class SymbolicStringHandler {
 				} else {
 					pc.spc._addDet(StringComparator.NOTDOUBLE, (StringExpression) sym_v3);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						System.err.println("ERROR: Double Format Type Exception");
-						ss.setIgnored(true);
-						sf.push(0, true);
+						th.getVM().getSystemState().setIgnored(true);
+						sf.push(0, true); // TODO: this is very strange code; to review
 					}
 				}
 			}
@@ -1849,7 +1849,7 @@ public class SymbolicStringHandler {
 
 	}
 
-	public void handleParseDouble(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleParseDouble(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -1862,7 +1862,7 @@ public class SymbolicStringHandler {
 				StringExpression sym_v1 = (StringExpression) sym_v3;
 				ChoiceGenerator<?> cg;
 				boolean conditionValue;
-				cg = ss.getChoiceGenerator();
+				cg = th.getVM().getChoiceGenerator();
 
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
@@ -1884,7 +1884,7 @@ public class SymbolicStringHandler {
 				if (conditionValue) {
 					pc.spc._addDet(StringComparator.ISDOUBLE, sym_v1);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						RealExpression sym_v2 = new SpecialRealExpression(sym_v1);
@@ -1895,17 +1895,17 @@ public class SymbolicStringHandler {
 				} else {
 					pc.spc._addDet(StringComparator.NOTDOUBLE, sym_v1);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						System.err.println("ERROR: Double Format Type Exception");
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					}
 				}
 			}
 		}
 	}
 
-	public void handleParseLong(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleParseLong(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v3 = (Expression) sf.getOperandAttr(0);
 
@@ -1918,7 +1918,7 @@ public class SymbolicStringHandler {
 				StringExpression sym_v1 = (StringExpression) sym_v3;
 				ChoiceGenerator<?> cg;
 				boolean conditionValue;
-				cg = ss.getChoiceGenerator();
+				cg = th.getVM().getChoiceGenerator();
 
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 				conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
@@ -1940,7 +1940,7 @@ public class SymbolicStringHandler {
 				if (conditionValue) {
 					pc.spc._addDet(StringComparator.ISLONG, sym_v1);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						((PCChoiceGenerator) cg).setCurrentPC(pc);
 						IntegerExpression sym_v2 = new SpecialIntegerExpression(sym_v1);
@@ -1951,17 +1951,17 @@ public class SymbolicStringHandler {
 				} else {
 					pc.spc._addDet(StringComparator.NOTLONG, sym_v1);
 					if (!pc.simplify()) {// not satisfiable
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					} else {
 						System.err.println("ERROR: Long Format Type Exception");
-						ss.setIgnored(true);
+						th.getVM().getSystemState().setIgnored(true);
 					}
 				}
 			}
 		}
 	}
 
-	public void handleParseBoolean(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleParseBoolean(InvokeInstruction invInst, ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		StringExpression sym_v1 = (StringExpression) sf.getOperandAttr(0);
 
@@ -1970,7 +1970,7 @@ public class SymbolicStringHandler {
 		} else {
 			ChoiceGenerator<?> cg;
 			boolean conditionValue;
-			cg = ss.getChoiceGenerator();
+			cg = th.getVM().getChoiceGenerator();
 
 			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
@@ -1992,7 +1992,7 @@ public class SymbolicStringHandler {
 			if (conditionValue) {
 				pc.spc._addDet(StringComparator.ISBOOLEAN, sym_v1);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					((PCChoiceGenerator) cg).setCurrentPC(pc);
 					IntegerExpression sym_v2 = new SpecialIntegerExpression(sym_v1);
@@ -2003,10 +2003,10 @@ public class SymbolicStringHandler {
 			} else {
 				pc.spc._addDet(StringComparator.NOTBOOLEAN, sym_v1);
 				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				} else {
 					System.err.println("ERROR: Boolean Format Type Exception");
-					ss.setIgnored(true);
+					th.getVM().getSystemState().setIgnored(true);
 				}
 			}
 		}
@@ -2047,7 +2047,7 @@ public class SymbolicStringHandler {
 		throw new RuntimeException("not handled; to review");
 	}
 
-	public Instruction handleIntValueOf(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public Instruction handleIntValueOf(InvokeInstruction invInst,  ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0);
 
@@ -2222,7 +2222,7 @@ public class SymbolicStringHandler {
 		return null;
 	}
 
-	public void handleObjectEquals(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public void handleObjectEquals(InvokeInstruction invInst,  ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Expression sym_v1 = (Expression) sf.getOperandAttr(0);
 		Expression sym_v2 = (Expression) sf.getOperandAttr(1);
@@ -2244,94 +2244,12 @@ public class SymbolicStringHandler {
 			}
 		}
 
-		handleEquals(invInst, ss, th);
+		handleEquals(invInst, th);
 	}
 
-	public void handleEquals(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
-		handleBooleanStringInstructions(invInst, ss, th, StringComparator.EQUALS);
-		/*
-		StackFrame sf = th.getTopFrame();
-		StringExpression sym_v1 = (StringExpression) sf.getOperandAttr(0);
-		StringExpression sym_v2 = (StringExpression) sf.getOperandAttr(1);
-
-		if ((sym_v1 == null) & (sym_v2 == null)) {
-			System.err.println("ERROR: symbolic string method must have one symbolic operand: handleEquals");
-		} else { // at least one condition variable is symbolic
-			ChoiceGenerator<?> cg;
-			boolean conditionValue;
-
-			cg = ss.getChoiceGenerator();
-			assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
-			conditionValue = (Integer) cg.getNextChoice() == 0 ? false : true;
-
-			// System.out.println("conditionValue: " + conditionValue);
-
-			int s1 = th.pop();
-			int s2 = th.pop();
-			PathCondition pc;
-
-			// pc is updated with the pc stored in the choice generator above
-			// get the path condition from the
-			// previous choice generator of the same type
-
-			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGenerator();
-			while (!((prev_cg == null) || (prev_cg instanceof PCChoiceGenerator))) {
-				prev_cg = prev_cg.getPreviousChoiceGenerator();
-			}
-
-			if (prev_cg == null) {
-				pc = new PathCondition();
-			} else {
-				pc = ((PCChoiceGenerator) prev_cg).getCurrentPC();
-			}
-
-			assert pc != null;
-
-			if (conditionValue) {
-				if (sym_v1 != null) {
-					if (sym_v2 != null) { // both are symbolic values
-						pc.spc._addDet(StringComparator.EQUALS, sym_v1, sym_v2);
-					} else {
-						ElementInfo e2 = th.getElementInfo(s2);
-						String val = e2.asString();
-						pc.spc._addDet(StringComparator.EQUALS, sym_v1, val);
-					}
-				} else {
-					ElementInfo e1 = th.getElementInfo(s1);
-					String val = e1.asString();
-					pc.spc._addDet(StringComparator.EQUALS, val, sym_v2);
-				}
-				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
-				} else {
-					// pc.solve();
-					((PCChoiceGenerator) cg).setCurrentPC(pc);
-					// System.out.println(((PCChoiceGenerator) cg).getCurrentPC());
-				}
-			} else {
-				if (sym_v1 != null) {
-					if (sym_v2 != null) { // both are symbolic values
-						pc.spc._addDet(StringComparator.NOTEQUALS, sym_v1, sym_v2);
-					} else {
-						ElementInfo e2 = th.getElementInfo(s2);
-						String val = e2.asString();
-						pc.spc._addDet(StringComparator.NOTEQUALS, sym_v1, val);
-					}
-				} else {
-					ElementInfo e1 = th.getElementInfo(s1);
-					String val = e1.asString();
-					pc.spc._addDet(StringComparator.NOTEQUALS, val, sym_v2);
-				}
-				if (!pc.simplify()) {// not satisfiable
-					ss.setIgnored(true);
-				} else {
-					((PCChoiceGenerator) cg).setCurrentPC(pc);
-				}
-			}
-
-			th.push(conditionValue ? 1 : 0, true);
-		}
-*/
+	public void handleEquals(InvokeInstruction invInst,  ThreadInfo th) {
+		handleBooleanStringInstructions(invInst,  th, StringComparator.EQUALS);
+		
 	}
 
 	public Instruction handleAppend(InvokeInstruction invInst, ThreadInfo th) {
@@ -2963,7 +2881,7 @@ public class SymbolicStringHandler {
 		}
 	}
 
-	public Instruction handletoString(InvokeInstruction invInst, SystemState ss, ThreadInfo th) {
+	public Instruction handletoString(InvokeInstruction invInst,  ThreadInfo th) {
 		StackFrame sf = th.getTopFrame();
 		Object sym_obj_v2 = sf.getOperandAttr(0);
 		if (sym_obj_v2 instanceof StringExpression) {
