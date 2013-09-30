@@ -2,7 +2,7 @@ classpath=${jpf-symbc}/build/examples
 sourcepath=${jpf-symbc}/src/examples
 target=FlapController
 
-#symbolic.method= gov.nasa.jpf.symbc.FlapController.startThreads(sym#sym#sym)
+symbolic.method= gov.nasa.jpf.symbc.FlapController.startThreads(sym#sym#sym)
 listener = gov.nasa.jpf.symbc.SymbolicListener
 #symbolic.lazy=true
 #vm.storage.class=nil

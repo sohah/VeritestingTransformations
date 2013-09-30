@@ -80,9 +80,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 	/* Locals to preserve the value that was held by JPF prior to changing it
 	 * in order to turn off state matching during symbolic execution
-	 */
-	//private boolean retainVal = false;
-	//private boolean forcedVal = false;
+	 * no longer necessary because we run spf stateless */
+	
 
 	private Map<String,MethodSummary> allSummaries;
     private String currentMethodName = "";
@@ -130,25 +129,9 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 	@Override
 	public void propertyViolated (Search search){
-		//System.out.println("--------->property violated");
-
-//		String[] dp = SymbolicInstructionFactory.dp;
-//		if (dp[0].equalsIgnoreCase("no_solver"))
-//			return;
 
 		VM vm = search.getVM();
-		//Config conf = vm.getConfig();
-		//SystemState ss = vm.getSystemState();
-		//ClassInfo ci = vm.getClassInfo();
-		//String className = ci.getName();
-		//ThreadInfo ti = vm.getLastThreadInfo();
-		//MethodInfo mi = ti.getMethod();
-		//String methodName = mi.getName();
-		//int numberOfArgs = mi.getNumberOfArguments();
-		//if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
-		//		|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
-		//	ss.retainAttributes(retainVal);
-		//	ss.setForced(forcedVal);
+		
 			ChoiceGenerator <?>cg = vm.getChoiceGenerator();
 			if (!(cg instanceof PCChoiceGenerator)){
 				ChoiceGenerator <?> prev_cg = cg.getPreviousChoiceGenerator();
@@ -188,35 +171,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 		//}
 	}
 	
-	/*
-	public void choiceGeneratorAdvanced(JVM vm) {
-		System.out.println("choice advanced advanced here.");
-		ChoiceGenerator<?> cg = vm.getSystemState().getChoiceGenerator();
-		int n = cg.getTotalNumberOfChoices();
-		if (cg instanceof PCChoiceGenerator) {
-			System.out.println("got a PC choice generator "+ n + " "+
-			((PCChoiceGenerator) cg).getNextChoice());//getCurrentPC());
-		}
-	}
-	*/
-	@Override
-	public void stateAdvanced(Search search) {
-		//super.stateAdvanced(search);
-		//System.out.println("State advanced here.");
-		ChoiceGenerator<?> cg = search.getVM().getSystemState().getChoiceGenerator();
-		int n = cg.getTotalNumberOfChoices();
-		if (cg instanceof PCChoiceGenerator) {
-			//System.out.println("got a PC choice generator "+ n + " "+
-			//((PCChoiceGenerator) cg).getNextChoice() + " "+((PCChoiceGenerator) cg).getCurrentPC());
-		
-		if(((PCChoiceGenerator) cg).getNextChoice()==1) {
-			//System.out.println("backtrack");
-			//search.requestBacktrack(); //;.getVM().getSystemState().setIgnored(true);
-			search.getVM().getSystemState().setIgnored(true);
-		}
-		
-		}
-	}
+	
+	
 
 	@Override
 	 public void instructionExecuted(VM vm, ThreadInfo currentThread, Instruction nextInstruction, Instruction executedInstruction) {
@@ -249,23 +205,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 						|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null)){
 
-					//get the original values and save them for restoration after
-					//we are done with symbolic execution
-					//retainVal = ss.getRetainAttributes();
-					//forcedVal = ss.isForced();
-					//turn off state matching
-					//ss.setForced(true);
-					//make sure it stays turned off when a new state is created
-					//ss.retainAttributes(true);
-					//clear the path condition when invoking a new method
-					// interacts with the pre-condition handling
-
-					//					ChoiceGenerator cg = vm.getChoiceGenerator();
-					//					if ((cg instanceof PCChoiceGenerator) &&(
-					//							(PCChoiceGenerator) cg).getCurrentPC() != null){
-					//						PathCondition pc = new PathCondition();
-					//						((PCChoiceGenerator) cg).setCurrentPC(pc);
-					//					}
+							
 
 					MethodSummary methodSummary = new MethodSummary();
 
@@ -340,10 +280,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 					
 					if (((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
 							|| BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
-						//at the end of symbolic execution, set the values back
-						//to their original value
-						//ss.retainAttributes(retainVal);
-						//ss.setForced(forcedVal);
+					
 						ChoiceGenerator <?>cg = vm.getChoiceGenerator();
 						if (!(cg instanceof PCChoiceGenerator)){
 							ChoiceGenerator <?> prev_cg = cg.getPreviousChoiceGenerator();
@@ -481,50 +418,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 		}
 	}
 
-	/*
-	  public void stateBacktracked(Search search) {
-
-		  JVM vm = search.getVM();
-		  Config conf = vm.getConfig();
-
-		  Instruction insn = vm.getChoiceGenerator().getInsn();
-		 // SystemState ss = vm.getSystemState();
-		  //ThreadInfo ti = vm.getChoiceGenerator().getThreadInfo();
-		  MethodInfo mi = insn.getMethodInfo();
-		  String className = mi.getClassName();
-		  //neha: changed the method name to full name
-		  String methodName = mi.getFullName();
-		  //this method returns the number of slots for the arguments, including "this"
-		  int numberOfArgs = mi.getNumberOfArguments();
-
-		  if ((BytecodeUtils.isClassSymbolic(conf, className, mi, methodName))
-					|| BytecodeUtils.isMethodSymbolic(conf, methodName, numberOfArgs, null)){
-			//get the original values and save them for restoration after
-			//we are done with symbolic execution
-		//	retainVal = ss.getRetainAttributes();
-		//	forcedVal = ss.isForced();
-			//turn off state matching
-		//	ss.setForced(true);
-			//make sure it stays turned off when a new state is created
-		//	ss.retainAttributes(true);
-		  }
-	  }
-*/
-	  /*
-	   *  todo: needs to be implemented if we are going to support heuristic search with fancy turnoff state matching
-	   */
-	  //public void stateRestored(Search search) {
-		//  System.err.println("Warning: State restored - heuristic search not supported");
-	  //}
-	  /*
-	   * Save the method summaries to a file for use by others
-	   */
-//	  public void searchFinished(Search search) {
-		  //writeTable();
-//		  if (search.getConfig().getStringArray("symbolic.dp")[0].equalsIgnoreCase("compare")) {
-//			  ProblemCompare.dump(search);
-//		  }
-//	  }
+	
+	  
 
 	  /*
 	   * The way this method works is specific to the format of the methodSummary
