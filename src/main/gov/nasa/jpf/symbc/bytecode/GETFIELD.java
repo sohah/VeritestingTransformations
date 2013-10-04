@@ -110,28 +110,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  
 	  ClassInfo typeClassInfo = fi.getTypeClassInfo(); // use this instead of fullType
 
-	  // need to introduce a new choice for heap pc
-	  // the problem is that we might have had a previous thread choice here
-	  // so we have to do something else
-	  
-	  // also compute how big to make this heapCG
-	  // we do not collect now  the candidates for lazy initialization
-	  
-	  // the problem is that we might have had a previous thread choice here
-	  
-	  /*
-	  HeapChoiceGenerator cg = ti.getVM().getSystemState().getCurrentChoiceGeneratorOfType(HeapChoiceGenerator.class);
-      if (cg == null){
-
-        
-       if (!ti.willReExecuteInstruction()){
-          // restore old operand stack contents
-          StackFrame frame_new = ti.getModifiableTopFrame();
-
-          frame_new.pop();
-          frame_new.pushRef( getLastThis());
-        }
-        */
+	 
 	  if(!ti.isFirstStepInsn()){
           prevSymRefs = null;
 		  numSymRefs = 0;
@@ -210,7 +189,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 		  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
 		  
-		  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, daIndex, attr, pcHeap,
+		  daIndex = Helper.addNewHeapNode(typeClassInfo, ti, attr, pcHeap,
 				  		symInputHeap, numSymRefs, prevSymRefs, ei.isShared());
 	  } else {
 		  System.err.println("subtyping not handled");
