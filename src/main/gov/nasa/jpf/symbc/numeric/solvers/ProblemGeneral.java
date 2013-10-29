@@ -164,7 +164,7 @@ public abstract class ProblemGeneral{
 	public abstract Object mixed(Object exp1, Object exp2);
 
 	public abstract Boolean solve();
-
+	
 	public abstract double getRealValueInf(Object dpvar);
 	public abstract double getRealValueSup(Object dpVar);
 	public abstract double getRealValue(Object dpVar);
