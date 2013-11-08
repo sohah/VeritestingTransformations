@@ -19,17 +19,13 @@
 
 package gov.nasa.jpf.symbc.numeric;
 
-import za.ac.sun.cs.solver.Instance;
-import za.ac.sun.cs.solver.expr.IntVariable;
-import za.ac.sun.cs.solver.expr.RealVariable;
-import za.ac.sun.cs.solver.expr.Variable;
-
+//import za.ac.sun.cs.green.Instance;
+import za.ac.sun.cs.green.Instance;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.numeric.visitors.CollectVariableVisitor;
 import gov.nasa.jpf.symbc.string.StringPathCondition;
-
 import gov.nasa.jpf.symbc.concolic.*;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.MJIEnv;
@@ -196,7 +192,7 @@ public class PathCondition implements Comparable<PathCondition> {
     public boolean prependUnlessRepeated(Constraint t) {
     	// if Green is used and slicing is on then we always add the constraint
     	// since we assume the last constraint added is always the header
-        if ((SymbolicInstructionFactory.solver != null && SymbolicInstructionFactory.solver.isSlicing())
+        if ((SymbolicInstructionFactory.greenSolver != null)
         		|| !hasConstraint(t)) {
             t.and = header;
             header = t;
@@ -264,14 +260,14 @@ public class PathCondition implements Comparable<PathCondition> {
 	}
 
 	public boolean solve() {
-		if (SymbolicInstructionFactory.solver == null)
+		if (SymbolicInstructionFactory.greenSolver == null)
 			return solveOld();
 		else 
 			return solveGreen();			
 	}
 	
 	public boolean simplify() {
-		if (SymbolicInstructionFactory.solver == null)
+		if (SymbolicInstructionFactory.greenSolver == null)
 			return simplifyOld();
 		else 
 			return simplifyGreen();
@@ -281,7 +277,7 @@ public class PathCondition implements Comparable<PathCondition> {
 		if (instance == null) {
 			instance = SolverTranslator.createInstance(header);
 		}
-		boolean isSat = instance.isSatisfiable() /*&& spc.simplify()*/; // strings are not supported by Green for now
+		boolean isSat = (Boolean) instance.request("sat");  /*&& spc.simplify()*/; // strings are not supported by Green for now
 		/*
 		 * This is untested and have shown a few issues so needs fixing first
 		if (isSat) {

@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-import za.ac.sun.cs.solver.Instance;
-import za.ac.sun.cs.solver.expr.Expression;
-import za.ac.sun.cs.solver.expr.IntConstant;
-import za.ac.sun.cs.solver.expr.IntVariable;
-import za.ac.sun.cs.solver.expr.Operation;
+import za.ac.sun.cs.green.Instance;
+import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
+import za.ac.sun.cs.green.expr.IntVariable;
+import za.ac.sun.cs.green.expr.Operation;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.BinaryLinearIntegerExpression;
 import gov.nasa.jpf.symbc.numeric.Constraint;
@@ -33,7 +33,7 @@ public class SolverTranslator {
 		}
 		Translator translator = new Translator();
 		c.accept(translator);
-		Instance i = new Instance(SymbolicInstructionFactory.solver, p, translator.getExpression());
+		Instance i = new Instance(SymbolicInstructionFactory.greenSolver, p, translator.getExpression());
 		instanceCache.put(new ConstraintSequence(constraint), i);
 		return i;
 	}
