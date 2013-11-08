@@ -30,5 +30,6 @@
 	<classpathentry kind="lib" path="lib/jaxen.jar"/>
 	<classpathentry kind="lib" path="lib/jedis-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/green.jar"/>
+	<classpathentry kind="lib" path="lib/com.microsoft.z3.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
