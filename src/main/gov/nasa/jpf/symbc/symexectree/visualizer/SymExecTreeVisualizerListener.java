@@ -40,7 +40,7 @@ public class SymExecTreeVisualizerListener extends ASymbolicExecutionTreeListene
 	}
 
 	@Override
-	protected void doneConstructingSymbExecTree(
+	protected void processSymbExecTree(
 			LinkedList<SymbolicExecutionTree> trees) {
 		this.dotPrinter.prettyPrintSymTrees(trees, this.dotFileOutputPath);
 	}

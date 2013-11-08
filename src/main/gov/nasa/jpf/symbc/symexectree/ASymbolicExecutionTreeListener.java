@@ -53,7 +53,7 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 	}
 	
 	protected abstract NodeFactory getNodeFactory();
-	protected abstract void doneConstructingSymbExecTree(LinkedList<SymbolicExecutionTree> trees);
+	protected abstract void processSymbExecTree(LinkedList<SymbolicExecutionTree> trees);
 
 	@Override
 	public void instructionExecuted(VM vm, ThreadInfo currentThread, Instruction nextInstruction, Instruction executedInstruction) {
@@ -147,7 +147,7 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 	@Override
 	public void searchFinished(Search search) {
 		LinkedList<SymbolicExecutionTree> trees = this.SETGenerator.getTrees();
-		doneConstructingSymbExecTree(trees);
+		processSymbExecTree(trees);
 	}
 	
 	@Override

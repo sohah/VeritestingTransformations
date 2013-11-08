@@ -62,10 +62,14 @@ public class SymbolicExecutionTreeGenerator {
 				nxtNode = tu.getBranchingInstrNode(instrCtx);
 			} else {
 				nxtNode = this.constructNode(instrCtx, tu.getSymTree());
+				if(nxtNode == null)
+					return;
 				tu.addBranchingInstrCtx(instrCtx, nxtNode);
 			}
 		} else {
 			nxtNode = this.constructNode(instrCtx, tu.getSymTree());
+			if(nxtNode == null)
+				return;
 		}
 		
 		if(tu.getPrevNode() != null) {
