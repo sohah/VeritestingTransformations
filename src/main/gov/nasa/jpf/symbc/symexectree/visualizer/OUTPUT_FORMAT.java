@@ -9,7 +9,7 @@ package gov.nasa.jpf.symbc.symexectree.visualizer;
  */
 
 // Feel free to add more
-public enum PRETTYPRINTER_FORMAT {
+public enum OUTPUT_FORMAT {
 	DOT("dot"),
 	PNG("png"),
 	EPS("eps"),
@@ -19,7 +19,7 @@ public enum PRETTYPRINTER_FORMAT {
 	
 	private String format;
 
-	PRETTYPRINTER_FORMAT(String format) {
+	OUTPUT_FORMAT(String format) {
 		this.format = format;
 	}
 	

@@ -19,7 +19,7 @@ import gov.nasa.jpf.symbc.symexectree.structure.SymbolicExecutionTree;
 public class SymExecTreeVisualizerListener extends ASymbolicExecutionTreeListener {
 
 	private String dotFileOutputPath;
-	private SETPrettyPrinter dotPrinter;
+	private AVisualizer dotPrinter;
 	/**
 	 * symbolic.visualiser.outputformat = [png|eps|dot|pdf|ps|svg]		(default: dot)
 	 * symbolic.visualizer.basepath = <output_path>
@@ -30,8 +30,8 @@ public class SymExecTreeVisualizerListener extends ASymbolicExecutionTreeListene
 		if(this.dotFileOutputPath == null)
 			throw new SymExecTreeVisualizerException("symbolic.visualizer.basepath has not been set");
 		String outputFormat = conf.getString("symbolic.visualizer.outputformat", "dot");
-		PRETTYPRINTER_FORMAT format = PRETTYPRINTER_FORMAT.valueOf(outputFormat.toUpperCase());
-		this.dotPrinter = new SETPrettyPrinter(format);
+		OUTPUT_FORMAT format = OUTPUT_FORMAT.valueOf(outputFormat.toUpperCase());
+		this.dotPrinter = new CompleteTreeVisualizer(format);
 	}
 
 	@Override

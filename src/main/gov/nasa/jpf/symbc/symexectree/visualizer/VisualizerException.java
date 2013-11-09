@@ -11,17 +11,17 @@ import java.io.PrintStream;
  * @author Kasper S. Luckow <luckow@cs.aau.dk>
  *
  */
-public class PrettyPrinterException extends SymbolicExecutionTreeRuntimeException {
+public class VisualizerException extends SymbolicExecutionTreeRuntimeException {
 
-	public PrettyPrinterException (String details) {
+	public VisualizerException (String details) {
 		super(details);
 	}
 
-	public PrettyPrinterException (Throwable cause) {
+	public VisualizerException (Throwable cause) {
 		super(cause);
 	}
 
-	public PrettyPrinterException (String details, Throwable cause){
+	public VisualizerException (String details, Throwable cause){
 		super(details, cause);
 	}
 	
