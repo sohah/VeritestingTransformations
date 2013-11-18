@@ -7,6 +7,7 @@ public class DoubleTest extends InvokeTest {
   //
   // (x <= 1.1)
   protected static String PC2 = "x_1_SYMREAL < CONST_1.1";
+  protected static String PC10 = "x_1_SYMREAL > CONST_1.1";
   protected static String PC3 = "CONST_1.1 == x_1_SYMREAL";
   //
   // [(x > 1.1) && ((z := y) > 30.0)] || [(x < 1.1) && ((z := x+y) > 30.0)] || [(x == 1.1) && ((z := x+y) > 30.0)]
@@ -38,9 +39,8 @@ public class DoubleTest extends InvokeTest {
               + PC5, TestUtils.getPathCondition());
       z = 91.0;
     } else {
-      assert (pcMatches(joinPC(PC6, pc)) || pcMatches(joinPC(PC7, pc)) || pcMatches(joinPC(PC8, pc)) || pcMatches(joinPC(PC9, pc))) : makePCAssertString(
-              "TestDoubleSpecial1.testDouble1 z <= 30.0", "one of\n" + joinPC(PC6, pc) + "\nor\n"
-              + joinPC(PC7, pc) + "\nor\n" + joinPC(PC8, pc) + "\nor\n" + joinPC(PC9, pc),
+      assert (pcMatches(PC2)) || pcMatches(PC3) || pcMatches(PC10) : makePCAssertString(
+              "TestDoubleSpecial1.testDouble1 z <= 30.0", "one of \n" + PC2 + "\nor\n" + PC3 + "\nor\n" + PC10,
               TestUtils.getPathCondition());
     }
   }

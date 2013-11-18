@@ -104,7 +104,7 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					prevPcGen.setCurrentPC(firstPC);
+					//prevPcGen.setCurrentPC(firstPC);
 					conditionValue = -1;
 				}
 			} else if(secSat) {
@@ -116,11 +116,11 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					prevPcGen.setCurrentPC(secPC);
+					//prevPcGen.setCurrentPC(secPC);
 					conditionValue = 0;
 				}
 			} else if(thirdSat) {
-				prevPcGen.setCurrentPC(thirdPC);
+				//prevPcGen.setCurrentPC(thirdPC);
 				conditionValue = 1;
 			} else {
 				ti.getVM().getSystemState().setIgnored(true);
@@ -250,7 +250,7 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					prevPcGen.setCurrentPC(firstPC);
+					//prevPcGen.setCurrentPC(firstPC);
 					conditionValue = -1;
 				}
 			} else if(secSat) {
@@ -262,11 +262,11 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					prevPcGen.setCurrentPC(secPC);
+					//prevPcGen.setCurrentPC(secPC);
 					conditionValue = 0;
 				}
 			} else if(thirdSat) {
-				prevPcGen.setCurrentPC(thirdPC);
+				//prevPcGen.setCurrentPC(thirdPC);
 				conditionValue = 1;
 			} else {
 				ti.getVM().getSystemState().setIgnored(true);
@@ -396,7 +396,7 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					prevPcGen.setCurrentPC(firstPC);
+					//prevPcGen.setCurrentPC(firstPC);
 					conditionValue = -1;
 				}
 			} else if(secSat) {
@@ -408,11 +408,11 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					prevPcGen.setCurrentPC(secPC);
+					//prevPcGen.setCurrentPC(secPC);
 					conditionValue = 0;
 				}
 			} else if(thirdSat) {
-				prevPcGen.setCurrentPC(thirdPC);
+				//prevPcGen.setCurrentPC(thirdPC);
 				conditionValue = 1;
 			} else {
 				ti.getVM().getSystemState().setIgnored(true);
@@ -511,14 +511,15 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					prevPcGen.setCurrentPC(eqPC);
+					//prevPcGen.setCurrentPC(eqPC);
 					ti.getModifiableTopFrame().pop();
 					return instr.getTarget();
 				}
 			} else {
-				if(neSat) {
+				/*if(neSat) {
 					prevPcGen.setCurrentPC(nePC);
-				} else {
+				} else*/ 
+				if(!neSat) {
 					ti.getVM().getSystemState().setIgnored(true);
 				}
 				ti.getModifiableTopFrame().pop();
@@ -603,15 +604,16 @@ public class IFInstrSymbHelper {
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					prevPcGen.setCurrentPC(eqPC);
+					//prevPcGen.setCurrentPC(eqPC);
 					ti.getModifiableTopFrame().pop();
 					ti.getModifiableTopFrame().pop();
 					return instr.getTarget();
 				}
 			} else {
-				if(neSat) {
+				/*if(neSat) {
 					prevPcGen.setCurrentPC(nePC);
-				} else {
+				} else */
+				if(!neSat) {
 					ti.getVM().getSystemState().setIgnored(true);
 				}
 				ti.getModifiableTopFrame().pop();

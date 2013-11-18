@@ -7,6 +7,7 @@ public class FloatTest extends InvokeTest {
   //
   // (x <= 1.1f)
   protected static String PC2 = "x_1_SYMREAL < CONST_1.100000023841858";
+  protected static String PC10 = "x_1_SYMREAL > CONST_1.100000023841858";
   protected static String PC3 = "CONST_1.100000023841858 == x_1_SYMREAL";
   //
   // [(x > 1.1f) && ((z := y) > 30.0f)] || [(x < 1.1f) && ((z := x+y) > 30.0f)] || [(x == 1.1f) && ((z := x+y) > 30.0f)]
@@ -39,9 +40,9 @@ public class FloatTest extends InvokeTest {
               + joinPC(PC5, pc), TestUtils.getPathCondition());
       z = 91.0f;
     } else {
-      assert (pcMatches(joinPC(PC6, pc)) || pcMatches(joinPC(PC7, pc)) || pcMatches(joinPC(PC8, pc)) || pcMatches(joinPC(PC9, pc))) : makePCAssertString(
-              "TestFloatSpecial1.testFloat1 z <= 30.0f", "one of\n" + joinPC(PC6, pc) + "\nor\n"
-              + joinPC(PC7, pc) + "\nor\n" + joinPC(PC8, pc) + "\nor\n" + joinPC(PC9, pc),
+      assert (pcMatches(PC2) || pcMatches(PC3) || pcMatches(PC10)) : makePCAssertString(
+              "TestFloatSpecial1.testFloat1 z <= 30.0f", "one of\n" +PC2 + "\nor\n" + PC3 + "\nor\n" + PC10
+              ,
               TestUtils.getPathCondition());
     }
   }
