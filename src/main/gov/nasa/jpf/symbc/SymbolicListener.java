@@ -159,7 +159,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				}
 				else
 					pc.solve();
-				Pair<String,String> pcPair = new Pair<String,String>(pc.stringPC(),error);//(pc.toString(),error);
+				Pair<String,String> pcPair = new Pair<String,String>(pc.toString(),error);//(pc.toString(),error);
 				//String methodName = vm.getLastInstruction().getMethodInfo().getName();
 				MethodSummary methodSummary = allSummaries.get(currentMethodName);
 				methodSummary.addPathCondition(pcPair);
