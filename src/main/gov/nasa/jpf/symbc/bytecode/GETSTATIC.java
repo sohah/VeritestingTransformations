@@ -85,7 +85,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	      return ti.getPC();
 	    }
 
-	    ElementInfo ei = ciField.getStaticElementInfo();
+	    ElementInfo ei = ciField.getModifiableStaticElementInfo();
 	    ei = ei.getInstanceWithUpdatedSharedness(ti);
 
 	    if (ei == null){
@@ -192,8 +192,8 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		  }
 
 
-		//ei.setReferenceField(fi,daIndex );
-		//ei.setFieldAttr(fi, Helper.SymbolicNull); // was null
+		ei.setReferenceField(fi,daIndex );
+		ei.setFieldAttr(fi, null);//Helper.SymbolicNull); // was null
 		StackFrame frame = ti.getModifiableTopFrame();
 		frame.pushRef(daIndex);
 		((HeapChoiceGenerator)heapCG).setCurrentPCheap(pcHeap);
