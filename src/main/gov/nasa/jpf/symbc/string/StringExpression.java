@@ -88,7 +88,7 @@ public abstract class StringExpression extends Expression {
   
   public IntegerExpression _length() {
     if (length == null) {
-      length = new SymbolicLengthInteger("Length_" + lengthcount + "_", 1, PreProcessGraph.MAXIMUM_LENGTH, this);
+      length = new SymbolicLengthInteger("Length_" + lengthcount + "_", 0, PreProcessGraph.MAXIMUM_LENGTH, this);
       lengthcount++;
     }
     return length;
