@@ -75,7 +75,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	    }
 
 	    
-	    ElementInfo ei = ti.getElementInfoWithUpdatedSharedness(objRef);
+	    ElementInfo ei = ti.getModifiableElementInfoWithUpdatedSharedness(objRef);
 	    FieldInfo fi = getFieldInfo();
 	    if (fi == null) {
 	      return ti.createAndThrowException("java.lang.NoSuchFieldError",
@@ -196,8 +196,8 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  }
 
 	  
-	  //ei.setReferenceField(fi,daIndex );
-	  //ei.setFieldAttr(fi, null);
+	 ei.setReferenceField(fi,daIndex );
+	 ei.setFieldAttr(fi, null);
 
 	  frame.pushRef(daIndex);
       
