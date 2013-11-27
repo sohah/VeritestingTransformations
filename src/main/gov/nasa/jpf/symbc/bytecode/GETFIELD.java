@@ -36,6 +36,7 @@ import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.StackFrame;
 //import gov.nasa.jpf.symbc.uberlazy.TypeHierarchy;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -184,7 +185,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	  }
 	  else if (currentChoice == numSymRefs){ //null object
 		  pcHeap._addDet(Comparator.EQ, (SymbolicInteger) attr, new IntegerConstant(-1));
-		  daIndex = -1;
+		  daIndex = MJIEnv.NULL;//-1;
 	  }
 	  else if (currentChoice == (numSymRefs + 1) && !abstractClass) {
 		  // creates a new object with all fields symbolic and adds the object to SymbolicHeap
