@@ -33,6 +33,7 @@ import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.FloatFieldInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.IntegerFieldInfo;
+import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.VM;
 
 import gov.nasa.jpf.vm.LocalVarInfo;
@@ -78,6 +79,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
 
 public class HeapSymbolicListener extends PropertyListenerAdapter implements PublisherExtension {
 
@@ -212,7 +214,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 								int objIndex = f.getReferenceValue(i);
 								if (null == val){
 									IntegerExpression exp = null;
-									if (objIndex == -1){
+									if (objIndex == MJIEnv.NULL){
 										exp = new IntegerConstant(objIndex);
 										pc._addDet(Comparator.EQ, symField, exp);
 									}else{
@@ -220,13 +222,13 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 										if (null == exp)
 											exp = new IntegerConstant(objIndex);
 										pc._addDet(Comparator.EQ, symField, exp);
-										if (objIndex != objNum && !seenSet.contains(objIndex) && objIndex != -1)
+										if (objIndex != objNum && !seenSet.contains(objIndex) && objIndex != MJIEnv.NULL)
 											expandReferenceObject(pc,ti,ci,objIndex);
 									}
 								}else{
 									//pc._addDet(Comparator.EQ, symField, new IntegerConstant(objIndex));
 									pc._addDet(Comparator.EQ, symField, (SymbolicInteger)val);
-									if (objIndex != objNum && !seenSet.contains(objIndex) && objIndex != -1)
+									if (objIndex != objNum && !seenSet.contains(objIndex) && objIndex != MJIEnv.NULL)
 										expandReferenceObject(pc,ti,ci,objIndex);
 								}
 							}
@@ -287,7 +289,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 								ReferenceFieldInfo rfi = (ReferenceFieldInfo)staticFields[i];
 								Integer objIndex = ci.getStaticElementInfo().getReferenceField(rfi);
 								IntegerExpression exp = null;
-								if (objIndex == -1){
+								if (objIndex == MJIEnv.NULL){
 									exp = new IntegerConstant(objIndex);
 									pc._addDet(Comparator.EQ, symStatic,exp);
 								}else{
