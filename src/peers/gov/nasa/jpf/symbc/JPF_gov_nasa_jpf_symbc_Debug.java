@@ -165,7 +165,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 			  cg = new HeapChoiceGenerator(1);  //new
 			  ss.setNextChoiceGenerator(cg);
 			  env.repeatInvocation();
-			  return -1;  // not used anyways
+			  return MJIEnv.NULL;  // not used anyways
 		  }
 		//else this is what really returns results
 
@@ -204,7 +204,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	    ((HeapChoiceGenerator)cg).setCurrentPCheap(pcHeap);
 	    ((HeapChoiceGenerator)cg).setCurrentSymInputHeap(symInputHeap);
 	    //System.out.println(">>>>>>>>>>>> initial pcHeap: " + pcHeap.toString());
-		return -1;
+		return MJIEnv.NULL;
 	}
 
 
@@ -216,7 +216,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	@MJI
 	public static void makeFieldsSymbolic(MJIEnv env, int objRef, int stringRef, int objvRef) {
 		// makes all the fields of obj v symbolic and adds obj v to the symbolic heap to kick off lazy initialization
-		if (objvRef == -1)
+		if (objvRef == MJIEnv.NULL)
 			throw new RuntimeException("## Error: null object");
 		// introduce a heap choice generator for the element in the heap
 		ThreadInfo ti = env.getVM().getCurrentThread();
@@ -292,8 +292,8 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	 */
 	static void buildHeapTree(MJIEnv env, int n) {
 		res += " { ";
-		res += ((n == -1) ? " -1 " : " 0 ");
-		if (n != -1) {
+		res += ((n == MJIEnv.NULL) ? " -1 " : " 0 ");
+		if (n != MJIEnv.NULL) {
 			ClassInfo ci = env.getClassInfo(n);
 			FieldInfo[] fields = ci.getDeclaredInstanceFields();
 			for (int i = 0; i < fields.length; i++)
@@ -354,7 +354,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	}
 
 	 static String toStringSymbolicRef(MJIEnv env, int objvRef) {
-		if (objvRef == -1) {
+		if (objvRef == MJIEnv.NULL) {
 			sequence += "[";
 			sequence += "null";
 			sequence += "]";
@@ -473,7 +473,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	 */
 	private static String traverseRootedHeapAndGetSequence(MJIEnv env, int n){
 		// lets call the current vertex v
-		if (n==-1) { // vertex v is null
+		if (n==MJIEnv.NULL) { // vertex v is null
 			// for null vertex, discovery and finish time are the same
 			// so open and close the bracket all in one place.
 			sequence += "{";
@@ -496,7 +496,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 					//System.out.println("field name " + fname);
 					int temp = env.getReferenceField(n, fname);
 					// null (short-circuited) OR successor yet undiscovered
-					if(temp==-1 || !discovered.contains(new Integer(temp))){
+					if(temp==MJIEnv.NULL || !discovered.contains(new Integer(temp))){
 						traverseRootedHeapAndGetSequence(env, temp);
 					}
 				}
