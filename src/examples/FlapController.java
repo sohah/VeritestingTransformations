@@ -63,7 +63,7 @@ public class FlapController {
 		private boolean emergency;
 		private int oldGoal;
 
-		public EmergencySensor(boolean emergercy) {
+		public EmergencySensor(boolean emergency) {
 			this.emergency = emergency;
 		}
 
