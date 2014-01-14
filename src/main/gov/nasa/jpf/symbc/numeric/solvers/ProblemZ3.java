@@ -76,7 +76,7 @@ public class ProblemZ3 extends ProblemGeneral {
 	public Object makeRealVar(String name, double min, double max) {
 
 		try{
-			return ctx.MkReal(name);
+			return ctx.MkReal(name); 
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -248,36 +248,36 @@ public class ProblemZ3 extends ProblemGeneral {
 //	    }
 //	}
 //
-//	public Object geq(int value, Object exp){
-//		try{
-//			return  vc.geExpr(vc.ratExpr(value), (Expr)exp);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//
-//	    }
-//	}
-//
-//	public Object geq(Object exp, int value){
-//		try{
-//			return  vc.geExpr((Expr)exp, vc.ratExpr(value));
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//
-//	    }
-//	}
-//
-//	public Object geq(Object exp1, Object exp2){
-//		try{
-//			return  vc.geExpr((Expr)exp1, (Expr)exp2);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//
-//	    }
-//	}
-//
+	public Object geq(int value, Object exp){
+		try{
+			return  ctx.MkGe(ctx.MkInt(value),(IntExpr)exp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+
+	    }
+	}
+
+	public Object geq(Object exp, int value){
+		try{
+			return  ctx.MkGe((IntExpr)exp,ctx.MkInt(value));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+
+	    }
+	}
+
+	public Object geq(Object exp1, Object exp2){
+		try{
+			return  ctx.MkGe((ArithExpr)exp1,(ArithExpr)exp2);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+
+	    }
+	}
+
 //	public Object geq(double value, Object exp){
 //		try{
 //			return  vc.geExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
@@ -298,36 +298,36 @@ public class ProblemZ3 extends ProblemGeneral {
 //	    }
 //	}
 //
-//	public Object lt(int value, Object exp){
-//		try{
-//			return  vc.ltExpr(vc.ratExpr(value), (Expr)exp);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//
-//	    }
-//	}
-//
-//	public Object lt(Object exp, int value){
-//		try{
-//			return  vc.ltExpr((Expr)exp, vc.ratExpr(value));
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//
-//	    }
-//	}
-//
-//	public Object lt(Object exp1, Object exp2){
-//		try{
-//			return  vc.ltExpr((Expr)exp1, (Expr)exp2);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//
-//	    }
-//	}
-//
+	public Object lt(int value, Object exp){
+		try{
+			return  ctx.MkLt(ctx.MkInt(value),(IntExpr)exp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+
+	    }
+	}
+
+	public Object lt(Object exp, int value){
+		try{
+			return  ctx.MkLt((IntExpr)exp,ctx.MkInt(value));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+
+	    }
+	}
+
+	public Object lt(Object exp1, Object exp2){
+		try{
+			return  ctx.MkLt((ArithExpr)exp1,(ArithExpr)exp2);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+
+	    }
+	}
+
 //	public Object lt(double value, Object exp){
 //		try{
 //			return  vc.ltExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
@@ -349,36 +349,36 @@ public class ProblemZ3 extends ProblemGeneral {
 //	}
 //
 //
-//	public Object gt(int value, Object exp){
-//		try{
-//			return  vc.gtExpr(vc.ratExpr(value), (Expr)exp);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//
-//	    }
-//	}
-//
-//	public Object gt(Object exp, int value){
-//		try{
-//			return  vc.gtExpr((Expr)exp, vc.ratExpr(value));
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//
-//	    }
-//	}
-//
-//	public Object gt(Object exp1, Object exp2){
-//		try{
-//			return  vc.gtExpr((Expr)exp1, (Expr)exp2);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//
-//	    }
-//	}
-//
+	public Object gt(int value, Object exp){
+		try{
+			return  ctx.MkGt(ctx.MkInt(value),(IntExpr)exp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+
+	    }
+	}
+
+	public Object gt(Object exp, int value){
+		try{
+			return  ctx.MkGt((IntExpr)exp,ctx.MkInt(value));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+
+	    }
+	}
+
+	public Object gt(Object exp1, Object exp2){
+		try{
+			return  ctx.MkGt((ArithExpr)exp1,(ArithExpr)exp2);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+
+	    }
+	}
+
 //	public Object implies(Object exp1, Object exp2){
 //		try{
 //			return  vc.impliesExpr((Expr)exp1, (Expr)exp2);
@@ -388,7 +388,7 @@ public class ProblemZ3 extends ProblemGeneral {
 //
 //	    }
 //	}
-//
+
 //	public Object gt(double value, Object exp){
 //		try{
 //			return  vc.gtExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
@@ -457,33 +457,33 @@ public class ProblemZ3 extends ProblemGeneral {
 //		}
 //	}
 
-//	public Object minus(int value, Object exp) {
-//		try{
-//			return  vc.minusExpr(vc.ratExpr(value), (Expr)exp);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//		}
-//	}
-//
-//	public Object minus(Object exp, int value) {
-//		try{
-//			return  vc.minusExpr((Expr)exp, vc.ratExpr(value));
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//		}
-//	}
-//
-//	public Object minus(Object exp1, Object exp2) {
-//		try{
-//			return  vc.minusExpr((Expr)exp1, (Expr)exp2);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//		}
-//	}
-//
+	public Object minus(int value, Object exp) {
+		try{
+			return  ctx.MkSub(new ArithExpr[] { ctx.MkInt(value), (IntExpr)exp});
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+		}
+	}
+
+	public Object minus(Object exp, int value) {
+		try{
+			return  ctx.MkSub(new ArithExpr[] {(IntExpr)exp, ctx.MkInt(value)});
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+		}
+	}
+
+	public Object minus(Object exp1, Object exp2) {
+		try{
+			return  ctx.MkSub(new ArithExpr[] { (ArithExpr)exp1, (ArithExpr)exp2});
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+		}
+	}
+
 //	public Object minus(double value, Object exp) {
 //		try{
 //			return  vc.minusExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
@@ -501,33 +501,33 @@ public class ProblemZ3 extends ProblemGeneral {
 //			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
 //		}
 //	}
-//
-//	public Object mult(int value, Object exp) {
-//		try{
-//			return  vc.multExpr(vc.ratExpr(value), (Expr)exp);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//		}
-//	}
-//
-//	public Object mult(Object exp, int value) {
-//		try{
-//			return  vc.multExpr((Expr)exp, vc.ratExpr(value));
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//		}
-//	}
-//
-//	public Object mult(Object exp1, Object exp2) {
-//		try{
-//			return  vc.multExpr((Expr)exp1, (Expr)exp2);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//		}
-//	}
+
+	public Object mult(int value, Object exp) {
+		try{
+			return  ctx.MkMul(new ArithExpr[] {(IntExpr)exp, ctx.MkInt(value)});
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+		}
+	}
+
+	public Object mult(Object exp, int value) {
+		try{
+			return  ctx.MkMul(new ArithExpr[] {(IntExpr)exp, ctx.MkInt(value)});
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+		}
+	}
+
+	public Object mult(Object exp1, Object exp2) {
+		try{
+			return  ctx.MkMul(new ArithExpr[] {(ArithExpr)exp1, (ArithExpr)exp2});
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+		}
+	}
 //	public Object mult(double value, Object exp) {
 //		try{
 //			return  vc.multExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
@@ -545,34 +545,34 @@ public class ProblemZ3 extends ProblemGeneral {
 //		}
 //	}
 //
-//	//TODO
-//
-//	public Object div(int value, Object exp) {
-//		try{
-//			return  vc.divideExpr(vc.ratExpr(value), (Expr)exp);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//		}
-//	}
-//
-//	public Object div(Object exp, int value) {
-//		try{
-//			return  vc.divideExpr((Expr)exp, vc.ratExpr(value));
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//		}
-//	}
-//
-//	public Object div(Object exp1, Object exp2) {
-//		try{
-//			return  vc.divideExpr((Expr)exp1, (Expr)exp2);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new RuntimeException("## Error CVC3: Exception caught in CVC3 JNI: \n" + e);
-//		}
-//	}
+//	
+
+	public Object div(int value, Object exp) {
+		try{
+			return  ctx.MkDiv(ctx.MkInt(value), (IntExpr)exp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+		}
+	}
+
+	public Object div(Object exp, int value) {
+		try{
+			return  ctx.MkDiv((IntExpr)exp,ctx.MkInt(value));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+		}
+	}
+
+	public Object div(Object exp1, Object exp2) {
+		try{
+			return  ctx.MkDiv((ArithExpr)exp1,(ArithExpr)exp2);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+		}
+	}
 //	public Object div(double value, Object exp) {
 //		try{
 //			return  vc.divideExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
@@ -659,429 +659,313 @@ public class ProblemZ3 extends ProblemGeneral {
 	@Override
 	public Object eq(double value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object eq(Object exp, double value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object neq(double value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object neq(Object exp, double value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object leq(double value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object leq(Object exp, double value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
-	@Override
-	public Object geq(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public Object geq(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public Object geq(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 
 	@Override
 	public Object geq(double value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object geq(Object exp, double value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
-	@Override
-	public Object lt(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-
-	@Override
-	public Object lt(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public Object lt(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 
 	@Override
 	public Object lt(double value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object lt(Object exp, double value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
-	@Override
-	public Object gt(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-
-	@Override
-	public Object gt(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public Object gt(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 
 	@Override
 	public Object gt(double value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object gt(Object exp, double value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
-
-	
-
-	@Override
-	public Object minus(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public Object minus(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public Object minus(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 
 	@Override
 	public Object minus(double value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object minus(Object exp, double value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
-
-	@Override
-	public Object mult(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public Object mult(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public Object mult(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 
 	@Override
 	public Object mult(double value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object mult(Object exp, double value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
-
-
-	@Override
-	public Object div(int value, Object exp) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public Object div(Object exp, int value) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	public Object div(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 
 	@Override
 	public Object div(double value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object div(Object exp, double value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object and(int value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object and(Object exp, int value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object and(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object or(int value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object or(Object exp, int value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object or(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object xor(int value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object xor(Object exp, int value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object xor(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object shiftL(int value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object shiftL(Object exp, int value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object shiftL(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object shiftR(int value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object shiftR(Object exp, int value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object shiftR(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object shiftUR(int value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object shiftUR(Object exp, int value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object shiftUR(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object mixed(Object exp1, Object exp2) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public double getRealValueInf(Object dpvar) {
 		// TODO Auto-generated method stub
-		return 0;
+		throw new RuntimeException("## Error Z3 \n");//return 0;
 	}
 
 
 	@Override
 	public double getRealValueSup(Object dpVar) {
 		// TODO Auto-generated method stub
-		return 0;
+		throw new RuntimeException("## Error Z3 \n");//return 0;
 	}
 
 
 	@Override
 	public double getRealValue(Object dpVar) {
 		// TODO Auto-generated method stub
-		return 0;
+		throw new RuntimeException("## Error Z3 \n");//return 0;
 	}
 
 
 	@Override
 	public void postLogicalOR(Object[] constraint) {
 		// TODO Auto-generated method stub
-		
+		throw new RuntimeException("## Error Z3 \n");	
 	}
 
 
 	@Override
 	public Object plus(double value, Object exp) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
 
 
 	@Override
 	public Object plus(Object exp, double value) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("## Error Z3 \n");
 	}
+
+
+	
 
 }
