@@ -33,7 +33,7 @@ public class CompleteTreeVisualizer extends AVisualizer {
 
 	@Override
 	protected LinkedList<Attribute> getNodeAttr(StdNode treeNode) {
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList<Attribute>();
 		
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n")
@@ -53,7 +53,7 @@ public class CompleteTreeVisualizer extends AVisualizer {
 	
 	@Override
 	protected LinkedList<Attribute> getNodeAttr(InvokeNode treeNode) {
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList<Attribute>();
 		
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n");
@@ -72,7 +72,7 @@ public class CompleteTreeVisualizer extends AVisualizer {
 
 	@Override
 	protected LinkedList<Attribute> getNodeAttr(ReturnNode treeNode) {
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList<Attribute>();
 		
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n");
@@ -91,7 +91,7 @@ public class CompleteTreeVisualizer extends AVisualizer {
 	
 	@Override
 	protected LinkedList<Attribute> getNodeAttr(IfNode treeNode) {
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList<Attribute>();
 		Instruction instr = treeNode.getInstructionContext().getInstr();
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(instr.getMnemonic()).append("\\n");
@@ -105,7 +105,7 @@ public class CompleteTreeVisualizer extends AVisualizer {
 	
 	@Override
 	protected LinkedList<Attribute> getFinalNodeAttr(gov.nasa.jpf.symbc.symexectree.structure.Node treeNode) {
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList<Attribute>();
 		Instruction instr = treeNode.getInstructionContext().getInstr();
 		StringBuilder lblBuilder = new StringBuilder();
 		lblBuilder.append(instr.getMnemonic()).append("\\n");
@@ -119,7 +119,7 @@ public class CompleteTreeVisualizer extends AVisualizer {
 	
 	@Override
 	protected LinkedList<Attribute> getEdgeAttr(Node srcNode, Node targetNode) {
-		return new LinkedList<>();
+		return new LinkedList<Attribute>();
 	}
 	
 	private String getPathConditionString(PathCondition pc) {

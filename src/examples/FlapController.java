@@ -1,4 +1,6 @@
 
+import gov.nasa.jpf.symbc.Debug;
+
 
 public class FlapController {
 	private static int goal;
@@ -51,6 +53,7 @@ public class FlapController {
 				}
 				time++;
 				if (time > 1) {
+					Debug.printPC("\n Path Condition: ");
 					assert false;
 				}
 			}
@@ -63,7 +66,7 @@ public class FlapController {
 		private boolean emergency;
 		private int oldGoal;
 
-		public EmergencySensor(boolean emergercy) {
+		public EmergencySensor(boolean emergency) {
 			this.emergency = emergency;
 		}
 

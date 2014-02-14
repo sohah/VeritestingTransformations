@@ -93,7 +93,7 @@ public abstract class AVisualizer {
 		Instruction instr = treeNode.getInstructionContext().getInstr();
 		Node targetNode = new Node(grappaGraph, instr.getMnemonic() + this.uniqueID++);
 		
-		LinkedList<Attribute> attrs = new LinkedList<>();
+		LinkedList<Attribute> attrs = new LinkedList<Attribute>();
 		if(treeNode.getOutgoingTransitions().size() == 0)
 			attrs.addAll(this.getFinalNodeAttr(treeNode));
 		else {

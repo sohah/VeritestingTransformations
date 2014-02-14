@@ -231,7 +231,7 @@ public class MinMax {
 		if (varname.endsWith("_SYMINT")) {
 			varname = varname.replaceAll("_[0-9][0-9]*_SYMINT", "");
 		}
-		return varMinIntMap.containsKey(varname) ? varMinIntMap.get(varname) : minInt;
+		return varMinIntMap!=null && varMinIntMap.containsKey(varname) ? varMinIntMap.get(varname) : minInt;
 	}
 
 	/**
@@ -244,7 +244,7 @@ public class MinMax {
 		if (varname.endsWith("_SYMINT")) {
 			varname = varname.replaceAll("_[0-9][0-9]*_SYMINT", "");
 		}
-		return varMaxIntMap.containsKey(varname) ? varMaxIntMap.get(varname) : maxInt;
+		return varMaxIntMap!=null && varMaxIntMap.containsKey(varname) ? varMaxIntMap.get(varname) : maxInt;
 	}
 	
 	/**
