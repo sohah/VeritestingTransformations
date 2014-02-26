@@ -1,7 +1,7 @@
 package gov.nasa.jpf.symbc;
 import gov.nasa.jpf.util.test.TestJPF;
 import org.junit.Test;
-import org.junit.runner.JUnitCore;
+//import org.junit.runner.JUnitCore;
 
 public class TestSymbolicJPF extends TestJPF {
   
@@ -11,7 +11,7 @@ public class TestSymbolicJPF extends TestJPF {
   static final String STORAGE = "+vm.storage.class= ";
   
   public static void main(String args[]) {
-    JUnitCore.main(TEST_CLASS + "JPF");
+      //JUnitCore.main(TEST_CLASS + "JPF");
   }
   
   //------------- IADD

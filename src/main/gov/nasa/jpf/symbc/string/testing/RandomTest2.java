@@ -10,8 +10,6 @@ import java.util.Timer;
 
 import javax.print.attribute.IntegerSyntax;
 
-import junit.framework.Assert;
-
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.Comparator;

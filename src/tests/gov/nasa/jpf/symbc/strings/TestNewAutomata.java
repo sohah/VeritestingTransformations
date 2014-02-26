@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.strings;
 
 import gov.nasa.jpf.Config;
+import gov.nasa.jpf.util.test.TestJPF;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
@@ -12,12 +13,11 @@ import gov.nasa.jpf.symbc.string.StringExpression;
 import gov.nasa.jpf.symbc.string.StringPathCondition;
 import gov.nasa.jpf.symbc.string.StringSymbolic;
 import gov.nasa.jpf.symbc.string.SymbolicStringConstraintsGeneral;
-import junit.framework.Assert;
 
 import org.junit.Test;
 
 
-public class TestNewAutomata {
+public class TestNewAutomata extends TestJPF {
 	@Test
 	//NOTEQUALS
 	public void Test1_1 () {
@@ -35,9 +35,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var1, var2);
 			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var2, var3);		
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().equals(var2.solution()));
-			Assert.assertTrue(!var2.solution().equals(var3.solution()));
+			assertTrue(result);
+			assertTrue(!var1.solution().equals(var2.solution()));
+			assertTrue(!var2.solution().equals(var3.solution()));
 		}
 	}
 	
@@ -58,10 +58,10 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var2, var3);
 			stringCurrentPC._addDet(StringComparator.NOTEQUALS, var1, var3);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().equals(var2.solution()));
-			Assert.assertTrue(!var2.solution().equals(var3.solution()));
-			Assert.assertTrue(!var1.solution().equals(var3.solution()));
+			assertTrue(result);
+			assertTrue(!var1.solution().equals(var2.solution()));
+			assertTrue(!var2.solution().equals(var3.solution()));
+			assertTrue(!var1.solution().equals(var3.solution()));
 		}
 	}
 	
@@ -86,10 +86,10 @@ public class TestNewAutomata {
 				}
 			}
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
+			assertTrue(result);
 			for (int i = 0; i < var.length-1; i++) {
 				for (int j = i+1; j < var.length; j++) {
-					Assert.assertTrue(!var[i].solution().equals(var[j].solution()));
+					assertTrue(!var[i].solution().equals(var[j].solution()));
 				}
 			}
 			
@@ -113,8 +113,8 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.GE, var1._length(), new IntegerConstant(2));
 			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var2, var1);		
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().startsWith(var2.solution()));
+			assertTrue(result);
+			assertTrue(!var1.solution().startsWith(var2.solution()));
 		}
 	}
 	
@@ -135,8 +135,8 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.GE, var1._length(), new IntegerConstant(2));
 			stringCurrentPC._addDet(StringComparator.EQUALS, var2, var1);		
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().equals(var2.solution()));
+			assertTrue(result);
+			assertTrue(var1.solution().equals(var2.solution()));
 		}
 	}
 	
@@ -157,8 +157,8 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.GE, var1._length(), new IntegerConstant(2));
 			stringCurrentPC._addDet(StringComparator.NOTENDSWITH, var2, var1);		
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().endsWith(var2.solution()));
+			assertTrue(result);
+			assertTrue(!var1.solution().endsWith(var2.solution()));
 		}
 	}
 	
@@ -179,8 +179,8 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.GE, var1._length(), new IntegerConstant(2));
 			stringCurrentPC._addDet(StringComparator.NOTCONTAINS, var2, var1);		
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().contains(var2.solution()));
+			assertTrue(result);
+			assertTrue(!var1.solution().contains(var2.solution()));
 		}
 	}
 	
@@ -200,9 +200,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("a"));
-			Assert.assertTrue(var2.solution().startsWith("b"));
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("a"));
+			assertTrue(var2.solution().startsWith("b"));
 		}
 	}
 	
@@ -221,9 +221,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("a"));
-			Assert.assertTrue(!var2.solution().startsWith("b"));
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("a"));
+			assertTrue(!var2.solution().startsWith("b"));
 		}
 	}
 
@@ -242,9 +242,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.STARTSWITH, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().startsWith("a"));
-			Assert.assertTrue(var2.solution().startsWith("b"));
+			assertTrue(result);
+			assertTrue(!var1.solution().startsWith("a"));
+			assertTrue(var2.solution().startsWith("b"));
 		}
 	}
 	
@@ -263,9 +263,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().startsWith("a"));
-			Assert.assertTrue(!var2.solution().startsWith("b"));
+			assertTrue(result);
+			assertTrue(!var1.solution().startsWith("a"));
+			assertTrue(!var2.solution().startsWith("b"));
 		}
 	}
 	
@@ -284,9 +284,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.ENDSWITH, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.ENDSWITH, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("a"));
-			Assert.assertTrue(var2.solution().startsWith("b"));
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("a"));
+			assertTrue(var2.solution().startsWith("b"));
 		}
 	}
 	
@@ -305,9 +305,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.ENDSWITH, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.NOTENDSWITH, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("a"));
-			Assert.assertTrue(!var2.solution().startsWith("b"));
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("a"));
+			assertTrue(!var2.solution().startsWith("b"));
 		}
 	}
 
@@ -326,9 +326,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTENDSWITH, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.ENDSWITH, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().startsWith("a"));
-			Assert.assertTrue(var2.solution().startsWith("b"));
+			assertTrue(result);
+			assertTrue(!var1.solution().startsWith("a"));
+			assertTrue(var2.solution().startsWith("b"));
 		}
 	}
 	
@@ -347,9 +347,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTENDSWITH, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.NOTENDSWITH, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().startsWith("a"));
-			Assert.assertTrue(!var2.solution().startsWith("b"));
+			assertTrue(result);
+			assertTrue(!var1.solution().startsWith("a"));
+			assertTrue(!var2.solution().startsWith("b"));
 		}
 	}
 	
@@ -368,9 +368,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.EQUALS, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.EQUALS, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().equals("a"));
-			Assert.assertTrue(var2.solution().equals("b"));
+			assertTrue(result);
+			assertTrue(var1.solution().equals("a"));
+			assertTrue(var2.solution().equals("b"));
 		}
 	}
 	
@@ -390,9 +390,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTEQUALS, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
 			System.out.println(SymbolicStringConstraintsGeneral.getSolution());
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().equals("a"));
-			Assert.assertTrue(var2.solution() == null || !var2.solution().equals("b"));
+			assertTrue(result);
+			assertTrue(var1.solution().equals("a"));
+			assertTrue(var2.solution() == null || !var2.solution().equals("b"));
 		}
 	}
 
@@ -411,9 +411,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTEQUALS, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.EQUALS, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().equals("a"));
-			Assert.assertTrue(var2.solution().equals("b"));
+			assertTrue(result);
+			assertTrue(!var1.solution().equals("a"));
+			assertTrue(var2.solution().equals("b"));
 		}
 	}
 	
@@ -432,9 +432,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTEQUALS, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.NOTEQUALS, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().equals("a"));
-			Assert.assertTrue(!var2.solution().equals("b"));
+			assertTrue(result);
+			assertTrue(!var1.solution().equals("a"));
+			assertTrue(!var2.solution().equals("b"));
 		}
 	}
 	
@@ -453,9 +453,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.CONTAINS, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.CONTAINS, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().contains("a"));
-			Assert.assertTrue(var2.solution().contains("b"));
+			assertTrue(result);
+			assertTrue(var1.solution().contains("a"));
+			assertTrue(var2.solution().contains("b"));
 		}
 	}
 	
@@ -475,9 +475,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTCONTAINS, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
 			System.out.println(SymbolicStringConstraintsGeneral.getSolution());
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().contains("a"));
-			Assert.assertTrue(!var2.solution().contains("b"));
+			assertTrue(result);
+			assertTrue(var1.solution().contains("a"));
+			assertTrue(!var2.solution().contains("b"));
 		}
 	}
 
@@ -496,9 +496,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTCONTAINS, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.CONTAINS, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().contains("a"));
-			Assert.assertTrue(var2.solution().contains("b"));
+			assertTrue(result);
+			assertTrue(!var1.solution().contains("a"));
+			assertTrue(var2.solution().contains("b"));
 		}
 	}
 	
@@ -517,9 +517,9 @@ public class TestNewAutomata {
 			stringCurrentPC._addDet(StringComparator.NOTCONTAINS, new StringConstant("a"), var1);
 			stringCurrentPC._addDet(StringComparator.NOTCONTAINS, new StringConstant("b"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().contains("a"));
-			Assert.assertTrue(!var2.solution().contains("b"));
+			assertTrue(result);
+			assertTrue(!var1.solution().contains("a"));
+			assertTrue(!var2.solution().contains("b"));
 		}
 	}
 	
@@ -539,9 +539,9 @@ public class TestNewAutomata {
 			StringExpression var2 = var1._trim();
 			stringCurrentPC._addDet(StringComparator.EQUALS, new StringConstant("cc"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var2.solution().equals("cc"));
-			Assert.assertTrue(var1.solution().trim().equals("cc"));
+			assertTrue(result);
+			assertTrue(var2.solution().equals("cc"));
+			assertTrue(var1.solution().trim().equals("cc"));
 		}
 	}
 	
@@ -560,9 +560,9 @@ public class TestNewAutomata {
 			StringExpression var2 = var1._trim();
 			stringCurrentPC._addDet(StringComparator.NOTEQUALS, new StringConstant("cc"), var2);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var2.solution().equals("cc"));
-			Assert.assertTrue(!var1.solution().trim().equals("cc"));
+			assertTrue(result);
+			assertTrue(!var2.solution().equals("cc"));
+			assertTrue(!var1.solution().trim().equals("cc"));
 		}
 	}
 	
@@ -586,11 +586,11 @@ public class TestNewAutomata {
 			StringExpression var3 = var1._concat(var2);
 			pc._addDet(Comparator.LE, var3._length(), 10);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().contains("a"));
-			Assert.assertTrue(var2.solution().contains("b"));
-			Assert.assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
-			Assert.assertTrue(var3.solution().length() < 10);
+			assertTrue(result);
+			assertTrue(var1.solution().contains("a"));
+			assertTrue(var2.solution().contains("b"));
+			assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
+			assertTrue(var3.solution().length() < 10);
 		}
 	}
 	
@@ -612,11 +612,11 @@ public class TestNewAutomata {
 			StringExpression var3 = var1._concat(var2);
 			pc._addDet(Comparator.LE, var3._length(), 10);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().contains("a"));
-			Assert.assertTrue(var2.solution().contains("b"));
-			Assert.assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
-			Assert.assertTrue(var3.solution().length() < 10);
+			assertTrue(result);
+			assertTrue(!var1.solution().contains("a"));
+			assertTrue(var2.solution().contains("b"));
+			assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
+			assertTrue(var3.solution().length() < 10);
 		}
 	}
 	
@@ -638,11 +638,11 @@ public class TestNewAutomata {
 			StringExpression var3 = var1._concat(var2);
 			pc._addDet(Comparator.LE, var3._length(), 10);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().contains("a"));
-			Assert.assertTrue(!var2.solution().contains("b"));
-			Assert.assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
-			Assert.assertTrue(var3.solution().length() < 10);
+			assertTrue(result);
+			assertTrue(var1.solution().contains("a"));
+			assertTrue(!var2.solution().contains("b"));
+			assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
+			assertTrue(var3.solution().length() < 10);
 		}
 	}
 	
@@ -664,11 +664,11 @@ public class TestNewAutomata {
 			StringExpression var3 = var1._concat(var2);
 			pc._addDet(Comparator.LE, var3._length(), 10);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().contains("a"));
-			Assert.assertTrue(!var2.solution().contains("b"));
-			Assert.assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
-			Assert.assertTrue(var3.solution().length() < 10);
+			assertTrue(result);
+			assertTrue(!var1.solution().contains("a"));
+			assertTrue(!var2.solution().contains("b"));
+			assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
+			assertTrue(var3.solution().length() < 10);
 		}
 	}
 
@@ -690,11 +690,11 @@ public class TestNewAutomata {
 			StringExpression var3 = var1._concat(var2);
 			pc._addDet(Comparator.GT, var3._length(), 10);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().contains("a"));
-			Assert.assertTrue(var2.solution().contains("b"));
-			Assert.assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
-			Assert.assertTrue(var3.solution().length() > 10);
+			assertTrue(result);
+			assertTrue(var1.solution().contains("a"));
+			assertTrue(var2.solution().contains("b"));
+			assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
+			assertTrue(var3.solution().length() > 10);
 		}
 	}
 	
@@ -716,11 +716,11 @@ public class TestNewAutomata {
 			StringExpression var3 = var1._concat(var2);
 			pc._addDet(Comparator.GT, var3._length(), 10);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().contains("a"));
-			Assert.assertTrue(var2.solution().contains("b"));
-			Assert.assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
-			Assert.assertTrue(var3.solution().length() > 10);
+			assertTrue(result);
+			assertTrue(!var1.solution().contains("a"));
+			assertTrue(var2.solution().contains("b"));
+			assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
+			assertTrue(var3.solution().length() > 10);
 		}
 	}
 	
@@ -742,11 +742,11 @@ public class TestNewAutomata {
 			StringExpression var3 = var1._concat(var2);
 			pc._addDet(Comparator.GT, var3._length(), 10);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().contains("a"));
-			Assert.assertTrue(!var2.solution().contains("b"));
-			Assert.assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
-			Assert.assertTrue(var3.solution().length() > 10);
+			assertTrue(result);
+			assertTrue(var1.solution().contains("a"));
+			assertTrue(!var2.solution().contains("b"));
+			assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
+			assertTrue(var3.solution().length() > 10);
 		}
 	}
 	
@@ -768,11 +768,11 @@ public class TestNewAutomata {
 			StringExpression var3 = var1._concat(var2);
 			pc._addDet(Comparator.GT, var3._length(), 10);
 			boolean result = stringCurrentPC.simplify();
-			Assert.assertTrue(result);
-			Assert.assertTrue(!var1.solution().contains("a"));
-			Assert.assertTrue(!var2.solution().contains("b"));
-			Assert.assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
-			Assert.assertTrue(var3.solution().length() > 10);
+			assertTrue(result);
+			assertTrue(!var1.solution().contains("a"));
+			assertTrue(!var2.solution().contains("b"));
+			assertTrue(var1.solution().concat(var2.solution()).equals(var3.solution()));
+			assertTrue(var3.solution().length() > 10);
 		}
 	}
 	
@@ -796,9 +796,9 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.GT, var1._indexOf(new StringConstant("a")), 0);
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue("Solver " + solver + " failed",  !result);
-			/*Assert.assertTrue(var1.solution().startsWith("aa"));
-			Assert.assertTrue(var1.solution().indexOf("a") > 0);*/
+			assertTrue("Solver " + solver + " failed",  !result);
+			/*assertTrue(var1.solution().startsWith("aa"));
+			assertTrue(var1.solution().indexOf("a") > 0);*/
 			
 		}
 	}
@@ -821,9 +821,9 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.GT, var1._indexOf(new StringConstant("a")), 0);
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("bb"));
-			Assert.assertTrue(var1.solution().indexOf("a") > 0);
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("bb"));
+			assertTrue(var1.solution().indexOf("a") > 0);
 			
 		}
 	}
@@ -846,9 +846,9 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.EQ, var1._indexOf(new StringConstant("a")), -1);
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("bb"));
-			Assert.assertTrue(var1.solution().indexOf("a") == -1);
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("bb"));
+			assertTrue(var1.solution().indexOf("a") == -1);
 			
 		}
 	}
@@ -871,7 +871,7 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.EQ, var1._indexOf(new StringConstant("b")), -1);
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue(!result);
+			assertTrue(!result);
 		}
 	}
 	
@@ -893,7 +893,7 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.EQ, var1._indexOf(new StringConstant("b")), 1);
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue(!result);
+			assertTrue(!result);
 		}
 	}
 	
@@ -918,11 +918,11 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.EQ, var1._indexOf(new StringConstant("a"), new IntegerConstant(5)), si);
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue("Solver " + solver + " failed",  result);
-			Assert.assertTrue(var1.solution().startsWith("aa"));
+			assertTrue("Solver " + solver + " failed",  result);
+			assertTrue(var1.solution().startsWith("aa"));
 			System.out.printf("var1.solution() '%s'\n", var1.solution());
 			System.out.printf("si.solution() '%s'\n", si.solution());
-			Assert.assertTrue(var1.solution().indexOf("a", 5) == si.solution());
+			assertTrue(var1.solution().indexOf("a", 5) == si.solution());
 			
 		}
 	}
@@ -946,9 +946,9 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.EQ, var1._indexOf(new StringConstant("a"), new IntegerConstant(5)), si);
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("bb"));
-			Assert.assertTrue(var1.solution().indexOf("a", 5) == si.solution());
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("bb"));
+			assertTrue(var1.solution().indexOf("a", 5) == si.solution());
 			
 		}
 	}
@@ -973,10 +973,10 @@ public class TestNewAutomata {
 			pc._addDet(Comparator.GT, var1._indexOf(var2), 0);
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("aa"));
-			Assert.assertTrue(var2.solution().endsWith("bb"));
-			Assert.assertTrue(var1.solution().indexOf(var2.solution()) > 0);
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("aa"));
+			assertTrue(var2.solution().endsWith("bb"));
+			assertTrue(var1.solution().indexOf(var2.solution()) > 0);
 			
 		}
 	}
@@ -1005,9 +1005,9 @@ public class TestNewAutomata {
 			//stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var1, new StringConstant("O4+]"));
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("gLR"));
-			Assert.assertTrue(!var1.solution().startsWith("kR"));
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("gLR"));
+			assertTrue(!var1.solution().startsWith("kR"));
 			
 		}
 	}
@@ -1036,9 +1036,9 @@ public class TestNewAutomata {
 			//stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var1, new StringConstant("O4+]"));
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().endsWith("Y&v^"));
-			Assert.assertTrue(!var1.solution().startsWith("N@"));
+			assertTrue(result);
+			assertTrue(var1.solution().endsWith("Y&v^"));
+			assertTrue(!var1.solution().startsWith("N@"));
 			
 		}
 	}
@@ -1069,10 +1069,10 @@ public class TestNewAutomata {
 			//stringCurrentPC._addDet(StringComparator.NOTSTARTSWITH, var1, new StringConstant("O4+]"));
 			boolean result = stringCurrentPC.simplify();
 			//System.out.printf("var1: '%s'\n", var1.solution());
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("9u"));
-			Assert.assertTrue(var2.solution().endsWith("9u"));
-			Assert.assertTrue(!var1.solution().contains(var2.solution()));
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("9u"));
+			assertTrue(var2.solution().endsWith("9u"));
+			assertTrue(!var1.solution().contains(var2.solution()));
 		}
 	}
 	
@@ -1101,10 +1101,10 @@ public class TestNewAutomata {
 			//System.out.printf("var1: '%s'\n", var1.solution());
 			System.out.println(var0.solution());
 			System.out.println(var1.solution());
-			Assert.assertTrue(result);
-			Assert.assertTrue(var1.solution().startsWith("M.m"));
-			Assert.assertTrue(var0.solution().endsWith(var1.solution()));
-			Assert.assertTrue(!var1.solution().equals(var0.solution()));
+			assertTrue(result);
+			assertTrue(var1.solution().startsWith("M.m"));
+			assertTrue(var0.solution().endsWith(var1.solution()));
+			assertTrue(!var1.solution().equals(var0.solution()));
 		}
 		
 	}

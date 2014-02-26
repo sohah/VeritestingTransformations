@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.TestCase;
+//import junit.framework.TestCase;
 
 /**
  * This class serves as a way to calculate the median of a list of values.  It

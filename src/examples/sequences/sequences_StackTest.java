@@ -1,11 +1,11 @@
 package sequences;
 
 // auto-generated JUnit code:
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import gov.nasa.jpf.util.test.TestJPF;
 
-public class sequences_StackTest {
+public class sequences_StackTest extends TestJPF {
 
 	private sequences.Stack sequences_stack;
 
