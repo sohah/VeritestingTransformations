@@ -25,7 +25,7 @@ import gov.nasa.jpf.symbc.numeric.solvers.DebugSolvers;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3BitVector;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco2;
+//import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco2;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemGeneral;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemIAsolver;
@@ -68,8 +68,8 @@ public class SymbolicConstraintsGeneral {
 			pb = new ProblemChoco();
 		} else if(dp[0].equalsIgnoreCase("choco")){
 			pb = new ProblemChoco();
-		} else if(dp[0].equalsIgnoreCase("choco2")){
-			pb = new ProblemChoco2();
+//		} else if(dp[0].equalsIgnoreCase("choco2")){
+//			pb = new ProblemChoco2();
 		} else if(dp[0].equalsIgnoreCase("coral")){
 			pb = new ProblemCoral();
 		}

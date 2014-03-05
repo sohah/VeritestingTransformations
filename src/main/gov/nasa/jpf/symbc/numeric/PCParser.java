@@ -20,16 +20,9 @@
 package gov.nasa.jpf.symbc.numeric;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemCompare;
-import gov.nasa.jpf.symbc.numeric.solvers.DebugSolvers;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemCVC3BitVector;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco2;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemGeneral;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemIAsolver;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemYices;
+
 
 
 

@@ -6,7 +6,7 @@ package gov.nasa.jpf.symbc.symexectree;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import scale.common.RuntimeException;
+//import scale.common.RuntimeException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;

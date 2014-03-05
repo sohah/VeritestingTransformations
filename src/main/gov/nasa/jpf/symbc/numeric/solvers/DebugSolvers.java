@@ -17,7 +17,7 @@ public class DebugSolvers extends ProblemGeneral {
 		probs = new ProblemGeneral[numSolvers];
 
 		probs[0] = new ProblemChoco();
-		probs[1] = new ProblemChoco2();
+//		probs[1] = new ProblemChoco2();
 		probs[2] = new ProblemCoral();
 	}
 

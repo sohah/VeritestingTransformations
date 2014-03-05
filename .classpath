@@ -9,16 +9,13 @@
 	<classpathentry kind="lib" path="lib/automaton.jar"/>
 	<classpathentry kind="lib" path="lib/choco-1_2_04.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.4.jar"/>
-	<classpathentry kind="lib" path="lib/hampi.jar"/>
 	<classpathentry kind="lib" path="lib/iasolver.jar"/>
 	<classpathentry kind="lib" path="lib/libcvc3.jar"/>
-	<classpathentry kind="lib" path="lib/scale.jar"/>
 	<classpathentry kind="lib" path="lib/STPJNI.jar"/>
 	<classpathentry kind="lib" path="lib/string.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jpf-core"/>
 	<classpathentry kind="lib" path="lib/coral.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/choco-solver-2.1.1-20100709.142532-2.jar"/>
 	<classpathentry kind="lib" path="lib/yicesapijava.jar"/>
 	<classpathentry kind="lib" path="lib/aima-core.jar"/>
 	<classpathentry kind="lib" path="lib/bcel.jar"/>
