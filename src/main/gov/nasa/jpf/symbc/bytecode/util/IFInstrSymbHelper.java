@@ -27,6 +27,7 @@ import gov.nasa.jpf.vm.Types;
  * 
  * Deals with how symbolic conditions are handled. Currently a lot(!!) of redundancy. Furthermore, parts of it
  * are so ugly that my eyes bleed. Should be refactored into a generic method.
+ * modified by corina on March 18
  */
 public class IFInstrSymbHelper {
 	
@@ -546,17 +547,14 @@ public class IFInstrSymbHelper {
 			PCChoiceGenerator prevPcGen;
 			ChoiceGenerator<?> cg = ti.getVM().getChoiceGenerator();
 			PathCondition pc = null;
-			if(cg instanceof PCChoiceGenerator) {
-				prevPcGen = (PCChoiceGenerator)cg;
-				pc = prevPcGen.getCurrentPC();
+			prevPcGen = (PCChoiceGenerator)cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
+			
+			if(prevPcGen == null) {
+				pc = new PathCondition();
 			} else {
-				prevPcGen = (PCChoiceGenerator)cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
-				if(prevPcGen == null) {
-					pc = new PathCondition();
-				} else {
-					pc = prevPcGen.getCurrentPC();
-				}
+				pc = prevPcGen.getCurrentPC();
 			}
+			
 			
 			PathCondition eqPC = pc.make_copy();
 			PathCondition nePC = pc.make_copy();
@@ -569,29 +567,31 @@ public class IFInstrSymbHelper {
 			if(eqSat) {
 				if(neSat) {
 					if(prevPcGen == null) {
+						//?? why is this part necessary?
 						prevPcGen = new PCChoiceGenerator(1);
 						prevPcGen.setOffset(instr.getPosition());
 						prevPcGen.setMethodName(instr.getMethodInfo().getFullName());
 						ti.getVM().getSystemState().setNextChoiceGenerator(prevPcGen);
 						prevPcGen.advance();
 						prevPcGen.setCurrentPC(new PathCondition());
+						//??
 					}
 					PCChoiceGenerator newPCChoice;
 					newPCChoice = new PCChoiceGenerator(2);
 					newPCChoice.setOffset(instr.getPosition());
 					newPCChoice.setMethodName(instr.getMethodInfo().getFullName());
+					newPCChoice.setPC(eqPC, 1);
+					newPCChoice.setPC(nePC, 0);
 					ti.getVM().getSystemState().setNextChoiceGenerator(newPCChoice);
 					return instr;
 				} else {
-					//prevPcGen.setCurrentPC(eqPC);
 					ti.getModifiableTopFrame().pop();
 					return instr.getTarget();
 				}
-			} else {
-				/*if(neSat) {
-					prevPcGen.setCurrentPC(nePC);
-				} else*/ 
+			} else { 
 				if(!neSat) {
+					// this should never be reachable
+					assert(false);
 					ti.getVM().getSystemState().setIgnored(true);
 				}
 				ti.getModifiableTopFrame().pop();
@@ -599,23 +599,11 @@ public class IFInstrSymbHelper {
 			}	
 		} else {
 			ti.getModifiableTopFrame().pop();
-			PathCondition pc;
 			PCChoiceGenerator curCg = (PCChoiceGenerator)ti.getVM().getSystemState().getChoiceGenerator();
-			
-			PCChoiceGenerator prevCg = curCg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
-			
-			if(prevCg == null )
-				pc = new PathCondition();
-			else
-				pc = prevCg.getCurrentPC();
 			boolean conditionValue = (Integer)curCg.getNextChoice()==1 ? true: false;
 			if(conditionValue) {
-				pc._addDet(trueComparator, sym_v, 0);
-				((PCChoiceGenerator) curCg).setCurrentPC(pc);
 				return instr.getTarget();
 			} else {
-				pc._addDet(falseComparator, sym_v, 0);
-				((PCChoiceGenerator) curCg).setCurrentPC(pc);
 				return instr.getNext(ti);
 			}
 		}	
