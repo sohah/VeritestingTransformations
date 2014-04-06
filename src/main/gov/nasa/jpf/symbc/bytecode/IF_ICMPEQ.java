@@ -49,7 +49,10 @@ public class IF_ICMPEQ extends gov.nasa.jpf.jvm.bytecode.IF_ICMPEQ{
 																					  sym_v2,
 																					  Comparator.EQ, 
 																					  Comparator.NE);
-
+			if(nxtInstr==getTarget())
+				conditionValue=true;
+			else 
+				conditionValue=false;
 			return nxtInstr;
 		}
 	}

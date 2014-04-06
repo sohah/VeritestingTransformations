@@ -51,7 +51,10 @@ public class IFGE extends gov.nasa.jpf.jvm.bytecode.IFGE {
 																					  sym_v, 
 																					  Comparator.GE, 
 																					  Comparator.LT);
-
+			if(nxtInstr==getTarget())
+				conditionValue=true;
+			else 
+				conditionValue=false;
 			return nxtInstr;
 		}
 	}

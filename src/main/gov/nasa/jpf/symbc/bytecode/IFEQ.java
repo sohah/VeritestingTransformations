@@ -51,7 +51,10 @@ public class IFEQ extends gov.nasa.jpf.jvm.bytecode.IFEQ {
 																					  sym_v, 
 																					  Comparator.EQ, 
 																					  Comparator.NE);
-			
+			if(nxtInstr==getTarget())
+				conditionValue=true;
+			else 
+				conditionValue=false;
 			return nxtInstr;
 		}
 	}

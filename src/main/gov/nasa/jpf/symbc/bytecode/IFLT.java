@@ -48,7 +48,10 @@ public class IFLT extends gov.nasa.jpf.jvm.bytecode.IFLT {
 																					  sym_v, 
 																					  Comparator.LT, 
 																					  Comparator.GE);
-
+			if(nxtInstr==getTarget())
+				conditionValue=true;
+			else 
+				conditionValue=false;
 			return nxtInstr;
 		}
 	}

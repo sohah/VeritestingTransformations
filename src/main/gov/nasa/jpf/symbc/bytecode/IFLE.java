@@ -50,7 +50,10 @@ public class IFLE extends gov.nasa.jpf.jvm.bytecode.IFLE {
 																					  sym_v, 
 																					  Comparator.LE, 
 																					  Comparator.GT);
-
+			if(nxtInstr==getTarget())
+				conditionValue=true;
+			else 
+				conditionValue=false;
 			return nxtInstr;
 		}
 	}

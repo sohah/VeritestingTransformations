@@ -52,7 +52,10 @@ public class IF_ICMPGT extends gov.nasa.jpf.jvm.bytecode.IF_ICMPGT{
 																					  sym_v2,
 																					  Comparator.GT, 
 																					  Comparator.LE);
-
+			if(nxtInstr==getTarget())
+				conditionValue=true;
+			else 
+				conditionValue=false;
 			return nxtInstr;
 		}
 	}

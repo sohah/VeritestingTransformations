@@ -51,7 +51,10 @@ public class IFNE extends gov.nasa.jpf.jvm.bytecode.IFNE {
 																					  sym_v, 
 																					  Comparator.NE, 
 																					  Comparator.EQ);
-			
+			if(nxtInstr==getTarget())
+				conditionValue=true;
+			else 
+				conditionValue=false;
 			return nxtInstr;
 		}
 	}

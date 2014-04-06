@@ -50,7 +50,10 @@ public class IF_ICMPGE extends gov.nasa.jpf.jvm.bytecode.IF_ICMPGE{
 																					  sym_v2,
 																					  Comparator.GE, 
 																					  Comparator.LT);
-
+			if(nxtInstr==getTarget())
+				conditionValue=true;
+			else 
+				conditionValue=false;
 			return nxtInstr;
 		}
 	}

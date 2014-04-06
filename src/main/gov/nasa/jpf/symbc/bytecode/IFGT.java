@@ -52,7 +52,10 @@ public class IFGT extends gov.nasa.jpf.jvm.bytecode.IFGT {
 																					  sym_v, 
 																					  Comparator.GT, 
 																					  Comparator.LE);
-
+			if(nxtInstr==getTarget())
+				conditionValue=true;
+			else 
+				conditionValue=false;
 			return nxtInstr;
 		}
 	}
