@@ -19,6 +19,7 @@
 
 package gov.nasa.jpf.symbc.heap;
 
+import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.vm.ClassInfo;
 
 
@@ -68,6 +69,16 @@ public class SymbolicInputHeap {
 		}
 
 		return false;
+	}
+	
+	public SymbolicInteger getNode(int daIndex) {
+	    HeapNode n = header;
+        while (n != null){
+            if (n.getIndex() == daIndex)
+                return n.getSymbolic();
+            n = n.getNext();
+        }
+        return null;
 	}
 	
 	public HeapNode[] getNodesOfType(ClassInfo type) {

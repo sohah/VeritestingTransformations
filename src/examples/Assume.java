@@ -7,11 +7,16 @@ public class Assume {
 		Debug.assume(x>y);
 		return x-y;
 	}
+	public int test1(int x, int y) {
+		Debug.assume(x>y);
+		return x-y;
+	}
 	
 	// The test driver
 	public static void main(String[] args) {
 		Assume testinst = new Assume();
 		int x = testinst.test(1, 2);
+		 x = testinst.test1(1, 2);
 		System.out.println("symbolic value of x: "+Debug.getSymbolicIntegerValue(x));
 		Debug.printPC("\n Path Condition: ");
 	}

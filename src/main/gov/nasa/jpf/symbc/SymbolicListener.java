@@ -131,7 +131,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	public void propertyViolated (Search search){
 
 		VM vm = search.getVM();
-		
+
 			ChoiceGenerator <?>cg = vm.getChoiceGenerator();
 			if (!(cg instanceof PCChoiceGenerator)){
 				ChoiceGenerator <?> prev_cg = cg.getPreviousChoiceGenerator();
@@ -159,7 +159,9 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				}
 				else
 					pc.solve();
+
 				Pair<String,String> pcPair = new Pair<String,String>(pc.toString(),error);//(pc.toString(),error);
+
 				//String methodName = vm.getLastInstruction().getMethodInfo().getName();
 				MethodSummary methodSummary = allSummaries.get(currentMethodName);
 				methodSummary.addPathCondition(pcPair);
@@ -304,7 +306,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 							//after the following statement is executed, the pc loses its solution
 
-							String pcString = pc.stringPC();
+							String pcString = pc.toString();//pc.stringPC();
 							Pair<String,String> pcPair = null;
 
 							String returnString = "";
@@ -455,6 +457,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						  token = st.nextToken();
 					  if (pc.contains(token)){
 						  String temp = pc.substring(pc.indexOf(token));
+						  System.out.println("temp "+temp);
 						  String val = temp.substring(temp.indexOf("[")+1,temp.indexOf("]"));
 						  if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_DOUBLE)
 							  testCase = testCase + val + ",";

@@ -32,7 +32,7 @@ public class BinaryNonLinearIntegerExpression extends NonLinearIntegerExpression
 
 	public IntegerExpression right;
 
-	BinaryNonLinearIntegerExpression(IntegerExpression l, Operator o, IntegerExpression r) {
+	public BinaryNonLinearIntegerExpression(IntegerExpression l, Operator o, IntegerExpression r) {
 		left = l;
 		op = o;
 		right = r;
