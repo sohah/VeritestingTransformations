@@ -44,7 +44,7 @@ public class IREM extends gov.nasa.jpf.jvm.bytecode.IREM {
 	    	if(v1==0)
 				return th.createAndThrowException("java.lang.ArithmeticException","div by 0");
 	    	sf.push(0, false);
-	    	IntegerExpression result = sym_v2._div(v1);
+	    	IntegerExpression result = sym_v2._rem(v1);
 			sf.setOperandAttr(result);
 		    return getNext(th);
 	    }

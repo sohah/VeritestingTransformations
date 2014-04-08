@@ -156,7 +156,7 @@ public class PCParser {
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.shiftR(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
-					return pb.shiftR(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
+					return pb.shiftR(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
 				else
 					return pb.shiftR(getExpression(e_leftRef),getExpression(e_rightRef));
 			case SHIFTUR:
@@ -165,7 +165,7 @@ public class PCParser {
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.shiftUR(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
-					return pb.shiftUR(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
+					return pb.shiftUR(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
 				else
 					return pb.shiftUR(getExpression(e_leftRef),getExpression(e_rightRef));
 			case SHIFTL:
@@ -174,7 +174,7 @@ public class PCParser {
 				else if (e_leftRef instanceof IntegerConstant)
 					return pb.shiftL(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
 				else if (e_rightRef instanceof IntegerConstant)
-					return pb.shiftL(((IntegerConstant)e_rightRef).value,getExpression(e_leftRef));
+					return pb.shiftL(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
 				else
 					return pb.shiftL(getExpression(e_leftRef),getExpression(e_rightRef));
 			default:
