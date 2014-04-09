@@ -211,7 +211,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 					MethodSummary methodSummary = new MethodSummary();
 
-					methodSummary.setMethodName(shortName);
+					methodSummary.setMethodName(className + "." + shortName);
 					Object [] argValues = md.getArgumentValues(ti);
 					String argValuesStr = "";
 					for (int i=0; i<argValues.length; i++){
@@ -303,6 +303,9 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							else
 								pc.solve();
 
+							if (!PathCondition.flagSolved) {
+							  return;
+							}
 
 							//after the following statement is executed, the pc loses its solution
 
@@ -407,11 +410,13 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							if(allSummaries.get(longName)!=null) // recursive call
 								longName = longName + methodSummary.hashCode(); // differentiate the key for recursive calls
 							allSummaries.put(longName,methodSummary);
-							System.out.println("*************Summary***************");
-							System.out.println("PC is:"+pc.toString());
-							if(result!=null){
+							if (SymbolicInstructionFactory.debugMode) {
+							    System.out.println("*************Summary***************");
+							    System.out.println("PC is:"+pc.toString());
+							    if(result!=null){
 								System.out.println("Return is:  "+result);
 								System.out.println("***********************************");
+							    }
 							}
 						}
 					}
@@ -449,6 +454,9 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 				  StringTokenizer st = new StringTokenizer(symValues, ",");
 				  StringTokenizer st2 = new StringTokenizer(argValues, ",");
 				  StringTokenizer st3 = new StringTokenizer(argTypes, ",");
+				  if (!argTypes.isEmpty() && argValues.isEmpty()) {
+				      continue;
+				  }
 				  while(st2.hasMoreTokens()){
 					  String token = "";
 					  String actualValue = st2.nextToken();
@@ -457,10 +465,31 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						  token = st.nextToken();
 					  if (pc.contains(token)){
 						  String temp = pc.substring(pc.indexOf(token));
-						  System.out.println("temp "+temp);
+						  if (temp.indexOf(']') < 0) {
+							  	continue;
+						  }
+						  
 						  String val = temp.substring(temp.indexOf("[")+1,temp.indexOf("]"));
-						  if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_DOUBLE)
-							  testCase = testCase + val + ",";
+						  
+						  
+						  //if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_DOUBLE)
+							  //testCase = testCase + val + ",";
+						  if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_DOUBLE) {
+							  String suffix = "";
+							  if (actualType == Types.T_LONG) {
+								  suffix = "l";
+							  } else if (actualType == Types.T_FLOAT) {
+								  val = String.valueOf(Double.valueOf(val).floatValue());
+							  	  suffix = "f";
+							  }
+							  if (val.endsWith("Infinity")) {
+								  boolean isNegative = val.startsWith("-");
+								  val = ((actualType == Types.T_DOUBLE) ? "Double" : "Float");
+								  val += isNegative ? ".NEGATIVE_INFINITY" : ".POSITIVE_INFINITY";
+								  suffix = "";
+							  }
+							  testCase = testCase + val + suffix + ",";
+						  }
 						  else if (actualType == Types.T_BOOLEAN){ //translate boolean values represented as ints
 							  //to "true" or "false"
 							  if (val.equalsIgnoreCase("0"))
@@ -531,6 +560,10 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						  token = st.nextToken();
 					  if (pc.contains(token)){
 						  String temp = pc.substring(pc.indexOf(token));
+						  if (temp.indexOf(']') < 0) {
+							  continue;
+						  }
+						  
 						  String val = temp.substring(temp.indexOf("[")+1,temp.indexOf("]"));
 					      if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_DOUBLE)
 							  testCase = testCase + "<td>" + val + "</td>";

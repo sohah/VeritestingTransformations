@@ -503,6 +503,10 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 	static public boolean heuristicPartitionMode;
 	static public int MaxTries = 1;
 
+  static public int maxPcLength;
+  static public long maxPcMSec;
+  static public long startSystemMillis;
+
 	ClassInfo ci;
 	ClassInfoFilter filter; // TODO: fix; do we still need this?
 
@@ -589,6 +593,21 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 				ProblemCoral.configure(conf);
 			}
 
+      maxPcLength = conf.getInt("symbolic.max_pc_length", Integer.MAX_VALUE);
+      if (maxPcLength == -1) {
+        maxPcLength = Integer.MAX_VALUE;
+      }
+      if (maxPcLength <= 0) {
+        throw new IllegalArgumentException("symbolic.max_pc_length must be positive (>0), but was " + maxPcLength);
+      }
+      System.out.println("symbolic.max_pc_length=" + maxPcLength);
+
+      maxPcMSec = conf.getLong("symbolic.max_pc_msec", 0);
+      if (maxPcLength < 0) {
+        throw new IllegalArgumentException("symbolic.max_pc_msec must be non-negative (>=0), but was " + maxPcMSec);
+      }
+      System.out.println("symbolic.max_pc_msec=" + maxPcMSec);
+      startSystemMillis = System.currentTimeMillis();
 		}
 
 		String regress = conf.getProperty("symbolic.regression_output");

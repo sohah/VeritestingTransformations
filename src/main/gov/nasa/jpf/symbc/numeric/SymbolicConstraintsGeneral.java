@@ -59,6 +59,16 @@ public class SymbolicConstraintsGeneral {
 			return true;
 		}
 
+		if (pc.count() > SymbolicInstructionFactory.maxPcLength) {
+		    System.out.println("## Warning: Path condition exceeds symbolic.max_pc_length=" +
+				       SymbolicInstructionFactory.maxPcLength + ".  Pretending it is unsatisfiable.");
+		    return false;
+		}
+		if (SymbolicInstructionFactory.maxPcMSec > 0 && System.currentTimeMillis() - SymbolicInstructionFactory.startSystemMillis > SymbolicInstructionFactory.maxPcMSec) {
+		    System.out.println("## Warning: Exploration time exceeds symbolic.max_pc_msec=" +
+				       SymbolicInstructionFactory.maxPcMSec + ".  Pretending all paths are unsatisfiable.");
+		    return false;
+		}
 
 //		if (SymbolicInstructionFactory.debugMode)
 //			System.out.println("checking: PC "+pc);
