@@ -111,7 +111,7 @@ public class IFInstrSymbHelper {
 			} else if(thirdSat) {
 				conditionValue = 1;
 			} else {
-				assert(false);
+				System.err.println("***********Warning: everything false");
 				ti.getVM().getSystemState().setIgnored(true);
 			}
 			
@@ -252,7 +252,7 @@ public class IFInstrSymbHelper {
 			} else if(thirdSat) {
 				conditionValue = 1;
 			} else {
-				assert(false);
+				System.err.println("***********Warning: everything false");
 				ti.getVM().getSystemState().setIgnored(true);
 			}
 		} else { //This branch will only be taken if there is a choice
@@ -393,7 +393,7 @@ public class IFInstrSymbHelper {
 			} else if(thirdSat) {
 				conditionValue = 1;
 			} else {
-				assert(false);
+				System.err.println("***********Warning: everything false");
 				ti.getVM().getSystemState().setIgnored(true);
 			}
 		} else { //This branch will only be taken if there is a choice
