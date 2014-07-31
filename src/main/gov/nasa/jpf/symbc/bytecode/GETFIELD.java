@@ -76,7 +76,7 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 	    }
 
 	    
-	    ElementInfo ei = ti.getModifiableElementInfoWithUpdatedSharedness(objRef);
+	    ElementInfo ei = ti.getModifiableElementInfo(objRef); //getModifiableElementInfoWithUpdatedSharedness(objRef); POR broken
 	    FieldInfo fi = getFieldInfo();
 	    if (fi == null) {
 	      return ti.createAndThrowException("java.lang.NoSuchFieldError",
@@ -98,13 +98,14 @@ public class GETFIELD extends gov.nasa.jpf.jvm.bytecode.GETFIELD {
 		  System.out.println("lazy initialization");
 	  // else: lazy initialization
 
+	  // POR broken again
 	// check if this breaks the current transition//
 	// may introduce thread choice
-	    if (isNewPorFieldBoundary(ti, fi, objRef)) {
-	      if (createAndSetSharedFieldAccessCG( ei, ti)) {
+	//    if (isNewPorFieldBoundary(ti, fi, objRef)) {
+	//      if (createAndSetSharedFieldAccessCG( ei, ti)) {
 	      //  return this; 
-	      }
-	    }
+	//      }
+	 //   }
 	  
 	  int currentChoice;
 	  ChoiceGenerator<?> thisHeapCG;

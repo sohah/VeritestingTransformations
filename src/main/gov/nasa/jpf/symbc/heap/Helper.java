@@ -108,7 +108,7 @@ public class Helper {
 		  SymbolicInteger newSymRef = new SymbolicInteger( refChain);
 		  ElementInfo eiRef =  ti.getModifiableElementInfo(daIndex);//ti.getElementInfo(daIndex); // TODO to review!
 		  if(setShared) {
-			  eiRef.setShared(true);
+			  eiRef.setShared(ti,true);//??
 		  }
 		  //daIndex.getObjectRef() -> number
 

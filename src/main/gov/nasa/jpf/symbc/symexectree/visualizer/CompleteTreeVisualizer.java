@@ -4,8 +4,8 @@
 package gov.nasa.jpf.symbc.symexectree.visualizer;
 
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
-import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
-import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMInvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMReturnInstruction;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.symexectree.Transition;
 import gov.nasa.jpf.symbc.symexectree.structure.IfNode;
@@ -59,8 +59,8 @@ public class CompleteTreeVisualizer extends AVisualizer {
 		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n");
 		
 		Instruction instr = treeNode.getInstructionContext().getInstr();
-		if(instr instanceof InvokeInstruction) { // Should not be necessary, but better safe than sorry
-			InvokeInstruction invokeInstr = (InvokeInstruction) instr;
+		if(instr instanceof JVMInvokeInstruction) { // Should not be necessary, but better safe than sorry
+			JVMInvokeInstruction invokeInstr = (JVMInvokeInstruction) instr;
 			lblBuilder.append("Calling:\\n")
 					  .append(invokeInstr.getInvokedMethod().getFullName());
 		}
@@ -78,7 +78,7 @@ public class CompleteTreeVisualizer extends AVisualizer {
 		lblBuilder.append(treeNode.getInstructionContext().getInstr().getMnemonic()).append("\\n");
 		
 		Instruction instr = treeNode.getInstructionContext().getInstr();
-		if(instr instanceof ReturnInstruction) { // Should not be necessary, but better safe than sorry
+		if(instr instanceof JVMReturnInstruction) { // Should not be necessary, but better safe than sorry
 			StackFrame frame = treeNode.getInstructionContext().getFrame().getPrevious();
 			if(frame != null)
 				lblBuilder.append("Returning to:\\n").append(frame.getMethodInfo().getFullName());

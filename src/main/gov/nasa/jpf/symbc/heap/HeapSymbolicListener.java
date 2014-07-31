@@ -47,8 +47,8 @@ import gov.nasa.jpf.vm.Types;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
 import gov.nasa.jpf.jvm.bytecode.IRETURN;
 
-import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
-import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMInvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMReturnInstruction;
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
@@ -320,7 +320,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 	private void getFieldValues(PathCondition returnPC, ThreadInfo ti,
 										MethodInfo mi, Instruction insn){
 		ClassInfo ci = mi.getClassInfo();
-		ReturnInstruction ret = (ReturnInstruction)insn;
+		JVMReturnInstruction ret = (JVMReturnInstruction)insn;
 		StackFrame sf = ret.getReturnFrame();
 		int thisRef = sf.getThis();
 
@@ -405,8 +405,8 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 			ThreadInfo ti = currentThread;
 			Config conf = vm.getConfig();
 
-			if (insn instanceof InvokeInstruction) {
-				InvokeInstruction md = (InvokeInstruction) insn;
+			if (insn instanceof JVMInvokeInstruction) {
+				JVMInvokeInstruction md = (JVMInvokeInstruction) insn;
 				String methodName = md.getInvokedMethodName();
 				int numberOfArgs = md.getArgumentValues(ti).length;
 
@@ -507,7 +507,7 @@ public class HeapSymbolicListener extends PropertyListenerAdapter implements Pub
 					currentMethodName = longName;
 					allSummaries.put(longName,methodSummary);
 				}
-			}else if (insn instanceof ReturnInstruction){
+			}else if (insn instanceof JVMReturnInstruction){
 				MethodInfo mi = insn.getMethodInfo();
 				ClassInfo ci = mi.getClassInfo();
 				if (null != ci){

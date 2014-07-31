@@ -87,7 +87,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 	    }
 
 	    ElementInfo ei = ciField.getModifiableStaticElementInfo();
-	    ei = ei.getInstanceWithUpdatedSharedness(ti);
+	    //ei = ei. getInstanceWithUpdatedSharedness(ti); POR broken again
 
 	    if (ei == null){
 	      throw new JPFException("attempt to access field: " + fname + " of uninitialized class: " + ciField.getName());
@@ -107,11 +107,12 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 			  System.out.println("lazy initialization");
 		
 		// may introduce thread choices
-		 if (isNewPorFieldBoundary(ti)) {
-		      if (createAndSetSharedFieldAccessCG( ei, ti)) {
+		//POR broken again
+		 //if (isNewPorFieldBoundary(ti)) {
+		   //   if (createAndSetSharedFieldAccessCG( ei, ti)) {
 		        //return this; // not yet because well create the heap cg
-		      }
-		    }  
+		     // }
+		    //}  
 		   
 
 		int currentChoice;

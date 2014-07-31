@@ -22,8 +22,8 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.IRETURN;
-import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
-import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMInvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMReturnInstruction;
 import gov.nasa.jpf.jvm.bytecode.VirtualInvocation;
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
@@ -86,12 +86,12 @@ import java.util.Vector;
  * 		0. Note down the initialState (first time when an instruction is invoked)
  * 		lastRecordedState = initialState
  *
- * 		1. At instructionExecuted->InvokeInstruction, remember invoked method with
+ * 		1. At instructionExecuted->JVMInvokeInstruction, remember invoked method with
  * 		SequenceChoiceGenerator. Same as SymbolicSequenceListener
  *
  * 		2. On stateBacktracked, update lastRecordedState = getAbstractedState(...)
  *
- * 		3. On instructionExecuted->ReturnInstruction,
+ * 		3. On instructionExecuted->JVMReturnInstruction,
  * 		newState = getAbstractedState(...)
  * 		add the edge lastRecordedState-----lastInvokedMethod----->newState
  * 		update lastRecordedState = newState
@@ -108,10 +108,10 @@ import java.util.Vector;
  * 		0. Note down the initial state (first time when an instruction is invoked)
  * 		lastRecordedState = initialState
  *
- * 		1. At instructionExecuted->InvokeInstruction, remember invoked method with
+ * 		1. At instructionExecuted->JVMInvokeInstruction, remember invoked method with
  * 		SequenceChoiceGenerator. Same as SymbolicSequenceListener
  *
- * 		2. On instructionExecuted->ReturnInstruction,
+ * 		2. On instructionExecuted->JVMReturnInstruction,
  * 		newState = getAbstractedState(...)
  * 		update lastRecordedState = newState
  * 		add the edge initialState-----lastInvokedSequence----->lastRecordedState
@@ -318,8 +318,8 @@ public class SymbolicAbstractionListener extends PropertyListenerAdapter{
 			ThreadInfo ti = currentThread;
 
 
-			if (insn instanceof InvokeInstruction && insn.isCompleted(ti)) {
-				InvokeInstruction md = (InvokeInstruction) insn;
+			if (insn instanceof JVMInvokeInstruction && insn.isCompleted(ti)) {
+				JVMInvokeInstruction md = (JVMInvokeInstruction) insn;
 				String methodName = md.getInvokedMethodName();
 				// get number of arguments.
 				int numberOfArgs = md.getArgumentValues(ti).length;
@@ -327,7 +327,7 @@ public class SymbolicAbstractionListener extends PropertyListenerAdapter{
 				Config conf = ti.getVM().getConfig(); // Corina: added fix
 				//neha: changed invoked method to the full name
 				if ((BytecodeUtils.isMethodSymbolic(conf, mi.getFullName(), numberOfArgs, null))){
-					// if it is InvokeInstruction, just keep track of what
+					// if it is JVMInvokeInstruction, just keep track of what
 					// method got invoked in the SequenceChoiceGenerator.
 					// if it is the first time, record the initial state
 
@@ -386,7 +386,7 @@ public class SymbolicAbstractionListener extends PropertyListenerAdapter{
 			// get the sequence
 			// update last recorded state for sequence
 			// update sequence part of OSM
-			else if (insn instanceof ReturnInstruction){
+			else if (insn instanceof JVMReturnInstruction){
 				MethodInfo mi = insn.getMethodInfo();
 				String methodName = mi.getName();
 				String longName = mi.getLongName();
@@ -398,8 +398,8 @@ public class SymbolicAbstractionListener extends PropertyListenerAdapter{
 
 					// get the abstracted state caused by method return
 					String abstractedState = null;
-					ReturnInstruction returnInstruction = (ReturnInstruction)insn;
-					int ref = returnInstruction.getReturnFrame().getThis();
+					JVMReturnInstruction JVMReturnInstruction = (JVMReturnInstruction)insn;
+					int ref = JVMReturnInstruction.getReturnFrame().getThis();
 					MJIEnv env = ti.getEnv();
 					abstractedState = getAbstractedState(env, ref);
 

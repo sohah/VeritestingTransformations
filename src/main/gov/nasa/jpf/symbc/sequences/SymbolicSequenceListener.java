@@ -35,7 +35,7 @@ import gov.nasa.jpf.vm.Types;
 import gov.nasa.jpf.vm.VM;
 
 
-import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMInvokeInstruction;
 
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
@@ -71,7 +71,7 @@ import java.util.Vector;
  *
  * Algorithm (Works independent of search order):
  *
- * When instructionExecuted->InvokeInstruction, remember the executed method, symbolic attributes, etc.
+ * When instructionExecuted->JVMInvokeInstruction, remember the executed method, symbolic attributes, etc.
  * in a SequenceChoiceGenerator
  *
  * The main idea is to exploit the fact that
@@ -175,8 +175,8 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 			ThreadInfo ti = currentThread;
 			Config conf  = vm.getConfig();
 
-			if (insn instanceof InvokeInstruction && insn.isCompleted(ti)) {
-				InvokeInstruction md = (InvokeInstruction) insn;
+			if (insn instanceof JVMInvokeInstruction && insn.isCompleted(ti)) {
+				JVMInvokeInstruction md = (JVMInvokeInstruction) insn;
 				String methodName = md.getInvokedMethodName();
 				int numberOfArgs = md.getArgumentValues(ti).length;
 				MethodInfo mi = md.getInvokedMethod();
@@ -233,7 +233,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 					// nothing to do as there are no choices.
 				}
 			}
-			//else if (insn instanceof ReturnInstruction){
+			//else if (insn instanceof JVMReturnInstruction){
 			// I don't think we need to do anything  here for printing method sequences...
 			//}
 		}

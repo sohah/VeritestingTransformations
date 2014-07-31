@@ -21,7 +21,7 @@ package gov.nasa.jpf.symbc.bytecode;
 
 import gov.nasa.jpf.Config;
 
-import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMInvokeInstruction;
 import gov.nasa.jpf.symbc.heap.Helper;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
@@ -175,7 +175,7 @@ public class BytecodeUtils {
 	 * @param th The current thread info
 	 * @return an InstructionOrSuper instance saying what to do next.
 	 */
-	public static InstructionOrSuper execute(InvokeInstruction invInst, ThreadInfo th) {
+	public static InstructionOrSuper execute(JVMInvokeInstruction invInst, ThreadInfo th) {
 		boolean isStatic = (invInst instanceof INVOKESTATIC);
 		String bytecodeName = invInst.getMnemonic().toUpperCase();
 		String mname = invInst.getInvokedMethodName();

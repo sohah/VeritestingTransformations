@@ -19,7 +19,7 @@
 package gov.nasa.jpf.symbc.bytecode;
 
 import gov.nasa.jpf.JPFException;
-import gov.nasa.jpf.jvm.bytecode.InstructionVisitor;
+import gov.nasa.jpf.jvm.bytecode.JVMInstructionVisitor;
 
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
@@ -36,7 +36,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
  * Access jump table by index and jump
  *   ..., index  ...
  */
-public class TABLESWITCH extends SwitchInstruction implements gov.nasa.jpf.vm.TableSwitchInstruction{
+public class TABLESWITCH extends SwitchInstruction implements gov.nasa.jpf.vm.bytecode.TableSwitchInstruction{
 
 	int min, max;
 

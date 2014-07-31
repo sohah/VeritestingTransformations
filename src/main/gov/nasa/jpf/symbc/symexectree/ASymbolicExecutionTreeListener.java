@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
-import gov.nasa.jpf.jvm.bytecode.FieldInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMFieldInstruction;
 import gov.nasa.jpf.jvm.bytecode.GETFIELD;
 import gov.nasa.jpf.jvm.bytecode.GETSTATIC;
 import gov.nasa.jpf.jvm.bytecode.PUTFIELD;
@@ -75,7 +75,7 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 						ThreadInfo ti = vm.getCurrentThread();
 						if(ti.getTopFrame() != null) {
 							if(ti.getTopFrame().getSlots().length > 0) {
-								FieldInstruction fieldInstr = (FieldInstruction) instructionToExecute;
+								JVMFieldInstruction fieldInstr = (JVMFieldInstruction) instructionToExecute;
 								ElementInfo ei = fieldInstr.peekElementInfo(ti);
 								if(ei != null) {
 									if(ei.isShared()) {
@@ -92,7 +92,7 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 				if(instructionToExecute instanceof PUTFIELD ||
 				   instructionToExecute instanceof PUTSTATIC) {
 					ThreadInfo ti = vm.getCurrentThread();
-					FieldInstruction putInstr = (FieldInstruction) instructionToExecute;
+					JVMFieldInstruction putInstr = (JVMFieldInstruction) instructionToExecute;
 					
 					ElementInfo eiOwner = putInstr.peekElementInfo(ti);
 					FieldInfo fi = putInstr.getFieldInfo();
@@ -137,7 +137,7 @@ public abstract class ASymbolicExecutionTreeListener extends PropertyListenerAda
 				ElementInfo thisEi = ti.getElementInfo(objRef);
 				if(thisEi == null)
 					throw new RuntimeException("ElementInfo is null!");
-				thisEi.setShared(true);
+				thisEi.setShared(ti,true);
 				visitedEi.add(thisEi);
 				recursivelySetSharedness(thisEi, ti);
 			}

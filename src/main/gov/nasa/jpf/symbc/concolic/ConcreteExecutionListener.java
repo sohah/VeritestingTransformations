@@ -11,7 +11,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
-import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMInvokeInstruction;
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
@@ -47,13 +47,13 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 
 		Instruction lastInsn =  executedInstruction;
 		MethodInfo mi = executedInstruction.getMethodInfo();
-		if(lastInsn != null && lastInsn instanceof InvokeInstruction) {
+		if(lastInsn != null && lastInsn instanceof JVMInvokeInstruction) {
 			boolean foundAnote = checkConcreteAnnotation(mi);
 			if(foundAnote) {
 				ThreadInfo ti = vm.getCurrentThread();
 				StackFrame sf = ti.popAndGetModifiableTopFrame();
 				FunctionExpression result =
-					generateFunctionExpression(mi, (InvokeInstruction)
+					generateFunctionExpression(mi, (JVMInvokeInstruction)
 													lastInsn, ti);
 				checkReturnType(ti, mi, result);
 				Instruction nextIns = sf.getPC().getNext();
@@ -89,7 +89,7 @@ public class ConcreteExecutionListener extends PropertyListenerAdapter {
 	}
 
 	private FunctionExpression generateFunctionExpression(MethodInfo mi,
-			InvokeInstruction ivk, ThreadInfo ti){
+			JVMInvokeInstruction ivk, ThreadInfo ti){
 		Object [] attrs = ivk.getArgumentAttrs(ti);
 		Object [] values = ivk.getArgumentValues(ti);
 		String [] types = mi.getArgumentTypeNames();

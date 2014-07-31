@@ -13,11 +13,11 @@ import gov.nasa.jpf.jvm.bytecode.DCMPL;
 import gov.nasa.jpf.jvm.bytecode.FCMPG;
 import gov.nasa.jpf.jvm.bytecode.FCMPL;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
-import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMInvokeInstruction;
 import gov.nasa.jpf.jvm.bytecode.LCMP;
 import gov.nasa.jpf.jvm.bytecode.MONITORENTER;
 import gov.nasa.jpf.jvm.bytecode.MONITOREXIT;
-import gov.nasa.jpf.jvm.bytecode.ReturnInstruction;
+import gov.nasa.jpf.jvm.bytecode.JVMReturnInstruction;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.symexectree.structure.MonitorEnterNode;
 import gov.nasa.jpf.symbc.symexectree.structure.Node;
@@ -92,9 +92,9 @@ public class SymbolicExecutionTreeGenerator {
 		Instruction instr = instrCtx.getInstr();
 		if(isBranchingInstr(instr)) {
 			return this.nodeFactory.constructIfNode(instrCtx, tree);
-		} else if(instr instanceof InvokeInstruction) {
+		} else if(instr instanceof JVMInvokeInstruction) {
 			return this.nodeFactory.constructInvokeNode(instrCtx, tree);
-		} else if(instr instanceof ReturnInstruction) {
+		} else if(instr instanceof JVMReturnInstruction) {
 			return this.nodeFactory.constructReturnNode(instrCtx, tree);
 		} else if(instr instanceof MONITORENTER) {
 			return this.nodeFactory.constructMonitorEnterNode(instrCtx, tree);
