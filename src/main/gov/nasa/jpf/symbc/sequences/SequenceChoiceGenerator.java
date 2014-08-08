@@ -17,6 +17,8 @@
 //
 package gov.nasa.jpf.symbc.sequences;
 
+import gov.nasa.jpf.vm.ChoiceGenerator;
+
 
 
 /**
@@ -36,7 +38,13 @@ public class SequenceChoiceGenerator extends gov.nasa.jpf.vm.choice.IntIntervalG
   private String methodShortName;
   private Object [] argValues;
   private Object [] attributes;
-
+  
+  @Override
+  public ChoiceGenerator randomize() {
+      // This doesn't make choices anyway, no need to change.
+      return this;
+  }
+  
   // will always make only one choice
 @SuppressWarnings("deprecation")
 public SequenceChoiceGenerator(String _methodShortName) {
