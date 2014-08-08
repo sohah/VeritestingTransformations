@@ -51,7 +51,7 @@ public class TABLESWITCH extends SwitchInstruction implements gov.nasa.jpf.vm.by
 		StackFrame sf = ti.getModifiableTopFrame();
 		IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
 			
-		System.out.println("sym v "+ sym_v); 
+		
 		if(sym_v==null) return super.execute(ti);
 		
 		// the condition is symbolic
