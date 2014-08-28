@@ -110,7 +110,10 @@ public class SymbolicConstraintsGeneral {
 					"\n(use choco or IAsolver or CVC3)");
 
 		pb = PCParser.parse(pc,pb);
-		result = pb.solve();
+		if(pb==null)
+			result = Boolean.FALSE;
+		else
+			result = pb.solve();
 
 		if (SymbolicInstructionFactory.debugMode)
 			System.out.println("numeric PC: " + pc + " -> " + result+"\n");

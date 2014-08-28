@@ -29,6 +29,7 @@ public class ISUB extends gov.nasa.jpf.jvm.bytecode.ISUB {
 	@Override
 	public Instruction execute (ThreadInfo th) {
 		
+		
 		StackFrame sf = th.getModifiableTopFrame();
 		IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(0); 
 		IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(1);
@@ -52,7 +53,6 @@ public class ISUB extends gov.nasa.jpf.jvm.bytecode.ISUB {
 				result = sym_v1._minus_reverse(v2);
 			sf.setOperandAttr(result);
 		
-			//System.out.println("Execute ISUB: "+result);
 		
 			return getNext(th);
 		}

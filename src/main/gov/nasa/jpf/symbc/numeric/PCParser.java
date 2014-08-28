@@ -49,7 +49,7 @@ public class PCParser {
 	  static Object getExpression(IntegerExpression eRef) {
 			assert eRef != null;
 			assert !(eRef instanceof IntegerConstant);
-
+			
 			if (eRef instanceof SymbolicInteger) {
 
 				Object dp_var = symIntegerVar.get(eRef);
@@ -454,7 +454,7 @@ public class PCParser {
 		return true;
 	}
 
-	//Added by Gideon, to handle CNF style constraints
+	//Added by Gideon, to handle CNF style constraints??? 
 	static public boolean createDPLinearOrIntegerConstraint (LogicalORLinearIntegerConstraints c) {
 		List<Object> orList = new ArrayList<Object>();
 
@@ -462,14 +462,11 @@ public class PCParser {
 			Comparator c_compRef = cRef.getComparator();
 			IntegerExpression c_leftRef = (IntegerExpression)cRef.getLeft();
 			IntegerExpression c_rightRef = (IntegerExpression)cRef.getRight();
-			//Removed all return false
+			//Removed all return false: why?
 			switch(c_compRef){
 			case EQ:
 				if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-					if (!(((IntegerConstant) c_leftRef).value == ((IntegerConstant) c_rightRef).value)) {
-						//return false;
-					}
-					else
+					if (((IntegerConstant) c_leftRef).value == ((IntegerConstant) c_rightRef).value) 
 						return true;
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
@@ -497,10 +494,7 @@ public class PCParser {
 				break;
 			case NE:
 				if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-					if (!(((IntegerConstant) c_leftRef).value != ((IntegerConstant) c_rightRef).value)) {
-						//return false;
-					}
-					else
+					if (((IntegerConstant) c_leftRef).value != ((IntegerConstant) c_rightRef).value) 
 						return true;
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
@@ -528,10 +522,7 @@ public class PCParser {
 				break;
 			case LT:
 				if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-					if (!(((IntegerConstant) c_leftRef).value < ((IntegerConstant) c_rightRef).value)) {
-						//return false;
-					}
-					else
+					if (((IntegerConstant) c_leftRef).value < ((IntegerConstant) c_rightRef).value) 
 						return true;
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
@@ -559,10 +550,7 @@ public class PCParser {
 				break;
 			case GE:
 				if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-					if (!(((IntegerConstant) c_leftRef).value >= ((IntegerConstant) c_rightRef).value)) {
-						//return false;
-					}
-					else
+					if (((IntegerConstant) c_leftRef).value >= ((IntegerConstant) c_rightRef).value)
 						return true;
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
@@ -590,10 +578,7 @@ public class PCParser {
 				break;
 			case LE:
 				if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-					if (!(((IntegerConstant) c_leftRef).value <= ((IntegerConstant) c_rightRef).value)) {
-						//return false;
-					}
-					else
+					if (((IntegerConstant) c_leftRef).value <= ((IntegerConstant) c_rightRef).value)
 						return true;
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
@@ -621,10 +606,7 @@ public class PCParser {
 				break;
 			case GT:
 				if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-					if (!(((IntegerConstant) c_leftRef).value > ((IntegerConstant) c_rightRef).value)) {
-						//return false;
-					}
-					else
+					if (((IntegerConstant) c_leftRef).value > ((IntegerConstant) c_rightRef).value)
 						return true;
 				}
 				else if (c_leftRef instanceof IntegerConstant) {
@@ -883,11 +865,7 @@ public class PCParser {
 	// result is in pb
 	public static ProblemGeneral parse(PathCondition pc, ProblemGeneral pbtosolve) {
 		pb=pbtosolve;
-		if (pc == null || pc.count == 0) {
-			if (SymbolicInstructionFactory.debugMode)
-				System.out.println("## Warning: empty path condition");
-			return null;
-		}
+		
 		
 		symRealVar = new HashMap<SymbolicReal,Object>();
 		symIntegerVar = new HashMap<SymbolicInteger,Object>();
@@ -922,7 +900,9 @@ public class PCParser {
 					throw new RuntimeException("## Error: Non Linear Integer Constraint not handled " + cRef);
 			}
 
+			if(constraintResult == false) return null; // not sat
 			cRef = cRef.and;
+			
 		}
 		 
          return pb;
