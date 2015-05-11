@@ -80,7 +80,7 @@ public class GETSTATIC extends gov.nasa.jpf.jvm.bytecode.GETSTATIC {
 		
 		ciField = fieldInfo.getClassInfo();
 	    
-	    if (!mi.isClinit(ciField) && ciField.pushRequiredClinits(ti)) {
+	    if (!mi.isClinit(ciField) && ciField.initializeClass(ti)) {
 	      // note - this returns the next insn in the topmost clinit that just got pushed
 	      return ti.getPC();
 	    }
