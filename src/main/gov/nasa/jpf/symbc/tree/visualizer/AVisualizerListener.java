@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, United States Government, as represented by the
+ * Copyright (C) 2015, United States Government, as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All rights reserved.
  *
@@ -15,16 +15,21 @@
  * See the License for the specific language governing permissions and 
  * limitations under the License.
  */
+package gov.nasa.jpf.symbc.tree.visualizer;
+
+import gov.nasa.jpf.Config;
+import gov.nasa.jpf.JPF;
+import gov.nasa.jpf.symbc.tree.ATreeListener;
 
 /**
- * 
+ * @author Kasper Luckow
  */
-package gov.nasa.jpf.symbc.symexectree;
+public abstract class AVisualizerListener<T> extends ATreeListener<T> {
 
-/**
- * @author Kasper S. Luckow <luckow@cs.aau.dk>
- *
- */
-public interface ISymbolicExecutionTreeElement {
-	void accept(SymbolicExecutionTreeVisitor visitor);
+  protected final String targetMethod;
+  
+  public AVisualizerListener(Config conf, JPF jpf) {
+    super(conf, jpf);
+    this.targetMethod = conf.getString("symbolic.method");
+  }
 }

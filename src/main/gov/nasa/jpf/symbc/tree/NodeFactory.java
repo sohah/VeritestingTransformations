@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, United States Government, as represented by the
+ * Copyright (C) 2015, United States Government, as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All rights reserved.
  *
@@ -16,25 +16,14 @@
  * limitations under the License.
  */
 
-/**
- * 
- */
-package gov.nasa.jpf.symbc.symexectree.structure;
+package gov.nasa.jpf.symbc.tree;
 
-import gov.nasa.jpf.symbc.symexectree.InstrContext;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.VM;
 
 /**
- * @author Kasper S. Luckow <luckow@cs.aau.dk>
- *
+ * @author Kasper Luckow
  */
-public class StdNode extends Node {
-
-	public StdNode(InstrContext instructionContext) {
-		super(instructionContext);
-	}
-	
-	public StdNode(InstrContext instructionContext, SymbolicExecutionTree tree) {
-		super(instructionContext, tree);
-	}
-
+public abstract class NodeFactory<T> {
+	public abstract T constructNode(T parentNode, Instruction instr, VM vm);
 }
