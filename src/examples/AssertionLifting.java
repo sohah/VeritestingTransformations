@@ -28,6 +28,8 @@ public class AssertionLifting {
 		Debug.addGT0(x);
 		Debug.addGT0(6-x);
 		boolean result = Debug.checkSAT();
+		
+		//compare with result = x>0 && x<=5
 		System.out.println("result "+result+" "+Debug.getSolvedPC());
 		if(x>0) {
 			assert(x>0);
