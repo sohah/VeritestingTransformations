@@ -63,6 +63,11 @@ public class Debug {
     native public static boolean makeSymbolicBoolean(String name);
     native public static String makeSymbolicString(String name);
     
+    native public static void freshPCcopy();
+    native public static boolean addEQ0(int v);
+    native public static boolean addGT0(int v);
+    native public static boolean checkSAT();
+    
     // makes v a symbolic object
     public static Object makeSymbolicRef(String name, Object v) {
     	assert (v!=null); // needed for type info

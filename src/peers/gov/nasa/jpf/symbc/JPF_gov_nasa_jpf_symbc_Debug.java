@@ -51,8 +51,8 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
 public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
-	@MJI
-	public static PathCondition getPC(MJIEnv env) {
+	
+	static PathCondition getPC(MJIEnv env) {
 		VM vm = env.getVM();
 		ChoiceGenerator<?> cg = vm.getChoiceGenerator();
 		PathCondition pc = null;
@@ -70,6 +70,8 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		}
 		return pc;
 	}
+	
+	
 	@MJI
 	public static void printPC(MJIEnv env, int objRef, int msgRef) {
 		PathCondition pc = getPC(env);
@@ -101,6 +103,52 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		else
 			return env.newString(Integer.toString(v));
 	}
+	
+	
+	@MJI
+	public static void freshPCcopy(MJIEnv env, int objRef) {
+		PathCondition pc = getPC(env);
+		if(pc!=null)
+			pcLocal = pc.make_copy();
+		else
+			pcLocal = new PathCondition();
+	}
+	
+	static PathCondition pcLocal;
+			
+	@MJI
+	public static boolean addEQ0(MJIEnv env, int objRef, int v) {
+		Object [] attrs = env.getArgAttributes();
+		
+		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		if (sym_arg !=null) {
+			pcLocal._addDet(Comparator.EQ, sym_arg, 0);
+			return true;
+		}
+		else
+			return (v==0);
+	}
+	
+	@MJI
+	public static boolean addGT0(MJIEnv env, int objRef, int v) {
+		Object [] attrs = env.getArgAttributes();
+		
+		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		if (sym_arg !=null) {
+			pcLocal._addDet(Comparator.GT, sym_arg, 0);
+			return true;
+		}
+		else
+			return (v>0);
+	}
+	
+	@MJI
+	public static boolean checkSAT(MJIEnv env, int objRef) {
+		return pcLocal.simplify();
+	}
+	
+	
+	
 	@MJI
     public static int getSymbolicRealValue(MJIEnv env, int objRef, double v) {
     	Object [] attrs = env.getArgAttributes();
