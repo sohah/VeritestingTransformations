@@ -1,0 +1,19 @@
+--- .classpath
++++ .classpath
+@@ -21,11 +21,15 @@
+ 	<classpathentry kind="lib" path="lib/bcel.jar"/>
+ 	<classpathentry kind="lib" path="lib/opt4j-2.4.jar"/>
+ 	<classpathentry kind="lib" path="lib/solver.jar"/>
+-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
++	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_25-x64"/>
+ 	<classpathentry kind="lib" path="lib/grappa.jar"/>
+ 	<classpathentry kind="lib" path="lib/jaxen.jar"/>
+ 	<classpathentry kind="lib" path="lib/jedis-2.0.0.jar"/>
+ 	<classpathentry kind="lib" path="lib/green.jar"/>
+ 	<classpathentry kind="lib" path="lib/com.microsoft.z3.jar"/>
++	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
++	<classpathentry kind="lib" path="lib/choco-solver-2.1.1-20100709.142532-2.jar"/>
++	<classpathentry kind="lib" path="lib/hampi.jar"/>
++	<classpathentry kind="lib" path="lib/proteus.jar"/>
+ 	<classpathentry kind="output" path="build"/>
+ </classpath>
