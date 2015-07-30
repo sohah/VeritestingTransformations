@@ -118,64 +118,74 @@ public abstract class ProblemGeneral{
 	public abstract Object shiftUR(Object exp, int value) ;
 	public abstract Object shiftUR(Object exp1, Object exp2) ;
 
-	public Object constant(double d) {
+	public Object constant(final double d) {
 		throw new RuntimeException("## Error: constant not supported");
 	}
+	
+	/* Added for dReal by Nima 
+	 * Note: I had to add a default implementation in order to not break the current solvers.
+	 *       Furthermore, the default implementation must no throw an exception, since current solvers do not override it.
+	 *       This may result in more complex constraints and more computational time or even unsupported operations exceptions 
+	 *       from the current solvers. */
+	public Object abs(final Object exp) {
+    return sqrt(mult(exp, exp)); //OMG!!
+  }
 
-	public Object sin(Object exp) {
+
+	public Object sin(final Object exp) {
 		throw new RuntimeException("## Error: Math.sin not supported");
 	}
-	public Object cos(Object exp) {
+	public Object cos(final Object exp) {
 		throw new RuntimeException("## Error: Math.cos not supported");
 	}
 
-	public Object round(Object exp) {
+	public Object round(final Object exp) {
 		throw new RuntimeException("## Error: Math.round not supported");
 	}
-	public Object exp(Object exp) {
+	public Object exp(final Object exp) {
 		throw new RuntimeException("## Error: Math.exp not supported");
 	}
-	public Object asin(Object exp) {
+	public Object asin(final Object exp) {
 		throw new RuntimeException("## Error: Math.asin not supported");
 
 	}
-	public Object acos(Object exp) {
+	public Object acos(final Object exp) {
 		throw new RuntimeException("## Error: Math.acos not supported");
 
 	}
-	public Object atan(Object exp) {
+	public Object atan(final Object exp) {
 		throw new RuntimeException("## Error: Math.atan not supported");
 
 	}
-	public Object log(Object exp) {
+	public Object log(final Object exp) {
 		throw new RuntimeException("## Error: Math.log not supported");
 
 	}
-	public Object tan(Object exp) {
+	public Object tan(final Object exp) {
 		throw new RuntimeException("## Error: Math.tan not supported");
 
 	}
-	public Object sqrt(Object exp) {
+	public Object sqrt(final Object exp) {
 		throw new RuntimeException("## Error: Math.sqrt not supported");
 
 	}
-	public Object power(Object exp1, Object exp2) {
+	public Object power(final Object exp1, final Object exp2) {
 		throw new RuntimeException("## Error: Math.power not supported");
 	}
-	public Object power(Object exp1, double exp2) {
+	public Object power(final Object exp1, final double exp2) {
 		throw new RuntimeException("## Error: Math.power not supported");
 	}
-	public Object power(double exp1, Object exp2) {
+	public Object power(final double exp1, final Object exp2) {
 		throw new RuntimeException("## Error: Math.power not supported");
 	}
 
-	public Object atan2(Object exp1, Object exp2) {
+	public Object atan2(final Object exp1, final Object exp2) {
 		throw new RuntimeException("## Error: Math.atan2 not supported");
 	}
-	public Object atan2(Object exp1, double exp2) {
+	public Object atan2(final Object exp1, final double exp2) {
 		throw new RuntimeException("## Error: Math.atan2 not supported");
 	}
-	public Object atan2(double exp1, Object exp2) {
+	public Object atan2(final double exp1, final Object exp2) {
 		throw new RuntimeException("## Error: Math.atan2 not supported");
 	}
 
