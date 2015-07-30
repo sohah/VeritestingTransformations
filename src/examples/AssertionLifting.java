@@ -31,8 +31,15 @@ public class AssertionLifting {
 		
 		//compare with result = x>0 && x<=5
 		System.out.println("result "+result+" "+Debug.getSolvedPC());
+		
+		//if(x>0&&x<=5)
+		//	assert false;
 		if(x>0) {
-			assert(x>0);
+			//assert(x>5);
+			if(x<=5) {
+				System.out.println("assert violated "+Debug.getSolvedPC());
+			}
+				
 			System.out.println("br2");
 		}
 		else
