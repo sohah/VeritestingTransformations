@@ -70,15 +70,15 @@ public class TablePrinter {
 			System.out.println("==================================");
 			general.printLatex();
 			
-		} catch (IOException _) {
+		} catch (IOException e1) {
 			System.err.println(ERR_MSG);
-			_.printStackTrace();
+			e1.printStackTrace();
 			System.exit(-1);
-		} catch (ClassNotFoundException _) {
+		} catch (ClassNotFoundException e2) {
 			String msg = "Looks like you changed structure or name of the class " +
 			"contained in the serialiable files after generating the file.";
 			System.err.println(msg);
-			_.printStackTrace();
+			e2.printStackTrace();
 			System.exit(-1);
 		}
 		
