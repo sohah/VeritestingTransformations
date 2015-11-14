@@ -56,35 +56,8 @@ public class AALOAD extends gov.nasa.jpf.jvm.bytecode.AALOAD {
 	    if (arrayRef == MJIEnv.NULL) {
 	      return ti.createAndThrowException("java.lang.NullPointerException");
 	    }
-	  //throw new RuntimeException("Arrays: symbolic index not handled");
-	    ElementInfo eiArray = ti.getElementInfo(arrayRef);    
-        int len=(eiArray.getArrayFields()).arrayLength(); // assumed concrete
-	   // check for out of bounds exceptions 0 <= sym_index < len
-      
-        //original code for concrete execution
-        arrayOperandAttr = peekArrayAttr(ti);
-        indexOperandAttr = peekIndexAttr(ti);
-        IntegerExpression sym_index=(IntegerExpression)indexOperandAttr;
-        //check for out of bounds exceptions 0 <= sym_index < len
-        
-        // Ignore POR for now
-        frame.pop(2); // now we can pop index and array reference
-        try {
-          push(frame, eiArray, index);
-            
-          Object elementAttr = eiArray.getElementAttr(index);
-          if (elementAttr != null) {
-            if (getElementSize() == 1) {
-              frame.setOperandAttr(elementAttr);
-            } else {
-              frame.setLongOperandAttr(elementAttr);
-            }
-          }
-          return getNext(ti);
-          
-        } catch (ArrayIndexOutOfBoundsExecutiveException ex) {
-          return ex.getInstruction();
-        }
+	  throw new RuntimeException("Arrays: symbolic index not handled");
+	    
 
   }
 }
