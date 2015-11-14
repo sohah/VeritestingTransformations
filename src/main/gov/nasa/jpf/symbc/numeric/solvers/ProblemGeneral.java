@@ -118,6 +118,10 @@ public abstract class ProblemGeneral{
 	public abstract Object shiftUR(Object exp, int value) ;
 	public abstract Object shiftUR(Object exp1, Object exp2) ;
 
+	public Object rem(Object exp1, Object exp2) {throw new RuntimeException("## Error: rem not supported");}
+    public Object rem(int exp1, Object exp2) {throw new RuntimeException("## Error: rem not supported");}
+    public Object rem(Object exp1, int exp2) {throw new RuntimeException("## Error: rem not supported");}
+    
 	public Object constant(final double d) {
 		throw new RuntimeException("## Error: constant not supported");
 	}

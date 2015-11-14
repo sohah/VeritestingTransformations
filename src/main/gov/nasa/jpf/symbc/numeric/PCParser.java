@@ -44,6 +44,7 @@ import java.util.Map;
 
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemGeneral;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3;
 
 
 // parses PCs
@@ -80,7 +81,7 @@ public class PCParser {
 				e_leftRef = ((BinaryLinearIntegerExpression)eRef).left;
 				e_rightRef = ((BinaryLinearIntegerExpression)eRef).right;
 			} else { // bin non lin expr
-				if(pb instanceof ProblemCoral) {
+				if(pb instanceof ProblemCoral || pb instanceof ProblemZ3) {
 					opRef = ((BinaryNonLinearIntegerExpression)eRef).op;
 					e_leftRef = ((BinaryNonLinearIntegerExpression)eRef).left;
 					e_rightRef = ((BinaryNonLinearIntegerExpression)eRef).right;
@@ -187,6 +188,19 @@ public class PCParser {
 					return pb.shiftL(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
 				else
 					return pb.shiftL(getExpression(e_leftRef),getExpression(e_rightRef));
+			case REM:
+                if (e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+                    throw new RuntimeException("## Error: this is not a symbolic expression"); //
+            else if (e_leftRef instanceof IntegerConstant) // TODO: this might not be linear
+                    return pb.rem(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+            else if (e_rightRef instanceof IntegerConstant)
+                    return pb.rem(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
+            else {
+                    if(pb instanceof ProblemCoral || pb instanceof ProblemZ3)
+                            return pb.rem(getExpression(e_leftRef),getExpression(e_rightRef));
+                     else
+                            throw new RuntimeException("## Error: Binary Non Linear Operation");
+            }      
 			default:
 				throw new RuntimeException("## Error: Binary Non Linear Operation");
 			}
@@ -904,8 +918,8 @@ public class PCParser {
 
 			}
 			else {
-				System.out.println("## Warning: Non Linear Integer Constraint (only coral can handle it)" + cRef);
-				if(pb instanceof ProblemCoral)
+				//System.out.println("## Warning: Non Linear Integer Constraint (only coral can handle it)" + cRef);
+				if(pb instanceof ProblemCoral || pb instanceof ProblemZ3)
 					constraintResult= createDPNonLinearIntegerConstraint((NonLinearIntegerConstraint)cRef);
 				else
 					throw new RuntimeException("## Error: Non Linear Integer Constraint not handled " + cRef);

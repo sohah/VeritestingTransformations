@@ -81,7 +81,12 @@ public class ProblemZ3 extends ProblemGeneral {
 	public Object makeIntVar(String name, int min, int max) {
 		try{
 			
-			return ctx.MkIntConst(name);
+			//return ctx.MkIntConst(name);
+			IntExpr intConst = ctx.MkIntConst(name);
+            solver.Assert(ctx.MkGe(intConst, ctx.MkInt(min)));
+            solver.Assert(ctx.MkLe(intConst, ctx.MkInt(max)));
+            return intConst;
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -591,6 +596,37 @@ public class ProblemZ3 extends ProblemGeneral {
 			throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
 		}
 	}
+	
+	public Object rem(Object exp, int value) {// added by corina
+        try{
+                
+                return  ctx.MkRem((IntExpr) exp, ctx.MkInt(value));
+        } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+        }
+}
+public Object rem(int value, Object exp) {// added by corina
+        try{
+                
+                return  ctx.MkRem(ctx.MkInt(value), (IntExpr) exp);
+        } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+        }
+}
+public Object rem(Object exp1, Object exp2) {// added by corina
+        try{
+                if(exp2 instanceof Integer)
+                        return  ctx.MkRem((IntExpr)exp1,ctx.MkInt((Integer)exp2));
+                return  ctx.MkRem((IntExpr) exp1, (IntExpr) exp2);
+        } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+        }
+}
+
+
 //	public Object div(double value, Object exp) {
 //		try{
 //			return  vc.divideExpr(vc.ratExpr(Double.toString(value), base), (Expr)exp);
@@ -871,6 +907,7 @@ public class ProblemZ3 extends ProblemGeneral {
 		throw new RuntimeException("## Error Z3 \n");
 	}
 
+	
 
 	@Override
 	public Object shiftL(int value, Object exp) {

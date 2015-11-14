@@ -233,7 +233,8 @@ public abstract class IntegerExpression extends Expression {
 
 	public IntegerExpression _rem(int i)
 	{
-		throw new RuntimeException( "## Error: Operation not supported!" );
+		//throw new RuntimeException( "## Error: Operation not supported!" );
+		return new BinaryNonLinearIntegerExpression(this, REM, new IntegerConstant( i));
 	}
 	
 	public IntegerExpression _rem_reverse(int i)

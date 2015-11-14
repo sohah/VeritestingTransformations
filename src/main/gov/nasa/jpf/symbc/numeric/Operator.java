@@ -49,8 +49,8 @@ public enum Operator{
 	XOR(" ^ "),
 	SHIFTL("<<"),
 	SHIFTR(">>"),
-	SHIFTUR(">>>");
-	
+	SHIFTUR(">>>"),
+	REM(" % ");
 	
 	
 	private final String str;
