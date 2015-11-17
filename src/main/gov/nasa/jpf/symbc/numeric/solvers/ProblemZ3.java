@@ -41,6 +41,8 @@ package gov.nasa.jpf.symbc.numeric.solvers;
 // still needs a lot of work: do not use!
 
 
+import gov.nasa.jpf.vm.Verify;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -80,7 +82,6 @@ public class ProblemZ3 extends ProblemGeneral {
 	// TODO: to add ranges
 	public Object makeIntVar(String name, int min, int max) {
 		try{
-			
 			//return ctx.MkIntConst(name);
 			IntExpr intConst = ctx.MkIntConst(name);
             solver.Assert(ctx.MkGe(intConst, ctx.MkInt(min)));
