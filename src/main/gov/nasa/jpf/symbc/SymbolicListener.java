@@ -406,7 +406,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							}
 							
 							if(allSummaries.get(longName)!=null) // recursive call
-								longName = longName + methodSummary.hashCode(); // differentiate the key for recursive calls
+								longName = longName;// + methodSummary.hashCode(); // differentiate the key for recursive calls
 							allSummaries.put(longName,methodSummary);
 							if (SymbolicInstructionFactory.debugMode) {
 							    System.out.println("*************Summary***************");
@@ -618,6 +618,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	    publisher.publishTopicStart("Method Summaries");
 	    Iterator it = allSummaries.entrySet().iterator();
 	    while (it.hasNext()){
+	    	
 	    	Map.Entry me = (Map.Entry)it.next();
 	    	MethodSummary methodSummary = (MethodSummary)me.getValue();
 	    	printMethodSummary(pw, methodSummary);
@@ -630,6 +631,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	    	MethodSummary methodSummary = (MethodSummary)me.getValue();
 	    	printMethodSummaryHTML(pw, methodSummary);
 	    }
+	    
 	  }
 
 	  protected class MethodSummary{

@@ -40,6 +40,7 @@ package gov.nasa.jpf.symbc.numeric.solvers;
 import symlib.SymBool;
 import symlib.SymDouble;
 import symlib.SymInt;
+import symlib.SymIntLiteral;
 import symlib.SymLiteral;
 import symlib.SymNumber;
 import symlib.Util;
@@ -163,7 +164,11 @@ public class ProblemCoral extends ProblemGeneral {
 
 	@Override
 	public Object makeIntVar(String name, int min, int max) {
-		return Util.createSymLiteral(0/*default value*/);
+		
+		SymIntLiteral result = Util.createSymLiteral(0/*default value*/);
+		pc.addConstraint(Util.le(result, Util.createConstant(max)));
+		pc.addConstraint(Util.ge(result, Util.createConstant(min)));
+		return result;
 	}
 
 	@Override
@@ -425,10 +430,20 @@ public class ProblemCoral extends ProblemGeneral {
 	}
 
 	@Override
+	public Object rem(int value, Object exp) {
+		return Util.mod(Util.createConstant(value), (SymInt)exp);
+	}
+	
+	@Override
 	public Object mult(Object exp, int value) {
 		return Util.mul((SymInt)exp, Util.createConstant(value));
 	}
-
+	
+	@Override
+	public Object rem(Object exp, int value) {
+		return Util.mod((SymInt)exp, Util.createConstant(value));
+	}
+	
 	@Override
 	public Object mult(Object exp1, Object exp2) {
 		if (exp1 instanceof SymDouble) {
@@ -440,6 +455,16 @@ public class ProblemCoral extends ProblemGeneral {
 		}
 	}
 
+	@Override
+	public Object rem(Object exp1, Object exp2) {
+		if (exp1 instanceof SymInt) {
+			return Util.mod((SymInt)exp1, (SymInt)exp2);
+		} else {
+			throw new UnsupportedOperationException();
+		}
+	}
+	
+	
 	@Override
 	public Object mult(double value, Object exp) {
 		return Util.mul(Util.createConstant(value), (SymDouble)exp);
