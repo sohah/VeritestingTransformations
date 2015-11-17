@@ -129,7 +129,7 @@ public class PCParser {
 				else if (e_rightRef instanceof IntegerConstant)
 					return pb.div(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
 				else {
-					if(pb instanceof ProblemCoral)
+					if(pb instanceof ProblemCoral || pb instanceof ProblemZ3)
 						return pb.div(getExpression(e_leftRef),getExpression(e_rightRef));
 					 else
 						throw new RuntimeException("## Error: Binary Non Linear Operation");
