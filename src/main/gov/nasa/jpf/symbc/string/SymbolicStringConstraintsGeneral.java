@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.logging.Logger;
 
-import edu.ucsb.cs.vlab.modelling.Output;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.Constraint;
@@ -62,7 +61,6 @@ import gov.nasa.jpf.symbc.string.graph.EdgeTrimEqual;
 import gov.nasa.jpf.symbc.string.graph.PreProcessGraph;
 import gov.nasa.jpf.symbc.string.graph.StringGraph;
 import gov.nasa.jpf.symbc.string.graph.Vertex;
-import gov.nasa.jpf.symbc.string.translate.TranslateToABC;
 import gov.nasa.jpf.symbc.string.translate.TranslateToAutomata;
 import gov.nasa.jpf.symbc.string.translate.TranslateToAutomata2;
 import gov.nasa.jpf.symbc.string.translate.TranslateToCVC;
@@ -70,7 +68,6 @@ import gov.nasa.jpf.symbc.string.translate.TranslateToCVCInc;
 import gov.nasa.jpf.symbc.string.translate.TranslateToSAT;
 import gov.nasa.jpf.symbc.string.translate.TranslateToZ3;
 import gov.nasa.jpf.symbc.string.translate.TranslateToZ3Inc;
-import gov.nasa.jpf.symbc.string.translate.TranslateToZ3str2;
 import gov.nasa.jpf.util.LogManager;
 
 /**
@@ -420,19 +417,6 @@ public class SymbolicStringConstraintsGeneral {
 		
 		logger.info("Using solver: " + solver);
 
-		if(solver.equals(ABC)){
-			boolean dpresult = TranslateToABC.isSat(pc);
-			constraintCount = constraintCount + 1;
-			return dpresult;
-		}
-		
-		else if(solver.equals(Z3STR2)){
-			System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-			System.out.println("Calling Z3str2\n");
-			final Output dpresult = TranslateToZ3str2.solve(pc);
-			constraintCount = constraintCount + 1;
-			return dpresult.isSAT();
-		}
 		
 		
 		TIMEOUT = SymbolicInstructionFactory.stringTimeout;

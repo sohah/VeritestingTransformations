@@ -768,12 +768,6 @@ public class ProblemCoral extends ProblemGeneral {
 	}
 
 	@Override
-	public Object rem(Object exp1, Object exp2) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Object rem(long exp1, Object exp2) {
 		// TODO Auto-generated method stub
 		return null;

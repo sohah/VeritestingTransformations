@@ -187,6 +187,21 @@ public abstract class ProblemDReal extends ProblemGeneral {
 		}
 
 		private static TrueFormula TRUE = new TrueFormula();
+
+		@Override
+		public Object rem(Object exp1, Object exp2) {
+			throw new UnsupportedOperationException("## Error: dReal unsupported operation");
+		}
+
+		@Override
+		public Object rem(long exp1, Object exp2) {
+			throw new UnsupportedOperationException("## Error: dReal unsupported operation");
+		}
+
+		@Override
+		public Object rem(Object exp1, long exp2) {
+			throw new UnsupportedOperationException("## Error: dReal unsupported operation");
+		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------
@@ -311,6 +326,20 @@ public abstract class ProblemDReal extends ProblemGeneral {
 
 		private final Real precision;
 		private static FalseFormula FALSE = new FalseFormula();
+		@Override
+		public Object rem(Object exp1, Object exp2) {
+			throw new UnsupportedOperationException("## Error: dReal unsupported operation");
+		}
+
+		@Override
+		public Object rem(long exp1, Object exp2) {
+			throw new UnsupportedOperationException("## Error: dReal unsupported operation");
+		}
+
+		@Override
+		public Object rem(Object exp1, long exp2) {
+			throw new UnsupportedOperationException("## Error: dReal unsupported operation");
+		}
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------
@@ -560,139 +589,139 @@ public abstract class ProblemDReal extends ProblemGeneral {
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public Object makeIntVar(final String name, final int min, final int max) {
+	public Object makeIntVar(final String name, final long min, final long max) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer Variables");
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public ComparisonFormula eq(final int value, final Object exp) {
+	public ComparisonFormula eq(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
 	}
 
 	@Override
-	public ComparisonFormula eq(final Object exp, final int value) {
-		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
-	}
-
-	// ------------------------------------------------------------------------------------------------------------------
-
-	@Override
-	public ComparisonFormula neq(final int value, final Object exp) {
-		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
-	}
-
-	@Override
-	public ComparisonFormula neq(final Object exp, final int value) {
+	public ComparisonFormula eq(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public ComparisonFormula leq(final int value, final Object exp) {
+	public ComparisonFormula neq(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
 	}
 
 	@Override
-	public ComparisonFormula leq(final Object exp, final int value) {
-		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
-	}
-
-	// ------------------------------------------------------------------------------------------------------------------
-
-	@Override
-	public ComparisonFormula geq(final int value, final Object exp) {
-		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
-	}
-
-	@Override
-	public ComparisonFormula geq(final Object exp, final int value) {
+	public ComparisonFormula neq(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public ComparisonFormula lt(final int value, final Object exp) {
+	public ComparisonFormula leq(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
 	}
 
 	@Override
-	public ComparisonFormula lt(final Object exp, final int value) {
-		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
-	}
-
-	// ------------------------------------------------------------------------------------------------------------------
-
-	@Override
-	public ComparisonFormula gt(final int value, final Object exp) {
-		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
-	}
-
-	@Override
-	public ComparisonFormula gt(final Object exp, final int value) {
+	public ComparisonFormula leq(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public Term plus(final int value, final Object exp) {
+	public ComparisonFormula geq(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
 	}
 
 	@Override
-	public Term plus(final Object exp, final int value) {
-		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
-	}
-
-	// ------------------------------------------------------------------------------------------------------------------
-
-	@Override
-	public Term minus(final int value, final Object exp) {
-		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
-	}
-
-	@Override
-	public Term minus(final Object exp, final int value) {
+	public ComparisonFormula geq(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public Term mult(final int value, final Object exp) {
+	public ComparisonFormula lt(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
 	}
 
 	@Override
-	public Term mult(final Object exp, final int value) {
-		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
-	}
-
-	// ------------------------------------------------------------------------------------------------------------------
-
-	@Override
-	public Term div(final int value, final Object exp) {
-		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
-	}
-
-	@Override
-	public Term div(final Object exp, final int value) {
+	public ComparisonFormula lt(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public Term and(final int value, final Object exp) {
+	public ComparisonFormula gt(final long value, final Object exp) {
+		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
+	}
+
+	@Override
+	public ComparisonFormula gt(final Object exp, final long value) {
+		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------
+
+	@Override
+	public Term plus(final long value, final Object exp) {
+		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
+	}
+
+	@Override
+	public Term plus(final Object exp, final long value) {
+		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------
+
+	@Override
+	public Term minus(final long value, final Object exp) {
+		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
+	}
+
+	@Override
+	public Term minus(final Object exp, final long value) {
+		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------
+
+	@Override
+	public Term mult(final long value, final Object exp) {
+		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
+	}
+
+	@Override
+	public Term mult(final Object exp, final long value) {
+		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------
+
+	@Override
+	public Term div(final long value, final Object exp) {
+		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
+	}
+
+	@Override
+	public Term div(final Object exp, final long value) {
+		throw new UnsupportedOperationException("## Error: dReal does not support integer values");
+	}
+
+	// ------------------------------------------------------------------------------------------------------------------
+
+	@Override
+	public Term and(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
 	@Override
-	public Term and(final Object exp, final int value) {
+	public Term and(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
@@ -704,12 +733,12 @@ public abstract class ProblemDReal extends ProblemGeneral {
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public Term or(final int value, final Object exp) {
+	public Term or(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
 	@Override
-	public Term or(final Object exp, final int value) {
+	public Term or(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
@@ -721,12 +750,12 @@ public abstract class ProblemDReal extends ProblemGeneral {
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public Term xor(final int value, final Object exp) {
+	public Term xor(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
 	@Override
-	public Term xor(final Object exp, final int value) {
+	public Term xor(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
@@ -738,12 +767,12 @@ public abstract class ProblemDReal extends ProblemGeneral {
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public Term shiftL(final int value, final Object exp) {
+	public Term shiftL(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
 	@Override
-	public Term shiftL(final Object exp, final int value) {
+	public Term shiftL(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
@@ -753,12 +782,12 @@ public abstract class ProblemDReal extends ProblemGeneral {
 	}
 
 	@Override
-	public Term shiftR(final int value, final Object exp) {
+	public Term shiftR(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
 	@Override
-	public Term shiftR(final Object exp, final int value) {
+	public Term shiftR(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
@@ -768,12 +797,12 @@ public abstract class ProblemDReal extends ProblemGeneral {
 	}
 
 	@Override
-	public Term shiftUR(final int value, final Object exp) {
+	public Term shiftUR(final long value, final Object exp) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
 	@Override
-	public Term shiftUR(final Object exp, final int value) {
+	public Term shiftUR(final Object exp, final long value) {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
@@ -799,7 +828,7 @@ public abstract class ProblemDReal extends ProblemGeneral {
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public int getIntValue(final Object dpVar) {
+	public long getIntValue(final Object dpVar) {
 		throw new RuntimeException("## Error: dReal does not support integer variables");
 	}
 
