@@ -44,7 +44,9 @@ public enum MathFunction{
 	COS(" cos "),
 	POW(" pow "),
 	
-	
+	/* Added for dReal by Nima */
+	ABS(" abs "),
+	 
 	SQRT(" sqrt "),
 	EXP(" exp "),
 	ASIN(" asin "),
@@ -56,7 +58,7 @@ public enum MathFunction{
 	
 	private final String str;
 	
-    MathFunction(String str){
+    MathFunction(final String str){
 		this.str= str;
 	}
 	

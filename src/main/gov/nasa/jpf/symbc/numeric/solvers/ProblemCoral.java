@@ -430,7 +430,12 @@ public class ProblemCoral extends ProblemGeneral {
 	public Object mult(Object exp, long value) {
 		return Util.mul((SymInt)exp, Util.createConstant((int) value));
 	}
-
+	
+	@Override
+	public Object rem(Object exp, int value) {
+		return Util.mod((SymInt)exp, Util.createConstant(value));
+	}
+	
 	@Override
 	public Object mult(Object exp1, Object exp2) {
 		if (exp1 instanceof SymDouble) {
@@ -442,6 +447,16 @@ public class ProblemCoral extends ProblemGeneral {
 		}
 	}
 
+	@Override
+	public Object rem(Object exp1, Object exp2) {
+		if (exp1 instanceof SymInt) {
+			return Util.mod((SymInt)exp1, (SymInt)exp2);
+		} else {
+			throw new UnsupportedOperationException();
+		}
+	}
+	
+	
 	@Override
 	public Object mult(double value, Object exp) {
 		return Util.mul(Util.createConstant(value), (SymDouble)exp);

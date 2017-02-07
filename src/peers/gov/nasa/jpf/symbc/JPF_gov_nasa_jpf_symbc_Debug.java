@@ -73,6 +73,8 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		}
 		return pc;
 	}
+	
+	
 	@MJI
 	public static void printPC(MJIEnv env, int objRef, int msgRef) {
 		PathCondition pc = getPC(env);
@@ -186,6 +188,48 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 			return true;
 		}
 		return false;
+	}
+
+	@MJI
+	public static void freshPCcopy(MJIEnv env, int objRef) {
+		PathCondition pc = getPC(env);
+		if(pc!=null)
+			pcLocal = pc.make_copy();
+		else
+			pcLocal = new PathCondition();
+	}
+	
+	static PathCondition pcLocal;
+			
+	@MJI
+	public static boolean addEQ0(MJIEnv env, int objRef, int v) {
+		Object [] attrs = env.getArgAttributes();
+		
+		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		if (sym_arg !=null) {
+			pcLocal._addDet(Comparator.EQ, sym_arg, 0);
+			return true;
+		}
+		else
+			return (v==0);
+	}
+	
+	@MJI
+	public static boolean addGT0(MJIEnv env, int objRef, int v) {
+		Object [] attrs = env.getArgAttributes();
+		
+		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		if (sym_arg !=null) {
+			pcLocal._addDet(Comparator.GT, sym_arg, 0);
+			return true;
+		}
+		else
+			return (v>0);
+	}
+	
+	@MJI
+	public static boolean checkSAT(MJIEnv env, int objRef) {
+		return pcLocal.simplify();
 	}
 	
 	

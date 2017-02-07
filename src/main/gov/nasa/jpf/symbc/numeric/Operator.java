@@ -53,7 +53,6 @@ public enum Operator{
 	REM(" % ");
 	
 	
-	
 	private final String str;
 	
     Operator(String str){

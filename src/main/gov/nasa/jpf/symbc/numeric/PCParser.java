@@ -54,11 +54,12 @@ import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3Incremental;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
+
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemGeneral;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3;
 
 
 // parses PCs

@@ -24,6 +24,7 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.LocalVarInfo;
 import gov.nasa.jpf.vm.MethodInfo;
@@ -31,7 +32,6 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 import gov.nasa.jpf.vm.VM;
-
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
 import gov.nasa.jpf.jvm.bytecode.DRETURN;
 import gov.nasa.jpf.jvm.bytecode.FRETURN;
@@ -46,8 +46,6 @@ import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.bytecode.BytecodeUtils;
 import gov.nasa.jpf.symbc.bytecode.INVOKESTATIC;
 import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
-
-
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
@@ -58,12 +56,10 @@ import gov.nasa.jpf.symbc.numeric.RealConstant;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
 import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 import gov.nasa.jpf.symbc.numeric.SymbolicReal;
-
 import gov.nasa.jpf.symbc.numeric.SymbolicConstraintsGeneral;
 //import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
 import gov.nasa.jpf.util.Pair;
-
 
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -317,7 +313,6 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 							Expression result = null;
 
-
 							if (insn instanceof IRETURN){
 								IRETURN ireturn = (IRETURN)insn;
 								int returnValue = ireturn.getReturnValue();
@@ -376,15 +371,20 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 									result = returnAttr;
 								}
 								else {// concrete
-									Object val = areturn.getReturnValue(ti);
-									returnString = "Return Value: " + String.valueOf(val);
+									DynamicElementInfo val = (DynamicElementInfo)areturn.getReturnValue(ti);
+									
+									//System.out.println("string "+val.asString());
+									returnString = "Return Value: " + val.asString();
 									//DynamicElementInfo val = (DynamicElementInfo)areturn.getReturnValue(ti);
-									String tmp = String.valueOf(val);
+									String tmp = val.asString();
 									tmp = tmp.substring(tmp.lastIndexOf('.')+1);
 									result = new SymbolicInteger(tmp);
 									
 								}
-							}else //other types of return
+								
+							}
+							
+							else //other types of return
 								returnString = "Return Value: --";
 							//pc.solve();
 							// not clear why this part is necessary
@@ -408,7 +408,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 							}
 							
 							if(allSummaries.get(longName)!=null) // recursive call
-								longName = longName + methodSummary.hashCode(); // differentiate the key for recursive calls
+								longName = longName;// + methodSummary.hashCode(); // differentiate the key for recursive calls
 							allSummaries.put(longName,methodSummary);
 							if (SymbolicInstructionFactory.debugMode) {
 							    System.out.println("*************Summary***************");
@@ -620,6 +620,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	    publisher.publishTopicStart("Method Summaries");
 	    Iterator it = allSummaries.entrySet().iterator();
 	    while (it.hasNext()){
+	    	
 	    	Map.Entry me = (Map.Entry)it.next();
 	    	MethodSummary methodSummary = (MethodSummary)me.getValue();
 	    	printMethodSummary(pw, methodSummary);
@@ -632,6 +633,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	    	MethodSummary methodSummary = (MethodSummary)me.getValue();
 	    	printMethodSummaryHTML(pw, methodSummary);
 	    }
+	    
 	  }
 
 	  protected class MethodSummary{
