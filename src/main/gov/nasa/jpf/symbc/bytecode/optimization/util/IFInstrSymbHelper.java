@@ -19,11 +19,11 @@
 /**
  * 
  */
-package gov.nasa.jpf.symbc.bytecode.util;
+package gov.nasa.jpf.symbc.bytecode.optimization.util;
 
 
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
-import gov.nasa.jpf.symbc.bytecode.LCMP;
+import gov.nasa.jpf.jvm.bytecode.LCMP;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
@@ -34,12 +34,6 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 
-/**
- * @author Kasper S. Luckow <luckow@cs.aau.dk>
- * 
- * Deals with how symbolic conditions are handled. Currently a lot(!!) of redundancy. Furthermore, parts of it
- * are so ugly that my eyes bleed. Should be refactored into a generic method.
- */
 public class IFInstrSymbHelper {
 	
 	public static Instruction getNextInstructionAndSetPCChoice(ThreadInfo ti, 

@@ -15,7 +15,7 @@ sourcepath=${jpf-symbc}/src/examples
 
 # in this particular configuration all the input
 # parameters to methods test2 and test are symbolic
-symbolic.dp=choco
+symbolic.dp=z3str2
 
 # settings for the symbolic string support, either
 # "none" (default), "cvc", "automata" (recommended) or
@@ -31,7 +31,7 @@ symbolic.string_dp_timeout_ms=3000
 # you need to go through "Run Configuration"
 
 symbolic.method= strings.MysteryQuestionMin.preserveSomeHtmlTagsAndRemoveWhitespaces(sym)
-search.depth_limit = 10
+search.depth_limit = 30
 #listener = gov.nasa.jpf.symbc.SymbolicListenerClean
 listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
 

@@ -37,22 +37,32 @@
 
 package gov.nasa.jpf.symbc.numeric;
 
-//import za.ac.sun.cs.green.Instance;
 import za.ac.sun.cs.green.Instance;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+import gov.nasa.jpf.symbc.arrays.ArrayConstraint;
+import gov.nasa.jpf.symbc.arrays.RealArrayConstraint;
+import gov.nasa.jpf.symbc.arrays.RealStoreExpression;
+import gov.nasa.jpf.symbc.arrays.StoreExpression;
+import gov.nasa.jpf.symbc.arrays.SelectExpression;
 import gov.nasa.jpf.symbc.concolic.PCAnalyzer;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.numeric.visitors.CollectVariableVisitor;
 import gov.nasa.jpf.symbc.string.StringPathCondition;
 import gov.nasa.jpf.symbc.concolic.*;
+import gov.nasa.jpf.symbc.arrays.ArrayExpression;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.VM;
+
+import java.util.HashMap;
+import java.util.Map;
 
 // path condition contains mixed constraints of integers and reals
 
 public class PathCondition implements Comparable<PathCondition> {
     public static boolean flagSolved = false;
+
+    public HashMap<String, ArrayExpression> arrayExpressions;
 
     public Constraint header;
     int count = 0;
@@ -73,6 +83,7 @@ public class PathCondition implements Comparable<PathCondition> {
 
     public PathCondition() {
     	header = null;
+        arrayExpressions = new HashMap<String, ArrayExpression>();
     }
 
     public Instance getInstance() {
@@ -92,8 +103,41 @@ public class PathCondition implements Comparable<PathCondition> {
 	    pc_new.count = this.count;
 	    pc_new.spc = this.spc.make_copy(pc_new); // TODO: to review
 	    pc_new.solverCalls = this.solverCalls;
+        pc_new.arrayExpressions = this.arrayExpressions;
 		return pc_new;
 	}
+
+    //Added by Aymeric
+    public void _addDet(Comparator c, SelectExpression se, IntegerExpression ie) {
+        Constraint t;
+        flagSolved = false;
+        t  = new ArrayConstraint(se, c, ie);
+        prependUnlessRepeated(t);
+    }
+
+    //Added by Aymeric
+    public void _addDet(Comparator c, StoreExpression se, ArrayExpression ae) {
+        Constraint t;
+        flagSolved = false;
+        t  = new ArrayConstraint(se, c, ae);
+        prependUnlessRepeated(t);
+    }
+
+    //Added by Aymeric
+    public void _addDet(Comparator c, SelectExpression se, RealExpression re) {
+        Constraint t;
+        flagSolved = false;
+        t  = new RealArrayConstraint(se, c, re);
+        prependUnlessRepeated(t);
+    }
+
+    //Added by Aymeric
+    public void _addDet(Comparator c, RealStoreExpression se, ArrayExpression ae) {
+        Constraint t;
+        flagSolved = false;
+        t  = new RealArrayConstraint(se, c, ae);
+        prependUnlessRepeated(t);
+    }
 
 	//Added by Gideon
 	public void _addDet (LogicalORLinearIntegerConstraints loic) {
@@ -118,26 +162,14 @@ public class PathCondition implements Comparable<PathCondition> {
 	}
 
 	// constraints on integers
-	public void _addDet(Comparator c, IntegerExpression l, int r) {
+	public void _addDet(Comparator c, IntegerExpression l, long r) {
 		flagSolved = false; // C
 		_addDet(c, l, new IntegerConstant(r));
 	}
 
-	public void _addDet(Comparator c, int l, IntegerExpression r) {
-		flagSolved = false; // C
-		_addDet(c, new IntegerConstant(l), r);
-	}
-
-	public void _addDet(Comparator c, IntegerExpression l, long r) {
-		flagSolved = false; // C
-		_addDet(c, l, new IntegerConstant((int)r));
-		//_addDet(c, l, (int)r);
-	}
-
 	public void _addDet(Comparator c, long l, IntegerExpression r) {
 		flagSolved = false; // C
-		_addDet(c, new IntegerConstant((int)l), r);
-		//_addDet(c, (int)l, r);
+		_addDet(c, new IntegerConstant(l), r);
 	}
 
 	public void _addDet(Comparator c, IntegerExpression l, IntegerExpression r) {
@@ -215,6 +247,8 @@ public class PathCondition implements Comparable<PathCondition> {
             t.and = header;
             header = t;
             count++;
+            // remember that the most recently added constraint is not a string one
+    	    spc.setRecentlyAddedConstraintNumeric();
             return true;
         } else {
             return false;
@@ -231,6 +265,14 @@ public class PathCondition implements Comparable<PathCondition> {
         Constraint tmp = header.last();
         tmp.and = t;
         count= length(header);
+     }
+
+     public void appendPathcondition(PathCondition pc) {
+        while (pc.header != null) {
+            // Since we are only using it to append heapPC to pc, it may not be required to use prependUnlessRepeated
+            prependUnlessRepeated(pc.header.copy());
+            pc.header = pc.header.and;
+        }
      }
 
     private static int length(Constraint c) {
@@ -291,11 +333,67 @@ public class PathCondition implements Comparable<PathCondition> {
 			return simplifyGreen();
 	}
 	
+	public Map<String, Object> solveWithValuation() {
+		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
+
+		Map<String,Object> result1 = solver.solveWithSolution(this);
+		solver.cleanup();
+		PathCondition.flagSolved = true;
+		return result1;
+	}
+
 	private boolean solveWithSolution() {
-		if (instance == null) {
+		//
+		// PEND: Why does this if check for instance==null?
+		//       Why does the else NOT check that condition? (Looks fishy)
+		//       What do we know about the prior value of this.instance here?
+		//
+
+		if (instance == null && spc.header == null) {
+			System.out.println("\nCalling Green on Constraint (header):" +
+				("\n" + header.toString()).replaceAll("\n", "\n        ")
+			);
+			//System.out.println("  ********** KNOWN: " + spc.isRecentlyAddedConstraintKnown() + " ***** NUM: " + (spc.isRecentlyAddedConstraintKnown() ? spc.isRecentlyAddedConstraintNumeric() : "?") + " ***** STR: " + (spc.isRecentlyAddedConstraintKnown() ? spc.isRecentlyAddedConstraintString() : "?") + " **********");
 			instance = SolverTranslator.createInstance(header);
 		}
+		else if (header == null){
+			System.out.println("\nCalling Green on StringConstraint (spc.header):" +
+					("\n" + spc.header.toString()).replaceAll("\n", "\n        ")
+				);
+			//System.out.println("  ********** KNOWN: " + spc.isRecentlyAddedConstraintKnown() + " ***** NUM: " + (spc.isRecentlyAddedConstraintKnown() ? spc.isRecentlyAddedConstraintNumeric() : "?") + " ***** STR: " + (spc.isRecentlyAddedConstraintKnown() ? spc.isRecentlyAddedConstraintString() : "?") + " **********");
+			instance = SolverTranslator.createStringInstance(spc.header);
+		}
+		else{
+			// Handle mixed constraint
+			System.out.println("\nCalling Green on both a Constraint and a StringConstraint (mixed constraint!)");
+			System.out.println("Constraint (header):" +
+					("\n" + header.toString()).replaceAll("\n", "\n        ")
+				);
+			System.out.println("StringConstraint (spc.header):" +
+					("\n" + spc.header.toString()).replaceAll("\n", "\n        ")
+				);
+			//System.out.println("  ********** KNOWN: " + spc.isRecentlyAddedConstraintKnown() + " ***** NUM: " + (spc.isRecentlyAddedConstraintKnown() ? spc.isRecentlyAddedConstraintNumeric() : "?") + " ***** STR: " + (spc.isRecentlyAddedConstraintKnown() ? spc.isRecentlyAddedConstraintString() : "?") + " **********");
+			if(! spc.isRecentlyAddedConstraintKnown()) {
+				throw new RuntimeException("Expected recently added constraint (num vs str) to be known at this point!");
+			}
+			
+			// Translate both constraints to Instances
+			Instance instance_num = SolverTranslator.createInstance(header);
+			Instance instance_str = SolverTranslator.createStringInstance(spc.header);
+			
+			// Merge them into a single Instance, making sure to put the one with the
+			// recently added constraint on the left side.
+			if(! spc.isRecentlyAddedConstraintKnown()) {
+				throw new RuntimeException("We would expect this to be known at this point! What happened?");
+			}
+			if(spc.isRecentlyAddedConstraintNumeric()) {
+				instance = Instance.merge(instance_num, instance_str);
+			} else {
+				instance = Instance.merge(instance_str, instance_num);
+			}
+		}
 		boolean isSat = (Boolean) instance.request("sat");  /*&& spc.simplify()*/; // strings are not supported by Green for now
+
 		/*
 		 * This is untested and have shown a few issues so needs fixing first
 		if (isSat) {
@@ -380,7 +478,11 @@ public class PathCondition implements Comparable<PathCondition> {
 		//return ((header == null) ? "" : " " + header.toString()); -- for specialization
 					//+ "\n" + spc.toString(); // TODO: to review
 	}
-
+	public String prefix_notation() {
+		return "constraint # = " + count + ((header == null) ? "" : "\n" + header.prefix_notation());
+		//return ((header == null) ? "" : " " + header.toString()); -- for specialization
+					//+ "\n" + spc.toString(); // TODO: to review
+	}
 	public static PathCondition getPC(MJIEnv env) {
 	   VM vm = env.getVM();
 	   return getPC(vm);
@@ -521,6 +623,7 @@ public class PathCondition implements Comparable<PathCondition> {
 	 * hash code.
 	 */
 	public void removeHeader() {
+		spc.setRecentlyAddedConstraintUnknown(); // just to be safe, even though no one seems to be using removeHeader at all!
 		assert header != null;
 		header = header.and;
 		count--;

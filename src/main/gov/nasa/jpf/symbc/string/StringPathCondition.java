@@ -49,18 +49,64 @@ TERMINATION OF THIS AGREEMENT.
 */
 package gov.nasa.jpf.symbc.string;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 
 public class StringPathCondition {
 	  static boolean flagSolved = false;
 
+	  public String smtlib = "";
+	  public Map<String, String> solution = Collections.<String,String>emptyMap();
 	  public StringConstraint header;
 	  int count = 0;
 
-	  PathCondition npc = null;
+	  // Is this always a reference to the PC that contains this SPC?
+	  private PathCondition npc = null;
 
+	  
+	  // Added for disambiguation, because there is no way to know whether
+	  // the most recently added constraint is the first numeric constraint
+	  // or the first string constraint. This knowledge is reset after popping!
+
+	  // The latter only matters when the former is true.
+	  private boolean isRecentlyAddedConstraintKnown = false;
+	  private boolean isRecentlyAddedConstraintString = false;
+
+	  public boolean isRecentlyAddedConstraintKnown() {
+		  return isRecentlyAddedConstraintKnown;
+	  }
+	  
+	  public boolean isRecentlyAddedConstraintString() {
+		  if(! isRecentlyAddedConstraintKnown) { throw new RuntimeException("Undefined at this time!"); }
+		  return isRecentlyAddedConstraintString;
+	  }
+
+	  public boolean isRecentlyAddedConstraintNumeric() {
+		  if(! isRecentlyAddedConstraintKnown) { throw new RuntimeException("Undefined at this time!"); }
+		  return (! isRecentlyAddedConstraintString);
+	  }
+	  
+	  public void setRecentlyAddedConstraintString() {
+		  isRecentlyAddedConstraintKnown = true;
+		  isRecentlyAddedConstraintString = true;
+	  }
+
+	  public void setRecentlyAddedConstraintNumeric() {
+		  isRecentlyAddedConstraintKnown = true;
+		  isRecentlyAddedConstraintString = false;
+	  }
+	  
+	  public void setRecentlyAddedConstraintUnknown() {
+		  isRecentlyAddedConstraintKnown = false;
+	  }
+	  
+
+	  
 	  public StringPathCondition(PathCondition npc) {
-	    this.npc = npc;
+	    this.setNpc(npc);
 	    header = null;
 	  }
 
@@ -68,6 +114,9 @@ public class StringPathCondition {
 	    StringPathCondition pc_new = new StringPathCondition(npc);
 	    pc_new.header = this.header;
 	    pc_new.count = this.count;
+	    // PEND: Does copying these here break anything? Shouldn't. But check.
+	    pc_new.isRecentlyAddedConstraintKnown = this.isRecentlyAddedConstraintKnown;
+	    pc_new.isRecentlyAddedConstraintString = this.isRecentlyAddedConstraintString;
 	    return pc_new;
 	  }
 
@@ -83,6 +132,7 @@ public class StringPathCondition {
 	  }
 
 	  public void _addDet(StringComparator c,  StringExpression r) {
+		    setRecentlyAddedConstraintString();
 		    StringConstraint t;
 
 		    flagSolved = false; // C
@@ -97,6 +147,7 @@ public class StringPathCondition {
 		  }
 
 	  public void _addDet(StringComparator c, StringExpression l, StringExpression r) {
+	    setRecentlyAddedConstraintString();
 	    StringConstraint t;
 
 	    flagSolved = false; // C
@@ -128,25 +179,49 @@ public class StringPathCondition {
 	  }
 
 	  public boolean solve() {// warning: solve calls simplify
-	  // SymbolicStringConstraintsGeneral solver = new SymbolicStringConstraintsGeneral();
-	  // solver.solve(this);
-	      StringPathCondition.flagSolved = true;
-	      return true;
+		  SymbolicStringConstraintsGeneral solver = new SymbolicStringConstraintsGeneral();
+		  boolean result = solver.isSatisfiable(this);
+		  StringPathCondition.flagSolved = result;
+		  return result;
 	  }
 
 	  public boolean simplify() {
 	    SymbolicStringConstraintsGeneral solver = new SymbolicStringConstraintsGeneral();
 	    boolean result = solver.isSatisfiable(this);
 	    return result;
-
 	  }
 
 	  public String stringPC() {
-	    return "SPC # = " + count + ((header == null) ? "" : "\n" + header.stringPC());
+	    return "SPC # = " + count + ((header == null) ? "" : "\n" + header.stringPC()) +"\n"
+	    		+ "NPC "+npc.stringPC();
 	  }
 
 	  public String toString() {
-	    return "SPC # = " + count + ((header == null) ? "" : "\n" + header.toString());
+	    return "SPC # = " + count + ((header == null) ? "" : "\n" + header.toString()) +"\n"
+	    		+ "NPC "+npc.toString();
 	  }
 
+	public PathCondition getNpc() {
+		return npc;
 	}
+
+	public void setNpc(PathCondition npc) {
+		this.npc = npc;
+	}
+	
+	public Map<String, String> getSolution(){
+		return this.solution;
+	}
+	
+
+	public String printableStringSolution(){
+		StringBuilder b = new StringBuilder();
+		for (Entry<String, String> sol : solution.entrySet()) {
+			b.append(sol.getKey()).append(" : \"").append(sol.getValue()).append("\"");
+	    }
+		return b.toString();
+	}
+	
+	
+
+}

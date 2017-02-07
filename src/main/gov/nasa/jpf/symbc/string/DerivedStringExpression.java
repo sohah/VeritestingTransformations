@@ -66,8 +66,8 @@ public class DerivedStringExpression extends StringExpression {
   
   public Expression[] oprlist;
 
-  DerivedStringExpression(StringExpression l, StringOperator o, StringExpression r) {
-	oprlist = null;
+  public DerivedStringExpression(StringExpression l, StringOperator o, StringExpression r) {
+  oprlist = null;
     left = l;
     op = o;
     right = r;
@@ -75,29 +75,29 @@ public class DerivedStringExpression extends StringExpression {
 //    right.addDependent(this); 
   }
   
-  DerivedStringExpression(StringOperator o, Expression[] olist) {
-	  left = null;
-	  right = null;
-	  op = o;
-	  int i = olist.length;
-	  oprlist = new Expression[i];
-	  for(int j = 0; j < i; j++){
-		  oprlist[j] = olist[j];
-//		  if(olist[j] instanceof StringExpression){
-//			  ((StringExpression) oprlist[j]).addDependent(this);
-//		  }
-	  }
+  public DerivedStringExpression(StringOperator o, Expression[] olist) {
+    left = null;
+    right = null;
+    op = o;
+    int i = olist.length;
+    oprlist = new Expression[i];
+    for(int j = 0; j < i; j++){
+      oprlist[j] = olist[j];
+//      if(olist[j] instanceof StringExpression){
+//        ((StringExpression) oprlist[j]).addDependent(this);
+//      }
+    }
   }
   
-  DerivedStringExpression(StringOperator o, StringExpression r) {
-	    left = null;
-	    op = o;
-	    right = r;
-//	    right.addDependent(this); 
-	  }
+  public DerivedStringExpression(StringOperator o, StringExpression r) {
+      left = null;
+      op = o;
+      right = r;
+//      right.addDependent(this); 
+    }
   
     public DerivedStringExpression clone() {
-	  throw new RuntimeException("Operation not implemented");
+    throw new RuntimeException("Operation not implemented");
   }
 
   public Set<Expression> getOperands() {
@@ -118,17 +118,17 @@ public class DerivedStringExpression extends StringExpression {
 
   //TODO: add solution() cases for all supported operators
   public String solution() {
-	  String l;
+    String l;
     if(left != null) 
-    	l = left.solution();
+      l = left.solution();
     else
-    	l = new String();
+      l = new String();
     String r = right.solution();
     switch (op) {
       case CONCAT:
         return l.concat(r);
       case TRIM:
-    	  return right.solution();
+        return right.solution();
       default:
         throw new RuntimeException(
             "## Error: BinaryStringSolution solution: l " + l + " op " + op
@@ -137,50 +137,50 @@ public class DerivedStringExpression extends StringExpression {
   }
 
   public void getVarsVals(Map<String, Object> varsVals) {
-	if(left != null) left.getVarsVals(varsVals);
+  if(left != null) left.getVarsVals(varsVals);
     right.getVarsVals(varsVals);
   }
 
   public String stringPC() {
-	if (left != null)
+  if (left != null)
         return left.stringPC() + "." + op.toString() + "(" + right.stringPC() + ")";
-	else if (right != null)
-		return "." + op.toString() + "(" + right.stringPC() + ")";
-	else 
-	{
-		StringBuilder s = new StringBuilder();
-		   s.append("{");
-		for(int i = 0; i < oprlist.length; i++){	
-			s.append("(");			
-			s.append(oprlist[i].toString());
-			s.append(")");				
-		}
-		   s.append("}");	
-		return "." + op.toString() + s;
-		
-	}
+  else if (right != null)
+    return "." + op.toString() + "(" + right.stringPC() + ")";
+  else 
+  {
+    StringBuilder s = new StringBuilder();
+       s.append("{");
+    for(int i = 0; i < oprlist.length; i++){  
+      s.append("(");      
+      s.append(oprlist[i].toString());
+      s.append(")");        
+    }
+       s.append("}"); 
+    return "." + op.toString() + s;
+    
+  }
   }
 
   public String toString() {
-		if (left != null)	  
+    if (left != null)   
             return left.toString() + "." + op.toString() + "(" + right.toString() + ")";
-		else if (right != null)
-			return "." + op.toString() + "(" + right.toString() + ")";
-		else 
-		{
-			StringBuilder s = new StringBuilder();
-			   s.append("[");
-			for(int i = 0; i < oprlist.length; i++){	
-				s.append("(");			
-				s.append(oprlist[i].toString());
-				s.append(")");				
-			}
-			    s.append("]");	
-			return "." + op.toString() + s;			
-		}
-				
+    else if (right != null)
+      return "." + op.toString() + "(" + right.toString() + ")";
+    else 
+    {
+      StringBuilder s = new StringBuilder();
+         s.append("[");
+      for(int i = 0; i < oprlist.length; i++){  
+        s.append("(");      
+        s.append(oprlist[i].toString());
+        s.append(")");        
+      }
+          s.append("]");  
+      return "." + op.toString() + s;     
+    }
+        
   }
-  	
+    
   public String getName() {
     String name;
     if (left != null)
@@ -207,13 +207,22 @@ public class DerivedStringExpression extends StringExpression {
     return "STRING_" + name;
   }
 
-	@Override
-	public void accept(ConstraintExpressionVisitor visitor) {
-		visitor.preVisit(this);
-		left.accept(visitor);
-		right.accept(visitor);
-		visitor.postVisit(this);
-	}
+  @Override
+  public void accept(ConstraintExpressionVisitor visitor) {
+    visitor.preVisit(this);
+    if (left != null){
+      left.accept(visitor);
+    }
+    if (right != null){
+      right.accept(visitor);
+    }
+     if (oprlist != null) {
+          for (Expression e : oprlist) {
+            e.accept(visitor);
+          }
+        }
+    visitor.postVisit(this);
+  }
   
 }
 

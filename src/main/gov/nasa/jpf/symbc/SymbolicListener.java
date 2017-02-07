@@ -162,6 +162,8 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 
 				//String methodName = vm.getLastInstruction().getMethodInfo().getName();
 				MethodSummary methodSummary = allSummaries.get(currentMethodName);
+				if (methodSummary==null) 
+					methodSummary = new MethodSummary();
 				methodSummary.addPathCondition(pcPair);
 				allSummaries.put(currentMethodName,methodSummary);
 				System.out.println("Property Violated: PC is "+pc.toString());
@@ -472,7 +474,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						  
 						  //if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_DOUBLE)
 							  //testCase = testCase + val + ",";
-						  if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_DOUBLE) {
+						  if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_SHORT || actualType == Types.T_BYTE || actualType == Types.T_CHAR || actualType == Types.T_DOUBLE) {
 							  String suffix = "";
 							  if (actualType == Types.T_LONG) {
 								  suffix = "l";
@@ -496,7 +498,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 								  testCase = testCase + "true" + ",";
 						  }
 						  else
-							  throw new RuntimeException("## Error: listener does not support type other than int, long, float, double and boolean");
+							  throw new RuntimeException("## Error: listener does not support type other than int, long, short, byte, float, double and boolean");
 						  // TODO: to extend with arrays
 					  }else{
 						  //need to check if value is concrete
@@ -563,7 +565,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 						  }
 						  
 						  String val = temp.substring(temp.indexOf("[")+1,temp.indexOf("]"));
-					      if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_DOUBLE)
+					      if(actualType == Types.T_INT || actualType == Types.T_FLOAT || actualType == Types.T_LONG || actualType == Types.T_SHORT || actualType == Types.T_BYTE || actualType == Types.T_DOUBLE)
 							  testCase = testCase + "<td>" + val + "</td>";
 						  else if (actualType == Types.T_BOOLEAN) { //translate boolean values represented as ints
 							  //to "true" or "false"
@@ -573,7 +575,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 								  testCase = testCase + "<td>true</td>";
 						  }
 						  else
-							  throw new RuntimeException("## Error: listener does not support type other than int, long, float, double and boolean");
+							  throw new RuntimeException("## Error: listener does not support type other than int, long, short, byte, float, double and boolean");
 
 					  }else{
 						  //need to check if value is concrete

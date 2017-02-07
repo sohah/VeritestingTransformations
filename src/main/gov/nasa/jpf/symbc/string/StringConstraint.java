@@ -50,6 +50,10 @@ TERMINATION OF THIS AGREEMENT.
 
 package gov.nasa.jpf.symbc.string;
 
+import gov.nasa.jpf.symbc.numeric.ConstraintExpressionVisitor;
+import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
+import gov.nasa.jpf.symbc.numeric.visitors.CollectVariableVisitor;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -61,9 +65,9 @@ public class StringConstraint {
 
   StringExpression right;
 
-  StringConstraint and;
+  public StringConstraint and;
 
-  StringConstraint(StringExpression l, StringComparator c, StringExpression r) {
+  public StringConstraint(StringExpression l, StringComparator c, StringExpression r) {
     left = l;
     comp = c;
     right = r;
@@ -71,13 +75,22 @@ public class StringConstraint {
 //    right.addRelationship(this);
   }
 
-  StringConstraint(StringComparator c, StringExpression r) {
-	    left = null;
-	    comp = c;
-	    right = r;
-//	    right.addRelationship(this);
-	  }
+  public StringConstraint(StringComparator c, StringExpression r) {
+      left = null;
+      comp = c;
+      right = r;
+//      right.addRelationship(this);
+    }
 
+  public StringConstraint(StringConstraint original) {
+    left = original.left;
+    comp = original.comp;
+    right = original.right;
+    if (original.and!= null){
+      and = new StringConstraint(original.and);
+    }
+  }
+  
   public Set<StringExpression> getOperands() {
     Set<StringExpression> operands = new HashSet<StringExpression>();
     operands.add(right);
@@ -88,13 +101,13 @@ public class StringConstraint {
   }
 
   public String stringPC() {
-	  if(left != null) {
-		    return "(" +left.stringPC() + comp.toString() + right.stringPC() + ")"
-		        + ((and == null) ? "" : " && " + and.stringPC());
-		   } else {
-			    return "(" +comp.toString() + right.stringPC() + ")"
-		        + ((and == null) ? "" : " && " + and.stringPC());
-		   }
+    if(left != null) {
+        return "(" +left.stringPC() + comp.toString() + right.stringPC() + ")"
+            + ((and == null) ? "" : " && " + and.stringPC());
+       } else {
+          return "(" +comp.toString() + right.stringPC() + ")"
+            + ((and == null) ? "" : " && " + and.stringPC());
+       }
   }
 
   public void getVarVals(Map<String, Object> varsVals) {
@@ -125,20 +138,20 @@ public class StringConstraint {
   }
 
   public boolean contradicts(StringConstraint o) {
-	if(left != null){
+  if(left != null){
     return left.equals(o.left)
         && comp.equals(o.comp.not())
         && right.equals(o.right);
-	} else {
-		   return comp.equals(o.comp.not())
-	        && right.equals(o.right);
-	}
+  } else {
+       return comp.equals(o.comp.not())
+          && right.equals(o.right);
+  }
   }
 
   public int hashCode() {
-	if (left != null)
+  if (left != null)
      return left.hashCode() ^ comp.hashCode() ^ right.hashCode();
-	else
+  else
      return comp.hashCode() ^ right.hashCode();
   }
 
@@ -147,24 +160,44 @@ public class StringConstraint {
     return "(" + left.toString() + comp.toString() + right.toString() + ")"
         + ((and == null) ? "" : " && " + and.toString());
    } else {
-	    return "(" + comp.toString() + right.toString() + ")"
+      return "(" + comp.toString() + right.toString() + ")"
         + ((and == null) ? "" : " && " + and.toString());
    }
   }
   
   public StringComparator getComparator() {
-	  return comp;
+    return comp;
   }
   
   public StringExpression getLeft () {
-	  return left;
+    return left;
   }
   
   public StringExpression getRight () {
-	  return right;
+    return right;
   }
   
   public StringConstraint and () {
-	  return and;
+    return and;
+  }
+  
+  public StringConstraint not() {
+      return new StringConstraint(getLeft(), getComparator().not(), getRight());
+  }  
+  
+  public void accept(ConstraintExpressionVisitor visitor) {
+    visitor.preVisit(this);
+    left.accept(visitor);
+    right.accept(visitor);
+      //if (and!=null) and.accept(visitor);
+      visitor.postVisit(this);
+  }
+
+  public void accept(CollectVariableVisitor visitor) {
+    visitor.preVisit(this);
+    left.accept(visitor);
+    right.accept(visitor);
+      if (and!=null) and.accept(visitor);
+      visitor.postVisit(this);
   }
 }

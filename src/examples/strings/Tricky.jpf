@@ -15,13 +15,13 @@ sourcepath=${jpf-symbc}/src/examples
 
 # in this particular configuration all the input
 # parameters to methods test2 and test are symbolic
-symbolic.dp=yices
+symbolic.dp=coral
 
 # settings for the symbolic string support, either
 # "none" (default), "cvc", "automata" (recommended) or
 # "sat". At the moment symbolic.dp must be equal to
 # "choco" for it to work.
-symbolic.string_dp=automata
+symbolic.string_dp=z3str2
 # As a side note for eclipse users, to run cvc3
 # enabled programs, the eclipse plugin which allows
 # you to right click on a .jpf test file and click
@@ -34,4 +34,4 @@ listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
 
 vm.storage.class=nil
 
-search.depth_limit = 30
+search.depth_limit = 13

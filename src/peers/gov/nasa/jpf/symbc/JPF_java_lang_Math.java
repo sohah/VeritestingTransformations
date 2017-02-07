@@ -332,7 +332,7 @@ public class JPF_java_lang_Math extends NativePeer{
   }
   @MJI
   public static double pow__DD__D (MJIEnv env, int clsObjRef, double a, double b) {
-	  System.out.println("here!!!!!");
+//	  System.out.println("here!!!!!");
 	  Object [] attrs = env.getArgAttributes();
 	  if (attrs==null) // concrete? I think
 		  return Math.pow(a,b);

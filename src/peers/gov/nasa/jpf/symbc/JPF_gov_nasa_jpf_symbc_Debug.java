@@ -18,9 +18,10 @@
 
 package gov.nasa.jpf.symbc;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-
+import java.util.Vector;
 
 import gov.nasa.jpf.annotation.MJI;
 import gov.nasa.jpf.symbc.heap.HeapChoiceGenerator;
@@ -31,6 +32,7 @@ import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
+import gov.nasa.jpf.symbc.numeric.MinMax;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.RealExpression;
@@ -51,6 +53,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
 public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
+	
 	@MJI
 	public static PathCondition getPC(MJIEnv env) {
 		VM vm = env.getVM();
@@ -90,7 +93,15 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		return env.newString("");
 	}
 
-
+	@MJI
+	public static int getPC_prefix_notation(MJIEnv env, int objRef) {
+		PathCondition pc = getPC(env);
+		if (pc != null) {
+			pc.solve();
+			return env.newString(pc.prefix_notation());
+		}
+		return env.newString("");
+	}
 	@MJI
 	public static int getSymbolicIntegerValue(MJIEnv env, int objRef, int v) {
 		Object [] attrs = env.getArgAttributes();
@@ -99,8 +110,85 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		if (sym_arg !=null)
 			return env.newString(sym_arg.toString());
 		else
-			return env.newString(Integer.toString(v));
+			return env.newString(Long.toString(v));
 	}
+	@MJI
+	public static int getSymbolicByteValue(MJIEnv env, int objRef, byte v) {
+		Object [] attrs = env.getArgAttributes();
+		
+		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		if (sym_arg !=null)
+			return env.newString(sym_arg.toString());
+		else
+			return env.newString(Long.toString(v));
+	}
+	@MJI
+	public static int getSymbolicLongValue(MJIEnv env, int objRef, long v) {
+		Object [] attrs = env.getArgAttributes();
+		
+		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		if (sym_arg !=null)
+			return env.newString(sym_arg.toString());
+		else
+			return env.newString(Long.toString(v));
+	}
+	
+	@MJI
+	public static boolean isSymbolicInteger(MJIEnv env, int objRef, int v) {
+		Object [] attrs = env.getArgAttributes();
+		if(attrs!=null){
+		  IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		  if (sym_arg !=null)
+			return true;
+		}
+		return false;
+	}
+	
+	@MJI
+	public static boolean isSymbolicLong(MJIEnv env, int objRef, long v) {
+		Object [] attrs = env.getArgAttributes();
+		if(attrs!=null){
+		  IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		  if (sym_arg !=null)
+			return true;
+		}
+		return false;
+	}
+	
+	@MJI
+	public static boolean isSymbolicShort(MJIEnv env, int objRef, short v) {
+		Object [] attrs = env.getArgAttributes();
+		if(attrs!=null){
+		  IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		  if (sym_arg !=null)
+			return true;
+		}
+		return false;
+	}
+	
+	@MJI
+	public static boolean isSymbolicByte(MJIEnv env, int objRef, byte v) {
+		Object [] attrs = env.getArgAttributes();
+		if(attrs!=null){
+		  IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		  if (sym_arg !=null)
+			return true;
+		}
+		return false;
+	}
+	
+	@MJI
+	public static boolean isSymbolicChar(MJIEnv env, int objRef, char v) {
+		Object [] attrs = env.getArgAttributes();
+		if(attrs!=null){
+		  IntegerExpression sym_arg = (IntegerExpression)attrs[0];
+		  if (sym_arg !=null)
+			return true;
+		}
+		return false;
+	}
+	
+	
 	@MJI
     public static int getSymbolicRealValue(MJIEnv env, int objRef, double v) {
     	Object [] attrs = env.getArgAttributes();
@@ -132,6 +220,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	@MJI
     public static void assume(MJIEnv env, int objRef, boolean c) {
     	Object [] attrs = env.getArgAttributes();
+    	if(attrs==null)return;
 		IntegerExpression sym_arg = (IntegerExpression)attrs[0];
 		assert(sym_arg==null);
 		if(!c) {// instruct JPF to backtrack
@@ -142,13 +231,37 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 	@MJI
 	public static int makeSymbolicInteger(MJIEnv env, int objRef, int stringRef) {
 		String name = env.getStringObject(stringRef);
-		env.setReturnAttribute(new SymbolicInteger(name));
+		env.setReturnAttribute(new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name)));
+		return 0;
+	}
+	@MJI
+	public static long makeSymbolicLong(MJIEnv env, int objRef, int stringRef) {
+		String name = env.getStringObject(stringRef);
+		env.setReturnAttribute(new SymbolicInteger(name, MinMax.getVarMinLong(name), MinMax.getVarMaxLong(name)));
+		return 0;
+	}
+	@MJI
+	public static short makeSymbolicShort(MJIEnv env, int objRef, int stringRef) {
+		String name = env.getStringObject(stringRef);
+		env.setReturnAttribute(new SymbolicInteger(name, MinMax.getVarMinShort(name), MinMax.getVarMaxShort(name)));
+		return 0;
+	}
+	@MJI
+	public static byte makeSymbolicByte(MJIEnv env, int objRef, int stringRef) {
+		String name = env.getStringObject(stringRef);
+		env.setReturnAttribute(new SymbolicInteger(name, MinMax.getVarMinByte(name), MinMax.getVarMaxByte(name)));
+		return 0;
+	}
+	@MJI
+	public static char makeSymbolicChar(MJIEnv env, int objRef, int stringRef) {
+		String name = env.getStringObject(stringRef);
+		env.setReturnAttribute(new SymbolicInteger(name, MinMax.getVarMinChar(name), MinMax.getVarMaxChar(name)));
 		return 0;
 	}
 	@MJI
 	public static double makeSymbolicReal(MJIEnv env, int objRef, int stringRef) {
 		String name = env.getStringObject(stringRef);
-		env.setReturnAttribute(new SymbolicReal(name));
+		env.setReturnAttribute(new SymbolicReal(name, MinMax.getVarMinDouble(name), MinMax.getVarMaxDouble(name)));
 		return 0.0;
 	}
 	@MJI
@@ -158,7 +271,7 @@ public class JPF_gov_nasa_jpf_symbc_Debug extends NativePeer {
 		return false;
 	}
 	@MJI
-	public static int makeSymbolicString(MJIEnv env, int objRef, int stringRef) {
+	public static int makeSymbolicString__Ljava_lang_String_2__Ljava_lang_String_2(MJIEnv env, int objRef, int stringRef) {
 		String name = env.getStringObject(stringRef);
 		env.setReturnAttribute(new StringSymbolic(name));
 		return env.newString("");
