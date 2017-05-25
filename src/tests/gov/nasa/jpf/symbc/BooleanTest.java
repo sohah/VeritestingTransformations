@@ -17,19 +17,26 @@
  */
 
 package gov.nasa.jpf.symbc;
+import org.junit.Test;
 
 public class BooleanTest extends InvokeTest {
 
-  protected static String PC_x_1_y_0 = "x_1_SYMINT != CONST_0 && y_2_SYMINT == CONST_0";
-  protected static String PC_x_1_y_1 = "x_1_SYMINT != CONST_0 && y_2_SYMINT != CONST_0";
-  protected static String PC_x_0_y_0 = "x_1_SYMINT == CONST_0 && y_2_SYMINT == CONST_0";
-  protected static String PC_x_0_y_1 = "x_1_SYMINT == CONST_0 && y_2_SYMINT != CONST_0";
+ 
+  protected static String PC_x_1_y_0;
+  protected static String PC_x_1_y_1;
+  protected static String PC_x_0_y_0;
+  protected static String PC_x_0_y_1; 
+
 
   protected static void testBoolean(boolean x, boolean y) {
-    // Note: "!y" compiles to IFEQ, so it creates a choice generator
+      
     boolean z = !y;
-
+    PC_x_1_y_0 = TestPC.booleanPC_x_y("x","!=","y","=");    
+    PC_x_1_y_1 = TestPC.booleanPC_x_y("x","!=","y","!=");
+    PC_x_0_y_0 = TestPC.booleanPC_x_y("x","=","y","=");
+    PC_x_0_y_1 = TestPC.booleanPC_x_y("x","=","y","!=");
     if (x) {
+      
       assert pcMatches(PC_x_1_y_0) || pcMatches(PC_x_1_y_1) :
               makePCAssertString("TestBooleanSpecial1.testBoolean1 if (x == true)",
               "one of\n" + PC_x_1_y_0 + "\nor\n"

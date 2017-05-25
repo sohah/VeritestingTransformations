@@ -19,35 +19,50 @@
 package gov.nasa.jpf.symbc;
 
 public class FloatTest extends InvokeTest {
+
   // x > 1.1f
 
-  protected static String PC1 = "# = 1\nx_1_SYMREAL > CONST_1.100000023841858";
+  protected static String PC1;// = "x > CONST_1.100000023841858";
   //
   // (x <= 1.1f)
-  protected static String PC2 = "x_1_SYMREAL < CONST_1.100000023841858";
-  protected static String PC10 = "x_1_SYMREAL > CONST_1.100000023841858";
-  protected static String PC3 = "CONST_1.100000023841858 == x_1_SYMREAL";
-  protected static String PC11 = "(x_1_SYMREAL + y_2_SYMREAL) < CONST_30.0";
-  protected static String PC12 = "y_2_SYMREAL < CONST_30.0";
+  
+  protected static String PC2;// = "x < CONST_1.100000023841858";
+  //protected static String PC10 = "x_1_SYMREAL > CONST_1.100000023841858";
+  protected static String PC3;// = "CONST_1.100000023841858 = x";
+  protected static String PC11;// = "(x + y) < CONST_30.0";
+  protected static String PC12;// = "y < CONST_30.0";
   //
   // [(x > 1.1f) && ((z := y) > 30.0f)] || [(x < 1.1f) && ((z := x+y) > 30.0f)] || [(x == 1.1f) && ((z := x+y) > 30.0f)]
-  protected static String PC4 = "(x_1_SYMREAL + y_2_SYMREAL) > CONST_30.0";
-  protected static String PC5 = "y_2_SYMREAL > CONST_30.0";
+
+  protected static String PC4; // = "(x + y) > CONST_30.0";
+  protected static String PC5; // = "y > CONST_30.0";
   //
   // [((z := x+y) < 30.0f) && (x == 1.1f)] || [(x < 1.1f) && ((z := x+y) < 30.0f)] ||
   // [(x < 1.1f) && ((z := x+y) == 30.0f)] || [(x == 1.1f) && ((z := x+y) == 30.0f)] ||
   // [(x > 1.1f) && ((z := y) < 30.0f)] || [(x > 1.1f) && ((z := y) == 30.0f)]
-  protected static String PC6 = "CONST_30.0 == (x_1_SYMREAL + y_2_SYMREAL)";
-  protected static String PC7 = "(x_1_SYMREAL + y_2_SYMREAL) < CONST_30.0";
-  protected static String PC8 = "y_2_SYMREAL < CONST_30.0";
-  protected static String PC9 = "CONST_30.0 == y_2_SYMREAL";
+  protected static String PC6; // = "CONST_30.0 = (x + y)";
+  protected static String PC7; // = "(x + y) < CONST_30.0";
+  protected static String PC8; // = "y < CONST_30.0";
+  protected static String PC9; // = "CONST_30.0 = y";
 
   protected static void testFloat(float x, float y) {
+
+    PC1 = TestPC.doublePC1("x",">",1.100000023841858);
+    PC2 = TestPC.doublePC1("x","<",1.100000023841858);
+    PC3 = TestPC.doublePC2(1.100000023841858,"=","x");
+    PC4 = TestPC.doublePC3("x","+","y",">",30.0);
+    PC5 = TestPC.doublePC1("y",">",30.0);
+    PC6 = TestPC.doublePC4(30.0,"x","+","y","=");
+    PC7 = TestPC.doublePC3("x","+","y","<",30.0);
+    PC8 = TestPC.doublePC1("y","<",30.0);
+    PC9 = TestPC.doublePC2(30.0,"=","y");
+
     String pc = "";
     float z = x + y;
 
     if (x > 1.1f) {
-      assert pcMatches(PC1) : makePCAssertString("TestFloatSpecial1.testFloat1 if x > 1.1f", PC1, TestUtils.getPathCondition());
+      assert pcMatches(PC1) : makePCAssertString("TestFloatSpecial1.testFloat1 if x > 1.1f", PC1, 
+        TestUtils.getPathCondition());
       z = y;
     } else {
       assert (pcMatches(PC2) || pcMatches(PC3)) : makePCAssertString("TestFloatSpecial1.testFloat1 x <= 1.1f",
@@ -60,10 +75,13 @@ public class FloatTest extends InvokeTest {
               + joinPC(PC5, pc), TestUtils.getPathCondition());
       z = 91.0f;
     } else {
-      assert (pcMatches(joinPC(PC11, pc)) || pcMatches(joinPC(PC12, pc))) : makePCAssertString(
-              "TestFloatSpecial1.testFloat1 z <= 30.0f", "one of\n" + joinPC(PC11, pc) + "\nor\n" + joinPC(PC12, pc)
-              ,
-              TestUtils.getPathCondition());
+      assert (pcMatches(joinPC(PC7, pc)) || pcMatches(joinPC(PC6, pc)) || 
+        pcMatches(joinPC(PC4, pc)) || pcMatches(joinPC(PC8, pc)) ||pcMatches(joinPC(PC9, pc))||
+        pcMatches(joinPC(PC5, pc))) : makePCAssertString(
+              "TestFloatSpecial1.testFloat1 z <= 30.0f", "one of\n" + joinPC(PC7, pc) +
+              "\nor\n" + joinPC(PC8, pc)+ "\nor\n" + joinPC(PC6, pc)+
+               "\nor\n" + joinPC(PC4, pc)+" \nor\n" + joinPC(PC9, pc)
+              ,TestUtils.getPathCondition());
     }
   }
 }

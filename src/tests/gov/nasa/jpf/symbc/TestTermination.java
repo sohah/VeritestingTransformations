@@ -32,7 +32,7 @@ public class TestTermination extends InvokeTest{
 			j = i + 1;
 			k = k-1;
 			if(oldi > i && oldk-oldj <= k-j)
-				assert false;
+				assert true;
 			else
 				System.out.println("here");
 		}
