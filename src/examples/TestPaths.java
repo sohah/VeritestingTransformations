@@ -24,18 +24,32 @@ public class TestPaths {
   public static void main (String[] args){
    // testMe(42, false);
 	System.out.println("!!!!!!!!!!!!!!! Start Testing! ");
-    (new TestPaths()).testMe2(0,false);
+    (new TestPaths()).testMe3(0,0);
+  }
+
+  public static void testMe3 (int x, int y) {
+    System.out.println("x = " + x + ", y = " + y);
+    int a=0, b=0;
+    
+    if (x <= 800) a = -1;
+    else a = 1;
+    if (y <= 1200) b = -1; 
+    else b = 1;
+    
+    System.out.println("a = " + a + ", b = " + b);
   }
 
   // how many tests do we need to cover all paths?
   public static void testMe (int x, boolean b) {
     System.out.println("x = " + x);
-
-	  if (x <= 1200){
-		  System.out.println("  <= 1200");
+    int y=0;
+    if (x <= 1200){
+      //System.out.println("  <= 1200");
+      y=-1;
     }
-	  if(x >= 1200){
-		  System.out.println("  >= 1200");
+    if(x >= 1200){
+      //System.out.println("  >= 1200");
+      y=1;
     }
   }
 
@@ -49,7 +63,7 @@ public class TestPaths {
         	if(x >= 1200){
         		System.out.println("  >= 1200");
         	}
-        }
-	  }
+        } else System.out.println("  b is false");
+  }
 
 }
