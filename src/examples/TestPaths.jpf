@@ -10,6 +10,6 @@ symbolic.method= TestPaths.testMe3(sym#sym)
 
 #symbolic.dp=yices
 
-listener = .symbc.SymbolicListener
+listener = .symbc.VeritestingListener
 
 vm.storage.class=nil

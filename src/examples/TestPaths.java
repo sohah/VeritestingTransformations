@@ -29,7 +29,7 @@ public class TestPaths {
 
   public static void testMe3 (int x, int y) {
     System.out.println("x = " + x + ", y = " + y);
-    int a=0, b=0;
+    int a=1, b=2;
     
     if (x <= 800) a = -1;
     else a = 1;
