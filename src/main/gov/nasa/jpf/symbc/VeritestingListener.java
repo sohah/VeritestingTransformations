@@ -53,8 +53,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       System.out.println("topPos = "+sf.getTopPos());
       
       // Causes assert on StackFrame.java:576 to fail
-      // IntegerExpression x_v = (IntegerExpression) sf.getOperandAttr(0);
-      // if(x_v == null) System.out.println("failed to get x expr");
+      IntegerExpression x_v = (IntegerExpression) sf.getOperandAttr();
+      if(x_v == null) System.out.println("failed to get x expr");
       
       int a_val = sf.getSlot(2);
       sf.setOperand(1, 0, false);
