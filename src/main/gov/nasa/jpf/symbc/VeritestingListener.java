@@ -68,8 +68,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
  
   public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
-    int a_slot_index = 2, b_slot_index = 3;
-    int startInsn = 40, endInsn = 68; //TODO: read these 4 things from config 
+    int a_slot_index = 5, b_slot_index = 6;
+    int startInsn = 42, endInsn = 74; //TODO: read these 4 things from config 
     if(currentThread.getTopFrame().getPC().getPosition() == startInsn && 
        currentThread.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        currentThread.getTopFrame().getClassInfo().getName().equals("TestPaths")) { 
@@ -78,9 +78,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
        currentThread.getTopFrame().getMethodInfo().getName());
       System.out.println("topPos = "+sf.getTopPos());
       
-      IntegerExpression x_v = (IntegerExpression) sf.getLocalAttr(0);
+      IntegerExpression x_v = (IntegerExpression) sf.getLocalAttr(1);
       if(x_v == null) System.out.println("failed to get x expr");
-      IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(0);
+      IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(2);
       if(y_v == null) System.out.println("failed to get y expr");
       
       int a_val = sf.getSlot(a_slot_index);

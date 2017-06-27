@@ -24,10 +24,10 @@ public class TestPaths {
   public static void main (String[] args){
    // testMe(42, false);
 	System.out.println("!!!!!!!!!!!!!!! Start Testing! ");
-    (new TestPaths()).testMe3(0,0);
+	(new TestPaths()).testMe3(0,0,0,0);
   }
 
-  public static void testMe3 (int x, int y) {
+  public void testMe3 (int x, int y, int a_prime, int b_prime) {
     System.out.println("x = " + x + ", y = " + y);
     int a=11, b=12;
     
@@ -35,11 +35,11 @@ public class TestPaths {
     else a = 1;
     if (y <= 1200) b = -1; 
     else b = 1;
-    
-    System.out.println("a = " + a + ", b = " + b);
-    if(a==1) System.out.println("a = 1");
-    else System.out.println("a != 1");
-    if(b==1) System.out.println("b = 1");
+   
+    if (a == -1) System.out.println("a = -1");
+    else if (a == 1) System.out.println("a = 1");
+    else System.out.println("a != 1 && a != -1");
+    if(b == -1) System.out.println("b = 1");
     else System.out.println("b != 1");
     System.out.println();
   }
