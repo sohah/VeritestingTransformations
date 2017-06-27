@@ -31,8 +31,11 @@ import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.BinaryNonLinearIntegerExpression;
+import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.LocalVarInfo;
 
 import static gov.nasa.jpf.symbc.numeric.Operator.*;
 
@@ -40,10 +43,33 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   
   public VeritestingListener(Config conf, JPF jpf) {
   }
-  
+ 
+  // helper function to print local vars
+  private void printLocals(MethodInfo mi, StackFrame mysf) {
+    // StackFrame mysf = sf.getPrevious();
+    LocalVarInfo[] lvi = mysf.getLocalVars();
+          
+    String lvs = "";
+    for (LocalVarInfo lv: lvi){
+      lvs = lvs +  lv.getType() + " " + lv.getName() + ", ";
+    }
+    System.out.printf("vars: %s\n", lvs);
+
+    for (int i = 0; i < lvi.length; ++i) {
+      Expression exp = (Expression)mysf.getLocalAttr(i);
+      if (exp != null){
+        System.out.printf("SYM: %s = %s\n", lvi[i].getName(), exp.toString());
+      }
+      else{
+        int slot = lvi[i].getSlotIndex();
+        System.out.printf("CON: %s = %s\n", lvi[i].getName(), mysf.getSlot(slot));
+      }
+    }
+  }
+ 
   public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
-    int startInsn = 40, endInsn = 68;
-    //System.out.println(currentThread.getTopFrame().getPC().getPosition()); 
+    int a_slot_index = 2, b_slot_index = 3;
+    int startInsn = 40, endInsn = 68; //TODO: read these 4 things from config 
     if(currentThread.getTopFrame().getPC().getPosition() == startInsn && 
        currentThread.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        currentThread.getTopFrame().getClassInfo().getName().equals("TestPaths")) { 
@@ -52,19 +78,19 @@ public class VeritestingListener extends PropertyListenerAdapter  {
        currentThread.getTopFrame().getMethodInfo().getName());
       System.out.println("topPos = "+sf.getTopPos());
       
-      // Causes assert on StackFrame.java:576 to fail
-      IntegerExpression x_v = (IntegerExpression) sf.getOperandAttr();
+      IntegerExpression x_v = (IntegerExpression) sf.getLocalAttr(0);
       if(x_v == null) System.out.println("failed to get x expr");
+      IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(0);
+      if(y_v == null) System.out.println("failed to get y expr");
       
-      int a_val = sf.getSlot(2);
-      sf.setOperand(1, 0, false);
-      sf.setSlotAttr(2, 
-         new BinaryNonLinearIntegerExpression(new IntegerConstant(1), 
+      int a_val = sf.getSlot(a_slot_index);
+      sf.setSlotAttr(a_slot_index, 
+         new BinaryNonLinearIntegerExpression(x_v, 
                 PLUS, new IntegerConstant(a_val)));
-      int b_val = sf.getSlot(3);
-      sf.setOperand(0, 0, false);
-      sf.setSlotAttr(3, 
-         new BinaryNonLinearIntegerExpression(new IntegerConstant(1), 
+
+      int b_val = sf.getSlot(b_slot_index);
+      sf.setSlotAttr(b_slot_index, 
+         new BinaryNonLinearIntegerExpression(y_v, 
                 PLUS, new IntegerConstant(b_val)));
       
       Instruction insn=instructionToExecute;

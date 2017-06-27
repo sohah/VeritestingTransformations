@@ -37,8 +37,11 @@ public class TestPaths {
     else b = 1;
     
     System.out.println("a = " + a + ", b = " + b);
-    if(a==1) System.out.println("blah");
-    else System.out.println("blah1");
+    if(a==1) System.out.println("a = 1");
+    else System.out.println("a != 1");
+    if(b==1) System.out.println("b = 1");
+    else System.out.println("b != 1");
+    System.out.println();
   }
 
   // how many tests do we need to cover all paths?
