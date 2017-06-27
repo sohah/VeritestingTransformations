@@ -29,7 +29,7 @@ public class TestPaths {
 
   public static void testMe3 (int x, int y) {
     System.out.println("x = " + x + ", y = " + y);
-    int a=1, b=2;
+    int a=11, b=12;
     
     if (x <= 800) a = -1;
     else a = 1;
@@ -37,6 +37,8 @@ public class TestPaths {
     else b = 1;
     
     System.out.println("a = " + a + ", b = " + b);
+    if(a==1) System.out.println("blah");
+    else System.out.println("blah1");
   }
 
   // how many tests do we need to cover all paths?

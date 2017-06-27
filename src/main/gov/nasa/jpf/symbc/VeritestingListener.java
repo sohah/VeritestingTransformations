@@ -42,40 +42,33 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
   
   public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
+    int startInsn = 40, endInsn = 68;
     //System.out.println(currentThread.getTopFrame().getPC().getPosition()); 
-    if(currentThread.getTopFrame().getPC().getPosition() == 38 && 
+    if(currentThread.getTopFrame().getPC().getPosition() == startInsn && 
        currentThread.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        currentThread.getTopFrame().getClassInfo().getName().equals("TestPaths")) { 
+      StackFrame sf = currentThread.getTopFrame();
       System.out.println("time to start veritesting for " + 
        currentThread.getTopFrame().getMethodInfo().getName());
-      StackFrame sf = currentThread.getTopFrame();
-      
-      int offset=-1;
       System.out.println("topPos = "+sf.getTopPos());
-      IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr(offset);
-      if(sym_v == null) {
-        int a_val = sf.getSlot(2);
-        System.out.println("offset("+offset+") is concrete with value = "+a_val);
-        sf.setOperandAttr(-1, 
-              new BinaryNonLinearIntegerExpression(new IntegerConstant(a_val), 
-                  PLUS, new IntegerConstant(1)));
-      } else {
-        System.out.println("offset("+offset+") is symbolic");
-      }
-      offset = -2;
-      sym_v = (IntegerExpression) sf.getOperandAttr(offset);
-      if(sym_v == null) {
-        int a_val = sf.getSlot(3);
-        System.out.println("offset("+offset+") is concrete with value = "+a_val);
-        sf.setOperandAttr(-1, 
-              new BinaryNonLinearIntegerExpression(new IntegerConstant(a_val), 
-                  PLUS, new IntegerConstant(1)));
-      } else {
-        System.out.println("offset("+offset+") is symbolic");
-      }
+      
+      // Causes assert on StackFrame.java:576 to fail
+      // IntegerExpression x_v = (IntegerExpression) sf.getOperandAttr(0);
+      // if(x_v == null) System.out.println("failed to get x expr");
+      
+      int a_val = sf.getSlot(2);
+      sf.setOperand(1, 0, false);
+      sf.setSlotAttr(2, 
+         new BinaryNonLinearIntegerExpression(new IntegerConstant(1), 
+                PLUS, new IntegerConstant(a_val)));
+      int b_val = sf.getSlot(3);
+      sf.setOperand(0, 0, false);
+      sf.setSlotAttr(3, 
+         new BinaryNonLinearIntegerExpression(new IntegerConstant(1), 
+                PLUS, new IntegerConstant(b_val)));
       
       Instruction insn=instructionToExecute;
-      while(insn.getPosition() < 66) 
+      while(insn.getPosition() < endInsn) 
         insn = insn.getNext();
       currentThread.setNextPC(insn);
     }

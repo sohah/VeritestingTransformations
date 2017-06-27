@@ -1,0 +1,125 @@
+Compiled from "TestPaths.java"
+public class TestPaths {
+  public TestPaths();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void main(java.lang.String[]);
+    Code:
+       0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       3: ldc           #3                  // String !!!!!!!!!!!!!!! Start Testing!
+       5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+       8: new           #5                  // class TestPaths
+      11: dup
+      12: invokespecial #6                  // Method "<init>":()V
+      15: pop
+      16: iconst_0
+      17: iconst_0
+      18: invokestatic  #7                  // Method testMe3:(II)V
+      21: return
+
+  public static void testMe3(int, int);
+    Code:
+       0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       3: new           #8                  // class java/lang/StringBuilder
+       6: dup
+       7: invokespecial #9                  // Method java/lang/StringBuilder."<init>":()V
+      10: ldc           #10                 // String x =
+      12: invokevirtual #11                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      15: iload_0
+      16: invokevirtual #12                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+      19: ldc           #13                 // String , y =
+      21: invokevirtual #11                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      24: iload_1
+      25: invokevirtual #12                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+      28: invokevirtual #14                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      31: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      34: bipush        11
+      36: istore_2
+      37: bipush        12
+      39: istore_3
+      40: iload_0
+      41: sipush        800
+      44: if_icmpgt     52
+      47: iconst_m1
+      48: istore_2
+      49: goto          54
+      52: iconst_1
+      53: istore_2
+      54: iload_1
+      55: sipush        1200
+      58: if_icmpgt     66
+      61: iconst_m1
+      62: istore_3
+      63: goto          68
+      66: iconst_1
+      67: istore_3
+      68: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      71: new           #8                  // class java/lang/StringBuilder
+      74: dup
+      75: invokespecial #9                  // Method java/lang/StringBuilder."<init>":()V
+      78: ldc           #15                 // String a =
+      80: invokevirtual #11                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      83: iload_2
+      84: invokevirtual #12                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+      87: ldc           #16                 // String , b =
+      89: invokevirtual #11                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      92: iload_3
+      93: invokevirtual #12                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+      96: invokevirtual #14                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      99: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     102: return
+
+  public static void testMe(int, boolean);
+    Code:
+       0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       3: new           #8                  // class java/lang/StringBuilder
+       6: dup
+       7: invokespecial #9                  // Method java/lang/StringBuilder."<init>":()V
+      10: ldc           #10                 // String x =
+      12: invokevirtual #11                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      15: iload_0
+      16: invokevirtual #12                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+      19: invokevirtual #14                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      22: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      25: iconst_0
+      26: istore_2
+      27: iload_0
+      28: sipush        1200
+      31: if_icmpgt     36
+      34: iconst_m1
+      35: istore_2
+      36: iload_0
+      37: sipush        1200
+      40: if_icmplt     45
+      43: iconst_1
+      44: istore_2
+      45: return
+
+  public void testMe2(int, boolean);
+    Code:
+       0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       3: ldc           #17                 // String !!!!!!!!!!!!!!! First step!
+       5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+       8: iload_2
+       9: ifeq          45
+      12: iload_1
+      13: sipush        1200
+      16: if_icmpgt     27
+      19: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      22: ldc           #18                 // String   <= 1200
+      24: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      27: iload_1
+      28: sipush        1200
+      31: if_icmplt     53
+      34: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      37: ldc           #19                 // String   >= 1200
+      39: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      42: goto          53
+      45: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      48: ldc           #20                 // String   b is false
+      50: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      53: return
+}
