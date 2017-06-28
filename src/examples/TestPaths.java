@@ -18,30 +18,41 @@
 
 /**
  * example to demonstrate creation of test suites for path coverage
+ * modified for veritesting
  */
+
+import gov.nasa.jpf.symbc.Debug;
+
 public class TestPaths {
 
   public static void main (String[] args){
    // testMe(42, false);
 	System.out.println("!!!!!!!!!!!!!!! Start Testing! ");
-	(new TestPaths()).testMe3(0,0,0,0);
+	(new TestPaths()).testMe3(0,0);
   }
 
-  public void testMe3 (int x, int y, int a_prime, int b_prime) {
+  public void testMe3 (int x, int y) {
     System.out.println("x = " + x + ", y = " + y);
+		int a_final = Debug.makeSymbolicInteger("a_final");
+		int b_final = Debug.makeSymbolicInteger("b_final");
     int a=11, b=12;
-    
-    if (x <= 800) a = -1;
-    else a = 1;
-    if (y <= 1200) b = -1; 
+   
+		// Begin region for static unrolling
+    if (x < 800) a = -1;
+    else if (x == 800) a = 0;
+	  else a = 1;
+    if (y < 1200) b = -1;
+		else if (y == 1200) b = 0;
     else b = 1;
+		// End region for static unrolling
    
     if (a == -1) System.out.println("a = -1");
     else if (a == 1) System.out.println("a = 1");
     else System.out.println("a != 1 && a != -1");
-    if(b == -1) System.out.println("b = 1");
-    else System.out.println("b != 1");
-    System.out.println();
+    if(b == -1) System.out.println("b = -1");
+		else if (b == 1) System.out.println("b = 1");
+    else System.out.println("b != 1 && b != 1");
+    System.out.println("-x-x-x-x-");
   }
 
   // how many tests do we need to cover all paths?

@@ -28,16 +28,19 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
+import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.BinaryNonLinearIntegerExpression;
 import gov.nasa.jpf.symbc.numeric.Expression;
+import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.LocalVarInfo;
 
 import static gov.nasa.jpf.symbc.numeric.Operator.*;
+import static gov.nasa.jpf.symbc.numeric.Comparator.*;
 
 public class VeritestingListener extends PropertyListenerAdapter  {
   
@@ -66,37 +69,67 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       }
     }
   }
- 
-  public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
+
+  // adapted from bytecodes/IFEQ.java
+  public PathCondition getPC(VM vm, ThreadInfo ti, Instruction instructionToExecute, PathCondition pc) {
+    ChoiceGenerator <?> cg;
+    if (!ti.isFirstStepInsn()) { // first time around
+      cg = new PCChoiceGenerator(2);
+      ((PCChoiceGenerator)cg).setOffset(instructionToExecute.getPosition());
+      ((PCChoiceGenerator)cg).setMethodName(ti.getTopFrame().getMethodInfo().getFullName());
+      vm.getSystemState().setNextChoiceGenerator(cg);
+    } else {  // this is what really returns results
+      cg = vm.getSystemState().getChoiceGenerator();
+      assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
+    }
+    ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
+    if (prev_cg == null)
+      pc = new PathCondition();
+    else
+      pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
+    assert pc != null;
+    return pc;
+  }
+
+  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+    int x_slot_index = 1, y_slot_index = 2;
+    int a_final_slot_index = 3, b_final_slot_index = 4;
     int a_slot_index = 5, b_slot_index = 6;
-    int startInsn = 42, endInsn = 74; //TODO: read these 4 things from config 
-    if(currentThread.getTopFrame().getPC().getPosition() == startInsn && 
-       currentThread.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
-       currentThread.getTopFrame().getClassInfo().getName().equals("TestPaths")) { 
-      StackFrame sf = currentThread.getTopFrame();
+    int startInsn = 55, endInsn = 113; //TODO: read some of these from config 
+    if(ti.getTopFrame().getPC().getPosition() == startInsn && 
+       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
+       ti.getTopFrame().getClassInfo().getName().equals("TestPaths")) { 
+      StackFrame sf = ti.getTopFrame();
       System.out.println("time to start veritesting for " + 
-       currentThread.getTopFrame().getMethodInfo().getName());
+       ti.getTopFrame().getMethodInfo().getName());
       System.out.println("topPos = "+sf.getTopPos());
       
-      IntegerExpression x_v = (IntegerExpression) sf.getLocalAttr(1);
+      IntegerExpression x_v = (IntegerExpression) sf.getLocalAttr(x_slot_index);
       if(x_v == null) System.out.println("failed to get x expr");
-      IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(2);
+      IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(y_slot_index);
       if(y_v == null) System.out.println("failed to get y expr");
-      
-      int a_val = sf.getSlot(a_slot_index);
-      sf.setSlotAttr(a_slot_index, 
-         new BinaryNonLinearIntegerExpression(x_v, 
-                PLUS, new IntegerConstant(a_val)));
+      IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(a_final_slot_index);
+      if(a_v == null) System.out.println("failed to get a_final expr");
+      IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(b_final_slot_index);
+      if(b_v == null) System.out.println("failed to get b_final expr");
+     
+      PathCondition pc = null;
+      pc = getPC(vm, ti, instructionToExecute, pc);
 
+      // Generate symbolic expressions to unroll lines 40-45 of TestPaths.java
+      pc._addDet(EQ, a_v, new BinaryNonLinearIntegerExpression(x_v, CMP, new IntegerConstant(800)));
+      pc._addDet(EQ, b_v, new BinaryNonLinearIntegerExpression(y_v, CMP, new IntegerConstant(1200)));
+
+      // Assign a', b' (aka a_final, b_final) back into a, b respectively
+      int a_val = sf.getSlot(a_slot_index);
+      sf.setSlotAttr(a_slot_index, a_v); 
       int b_val = sf.getSlot(b_slot_index);
-      sf.setSlotAttr(b_slot_index, 
-         new BinaryNonLinearIntegerExpression(y_v, 
-                PLUS, new IntegerConstant(b_val)));
+      sf.setSlotAttr(b_slot_index, b_v); 
       
       Instruction insn=instructionToExecute;
       while(insn.getPosition() < endInsn) 
         insn = insn.getNext();
-      currentThread.setNextPC(insn);
+      ti.setNextPC(insn);
     }
   }
 }
