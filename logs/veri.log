@@ -1,0 +1,115 @@
+symbolic.min_int=-25
+symbolic.min_long=-9223372036854775808
+symbolic.min_short=-32768
+symbolic.min_byte=-128
+symbolic.min_char=0
+symbolic.max_int=25
+symbolic.max_long=9223372036854775807
+symbolic.max_short=32767
+symbolic.max_byte=127
+symbolic.max_char=65535
+symbolic.min_double=4.9E-324
+symbolic.max_double=1.7976931348623157E308
+JavaPathfinder core system v8.0 (rev 32) - (C) 2005-2014 United States Government. All rights reserved.
+
+
+====================================================== system under test
+TestPaths.main()
+
+====================================================== search started: 6/29/17 3:47 PM
+!!!!!!!!!!!!!!! Start Testing! 
+x = 0, y = 0
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+time to start veritesting for testMe3
+topPos = 7
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+-x-x-x-x-
+
+====================================================== results
+no errors detected
+
+====================================================== statistics
+elapsed time:       00:00:00
+states:             new=54,visited=0,backtracked=54,end=27
+search:             maxDepth=28,constraints=0
+choice generators:  thread=1 (signal=0,lock=1,sharedRef=0,threadApi=0,reschedule=0), data=27
+heap:               new=426,released=276,maxLive=366,gcCycles=29
+instructions:       3600
+max memory:         240MB
+loaded code:        classes=63,methods=1472
+
+====================================================== search finished: 6/29/17 3:47 PM
