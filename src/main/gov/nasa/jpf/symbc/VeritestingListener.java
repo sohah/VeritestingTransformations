@@ -39,6 +39,10 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.LocalVarInfo;
 
+import gov.nasa.jpf.vm.MJIEnv;
+import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
+import gov.nasa.jpf.symbc.numeric.MinMax;
+
 import static gov.nasa.jpf.symbc.numeric.Operator.*;
 import static gov.nasa.jpf.symbc.numeric.Comparator.*;
 
@@ -91,12 +95,17 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     return pc;
   }
 
+  public static int makeSymbolicInteger(MJIEnv env, String name) {
+    env.setReturnAttribute(new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name)));
+    return 0;
+  }
+
   public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
-    int a_final_slot_index = 3, b_final_slot_index = 4;
-    int i_slot_index = 5;
-    int a_slot_index = 6, b_slot_index = 7;
-    int startInsn = 68, endInsn = 126; //TODO: read some of these from config 
+    // int a_final_slot_index = 3, b_final_slot_index = 4;
+    int i_slot_index = 3;
+    int a_slot_index = 4, b_slot_index = 5;
+    int startInsn = 53, endInsn = 107; //TODO: read some of these from config 
     if(ti.getTopFrame().getPC().getPosition() == startInsn && 
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPaths")) { 
@@ -111,10 +120,13 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       if(y_v == null) System.out.println("failed to get y expr");
       IntegerExpression i_v = (IntegerExpression) sf.getLocalAttr(i_slot_index);
       if(i_v == null) System.out.println("failed to get i expr");
-      IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(a_final_slot_index);
-      if(a_v == null) System.out.println("failed to get a_final expr");
-      IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(b_final_slot_index);
-      if(b_v == null) System.out.println("failed to get b_final expr");
+      // IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(a_final_slot_index);
+      // if(a_v == null) System.out.println("failed to get a_final expr");
+      // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(b_final_slot_index);
+      // if(b_v == null) System.out.println("failed to get b_final expr");
+      
+      int a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
+      int b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
      
       PathCondition pc = null;
       pc = getPC(vm, ti, instructionToExecute, pc);

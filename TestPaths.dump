@@ -35,60 +35,54 @@ public class TestPaths {
       25: invokevirtual #12                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
       28: invokevirtual #14                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
       31: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-      34: ldc           #15                 // String a_final
+      34: ldc           #15                 // String i
       36: invokestatic  #16                 // Method gov/nasa/jpf/symbc/Debug.makeSymbolicInteger:(Ljava/lang/String;)I
       39: istore_3
-      40: ldc           #17                 // String b_final
-      42: invokestatic  #16                 // Method gov/nasa/jpf/symbc/Debug.makeSymbolicInteger:(Ljava/lang/String;)I
-      45: istore        4
-      47: ldc           #18                 // String i
-      49: invokestatic  #16                 // Method gov/nasa/jpf/symbc/Debug.makeSymbolicInteger:(Ljava/lang/String;)I
-      52: istore        5
-      54: bipush        11
-      56: istore        6
-      58: bipush        12
-      60: istore        7
-      62: iload         5
-      64: iconst_1
-      65: if_icmpge     132
-      68: iload_1
-      69: iload         5
-      71: iadd
-      72: ifge          81
-      75: iconst_m1
-      76: istore        6
-      78: goto          97
-      81: iload_1
-      82: iload         5
-      84: iadd
-      85: ifne          94
-      88: iconst_0
-      89: istore        6
-      91: goto          97
-      94: iconst_1
-      95: istore        6
-      97: iload_2
-      98: iload         5
-     100: iadd
-     101: ifge          110
-     104: iconst_m1
-     105: istore        7
-     107: goto          126
-     110: iload_2
-     111: iload         5
-     113: iadd
-     114: ifne          123
-     117: iconst_0
-     118: istore        7
-     120: goto          126
-     123: iconst_1
-     124: istore        7
-     126: iinc          5, 1
-     129: goto          62
-     132: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     135: ldc           #19                 // String -x-x-x-x-
-     137: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     140: return
+      40: bipush        11
+      42: istore        4
+      44: bipush        12
+      46: istore        5
+      48: iload_3
+      49: iconst_1
+      50: if_icmpge     113
+      53: iload_1
+      54: iload_3
+      55: iadd
+      56: ifge          65
+      59: iconst_m1
+      60: istore        4
+      62: goto          80
+      65: iload_1
+      66: iload_3
+      67: iadd
+      68: ifne          77
+      71: iconst_0
+      72: istore        4
+      74: goto          80
+      77: iconst_1
+      78: istore        4
+      80: iload_2
+      81: iload_3
+      82: iadd
+      83: ifge          92
+      86: iconst_m1
+      87: istore        5
+      89: goto          107
+      92: iload_2
+      93: iload_3
+      94: iadd
+      95: ifne          104
+      98: iconst_0
+      99: istore        5
+     101: goto          107
+     104: iconst_1
+     105: istore        5
+     107: iinc          3, 1
+     110: goto          48
+     113: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     116: ldc           #17                 // String -x-x-x-x-
+     118: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     121: return
 
   public static void testMe(int, boolean);
     Code:
@@ -119,7 +113,7 @@ public class TestPaths {
   public void testMe2(int, boolean);
     Code:
        0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-       3: ldc           #20                 // String !!!!!!!!!!!!!!! First step!
+       3: ldc           #18                 // String !!!!!!!!!!!!!!! First step!
        5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
        8: iload_2
        9: ifeq          45
@@ -127,17 +121,17 @@ public class TestPaths {
       13: sipush        1200
       16: if_icmpgt     27
       19: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      22: ldc           #21                 // String   <= 1200
+      22: ldc           #19                 // String   <= 1200
       24: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
       27: iload_1
       28: sipush        1200
       31: if_icmplt     53
       34: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      37: ldc           #22                 // String   >= 1200
+      37: ldc           #20                 // String   >= 1200
       39: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
       42: goto          53
       45: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      48: ldc           #23                 // String   b is false
+      48: ldc           #21                 // String   b is false
       50: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
       53: return
 }
