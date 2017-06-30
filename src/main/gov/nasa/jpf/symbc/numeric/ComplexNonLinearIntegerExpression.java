@@ -52,13 +52,19 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
 
   public ComplexNonLinearIntegerExpression right;
 
-  public ComplexNonLinearIntegerExpression(IntegerExpression l) {
-    if(l instanceof ComplexNonLinearIntegerExpression) left = (ComplexNonLinearIntegerExpression) l;
-    else left = new ComplexNonLinearIntegerExpression();
-    left = 
+  public IntegerExpression base;
+
+  public ComplexNonLinearIntegerExpression() {
+    left = right = null;
     op = Operator.NONE_OP;
-    right = null;
     cmprtr = Comparator.NONE_CMP;
+  }
+
+  public ComplexNonLinearIntegerExpression(IntegerExpression l) {
+    base = l;
+    op = Operator.NONE_OP;
+    cmprtr = Comparator.NONE_CMP;
+    left = right = null;
   }
 
   public void initLR(IntegerExpression l, IntegerExpression r) {
@@ -86,15 +92,15 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
     cmprtr = Comparator.NONE_CMP;
   }
 
-  public ComplexNonLinearIntegerExpression(IntegerExpression  l, Comparator c, long r) {
-    initLR(l, new IntegerConstant(r));
+  public ComplexNonLinearIntegerExpression(long l, Comparator c, IntegerExpression r) {
+    initLR(new IntegerConstant(l), r);
     cmprtr = c;
     op = Operator.NONE_OP;
   }
 
   public long solution() {
     long l = left.solution();
-    if (op == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return l;
+    if (op == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return base.solution();
     long r = right.solution();
     if (op != Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) {
       switch(op){
@@ -125,7 +131,7 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
   }
 
   public String stringPC() {
-    if(op == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return left.stringPC();
+    if(op == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return base.stringPC();
     if(op == Operator.NONE_OP)  
       return "(" + left.stringPC() + cmprtr.toString() + right.stringPC() + ")";
     else 
@@ -133,7 +139,7 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
   }
 
   public String toString() {
-    if(op == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return left.toString();
+    if(op == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return base.toString();
     if(op == Operator.NONE_OP)  
       return "(" + left.toString() + cmprtr.toString() + right.toString() + ")";
     else 
@@ -156,7 +162,7 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
       int r = -1;
       if(e.op == Operator.NONE_OP && op == Operator.NONE_OP)
         if(e.cmprtr == Comparator.NONE_CMP && cmprtr == Comparator.NONE_CMP)
-          left._cmp(e.left); // use left if no operators used 
+          base._cmp(e.base); // use left if no operators used 
         else 
           r = cmprtr.compareTo(e.cmprtr);
       else r = op.compareTo(e.op);

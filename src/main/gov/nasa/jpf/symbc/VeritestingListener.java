@@ -127,11 +127,15 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       // Generate symbolic expressions to unroll lines 39-42 of TestPaths.java
       pc._addDet(EQ, a_v, new ComplexNonLinearIntegerExpression( 
             new ComplexNonLinearIntegerExpression(
-              new ComplexNonLinearIntegerExpression(x_v, LE, new IntegerConstant(800)), LOGICAL_AND, 
-              new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(-1))), LOGICAL_OR, 
+              new ComplexNonLinearIntegerExpression(x_v, LE, new IntegerConstant(800)), 
+              LOGICAL_AND, 
+              new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(-1))), 
+            LOGICAL_OR, 
             new ComplexNonLinearIntegerExpression(
-              new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(800)), LOGICAL_AND, 
+              new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(800)), 
+              LOGICAL_AND, 
               new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(1)))));
+
       pc._addDet(EQ, b_v, new ComplexNonLinearIntegerExpression( 
             new ComplexNonLinearIntegerExpression(
               new ComplexNonLinearIntegerExpression(y_v, LE, new IntegerConstant(1200)), LOGICAL_AND, 
@@ -142,7 +146,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 
       // Assign a', b' (aka a_final, b_final) back into a, b respectively
       int a_val = sf.getSlot(a_slot_index);
-      sf.setSlotAttr(a_slot_index, a_v); 
+      sf.setSlotAttr(a_slot_index, new IntegerConstant(a_v)); 
       int b_val = sf.getSlot(b_slot_index);
       sf.setSlotAttr(b_slot_index, b_v); 
       
