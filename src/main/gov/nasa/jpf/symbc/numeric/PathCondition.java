@@ -107,6 +107,16 @@ public class PathCondition implements Comparable<PathCondition> {
 		return pc_new;
 	}
 
+    public void _addDet(ComplexNonLinearIntegerConstraint clic) {
+			if (!this.hasConstraint(clic)) {
+				flagSolved = false;
+				Constraint t = (Constraint) clic;
+				t.and = header;
+				header = t;
+				count++;
+			}
+		}
+
     //Added by Aymeric
     public void _addDet(Comparator c, SelectExpression se, IntegerExpression ie) {
         Constraint t;

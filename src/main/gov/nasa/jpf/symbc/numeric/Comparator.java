@@ -44,7 +44,8 @@ public enum Comparator {
    LT(" < ")  { public Comparator not() { return GE; }},
    LE(" <= ") { public Comparator not() { return GT; }},
    GT(" > ")  { public Comparator not() { return LE; }},
-   GE(" >= ") { public Comparator not() { return LT; }};
+   GE(" >= ") { public Comparator not() { return LT; }},
+   NONE_CMP(" ; ") { public Comparator not() { return NONE_CMP; }};
 
    private final String str;
 
@@ -83,6 +84,7 @@ public enum Comparator {
 			return left > right;
 		case GE:
 			return left >= right;
+		case NONE_CMP: 
 		default:
 			return false;
 		}
