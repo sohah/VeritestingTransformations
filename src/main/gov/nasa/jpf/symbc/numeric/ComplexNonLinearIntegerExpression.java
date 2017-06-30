@@ -52,17 +52,43 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
 
   public ComplexNonLinearIntegerExpression right;
 
+  public ComplexNonLinearIntegerExpression(IntegerExpression l) {
+    if(l instanceof ComplexNonLinearIntegerExpression) left = (ComplexNonLinearIntegerExpression) l;
+    else left = new ComplexNonLinearIntegerExpression();
+    left = 
+    op = Operator.NONE_OP;
+    right = null;
+    cmprtr = Comparator.NONE_CMP;
+  }
+
+  public void initLR(IntegerExpression l, IntegerExpression r) {
+    if(l instanceof ComplexNonLinearIntegerExpression) left = (ComplexNonLinearIntegerExpression) l;
+    else left = new ComplexNonLinearIntegerExpression(l);
+    if(r instanceof ComplexNonLinearIntegerExpression) right = (ComplexNonLinearIntegerExpression) r;
+    else right = new ComplexNonLinearIntegerExpression(r);
+  }
+
   public ComplexNonLinearIntegerExpression(IntegerExpression l, Operator o, IntegerExpression r) {
-    left = (ComplexNonLinearIntegerExpression) l;
+    initLR(l, r);
     op = o;
-    right = (ComplexNonLinearIntegerExpression) r;
     cmprtr = Comparator.NONE_CMP;
   }
 
   public ComplexNonLinearIntegerExpression(IntegerExpression l, Comparator c, IntegerExpression r) {
-    left = (ComplexNonLinearIntegerExpression) l;
+    initLR(l, r);
     cmprtr = c;
-    right = (ComplexNonLinearIntegerExpression) r;
+    op = Operator.NONE_OP;
+  }
+
+  public ComplexNonLinearIntegerExpression(long l, Operator o, IntegerExpression r) {
+    initLR(new IntegerConstant(l), r);
+    op = o;
+    cmprtr = Comparator.NONE_CMP;
+  }
+
+  public ComplexNonLinearIntegerExpression(IntegerExpression  l, Comparator c, long r) {
+    initLR(l, new IntegerConstant(r));
+    cmprtr = c;
     op = Operator.NONE_OP;
   }
 

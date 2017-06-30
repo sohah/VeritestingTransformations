@@ -32,6 +32,7 @@ import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.BinaryNonLinearIntegerExpression;
+import gov.nasa.jpf.symbc.numeric.ComplexNonLinearIntegerExpression;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.vm.ChoiceGenerator;
@@ -101,6 +102,58 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
 
   public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+    int x_slot_index = 1, y_slot_index = 2;
+    int a_slot_index = 3, b_slot_index = 4;
+    int startInsn = 41, endInsn = 71; //TODO: read some of these from config 
+    if(ti.getTopFrame().getPC().getPosition() == startInsn && 
+       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
+       ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) { 
+      StackFrame sf = ti.getTopFrame();
+      System.out.println("time to start veritesting for " + 
+       ti.getTopFrame().getMethodInfo().getName());
+      System.out.println("topPos = "+sf.getTopPos());
+      
+      IntegerExpression x_v = (IntegerExpression) sf.getLocalAttr(x_slot_index);
+      if(x_v == null) System.out.println("failed to get x expr");
+      IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(y_slot_index);
+      if(y_v == null) System.out.println("failed to get y expr");
+      
+      int a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
+      int b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
+     
+      PathCondition pc = null;
+      pc = getPC(vm, ti, instructionToExecute, pc);
+
+      // Generate symbolic expressions to unroll lines 39-42 of TestPaths.java
+      pc._addDet(EQ, a_v, new ComplexNonLinearIntegerExpression( 
+            new ComplexNonLinearIntegerExpression(
+              new ComplexNonLinearIntegerExpression(x_v, LE, new IntegerConstant(800)), LOGICAL_AND, 
+              new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(-1))), LOGICAL_OR, 
+            new ComplexNonLinearIntegerExpression(
+              new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(800)), LOGICAL_AND, 
+              new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(1)))));
+      pc._addDet(EQ, b_v, new ComplexNonLinearIntegerExpression( 
+            new ComplexNonLinearIntegerExpression(
+              new ComplexNonLinearIntegerExpression(y_v, LE, new IntegerConstant(1200)), LOGICAL_AND, 
+              new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(-1))), LOGICAL_OR, 
+            new ComplexNonLinearIntegerExpression(
+              new ComplexNonLinearIntegerExpression(y_v, GT, new IntegerConstant(1200)), LOGICAL_AND, 
+              new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(1)))));
+
+      // Assign a', b' (aka a_final, b_final) back into a, b respectively
+      int a_val = sf.getSlot(a_slot_index);
+      sf.setSlotAttr(a_slot_index, a_v); 
+      int b_val = sf.getSlot(b_slot_index);
+      sf.setSlotAttr(b_slot_index, b_v); 
+      
+      Instruction insn=instructionToExecute;
+      while(insn.getPosition() < endInsn) 
+        insn = insn.getNext();
+      ti.setNextPC(insn);
+    }
+  }
+
+  public void executeInstruction_TestPaths(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
     // int a_final_slot_index = 3, b_final_slot_index = 4;
     int i_slot_index = 3;

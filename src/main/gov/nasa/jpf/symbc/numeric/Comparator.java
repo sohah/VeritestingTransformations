@@ -45,48 +45,54 @@ public enum Comparator {
    LE(" <= ") { public Comparator not() { return GT; }},
    GT(" > ")  { public Comparator not() { return LE; }},
    GE(" >= ") { public Comparator not() { return LT; }},
+	 LOGICAL_AND(" && ") {public Comparator not() { return LOGICAL_OR; }},
+	 LOGICAL_OR(" || ") {public Comparator not() { return LOGICAL_AND; }},
    NONE_CMP(" ; ") { public Comparator not() { return NONE_CMP; }};
 
    private final String str;
 
    Comparator(String str){
-	   this.str= str;
+     this.str= str;
    }
    
    public abstract Comparator not();
    
    @Override
    public String toString() {
-	 return str;
+   return str;
    }
 
-	/**
-	 * Apply this comparator to the given operands.
-	 * 
-	 * @param left
-	 *            the left operand
-	 * @param right
-	 *            the right operand
-	 * @return <code>true</code> if and only if the operands satisfy this
-	 *         comparator
-	 */
-	public boolean evaluate(double left, double right) {
-		switch (this) {
-		case EQ:
-			return left == right;
-		case NE:
-			return left != right;
-		case LT:
-			return left < right;
-		case LE:
-			return left <= right;
-		case GT:
-			return left > right;
-		case GE:
-			return left >= right;
-		case NONE_CMP: 
-		default:
-			return false;
-		}
-	}
+  /**
+   * Apply this comparator to the given operands.
+   * 
+   * @param left
+   *            the left operand
+   * @param right
+   *            the right operand
+   * @return <code>true</code> if and only if the operands satisfy this
+   *         comparator
+   */
+  public boolean evaluate(double left, double right) {
+    switch (this) {
+    case EQ:
+      return left == right;
+    case NE:
+      return left != right;
+    case LT:
+      return left < right;
+    case LE:
+      return left <= right;
+    case GT:
+      return left > right;
+    case GE:
+      return left >= right;
+    case LOGICAL_AND:
+      return left!=0 && right!=0;
+    case LOGICAL_OR:
+      return left!=0 || right!=0;
+    case NONE_CMP: 
+    default:
+      return false;
+    }
+  }
 }
