@@ -47,6 +47,7 @@ public class BinaryLinearIntegerExpression extends LinearIntegerExpression
 
 	public BinaryLinearIntegerExpression (IntegerExpression l, Operator o, IntegerExpression r)
 	{
+		System.out.println("new BLIE");
 		left = l;
 		op = o;
 		right = r;
