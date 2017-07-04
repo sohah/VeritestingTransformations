@@ -86,7 +86,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     // } else {  // this is what really returns results
       cg = vm.getSystemState().getChoiceGenerator();
       assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
-    //}
+    // }
     ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
     if (prev_cg == null)
       pc = new PathCondition();
@@ -101,10 +101,12 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     return 0;
   }
 
+  // Used for TestPathsSimple
   public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
-    int a_slot_index = 3, b_slot_index = 4;
-    int startInsn = 41, endInsn = 71; //TODO: read some of these from config 
+    int af_slot_index = 3, bf_slot_index = 4;
+    int a_slot_index = 5, b_slot_index = 6;
+    int startInsn = 55, endInsn = 87; //TODO: read some of these from config 
     if(ti.getTopFrame().getPC().getPosition() == startInsn && 
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) { 
@@ -118,8 +120,12 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(y_slot_index);
       if(y_v == null) System.out.println("failed to get y expr");
       
-      int a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
-      int b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
+      //int a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
+      //int b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
+      IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(af_slot_index);
+      if(a_v == null) System.out.println("failed to get a_final expr");
+      IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(bf_slot_index);
+      if(b_v == null) System.out.println("failed to get b_final expr");
      
       PathCondition pc = null;
       pc = getPC(vm, ti, instructionToExecute, pc);
@@ -146,7 +152,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 
       // Assign a', b' (aka a_final, b_final) back into a, b respectively
       int a_val = sf.getSlot(a_slot_index);
-      sf.setSlotAttr(a_slot_index, new IntegerConstant(a_v)); 
+      sf.setSlotAttr(a_slot_index, a_v); 
       int b_val = sf.getSlot(b_slot_index);
       sf.setSlotAttr(b_slot_index, b_v); 
       
