@@ -1,0 +1,238 @@
+public class TestPathsSimple extends java.lang.Object
+{
+
+    public void <init>()
+    {
+        TestPathsSimple r0;
+
+        r0 := @this: TestPathsSimple;
+
+        specialinvoke r0.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+
+    public static void main(java.lang.String[])
+    {
+        java.lang.String[] r0;
+        java.io.PrintStream $r1;
+        TestPathsSimple $r2;
+
+        r0 := @parameter0: java.lang.String[];
+
+        $r1 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>("!!!!!!!!!!!!!!! Start Testing! ");
+
+        $r2 = new TestPathsSimple;
+
+        specialinvoke $r2.<TestPathsSimple: void <init>()>();
+
+        virtualinvoke $r2.<TestPathsSimple: void testMe3(int,int)>(0, 0);
+
+        return;
+    }
+
+    public void testMe3(int, int)
+    {
+        TestPathsSimple r0;
+        int i0, i1;
+        java.lang.StringBuilder $r1, $r3, $r4, $r5, $r6;
+        java.io.PrintStream $r2, $r8, $r9, $r10, $r11, $r12, $r13, $r14;
+        java.lang.String $r7;
+        byte b4, b5, b6, b7, b6_1, b6_2, b7_1, b7_2;
+
+        r0 := @this: TestPathsSimple;
+
+        i0 := @parameter0: int;
+
+        i1 := @parameter1: int;
+
+        $r2 = <java.lang.System: java.io.PrintStream out>;
+
+        $r1 = new java.lang.StringBuilder;
+
+        specialinvoke $r1.<java.lang.StringBuilder: void <init>()>();
+
+        $r3 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ");
+
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0);
+
+        $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(", y = ");
+
+        $r6 = virtualinvoke $r5.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i1);
+
+        $r7 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.String toString()>();
+
+        virtualinvoke $r2.<java.io.PrintStream: void println(java.lang.String)>($r7);
+
+        staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("a_final");
+
+        staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("b_final");
+
+        b4 = 11;
+
+        b5 = 12;
+
+        if i0 > 800 goto label01;
+
+        b6 = -1;
+
+(0)     goto label02;
+
+     label01:
+(1)     b6_1 = 1;
+
+     label02:
+        b6_2 = Phi(b6 #0, b6_1 #1);
+
+        if i1 > 1200 goto label03;
+
+        b7 = -1;
+
+(2)     goto label04;
+
+     label03:
+(3)     b7_1 = 1;
+
+     label04:
+        b7_2 = Phi(b7 #2, b7_1 #3);
+
+        if b6_2 != -1 goto label05;
+
+        $r13 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r13.<java.io.PrintStream: void println(java.lang.String)>("a = -1");
+
+        goto label07;
+
+     label05:
+        if b6_2 != 1 goto label06;
+
+        $r12 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r12.<java.io.PrintStream: void println(java.lang.String)>("a = 1");
+
+        goto label07;
+
+     label06:
+        $r8 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r8.<java.io.PrintStream: void println(java.lang.String)>("a != 1 && a != -1");
+
+     label07:
+        if b7_2 != -1 goto label08;
+
+        $r11 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r11.<java.io.PrintStream: void println(java.lang.String)>("b = -1");
+
+        goto label10;
+
+     label08:
+        if b7_2 != 1 goto label09;
+
+        $r10 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r10.<java.io.PrintStream: void println(java.lang.String)>("b = 1");
+
+        goto label10;
+
+     label09:
+        $r9 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r9.<java.io.PrintStream: void println(java.lang.String)>("b != 1 && b != 1");
+
+     label10:
+        $r14 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r14.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-");
+
+        return;
+    }
+
+    public static void testMe(int, boolean)
+    {
+        int i0;
+        boolean z0, z1, z2;
+        java.lang.StringBuilder $r0, $r2, $r3;
+        java.io.PrintStream $r1;
+        java.lang.String $r4;
+        byte b1;
+
+        i0 := @parameter0: int;
+
+        z0 := @parameter1: boolean;
+
+        $r1 = <java.lang.System: java.io.PrintStream out>;
+
+        $r0 = new java.lang.StringBuilder;
+
+        specialinvoke $r0.<java.lang.StringBuilder: void <init>()>();
+
+        $r2 = virtualinvoke $r0.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ");
+
+        $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0);
+
+        $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>();
+
+        virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>($r4);
+
+        z1 = 0;
+
+        if i0 > 1200 goto label1;
+
+        b1 = -1;
+
+     label1:
+        if i0 < 1200 goto label2;
+
+        z2 = 1;
+
+     label2:
+        return;
+    }
+
+    public void testMe2(int, boolean)
+    {
+        TestPathsSimple r0;
+        int i0;
+        boolean z0;
+        java.io.PrintStream $r1, $r2, $r3, $r4;
+
+        r0 := @this: TestPathsSimple;
+
+        i0 := @parameter0: int;
+
+        z0 := @parameter1: boolean;
+
+        $r1 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>("!!!!!!!!!!!!!!! First step! ");
+
+        if z0 == 0 goto label2;
+
+        if i0 > 1200 goto label1;
+
+        $r4 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r4.<java.io.PrintStream: void println(java.lang.String)>("  <= 1200");
+
+     label1:
+        if i0 < 1200 goto label3;
+
+        $r3 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r3.<java.io.PrintStream: void println(java.lang.String)>("  >= 1200");
+
+        goto label3;
+
+     label2:
+        $r2 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r2.<java.io.PrintStream: void println(java.lang.String)>("  b is false");
+
+     label3:
+        return;
+    }
+}
