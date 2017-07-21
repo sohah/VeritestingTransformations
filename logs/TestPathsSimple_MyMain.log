@@ -1,153 +1,104 @@
-Soot started on Fri Jul 21 12:11:42 CDT 2017
+Soot started on Fri Jul 21 13:18:35 CDT 2017
 Transforming TestPathsSimple... 
 <TestPathsSimple: void testMe3(int,int)>
-  IdentityStmt = r0 := @this: TestPathsSimple
-r0 := @this: TestPathsSimple
+  IdentityStmt: r0 := @this: TestPathsSimple
 
-  IdentityStmt = i0 := @parameter0: int
-i0 := @parameter0: int
+  IdentityStmt: i0 := @parameter0: int
 
-  IdentityStmt = i1 := @parameter1: int
-i1 := @parameter1: int
+  IdentityStmt: i1 := @parameter1: int
 
-  AssignStmt = $r1 = <java.lang.System: java.io.PrintStream out>
-$r1 = <java.lang.System: java.io.PrintStream out>
+  AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
 
-  AssignStmt = $r2 = new java.lang.StringBuilder
-$r2 = new java.lang.StringBuilder
+  AssignStmt: $r2 = new java.lang.StringBuilder
 
-  InvokeStmt = specialinvoke $r2.<java.lang.StringBuilder: void <init>()>()
-specialinvoke $r2.<java.lang.StringBuilder: void <init>()>()
+  InvokeStmt: specialinvoke $r2.<java.lang.StringBuilder: void <init>()>()
 
-  AssignStmt = $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ")
-$r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ")
+  AssignStmt: $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ")
 
-  AssignStmt = $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0)
-$r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0)
+  AssignStmt: $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0)
 
-  AssignStmt = $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(", y = ")
-$r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(", y = ")
+  AssignStmt: $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(", y = ")
 
-  AssignStmt = $r6 = virtualinvoke $r5.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i1)
-$r6 = virtualinvoke $r5.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i1)
+  AssignStmt: $r6 = virtualinvoke $r5.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i1)
 
-  AssignStmt = $r7 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.String toString()>()
-$r7 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.String toString()>()
+  AssignStmt: $r7 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.String toString()>()
 
-  InvokeStmt = virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>($r7)
-virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>($r7)
+  InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>($r7)
 
-  InvokeStmt = staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("a_final")
-staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("a_final")
+  InvokeStmt: staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("a_final")
 
-  InvokeStmt = staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("b_final")
-staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("b_final")
+  InvokeStmt: staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("b_final")
 
-  AssignStmt = b4 = 11
-b4 = 11
+  AssignStmt: b4 = 11
 
-  AssignStmt = b5 = 12
-b5 = 12
+  AssignStmt: b5 = 12
 
-  IfStmt = if i0 > 800 goto b6_1 = 1
-if i0 > 800 goto b6_1 = 1
+  IfStmt: if i0 > 800 goto b6_1 = 1
 
-  AssignStmt = b6 = -1
-b6 = -1
+  AssignStmt: b6 = -1
 
-  GotoStmt = goto [?= b6_2 = Phi(b6, b6_1)]
-goto [?= b6_2 = Phi(b6, b6_1)]
+  GotoStmt: goto [?= b6_2 = Phi(b6, b6_1)]
 
-  AssignStmt = b6_1 = 1
-b6_1 = 1
+  AssignStmt: b6_1 = 1
 
-  AssignStmt = b6_2 = Phi(b6, b6_1)
-b6_2 = Phi(b6, b6_1)
+  AssignStmt: b6_2 = Phi(b6, b6_1)
 
-  IfStmt = if i1 > 1200 goto b7_1 = 1
-if i1 > 1200 goto b7_1 = 1
+  IfStmt: if i1 > 1200 goto b7_1 = 1
 
-  AssignStmt = b7 = -1
-b7 = -1
+  AssignStmt: b7 = -1
 
-  GotoStmt = goto [?= b7_2 = Phi(b7, b7_1)]
-goto [?= b7_2 = Phi(b7, b7_1)]
+  GotoStmt: goto [?= b7_2 = Phi(b7, b7_1)]
 
-  AssignStmt = b7_1 = 1
-b7_1 = 1
+  AssignStmt: b7_1 = 1
 
-  AssignStmt = b7_2 = Phi(b7, b7_1)
-b7_2 = Phi(b7, b7_1)
+  AssignStmt: b7_2 = Phi(b7, b7_1)
 
-  IfStmt = if b6_2 != -1 goto (branch)
-if b6_2 != -1 goto (branch)
+  IfStmt: if b6_2 != -1 goto (branch)
 
-  AssignStmt = $r8 = <java.lang.System: java.io.PrintStream out>
-$r8 = <java.lang.System: java.io.PrintStream out>
+  AssignStmt: $r8 = <java.lang.System: java.io.PrintStream out>
 
-  InvokeStmt = virtualinvoke $r8.<java.io.PrintStream: void println(java.lang.String)>("a = -1")
-virtualinvoke $r8.<java.io.PrintStream: void println(java.lang.String)>("a = -1")
+  InvokeStmt: virtualinvoke $r8.<java.io.PrintStream: void println(java.lang.String)>("a = -1")
 
-  GotoStmt = goto [?= (branch)]
-goto [?= (branch)]
+  GotoStmt: goto [?= (branch)]
 
-  IfStmt = if b6_2 != 1 goto $r10 = <java.lang.System: java.io.PrintStream out>
-if b6_2 != 1 goto $r10 = <java.lang.System: java.io.PrintStream out>
+  IfStmt: if b6_2 != 1 goto $r10 = <java.lang.System: java.io.PrintStream out>
 
-  AssignStmt = $r9 = <java.lang.System: java.io.PrintStream out>
-$r9 = <java.lang.System: java.io.PrintStream out>
+  AssignStmt: $r9 = <java.lang.System: java.io.PrintStream out>
 
-  InvokeStmt = virtualinvoke $r9.<java.io.PrintStream: void println(java.lang.String)>("a = 1")
-virtualinvoke $r9.<java.io.PrintStream: void println(java.lang.String)>("a = 1")
+  InvokeStmt: virtualinvoke $r9.<java.io.PrintStream: void println(java.lang.String)>("a = 1")
 
-  GotoStmt = goto [?= (branch)]
-goto [?= (branch)]
+  GotoStmt: goto [?= (branch)]
 
-  AssignStmt = $r10 = <java.lang.System: java.io.PrintStream out>
-$r10 = <java.lang.System: java.io.PrintStream out>
+  AssignStmt: $r10 = <java.lang.System: java.io.PrintStream out>
 
-  InvokeStmt = virtualinvoke $r10.<java.io.PrintStream: void println(java.lang.String)>("a != 1 && a != -1")
-virtualinvoke $r10.<java.io.PrintStream: void println(java.lang.String)>("a != 1 && a != -1")
+  InvokeStmt: virtualinvoke $r10.<java.io.PrintStream: void println(java.lang.String)>("a != 1 && a != -1")
 
-  IfStmt = if b7_2 != -1 goto (branch)
-if b7_2 != -1 goto (branch)
+  IfStmt: if b7_2 != -1 goto (branch)
 
-  AssignStmt = $r11 = <java.lang.System: java.io.PrintStream out>
-$r11 = <java.lang.System: java.io.PrintStream out>
+  AssignStmt: $r11 = <java.lang.System: java.io.PrintStream out>
 
-  InvokeStmt = virtualinvoke $r11.<java.io.PrintStream: void println(java.lang.String)>("b = -1")
-virtualinvoke $r11.<java.io.PrintStream: void println(java.lang.String)>("b = -1")
+  InvokeStmt: virtualinvoke $r11.<java.io.PrintStream: void println(java.lang.String)>("b = -1")
 
-  GotoStmt = goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
-goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
+  GotoStmt: goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
 
-  IfStmt = if b7_2 != 1 goto $r13 = <java.lang.System: java.io.PrintStream out>
-if b7_2 != 1 goto $r13 = <java.lang.System: java.io.PrintStream out>
+  IfStmt: if b7_2 != 1 goto $r13 = <java.lang.System: java.io.PrintStream out>
 
-  AssignStmt = $r12 = <java.lang.System: java.io.PrintStream out>
-$r12 = <java.lang.System: java.io.PrintStream out>
+  AssignStmt: $r12 = <java.lang.System: java.io.PrintStream out>
 
-  InvokeStmt = virtualinvoke $r12.<java.io.PrintStream: void println(java.lang.String)>("b = 1")
-virtualinvoke $r12.<java.io.PrintStream: void println(java.lang.String)>("b = 1")
+  InvokeStmt: virtualinvoke $r12.<java.io.PrintStream: void println(java.lang.String)>("b = 1")
 
-  GotoStmt = goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
-goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
+  GotoStmt: goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
 
-  AssignStmt = $r13 = <java.lang.System: java.io.PrintStream out>
-$r13 = <java.lang.System: java.io.PrintStream out>
+  AssignStmt: $r13 = <java.lang.System: java.io.PrintStream out>
 
-  InvokeStmt = virtualinvoke $r13.<java.io.PrintStream: void println(java.lang.String)>("b != 1 && b != 1")
-virtualinvoke $r13.<java.io.PrintStream: void println(java.lang.String)>("b != 1 && b != 1")
+  InvokeStmt: virtualinvoke $r13.<java.io.PrintStream: void println(java.lang.String)>("b != 1 && b != 1")
 
-  AssignStmt = $r14 = <java.lang.System: java.io.PrintStream out>
-$r14 = <java.lang.System: java.io.PrintStream out>
+  AssignStmt: $r14 = <java.lang.System: java.io.PrintStream out>
 
-  InvokeStmt = virtualinvoke $r14.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
-virtualinvoke $r14.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
+  InvokeStmt: virtualinvoke $r14.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
 
-  ReturnVoidStmt = return
-return
+  ReturnVoidStmt: return
 
 Writing to sootOutput/TestPathsSimple.shimple
-Soot finished on Fri Jul 21 12:11:43 CDT 2017
+Soot finished on Fri Jul 21 13:18:36 CDT 2017
 Soot has run for 0 min. 0 sec.
