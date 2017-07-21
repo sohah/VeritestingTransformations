@@ -70,9 +70,7 @@ public class MyMain {
                   G.v().out.println("  IdentityStmt: "+stmt);
 		            }
 		            public void caseIfStmt(IfStmt stmt) {
-                  StringBuffer s;
-                  stmt.toString(s);
-                  G.v().out.println("  IfStmt: "+s);
+                  G.v().out.println("  IfStmt: "+stmt);
 		            }
 		            public void caseInvokeStmt(InvokeStmt stmt) {
                   G.v().out.println("  InvokeStmt: "+stmt);

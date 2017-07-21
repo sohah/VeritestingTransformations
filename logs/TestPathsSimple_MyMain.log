@@ -1,4 +1,4 @@
-Soot started on Fri Jul 21 13:18:35 CDT 2017
+Soot started on Fri Jul 21 13:24:29 CDT 2017
 Transforming TestPathsSimple... 
 <TestPathsSimple: void testMe3(int,int)>
   IdentityStmt: r0 := @this: TestPathsSimple
@@ -100,5 +100,5 @@ Transforming TestPathsSimple...
   ReturnVoidStmt: return
 
 Writing to sootOutput/TestPathsSimple.shimple
-Soot finished on Fri Jul 21 13:18:36 CDT 2017
+Soot finished on Fri Jul 21 13:24:30 CDT 2017
 Soot has run for 0 min. 0 sec.
