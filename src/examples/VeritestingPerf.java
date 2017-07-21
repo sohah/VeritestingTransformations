@@ -23,31 +23,31 @@
 
 import gov.nasa.jpf.symbc.Debug;
 
-public class TestPaths {
+public class VeritestingPerf {
 
   public static void main (String[] args){
    // testMe(42, false);
 	System.out.println("!!!!!!!!!!!!!!! Start Testing! ");
-	(new TestPaths()).testMe3(0,0);
+	(new VeritestingPerf()).testMe3(0,0);
   }
 
   public void testMe3 (int x, int y) {
     System.out.println("x = " + x + ", y = " + y);
-		int a_final = Debug.makeSymbolicInteger("a_final");
-		int b_final = Debug.makeSymbolicInteger("b_final");
+		// int a_final = Debug.makeSymbolicInteger("a_final");
+		// int b_final = Debug.makeSymbolicInteger("b_final");
+    int i = Debug.makeSymbolicInteger("i");
     int a=11, b=12;
   
+    for (; i<1; i++) {
 		// Begin region for static unrolling
-    if (x < 0 ) {
-        a = -1;
-        return;
-    }
-    else if (x  == 0 ) a = 0;
+    if (x + i< 0 ) a = -1;
+    else if (x + i == 0 ) a = 0;
 	  else a = 1;
-    if (y < 0 ) b = -1;
-		else if (y == 0 ) { b = 0; return; }
+    if (y + i < 0 ) b = -1;
+		else if (y + i == 0 ) b = 0;
     else b = 1;
 		// End region for static unrolling
+    //
    
     // if (a == -1) System.out.println("a = -1");
     // else if (a == 1) System.out.println("a = 1");
@@ -55,6 +55,7 @@ public class TestPaths {
     // if(b == -1) System.out.println("b = -1");
 		// else if (b == 1) System.out.println("b = 1");
     // else System.out.println("b != 1 && b != 1");
+    }
     System.out.println("-x-x-x-x-");
   }
 

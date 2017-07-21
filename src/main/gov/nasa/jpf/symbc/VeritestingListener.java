@@ -78,15 +78,15 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   // adapted from bytecodes/IFEQ.java
   public PathCondition getPC(VM vm, ThreadInfo ti, Instruction instructionToExecute, PathCondition pc) {
     ChoiceGenerator <?> cg;
-    // if (!ti.isFirstStepInsn()) { // first time around
-    //   cg = new PCChoiceGenerator(2);
-    //   ((PCChoiceGenerator)cg).setOffset(instructionToExecute.getPosition());
-    //   ((PCChoiceGenerator)cg).setMethodName(ti.getTopFrame().getMethodInfo().getFullName());
-    //   vm.getSystemState().setNextChoiceGenerator(cg);
-    // } else {  // this is what really returns results
+    if (!ti.isFirstStepInsn()) { // first time around
+      cg = new PCChoiceGenerator(2);
+      ((PCChoiceGenerator)cg).setOffset(instructionToExecute.getPosition());
+      ((PCChoiceGenerator)cg).setMethodName(ti.getTopFrame().getMethodInfo().getFullName());
+      vm.getSystemState().setNextChoiceGenerator(cg);
+    } else {  // this is what really returns results
       cg = vm.getSystemState().getChoiceGenerator();
       assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
-    // }
+    }
     ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
     if (prev_cg == null)
       pc = new PathCondition();
@@ -101,8 +101,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     return 0;
   }
 
-  // Used for TestPathsSimple
-  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  // TestPathsSimple listener
+  public void executeInstruction_TestPathsSimple(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
     int af_slot_index = 3, bf_slot_index = 4;
     int a_slot_index = 5, b_slot_index = 6;
@@ -163,7 +163,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
   }
 
-  public void executeInstruction_TestPaths(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  // VeritestingPerf listener
+  public void executeInstruction_VeritestingPerf(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
     // int a_final_slot_index = 3, b_final_slot_index = 4;
     int i_slot_index = 3;
@@ -171,7 +172,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     int startInsn = 53, endInsn = 107; //TODO: read some of these from config 
     if(ti.getTopFrame().getPC().getPosition() == startInsn && 
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
-       ti.getTopFrame().getClassInfo().getName().equals("TestPaths")) { 
+       ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) { 
       StackFrame sf = ti.getTopFrame();
       System.out.println("time to start veritesting for " + 
        ti.getTopFrame().getMethodInfo().getName());
@@ -199,6 +200,51 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             new BinaryNonLinearIntegerExpression(x_v, PLUS, i_v), CMP, new IntegerConstant(0)));
       pc._addDet(EQ, b_v, new BinaryNonLinearIntegerExpression(
             new BinaryNonLinearIntegerExpression(y_v, PLUS, i_v), CMP, new IntegerConstant(0)));
+
+      // Assign a', b' (aka a_final, b_final) back into a, b respectively
+      int a_val = sf.getSlot(a_slot_index);
+      sf.setSlotAttr(a_slot_index, a_v); 
+      int b_val = sf.getSlot(b_slot_index);
+      sf.setSlotAttr(b_slot_index, b_v); 
+      
+      Instruction insn=instructionToExecute;
+      while(insn.getPosition() < endInsn) 
+        insn = insn.getNext();
+      ti.setNextPC(insn);
+    }
+  }
+
+  // TestPaths listener
+  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+    int x_slot_index = 1, y_slot_index = 2;
+    int a_final_slot_index = 3, b_final_slot_index = 4;
+    int a_slot_index = 5, b_slot_index = 6;
+    int startInsn = 55, endInsn = 101; //TODO: read some of these from config 
+    if(ti.getTopFrame().getPC().getPosition() == startInsn && 
+       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
+       ti.getTopFrame().getClassInfo().getName().equals("TestPaths")) { 
+      StackFrame sf = ti.getTopFrame();
+      System.out.println("time to start veritesting for " + 
+       ti.getTopFrame().getMethodInfo().getName());
+      System.out.println("topPos = "+sf.getTopPos());
+      
+      IntegerExpression x_v = (IntegerExpression) sf.getLocalAttr(x_slot_index);
+      if(x_v == null) System.out.println("failed to get x expr");
+      IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(y_slot_index);
+      if(y_v == null) System.out.println("failed to get y expr");
+      IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(a_final_slot_index);
+      if(a_v == null) System.out.println("failed to get a_final expr");
+      IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(b_final_slot_index);
+      if(b_v == null) System.out.println("failed to get b_final expr");
+      
+      PathCondition pc = null;
+      pc = getPC(vm, ti, instructionToExecute, pc);
+
+      // Generate symbolic expressions to unroll lines 40-45 of TestPaths.java
+      pc._addDet(EQ, a_v, new BinaryNonLinearIntegerExpression(
+            x_v, CMP, new IntegerConstant(0)));
+      pc._addDet(EQ, b_v, new BinaryNonLinearIntegerExpression(
+            y_v, CMP, new IntegerConstant(0)));
 
       // Assign a', b' (aka a_final, b_final) back into a, b respectively
       int a_val = sf.getSlot(a_slot_index);
