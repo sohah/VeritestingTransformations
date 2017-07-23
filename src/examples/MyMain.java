@@ -50,57 +50,8 @@ public class MyMain {
             Iterator it = body.getUnits().iterator();
             while (it.hasNext()) {
               Unit u = (Unit) it.next();
-              u.apply(new AbstractStmtSwitch() {
-		            public void caseAssignStmt(AssignStmt stmt) {
-                  G.v().out.println("  AssignStmt: "+stmt);
-		            }
-		            public void caseBreakpointStmt(BreakpointStmt stmt) {
-                  G.v().out.println("  BreakpointStmt: "+stmt);
-		            }
-		            public void caseEnterMonitorStmt(EnterMonitorStmt stmt) {
-                  G.v().out.println("  EnterMonitorStmt: "+stmt);
-		            }
-		            public void caseExitMonitorStmt(ExitMonitorStmt stmt) {
-                  G.v().out.println("  ExitMonitorStmt: "+stmt);
-		            }
-		            public void caseGotoStmt(GotoStmt stmt) {
-                  G.v().out.println("  GotoStmt: "+stmt);
-		            }
-		            public void caseIdentityStmt(IdentityStmt stmt) {
-                  G.v().out.println("  IdentityStmt: "+stmt);
-		            }
-		            public void caseIfStmt(IfStmt stmt) {
-                  G.v().out.println("  IfStmt: "+stmt);
-		            }
-		            public void caseInvokeStmt(InvokeStmt stmt) {
-                  G.v().out.println("  InvokeStmt: "+stmt);
-		            }
-                public void caseLookupSwitchStmt(LookupSwitchStmt stmt) {
-                  G.v().out.println("  LookupSwitchStmt: "+stmt);
-		            }
-                public void caseNopStmt(NopStmt stmt) {
-                  G.v().out.println("  NopStmt: "+stmt);
-		            }
-                public void caseRetStmt(RetStmt stmt) {
-                  G.v().out.println("  RetStmt: "+stmt);
-		            }
-                public void caseReturnStmt(ReturnStmt stmt) {
-                  G.v().out.println("  ReturnStmt: "+stmt);
-		            }
-                public void caseReturnVoidStmt(ReturnVoidStmt stmt) {
-                  G.v().out.println("  ReturnVoidStmt: "+stmt);
-		            }
-                public void caseTableSwitchStmt(TableSwitchStmt stmt) {
-                  G.v().out.println("  TableSwitchStmt: "+stmt);
-		            }
-                public void caseThrowStmt(ThrowStmt stmt) {
-                  G.v().out.println("  ThrowStmt: "+stmt);
-		            }
-                public void defaultCase(Object o) {
-                  G.v().out.println("  defaultCase: "+o);
-		            }
-		          }
-		          );
+              MyStmtSwitch myStmtSwitch = new MyStmtSwitch();
+              u.apply(myStmtSwitch);
               //G.v().out.println(u);
               G.v().out.println("");
 	          }

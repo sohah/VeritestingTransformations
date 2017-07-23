@@ -1,4 +1,4 @@
-Soot started on Fri Jul 21 13:24:29 CDT 2017
+Soot started on Sun Jul 23 12:04:41 CDT 2017
 Transforming TestPathsSimple... 
 <TestPathsSimple: void testMe3(int,int)>
   IdentityStmt: r0 := @this: TestPathsSimple
@@ -34,6 +34,8 @@ Transforming TestPathsSimple...
   AssignStmt: b5 = 12
 
   IfStmt: if i0 > 800 goto b6_1 = 1
+  AssignStmt: b6_1 = 1
+    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerConstraint(b6_1, EQ, new IntegerConstant(1))
 
   AssignStmt: b6 = -1
 
@@ -44,6 +46,8 @@ Transforming TestPathsSimple...
   AssignStmt: b6_2 = Phi(b6, b6_1)
 
   IfStmt: if i1 > 1200 goto b7_1 = 1
+  AssignStmt: b7_1 = 1
+    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(new ComplexNonLinearIntegerExpression(i1, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerConstraint(b7_1, EQ, new IntegerConstant(1))
 
   AssignStmt: b7 = -1
 
@@ -54,6 +58,12 @@ Transforming TestPathsSimple...
   AssignStmt: b7_2 = Phi(b7, b7_1)
 
   IfStmt: if b6_2 != -1 goto (branch)
+    IfStmt(ne): v = b6_2 != -1
+  IfStmt: if b6_2 != 1 goto $r10 = <java.lang.System: java.io.PrintStream out>
+    IfStmt(ne): v = b6_2 != 1
+  AssignStmt: $r10 = <java.lang.System: java.io.PrintStream out>
+    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, new ComplexNonLinearIntegerConstraint($r10, EQ, <java.lang.System: java.io.PrintStream out>)
+    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, null)
 
   AssignStmt: $r8 = <java.lang.System: java.io.PrintStream out>
 
@@ -62,6 +72,9 @@ Transforming TestPathsSimple...
   GotoStmt: goto [?= (branch)]
 
   IfStmt: if b6_2 != 1 goto $r10 = <java.lang.System: java.io.PrintStream out>
+    IfStmt(ne): v = b6_2 != 1
+  AssignStmt: $r10 = <java.lang.System: java.io.PrintStream out>
+    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, new ComplexNonLinearIntegerConstraint($r10, EQ, <java.lang.System: java.io.PrintStream out>)
 
   AssignStmt: $r9 = <java.lang.System: java.io.PrintStream out>
 
@@ -74,6 +87,12 @@ Transforming TestPathsSimple...
   InvokeStmt: virtualinvoke $r10.<java.io.PrintStream: void println(java.lang.String)>("a != 1 && a != -1")
 
   IfStmt: if b7_2 != -1 goto (branch)
+    IfStmt(ne): v = b7_2 != -1
+  IfStmt: if b7_2 != 1 goto $r13 = <java.lang.System: java.io.PrintStream out>
+    IfStmt(ne): v = b7_2 != 1
+  AssignStmt: $r13 = <java.lang.System: java.io.PrintStream out>
+    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, new ComplexNonLinearIntegerConstraint($r13, EQ, <java.lang.System: java.io.PrintStream out>)
+    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, null)
 
   AssignStmt: $r11 = <java.lang.System: java.io.PrintStream out>
 
@@ -82,6 +101,9 @@ Transforming TestPathsSimple...
   GotoStmt: goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
 
   IfStmt: if b7_2 != 1 goto $r13 = <java.lang.System: java.io.PrintStream out>
+    IfStmt(ne): v = b7_2 != 1
+  AssignStmt: $r13 = <java.lang.System: java.io.PrintStream out>
+    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, new ComplexNonLinearIntegerConstraint($r13, EQ, <java.lang.System: java.io.PrintStream out>)
 
   AssignStmt: $r12 = <java.lang.System: java.io.PrintStream out>
 
@@ -100,5 +122,5 @@ Transforming TestPathsSimple...
   ReturnVoidStmt: return
 
 Writing to sootOutput/TestPathsSimple.shimple
-Soot finished on Fri Jul 21 13:24:30 CDT 2017
+Soot finished on Sun Jul 23 12:04:42 CDT 2017
 Soot has run for 0 min. 0 sec.
