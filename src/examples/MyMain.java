@@ -120,7 +120,9 @@ public class MyMain {
             while(thenUnit != commonSucc) {
               thenUnit.apply(myStmtSwitch);
               String thenExpr1 = myStmtSwitch.getSPFExpr();
-              thenExpr = MyUtils.SPFLogicalAnd(thenExpr, thenExpr1); 
+              if(thenExpr!="") 
+                thenExpr = MyUtils.SPFLogicalAnd(thenExpr, thenExpr1);
+              else thenExpr = thenExpr1;
               thenUnit = g.getUnexceptionalSuccsOf(thenUnit).get(0);
               thenExpr = MyUtils.SPFLogicalAnd(thenExpr, 
                    MyUtils.nCNLIE + "pathLabel, EQ, " + thenPathLabel + ")");
@@ -128,7 +130,9 @@ public class MyMain {
             while(elseUnit != commonSucc) {
               elseUnit.apply(myStmtSwitch);
               String elseExpr1 = myStmtSwitch.getSPFExpr();
-              elseExpr = MyUtils.SPFLogicalAnd(elseExpr, elseExpr1);
+              if(elseExpr != "") 
+                elseExpr = MyUtils.SPFLogicalAnd(elseExpr, elseExpr1);
+              else elseExpr = elseExpr1;
               elseUnit = g.getUnexceptionalSuccsOf(elseUnit).get(0);
               elseExpr = MyUtils.SPFLogicalAnd(elseExpr, 
                    MyUtils.nCNLIE + "pathLabel, EQ, " + elsePathLabel + ")");
