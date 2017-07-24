@@ -1,4 +1,5 @@
 import java.util.Map;
+import java.util.List;
 import java.util.Iterator;
 
 import soot.Body;
@@ -12,7 +13,7 @@ import soot.Transform;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.Type;
 import soot.Value;
-
+import soot.toolkits.scalar.*;
 
 class MyShimpleValueSwitch extends AbstractShimpleValueSwitch {
   String op1_str, op2_str, op;
@@ -26,7 +27,7 @@ class MyShimpleValueSwitch extends AbstractShimpleValueSwitch {
 
 	String getIfExprStr_SPF() { return ifExprStr_SPF; }
 	
-	String getifNotExprStr_SPF() { return ifNotExprStr_SPF; }	
+	String getIfNotExprStr_SPF() { return ifNotExprStr_SPF; }	
 
 	void setupSPFExpr(BinopExpr v) {
 		if(v.getOp1().getType().toString() == "int" && MyUtils.isIntegerConstant(v.getOp1()))
@@ -64,6 +65,7 @@ class MyShimpleValueSwitch extends AbstractShimpleValueSwitch {
   }
 	public void casePhiExpr(PhiExpr e) {
 		List<ValueUnitPair> args = e.getArgs();
+		assert(args.size() > 1);
 		arg0PhiExpr = args.get(0).getValue().toString();
 		arg1PhiExpr = args.get(1).getValue().toString();
 	}

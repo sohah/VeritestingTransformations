@@ -44,7 +44,6 @@ public class MyMain {
 
           protected void internalTransform(Body body, String phase, Map options) {
             MyAnalysis m = new MyAnalysis(new ExceptionalUnitGraph(body));
-            m.doAnalysis();
             // use G.v().out instead of System.out so that Soot can
             // redirect this output to the Eclipse console
             // if(!body.getMethod().getName().contains("testMe3")) return;
@@ -78,13 +77,15 @@ public class MyMain {
       int cnt=0;
       while(cnt<MyUtils.maxSuccSteps) {
         u0_succ = g.getUnexceptionalSuccsOf(u0_succ).get(0);
-        if(u0_succ.getPreds().size() > 1) {
+        if(g.getPredsOf(u0_succ).size() > 1) {
           int cnt1=0;
           Unit u1_succ = u1;
           while(cnt1 < MyUtils.maxSuccSteps) {
             u1_succ = g.getUnexceptionalSuccsOf(u1_succ).get(0);
-            if(u1_succ.getPreds().size() > 1 && u1_succ == u0_succ) 
+            if(g.getPredsOf(u1_succ).size() > 1 && u1_succ == u0_succ) {
+              G.v().out.println("found common succ = "+u0_succ);
               return u0_succ;
+            }
             cnt1++;
           }
         }
@@ -108,21 +109,21 @@ public class MyMain {
           } else if (succs.size()==0) break;
           else {
             G.v().out.printf("  #succs = %d\n", succs.size());
-            String if_SPFExpr = myStmtSwitch.getIfSPFExpr();
+            String if_SPFExpr = myStmtSwitch.getSPFExpr();
             String ifNot_SPFExpr = myStmtSwitch.getIfNotSPFExpr();
-            Unit commonSucc = getCommonSucc(succ);
+            Unit commonSucc = getCommonSucc(succs);
             Unit thenUnit = succs.get(0);
             Unit elseUnit = succs.get(1);
             String thenExpr="", elseExpr="";
-            int thenPathLabel = MyUtils.getPathCounter();
-            int elsePathLabel = MyUtils.getPathCounter();
+            final int thenPathLabel = MyUtils.getPathCounter();
+            final int elsePathLabel = MyUtils.getPathCounter();
             while(thenUnit != commonSucc) {
               thenUnit.apply(myStmtSwitch);
               String thenExpr1 = myStmtSwitch.getSPFExpr();
               thenExpr = MyUtils.SPFLogicalAnd(thenExpr, thenExpr1); 
               thenUnit = g.getUnexceptionalSuccsOf(thenUnit).get(0);
               thenExpr = MyUtils.SPFLogicalAnd(thenExpr, 
-                   MyUtils.nCNLIC + "pathLabel, EQ, " + thenPathLabel + ")");
+                   MyUtils.nCNLIE + "pathLabel, EQ, " + thenPathLabel + ")");
             }
             while(elseUnit != commonSucc) {
               elseUnit.apply(myStmtSwitch);
@@ -140,7 +141,7 @@ public class MyMain {
               public void caseAssignStmt(AssignStmt stmt) {
                 String lhs = stmt.getLeftOp().toString();
                 MyShimpleValueSwitch msvs = new MyShimpleValueSwitch();
-                stmt.apply(msvs);
+                stmt.getRightOp().apply(msvs);
                 String phiExpr0 = msvs.getArg0PhiExpr();
                 String phiExpr1 = msvs.getArg1PhiExpr();
                 sB.append( MyUtils.SPFLogicalOr(
@@ -153,6 +154,9 @@ public class MyMain {
               }
             });
             String finalPathExpr = MyUtils.SPFLogicalAnd(pathExpr1, sB.toString());
+            G.v().out.println("finalPathExpr = "+finalPathExpr);
+            succs = g.getUnexceptionalSuccsOf(commonSucc);
+            u = succs.get(0);
           }
           G.v().out.println("");
         }

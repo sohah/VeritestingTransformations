@@ -19,9 +19,9 @@ class MyUtils {
 	public static final int maxSuccSteps = 10;
 
 	public static final String nCNLIE = "new ComplexNonLinearIntegerExpression(";
-	public static final int pathCounter=0;
+	public static int pathCounter=0;
 
-	public static final int getPathCounter() { pathCounter++; return pathCounter; }
+	public static final int getPathCounter() { MyUtils.pathCounter++; return pathCounter; }
 
 	public static final String SPFLogicalAnd(String e1, String e2) {
 		return MyUtils.nCNLIE + e1 + ", LOGICAL_AND, " + e2 + ")";

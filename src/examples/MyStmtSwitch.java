@@ -15,17 +15,17 @@ import soot.Value;
 
 class MyStmtSwitch extends AbstractStmtSwitch {
 	Boolean canVeritest;
-	String SPFExpr;
+	String SPFExpr, ifNotSPFExpr;
 
 	String getSPFExpr() { return SPFExpr; }
-	String getIfNotSPFExpr() { return ifNot_SPFExpr; }
+	String getIfNotSPFExpr() { return ifNotSPFExpr; }
 	Boolean isVeritest() { return canVeritest; }
 
   public void caseAssignStmt(AssignStmt stmt) {
 		String rightStr = stmt.getRightOp().toString();
 		if(MyUtils.isIntegerConstant(stmt.getRightOp()))
 			rightStr = "new IntegerConstant(" + stmt.getRightOp().toString()+")";
-		SPFExpr = MyUtils.nCNLIC + stmt.getLeftOp().toString() + ", EQ, " + rightStr;
+		SPFExpr = MyUtils.nCNLIE + stmt.getLeftOp().toString() + ", EQ, " + rightStr;
     G.v().out.println("  AssignStmt: "+stmt);
   }
 
@@ -50,16 +50,15 @@ class MyStmtSwitch extends AbstractStmtSwitch {
     G.v().out.println("  IfStmt: "+stmt);
     MyShimpleValueSwitch msvw = new MyShimpleValueSwitch();
     stmt.getCondition().apply(msvw);
-    if_SPFExpr = msvw.getIfExprStr_SPF();
-    ifNot_SPFExpr = msvw.getIfNotExprStr_SPF();
-		SPFExpr = if_SPFExpr;
+    SPFExpr = msvw.getIfExprStr_SPF();
+    ifNotSPFExpr = msvw.getIfNotExprStr_SPF();
 		// Stmt t = stmt.getTarget();
 		// MyStmtSwitch myStmtSwitch = new MyStmtSwitch();
 		// t.apply(myStmtSwitch);
 		// t_SPFExpr = myStmtSwitch.getSPFExpr();
-		// tBody_SPFExpr = MyUtils.nCNLIC + if_SPFExpr + ", LOGICAL_AND, " + t_SPFExpr + ")";
+		// tBody_SPFExpr = MyUtils.nCNLIE + if_SPFExpr + ", LOGICAL_AND, " + t_SPFExpr + ")";
     G.v().out.printf("    IfStmt: if_SPFExpr = %s, ifNot_SPFExpr = %s\n", 
-		     if_SPFExpr, ifNot_SPFExpr);
+		     SPFExpr, ifNotSPFExpr);
   }
 
   public void caseInvokeStmt(InvokeStmt stmt) {
