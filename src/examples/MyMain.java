@@ -117,29 +117,50 @@ public class MyMain {
             String thenExpr="", elseExpr="";
             final int thenPathLabel = MyUtils.getPathCounter();
             final int elsePathLabel = MyUtils.getPathCounter();
+            final String thenPLAssignSPF = 
+              MyUtils.nCNLIE + "pathLabel, EQ, " + thenPathLabel + ")"; 
+            final String elsePLAssignSPF = 
+              MyUtils.nCNLIE + "pathLabel, EQ, " + elsePathLabel + ")";
+
+            // Create thenExpr
             while(thenUnit != commonSucc) {
+              myStmtSwitch = new MyStmtSwitch();
               thenUnit.apply(myStmtSwitch);
               String thenExpr1 = myStmtSwitch.getSPFExpr();
+              if(thenExpr1 == null || thenExpr1 == "" ) {
+                thenUnit = g.getUnexceptionalSuccsOf(thenUnit).get(0);
+                continue;
+              }
               if(thenExpr!="") 
                 thenExpr = MyUtils.SPFLogicalAnd(thenExpr, thenExpr1);
               else thenExpr = thenExpr1;
               thenUnit = g.getUnexceptionalSuccsOf(thenUnit).get(0);
-              thenExpr = MyUtils.SPFLogicalAnd(thenExpr, 
-                   MyUtils.nCNLIE + "pathLabel, EQ, " + thenPathLabel + ")");
             }
+            // Assign pathLabel a value in the thenExpr
+            thenExpr = MyUtils.SPFLogicalAnd(thenExpr, thenPLAssignSPF);
+
+            // Create elseExpr, similar to thenExpr
             while(elseUnit != commonSucc) {
+              myStmtSwitch = new MyStmtSwitch();
               elseUnit.apply(myStmtSwitch);
               String elseExpr1 = myStmtSwitch.getSPFExpr();
+              if(elseExpr1 == null || elseExpr1 == "") {
+                elseUnit = g.getUnexceptionalSuccsOf(elseUnit).get(0);
+                continue;
+              }
               if(elseExpr != "") 
                 elseExpr = MyUtils.SPFLogicalAnd(elseExpr, elseExpr1);
               else elseExpr = elseExpr1;
               elseUnit = g.getUnexceptionalSuccsOf(elseUnit).get(0);
-              elseExpr = MyUtils.SPFLogicalAnd(elseExpr, 
-                   MyUtils.nCNLIE + "pathLabel, EQ, " + elsePathLabel + ")");
             }
+            // Assign pathLabel a different value in the elseExpr
+            elseExpr = MyUtils.SPFLogicalAnd(elseExpr, elsePLAssignSPF);
+
+            // (If && thenExpr) || (ifNot && elseExpr)
             String pathExpr1 = MyUtils.SPFLogicalOr( 
                   MyUtils.SPFLogicalAnd(if_SPFExpr, thenExpr),
                   MyUtils.SPFLogicalAnd(ifNot_SPFExpr, elseExpr));
+
             final StringBuilder sB = new StringBuilder();
             commonSucc.apply(new AbstractStmtSwitch() {
               public void caseAssignStmt(AssignStmt stmt) {
@@ -148,13 +169,13 @@ public class MyMain {
                 stmt.getRightOp().apply(msvs);
                 String phiExpr0 = msvs.getArg0PhiExpr();
                 String phiExpr1 = msvs.getArg1PhiExpr();
+
+                // (pathLabel == 1 && lhs == phiExpr0) || (pathLabel ==2 && lhs == phiExpr1)
                 sB.append( MyUtils.SPFLogicalOr(
-                  MyUtils.SPFLogicalAnd(
-                    MyUtils.nCNLIE + "pathLabel, EQ, " + thenPathLabel + ")",
-                    MyUtils.nCNLIE + lhs + ", EQ, " + phiExpr0), 
-                  MyUtils.SPFLogicalAnd(
-                    MyUtils.nCNLIE + "pathLabel, EQ, " + elsePathLabel + ")",
-                    MyUtils.nCNLIE + lhs + ", EQ, " + phiExpr1)));
+                  MyUtils.SPFLogicalAnd( thenPLAssignSPF,
+                    MyUtils.nCNLIE + lhs + ", EQ, " + phiExpr0 + ")"), 
+                  MyUtils.SPFLogicalAnd( elsePLAssignSPF, 
+                    MyUtils.nCNLIE + lhs + ", EQ, " + phiExpr1 + ")")));
               }
             });
             String finalPathExpr = MyUtils.SPFLogicalAnd(pathExpr1, sB.toString());

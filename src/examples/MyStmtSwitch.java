@@ -25,7 +25,7 @@ class MyStmtSwitch extends AbstractStmtSwitch {
 		String rightStr = stmt.getRightOp().toString();
 		if(MyUtils.isIntegerConstant(stmt.getRightOp()))
 			rightStr = "new IntegerConstant(" + stmt.getRightOp().toString()+")";
-		SPFExpr = MyUtils.nCNLIE + stmt.getLeftOp().toString() + ", EQ, " + rightStr;
+		SPFExpr = MyUtils.nCNLIE + stmt.getLeftOp().toString() + ", EQ, " + rightStr + ")";
     G.v().out.println("  AssignStmt: "+stmt);
   }
 
