@@ -17,11 +17,16 @@ import soot.Value;
 class MyShimpleValueSwitch extends AbstractShimpleValueSwitch {
   String op1_str, op2_str, op;
 	Type ty1, ty2;
-	String ifExprStr_SPF, notIfExprStr_SPF;
+	String ifExprStr_SPF, ifNotExprStr_SPF;
+	String arg0PhiExpr, arg1PhiExpr;
+
+	String getArg0PhiExpr() { return arg0PhiExpr; }
+
+	String getArg1PhiExpr() { return arg1PhiExpr; }
 
 	String getIfExprStr_SPF() { return ifExprStr_SPF; }
 	
-	String getNotIfExprStr_SPF() { return notIfExprStr_SPF; }	
+	String getifNotExprStr_SPF() { return ifNotExprStr_SPF; }	
 
 	void setupSPFExpr(BinopExpr v) {
 		if(v.getOp1().getType().toString() == "int" && MyUtils.isIntegerConstant(v.getOp1()))
@@ -38,7 +43,7 @@ class MyShimpleValueSwitch extends AbstractShimpleValueSwitch {
   public void caseGtExpr(GtExpr v) {
 		setupSPFExpr(v);
 		ifExprStr_SPF = "new ComplexNonLinearIntegerExpression(" + op1_str + ", GT, " + op2_str + ")"; 
-		notIfExprStr_SPF = "new ComplexNonLinearIntegerExpression(" + op1_str + ", LE, " + op2_str + ")"; 
+		ifNotExprStr_SPF = "new ComplexNonLinearIntegerExpression(" + op1_str + ", LE, " + op2_str + ")"; 
 		// G.v().out.println("    IfStmt(gt): v = "+v.getOp1()+"("+ty1+")" + " " + v.getOp2()+"("+ty2+")");
   }
   
@@ -57,4 +62,9 @@ class MyShimpleValueSwitch extends AbstractShimpleValueSwitch {
   public void caseNeExpr(NeExpr v) {
     G.v().out.println("    IfStmt(ne): v = "+v);
   }
+	public void casePhiExpr(PhiExpr e) {
+		List<ValueUnitPair> args = e.getArgs();
+		arg0PhiExpr = args.get(0).getValue().toString();
+		arg1PhiExpr = args.get(1).getValue().toString();
+	}
 }

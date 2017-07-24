@@ -1,6 +1,45 @@
-Soot started on Sun Jul 23 12:04:41 CDT 2017
+Soot started on Sun Jul 23 15:08:09 CDT 2017
 Transforming TestPathsSimple... 
-<TestPathsSimple: void testMe3(int,int)>
+  IdentityStmt: r0 := @this: TestPathsSimple
+
+  InvokeStmt: specialinvoke r0.<java.lang.Object: void <init>()>()
+
+  ReturnVoidStmt: return
+
+  IdentityStmt: r0 := @this: TestPathsSimple
+
+  InvokeStmt: specialinvoke r0.<java.lang.Object: void <init>()>()
+
+  ReturnVoidStmt: return
+
+  IdentityStmt: r0 := @parameter0: java.lang.String[]
+
+  AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>("!!!!!!!!!!!!!!! Start Testing! ")
+
+  AssignStmt: $r2 = new TestPathsSimple
+
+  InvokeStmt: specialinvoke $r2.<TestPathsSimple: void <init>()>()
+
+  InvokeStmt: virtualinvoke $r2.<TestPathsSimple: void testMe3(int,int)>(0, 0)
+
+  ReturnVoidStmt: return
+
+  IdentityStmt: r0 := @parameter0: java.lang.String[]
+
+  AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>("!!!!!!!!!!!!!!! Start Testing! ")
+
+  AssignStmt: $r2 = new TestPathsSimple
+
+  InvokeStmt: specialinvoke $r2.<TestPathsSimple: void <init>()>()
+
+  InvokeStmt: virtualinvoke $r2.<TestPathsSimple: void testMe3(int,int)>(0, 0)
+
+  ReturnVoidStmt: return
+
   IdentityStmt: r0 := @this: TestPathsSimple
 
   IdentityStmt: i0 := @parameter0: int
@@ -34,86 +73,46 @@ Transforming TestPathsSimple...
   AssignStmt: b5 = 12
 
   IfStmt: if i0 > 800 goto b6_1 = 1
-  AssignStmt: b6_1 = 1
-    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerConstraint(b6_1, EQ, new IntegerConstant(1))
+    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(800)), notIf_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(800))
 
+  #succs = 2
   AssignStmt: b6 = -1
 
   GotoStmt: goto [?= b6_2 = Phi(b6, b6_1)]
 
-  AssignStmt: b6_1 = 1
-
   AssignStmt: b6_2 = Phi(b6, b6_1)
 
   IfStmt: if i1 > 1200 goto b7_1 = 1
-  AssignStmt: b7_1 = 1
-    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(new ComplexNonLinearIntegerExpression(i1, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerConstraint(b7_1, EQ, new IntegerConstant(1))
+    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i1, GT, new IntegerConstant(1200)), notIf_SPFExpr = new ComplexNonLinearIntegerExpression(i1, LE, new IntegerConstant(1200))
 
+  #succs = 2
   AssignStmt: b7 = -1
 
   GotoStmt: goto [?= b7_2 = Phi(b7, b7_1)]
-
-  AssignStmt: b7_1 = 1
 
   AssignStmt: b7_2 = Phi(b7, b7_1)
 
   IfStmt: if b6_2 != -1 goto (branch)
     IfStmt(ne): v = b6_2 != -1
-  IfStmt: if b6_2 != 1 goto $r10 = <java.lang.System: java.io.PrintStream out>
-    IfStmt(ne): v = b6_2 != 1
-  AssignStmt: $r10 = <java.lang.System: java.io.PrintStream out>
-    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, new ComplexNonLinearIntegerConstraint($r10, EQ, <java.lang.System: java.io.PrintStream out>)
-    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, null)
+    IfStmt: if_SPFExpr = null, notIf_SPFExpr = null
 
+  #succs = 2
   AssignStmt: $r8 = <java.lang.System: java.io.PrintStream out>
 
   InvokeStmt: virtualinvoke $r8.<java.io.PrintStream: void println(java.lang.String)>("a = -1")
 
   GotoStmt: goto [?= (branch)]
 
-  IfStmt: if b6_2 != 1 goto $r10 = <java.lang.System: java.io.PrintStream out>
-    IfStmt(ne): v = b6_2 != 1
-  AssignStmt: $r10 = <java.lang.System: java.io.PrintStream out>
-    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, new ComplexNonLinearIntegerConstraint($r10, EQ, <java.lang.System: java.io.PrintStream out>)
-
-  AssignStmt: $r9 = <java.lang.System: java.io.PrintStream out>
-
-  InvokeStmt: virtualinvoke $r9.<java.io.PrintStream: void println(java.lang.String)>("a = 1")
-
-  GotoStmt: goto [?= (branch)]
-
-  AssignStmt: $r10 = <java.lang.System: java.io.PrintStream out>
-
-  InvokeStmt: virtualinvoke $r10.<java.io.PrintStream: void println(java.lang.String)>("a != 1 && a != -1")
-
   IfStmt: if b7_2 != -1 goto (branch)
     IfStmt(ne): v = b7_2 != -1
-  IfStmt: if b7_2 != 1 goto $r13 = <java.lang.System: java.io.PrintStream out>
-    IfStmt(ne): v = b7_2 != 1
-  AssignStmt: $r13 = <java.lang.System: java.io.PrintStream out>
-    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, new ComplexNonLinearIntegerConstraint($r13, EQ, <java.lang.System: java.io.PrintStream out>)
-    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, null)
+    IfStmt: if_SPFExpr = null, notIf_SPFExpr = null
 
+  #succs = 2
   AssignStmt: $r11 = <java.lang.System: java.io.PrintStream out>
 
   InvokeStmt: virtualinvoke $r11.<java.io.PrintStream: void println(java.lang.String)>("b = -1")
 
   GotoStmt: goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
-
-  IfStmt: if b7_2 != 1 goto $r13 = <java.lang.System: java.io.PrintStream out>
-    IfStmt(ne): v = b7_2 != 1
-  AssignStmt: $r13 = <java.lang.System: java.io.PrintStream out>
-    IfStmt: tBody = new ComplexNonLinearIntegerConstraint(null, LOGICAL_AND, new ComplexNonLinearIntegerConstraint($r13, EQ, <java.lang.System: java.io.PrintStream out>)
-
-  AssignStmt: $r12 = <java.lang.System: java.io.PrintStream out>
-
-  InvokeStmt: virtualinvoke $r12.<java.io.PrintStream: void println(java.lang.String)>("b = 1")
-
-  GotoStmt: goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
-
-  AssignStmt: $r13 = <java.lang.System: java.io.PrintStream out>
-
-  InvokeStmt: virtualinvoke $r13.<java.io.PrintStream: void println(java.lang.String)>("b != 1 && b != 1")
 
   AssignStmt: $r14 = <java.lang.System: java.io.PrintStream out>
 
@@ -121,6 +120,228 @@ Transforming TestPathsSimple...
 
   ReturnVoidStmt: return
 
+  IdentityStmt: r0 := @this: TestPathsSimple
+
+  IdentityStmt: i0 := @parameter0: int
+
+  IdentityStmt: i1 := @parameter1: int
+
+  AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
+
+  AssignStmt: $r2 = new java.lang.StringBuilder
+
+  InvokeStmt: specialinvoke $r2.<java.lang.StringBuilder: void <init>()>()
+
+  AssignStmt: $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ")
+
+  AssignStmt: $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0)
+
+  AssignStmt: $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(", y = ")
+
+  AssignStmt: $r6 = virtualinvoke $r5.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i1)
+
+  AssignStmt: $r7 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.String toString()>()
+
+  InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>($r7)
+
+  InvokeStmt: staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("a_final")
+
+  InvokeStmt: staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("b_final")
+
+  AssignStmt: b4 = 11
+
+  AssignStmt: b5 = 12
+
+  IfStmt: if i0 > 800 goto b6_1 = 1
+    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(800)), notIf_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(800))
+
+  #succs = 2
+  AssignStmt: b6 = -1
+
+  GotoStmt: goto [?= b6_2 = Phi(b6, b6_1)]
+
+  AssignStmt: b6_2 = Phi(b6, b6_1)
+
+  IfStmt: if i1 > 1200 goto b7_1 = 1
+    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i1, GT, new IntegerConstant(1200)), notIf_SPFExpr = new ComplexNonLinearIntegerExpression(i1, LE, new IntegerConstant(1200))
+
+  #succs = 2
+  AssignStmt: b7 = -1
+
+  GotoStmt: goto [?= b7_2 = Phi(b7, b7_1)]
+
+  AssignStmt: b7_2 = Phi(b7, b7_1)
+
+  IfStmt: if b6_2 != -1 goto (branch)
+    IfStmt(ne): v = b6_2 != -1
+    IfStmt: if_SPFExpr = null, notIf_SPFExpr = null
+
+  #succs = 2
+  AssignStmt: $r8 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r8.<java.io.PrintStream: void println(java.lang.String)>("a = -1")
+
+  GotoStmt: goto [?= (branch)]
+
+  IfStmt: if b7_2 != -1 goto (branch)
+    IfStmt(ne): v = b7_2 != -1
+    IfStmt: if_SPFExpr = null, notIf_SPFExpr = null
+
+  #succs = 2
+  AssignStmt: $r11 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r11.<java.io.PrintStream: void println(java.lang.String)>("b = -1")
+
+  GotoStmt: goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
+
+  AssignStmt: $r14 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r14.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
+
+  ReturnVoidStmt: return
+
+  IdentityStmt: i0 := @parameter0: int
+
+  IdentityStmt: z0 := @parameter1: boolean
+
+  AssignStmt: $r0 = <java.lang.System: java.io.PrintStream out>
+
+  AssignStmt: $r1 = new java.lang.StringBuilder
+
+  InvokeStmt: specialinvoke $r1.<java.lang.StringBuilder: void <init>()>()
+
+  AssignStmt: $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ")
+
+  AssignStmt: $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0)
+
+  AssignStmt: $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>()
+
+  InvokeStmt: virtualinvoke $r0.<java.io.PrintStream: void println(java.lang.String)>($r4)
+
+  AssignStmt: z1 = 0
+
+  IfStmt: if i0 > 1200 goto (branch)
+    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), notIf_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200))
+
+  #succs = 2
+  AssignStmt: b1 = -1
+
+  IfStmt: if i0 < 1200 goto return
+    IfStmt(lt): v = i0 < 1200
+    IfStmt: if_SPFExpr = null, notIf_SPFExpr = null
+
+  #succs = 2
+  AssignStmt: z2 = 1
+
+  ReturnVoidStmt: return
+
+  IdentityStmt: i0 := @parameter0: int
+
+  IdentityStmt: z0 := @parameter1: boolean
+
+  AssignStmt: $r0 = <java.lang.System: java.io.PrintStream out>
+
+  AssignStmt: $r1 = new java.lang.StringBuilder
+
+  InvokeStmt: specialinvoke $r1.<java.lang.StringBuilder: void <init>()>()
+
+  AssignStmt: $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ")
+
+  AssignStmt: $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0)
+
+  AssignStmt: $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>()
+
+  InvokeStmt: virtualinvoke $r0.<java.io.PrintStream: void println(java.lang.String)>($r4)
+
+  AssignStmt: z1 = 0
+
+  IfStmt: if i0 > 1200 goto (branch)
+    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), notIf_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200))
+
+  #succs = 2
+  AssignStmt: b1 = -1
+
+  IfStmt: if i0 < 1200 goto return
+    IfStmt(lt): v = i0 < 1200
+    IfStmt: if_SPFExpr = null, notIf_SPFExpr = null
+
+  #succs = 2
+  AssignStmt: z2 = 1
+
+  ReturnVoidStmt: return
+
+  IdentityStmt: r0 := @this: TestPathsSimple
+
+  IdentityStmt: i0 := @parameter0: int
+
+  IdentityStmt: z0 := @parameter1: boolean
+
+  AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>("!!!!!!!!!!!!!!! First step! ")
+
+  IfStmt: if z0 == 0 goto $r4 = <java.lang.System: java.io.PrintStream out>
+    IfStmt(eq): v = z0 == 0
+    IfStmt: if_SPFExpr = null, notIf_SPFExpr = null
+
+  #succs = 2
+  IfStmt: if i0 > 1200 goto (branch)
+    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), notIf_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200))
+
+  #succs = 2
+  AssignStmt: $r2 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r2.<java.io.PrintStream: void println(java.lang.String)>("  <= 1200")
+
+  IfStmt: if i0 < 1200 goto return
+    IfStmt(lt): v = i0 < 1200
+    IfStmt: if_SPFExpr = null, notIf_SPFExpr = null
+
+  #succs = 2
+  AssignStmt: $r3 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r3.<java.io.PrintStream: void println(java.lang.String)>("  >= 1200")
+
+  GotoStmt: goto [?= return]
+
+  ReturnVoidStmt: return
+
+  IdentityStmt: r0 := @this: TestPathsSimple
+
+  IdentityStmt: i0 := @parameter0: int
+
+  IdentityStmt: z0 := @parameter1: boolean
+
+  AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>("!!!!!!!!!!!!!!! First step! ")
+
+  IfStmt: if z0 == 0 goto $r4 = <java.lang.System: java.io.PrintStream out>
+    IfStmt(eq): v = z0 == 0
+    IfStmt: if_SPFExpr = null, notIf_SPFExpr = null
+
+  #succs = 2
+  IfStmt: if i0 > 1200 goto (branch)
+    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), notIf_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200))
+
+  #succs = 2
+  AssignStmt: $r2 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r2.<java.io.PrintStream: void println(java.lang.String)>("  <= 1200")
+
+  IfStmt: if i0 < 1200 goto return
+    IfStmt(lt): v = i0 < 1200
+    IfStmt: if_SPFExpr = null, notIf_SPFExpr = null
+
+  #succs = 2
+  AssignStmt: $r3 = <java.lang.System: java.io.PrintStream out>
+
+  InvokeStmt: virtualinvoke $r3.<java.io.PrintStream: void println(java.lang.String)>("  >= 1200")
+
+  GotoStmt: goto [?= return]
+
+  ReturnVoidStmt: return
+
 Writing to sootOutput/TestPathsSimple.shimple
-Soot finished on Sun Jul 23 12:04:42 CDT 2017
+Soot finished on Sun Jul 23 15:08:10 CDT 2017
 Soot has run for 0 min. 0 sec.

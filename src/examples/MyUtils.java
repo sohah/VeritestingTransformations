@@ -16,6 +16,11 @@ import soot.Value;
 
 
 class MyUtils {
+	public static final String nCNLIC = "new ComplexNonLinearIntegerConstraint(";
+	public static final int pathCounter=0;
+
+	public static final int getPathCounter() { pathCounter++; return pathCounter; }
+
 	public static final Boolean isIntegerConstant(Value v) {
 	// https://stackoverflow.com/questions/5439529/determine-if-a-string-is-an-integer-in-java
 		try { Integer.parseInt(v.toString()); }
