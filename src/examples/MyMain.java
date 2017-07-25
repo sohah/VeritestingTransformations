@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.Iterator;
 
 import soot.Body;
+import soot.SootMethod;
 import soot.Unit;
+import soot.util.Chain;
 import soot.jimple.*;
 import soot.shimple.*;
 import soot.BodyTransformer;
@@ -34,14 +36,21 @@ import soot.toolkits.graph.MHGPostDominatorsFinder;
 public class MyMain {
 
   public static void main(String[] args) {
+    // this jb pack does not work, perhaps, by design
+    PackManager.v().getPack("jb").add(
+        new Transform("jb.myTransform", new BodyTransformer() {
+          protected void internalTransform(Body body, String phase, Map options) {
+            SootMethod method = body.getMethod();
+            Chain units = body.getUnits();
+            Iterator it = units.snapshotIterator();
+            while(it.hasNext()) 
+              G.v().out.println("*it = "+it.next());
+          }
+        }));
     PackManager.v().getPack("stp").add(
         new Transform("stp.myTransform", new BodyTransformer() {
 
-          private void printTags(Stmt stmt) {
-            Iterator tags_it = stmt.getTags().iterator();
-            while(tags_it.hasNext()) G.v().out.println(tags_it.next());
-            G.v().out.println("  end tags");
-          }
+        
 
           protected void internalTransform(Body body, String phase, Map options) {
             MyAnalysis m = new MyAnalysis(new ExceptionalUnitGraph(body));
@@ -70,7 +79,13 @@ public class MyMain {
       g = exceptionalUnitGraph;
       doAnalysis();
     }
-
+    
+    private void printTags(Stmt stmt) {
+      Iterator tags_it = stmt.getTags().iterator();
+      while(tags_it.hasNext()) G.v().out.println(tags_it.next());
+      G.v().out.println("  end tags");
+    }
+    
     public Unit getIPDom(Unit u) {
       MHGPostDominatorsFinder m = new MHGPostDominatorsFinder(g);
       Unit u_IPDom = (Unit) m.getImmediateDominator(u);
@@ -83,6 +98,8 @@ public class MyMain {
         Unit u = (Unit) heads.get(0);
         MyStmtSwitch myStmtSwitch;
         while(true) {
+          //printTags((Stmt)u);
+          G.v().out.println("BytecodeOffsetTag = " + ((Stmt)u).getTag("BytecodeOffsetTag"));
           myStmtSwitch = new MyStmtSwitch();
           u.apply(myStmtSwitch);
           List<Unit> succs = g.getUnexceptionalSuccsOf(u);

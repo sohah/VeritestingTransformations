@@ -1,31 +1,58 @@
-Soot started on Mon Jul 24 20:01:33 CDT 2017
+Soot started on Mon Jul 24 23:41:21 CDT 2017
 Transforming TestPathsSimple... 
+BytecodeOffsetTag = null
   IdentityStmt: r0 := @this: TestPathsSimple
+BytecodeOffsetTag = 1
   InvokeStmt: specialinvoke r0.<java.lang.Object: void <init>()>()
+BytecodeOffsetTag = 4
   ReturnVoidStmt: return
+BytecodeOffsetTag = null
   IdentityStmt: r0 := @parameter0: java.lang.String[]
+BytecodeOffsetTag = 0
   AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
+BytecodeOffsetTag = 5
   InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>("!!!!!!!!!!!!!!! Start Testing! ")
+BytecodeOffsetTag = 8
   AssignStmt: $r2 = new TestPathsSimple
+BytecodeOffsetTag = 12
   InvokeStmt: specialinvoke $r2.<TestPathsSimple: void <init>()>()
+BytecodeOffsetTag = 17
   InvokeStmt: virtualinvoke $r2.<TestPathsSimple: void testMe3(int,int)>(0, 0)
+BytecodeOffsetTag = 20
   ReturnVoidStmt: return
+BytecodeOffsetTag = null
   IdentityStmt: r0 := @this: TestPathsSimple
+BytecodeOffsetTag = null
   IdentityStmt: i0 := @parameter0: int
+BytecodeOffsetTag = null
   IdentityStmt: i1 := @parameter1: int
+BytecodeOffsetTag = 0
   AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
+BytecodeOffsetTag = 3
   AssignStmt: $r2 = new java.lang.StringBuilder
+BytecodeOffsetTag = 7
   InvokeStmt: specialinvoke $r2.<java.lang.StringBuilder: void <init>()>()
+BytecodeOffsetTag = 12
   AssignStmt: $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ")
+BytecodeOffsetTag = 16
   AssignStmt: $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0)
+BytecodeOffsetTag = 21
   AssignStmt: $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(", y = ")
+BytecodeOffsetTag = 25
   AssignStmt: $r6 = virtualinvoke $r5.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i1)
+BytecodeOffsetTag = 28
   AssignStmt: $r7 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.String toString()>()
+BytecodeOffsetTag = 31
   InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>($r7)
+BytecodeOffsetTag = 39
   InvokeStmt: staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("a_final")
+BytecodeOffsetTag = 45
   InvokeStmt: staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("b_final")
+BytecodeOffsetTag = 49
   AssignStmt: b4 = 11
+BytecodeOffsetTag = 53
   AssignStmt: b5 = 12
+BytecodeOffsetTag = 59
   IfStmt: if i0 > 800 goto b6_1 = 1
     IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(800)), ifNot_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(800))
   #succs = 2
@@ -34,6 +61,7 @@ Transforming TestPathsSimple...
   AssignStmt: b6_1 = 1
 finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b6, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 1))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b6_1, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 2)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 1), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b6_2, EQ, b6)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 2), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b6_2, EQ, b6_1))))
 
+BytecodeOffsetTag = 75
   IfStmt: if i1 > 1200 goto b7_1 = 1
     IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i1, GT, new IntegerConstant(1200)), ifNot_SPFExpr = new ComplexNonLinearIntegerExpression(i1, LE, new IntegerConstant(1200))
   #succs = 2
@@ -42,6 +70,7 @@ finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntege
   AssignStmt: b7_1 = 1
 finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i1, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b7, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 3))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i1, LE, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b7_1, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 4)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 3), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b7_2, EQ, b7)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 4), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b7_2, EQ, b7_1))))
 
+BytecodeOffsetTag = 90
   IfStmt: if b6_2 != -1 goto (branch)
     IfStmt(ne): v = b6_2 != -1
     IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
@@ -57,35 +86,60 @@ finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntege
   GotoStmt: goto [?= (branch)]
 finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r8, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 5))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r9, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 6)))), LOGICAL_AND, )
 
+BytecodeOffsetTag = 135
   AssignStmt: $r11 = <java.lang.System: java.io.PrintStream out>
+BytecodeOffsetTag = 140
   InvokeStmt: virtualinvoke $r11.<java.io.PrintStream: void println(java.lang.String)>("b = -1")
+BytecodeOffsetTag = 143
   GotoStmt: goto [?= $r14 = <java.lang.System: java.io.PrintStream out>]
+BytecodeOffsetTag = 171
   AssignStmt: $r14 = <java.lang.System: java.io.PrintStream out>
+BytecodeOffsetTag = 176
   InvokeStmt: virtualinvoke $r14.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
+BytecodeOffsetTag = 179
   ReturnVoidStmt: return
+BytecodeOffsetTag = null
   IdentityStmt: i0 := @parameter0: int
+BytecodeOffsetTag = null
   IdentityStmt: z0 := @parameter1: boolean
+BytecodeOffsetTag = 0
   AssignStmt: $r0 = <java.lang.System: java.io.PrintStream out>
+BytecodeOffsetTag = 3
   AssignStmt: $r1 = new java.lang.StringBuilder
+BytecodeOffsetTag = 7
   InvokeStmt: specialinvoke $r1.<java.lang.StringBuilder: void <init>()>()
+BytecodeOffsetTag = 12
   AssignStmt: $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ")
+BytecodeOffsetTag = 16
   AssignStmt: $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0)
+BytecodeOffsetTag = 19
   AssignStmt: $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>()
+BytecodeOffsetTag = 22
   InvokeStmt: virtualinvoke $r0.<java.io.PrintStream: void println(java.lang.String)>($r4)
+BytecodeOffsetTag = 26
   AssignStmt: z1 = 0
+BytecodeOffsetTag = 31
   IfStmt: if i0 > 1200 goto (branch)
     IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), ifNot_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200))
   #succs = 2
   AssignStmt: b1 = -1
 finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b1, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 7))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(, LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 8)))), LOGICAL_AND, )
 
+BytecodeOffsetTag = 44
   AssignStmt: z2 = 1
+BytecodeOffsetTag = 45
   ReturnVoidStmt: return
+BytecodeOffsetTag = null
   IdentityStmt: r0 := @this: TestPathsSimple
+BytecodeOffsetTag = null
   IdentityStmt: i0 := @parameter0: int
+BytecodeOffsetTag = null
   IdentityStmt: z0 := @parameter1: boolean
+BytecodeOffsetTag = 0
   AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
+BytecodeOffsetTag = 5
   InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>("!!!!!!!!!!!!!!! First step! ")
+BytecodeOffsetTag = 9
   IfStmt: if z0 == 0 goto $r4 = <java.lang.System: java.io.PrintStream out>
     IfStmt(eq): v = z0 == 0
     IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
@@ -105,9 +159,9 @@ finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntege
 finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r2, EQ, <java.lang.System: java.io.PrintStream out>)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r3, EQ, <java.lang.System: java.io.PrintStream out>)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 9))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r4, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 10)))), LOGICAL_AND, )
 Exception in thread "main" java.lang.IndexOutOfBoundsException: Index: 0
 	at java.util.Collections$EmptyList.get(Collections.java:2976)
-	at MyMain$MyAnalysis.doAnalysis(MyMain.java:167)
-	at MyMain$MyAnalysis.<init>(MyMain.java:71)
-	at MyMain$1.internalTransform(MyMain.java:47)
+	at MyMain$MyAnalysis.doAnalysis(MyMain.java:184)
+	at MyMain$MyAnalysis.<init>(MyMain.java:80)
+	at MyMain$2.internalTransform(MyMain.java:56)
 	at soot.BodyTransformer.transform(BodyTransformer.java:51)
 	at soot.Transform.apply(Transform.java:104)
 	at soot.BodyPack.internalApply(BodyPack.java:49)
@@ -118,4 +172,4 @@ Exception in thread "main" java.lang.IndexOutOfBoundsException: Index: 0
 	at soot.PackManager.runPacks(PackManager.java:357)
 	at soot.Main.run(Main.java:198)
 	at soot.Main.main(Main.java:141)
-	at MyMain.main(MyMain.java:64)
+	at MyMain.main(MyMain.java:73)
