@@ -1,4 +1,4 @@
-Soot started on Mon Jul 24 13:31:41 CDT 2017
+Soot started on Mon Jul 24 20:01:33 CDT 2017
 Transforming TestPathsSimple... 
   IdentityStmt: r0 := @this: TestPathsSimple
   InvokeStmt: specialinvoke r0.<java.lang.Object: void <init>()>()
@@ -29,7 +29,6 @@ Transforming TestPathsSimple...
   IfStmt: if i0 > 800 goto b6_1 = 1
     IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(800)), ifNot_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(800))
   #succs = 2
-found common succ = b6_2 = Phi(b6, b6_1)
   AssignStmt: b6 = -1
   GotoStmt: goto [?= b6_2 = Phi(b6, b6_1)]
   AssignStmt: b6_1 = 1
@@ -38,7 +37,6 @@ finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntege
   IfStmt: if i1 > 1200 goto b7_1 = 1
     IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i1, GT, new IntegerConstant(1200)), ifNot_SPFExpr = new ComplexNonLinearIntegerExpression(i1, LE, new IntegerConstant(1200))
   #succs = 2
-found common succ = b7_2 = Phi(b7, b7_1)
   AssignStmt: b7 = -1
   GotoStmt: goto [?= b7_2 = Phi(b7, b7_1)]
   AssignStmt: b7_1 = 1
@@ -48,7 +46,6 @@ finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntege
     IfStmt(ne): v = b6_2 != -1
     IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
   #succs = 2
-found common succ = if b7_2 != -1 goto (branch)
   AssignStmt: $r8 = <java.lang.System: java.io.PrintStream out>
   InvokeStmt: virtualinvoke $r8.<java.io.PrintStream: void println(java.lang.String)>("a = -1")
   GotoStmt: goto [?= (branch)]
@@ -79,12 +76,38 @@ finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntege
   IfStmt: if i0 > 1200 goto (branch)
     IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), ifNot_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200))
   #succs = 2
+  AssignStmt: b1 = -1
+finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b1, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 7))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(, LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 8)))), LOGICAL_AND, )
+
+  AssignStmt: z2 = 1
+  ReturnVoidStmt: return
+  IdentityStmt: r0 := @this: TestPathsSimple
+  IdentityStmt: i0 := @parameter0: int
+  IdentityStmt: z0 := @parameter1: boolean
+  AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
+  InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>("!!!!!!!!!!!!!!! First step! ")
+  IfStmt: if z0 == 0 goto $r4 = <java.lang.System: java.io.PrintStream out>
+    IfStmt(eq): v = z0 == 0
+    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
+  #succs = 2
+  IfStmt: if i0 > 1200 goto (branch)
+    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), ifNot_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200))
+  AssignStmt: $r2 = <java.lang.System: java.io.PrintStream out>
+  InvokeStmt: virtualinvoke $r2.<java.io.PrintStream: void println(java.lang.String)>("  <= 1200")
+  IfStmt: if i0 < 1200 goto return
+    IfStmt(lt): v = i0 < 1200
+    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
+  AssignStmt: $r3 = <java.lang.System: java.io.PrintStream out>
+  InvokeStmt: virtualinvoke $r3.<java.io.PrintStream: void println(java.lang.String)>("  >= 1200")
+  GotoStmt: goto [?= return]
+  AssignStmt: $r4 = <java.lang.System: java.io.PrintStream out>
+  InvokeStmt: virtualinvoke $r4.<java.io.PrintStream: void println(java.lang.String)>("  b is false")
+finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r2, EQ, <java.lang.System: java.io.PrintStream out>)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r3, EQ, <java.lang.System: java.io.PrintStream out>)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 9))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r4, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 10)))), LOGICAL_AND, )
 Exception in thread "main" java.lang.IndexOutOfBoundsException: Index: 0
 	at java.util.Collections$EmptyList.get(Collections.java:2976)
-	at MyMain$MyAnalysis.getCommonSucc(MyMain.java:84)
-	at MyMain$MyAnalysis.doAnalysis(MyMain.java:114)
-	at MyMain$MyAnalysis.<init>(MyMain.java:70)
-	at MyMain$1.internalTransform(MyMain.java:46)
+	at MyMain$MyAnalysis.doAnalysis(MyMain.java:167)
+	at MyMain$MyAnalysis.<init>(MyMain.java:71)
+	at MyMain$1.internalTransform(MyMain.java:47)
 	at soot.BodyTransformer.transform(BodyTransformer.java:51)
 	at soot.Transform.apply(Transform.java:104)
 	at soot.BodyPack.internalApply(BodyPack.java:49)
@@ -95,4 +118,4 @@ Exception in thread "main" java.lang.IndexOutOfBoundsException: Index: 0
 	at soot.PackManager.runPacks(PackManager.java:357)
 	at soot.Main.run(Main.java:198)
 	at soot.Main.main(Main.java:141)
-	at MyMain.main(MyMain.java:63)
+	at MyMain.main(MyMain.java:64)

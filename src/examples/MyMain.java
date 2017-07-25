@@ -29,6 +29,7 @@ import soot.G;
 import soot.PackManager;
 import soot.Transform;
 import soot.toolkits.graph.ExceptionalUnitGraph;
+import soot.toolkits.graph.MHGPostDominatorsFinder;
 
 public class MyMain {
 
@@ -70,28 +71,10 @@ public class MyMain {
       doAnalysis();
     }
 
-    public Unit getCommonSucc(List<Unit> units) {
-      Unit u0 = units.get(0);
-      Unit u1 = units.get(1);
-      Unit u0_succ = u0;
-      int cnt=0;
-      while(cnt<MyUtils.maxSuccSteps) {
-        u0_succ = g.getUnexceptionalSuccsOf(u0_succ).get(0);
-        if(g.getPredsOf(u0_succ).size() > 1) {
-          int cnt1=0;
-          Unit u1_succ = u1;
-          while(cnt1 < MyUtils.maxSuccSteps) {
-            u1_succ = g.getUnexceptionalSuccsOf(u1_succ).get(0);
-            if(g.getPredsOf(u1_succ).size() > 1 && u1_succ == u0_succ) {
-              G.v().out.println("found common succ = "+u0_succ);
-              return u0_succ;
-            }
-            cnt1++;
-          }
-        }
-        cnt++;
-      }
-      return null;
+    public Unit getIPDom(Unit u) {
+      MHGPostDominatorsFinder m = new MHGPostDominatorsFinder(g);
+      Unit u_IPDom = (Unit) m.getImmediateDominator(u);
+      return u_IPDom;
     }
 
     public void doAnalysis() {
@@ -111,7 +94,7 @@ public class MyMain {
             G.v().out.printf("  #succs = %d\n", succs.size());
             String if_SPFExpr = myStmtSwitch.getSPFExpr();
             String ifNot_SPFExpr = myStmtSwitch.getIfNotSPFExpr();
-            Unit commonSucc = getCommonSucc(succs);
+            Unit commonSucc = getIPDom(u);
             Unit thenUnit = succs.get(0);
             Unit elseUnit = succs.get(1);
             String thenExpr="", elseExpr="";
