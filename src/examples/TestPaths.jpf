@@ -11,7 +11,7 @@ symbolic.dp=z3
 
 #symbolic.dp=yices
 
-listener = .symbc.VeritestingListener,.listener.ExecTracker
+listener = .symbc.VeritestingListener
 # listener = .symbc.SymbolicListener
 
 vm.storage.class=nil
