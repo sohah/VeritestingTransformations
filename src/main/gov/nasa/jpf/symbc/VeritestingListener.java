@@ -131,7 +131,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       pc = getPC(vm, ti, instructionToExecute, pc);
 
       // Generate symbolic expressions to unroll lines 39-42 of TestPaths.java
-      pc._addDet(EQ, a_v, new ComplexNonLinearIntegerExpression( 
+      pc._addDet(EQ, a_v, new ComplexNonLinearIntegerExpression(
             new ComplexNonLinearIntegerExpression(
               new ComplexNonLinearIntegerExpression(x_v, LE, new IntegerConstant(800)), 
               LOGICAL_AND, 

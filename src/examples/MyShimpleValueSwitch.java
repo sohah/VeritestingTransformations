@@ -13,6 +13,7 @@ import soot.Transform;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.Type;
 import soot.Value;
+import soot.ValueBox;
 import soot.toolkits.scalar.*;
 
 class MyShimpleValueSwitch extends AbstractShimpleValueSwitch {
@@ -46,6 +47,9 @@ class MyShimpleValueSwitch extends AbstractShimpleValueSwitch {
 		ifExprStr_SPF = "new ComplexNonLinearIntegerExpression(" + op1_str + ", GT, " + op2_str + ")"; 
 		ifNotExprStr_SPF = "new ComplexNonLinearIntegerExpression(" + op1_str + ", LE, " + op2_str + ")"; 
 		// G.v().out.println("    IfStmt(gt): v = "+v.getOp1()+"("+ty1+")" + " " + v.getOp2()+"("+ty2+")");
+		// List<ValueBox> u = v.getUseBoxes();
+		// G.v().out.println("    useboxes = "+u.get(0) + " " + u.get(1));
+
   }
   
 	public void caseEqExpr(EqExpr v) {

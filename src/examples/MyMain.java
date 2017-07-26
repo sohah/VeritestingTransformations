@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Iterator;
 
 import soot.Body;
+import soot.Local;
 import soot.SootMethod;
 import soot.Unit;
 import soot.util.Chain;
@@ -49,10 +50,18 @@ public class MyMain {
         }));
     PackManager.v().getPack("stp").add(
         new Transform("stp.myTransform", new BodyTransformer() {
-
-        
-
           protected void internalTransform(Body body, String phase, Map options) {
+            // // prints out locals, but those dont have stack locations
+            // Chain<Local> locals = body.getLocals();
+            // G.v().out.println("locals = "+locals);
+            // Iterator it = locals.iterator();
+            // while(it.hasNext()) {
+            //   Local l = (Local) it.next();
+            //   G.v().out.println("l.name = " + l.getName() + 
+            //     " l.type = " + l.getType() + 
+            //     " l.num = " + l.getNumber() + 
+            //     " l.getUB = " + l.getUseBoxes());
+            // }
             MyAnalysis m = new MyAnalysis(new ExceptionalUnitGraph(body));
             // use G.v().out instead of System.out so that Soot can
             // redirect this output to the Eclipse console
@@ -124,6 +133,7 @@ public class MyMain {
 
             // Create thenExpr
             while(thenUnit != commonSucc) {
+              G.v().out.println("BytecodeOffsetTag = " + ((Stmt)thenUnit).getTag("BytecodeOffsetTag"));
               myStmtSwitch = new MyStmtSwitch();
               thenUnit.apply(myStmtSwitch);
               String thenExpr1 = myStmtSwitch.getSPFExpr();
@@ -141,6 +151,7 @@ public class MyMain {
 
             // Create elseExpr, similar to thenExpr
             while(elseUnit != commonSucc) {
+              G.v().out.println("BytecodeOffsetTag = " + ((Stmt)elseUnit).getTag("BytecodeOffsetTag"));
               myStmtSwitch = new MyStmtSwitch();
               elseUnit.apply(myStmtSwitch);
               String elseExpr1 = myStmtSwitch.getSPFExpr();
