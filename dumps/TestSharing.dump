@@ -1,0 +1,29 @@
+Compiled from "TestSharing.java"
+public class TestSharing {
+  public TestSharing();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void testSharing(int);
+    Code:
+       0: iconst_0
+       1: istore_1
+       2: iload_1
+       3: bipush        10
+       5: if_icmpge     18
+       8: iload_0
+       9: iload_0
+      10: iadd
+      11: istore_0
+      12: iinc          1, 1
+      15: goto          2
+      18: return
+
+  public static void main(java.lang.String[]);
+    Code:
+       0: iconst_0
+       1: invokestatic  #2                  // Method testSharing:(I)V
+       4: return
+}

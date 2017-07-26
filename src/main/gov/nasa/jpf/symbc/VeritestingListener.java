@@ -96,17 +96,16 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     return pc;
   }
 
-  public static int makeSymbolicInteger(MJIEnv env, String name) {
-    env.setReturnAttribute(new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name)));
-    return 0;
+  public SymbolicInteger makeSymbolicInteger(MJIEnv env, String name) {
+    return new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name));
   }
 
   // TestPathsSimple listener
   public void executeInstruction_TestPathsSimple(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
-    int af_slot_index = 3, bf_slot_index = 4;
-    int a_slot_index = 5, b_slot_index = 6;
-    int startInsn = 55, endInsn = 87; //TODO: read some of these from config 
+    // int af_slot_index = 3, bf_slot_index = 4;
+    int a_slot_index = 3, b_slot_index = 4;
+    int startInsn = 41, endInsn = 71; //TODO: read some of these from config 
     if(ti.getTopFrame().getPC().getPosition() == startInsn && 
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) { 
@@ -120,12 +119,12 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(y_slot_index);
       if(y_v == null) System.out.println("failed to get y expr");
       
-      //int a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
-      //int b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
-      IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(af_slot_index);
-      if(a_v == null) System.out.println("failed to get a_final expr");
-      IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(bf_slot_index);
-      if(b_v == null) System.out.println("failed to get b_final expr");
+      SymbolicInteger a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
+      SymbolicInteger b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
+      // IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(af_slot_index);
+      // if(a_v == null) System.out.println("failed to get a_final expr");
+      // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(bf_slot_index);
+      // if(b_v == null) System.out.println("failed to get b_final expr");
      
       PathCondition pc = null;
       pc = getPC(vm, ti, instructionToExecute, pc);
@@ -164,7 +163,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
 
   // VeritestingPerf listener
-  public void executeInstruction_VeritestingPerf(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
     // int a_final_slot_index = 3, b_final_slot_index = 4;
     int i_slot_index = 3;
@@ -189,8 +188,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(b_final_slot_index);
       // if(b_v == null) System.out.println("failed to get b_final expr");
       
-      int a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
-      int b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
+      SymbolicInteger a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
+      SymbolicInteger b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
      
       PathCondition pc = null;
       pc = getPC(vm, ti, instructionToExecute, pc);
@@ -215,11 +214,11 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
 
   // TestPaths listener
-  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  public void executeInstruction_TestPaths(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
-    int a_final_slot_index = 3, b_final_slot_index = 4;
-    int a_slot_index = 5, b_slot_index = 6;
-    int startInsn = 8, endInsn = 50; //TODO: read some of these from config 
+    //int a_final_slot_index = 3, b_final_slot_index = 4;
+    int a_slot_index = 3, b_slot_index = 4;
+    int startInsn = 7, endInsn = 46; //TODO: read some of these from config 
     if(ti.getTopFrame().getPC().getPosition() == startInsn && 
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPaths")) { 
@@ -232,8 +231,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       if(x_v == null) System.out.println("failed to get x expr");
       IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(y_slot_index);
       if(y_v == null) System.out.println("failed to get y expr");
-      int a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
-      int b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
+      SymbolicInteger a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
+      SymbolicInteger b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
       // IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(a_final_slot_index);
       // if(a_v == null) System.out.println("failed to get a_final expr");
       // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(b_final_slot_index);

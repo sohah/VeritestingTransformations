@@ -33,8 +33,8 @@ public class TestPathsSimple {
 
   public void testMe3 (int x, int y) {
     System.out.println("x = " + x + ", y = " + y);
-    int a_final = Debug.makeSymbolicInteger("a_final");
-    int b_final = Debug.makeSymbolicInteger("b_final");
+    // int a_final = Debug.makeSymbolicInteger("a_final");
+    // int b_final = Debug.makeSymbolicInteger("b_final");
     int a=11, b=12;
   
     // Begin region for static unrolling
