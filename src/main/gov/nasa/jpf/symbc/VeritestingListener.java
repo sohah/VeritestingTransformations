@@ -218,7 +218,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 
   // Veritesting listener for testMe4 method
   public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-    int x_slot_index = 1, y_slot_index = 2;
     int sum_slot_index = 3;
     int startInsn = 61, endInsn = 80; //TODO: read some of these from config 
     if(ti.getTopFrame().getPC().getPosition() == startInsn && 
@@ -241,7 +240,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       LogicalORLinearIntegerConstraints lolic = new LogicalORLinearIntegerConstraints();
       lolic.addToList(
           new LinearIntegerConstraint(
-            new ComplexNonLinearIntegerExpression(x_v, LE, new IntegerConstant(0)), 
+            new ComplexNonLinearIntegerExpression(x_v, LT, new IntegerConstant(0)), 
           LOGICAL_AND,
             new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(-1))));
       lolic.addToList(

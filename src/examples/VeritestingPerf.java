@@ -31,6 +31,25 @@ public class VeritestingPerf {
 	  (new VeritestingPerf()).testMe4(arr,len);
   }
 
+  public void testMe5 (int[] x, int len) {
+    int sum, sum_new0, sum_new1;
+    for(int i=0; i < len; i++) 
+      x[i] = Debug.makeSymbolicInteger("x"+i);
+		// Begin region for static unrolling
+      if (x[0] < 0) sum_new0 = -1;
+      else if (x[0] > 0) sum_new0 = 1;
+      else sum_new0 = 0;
+      if (x[1] < 0) sum_new1 = -1;
+      else if (x[1] > 0) sum_new1 = 1;
+      else sum_new1 = 0;
+      sum = sum_new0 + sum_new1;
+    // End region for static unrolling
+    if (sum < 0) System.out.println("neg");
+    else if (sum > 0) System.out.println("pos");
+    else System.out.println("bug");
+    System.out.println("-x-x-x-x-");
+  }
+
   public void testMe4 (int[] x, int len) {
     int sum = Debug.makeSymbolicInteger("sum");;
     for(int i=0; i < len; i++) 
