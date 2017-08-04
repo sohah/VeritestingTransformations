@@ -6,8 +6,8 @@ sourcepath=${jpf-symbc}/src/examples
 
 # analyze VeritestingPerf.testMe(int x, boolean b) using symbolic values for 'x' and
 # concrete value for 'b'
-symbolic.method= VeritestingPerf.testMe3(sym#sym)
-symbolic.dp=z3
+symbolic.method= VeritestingPerf.testMe4(con#con)
+symbolic.dp=z3bitvector
 
 #symbolic.dp=yices
 
@@ -16,6 +16,6 @@ listener = .symbc.VeritestingListener
 
 vm.storage.class=nil
 
-# symbolic.debug=on
-symbolic.min_int=-1
-symbolic.max_int=2
+symbolic.debug=true
+# symbolic.min_int=-2147483648
+# symbolic.max_int=2147483647

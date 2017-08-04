@@ -619,6 +619,7 @@ public class SymbolicInstructionFactory extends gov.nasa.jpf.jvm.bytecode.Instru
 		} else {
 			debugMode = false;
 		}
+		debugMode = true;
 
 		if (debugMode) System.out.println("Running Symbolic PathFinder ...");
 

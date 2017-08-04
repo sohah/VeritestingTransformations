@@ -1,7 +1,7 @@
 target=TestSharing
 classpath=${jpf-symbc}/build/examples
 sourcepath=${jpf-symbc}/src/examples
-symbolic.method = TestSharing.testSharing(sym)
+symbolic.method = TestSharing.testSharing(sym#con)
 symbolic.min_int=-100
 symbolic.max_int=100
 #symbolic.dp=cvc3bitvec

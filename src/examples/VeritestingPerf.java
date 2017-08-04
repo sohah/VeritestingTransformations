@@ -26,9 +26,25 @@ import gov.nasa.jpf.symbc.Debug;
 public class VeritestingPerf {
 
   public static void main (String[] args){
-   // testMe(42, false);
-	System.out.println("!!!!!!!!!!!!!!! Start Testing! ");
-	(new VeritestingPerf()).testMe3(0,0);
+    int len = Integer.parseInt(args[0]);
+    int arr[] = new int [len];
+	  (new VeritestingPerf()).testMe4(arr,len);
+  }
+
+  public void testMe4 (int[] x, int len) {
+    int sum = Debug.makeSymbolicInteger("sum");;
+    for(int i=0; i < len; i++) 
+      x[i] = Debug.makeSymbolicInteger("x"+i);
+    for (int i=0; i < len; i++) {
+		// Begin region for static unrolling
+      if (x[i] < 0) sum += -1;
+      else if (x[i] > 0) sum += 1;
+    // End region for static unrolling
+    }
+    if (sum < 0) System.out.println("neg");
+    else if (sum > 0) System.out.println("pos");
+    else System.out.println("bug");
+    System.out.println("-x-x-x-x-");
   }
 
   public void testMe3 (int x, int y) {

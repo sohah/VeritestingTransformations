@@ -16,7 +16,7 @@ JavaPathfinder core system v8.0 (rev 32) - (C) 2005-2014 United States Governmen
 ====================================================== system under test
 TestPathsSimple.main()
 
-====================================================== search started: 7/26/17 2:21 PM
+====================================================== search started: 7/26/17 2:23 PM
 !!!!!!!!!!!!!!! Start Testing! 
 x = 0, y = 0
 a = -1
@@ -45,4 +45,4 @@ instructions:       3293
 max memory:         240MB
 loaded code:        classes=62,methods=1433
 
-====================================================== search finished: 7/26/17 2:21 PM
+====================================================== search finished: 7/26/17 2:23 PM

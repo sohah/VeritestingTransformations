@@ -35,6 +35,7 @@ import gov.nasa.jpf.symbc.numeric.BinaryNonLinearIntegerExpression;
 import gov.nasa.jpf.symbc.numeric.ComplexNonLinearIntegerExpression;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
+import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.MethodInfo;
@@ -48,6 +49,8 @@ import static gov.nasa.jpf.symbc.numeric.Operator.*;
 import static gov.nasa.jpf.symbc.numeric.Comparator.*;
 
 public class VeritestingListener extends PropertyListenerAdapter  {
+
+  int sumId=0;
   
   public VeritestingListener(Config conf, JPF jpf) {
   }
@@ -162,8 +165,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
   }
 
-  // VeritestingPerf listener
-  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  // VeritestingPerf listener for testMe3 method
+  public void executeInstruction_testMe3(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
     // int a_final_slot_index = 3, b_final_slot_index = 4;
     int i_slot_index = 3;
@@ -205,6 +208,65 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       sf.setSlotAttr(a_slot_index, a_v); 
       int b_val = sf.getSlot(b_slot_index);
       sf.setSlotAttr(b_slot_index, b_v); 
+      
+      Instruction insn=instructionToExecute;
+      while(insn.getPosition() < endInsn) 
+        insn = insn.getNext();
+      ti.setNextPC(insn);
+    }
+  }
+
+  // Veritesting listener for testMe4 method
+  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+    int x_slot_index = 1, y_slot_index = 2;
+    int sum_slot_index = 3;
+    int startInsn = 61, endInsn = 80; //TODO: read some of these from config 
+    if(ti.getTopFrame().getPC().getPosition() == startInsn && 
+       ti.getTopFrame().getMethodInfo().getName().equals("testMe4") &&
+       ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) { 
+      StackFrame sf = ti.getTopFrame();
+      System.out.println("time to start veritesting for " + 
+       ti.getTopFrame().getMethodInfo().getName());
+      
+      IntegerExpression x_v = (IntegerExpression) sf.getOperandAttr(0);
+      if(x_v == null) System.out.println("failed to get x expr");
+      IntegerExpression sum_v = (IntegerExpression) sf.getLocalAttr(sum_slot_index);
+      if(sum_v == null) System.out.println("failed to get sum expr");
+
+      SymbolicInteger sum_new = makeSymbolicInteger(ti.getEnv(),"sum_new"+sumId);
+      sumId++;
+      PathCondition pc = null;
+      pc = getPC(vm, ti, instructionToExecute, pc);
+     
+      LogicalORLinearIntegerConstraints lolic = new LogicalORLinearIntegerConstraints();
+      lolic.addToList(
+          new LinearIntegerConstraint(
+            new ComplexNonLinearIntegerExpression(x_v, LE, new IntegerConstant(0)), 
+          LOGICAL_AND,
+            new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(-1))));
+      lolic.addToList(
+          new LinearIntegerConstraint(
+            new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(0)), 
+          LOGICAL_AND,
+            new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(1))));
+
+      lolic.addToList(
+          new LinearIntegerConstraint(
+            new ComplexNonLinearIntegerExpression(x_v, EQ, new IntegerConstant(0)), 
+          LOGICAL_AND,
+            new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(0))));
+
+      pc._addDet(lolic);
+
+      // pc._addDet(EQ, sum_new, 
+      //   new BinaryNonLinearIntegerExpression(x_v, CMP, new IntegerConstant(0)));
+      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
+      
+      if(sumId > 1)
+        sf.setSlotAttr(sum_slot_index, new BinaryNonLinearIntegerExpression(sum_v, PLUS, sum_new));
+      else 
+        sf.setSlotAttr(sum_slot_index, sum_new);
+      sf.pop(); //pops off the x expr
       
       Instruction insn=instructionToExecute;
       while(insn.getPosition() < endInsn) 
