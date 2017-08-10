@@ -1,58 +1,91 @@
-symbolic.min_int=-100
-symbolic.min_long=-9223372036854775808
-symbolic.min_short=-32768
-symbolic.min_byte=-128
-symbolic.min_char=0
-symbolic.max_int=100
-symbolic.max_long=9223372036854775807
-symbolic.max_short=32767
-symbolic.max_byte=127
-symbolic.max_char=65535
-symbolic.min_double=4.9E-324
-symbolic.max_double=1.7976931348623157E308
-JavaPathfinder core system v8.0 (rev 32) - (C) 2005-2014 United States Government. All rights reserved.
-
-
-====================================================== system under test
-TestSharing.main()
-
-====================================================== search started: 7/4/17 2:18 PM
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-new BLIE
-then side
-else side
-then side
-
-====================================================== results
-no errors detected
-
-====================================================== statistics
+1
+elapsed time:       00:00:00
+max memory:         240MB
+2
+elapsed time:       00:00:00
+max memory:         240MB
+3
+elapsed time:       00:00:00
+max memory:         240MB
+4
+elapsed time:       00:00:00
+max memory:         240MB
+5
+elapsed time:       00:00:00
+max memory:         240MB
+6
+elapsed time:       00:00:00
+max memory:         240MB
+7
+elapsed time:       00:00:00
+max memory:         240MB
+8
+elapsed time:       00:00:00
+max memory:         240MB
+9
+elapsed time:       00:00:00
+max memory:         240MB
+10
+elapsed time:       00:00:00
+max memory:         240MB
+11
+elapsed time:       00:00:00
+max memory:         240MB
+12
+elapsed time:       00:00:00
+max memory:         240MB
+13
+elapsed time:       00:00:00
+max memory:         240MB
+14
+elapsed time:       00:00:00
+max memory:         240MB
+15
+elapsed time:       00:00:00
+max memory:         240MB
+16
+elapsed time:       00:00:00
+max memory:         240MB
+17
+elapsed time:       00:00:00
+max memory:         240MB
+18
+elapsed time:       00:00:00
+max memory:         303MB
+19
+elapsed time:       00:00:03
+max memory:         556MB
+20
+elapsed time:       00:00:08
+max memory:         876MB
+21
 elapsed time:       00:00:16
-states:             new=6,visited=0,backtracked=6,end=3
-search:             maxDepth=4,constraints=0
-choice generators:  thread=1 (signal=0,lock=1,sharedRef=0,threadApi=0,reschedule=0), data=3
-heap:               new=352,released=29,maxLive=344,gcCycles=4
-instructions:       3332
 max memory:         910MB
-loaded code:        classes=60,methods=1280
-
-====================================================== search finished: 7/4/17 2:18 PM
+22
+elapsed time:       00:00:27
+max memory:         910MB
+23
+elapsed time:       00:00:52
+max memory:         910MB
+24
+elapsed time:       00:01:40
+max memory:         910MB
+25
+elapsed time:       00:03:14
+max memory:         910MB
+26
+elapsed time:       00:06:27
+max memory:         910MB
+27
+elapsed time:       00:12:57
+max memory:         910MB
+28
+elapsed time:       00:25:37
+max memory:         910MB
+29
+elapsed time:       00:51:06
+max memory:         891MB
+30
+elapsed time:       01:42:29
+max memory:         899MB
+31

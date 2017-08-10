@@ -28,14 +28,14 @@ public class VeritestingPerf {
   public static void main (String[] args){
     int len = Integer.parseInt(args[0]);
     int arr[] = new int [len];
-	  (new VeritestingPerf()).testMe4(arr,len);
+    (new VeritestingPerf()).testMe4(arr,len);
   }
 
   public void testMe5 (int[] x, int len) {
     int sum, sum_new0, sum_new1;
     for(int i=0; i < len; i++) 
       x[i] = Debug.makeSymbolicInteger("x"+i);
-		// Begin region for static unrolling
+    // Begin region for static unrolling
       if (x[0] < 0) sum_new0 = -1;
       else if (x[0] > 0) sum_new0 = 1;
       else sum_new0 = 0;
@@ -54,11 +54,13 @@ public class VeritestingPerf {
     int sum = Debug.makeSymbolicInteger("sum");;
     for(int i=0; i < len; i++) 
       x[i] = Debug.makeSymbolicInteger("x"+i);
+    // x = array of symbolic integers
+    // len = concrete length of x
     for (int i=0; i < len; i++) {
-		// Begin region for static unrolling
+      // Begin region for static unrolling
       if (x[i] < 0) sum += -1;
       else if (x[i] > 0) sum += 1;
-    // End region for static unrolling
+      // End region for static unrolling
     }
     if (sum < 0) System.out.println("neg");
     else if (sum > 0) System.out.println("pos");
@@ -68,27 +70,27 @@ public class VeritestingPerf {
 
   public void testMe3 (int x, int y) {
     System.out.println("x = " + x + ", y = " + y);
-		// int a_final = Debug.makeSymbolicInteger("a_final");
-		// int b_final = Debug.makeSymbolicInteger("b_final");
+    // int a_final = Debug.makeSymbolicInteger("a_final");
+    // int b_final = Debug.makeSymbolicInteger("b_final");
     int i = Debug.makeSymbolicInteger("i");
     int a=11, b=12;
   
     for (; i<1; i++) {
-		// Begin region for static unrolling
+    // Begin region for static unrolling
     if (x + i< 0 ) a = -1;
     else if (x + i == 0 ) a = 0;
-	  else a = 1;
+    else a = 1;
     if (y + i < 0 ) b = -1;
-		else if (y + i == 0 ) b = 0;
+    else if (y + i == 0 ) b = 0;
     else b = 1;
-		// End region for static unrolling
+    // End region for static unrolling
     //
    
     // if (a == -1) System.out.println("a = -1");
     // else if (a == 1) System.out.println("a = 1");
     // else System.out.println("a != 1 && a != -1");
     // if(b == -1) System.out.println("b = -1");
-		// else if (b == 1) System.out.println("b = 1");
+    // else if (b == 1) System.out.println("b = 1");
     // else System.out.println("b != 1 && b != 1");
     }
     System.out.println("-x-x-x-x-");
@@ -109,15 +111,15 @@ public class VeritestingPerf {
   }
 
   public void testMe2 (int x, boolean b) {
-	  System.out.println("!!!!!!!!!!!!!!! First step! ");
-	    //System.out.println("x = " + x);
+    System.out.println("!!!!!!!!!!!!!!! First step! ");
+      //System.out.println("x = " + x);
         if (b) {
-        	if (x <= 1200){
-        		System.out.println("  <= 1200");
-        	}
-        	if(x >= 1200){
-        		System.out.println("  >= 1200");
-        	}
+          if (x <= 1200){
+            System.out.println("  <= 1200");
+          }
+          if(x >= 1200){
+            System.out.println("  >= 1200");
+          }
         } else System.out.println("  b is false");
   }
 
