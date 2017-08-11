@@ -54,6 +54,8 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
 
   public IntegerExpression base;
 
+	public Comparator getComparator() { return cmprtr; }
+
   public ComplexNonLinearIntegerExpression() {
     left = right = null;
     op = Operator.NONE_OP;

@@ -21,7 +21,7 @@
 
 package gov.nasa.jpf.symbc.numeric;
 
-public class ComplexNonLinearIntegerConstraint extends Constraint{
+public class ComplexNonLinearIntegerConstraint extends NonLinearIntegerConstraint{
   
   private ComplexNonLinearIntegerExpression cnlie;
   public String comment;
@@ -40,16 +40,11 @@ public class ComplexNonLinearIntegerConstraint extends Constraint{
     return new ComplexNonLinearIntegerConstraint(cnlie);
   }
   
+	public Comparator getComparator() { return cnlie.getComparator(); }
   
   public ComplexNonLinearIntegerExpression getCNLIE () {
     return cnlie;
   }
-  
-	@Override
-	public Constraint not() {
-		throw new UnsupportedOperationException("Not supported");
-		//return null;
-	}
   
   public String toString () {
     StringBuilder sb = new StringBuilder();

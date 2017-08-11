@@ -33,6 +33,7 @@ import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.BinaryNonLinearIntegerExpression;
 import gov.nasa.jpf.symbc.numeric.ComplexNonLinearIntegerExpression;
+import gov.nasa.jpf.symbc.numeric.ComplexNonLinearIntegerConstraint;
 import gov.nasa.jpf.symbc.numeric.Expression;
 import gov.nasa.jpf.symbc.numeric.LogicalORLinearIntegerConstraints;
 import gov.nasa.jpf.symbc.numeric.LinearIntegerConstraint;
@@ -237,28 +238,48 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       PathCondition pc = null;
       pc = getPC(vm, ti, instructionToExecute, pc);
      
-      LogicalORLinearIntegerConstraints lolic = new LogicalORLinearIntegerConstraints();
-      lolic.addToList(
-          new LinearIntegerConstraint(
-            new ComplexNonLinearIntegerExpression(x_v, LT, new IntegerConstant(0)), 
-          LOGICAL_AND,
-            new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(-1))));
-      lolic.addToList(
-          new LinearIntegerConstraint(
-            new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(0)), 
-          LOGICAL_AND,
-            new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(1))));
+      // LogicalORLinearIntegerConstraints lolic = new LogicalORLinearIntegerConstraints();
+      // lolic.addToList(
+      //     new LinearIntegerConstraint(
+      //       new ComplexNonLinearIntegerExpression(x_v, LT, new IntegerConstant(0)), 
+      //     LOGICAL_AND,
+      //       new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(-1))));
+      // lolic.addToList(
+      //     new LinearIntegerConstraint(
+      //       new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(0)), 
+      //     LOGICAL_AND,
+      //       new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(1))));
 
-      lolic.addToList(
-          new LinearIntegerConstraint(
-            new ComplexNonLinearIntegerExpression(x_v, EQ, new IntegerConstant(0)), 
-          LOGICAL_AND,
-            new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(0))));
+      // lolic.addToList(
+      //     new LinearIntegerConstraint(
+      //       new ComplexNonLinearIntegerExpression(x_v, EQ, new IntegerConstant(0)), 
+      //     LOGICAL_AND,
+      //       new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(0))));
 
-      pc._addDet(lolic);
+      // pc._addDet(lolic);
 
       // pc._addDet(EQ, sum_new, 
       //   new BinaryNonLinearIntegerExpression(x_v, CMP, new IntegerConstant(0)));
+  
+      ComplexNonLinearIntegerExpression cnlie1 = new ComplexNonLinearIntegerExpression(
+          new ComplexNonLinearIntegerExpression(x_v, LT, new IntegerConstant(0)),
+          LOGICAL_AND,
+          new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(-1)) );
+      ComplexNonLinearIntegerExpression cnlie2 = new ComplexNonLinearIntegerExpression(
+          new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(0)),
+          LOGICAL_AND,
+          new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(1)) );
+      ComplexNonLinearIntegerExpression cnlie3 = new ComplexNonLinearIntegerExpression(
+          new ComplexNonLinearIntegerExpression(x_v, EQ, new IntegerConstant(0)),
+          LOGICAL_AND,
+          new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(0)) );
+      ComplexNonLinearIntegerExpression cnlie1_2 = 
+        new ComplexNonLinearIntegerExpression(cnlie1, LOGICAL_OR, cnlie2);
+      ComplexNonLinearIntegerExpression cnlie1_2_3 = 
+        new ComplexNonLinearIntegerExpression(cnlie1_2, LOGICAL_OR, cnlie3);
+
+      pc._addDet(new ComplexNonLinearIntegerConstraint(cnlie1_2_3));
+
       ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
       
       if(sumId > 1)
