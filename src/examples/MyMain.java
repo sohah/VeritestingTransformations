@@ -19,6 +19,7 @@
 import java.util.Map;
 import java.util.List;
 import java.util.Iterator;
+import java.util.HashSet;
 
 import soot.Body;
 import soot.Local;
@@ -84,9 +85,19 @@ public class MyMain {
   
   public static class MyAnalysis /*extends ForwardFlowAnalysis */ {
     ExceptionalUnitGraph g; 
+    HashSet startingPointsHistory;
+    LocalVarsTable lvt;
     public MyAnalysis(ExceptionalUnitGraph exceptionalUnitGraph) {
       g = exceptionalUnitGraph;
-      doAnalysis();
+      lvt = new LocalVarsTable(g.getBody().getMethod().getDeclaringClass().getName(), 
+                                              g.getBody().getMethod().getName());
+      G.v().out.println("Starting analysis for "+g.getBody().getMethod().getName());
+      List<Unit> heads = g.getHeads();
+      startingPointsHistory = new HashSet();
+      for(int i=0; i<heads.size(); i++) {
+        Unit u = (Unit) heads.get(i);
+        doAnalysis(u);
+      }
     }
     
     private void printTags(Stmt stmt) {
@@ -101,104 +112,161 @@ public class MyMain {
       return u_IPDom;
     }
 
-    public void doAnalysis() {
-      List<Unit> heads = g.getHeads(); 
-      if(heads.size()==1) {
-        Unit u = (Unit) heads.get(0);
-        MyStmtSwitch myStmtSwitch;
-        while(true) {
-          //printTags((Stmt)u);
-          G.v().out.println("BytecodeOffsetTag = " + ((Stmt)u).getTag("BytecodeOffsetTag"));
-          myStmtSwitch = new MyStmtSwitch();
-          u.apply(myStmtSwitch);
-          List<Unit> succs = g.getUnexceptionalSuccsOf(u);
-          if(succs.size()==1) {
-            u = succs.get(0);
-            continue;
-          } else if (succs.size()==0) break;
-          else {
-            G.v().out.printf("  #succs = %d\n", succs.size());
-            String if_SPFExpr = myStmtSwitch.getSPFExpr();
-            String ifNot_SPFExpr = myStmtSwitch.getIfNotSPFExpr();
-            Unit commonSucc = getIPDom(u);
-            Unit thenUnit = succs.get(0);
-            Unit elseUnit = succs.get(1);
-            String thenExpr="", elseExpr="";
-            final int thenPathLabel = MyUtils.getPathCounter();
-            final int elsePathLabel = MyUtils.getPathCounter();
-            final String thenPLAssignSPF = 
-              MyUtils.nCNLIE + "pathLabel, EQ, " + thenPathLabel + ")"; 
-            final String elsePLAssignSPF = 
-              MyUtils.nCNLIE + "pathLabel, EQ, " + elsePathLabel + ")";
 
-            // Create thenExpr
-            while(thenUnit != commonSucc) {
-              G.v().out.println("BytecodeOffsetTag = " + ((Stmt)thenUnit).getTag("BytecodeOffsetTag"));
-              myStmtSwitch = new MyStmtSwitch();
-              thenUnit.apply(myStmtSwitch);
-              String thenExpr1 = myStmtSwitch.getSPFExpr();
-              if(thenExpr1 == null || thenExpr1 == "" ) {
-                thenUnit = g.getUnexceptionalSuccsOf(thenUnit).get(0);
-                continue;
+    public void doAnalysis(Unit startingUnit) {
+      G.v().out.println("Starting doAnalysis");
+      Unit u = startingUnit;
+      MyStmtSwitch myStmtSwitch;
+      HashSet h = new HashSet();
+      boolean isLoop = false;
+      if(startingPointsHistory.contains(startingUnit)) return;
+      while(true) {
+        if(u == null) break;
+        if(h.contains(u)) { isLoop = true; break; }
+        else h.add(u);
+        //printTags((Stmt)u);
+        G.v().out.println("BOTag = " + ((Stmt)u).getTag("BytecodeOffsetTag"));
+        myStmtSwitch = new MyStmtSwitch(lvt);
+        u.apply(myStmtSwitch);
+        List<Unit> succs = g.getUnexceptionalSuccsOf(u);
+        Unit commonSucc = getIPDom(u);
+        if(succs.size()==1) {
+          u = succs.get(0);
+          continue;
+        } else if (succs.size()==0) 
+          break;
+        else if(succs.size() == 2 && startingPointsHistory.contains(u)) {
+            u = commonSucc;
+            break;
+        } else if(succs.size() == 2 && !startingPointsHistory.contains(u)) {
+          startingPointsHistory.add(u);
+          G.v().out.printf("  #succs = %d\n", succs.size());
+          String if_SPFExpr = myStmtSwitch.getSPFExpr();
+          String ifNot_SPFExpr = myStmtSwitch.getIfNotSPFExpr();
+          Unit thenUnit = succs.get(0);
+          Unit elseUnit = succs.get(1);
+          String thenExpr="", elseExpr="";
+          final int thenPathLabel = MyUtils.getPathCounter();
+          final int elsePathLabel = MyUtils.getPathCounter();
+          final String thenPLAssignSPF = 
+            MyUtils.nCNLIE + "pathLabel, EQ, " + thenPathLabel + ")"; 
+          final String elsePLAssignSPF = 
+            MyUtils.nCNLIE + "pathLabel, EQ, " + elsePathLabel + ")";
+
+          // Create thenExpr
+          while(thenUnit != commonSucc) {
+            G.v().out.println("BOTag = " + ((Stmt)thenUnit).getTag("BytecodeOffsetTag") + 
+                ", h.size() = " + h.size());
+            if(h.contains(thenUnit)) { 
+              isLoop = true;
+              List<Unit> thenSuccs;
+              while(true) {
+                thenSuccs = g.getUnexceptionalSuccsOf(thenUnit);
+                if(thenSuccs.size() > 1) break; 
+                thenUnit = thenSuccs.get(0);
               }
-              if(thenExpr!="") 
-                thenExpr = MyUtils.SPFLogicalAnd(thenExpr, thenExpr1);
-              else thenExpr = thenExpr1;
+              G.v().out.println(" calling doAnalysis on succ 0");
+              doAnalysis(thenSuccs.get(0));
+              G.v().out.println(" calling doAnalysis on succ 1");
+              doAnalysis(thenSuccs.get(1));
+              break; 
+            }
+            else h.add(thenUnit);
+            myStmtSwitch = new MyStmtSwitch(lvt);
+            thenUnit.apply(myStmtSwitch);
+            String thenExpr1 = myStmtSwitch.getSPFExpr();
+            if(thenExpr1 == null || thenExpr1 == "" ) {
               thenUnit = g.getUnexceptionalSuccsOf(thenUnit).get(0);
+              continue;
             }
-            // Assign pathLabel a value in the thenExpr
-            thenExpr = MyUtils.SPFLogicalAnd(thenExpr, thenPLAssignSPF);
-
-            // Create elseExpr, similar to thenExpr
-            while(elseUnit != commonSucc) {
-              G.v().out.println("BytecodeOffsetTag = " + ((Stmt)elseUnit).getTag("BytecodeOffsetTag"));
-              myStmtSwitch = new MyStmtSwitch();
-              elseUnit.apply(myStmtSwitch);
-              String elseExpr1 = myStmtSwitch.getSPFExpr();
-              if(elseExpr1 == null || elseExpr1 == "") {
-                elseUnit = g.getUnexceptionalSuccsOf(elseUnit).get(0);
-                continue;
-              }
-              if(elseExpr != "") 
-                elseExpr = MyUtils.SPFLogicalAnd(elseExpr, elseExpr1);
-              else elseExpr = elseExpr1;
-              elseUnit = g.getUnexceptionalSuccsOf(elseUnit).get(0);
-            }
-            // Assign pathLabel a different value in the elseExpr
-            elseExpr = MyUtils.SPFLogicalAnd(elseExpr, elsePLAssignSPF);
-
-            // (If && thenExpr) || (ifNot && elseExpr)
-            String pathExpr1 = MyUtils.SPFLogicalOr( 
-                  MyUtils.SPFLogicalAnd(if_SPFExpr, thenExpr),
-                  MyUtils.SPFLogicalAnd(ifNot_SPFExpr, elseExpr));
-
-            final StringBuilder sB = new StringBuilder();
-            commonSucc.apply(new AbstractStmtSwitch() {
-              public void caseAssignStmt(AssignStmt stmt) {
-                String lhs = stmt.getLeftOp().toString();
-                MyShimpleValueSwitch msvs = new MyShimpleValueSwitch();
-                stmt.getRightOp().apply(msvs);
-                String phiExpr0 = msvs.getArg0PhiExpr();
-                String phiExpr1 = msvs.getArg1PhiExpr();
-
-                // (pathLabel == 1 && lhs == phiExpr0) || (pathLabel ==2 && lhs == phiExpr1)
-                sB.append( MyUtils.SPFLogicalOr(
-                  MyUtils.SPFLogicalAnd( thenPLAssignSPF,
-                    MyUtils.nCNLIE + lhs + ", EQ, " + phiExpr0 + ")"), 
-                  MyUtils.SPFLogicalAnd( elsePLAssignSPF, 
-                    MyUtils.nCNLIE + lhs + ", EQ, " + phiExpr1 + ")")));
-              }
-            });
-            String finalPathExpr = MyUtils.SPFLogicalAnd(pathExpr1, sB.toString());
-            G.v().out.println("finalPathExpr = "+finalPathExpr);
-            succs = g.getUnexceptionalSuccsOf(commonSucc);
-            u = succs.get(0);
+            if(thenExpr!="") 
+              thenExpr = MyUtils.SPFLogicalAnd(thenExpr, thenExpr1);
+            else thenExpr = thenExpr1;
+            thenUnit = g.getUnexceptionalSuccsOf(thenUnit).get(0);
           }
-          G.v().out.println("");
-        }
-      }
-    }
+          if(isLoop) {
+            G.v().out.println("Found a loop");
+          }
+          // Assign pathLabel a value in the thenExpr
+          thenExpr = MyUtils.SPFLogicalAnd(thenExpr, thenPLAssignSPF);
 
-  }
+          h.clear();
+          isLoop = false;
+          while(elseUnit != commonSucc) {
+            if(h.contains(elseUnit)) { 
+              isLoop = true;
+              List<Unit> elseSuccs;
+              while(true) {
+                elseSuccs = g.getUnexceptionalSuccsOf(elseUnit);
+                if(elseSuccs.size() > 1) break; 
+                elseUnit = elseSuccs.get(0);
+              }
+              doAnalysis(elseSuccs.get(0));
+              doAnalysis(elseSuccs.get(1));
+              break; 
+            }
+            else h.add(elseUnit);
+            G.v().out.println("BOTag = " + ((Stmt)elseUnit).getTag("BytecodeOffsetTag") + 
+                ", h.size() = " + h.size());
+            myStmtSwitch = new MyStmtSwitch(lvt);
+            elseUnit.apply(myStmtSwitch);
+            String elseExpr1 = myStmtSwitch.getSPFExpr();
+            if(elseExpr1 == null || elseExpr1 == "" ) {
+              elseUnit = g.getUnexceptionalSuccsOf(elseUnit).get(0);
+              continue;
+            }
+            if(elseExpr!="") 
+              elseExpr = MyUtils.SPFLogicalAnd(elseExpr, elseExpr1);
+            else elseExpr = elseExpr1;
+            elseUnit = g.getUnexceptionalSuccsOf(elseUnit).get(0);
+          }
+          if(isLoop) {
+            G.v().out.println("Found an Else loop");
+          }
+          // Assign pathLabel a value in the elseExpr
+          elseExpr = MyUtils.SPFLogicalAnd(elseExpr, elsePLAssignSPF);
+          
+          // (If && thenExpr) || (ifNot && elseExpr)
+          String pathExpr1 = MyUtils.SPFLogicalOr( 
+                MyUtils.SPFLogicalAnd(if_SPFExpr, thenExpr),
+                MyUtils.SPFLogicalAnd(ifNot_SPFExpr, elseExpr));
+
+          final StringBuilder sB = new StringBuilder();
+          commonSucc.apply(new AbstractStmtSwitch() {
+            public void caseAssignStmt(AssignStmt stmt) {
+              String lhs = stmt.getLeftOp().toString();
+							String setSlotAttr = new String("sf.setSlotAttr("+
+								lvt.getLocalVarSlot(lhs.substring(0,lhs.length()-2))+", " + lhs + ");");
+							G.v().out.println("setSlotAttr = "+setSlotAttr);
+              MyShimpleValueSwitch msvs = new MyShimpleValueSwitch(lvt);
+              stmt.getRightOp().apply(msvs);
+              String phiExpr0 = msvs.getArg0PhiExpr();
+              String phiExpr1 = msvs.getArg1PhiExpr();
+
+              // (pathLabel == 1 && lhs == phiExpr0) || (pathLabel ==2 && lhs == phiExpr1)
+              sB.append( MyUtils.SPFLogicalOr(
+                MyUtils.SPFLogicalAnd( thenPLAssignSPF,
+                  MyUtils.nCNLIE + lhs + ", EQ, " + phiExpr0 + ")"), 
+                MyUtils.SPFLogicalAnd( elsePLAssignSPF, 
+                  MyUtils.nCNLIE + lhs + ", EQ, " + phiExpr1 + ")")));
+            }
+          });
+          String finalPathExpr = MyUtils.SPFLogicalAnd(pathExpr1, sB.toString());
+          G.v().out.println("At offset = " + ((Stmt)u).getTag("BytecodeOffsetTag") + 
+              " finalPathExpr = "+finalPathExpr);
+          u = commonSucc;
+        } else {
+          G.v().out.println("more than 2 successors unhandled");
+        }
+        G.v().out.println("");
+      } // end while(true)
+      if(u != null && u != startingUnit) doAnalysis(u);
+      if(isLoop) {
+        doAnalysis(g.getUnexceptionalSuccsOf(u).get(0));
+        doAnalysis(g.getUnexceptionalSuccsOf(u).get(1));
+      }
+    } // end doAnalysis
+
+  } // end MyAnalysis class
   
 }

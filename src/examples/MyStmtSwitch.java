@@ -16,10 +16,12 @@ import soot.Value;
 class MyStmtSwitch extends AbstractStmtSwitch {
 	Boolean canVeritest;
 	String SPFExpr, ifNotSPFExpr;
-
+	LocalVarsTable lvt;
 	String getSPFExpr() { return SPFExpr; }
 	String getIfNotSPFExpr() { return ifNotSPFExpr; }
 	Boolean isVeritest() { return canVeritest; }
+
+	public MyStmtSwitch(LocalVarsTable _lvt) { lvt = _lvt; }
 
   public void caseAssignStmt(AssignStmt stmt) {
 		String rightStr = stmt.getRightOp().toString();
@@ -48,7 +50,7 @@ class MyStmtSwitch extends AbstractStmtSwitch {
   public void caseIfStmt(IfStmt stmt) {
 		String if_SPFExpr, ifNot_SPFExpr, t_SPFExpr, tBody_SPFExpr;
     G.v().out.println("  IfStmt: "+stmt);
-    MyShimpleValueSwitch msvw = new MyShimpleValueSwitch();
+    MyShimpleValueSwitch msvw = new MyShimpleValueSwitch(lvt);
     stmt.getCondition().apply(msvw);
     SPFExpr = msvw.getIfExprStr_SPF();
     ifNotSPFExpr = msvw.getIfNotExprStr_SPF();

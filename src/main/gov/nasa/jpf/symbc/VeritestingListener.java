@@ -104,8 +104,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     return new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name));
   }
 
-  // TestPathsSimple listener
-  public void executeInstruction_TestPathsSimple(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  // TestPathsSimple listener for testMe3
+  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
     // int af_slot_index = 3, bf_slot_index = 4;
     int a_slot_index = 3, b_slot_index = 4;
@@ -134,24 +134,29 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       pc = getPC(vm, ti, instructionToExecute, pc);
 
       // Generate symbolic expressions to unroll lines 39-42 of TestPaths.java
-      pc._addDet(EQ, a_v, new ComplexNonLinearIntegerExpression(
+      pc._addDet(new ComplexNonLinearIntegerConstraint( 
             new ComplexNonLinearIntegerExpression(
-              new ComplexNonLinearIntegerExpression(x_v, LE, new IntegerConstant(800)), 
-              LOGICAL_AND, 
-              new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(-1))), 
-            LOGICAL_OR, 
-            new ComplexNonLinearIntegerExpression(
-              new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(800)), 
-              LOGICAL_AND, 
-              new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(1)))));
+              new ComplexNonLinearIntegerExpression(
+                new ComplexNonLinearIntegerExpression(x_v, LE, new IntegerConstant(800)), 
+                LOGICAL_AND, 
+                new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(-1))), 
+              LOGICAL_OR, 
+              new ComplexNonLinearIntegerExpression(
+                new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(800)), 
+                LOGICAL_AND, 
+                new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(1))))));
 
-      pc._addDet(EQ, b_v, new ComplexNonLinearIntegerExpression( 
-            new ComplexNonLinearIntegerExpression(
-              new ComplexNonLinearIntegerExpression(y_v, LE, new IntegerConstant(1200)), LOGICAL_AND, 
-              new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(-1))), LOGICAL_OR, 
-            new ComplexNonLinearIntegerExpression(
-              new ComplexNonLinearIntegerExpression(y_v, GT, new IntegerConstant(1200)), LOGICAL_AND, 
-              new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(1)))));
+      pc._addDet(new ComplexNonLinearIntegerConstraint( 
+            new ComplexNonLinearIntegerExpression( 
+              new ComplexNonLinearIntegerExpression(
+                new ComplexNonLinearIntegerExpression(y_v, LE, new IntegerConstant(1200)), 
+                LOGICAL_AND, 
+                new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(-1))), 
+              LOGICAL_OR, 
+              new ComplexNonLinearIntegerExpression(
+                new ComplexNonLinearIntegerExpression(y_v, GT, new IntegerConstant(1200)), 
+                LOGICAL_AND, 
+                new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(1))))));
 
       // Assign a', b' (aka a_final, b_final) back into a, b respectively
       int a_val = sf.getSlot(a_slot_index);
@@ -167,7 +172,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
 
   // VeritestingPerf listener for testMe3 method
-  public void executeInstruction_testMe3(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  public void executeInstruction_VeritestingPerf_testMe3(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
     // int a_final_slot_index = 3, b_final_slot_index = 4;
     int i_slot_index = 3;
@@ -218,7 +223,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
 
   // Veritesting listener for testMe4 method
-  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  public void executeInstruction_VeritestingPerf_testMe4(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int sum_slot_index = 3;
     int startInsn = 61, endInsn = 80; //TODO: read some of these from config 
     if(ti.getTopFrame().getPC().getPosition() == startInsn && 

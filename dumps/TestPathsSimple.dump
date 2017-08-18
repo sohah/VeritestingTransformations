@@ -1,147 +1,225 @@
 Compiled from "TestPathsSimple.java"
-public class TestPathsSimple {
-  public TestPathsSimple();
-    Code:
-       0: aload_0
-       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
-       4: return
+public class TestPathsSimple extends java.lang.Object{
+public TestPathsSimple();
+  Code:
+   0:	aload_0
+   1:	invokespecial	#1; //Method java/lang/Object."<init>":()V
+   4:	return
 
-  public static void main(java.lang.String[]);
-    Code:
-       0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-       3: ldc           #3                  // String !!!!!!!!!!!!!!! Start Testing!
-       5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-       8: new           #5                  // class TestPathsSimple
-      11: dup
-      12: invokespecial #6                  // Method "<init>":()V
-      15: iconst_0
-      16: iconst_0
-      17: invokevirtual #7                  // Method testMe3:(II)V
-      20: return
+  LineNumberTable: 
+   line 26: 0
 
-  public void testMe3(int, int);
-    Code:
-       0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-       3: new           #8                  // class java/lang/StringBuilder
-       6: dup
-       7: invokespecial #9                  // Method java/lang/StringBuilder."<init>":()V
-      10: ldc           #10                 // String x =
-      12: invokevirtual #11                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
-      15: iload_1
-      16: invokevirtual #12                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
-      19: ldc           #13                 // String , y =
-      21: invokevirtual #11                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
-      24: iload_2
-      25: invokevirtual #12                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
-      28: invokevirtual #14                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
-      31: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-      34: bipush        11
-      36: istore_3
-      37: bipush        12
-      39: istore        4
-      41: iload_1
-      42: sipush        800
-      45: if_icmpgt     53
-      48: iconst_m1
-      49: istore_3
-      50: goto          55
-      53: iconst_1
-      54: istore_3
-      55: iload_2
-      56: sipush        1200
-      59: if_icmpgt     68
-      62: iconst_m1
-      63: istore        4
-      65: goto          71
-      68: iconst_1
-      69: istore        4
-      71: iload_3
-      72: iconst_m1
-      73: if_icmpne     87
-      76: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      79: ldc           #15                 // String a = -1
-      81: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-      84: goto          111
-      87: iload_3
-      88: iconst_1
-      89: if_icmpne     103
-      92: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      95: ldc           #16                 // String a = 1
-      97: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     100: goto          111
-     103: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     106: ldc           #17                 // String a != 1 && a != -1
-     108: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     111: iload         4
-     113: iconst_m1
-     114: if_icmpne     128
-     117: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     120: ldc           #18                 // String b = -1
-     122: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     125: goto          153
-     128: iload         4
-     130: iconst_1
-     131: if_icmpne     145
-     134: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     137: ldc           #19                 // String b = 1
-     139: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     142: goto          153
-     145: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     148: ldc           #20                 // String b != 1 && b != 1
-     150: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     153: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     156: ldc           #21                 // String -x-x-x-x-
-     158: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     161: return
+  LocalVariableTable: 
+   Start  Length  Slot  Name   Signature
+   0      5      0    this       LTestPathsSimple;
 
-  public static void testMe(int, boolean);
-    Code:
-       0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-       3: new           #8                  // class java/lang/StringBuilder
-       6: dup
-       7: invokespecial #9                  // Method java/lang/StringBuilder."<init>":()V
-      10: ldc           #10                 // String x =
-      12: invokevirtual #11                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
-      15: iload_0
-      16: invokevirtual #12                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
-      19: invokevirtual #14                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
-      22: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-      25: iconst_0
-      26: istore_2
-      27: iload_0
-      28: sipush        1200
-      31: if_icmpgt     36
-      34: iconst_m1
-      35: istore_2
-      36: iload_0
-      37: sipush        1200
-      40: if_icmplt     45
-      43: iconst_1
-      44: istore_2
-      45: return
 
-  public void testMe2(int, boolean);
-    Code:
-       0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-       3: ldc           #22                 // String !!!!!!!!!!!!!!! First step!
-       5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-       8: iload_2
-       9: ifeq          45
-      12: iload_1
-      13: sipush        1200
-      16: if_icmpgt     27
-      19: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      22: ldc           #23                 // String   <= 1200
-      24: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-      27: iload_1
-      28: sipush        1200
-      31: if_icmplt     53
-      34: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      37: ldc           #24                 // String   >= 1200
-      39: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-      42: goto          53
-      45: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      48: ldc           #25                 // String   b is false
-      50: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-      53: return
+public static void main(java.lang.String[]);
+  Code:
+   0:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   3:	ldc	#3; //String !!!!!!!!!!!!!!! Start Testing! 
+   5:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   8:	new	#5; //class TestPathsSimple
+   11:	dup
+   12:	invokespecial	#6; //Method "<init>":()V
+   15:	iconst_0
+   16:	iconst_0
+   17:	invokevirtual	#7; //Method testMe3:(II)V
+   20:	return
+
+  LineNumberTable: 
+   line 30: 0
+   line 31: 8
+   line 32: 20
+
+  LocalVariableTable: 
+   Start  Length  Slot  Name   Signature
+   0      21      0    args       [Ljava/lang/String;
+
+
+public void testMe3(int, int);
+  Code:
+   0:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   3:	new	#8; //class java/lang/StringBuilder
+   6:	dup
+   7:	invokespecial	#9; //Method java/lang/StringBuilder."<init>":()V
+   10:	ldc	#10; //String x = 
+   12:	invokevirtual	#11; //Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+   15:	iload_1
+   16:	invokevirtual	#12; //Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+   19:	ldc	#13; //String , y = 
+   21:	invokevirtual	#11; //Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+   24:	iload_2
+   25:	invokevirtual	#12; //Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+   28:	invokevirtual	#14; //Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+   31:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   34:	bipush	11
+   36:	istore_3
+   37:	bipush	12
+   39:	istore	4
+   41:	iload_1
+   42:	sipush	800
+   45:	if_icmpgt	53
+   48:	iconst_m1
+   49:	istore_3
+   50:	goto	55
+   53:	iconst_1
+   54:	istore_3
+   55:	iload_2
+   56:	sipush	1200
+   59:	if_icmpgt	68
+   62:	iconst_m1
+   63:	istore	4
+   65:	goto	71
+   68:	iconst_1
+   69:	istore	4
+   71:	iload_3
+   72:	iconst_m1
+   73:	if_icmpne	87
+   76:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   79:	ldc	#15; //String a = -1
+   81:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   84:	goto	111
+   87:	iload_3
+   88:	iconst_1
+   89:	if_icmpne	103
+   92:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   95:	ldc	#16; //String a = 1
+   97:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   100:	goto	111
+   103:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   106:	ldc	#17; //String a != 1 && a != -1
+   108:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   111:	iload	4
+   113:	iconst_m1
+   114:	if_icmpne	128
+   117:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   120:	ldc	#18; //String b = -1
+   122:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   125:	goto	153
+   128:	iload	4
+   130:	iconst_1
+   131:	if_icmpne	145
+   134:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   137:	ldc	#19; //String b = 1
+   139:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   142:	goto	153
+   145:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   148:	ldc	#20; //String b != 1 && b != 1
+   150:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   153:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   156:	ldc	#21; //String -x-x-x-x-
+   158:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   161:	return
+
+  LineNumberTable: 
+   line 35: 0
+   line 38: 34
+   line 41: 41
+   line 42: 53
+   line 43: 55
+   line 44: 68
+   line 47: 71
+   line 48: 87
+   line 49: 103
+   line 50: 111
+   line 51: 128
+   line 52: 145
+   line 53: 153
+   line 54: 161
+
+  LocalVariableTable: 
+   Start  Length  Slot  Name   Signature
+   0      162      0    this       LTestPathsSimple;
+   0      162      1    x       I
+   0      162      2    y       I
+   37      125      3    a       I
+   41      121      4    b       I
+
+
+public static void testMe(int, boolean);
+  Code:
+   0:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   3:	new	#8; //class java/lang/StringBuilder
+   6:	dup
+   7:	invokespecial	#9; //Method java/lang/StringBuilder."<init>":()V
+   10:	ldc	#10; //String x = 
+   12:	invokevirtual	#11; //Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+   15:	iload_0
+   16:	invokevirtual	#12; //Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+   19:	invokevirtual	#14; //Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+   22:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   25:	iconst_0
+   26:	istore_2
+   27:	iload_0
+   28:	sipush	1200
+   31:	if_icmpgt	36
+   34:	iconst_m1
+   35:	istore_2
+   36:	iload_0
+   37:	sipush	1200
+   40:	if_icmplt	45
+   43:	iconst_1
+   44:	istore_2
+   45:	return
+
+  LineNumberTable: 
+   line 58: 0
+   line 59: 25
+   line 60: 27
+   line 62: 34
+   line 64: 36
+   line 66: 43
+   line 68: 45
+
+  LocalVariableTable: 
+   Start  Length  Slot  Name   Signature
+   0      46      0    x       I
+   0      46      1    b       Z
+   27      19      2    y       I
+
+
+public void testMe2(int, boolean);
+  Code:
+   0:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   3:	ldc	#22; //String !!!!!!!!!!!!!!! First step! 
+   5:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   8:	iload_2
+   9:	ifeq	45
+   12:	iload_1
+   13:	sipush	1200
+   16:	if_icmpgt	27
+   19:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   22:	ldc	#23; //String   <= 1200
+   24:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   27:	iload_1
+   28:	sipush	1200
+   31:	if_icmplt	53
+   34:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   37:	ldc	#24; //String   >= 1200
+   39:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   42:	goto	53
+   45:	getstatic	#2; //Field java/lang/System.out:Ljava/io/PrintStream;
+   48:	ldc	#25; //String   b is false
+   50:	invokevirtual	#4; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
+   53:	return
+
+  LineNumberTable: 
+   line 71: 0
+   line 73: 8
+   line 74: 12
+   line 75: 19
+   line 77: 27
+   line 78: 34
+   line 80: 45
+   line 81: 53
+
+  LocalVariableTable: 
+   Start  Length  Slot  Name   Signature
+   0      54      0    this       LTestPathsSimple;
+   0      54      1    x       I
+   0      54      2    b       Z
+
+
 }
+
