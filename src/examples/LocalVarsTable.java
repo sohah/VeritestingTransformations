@@ -6,9 +6,10 @@ class LocalVarsTable {
   String className;
   String methodName;
   HashMap<String, Integer> varsMap;
-  HashSet<String> usedLocalVars;
+  HashSet<String> usedLocalVars, intermediateVars;
   LocalVarsTable(String cN, String mN) {
     varsMap = new HashMap<String, Integer> ();
+		intermediateVars = new HashSet<String> ();
     usedLocalVars = new HashSet<String> ();
     className = cN;
     methodName = mN;
@@ -66,11 +67,21 @@ class LocalVarsTable {
     return varsMap.containsKey(varName);
   }
   public int getLocalVarSlot(String varName) {
-    return varsMap.get(varName);
+		if(isLocalVariable(varName)) return varsMap.get(varName);
+		else return -1;
   }
-  public String addUsedLocalVar(String varName) { 
+  public void addUsedLocalVar(String varName) { 
     usedLocalVars.add(varName); 
-    return varName;
+    return;
   }
+  public void addIntermediateVar(String varName) { 
+    intermediateVars.add(varName); 
+    return;
+  }
+	public void resetUsedLocalVars() { 
+		G.v().out.println("resetUsedLocalVars");
+		usedLocalVars = new HashSet<String> (); 
+	}
+	public void resetIntermediateVars() { intermediateVars = new HashSet<String> (); }
 }
 

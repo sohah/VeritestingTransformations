@@ -104,8 +104,20 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     return new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name));
   }
 
-  // TestPathsSimple listener for testMe3
   public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+    if(ti.getTopFrame().getPC().getPosition() == 45 && 
+       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
+       ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
+      TestPathsSimple_testMe3_VT_45_59(vm, ti, instructionToExecute);
+    } else if(ti.getTopFrame().getPC().getPosition() == 59 && 
+       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
+       ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
+      TestPathsSimple_testMe3_VT_59_73(vm, ti, instructionToExecute);
+    }
+  }
+
+  // TestPathsSimple listener for testMe3
+  public void executeInstruction_TestPathsSimple_testMe3(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
     // int af_slot_index = 3, bf_slot_index = 4;
     int a_slot_index = 3, b_slot_index = 4;
@@ -346,4 +358,54 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       ti.setNextPC(insn);
     }
   }
+
+  public void TestPathsSimple_testMe3_VT_45_59
+ (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  if(ti.getTopFrame().getPC().getPosition() == 45 && 
+     ti.getTopFrame().getMethodInfo().getName().equals("TestPathsSimple") && 
+     ti.getTopFrame().getClassInfo().getName().equals("testMe3")) {
+    StackFrame sf = ti.getTopFrame();
+    IntegerExpression x = (IntegerExpression) sf.getLocalAttr(1);
+    SymbolicInteger a_2 = makeSymbolicInteger(ti.getEnv(), "a_2");
+    SymbolicInteger a_1 = makeSymbolicInteger(ti.getEnv(), "a_1");
+    SymbolicInteger a_3 = makeSymbolicInteger(ti.getEnv(), "a_3");
+    SymbolicInteger pathLabel = makeSymbolicInteger(ti.getEnv(), "pathLabel");
+    PathCondition pc = null;
+    pc = getPC(vm, ti, instructionToExecute, pc);
+    pc._addDet(new ComplexNonLinearIntegerConstraint(
+    new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, GT, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(a_1, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, LE, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(a_2, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(a_3, EQ, a_1)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(a_3, EQ, a_2))))));
+    sf.setSlotAttr(3, a_3);
+    Instruction insn=instructionToExecute;
+    while(insn.getPosition() < 59)
+      insn = insn.getNext();
+    sf.pop(); sf.pop();
+    ti.setNextPC(insn);
+  }
+}
+
+public void TestPathsSimple_testMe3_VT_59_73
+ (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  if(ti.getTopFrame().getPC().getPosition() == 59 && 
+     ti.getTopFrame().getMethodInfo().getName().equals("TestPathsSimple") && 
+     ti.getTopFrame().getClassInfo().getName().equals("testMe3")) {
+    StackFrame sf = ti.getTopFrame();
+    IntegerExpression y = (IntegerExpression) sf.getLocalAttr(2);
+    SymbolicInteger b_1 = makeSymbolicInteger(ti.getEnv(), "b_1");
+    SymbolicInteger b_2 = makeSymbolicInteger(ti.getEnv(), "b_2");
+    SymbolicInteger b_3 = makeSymbolicInteger(ti.getEnv(), "b_3");
+    SymbolicInteger pathLabel = makeSymbolicInteger(ti.getEnv(), "pathLabel");
+    PathCondition pc = null;
+    pc = getPC(vm, ti, instructionToExecute, pc);
+    pc._addDet(new ComplexNonLinearIntegerConstraint(
+    new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(y, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b_1, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(3)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(y, LE, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b_2, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(4))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(3)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b_3, EQ, b_1)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(4)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b_3, EQ, b_2))))));
+    sf.setSlotAttr(4, b_3);
+    Instruction insn=instructionToExecute;
+    while(insn.getPosition() < 73)
+      insn = insn.getNext();
+    sf.pop(); sf.pop();
+    ti.setNextPC(insn);
+  }
+}
+
+
 }

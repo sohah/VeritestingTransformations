@@ -34,6 +34,7 @@ import soot.PackManager;
 import soot.Transform;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.graph.MHGPostDominatorsFinder;
+import soot.tagkit.*;
 
 public class MyMain {
 
@@ -87,10 +88,12 @@ public class MyMain {
     ExceptionalUnitGraph g; 
     HashSet startingPointsHistory;
     LocalVarsTable lvt;
+    String className, methodName;
     public MyAnalysis(ExceptionalUnitGraph exceptionalUnitGraph) {
       g = exceptionalUnitGraph;
-      lvt = new LocalVarsTable(g.getBody().getMethod().getDeclaringClass().getName(), 
-                                              g.getBody().getMethod().getName());
+      className = g.getBody().getMethod().getDeclaringClass().getName();
+      methodName = g.getBody().getMethod().getName();
+      lvt = new LocalVarsTable(className, methodName); 
       G.v().out.println("Starting analysis for "+g.getBody().getMethod().getName());
       List<Unit> heads = g.getHeads();
       startingPointsHistory = new HashSet();
@@ -125,9 +128,7 @@ public class MyMain {
         if(h.contains(u)) { isLoop = true; break; }
         else h.add(u);
         //printTags((Stmt)u);
-        G.v().out.println("BOTag = " + ((Stmt)u).getTag("BytecodeOffsetTag"));
-        myStmtSwitch = new MyStmtSwitch(lvt);
-        u.apply(myStmtSwitch);
+        // G.v().out.println("BOTag = " + ((Stmt)u).getTag("BytecodeOffsetTag"));
         List<Unit> succs = g.getUnexceptionalSuccsOf(u);
         Unit commonSucc = getIPDom(u);
         if(succs.size()==1) {
@@ -140,7 +141,11 @@ public class MyMain {
             break;
         } else if(succs.size() == 2 && !startingPointsHistory.contains(u)) {
           startingPointsHistory.add(u);
-          G.v().out.printf("  #succs = %d\n", succs.size());
+          lvt.resetUsedLocalVars();
+          lvt.resetIntermediateVars();
+          // G.v().out.printf("  #succs = %d\n", succs.size());
+          myStmtSwitch = new MyStmtSwitch(lvt);
+          u.apply(myStmtSwitch);
           String if_SPFExpr = myStmtSwitch.getSPFExpr();
           String ifNot_SPFExpr = myStmtSwitch.getIfNotSPFExpr();
           Unit thenUnit = succs.get(0);
@@ -149,14 +154,14 @@ public class MyMain {
           final int thenPathLabel = MyUtils.getPathCounter();
           final int elsePathLabel = MyUtils.getPathCounter();
           final String thenPLAssignSPF = 
-            MyUtils.nCNLIE + "pathLabel, EQ, " + thenPathLabel + ")"; 
+            MyUtils.nCNLIE + "pathLabel, EQ, new IntegerConstant(" + thenPathLabel + "))"; 
           final String elsePLAssignSPF = 
-            MyUtils.nCNLIE + "pathLabel, EQ, " + elsePathLabel + ")";
+            MyUtils.nCNLIE + "pathLabel, EQ, new IntegerConstant(" + elsePathLabel + "))";
 
           // Create thenExpr
           while(thenUnit != commonSucc) {
-            G.v().out.println("BOTag = " + ((Stmt)thenUnit).getTag("BytecodeOffsetTag") + 
-                ", h.size() = " + h.size());
+            // G.v().out.println("BOTag = " + ((Stmt)thenUnit).getTag("BytecodeOffsetTag") + 
+            //     ", h.size() = " + h.size());
             if(h.contains(thenUnit)) { 
               isLoop = true;
               List<Unit> thenSuccs;
@@ -165,9 +170,9 @@ public class MyMain {
                 if(thenSuccs.size() > 1) break; 
                 thenUnit = thenSuccs.get(0);
               }
-              G.v().out.println(" calling doAnalysis on succ 0");
+              // G.v().out.println(" calling doAnalysis on succ 0");
               doAnalysis(thenSuccs.get(0));
-              G.v().out.println(" calling doAnalysis on succ 1");
+              // G.v().out.println(" calling doAnalysis on succ 1");
               doAnalysis(thenSuccs.get(1));
               break; 
             }
@@ -185,7 +190,7 @@ public class MyMain {
             thenUnit = g.getUnexceptionalSuccsOf(thenUnit).get(0);
           }
           if(isLoop) {
-            G.v().out.println("Found a loop");
+            // G.v().out.println("Found a loop");
           }
           // Assign pathLabel a value in the thenExpr
           thenExpr = MyUtils.SPFLogicalAnd(thenExpr, thenPLAssignSPF);
@@ -206,8 +211,8 @@ public class MyMain {
               break; 
             }
             else h.add(elseUnit);
-            G.v().out.println("BOTag = " + ((Stmt)elseUnit).getTag("BytecodeOffsetTag") + 
-                ", h.size() = " + h.size());
+            // G.v().out.println("BOTag = " + ((Stmt)elseUnit).getTag("BytecodeOffsetTag") + 
+            //     ", h.size() = " + h.size());
             myStmtSwitch = new MyStmtSwitch(lvt);
             elseUnit.apply(myStmtSwitch);
             String elseExpr1 = myStmtSwitch.getSPFExpr();
@@ -221,7 +226,7 @@ public class MyMain {
             elseUnit = g.getUnexceptionalSuccsOf(elseUnit).get(0);
           }
           if(isLoop) {
-            G.v().out.println("Found an Else loop");
+            // G.v().out.println("Found an Else loop");
           }
           // Assign pathLabel a value in the elseExpr
           elseExpr = MyUtils.SPFLogicalAnd(elseExpr, elsePLAssignSPF);
@@ -232,12 +237,14 @@ public class MyMain {
                 MyUtils.SPFLogicalAnd(ifNot_SPFExpr, elseExpr));
 
           final StringBuilder sB = new StringBuilder();
+          final StringBuilder setSlotAttr_SB = new StringBuilder();
+          final StringBuilder lhs_SB = new StringBuilder();
           commonSucc.apply(new AbstractStmtSwitch() {
             public void caseAssignStmt(AssignStmt stmt) {
               String lhs = stmt.getLeftOp().toString();
-							String setSlotAttr = new String("sf.setSlotAttr("+
-								lvt.getLocalVarSlot(lhs.substring(0,lhs.length()-2))+", " + lhs + ");");
-							G.v().out.println("setSlotAttr = "+setSlotAttr);
+              lhs_SB.append(lhs);
+							setSlotAttr_SB.append(new String("sf.setSlotAttr("+
+								lvt.getLocalVarSlot(lhs.substring(0,lhs.length()-2))+", " + lhs + ");"));
               MyShimpleValueSwitch msvs = new MyShimpleValueSwitch(lvt);
               stmt.getRightOp().apply(msvs);
               String phiExpr0 = msvs.getArg0PhiExpr();
@@ -251,10 +258,62 @@ public class MyMain {
                   MyUtils.nCNLIE + lhs + ", EQ, " + phiExpr1 + ")")));
             }
           });
+          String startingInsn = ((Stmt)u).getTag("BytecodeOffsetTag").toString();
+          String endingInsn;
+          while(true) {
+            Tag t = ((Stmt)commonSucc).getTag("BytecodeOffsetTag");
+            if(t == null) {
+              commonSucc = g.getUnexceptionalSuccsOf(commonSucc).get(0);
+              continue;
+            } else { 
+              endingInsn = t.toString();
+              break;
+            }
+          }
           String finalPathExpr = MyUtils.SPFLogicalAnd(pathExpr1, sB.toString());
-          G.v().out.println("At offset = " + ((Stmt)u).getTag("BytecodeOffsetTag") + 
-              " finalPathExpr = "+finalPathExpr);
+          // G.v().out.println("At offset = " + startingInsn + 
+          //     " finalPathExpr = "+finalPathExpr);
+          // G.v().out.println("lvt.usedLocalVars.size = " + lvt.usedLocalVars.size());
           u = commonSucc;
+
+          // Generate the executeInstruction listener function
+          String fn = "public void " + className + "_" + methodName + "_VT_"+startingInsn+"_"+endingInsn+"\n";
+          fn += " (VM vm, ThreadInfo ti, Instruction instructionToExecute) {\n";
+          fn += "  if(ti.getTopFrame().getPC().getPosition() == " + startingInsn + " && \n";
+          fn += "     ti.getTopFrame().getMethodInfo().getName().equals(\"" + className + "\") && \n";
+          fn += "     ti.getTopFrame().getClassInfo().getName().equals(\"" + methodName + "\")) {\n";
+          fn += "    StackFrame sf = ti.getTopFrame();\n";
+          Iterator it = lvt.usedLocalVars.iterator();
+          while(it.hasNext()) {
+            String s = (String) it.next();
+            int slot = lvt.getLocalVarSlot(s);
+            if(slot!=-1) {
+              fn += "    IntegerExpression "+s+" = (IntegerExpression) sf.getLocalAttr("+slot+");\n";
+            }
+          }
+          it = lvt.intermediateVars.iterator();
+          while(it.hasNext()) {
+            String s = (String) it.next();
+            fn += "    SymbolicInteger " + s + " = makeSymbolicInteger(ti.getEnv(), \"" + s + "\");\n";
+          }
+          fn += "    SymbolicInteger " + lhs_SB.toString() + " = makeSymbolicInteger(ti.getEnv(), \"" + lhs_SB.toString() + "\");\n";
+          fn += "    SymbolicInteger pathLabel = makeSymbolicInteger(ti.getEnv(), \"pathLabel\");\n";
+          fn += "    PathCondition pc = null;\n";
+          fn += "    pc = getPC(vm, ti, instructionToExecute, pc);\n";
+          fn += "    pc._addDet(new ComplexNonLinearIntegerConstraint(\n    " + finalPathExpr + "));\n";
+          fn += "    " + setSlotAttr_SB.toString() + "\n";
+          fn += "    Instruction insn=instructionToExecute;\n";
+          fn += "    while(insn.getPosition() < " + endingInsn + ")\n";
+          fn += "      insn = insn.getNext();\n";
+          fn += "    sf.pop(); sf.pop();\n"; // popping the region's starting node (if stmt) operands
+          fn += "    ti.setNextPC(insn);\n";
+          fn += "  }\n";
+          fn += "}\n";
+
+          G.v().out.println(fn);
+
+          lvt.resetUsedLocalVars();
+          lvt.resetIntermediateVars();
         } else {
           G.v().out.println("more than 2 successors unhandled");
         }
