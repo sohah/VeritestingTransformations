@@ -280,8 +280,8 @@ public class MyMain {
           String fn = "public void " + className + "_" + methodName + "_VT_"+startingInsn+"_"+endingInsn+"\n";
           fn += " (VM vm, ThreadInfo ti, Instruction instructionToExecute) {\n";
           fn += "  if(ti.getTopFrame().getPC().getPosition() == " + startingInsn + " && \n";
-          fn += "     ti.getTopFrame().getMethodInfo().getName().equals(\"" + className + "\") && \n";
-          fn += "     ti.getTopFrame().getClassInfo().getName().equals(\"" + methodName + "\")) {\n";
+          fn += "     ti.getTopFrame().getMethodInfo().getName().equals(\"" + methodName + "\") && \n";
+          fn += "     ti.getTopFrame().getClassInfo().getName().equals(\"" + className + "\")) {\n";
           fn += "    StackFrame sf = ti.getTopFrame();\n";
           Iterator it = lvt.usedLocalVars.iterator();
           while(it.hasNext()) {
@@ -306,6 +306,7 @@ public class MyMain {
           fn += "    while(insn.getPosition() < " + endingInsn + ")\n";
           fn += "      insn = insn.getNext();\n";
           fn += "    sf.pop(); sf.pop();\n"; // popping the region's starting node (if stmt) operands
+          fn += "    ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);\n";
           fn += "    ti.setNextPC(insn);\n";
           fn += "  }\n";
           fn += "}\n";
