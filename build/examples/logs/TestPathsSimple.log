@@ -1,0 +1,561 @@
+Running Symbolic PathFinder ...
+symbolic.dp=z3bitvector
+symbolic.string_dp_timeout_ms=0
+symbolic.string_dp=none
+symbolic.max_pc_length=2147483647
+symbolic.max_pc_msec=0
+symbolic.bvlength=32
+symbolic.min_int=-2147483648
+symbolic.min_long=-9223372036854775808
+symbolic.min_short=-32768
+symbolic.min_byte=-128
+symbolic.min_char=0
+symbolic.max_int=2147483647
+symbolic.max_long=9223372036854775807
+symbolic.max_short=32767
+symbolic.max_byte=127
+symbolic.max_char=65535
+symbolic.min_double=4.9E-324
+symbolic.max_double=1.7976931348623157E308
+JavaPathfinder core system v8.0 (rev 32) - (C) 2005-2014 United States Government. All rights reserved.
+
+
+====================================================== system under test
+TestPathsSimple.main()
+
+====================================================== search started: 8/26/17 2:48 PM
+!!!!!!!!!!!!!!! Start Testing! 
+New sym int x min=-2147483648, max=2147483647
+New sym int y min=-2147483648, max=2147483647
+x = 0, y = 0
+time to start veritesting for testMe3
+topPos = 4
+New sym int a_final min=-2147483648, max=2147483647
+New sym int b_final min=-2147483648, max=2147483647
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+PCParser::getExpression for y true true
+Comparator is LOGICAL_OR
+PCParser::getExpression for ((x <= 800) && (a_final = -1)) true false
+PCParser::getExpression for (x <= 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = -1) true false
+PCParser::getExpression for a_final true true
+PCParser::getExpression for ((x > 800) && (a_final = 1)) true false
+PCParser::getExpression for (x > 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = 1) true false
+PCParser::getExpression for a_final true true
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun y () (_ BitVec 32))
+(declare-fun x () (_ BitVec 32))
+(declare-fun a_final () (_ BitVec 32))
+(assert (bvsge y #x80000000))
+(assert (bvsle y #x7fffffff))
+(assert (bvsgt y #x000004b0))
+(assert (bvsge x #x80000000))
+(assert (bvsle x #x7fffffff))
+(assert (bvsge a_final #x80000000))
+(assert (bvsle a_final #x7fffffff))
+(assert (or (and (bvsle x #x00000320) (= a_final #xffffffff))
+    (and (bvsgt x #x00000320) (= a_final #x00000001))))
+
+
+Solving time of z3 bitvector is 1 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 2
+y > 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null) -> true
+
+### PCs: total:1 sat:1 unsat:0
+
+string analysis: SPC # = 0
+NPC constraint # = 2
+y > 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null)
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+PCParser::getExpression for y true true
+Comparator is LOGICAL_OR
+PCParser::getExpression for ((x <= 800) && (a_final = -1)) true false
+PCParser::getExpression for (x <= 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = -1) true false
+PCParser::getExpression for a_final true true
+PCParser::getExpression for ((x > 800) && (a_final = 1)) true false
+PCParser::getExpression for (x > 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = 1) true false
+PCParser::getExpression for a_final true true
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun y () (_ BitVec 32))
+(declare-fun x () (_ BitVec 32))
+(declare-fun a_final () (_ BitVec 32))
+(assert (bvsge y #x80000000))
+(assert (bvsle y #x7fffffff))
+(assert (bvsle y #x000004b0))
+(assert (bvsge x #x80000000))
+(assert (bvsle x #x7fffffff))
+(assert (bvsge a_final #x80000000))
+(assert (bvsle a_final #x7fffffff))
+(assert (or (and (bvsle x #x00000320) (= a_final #xffffffff))
+    (and (bvsgt x #x00000320) (= a_final #x00000001))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 2
+y <= 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null) -> true
+
+### PCs: total:2 sat:2 unsat:0
+
+string analysis: SPC # = 0
+NPC constraint # = 2
+y <= 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null)
+At later offset, PC = constraint # = 1
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null)
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+PCParser::getExpression for a_final true true
+PCParser::getExpression for y true true
+Comparator is LOGICAL_OR
+PCParser::getExpression for ((x <= 800) && (a_final = -1)) true false
+PCParser::getExpression for (x <= 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = -1) true false
+PCParser::getExpression for a_final true true
+PCParser::getExpression for ((x > 800) && (a_final = 1)) true false
+PCParser::getExpression for (x > 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = 1) true false
+PCParser::getExpression for a_final true true
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun a_final () (_ BitVec 32))
+(declare-fun y () (_ BitVec 32))
+(declare-fun x () (_ BitVec 32))
+(assert (bvsge a_final #x80000000))
+(assert (bvsle a_final #x7fffffff))
+(assert (not (= a_final #xffffffff)))
+(assert (bvsge y #x80000000))
+(assert (bvsle y #x7fffffff))
+(assert (bvsle y #x000004b0))
+(assert (bvsge x #x80000000))
+(assert (bvsle x #x7fffffff))
+(assert (or (and (bvsle x #x00000320) (= a_final #xffffffff))
+    (and (bvsgt x #x00000320) (= a_final #x00000001))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 3
+a_final != -1 &&
+y <= 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null) -> true
+
+### PCs: total:3 sat:3 unsat:0
+
+string analysis: SPC # = 0
+NPC constraint # = 3
+a_final != -1 &&
+y <= 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null)
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+PCParser::getExpression for a_final true true
+PCParser::getExpression for y true true
+Comparator is LOGICAL_OR
+PCParser::getExpression for ((x <= 800) && (a_final = -1)) true false
+PCParser::getExpression for (x <= 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = -1) true false
+PCParser::getExpression for a_final true true
+PCParser::getExpression for ((x > 800) && (a_final = 1)) true false
+PCParser::getExpression for (x > 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = 1) true false
+PCParser::getExpression for a_final true true
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun a_final () (_ BitVec 32))
+(declare-fun y () (_ BitVec 32))
+(declare-fun x () (_ BitVec 32))
+(assert (bvsge a_final #x80000000))
+(assert (bvsle a_final #x7fffffff))
+(assert (= a_final #xffffffff))
+(assert (bvsge y #x80000000))
+(assert (bvsle y #x7fffffff))
+(assert (bvsle y #x000004b0))
+(assert (bvsge x #x80000000))
+(assert (bvsle x #x7fffffff))
+(assert (or (and (bvsle x #x00000320) (= a_final #xffffffff))
+    (and (bvsgt x #x00000320) (= a_final #x00000001))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 3
+a_final = -1 &&
+y <= 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null) -> true
+
+### PCs: total:4 sat:4 unsat:0
+
+string analysis: SPC # = 0
+NPC constraint # = 3
+a_final = -1 &&
+y <= 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null)
+a = -1
+b = -1
+-x-x-x-x-
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+PCParser::getExpression for a_final true true
+PCParser::getExpression for a_final true true
+PCParser::getExpression for y true true
+Comparator is LOGICAL_OR
+PCParser::getExpression for ((x <= 800) && (a_final = -1)) true false
+PCParser::getExpression for (x <= 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = -1) true false
+PCParser::getExpression for a_final true true
+PCParser::getExpression for ((x > 800) && (a_final = 1)) true false
+PCParser::getExpression for (x > 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = 1) true false
+PCParser::getExpression for a_final true true
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun a_final () (_ BitVec 32))
+(declare-fun y () (_ BitVec 32))
+(declare-fun x () (_ BitVec 32))
+(assert (bvsge a_final #x80000000))
+(assert (bvsle a_final #x7fffffff))
+(assert (not (= a_final #x00000001)))
+(assert (not (= a_final #xffffffff)))
+(assert (bvsge y #x80000000))
+(assert (bvsle y #x7fffffff))
+(assert (bvsle y #x000004b0))
+(assert (bvsge x #x80000000))
+(assert (bvsle x #x7fffffff))
+(assert (or (and (bvsle x #x00000320) (= a_final #xffffffff))
+    (and (bvsgt x #x00000320) (= a_final #x00000001))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 4
+a_final != 1 &&
+a_final != -1 &&
+y <= 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null) -> false
+
+### PCs: total:5 sat:4 unsat:1
+
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+PCParser::getExpression for a_final true true
+PCParser::getExpression for a_final true true
+PCParser::getExpression for y true true
+Comparator is LOGICAL_OR
+PCParser::getExpression for ((x <= 800) && (a_final = -1)) true false
+PCParser::getExpression for (x <= 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = -1) true false
+PCParser::getExpression for a_final true true
+PCParser::getExpression for ((x > 800) && (a_final = 1)) true false
+PCParser::getExpression for (x > 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = 1) true false
+PCParser::getExpression for a_final true true
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun a_final () (_ BitVec 32))
+(declare-fun y () (_ BitVec 32))
+(declare-fun x () (_ BitVec 32))
+(assert (bvsge a_final #x80000000))
+(assert (bvsle a_final #x7fffffff))
+(assert (= a_final #x00000001))
+(assert (not (= a_final #xffffffff)))
+(assert (bvsge y #x80000000))
+(assert (bvsle y #x7fffffff))
+(assert (bvsle y #x000004b0))
+(assert (bvsge x #x80000000))
+(assert (bvsle x #x7fffffff))
+(assert (or (and (bvsle x #x00000320) (= a_final #xffffffff))
+    (and (bvsgt x #x00000320) (= a_final #x00000001))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 4
+a_final = 1 &&
+a_final != -1 &&
+y <= 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null) -> true
+
+### PCs: total:6 sat:5 unsat:1
+
+string analysis: SPC # = 0
+NPC constraint # = 4
+a_final = 1 &&
+a_final != -1 &&
+y <= 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null)
+a = 1
+b = -1
+-x-x-x-x-
+At later offset, PC = constraint # = 1
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null)
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+PCParser::getExpression for a_final true true
+PCParser::getExpression for y true true
+Comparator is LOGICAL_OR
+PCParser::getExpression for ((x <= 800) && (a_final = -1)) true false
+PCParser::getExpression for (x <= 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = -1) true false
+PCParser::getExpression for a_final true true
+PCParser::getExpression for ((x > 800) && (a_final = 1)) true false
+PCParser::getExpression for (x > 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = 1) true false
+PCParser::getExpression for a_final true true
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun a_final () (_ BitVec 32))
+(declare-fun y () (_ BitVec 32))
+(declare-fun x () (_ BitVec 32))
+(assert (bvsge a_final #x80000000))
+(assert (bvsle a_final #x7fffffff))
+(assert (not (= a_final #xffffffff)))
+(assert (bvsge y #x80000000))
+(assert (bvsle y #x7fffffff))
+(assert (bvsgt y #x000004b0))
+(assert (bvsge x #x80000000))
+(assert (bvsle x #x7fffffff))
+(assert (or (and (bvsle x #x00000320) (= a_final #xffffffff))
+    (and (bvsgt x #x00000320) (= a_final #x00000001))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 3
+a_final != -1 &&
+y > 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null) -> true
+
+### PCs: total:7 sat:6 unsat:1
+
+string analysis: SPC # = 0
+NPC constraint # = 3
+a_final != -1 &&
+y > 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null)
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+PCParser::getExpression for a_final true true
+PCParser::getExpression for y true true
+Comparator is LOGICAL_OR
+PCParser::getExpression for ((x <= 800) && (a_final = -1)) true false
+PCParser::getExpression for (x <= 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = -1) true false
+PCParser::getExpression for a_final true true
+PCParser::getExpression for ((x > 800) && (a_final = 1)) true false
+PCParser::getExpression for (x > 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = 1) true false
+PCParser::getExpression for a_final true true
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun a_final () (_ BitVec 32))
+(declare-fun y () (_ BitVec 32))
+(declare-fun x () (_ BitVec 32))
+(assert (bvsge a_final #x80000000))
+(assert (bvsle a_final #x7fffffff))
+(assert (= a_final #xffffffff))
+(assert (bvsge y #x80000000))
+(assert (bvsle y #x7fffffff))
+(assert (bvsgt y #x000004b0))
+(assert (bvsge x #x80000000))
+(assert (bvsle x #x7fffffff))
+(assert (or (and (bvsle x #x00000320) (= a_final #xffffffff))
+    (and (bvsgt x #x00000320) (= a_final #x00000001))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 3
+a_final = -1 &&
+y > 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null) -> true
+
+### PCs: total:8 sat:7 unsat:1
+
+string analysis: SPC # = 0
+NPC constraint # = 3
+a_final = -1 &&
+y > 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null)
+a = -1
+b = 1
+-x-x-x-x-
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+PCParser::getExpression for a_final true true
+PCParser::getExpression for a_final true true
+PCParser::getExpression for y true true
+Comparator is LOGICAL_OR
+PCParser::getExpression for ((x <= 800) && (a_final = -1)) true false
+PCParser::getExpression for (x <= 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = -1) true false
+PCParser::getExpression for a_final true true
+PCParser::getExpression for ((x > 800) && (a_final = 1)) true false
+PCParser::getExpression for (x > 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = 1) true false
+PCParser::getExpression for a_final true true
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun a_final () (_ BitVec 32))
+(declare-fun y () (_ BitVec 32))
+(declare-fun x () (_ BitVec 32))
+(assert (bvsge a_final #x80000000))
+(assert (bvsle a_final #x7fffffff))
+(assert (not (= a_final #x00000001)))
+(assert (not (= a_final #xffffffff)))
+(assert (bvsge y #x80000000))
+(assert (bvsle y #x7fffffff))
+(assert (bvsgt y #x000004b0))
+(assert (bvsge x #x80000000))
+(assert (bvsle x #x7fffffff))
+(assert (or (and (bvsle x #x00000320) (= a_final #xffffffff))
+    (and (bvsgt x #x00000320) (= a_final #x00000001))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 4
+a_final != 1 &&
+a_final != -1 &&
+y > 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null) -> false
+
+### PCs: total:9 sat:7 unsat:2
+
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+PCParser::getExpression for a_final true true
+PCParser::getExpression for a_final true true
+PCParser::getExpression for y true true
+Comparator is LOGICAL_OR
+PCParser::getExpression for ((x <= 800) && (a_final = -1)) true false
+PCParser::getExpression for (x <= 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = -1) true false
+PCParser::getExpression for a_final true true
+PCParser::getExpression for ((x > 800) && (a_final = 1)) true false
+PCParser::getExpression for (x > 800) true false
+PCParser::getExpression for x true true
+PCParser::getExpression for (a_final = 1) true false
+PCParser::getExpression for a_final true true
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun a_final () (_ BitVec 32))
+(declare-fun y () (_ BitVec 32))
+(declare-fun x () (_ BitVec 32))
+(assert (bvsge a_final #x80000000))
+(assert (bvsle a_final #x7fffffff))
+(assert (= a_final #x00000001))
+(assert (not (= a_final #xffffffff)))
+(assert (bvsge y #x80000000))
+(assert (bvsle y #x7fffffff))
+(assert (bvsgt y #x000004b0))
+(assert (bvsge x #x80000000))
+(assert (bvsle x #x7fffffff))
+(assert (or (and (bvsle x #x00000320) (= a_final #xffffffff))
+    (and (bvsgt x #x00000320) (= a_final #x00000001))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 4
+a_final = 1 &&
+a_final != -1 &&
+y > 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null) -> true
+
+### PCs: total:10 sat:8 unsat:2
+
+string analysis: SPC # = 0
+NPC constraint # = 4
+a_final = 1 &&
+a_final != -1 &&
+y > 1200 &&
+(((x <= 800) && (a_final = -1)) || ((x > 800) && (a_final = 1)))(null)
+a = 1
+b = 1
+-x-x-x-x-
+
+====================================================== results
+no errors detected
+
+====================================================== statistics
+elapsed time:       00:00:00
+states:             new=8,visited=0,backtracked=8,end=4
+search:             maxDepth=4,constraints=0
+choice generators:  thread=1 (signal=0,lock=1,sharedRef=0,threadApi=0,reschedule=0), data=4
+heap:               new=387,released=46,maxLive=357,gcCycles=6
+instructions:       3272
+max memory:         240MB
+loaded code:        classes=62,methods=1433
+
+====================================================== search finished: 8/26/17 2:48 PM

@@ -555,6 +555,34 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     }
 
     @Override
+    public Object logical_or(Object exp1, Object exp2) {
+        try {
+            if (exp1 instanceof BoolExpr && exp2 instanceof  BoolExpr) {
+                return ctx.mkOr((BoolExpr) exp1, (BoolExpr) exp2);
+            } else {
+                throw new RuntimeException("## Error Z3: logical_or(Object, Object) expected 2 BoolExprs.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("## Error Z3: logical_or(Object, Object) failed.\n" + e);
+        }
+    }
+
+    @Override
+    public Object logical_and(Object exp1, Object exp2) {
+        try {
+            if (exp1 instanceof BoolExpr && exp2 instanceof  BoolExpr) {
+                return ctx.mkAnd((BoolExpr) exp1, (BoolExpr) exp2);
+            } else {
+                throw new RuntimeException("## Error Z3: logical_and(Object, Object) expected 2 BoolExprs.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("## Error Z3: logical_and(Object, Object) failed.\n" + e);
+        }
+    }
+
+    @Override
     public Object plus(long value, Object exp){
     	checkBounds(value);
         try {

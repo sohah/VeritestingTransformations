@@ -30,6 +30,14 @@ public class ComplexNonLinearIntegerConstraint extends NonLinearIntegerConstrain
     super (null, null, null);
     cnlie = null;
   }
+
+  public IntegerExpression getLeft() {
+      return cnlie.getLeft();
+  }
+  
+  public IntegerExpression getRight() {
+      return cnlie.getRight();
+  }
   
   public ComplexNonLinearIntegerConstraint (ComplexNonLinearIntegerExpression _cnlie) {
     super (null, null, null);

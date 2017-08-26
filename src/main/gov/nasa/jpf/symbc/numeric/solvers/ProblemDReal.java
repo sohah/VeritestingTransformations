@@ -764,6 +764,13 @@ public abstract class ProblemDReal extends ProblemGeneral {
 		throw new UnsupportedOperationException("## Error: dReal does not support bitwise operations");
 	}
 
+  public Object logical_or(Object exp1, Object exp2) {
+		throw new RuntimeException("## Error dReal does not support LOGICAL_OR");
+	}
+
+  public Object logical_and(Object exp1, Object exp2) {
+		throw new RuntimeException("## Error dReal does not support LOGICAL_AND");
+	}
 	// ------------------------------------------------------------------------------------------------------------------
 
 	@Override

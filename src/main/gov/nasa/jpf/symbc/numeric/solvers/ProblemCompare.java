@@ -1577,4 +1577,12 @@ public class ProblemCompare extends ProblemGeneral {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+  public Object logical_or(Object exp1, Object exp2) {
+		throw new RuntimeException("## Error ProblemCompare does not support LOGICAL_OR");
+	}
+
+  public Object logical_and(Object exp1, Object exp2) {
+		throw new RuntimeException("## Error ProblemCompare does not support LOGICAL_AND");
+	}
 }

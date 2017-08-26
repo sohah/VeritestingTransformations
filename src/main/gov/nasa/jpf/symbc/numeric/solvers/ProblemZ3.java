@@ -1220,4 +1220,11 @@ public class ProblemZ3 extends ProblemGeneral {
         }
     }
 
+    public Object logical_or(Object exp1, Object exp2) {
+  		throw new RuntimeException("## Error Z3 does not support LOGICAL_OR");
+  	}
+  
+    public Object logical_and(Object exp1, Object exp2) {
+  		throw new RuntimeException("## Error Z3 does not support LOGICAL_AND");
+  	}
 }

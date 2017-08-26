@@ -105,11 +105,11 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
 
   // TestPathsSimple listener for testMe3
-  public void executeInstruction_TestPathsSimple_testMe3(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int x_slot_index = 1, y_slot_index = 2;
     // int af_slot_index = 3, bf_slot_index = 4;
     int a_slot_index = 3, b_slot_index = 4;
-    int startInsn = 41, endInsn = 71; //TODO: read some of these from config 
+    int startInsn = 41, endInsn = 55; // 71; //TODO: read some of these from config 
     if(ti.getTopFrame().getPC().getPosition() == startInsn && 
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) { 
@@ -118,9 +118,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
        ti.getTopFrame().getMethodInfo().getName());
       System.out.println("topPos = "+sf.getTopPos());
       
-      IntegerExpression x_v = (IntegerExpression) sf.getLocalAttr(x_slot_index);
+      SymbolicInteger x_v = (SymbolicInteger) sf.getLocalAttr(x_slot_index);
       if(x_v == null) System.out.println("failed to get x expr");
-      IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(y_slot_index);
+      SymbolicInteger y_v = (SymbolicInteger) sf.getLocalAttr(y_slot_index);
       if(y_v == null) System.out.println("failed to get y expr");
       
       SymbolicInteger a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
@@ -130,9 +130,36 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(bf_slot_index);
       // if(b_v == null) System.out.println("failed to get b_final expr");
      
-      PathCondition pc = null;
-      pc = getPC(vm, ti, instructionToExecute, pc);
+      // PathCondition pc = null;
+      // pc = getPC(vm, ti, instructionToExecute, pc);
+      ChoiceGenerator<?> cg;
 
+			// if (!ti.isFirstStepInsn()) { // first time around
+      //   System.out.println("first time around");
+			// 	cg = new PCChoiceGenerator(2);
+      //   ((PCChoiceGenerator)cg).setOffset(instructionToExecute.getPosition());
+      //   ((PCChoiceGenerator)cg).setMethodName(ti.getTopFrame().getMethodInfo().getFullName());
+			// 	ti.getVM().getSystemState().setNextChoiceGenerator(cg);
+			// 	return ;
+			// } else {  // this is what really returns results
+				cg = ti.getVM().getSystemState().getChoiceGenerator();
+				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
+			// }
+
+			PathCondition pc;
+
+			// pc is updated with the pc stored in the choice generator above
+			// get the path condition from the
+			// previous choice generator of the same type
+			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
+			
+
+			if (prev_cg == null)
+				pc = new PathCondition();
+			else
+				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
+
+			assert pc != null;
       // Generate symbolic expressions to unroll lines 39-42 of TestPaths.java
       pc._addDet(new ComplexNonLinearIntegerConstraint( 
             new ComplexNonLinearIntegerExpression(
@@ -145,18 +172,19 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                 new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(800)), 
                 LOGICAL_AND, 
                 new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(1))))));
+      ((PCChoiceGenerator) cg).setCurrentPC(pc);
 
-      pc._addDet(new ComplexNonLinearIntegerConstraint( 
-            new ComplexNonLinearIntegerExpression( 
-              new ComplexNonLinearIntegerExpression(
-                new ComplexNonLinearIntegerExpression(y_v, LE, new IntegerConstant(1200)), 
-                LOGICAL_AND, 
-                new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(-1))), 
-              LOGICAL_OR, 
-              new ComplexNonLinearIntegerExpression(
-                new ComplexNonLinearIntegerExpression(y_v, GT, new IntegerConstant(1200)), 
-                LOGICAL_AND, 
-                new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(1))))));
+      // pc._addDet(new ComplexNonLinearIntegerConstraint( 
+      //       new ComplexNonLinearIntegerExpression( 
+      //         new ComplexNonLinearIntegerExpression(
+      //           new ComplexNonLinearIntegerExpression(y_v, LE, new IntegerConstant(1200)), 
+      //           LOGICAL_AND, 
+      //           new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(-1))), 
+      //         LOGICAL_OR, 
+      //         new ComplexNonLinearIntegerExpression(
+      //           new ComplexNonLinearIntegerExpression(y_v, GT, new IntegerConstant(1200)), 
+      //           LOGICAL_AND, 
+      //           new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(1))))));
 
       // Assign a', b' (aka a_final, b_final) back into a, b respectively
       int a_val = sf.getSlot(a_slot_index);
@@ -164,12 +192,18 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       int b_val = sf.getSlot(b_slot_index);
       sf.setSlotAttr(b_slot_index, b_v); 
       ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
-      
+     	
       Instruction insn=instructionToExecute;
       while(insn.getPosition() < endInsn) 
         insn = insn.getNext();
       ti.setNextPC(insn);
     }
+    if(ti.getTopFrame().getPC().getPosition() == 71 && 
+       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
+       ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) { 
+      System.out.println("At later offset, PC = " + getPC(vm, ti, instructionToExecute, null));
+    }
+
   }
 
   // VeritestingPerf listener for testMe3 method
@@ -348,7 +382,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
   }
 
-  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  public void executeInstruction_almost_autogen(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     if(ti.getTopFrame().getPC().getPosition() == 45 && 
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
@@ -376,8 +410,51 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     SymbolicInteger pathLabel = makeSymbolicInteger(ti.getEnv(), "pathLabel");
     PathCondition pc = null;
     pc = getPC(vm, ti, instructionToExecute, pc);
-    pc._addDet(new ComplexNonLinearIntegerConstraint(
-    new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, GT, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(a_1, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, LE, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(a_2, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(a_3, EQ, a_1)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(a_3, EQ, a_2)))))); // TODO - fix path expression
+    
+
+pc._addDet(new ComplexNonLinearIntegerConstraint(
+new ComplexNonLinearIntegerExpression(
+new ComplexNonLinearIntegerExpression(
+	new ComplexNonLinearIntegerExpression(
+		new ComplexNonLinearIntegerExpression(
+			new ComplexNonLinearIntegerExpression(x, GT, new IntegerConstant(800)), 
+			LOGICAL_AND, 
+			new ComplexNonLinearIntegerExpression(
+				new ComplexNonLinearIntegerExpression(a_1, EQ, new IntegerConstant(-1)), 
+				LOGICAL_AND, 
+				new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)))), 
+		LOGICAL_OR, 
+		new ComplexNonLinearIntegerExpression(
+			new ComplexNonLinearIntegerExpression(x, LE, new IntegerConstant(800)), 
+			LOGICAL_AND, 
+			new ComplexNonLinearIntegerExpression(
+				new ComplexNonLinearIntegerExpression(a_2, EQ, new IntegerConstant(1)), 
+				LOGICAL_AND, 
+				new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2))))), 
+	LOGICAL_AND, 
+	new ComplexNonLinearIntegerExpression(
+		new ComplexNonLinearIntegerExpression(
+			new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)), 
+			LOGICAL_AND, 
+			new ComplexNonLinearIntegerExpression(a_3, EQ, a_1)), 
+		LOGICAL_OR, 
+		new ComplexNonLinearIntegerExpression(
+			new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2)), 
+			LOGICAL_AND, 
+			new ComplexNonLinearIntegerExpression(a_3, EQ, a_2)))), 
+	LOGICAL_AND,
+	new ComplexNonLinearIntegerExpression(
+		new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)), 
+		LOGICAL_OR,
+		new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2)) )
+)
+
+));
+
+		
+		
+	// 	pc._addDet(new ComplexNonLinearIntegerConstraint(
+  //   new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, GT, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(a_1, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, LE, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(a_2, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(a_3, EQ, a_1)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(a_3, EQ, a_2)))))); // TODO - fix path expression
     sf.setSlotAttr(3, a_3);
     Instruction insn=instructionToExecute;
     while(insn.getPosition() < 55) // TODO - fix ending insn

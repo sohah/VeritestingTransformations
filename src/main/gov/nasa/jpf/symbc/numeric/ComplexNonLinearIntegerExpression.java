@@ -44,17 +44,21 @@ import java.util.Map;
  * Began with BinaryNonLinearIntegerExpression.java
  */
 public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpression {
-  public ComplexNonLinearIntegerExpression left;
+  public IntegerExpression left;
 
   public Operator op;
 
   public Comparator cmprtr;
 
-  public ComplexNonLinearIntegerExpression right;
+  public IntegerExpression right;
 
   public IntegerExpression base;
 
 	public Comparator getComparator() { return cmprtr; }
+
+	public IntegerExpression getLeft() { return left; }
+	
+	public IntegerExpression getRight() { return right; }
 
   public ComplexNonLinearIntegerExpression() {
     left = right = null;
@@ -71,9 +75,9 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
 
   public void initLR(IntegerExpression l, IntegerExpression r) {
     if(l instanceof ComplexNonLinearIntegerExpression) left = (ComplexNonLinearIntegerExpression) l;
-    else left = new ComplexNonLinearIntegerExpression(l);
+    else left = l;
     if(r instanceof ComplexNonLinearIntegerExpression) right = (ComplexNonLinearIntegerExpression) r;
-    else right = new ComplexNonLinearIntegerExpression(r);
+    else right = r;
   }
 
   public ComplexNonLinearIntegerExpression(IntegerExpression l, Operator o, IntegerExpression r) {

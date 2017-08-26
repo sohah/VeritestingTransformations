@@ -75,7 +75,9 @@ public class PCParser {
   static Object getExpression(IntegerExpression eRef) {
     assert eRef != null;
     assert !(eRef instanceof IntegerConstant);
-
+	
+		System.out.println("PCParser::getExpression for " + eRef + " " + 
+					(eRef instanceof IntegerExpression) +" "+(eRef instanceof SymbolicInteger));
     if (eRef instanceof SymbolicInteger) {
       Object dp_var = symIntegerVar.get(eRef);
       if (dp_var == null) {
@@ -84,6 +86,18 @@ public class PCParser {
         symIntegerVar.put((SymbolicInteger)eRef, dp_var);
       }
       return dp_var;
+    }
+
+			
+
+		if (eRef instanceof ComplexNonLinearIntegerExpression) {
+			ComplexNonLinearIntegerExpression c = ((ComplexNonLinearIntegerExpression)eRef);
+		  if(c.op == Operator.NONE_OP && c.cmprtr == Comparator.NONE_CMP) {
+				IntegerExpression l = (IntegerExpression)c.getLeft();
+				if(l == null) l = (IntegerExpression) eRef;
+				System.out.println("examining plain expression (" + l + ")");
+				System.out.println(eRef + " is IntegerExpression");
+			}
     }
 
     Operator    opRef;
@@ -96,9 +110,15 @@ public class PCParser {
       e_rightRef = ((BinaryLinearIntegerExpression)eRef).right;
     } else { // bin non lin expr
       if(pb instanceof ProblemCoral || pb instanceof ProblemZ3 || pb instanceof ProblemZ3BitVector ||  pb instanceof ProblemZ3Incremental || pb instanceof ProblemZ3BitVectorIncremental) {
-        opRef = ((BinaryNonLinearIntegerExpression)eRef).op;
-        e_leftRef = ((BinaryNonLinearIntegerExpression)eRef).left;
-        e_rightRef = ((BinaryNonLinearIntegerExpression)eRef).right;
+				if( eRef instanceof ComplexNonLinearIntegerExpression) {
+          opRef = ((ComplexNonLinearIntegerExpression)eRef).op;
+          e_leftRef = ((ComplexNonLinearIntegerExpression)eRef).getLeft();
+          e_rightRef = ((ComplexNonLinearIntegerExpression)eRef).getRight();
+				} else {
+          opRef = ((BinaryNonLinearIntegerExpression)eRef).op;
+          e_leftRef = ((BinaryNonLinearIntegerExpression)eRef).left;
+          e_rightRef = ((BinaryNonLinearIntegerExpression)eRef).right;
+				}
       }
       else
         throw new RuntimeException("## Error: Binary Non Linear Expression " + eRef);
@@ -215,12 +235,95 @@ public class PCParser {
           return pb.shiftL(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
         else
           return pb.shiftL(getExpression(e_leftRef),getExpression(e_rightRef));
-      default:
+      case NONE_OP:
+    		if(eRef instanceof ComplexNonLinearIntegerExpression) {
+					Comparator cmpRef = ((ComplexNonLinearIntegerExpression) eRef).cmprtr;
+					if(cmpRef != null) return getComparatorExpression(e_leftRef, cmpRef, e_rightRef);
+					else throw new RuntimeException("Expression " + eRef + 
+							" has neither operator nor comparator");
+				}
+				return null;
+			default:
         throw new RuntimeException("## Error: Binary Non Linear Operation");
     }
-
-
   }
+
+	static Object getComparatorExpression(IntegerExpression e_leftRef, 
+																				Comparator cmpRef, 
+																				IntegerExpression e_rightRef) {
+		switch(cmpRef) {
+    	case LOGICAL_OR:
+    		return pb.logical_or(getExpression(e_leftRef), getExpression(e_rightRef));
+    		// break; unreachable statement
+    	case LOGICAL_AND:
+    		return pb.logical_and(getExpression(e_leftRef), getExpression(e_rightRef));
+    		// break; unreachable statement
+    	case GT:
+    		if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+    			throw new RuntimeException("## Error: this is not a symbolic expression"); //
+        else if (e_leftRef instanceof IntegerConstant)
+    			return pb.gt(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+    		else if (e_rightRef instanceof IntegerConstant)
+    			return pb.gt(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
+    		else
+    			return pb.gt(getExpression(e_leftRef),getExpression(e_rightRef));
+    		// break; unreachable statement
+    	case LT:
+    		if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+    			throw new RuntimeException("## Error: this is not a symbolic expression"); //
+        else if (e_leftRef instanceof IntegerConstant)
+    			return pb.lt(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+    		else if (e_rightRef instanceof IntegerConstant)
+    			return pb.lt(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
+    		else
+    			return pb.lt(getExpression(e_leftRef),getExpression(e_rightRef));
+    		// break; unreachable statement
+    	case GE:
+    		if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+    			throw new RuntimeException("## Error: this is not a symbolic expression"); //
+        else if (e_leftRef instanceof IntegerConstant)
+    			return pb.geq(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+    		else if (e_rightRef instanceof IntegerConstant)
+    			return pb.geq(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
+    		else
+    			return pb.geq(getExpression(e_leftRef),getExpression(e_rightRef));
+    		// break; unreachable statement
+    	case LE:
+    		if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+    			throw new RuntimeException("## Error: this is not a symbolic expression"); //
+        else if (e_leftRef instanceof IntegerConstant)
+    			return pb.leq(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+    		else if (e_rightRef instanceof IntegerConstant)
+    			return pb.leq(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
+    		else
+    			return pb.leq(getExpression(e_leftRef),getExpression(e_rightRef));
+    		// break; unreachable statement
+    	case EQ:
+    		if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+    			throw new RuntimeException("## Error: this is not a symbolic expression"); //
+        else if (e_leftRef instanceof IntegerConstant)
+    			return pb.eq(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+    		else if (e_rightRef instanceof IntegerConstant)
+    			return pb.eq(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
+    		else
+    			return pb.eq(getExpression(e_leftRef),getExpression(e_rightRef));
+    		// break; unreachable statement
+    	case NE:
+    		if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
+    			throw new RuntimeException("## Error: this is not a symbolic expression"); //
+        else if (e_leftRef instanceof IntegerConstant)
+    			return pb.neq(((IntegerConstant)e_leftRef).value,getExpression(e_rightRef));
+    		else if (e_rightRef instanceof IntegerConstant)
+    			return pb.neq(getExpression(e_leftRef),((IntegerConstant)e_rightRef).value);
+    		else
+    			return pb.neq(getExpression(e_leftRef),getExpression(e_rightRef));
+    		// break; unreachable statement
+    	case NONE_CMP:
+				System.out.println("NONE_CMP exp = " + e_leftRef + ", " + e_rightRef);
+    	default:
+    		throw new RuntimeException("Unsupported comparator in PCParser::getExpression");
+		}
+	}
 
 
   // Converts RealExpression's into DP RealExp's
@@ -895,6 +998,26 @@ public class PCParser {
         else
           pb.post(pb.gt(getExpression(c_leftRef),getExpression(c_rightRef)));
         break;
+			case LOGICAL_OR: 
+				System.out.println("Comparator is LOGICAL_OR");
+				if (c_leftRef instanceof IntegerConstant || c_rightRef instanceof IntegerConstant) {
+					throw new RuntimeException("cannot LOGICAL_OR using a constant in PCParser::createDPNonLinearIntegerConstraint");
+        }
+        else
+          pb.post(pb.logical_or(getExpression(c_leftRef),getExpression(c_rightRef)));
+				break;
+			case LOGICAL_AND: 
+				System.out.println("Comparator is LOGICAL_AND");
+				if (c_leftRef instanceof IntegerConstant || c_rightRef instanceof IntegerConstant) {
+					throw new RuntimeException("cannot LOGICAL_AND using a constant in PCParser::createDPNonLinearIntegerConstraint");
+        }
+        else
+          pb.post(pb.logical_and(getExpression(c_leftRef),getExpression(c_rightRef)));
+				break;
+			case NONE_CMP: 
+			default: 
+				throw new RuntimeException("unknown comparator(" + 
+						cRef.getComparator() + ") in PCParser::createDPNonLinearIntegerConstraint");
     }
     return true;
   }

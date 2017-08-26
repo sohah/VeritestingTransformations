@@ -1511,4 +1511,12 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
             throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
         }
     }
+
+    public Object logical_or(Object exp1, Object exp2) {
+  		throw new RuntimeException("## Error Z3BitVectorIncremental does not support LOGICAL_OR");
+  	}
+  
+    public Object logical_and(Object exp1, Object exp2) {
+  		throw new RuntimeException("## Error Z3BitVectorIncremental does not support LOGICAL_AND");
+  	}
 }
