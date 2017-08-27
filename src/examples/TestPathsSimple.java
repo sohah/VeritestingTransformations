@@ -37,10 +37,6 @@ public class TestPathsSimple {
     // int b_final = Debug.makeSymbolicInteger("b_final");
     int a=11, b=12;
 
-    if(z == 0) {
-      System.out.println("first branch");
-    }
-  
     // Begin region for static unrolling
     if (x <= 800 ) a = -1;
     else a = 1;
@@ -48,12 +44,12 @@ public class TestPathsSimple {
     else b = 1;
     // End region for static unrolling
   
-    if (a == -1) System.out.println("a = -1");
-    else if (a == 1) System.out.println("a = 1");
-    else System.out.println("a != 1 && a != -1");
-    if(b == -1) System.out.println("b = -1");
-    else if (b == 1) System.out.println("b = 1");
-    else System.out.println("b != 1 && b != 1");
+    // if (a == -1) System.out.println("a = -1");
+    // else if (a == 1) System.out.println("a = 1");
+    // else System.out.println("a != 1 && a != -1");
+    // if(b == -1) System.out.println("b = -1");
+    // else if (b == 1) System.out.println("b = 1");
+    // else System.out.println("b != 1 && b != 1");
     System.out.println("-x-x-x-x-");
   }
 

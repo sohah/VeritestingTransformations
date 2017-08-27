@@ -388,10 +388,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
 
   public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-    if(ti.getTopFrame().getPC().getPosition() == 58 && 
+    if(ti.getTopFrame().getPC().getPosition() == 46 && 
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
-      System.out.println("executing #45");
       // if (!ti.isFirstStepInsn()) { // first time around
       //   ChoiceGenerator <?> cg = new PCChoiceGenerator(2);
       //   ((PCChoiceGenerator)cg).setOffset(instructionToExecute.getPosition());
@@ -401,10 +400,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       // }
       TestPathsSimple_testMe3_VT_45_59(vm, ti, instructionToExecute);
     } 
-    else if(ti.getTopFrame().getPC().getPosition() == 74 && 
+    else if(ti.getTopFrame().getPC().getPosition() == 62 && 
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
-      System.out.println("executing #59");
       // if (!ti.isFirstStepInsn()) { // first time around
       //   ChoiceGenerator <?> cg = new PCChoiceGenerator(2);
       //   ((PCChoiceGenerator)cg).setOffset(instructionToExecute.getPosition());
@@ -418,7 +416,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 
   public void TestPathsSimple_testMe3_VT_45_59
  (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-  if(ti.getTopFrame().getPC().getPosition() == 58 && 
+  if(ti.getTopFrame().getPC().getPosition() == 46 && 
      ti.getTopFrame().getMethodInfo().getName().equals("testMe3") && 
      ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
     StackFrame sf = ti.getTopFrame();
@@ -437,7 +435,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, GT, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(a_1, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, LE, new IntegerConstant(800)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(a_2, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(a_3, EQ, a_1)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(2)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(a_3, EQ, a_2)))))); // TODO - fix path expression
     sf.setSlotAttr(4, a_3);
     Instruction insn=instructionToExecute;
-    while(insn.getPosition() < 70) // TODO - fix ending insn
+    while(insn.getPosition() < 58) // TODO - fix ending insn
       insn = insn.getNext();
     sf.pop(); sf.pop();
     // ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator().getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class)).setCurrentPC(pc);
@@ -449,7 +447,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 
 public void TestPathsSimple_testMe3_VT_59_71
  (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-  if(ti.getTopFrame().getPC().getPosition() == 74 && 
+  if(ti.getTopFrame().getPC().getPosition() == 62 && 
      ti.getTopFrame().getMethodInfo().getName().equals("testMe3") && 
      ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
     StackFrame sf = ti.getTopFrame();
@@ -462,14 +460,12 @@ public void TestPathsSimple_testMe3_VT_59_71
 
     // pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator().getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class)).getCurrentPC();
     pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-    System.out.println("at offset 59, pc = " + pc);
     pc._addDet(new ComplexNonLinearIntegerConstraint(
     new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(y, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b_1, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(3)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(y, LE, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b_2, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(4))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(3)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b_3, EQ, b_1)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, new IntegerConstant(4)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b_3, EQ, b_2))))));
     sf.setSlotAttr(5, b_3);
     Instruction insn=instructionToExecute;
-    while(insn.getPosition() < 86)
+    while(insn.getPosition() < 74)
       insn = insn.getNext();
-    System.out.println("stopping at insn = " + insn);
     sf.pop(); sf.pop();
     //((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator().getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class)).setCurrentPC(pc);
     ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
