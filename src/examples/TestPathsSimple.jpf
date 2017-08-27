@@ -6,7 +6,7 @@ sourcepath=${jpf-symbc}/src/examples
 
 # analyze TestPathsSimple.testMe3(int x, boolean b) using symbolic values for 'x' and
 # concrete value for 'b'
-symbolic.method= TestPathsSimple.testMe3(sym#sym)
+symbolic.method= TestPathsSimple.testMe3(sym#sym#sym)
 symbolic.dp=z3bitvector
 
 #symbolic.dp=yices
@@ -16,6 +16,6 @@ listener = .symbc.VeritestingListener
 
 vm.storage.class=nil
 
-symbolic.debug=on
+# symbolic.debug=on
 # symbolic.min_int=-1
 # symbolic.max_int=2

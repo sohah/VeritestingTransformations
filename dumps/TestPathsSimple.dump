@@ -16,10 +16,11 @@ public class TestPathsSimple {
       12: invokespecial #6                  // Method "<init>":()V
       15: iconst_0
       16: iconst_0
-      17: invokevirtual #7                  // Method testMe3:(II)V
-      20: return
+      17: iconst_0
+      18: invokevirtual #7                  // Method testMe3:(III)V
+      21: return
 
-  public void testMe3(int, int);
+  public void testMe3(int, int, int);
     Code:
        0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
        3: new           #8                  // class java/lang/StringBuilder
@@ -36,63 +37,68 @@ public class TestPathsSimple {
       28: invokevirtual #14                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
       31: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
       34: bipush        11
-      36: istore_3
-      37: bipush        12
-      39: istore        4
-      41: iload_1
-      42: sipush        800
-      45: if_icmpgt     53
-      48: iconst_m1
-      49: istore_3
-      50: goto          55
-      53: iconst_1
-      54: istore_3
-      55: iload_2
-      56: sipush        1200
-      59: if_icmpgt     68
-      62: iconst_m1
-      63: istore        4
-      65: goto          71
-      68: iconst_1
-      69: istore        4
-      71: iload_3
-      72: iconst_m1
-      73: if_icmpne     87
-      76: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      79: ldc           #15                 // String a = -1
-      81: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-      84: goto          111
-      87: iload_3
-      88: iconst_1
+      36: istore        4
+      38: bipush        12
+      40: istore        5
+      42: iload_3
+      43: ifne          54
+      46: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      49: ldc           #15                 // String first branch
+      51: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      54: iload_1
+      55: sipush        800
+      58: if_icmpgt     67
+      61: iconst_m1
+      62: istore        4
+      64: goto          70
+      67: iconst_1
+      68: istore        4
+      70: iload_2
+      71: sipush        1200
+      74: if_icmpgt     83
+      77: iconst_m1
+      78: istore        5
+      80: goto          86
+      83: iconst_1
+      84: istore        5
+      86: iload         4
+      88: iconst_m1
       89: if_icmpne     103
       92: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      95: ldc           #16                 // String a = 1
+      95: ldc           #16                 // String a = -1
       97: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     100: goto          111
-     103: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     106: ldc           #17                 // String a != 1 && a != -1
-     108: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     111: iload         4
-     113: iconst_m1
-     114: if_icmpne     128
-     117: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     120: ldc           #18                 // String b = -1
-     122: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     125: goto          153
-     128: iload         4
-     130: iconst_1
+     100: goto          128
+     103: iload         4
+     105: iconst_1
+     106: if_icmpne     120
+     109: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     112: ldc           #17                 // String a = 1
+     114: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     117: goto          128
+     120: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     123: ldc           #18                 // String a != 1 && a != -1
+     125: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     128: iload         5
+     130: iconst_m1
      131: if_icmpne     145
      134: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     137: ldc           #19                 // String b = 1
+     137: ldc           #19                 // String b = -1
      139: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     142: goto          153
-     145: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     148: ldc           #20                 // String b != 1 && b != 1
-     150: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     153: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-     156: ldc           #21                 // String -x-x-x-x-
-     158: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     161: return
+     142: goto          170
+     145: iload         5
+     147: iconst_1
+     148: if_icmpne     162
+     151: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     154: ldc           #20                 // String b = 1
+     156: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     159: goto          170
+     162: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     165: ldc           #21                 // String b != 1 && b != 1
+     167: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     170: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     173: ldc           #22                 // String -x-x-x-x-
+     175: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     178: return
 
   public static void testMe(int, boolean);
     Code:
@@ -123,7 +129,7 @@ public class TestPathsSimple {
   public void testMe2(int, boolean);
     Code:
        0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-       3: ldc           #22                 // String !!!!!!!!!!!!!!! First step!
+       3: ldc           #23                 // String !!!!!!!!!!!!!!! First step!
        5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
        8: iload_2
        9: ifeq          45
@@ -131,17 +137,17 @@ public class TestPathsSimple {
       13: sipush        1200
       16: if_icmpgt     27
       19: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      22: ldc           #23                 // String   <= 1200
+      22: ldc           #24                 // String   <= 1200
       24: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
       27: iload_1
       28: sipush        1200
       31: if_icmplt     53
       34: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      37: ldc           #24                 // String   >= 1200
+      37: ldc           #25                 // String   >= 1200
       39: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
       42: goto          53
       45: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      48: ldc           #25                 // String   b is false
+      48: ldc           #26                 // String   b is false
       50: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
       53: return
 }

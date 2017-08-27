@@ -76,8 +76,8 @@ public class PCParser {
     assert eRef != null;
     assert !(eRef instanceof IntegerConstant);
 	
-		System.out.println("PCParser::getExpression for " + eRef + " " + 
-					(eRef instanceof IntegerExpression) +" "+(eRef instanceof SymbolicInteger));
+		// System.out.println("PCParser::getExpression for " + eRef + " " + 
+		// 			(eRef instanceof IntegerExpression) +" "+(eRef instanceof SymbolicInteger));
     if (eRef instanceof SymbolicInteger) {
       Object dp_var = symIntegerVar.get(eRef);
       if (dp_var == null) {
@@ -999,7 +999,7 @@ public class PCParser {
           pb.post(pb.gt(getExpression(c_leftRef),getExpression(c_rightRef)));
         break;
 			case LOGICAL_OR: 
-				System.out.println("Comparator is LOGICAL_OR");
+				// System.out.println("Comparator is LOGICAL_OR");
 				if (c_leftRef instanceof IntegerConstant || c_rightRef instanceof IntegerConstant) {
 					throw new RuntimeException("cannot LOGICAL_OR using a constant in PCParser::createDPNonLinearIntegerConstraint");
         }
@@ -1007,7 +1007,7 @@ public class PCParser {
           pb.post(pb.logical_or(getExpression(c_leftRef),getExpression(c_rightRef)));
 				break;
 			case LOGICAL_AND: 
-				System.out.println("Comparator is LOGICAL_AND");
+				// System.out.println("Comparator is LOGICAL_AND");
 				if (c_leftRef instanceof IntegerConstant || c_rightRef instanceof IntegerConstant) {
 					throw new RuntimeException("cannot LOGICAL_AND using a constant in PCParser::createDPNonLinearIntegerConstraint");
         }

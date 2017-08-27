@@ -28,14 +28,18 @@ public class TestPathsSimple {
   public static void main (String[] args){
    // testMe(42, false);
   System.out.println("!!!!!!!!!!!!!!! Start Testing! ");
-  (new TestPathsSimple()).testMe3(0,0);
+  (new TestPathsSimple()).testMe3(0,0,0);
   }
 
-  public void testMe3 (int x, int y) {
+  public void testMe3 (int x, int y, int z) {
     System.out.println("x = " + x + ", y = " + y);
     // int a_final = Debug.makeSymbolicInteger("a_final");
     // int b_final = Debug.makeSymbolicInteger("b_final");
     int a=11, b=12;
+
+    if(z == 0) {
+      System.out.println("first branch");
+    }
   
     // Begin region for static unrolling
     if (x <= 800 ) a = -1;
