@@ -5,6 +5,11 @@ public class TestPathsSimple {
        0: aload_0
        1: invokespecial #1                  // Method java/lang/Object."<init>":()V
        4: return
+    LineNumberTable:
+      line 26: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   LTestPathsSimple;
 
   public static void main(java.lang.String[]);
     Code:
@@ -19,6 +24,13 @@ public class TestPathsSimple {
       17: iconst_0
       18: invokevirtual #7                  // Method testMe3:(III)V
       21: return
+    LineNumberTable:
+      line 30: 0
+      line 31: 8
+      line 32: 21
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0      22     0  args   [Ljava/lang/String;
 
   public void testMe3(int, int, int);
     Code:
@@ -56,10 +68,67 @@ public class TestPathsSimple {
       68: goto          74
       71: iconst_1
       72: istore        5
-      74: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      77: ldc           #15                 // String -x-x-x-x-
-      79: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-      82: return
+      74: iload         4
+      76: iconst_m1
+      77: if_icmpne     91
+      80: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      83: ldc           #15                 // String a = -1
+      85: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      88: goto          116
+      91: iload         4
+      93: iconst_1
+      94: if_icmpne     108
+      97: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     100: ldc           #16                 // String a = 1
+     102: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     105: goto          116
+     108: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     111: ldc           #17                 // String a != 1 && a != -1
+     113: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     116: iload         5
+     118: iconst_m1
+     119: if_icmpne     133
+     122: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     125: ldc           #18                 // String b = -1
+     127: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     130: goto          158
+     133: iload         5
+     135: iconst_1
+     136: if_icmpne     150
+     139: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     142: ldc           #19                 // String b = 1
+     144: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     147: goto          158
+     150: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     153: ldc           #20                 // String b != 1 && b != 1
+     155: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     158: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+     161: ldc           #21                 // String -x-x-x-x-
+     163: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     166: return
+    LineNumberTable:
+      line 35: 0
+      line 38: 34
+      line 41: 42
+      line 42: 55
+      line 43: 58
+      line 44: 71
+      line 47: 74
+      line 48: 91
+      line 49: 108
+      line 50: 116
+      line 51: 133
+      line 52: 150
+      line 53: 158
+      line 54: 166
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0     167     0  this   LTestPathsSimple;
+          0     167     1     x   I
+          0     167     2     y   I
+          0     167     3     z   I
+         38     129     4     a   I
+         42     125     5     b   I
 
   public static void testMe(int, boolean);
     Code:
@@ -86,11 +155,24 @@ public class TestPathsSimple {
       43: iconst_1
       44: istore_2
       45: return
+    LineNumberTable:
+      line 58: 0
+      line 59: 25
+      line 60: 27
+      line 62: 34
+      line 64: 36
+      line 66: 43
+      line 68: 45
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0      46     0     x   I
+          0      46     1     b   Z
+         27      19     2     y   I
 
   public void testMe2(int, boolean);
     Code:
        0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-       3: ldc           #16                 // String !!!!!!!!!!!!!!! First step!
+       3: ldc           #22                 // String !!!!!!!!!!!!!!! First step!
        5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
        8: iload_2
        9: ifeq          45
@@ -98,17 +180,31 @@ public class TestPathsSimple {
       13: sipush        1200
       16: if_icmpgt     27
       19: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      22: ldc           #17                 // String   <= 1200
+      22: ldc           #23                 // String   <= 1200
       24: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
       27: iload_1
       28: sipush        1200
       31: if_icmplt     53
       34: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      37: ldc           #18                 // String   >= 1200
+      37: ldc           #24                 // String   >= 1200
       39: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
       42: goto          53
       45: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
-      48: ldc           #19                 // String   b is false
+      48: ldc           #25                 // String   b is false
       50: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
       53: return
+    LineNumberTable:
+      line 71: 0
+      line 73: 8
+      line 74: 12
+      line 75: 19
+      line 77: 27
+      line 78: 34
+      line 80: 45
+      line 81: 53
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0      54     0  this   LTestPathsSimple;
+          0      54     1     x   I
+          0      54     2     b   Z
 }

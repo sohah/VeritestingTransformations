@@ -49,7 +49,7 @@ class MyShimpleValueSwitch extends AbstractShimpleValueSwitch {
 		setupSPFExpr(v);
 		if( lvt.isLocalVariable(op1_str) ) {
 			lvt.addUsedLocalVar(op1_str);
-			G.v().out.println("added usedLocalVar = " + op1_str);
+			// G.v().out.println("added usedLocalVar = " + op1_str);
 		}
 		ifExprStr_SPF = "new ComplexNonLinearIntegerExpression(" + op1_str + ", GT, " + op2_str + ")"; 
 		ifNotExprStr_SPF = "new ComplexNonLinearIntegerExpression(" + op1_str + ", LE, " + op2_str + ")"; 

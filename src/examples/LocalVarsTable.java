@@ -7,15 +7,18 @@ class LocalVarsTable {
   String methodName;
   HashMap<String, Integer> varsMap;
   HashSet<String> usedLocalVars, intermediateVars;
+	HashMap<Integer, Integer> ifToSetup;
   LocalVarsTable(String cN, String mN) {
     varsMap = new HashMap<String, Integer> ();
 		intermediateVars = new HashSet<String> ();
     usedLocalVars = new HashSet<String> ();
+		ifToSetup = new HashMap<Integer, Integer> ();
     className = cN;
     methodName = mN;
+		String prevStr="", prevprevStr="";
     try {
       Runtime rt = Runtime.getRuntime();
-      String[] commands = {"javap", "-l", className};
+      String[] commands = {"javap", "-c", "-l", className};
       Process proc = rt.exec(commands);
       
       BufferedReader stdInput = new BufferedReader( 
@@ -33,7 +36,7 @@ class LocalVarsTable {
         if(mOIVarTable && s.length() == 0) {
           mOIVarTable = methodOfInterest = false;
         }
-        // if(methodOfInterest) G.v().out.println(s);
+        // if(methodOfInterest) G.v().out.println(s+" " + s.contains("if_"));
         if(s.contains(methodName+"(")) methodOfInterest = true;
         if(methodOfInterest) 
           if(s.contains("LocalVariableTable")) mOIVarTable = true;
@@ -54,6 +57,16 @@ class LocalVarsTable {
             G.v().out.println("mapped " + name + " to slot = " + slot);
           }
         }
+				if(methodOfInterest && s.contains("if_")) {
+					// assume setup instruction is previous-previous from current
+					int start = getOffsetFromLine(s), end = getOffsetFromLine(prevprevStr);
+					ifToSetup.put(start, end);
+					// System.out.println("Adding ("+start+", "+end+") to ifToSetup");
+				}
+				if(methodOfInterest) {
+					prevprevStr = prevStr;
+					prevStr = s;
+				}
       }
     
       // read any errors from the attempted command
@@ -79,9 +92,18 @@ class LocalVarsTable {
     return;
   }
 	public void resetUsedLocalVars() { 
-		G.v().out.println("resetUsedLocalVars");
+		// G.v().out.println("resetUsedLocalVars");
 		usedLocalVars = new HashSet<String> (); 
 	}
 	public void resetIntermediateVars() { intermediateVars = new HashSet<String> (); }
+	public int getOffsetFromLine(String line) {
+		int p1 = line.indexOf(':');
+		int p2 = line.substring(0,p1).lastIndexOf(' ');
+		return Integer.parseInt(line.substring(p2+1,p1));
+	}
+	public int getSetupInsn(int offset) {
+		if(ifToSetup.containsKey(offset)) return ifToSetup.get(offset);
+		else return -1;
+	}
 }
 

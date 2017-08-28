@@ -38,7 +38,10 @@ import soot.tagkit.*;
 
 public class MyMain {
 
+	public static int pathLabelVarNum=0;
+  public static HashSet endingInsnsHash;
   public static void main(String[] args) {
+    endingInsnsHash = new HashSet();
     // this jb pack does not work, perhaps, by design
     PackManager.v().getPack("jb").add(
         new Transform("jb.myTransform", new BodyTransformer() {
@@ -148,15 +151,15 @@ public class MyMain {
           u.apply(myStmtSwitch);
           String if_SPFExpr = myStmtSwitch.getSPFExpr();
           String ifNot_SPFExpr = myStmtSwitch.getIfNotSPFExpr();
-          Unit thenUnit = succs.get(0);
+          Unit thenUnit = succs.get(0); //assuming this order for now
           Unit elseUnit = succs.get(1);
           String thenExpr="", elseExpr="";
           final int thenPathLabel = MyUtils.getPathCounter();
           final int elsePathLabel = MyUtils.getPathCounter();
           final String thenPLAssignSPF = 
-            MyUtils.nCNLIE + "pathLabel, EQ, new IntegerConstant(" + thenPathLabel + "))"; 
+            MyUtils.nCNLIE + "pathLabel" + pathLabelVarNum + ", EQ, new IntegerConstant(" + thenPathLabel + "))"; 
           final String elsePLAssignSPF = 
-            MyUtils.nCNLIE + "pathLabel, EQ, new IntegerConstant(" + elsePathLabel + "))";
+            MyUtils.nCNLIE + "pathLabel" + pathLabelVarNum + ", EQ, new IntegerConstant(" + elsePathLabel + "))";
 
           // Create thenExpr
           while(thenUnit != commonSucc) {
@@ -267,6 +270,10 @@ public class MyMain {
               continue;
             } else { 
               endingInsn = t.toString();
+              int eiSetupInsn = lvt.getSetupInsn(Integer.parseInt(endingInsn));
+              if(eiSetupInsn!= -1) {
+                endingInsn = Integer.toString(eiSetupInsn);
+              }
               break;
             }
           }
@@ -288,7 +295,7 @@ public class MyMain {
             String s = (String) it.next();
             int slot = lvt.getLocalVarSlot(s);
             if(slot!=-1) {
-              fn += "    IntegerExpression "+s+" = (IntegerExpression) sf.getLocalAttr("+slot+");\n";
+              fn += "    SymbolicInteger "+s+" = (SymbolicInteger) sf.getLocalAttr("+slot+");\n";
             }
           }
           it = lvt.intermediateVars.iterator();
@@ -297,24 +304,27 @@ public class MyMain {
             fn += "    SymbolicInteger " + s + " = makeSymbolicInteger(ti.getEnv(), \"" + s + "\");\n";
           }
           fn += "    SymbolicInteger " + lhs_SB.toString() + " = makeSymbolicInteger(ti.getEnv(), \"" + lhs_SB.toString() + "\");\n";
-          fn += "    SymbolicInteger pathLabel = makeSymbolicInteger(ti.getEnv(), \"pathLabel\");\n";
-          fn += "    PathCondition pc = null;\n";
-          fn += "    pc = getPC(vm, ti, instructionToExecute, pc);\n";
+          fn += "    SymbolicInteger pathLabel" + pathLabelVarNum + " = makeSymbolicInteger(ti.getEnv(), \"pathLabel" + pathLabelVarNum+ "\");\n";
+          fn += "    PathCondition pc;\n";
+          fn += "    pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();\n";
           fn += "    pc._addDet(new ComplexNonLinearIntegerConstraint(\n    " + finalPathExpr + "));\n";
           fn += "    " + setSlotAttr_SB.toString() + "\n";
           fn += "    Instruction insn=instructionToExecute;\n";
           fn += "    while(insn.getPosition() < " + endingInsn + ")\n";
           fn += "      insn = insn.getNext();\n";
-          fn += "    sf.pop(); sf.pop();\n"; // popping the region's starting node (if stmt) operands
+          if(!endingInsnsHash.contains(startingInsn))
+            fn += "    sf.pop(); sf.pop();\n"; // popping the region's starting node (if stmt) operands
           fn += "    ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);\n";
           fn += "    ti.setNextPC(insn);\n";
           fn += "  }\n";
           fn += "}\n";
 
           G.v().out.println(fn);
+          endingInsnsHash.add(endingInsn);
 
           lvt.resetUsedLocalVars();
           lvt.resetIntermediateVars();
+          pathLabelVarNum++;
         } else {
           G.v().out.println("more than 2 successors unhandled");
         }
