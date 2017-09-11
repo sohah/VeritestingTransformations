@@ -7,7 +7,7 @@ sourcepath=${jpf-symbc}/src/examples
 symbolic.method= VeritestingPerf.testMe4(con#con)
 symbolic.dp=z3bitvector
 
-listener = .symbc.SymbolicListener
+listener = .symbc.VeritestingListener
 
 vm.storage.class=nil
 

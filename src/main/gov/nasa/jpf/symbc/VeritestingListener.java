@@ -263,7 +263,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
 
   // Veritesting listener for testMe4 method
-  public void executeInstruction_VeritestingPerf_testMe4(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     int sum_slot_index = 3;
     int startInsn = 61, endInsn = 80; //TODO: read some of these from config 
     if(ti.getTopFrame().getPC().getPosition() == startInsn && 
@@ -281,7 +281,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       SymbolicInteger sum_new = makeSymbolicInteger(ti.getEnv(),"sum_new"+sumId);
       sumId++;
       PathCondition pc = null;
-      pc = getPC(vm, ti, instructionToExecute, pc);
+      pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
      
       // LogicalORLinearIntegerConstraints lolic = new LogicalORLinearIntegerConstraints();
       // lolic.addToList(
@@ -472,7 +472,7 @@ public void TestPathsSimple_testMe3_VT_59_71
   }
 }
 
-  public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+  public void executeInstruction_autogen(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     if(ti.getTopFrame().getPC().getPosition() == 46 && 
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
