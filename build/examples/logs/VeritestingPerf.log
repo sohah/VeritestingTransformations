@@ -1,560 +1,229 @@
-Soot started on Thu Aug 17 14:57:46 CDT 2017
-Transforming VeritestingPerf... 
-Starting analysis for <init>
-Starting doAnalysis
-BOTag = null
-  IdentityStmt: r0 := @this: VeritestingPerf
-BOTag = 1
-  InvokeStmt: specialinvoke r0.<java.lang.Object: void <init>()>()
-BOTag = 4
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 4
-  ReturnVoidStmt: return
-Starting analysis for main
-Starting doAnalysis
-BOTag = null
-  IdentityStmt: r0 := @parameter0: java.lang.String[]
-BOTag = 2
-  AssignStmt: $r2 = r0[0]
-BOTag = 6
-  AssignStmt: i0 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>($r2)
-BOTag = 10
-  AssignStmt: r1 = newarray (int)[i0]
-BOTag = 11
-  AssignStmt: $r3 = new VeritestingPerf
-BOTag = 15
-  InvokeStmt: specialinvoke $r3.<VeritestingPerf: void <init>()>()
-BOTag = 20
-  InvokeStmt: virtualinvoke $r3.<VeritestingPerf: void testMe4(int[],int)>(r1, i0)
-BOTag = 23
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 23
-  ReturnVoidStmt: return
-Starting analysis for testMe5
-Starting doAnalysis
-BOTag = null
-  IdentityStmt: r0 := @this: VeritestingPerf
-BOTag = null
-  IdentityStmt: r1 := @parameter0: int[]
-BOTag = null
-  IdentityStmt: i0 := @parameter1: int
-BOTag = 1
-  AssignStmt: i1 = 0
-BOTag = null
-  AssignStmt: i1_1 = Phi(i1, i1_2)
-BOTag = 6
-  IfStmt: if i1_1 >= i0 goto $i6 = r1[0]
-    IfStmt(ge): v = i1_1 >= i0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 12, h.size() = 6
-  AssignStmt: $r2 = new java.lang.StringBuilder
-BOTag = 16, h.size() = 7
-  InvokeStmt: specialinvoke $r2.<java.lang.StringBuilder: void <init>()>()
-BOTag = 21, h.size() = 8
-  AssignStmt: $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x")
-BOTag = 26, h.size() = 9
-  AssignStmt: $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i1_1)
-BOTag = 29, h.size() = 10
-  AssignStmt: $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.String toString()>()
-BOTag = 32, h.size() = 11
-  AssignStmt: $i5 = staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>($r5)
-BOTag = 35, h.size() = 12
-  AssignStmt: r1[i1_1] = $i5
-BOTag = 36, h.size() = 13
-  AssignStmt: i1_2 = i1_1 + 1
-BOTag = 39, h.size() = 14
-  GotoStmt: goto [?= i1_1 = Phi(i1, i1_2)]
-BOTag = null, h.size() = 15
- calling doAnalysis on succ 0
-Starting doAnalysis
-BOTag = 12
-  AssignStmt: $r2 = new java.lang.StringBuilder
-BOTag = 16
-  InvokeStmt: specialinvoke $r2.<java.lang.StringBuilder: void <init>()>()
-BOTag = 21
-  AssignStmt: $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x")
-BOTag = 26
-  AssignStmt: $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i1_1)
-BOTag = 29
-  AssignStmt: $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.String toString()>()
-BOTag = 32
-  AssignStmt: $i5 = staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>($r5)
-BOTag = 35
-  AssignStmt: r1[i1_1] = $i5
-BOTag = 36
-  AssignStmt: i1_2 = i1_1 + 1
-BOTag = 39
-  GotoStmt: goto [?= i1_1 = Phi(i1, i1_2)]
-BOTag = null
-  AssignStmt: i1_1 = Phi(i1, i1_2)
-BOTag = 6
-  IfStmt: if i1_1 >= i0 goto $i6 = r1[0]
-    IfStmt(ge): v = i1_1 >= i0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-Starting doAnalysis
-BOTag = 44
-  AssignStmt: $i6 = r1[0]
-BOTag = 45
-  IfStmt: if $i6 >= 0 goto $i7 = r1[0]
-    IfStmt(ge): v = $i6 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 49, h.size() = 2
-  AssignStmt: b2 = -1
-BOTag = 51, h.size() = 3
-  GotoStmt: goto [?= b2_3 = Phi(b2, b2_1, b2_2)]
-BOTag = 56, h.size() = 1
-  AssignStmt: $i7 = r1[0]
-BOTag = 57, h.size() = 2
-  IfStmt: if $i7 <= 0 goto b2_2 = 0
-    IfStmt(le): v = $i7 <= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-BOTag = 61, h.size() = 3
-  AssignStmt: b2_1 = 1
-BOTag = 63, h.size() = 4
-  GotoStmt: goto [?= b2_3 = Phi(b2, b2_1, b2_2)]
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b2, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 3))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($i7, EQ, r1[0]), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b2_1, EQ, new IntegerConstant(1))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 4)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 3), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b2_3, EQ, b2)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 4), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b2_3, EQ, b2_1))))
+Running Symbolic PathFinder ...
+symbolic.dp=z3bitvector
+symbolic.string_dp_timeout_ms=0
+symbolic.string_dp=none
+symbolic.max_pc_length=2147483647
+symbolic.max_pc_msec=0
+symbolic.bvlength=32
+symbolic.min_int=-2147483648
+symbolic.min_long=-9223372036854775808
+symbolic.min_short=-32768
+symbolic.min_byte=-128
+symbolic.min_char=0
+symbolic.max_int=2147483647
+symbolic.max_long=9223372036854775807
+symbolic.max_short=32767
+symbolic.max_byte=127
+symbolic.max_char=65535
+symbolic.min_double=4.9E-324
+symbolic.max_double=1.7976931348623157E308
+JavaPathfinder core system v8.0 (rev 32) - (C) 2005-2014 United States Government. All rights reserved.
 
-BOTag = null
-  AssignStmt: b2_3 = Phi(b2, b2_1, b2_2)
-BOTag = 71
-  AssignStmt: $i8 = r1[1]
-BOTag = 72
-  IfStmt: if $i8 >= 0 goto $i9 = r1[1]
-    IfStmt(ge): v = $i8 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 76, h.size() = 7
-  AssignStmt: b3 = -1
-BOTag = 78, h.size() = 8
-  GotoStmt: goto [?= b3_3 = Phi(b3, b3_1, b3_2)]
-BOTag = 83, h.size() = 1
-  AssignStmt: $i9 = r1[1]
-BOTag = 84, h.size() = 2
-  IfStmt: if $i9 <= 0 goto b3_2 = 0
-    IfStmt(le): v = $i9 <= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-BOTag = 88, h.size() = 3
-  AssignStmt: b3_1 = 1
-BOTag = 90, h.size() = 4
-  GotoStmt: goto [?= b3_3 = Phi(b3, b3_1, b3_2)]
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b3, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 5))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($i9, EQ, r1[1]), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b3_1, EQ, new IntegerConstant(1))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 6)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 5), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b3_3, EQ, b3)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 6), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b3_3, EQ, b3_1))))
 
-BOTag = null
-  AssignStmt: b3_3 = Phi(b3, b3_1, b3_2)
-BOTag = 101
-  AssignStmt: i4 = b2_3 + b3_3
-BOTag = 103
-  IfStmt: if i4 >= 0 goto (branch)
-    IfStmt(ge): v = i4 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 106, h.size() = 7
-  AssignStmt: $r6 = <java.lang.System: java.io.PrintStream out>
-BOTag = 111, h.size() = 8
-  InvokeStmt: virtualinvoke $r6.<java.io.PrintStream: void println(java.lang.String)>("neg")
-BOTag = 114, h.size() = 9
-  GotoStmt: goto [?= $r9 = <java.lang.System: java.io.PrintStream out>]
-BOTag = 118, h.size() = 1
-  IfStmt: if i4 <= 0 goto $r8 = <java.lang.System: java.io.PrintStream out>
-    IfStmt(le): v = i4 <= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-BOTag = 121, h.size() = 2
-  AssignStmt: $r7 = <java.lang.System: java.io.PrintStream out>
-BOTag = 126, h.size() = 3
-  InvokeStmt: virtualinvoke $r7.<java.io.PrintStream: void println(java.lang.String)>("pos")
-BOTag = 129, h.size() = 4
-  GotoStmt: goto [?= $r9 = <java.lang.System: java.io.PrintStream out>]
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r6, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 7))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r7, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 8)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 7), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r9, EQ, null)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 8), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r9, EQ, null))))
+====================================================== system under test
+VeritestingPerf.main("2")
 
-BOTag = 140
-  AssignStmt: $r9 = <java.lang.System: java.io.PrintStream out>
-BOTag = 145
-  InvokeStmt: virtualinvoke $r9.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
-BOTag = 148
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 148
-  ReturnVoidStmt: return
- calling doAnalysis on succ 1
-Starting doAnalysis
-BOTag = 44
-  AssignStmt: $i6 = r1[0]
-BOTag = 45
-  IfStmt: if $i6 >= 0 goto $i7 = r1[0]
-    IfStmt(ge): v = $i6 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-Starting doAnalysis
-BOTag = null
-  AssignStmt: b2_3 = Phi(b2, b2_1, b2_2)
-BOTag = 71
-  AssignStmt: $i8 = r1[1]
-BOTag = 72
-  IfStmt: if $i8 >= 0 goto $i9 = r1[1]
-    IfStmt(ge): v = $i8 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-Starting doAnalysis
-BOTag = null
-  AssignStmt: b3_3 = Phi(b3, b3_1, b3_2)
-BOTag = 101
-  AssignStmt: i4 = b2_3 + b3_3
-BOTag = 103
-  IfStmt: if i4 >= 0 goto (branch)
-    IfStmt(ge): v = i4 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-Starting doAnalysis
-BOTag = 140
-  AssignStmt: $r9 = <java.lang.System: java.io.PrintStream out>
-BOTag = 145
-  InvokeStmt: virtualinvoke $r9.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
-BOTag = 148
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 148
-  ReturnVoidStmt: return
-Found a loop
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r2, EQ, new java.lang.StringBuilder), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r3, EQ, virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x"))), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r4, EQ, virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i1_1))), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r5, EQ, virtualinvoke $r4.<java.lang.StringBuilder: java.lang.String toString()>())), LOGICAL_AND, new ComplexNonLinearIntegerExpression($i5, EQ, staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>($r5))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(r1[i1_1], EQ, $i5)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(i1_2, EQ, i1_1 + 1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 1))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(, LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 2)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 1), LOGICAL_AND, new ComplexNonLinearIntegerExpression($i6, EQ, null)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 2), LOGICAL_AND, new ComplexNonLinearIntegerExpression($i6, EQ, null))))
+====================================================== search started: 9/11/17 3:51 PM
+New sym int sum min=-2147483648, max=2147483647
+New sym int x0 min=-2147483648, max=2147483647
+New sym int x1 min=-2147483648, max=2147483647
+time to start veritesting for testMe4
+New sym int sum_new0 min=-2147483648, max=2147483647
+time to start veritesting for testMe4
+New sym int sum_new1 min=-2147483648, max=2147483647
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
 
-BOTag = 44
-  AssignStmt: $i6 = r1[0]
-BOTag = 45
-  IfStmt: if $i6 >= 0 goto $i7 = r1[0]
-    IfStmt(ge): v = $i6 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-Starting doAnalysis
-BOTag = null
-  AssignStmt: b2_3 = Phi(b2, b2_1, b2_2)
-BOTag = 71
-  AssignStmt: $i8 = r1[1]
-BOTag = 72
-  IfStmt: if $i8 >= 0 goto $i9 = r1[1]
-    IfStmt(ge): v = $i8 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-Starting doAnalysis
-BOTag = null
-  AssignStmt: b3_3 = Phi(b3, b3_1, b3_2)
-BOTag = 101
-  AssignStmt: i4 = b2_3 + b3_3
-BOTag = 103
-  IfStmt: if i4 >= 0 goto (branch)
-    IfStmt(ge): v = i4 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-Starting doAnalysis
-BOTag = 140
-  AssignStmt: $r9 = <java.lang.System: java.io.PrintStream out>
-BOTag = 145
-  InvokeStmt: virtualinvoke $r9.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
-BOTag = 148
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 148
-  ReturnVoidStmt: return
-Starting analysis for testMe4
-Starting doAnalysis
-BOTag = null
-  IdentityStmt: r0 := @this: VeritestingPerf
-BOTag = null
-  IdentityStmt: r1 := @parameter0: int[]
-BOTag = null
-  IdentityStmt: i0 := @parameter1: int
-BOTag = 5
-  AssignStmt: i1 = staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("sum")
-BOTag = 11
-  AssignStmt: i2 = staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("x0")
-BOTag = 15
-  IfStmt: if i2 >= 0 goto i3_1 = i1 + 1
-    IfStmt(ge): v = i2 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 18, h.size() = 6
-  AssignStmt: i3 = i1 + -1
-BOTag = 21, h.size() = 7
-  GotoStmt: goto [?= i3_2 = Phi(i3, i3_1)]
-BOTag = 24, h.size() = 1
-  AssignStmt: i3_1 = i1 + 1
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i3, EQ, i1 + -1), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 9))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i3_1, EQ, i1 + 1), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 10)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 9), LOGICAL_AND, new ComplexNonLinearIntegerExpression(i3_2, EQ, i3)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 10), LOGICAL_AND, new ComplexNonLinearIntegerExpression(i3_2, EQ, i3_1))))
 
-BOTag = null
-  AssignStmt: i3_2 = Phi(i3, i3_1)
-BOTag = 28
-  IfStmt: if i3_2 >= 0 goto (branch)
-    IfStmt(ge): v = i3_2 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 31, h.size() = 3
-  AssignStmt: $r2 = <java.lang.System: java.io.PrintStream out>
-BOTag = 36, h.size() = 4
-  InvokeStmt: virtualinvoke $r2.<java.io.PrintStream: void println(java.lang.String)>("neg")
-BOTag = 39, h.size() = 5
-  GotoStmt: goto [?= $r5 = <java.lang.System: java.io.PrintStream out>]
-BOTag = 43, h.size() = 1
-  IfStmt: if i3_2 <= 0 goto $r4 = <java.lang.System: java.io.PrintStream out>
-    IfStmt(le): v = i3_2 <= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-BOTag = 46, h.size() = 2
-  AssignStmt: $r3 = <java.lang.System: java.io.PrintStream out>
-BOTag = 51, h.size() = 3
-  InvokeStmt: virtualinvoke $r3.<java.io.PrintStream: void println(java.lang.String)>("pos")
-BOTag = 54, h.size() = 4
-  GotoStmt: goto [?= $r5 = <java.lang.System: java.io.PrintStream out>]
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r2, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 11))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r3, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 12)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 11), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r5, EQ, null)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 12), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r5, EQ, null))))
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun sum_new0 () (_ BitVec 32))
+(declare-fun sum_new1 () (_ BitVec 32))
+(declare-fun x1 () (_ BitVec 32))
+(declare-fun x0 () (_ BitVec 32))
+(assert (bvsge sum_new0 #x80000000))
+(assert (bvsle sum_new0 #x7fffffff))
+(assert (bvsge sum_new1 #x80000000))
+(assert (bvsle sum_new1 #x7fffffff))
+(assert (bvsge (bvadd sum_new0 sum_new1) #x00000000))
+(assert (bvsge x1 #x80000000))
+(assert (bvsle x1 #x7fffffff))
+(assert (or (and (bvslt x1 #x00000000) (= sum_new1 #xffffffff))
+    (and (bvsgt x1 #x00000000) (= sum_new1 #x00000001))
+    (and (= x1 #x00000000) (= sum_new1 #x00000000))))
+(assert (bvsge x0 #x80000000))
+(assert (bvsle x0 #x7fffffff))
+(assert (or (and (bvslt x0 #x00000000) (= sum_new0 #xffffffff))
+    (and (bvsgt x0 #x00000000) (= sum_new0 #x00000001))
+    (and (= x0 #x00000000) (= sum_new0 #x00000000))))
 
-BOTag = 65
-  AssignStmt: $r5 = <java.lang.System: java.io.PrintStream out>
-BOTag = 70
-  InvokeStmt: virtualinvoke $r5.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
-BOTag = 73
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 73
-  ReturnVoidStmt: return
-Starting analysis for testMe3
-Starting doAnalysis
-BOTag = null
-  IdentityStmt: r0 := @this: VeritestingPerf
-BOTag = null
-  IdentityStmt: i0 := @parameter0: int
-BOTag = null
-  IdentityStmt: i1 := @parameter1: int
-BOTag = 0
-  AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
-BOTag = 3
-  AssignStmt: $r2 = new java.lang.StringBuilder
-BOTag = 7
-  InvokeStmt: specialinvoke $r2.<java.lang.StringBuilder: void <init>()>()
-BOTag = 12
-  AssignStmt: $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ")
-BOTag = 16
-  AssignStmt: $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0)
-BOTag = 21
-  AssignStmt: $r5 = virtualinvoke $r4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(", y = ")
-BOTag = 25
-  AssignStmt: $r6 = virtualinvoke $r5.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i1)
-BOTag = 28
-  AssignStmt: $r7 = virtualinvoke $r6.<java.lang.StringBuilder: java.lang.String toString()>()
-BOTag = 31
-  InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>($r7)
-BOTag = 39
-  AssignStmt: i2 = staticinvoke <gov.nasa.jpf.symbc.Debug: int makeSymbolicInteger(java.lang.String)>("i")
-BOTag = 42
-  AssignStmt: b3 = 11
-BOTag = 46
-  AssignStmt: b4 = 12
-BOTag = null
-  AssignStmt: i2_1 = Phi(i2, i2_2)
-BOTag = 50
-  IfStmt: if i2_1 >= 1 goto $r8 = <java.lang.System: java.io.PrintStream out>
-    IfStmt(ge): v = i2_1 >= 1
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 55, h.size() = 17
-  AssignStmt: $i5 = i0 + i2_1
-BOTag = 56, h.size() = 18
-  IfStmt: if $i5 >= 0 goto $i7 = i0 + i2_1
-    IfStmt(ge): v = $i5 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-BOTag = 60, h.size() = 19
-  AssignStmt: b6 = -1
-BOTag = 62, h.size() = 20
-  GotoStmt: goto [?= $i8 = i1 + i2_1]
-BOTag = 82, h.size() = 21
-  AssignStmt: $i8 = i1 + i2_1
-BOTag = 83, h.size() = 22
-  IfStmt: if $i8 >= 0 goto $i10 = i1 + i2_1
-    IfStmt(ge): v = $i8 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-BOTag = 87, h.size() = 23
-  AssignStmt: b9 = -1
-BOTag = 89, h.size() = 24
-  GotoStmt: goto [?= i2_2 = i2_1 + 1]
-BOTag = 107, h.size() = 25
-  AssignStmt: i2_2 = i2_1 + 1
-BOTag = 110, h.size() = 26
-  GotoStmt: goto [?= i2_1 = Phi(i2, i2_2)]
-BOTag = null, h.size() = 27
- calling doAnalysis on succ 0
-Starting doAnalysis
-BOTag = 55
-  AssignStmt: $i5 = i0 + i2_1
-BOTag = 56
-  IfStmt: if $i5 >= 0 goto $i7 = i0 + i2_1
-    IfStmt(ge): v = $i5 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 60, h.size() = 2
-  AssignStmt: b6 = -1
-BOTag = 62, h.size() = 3
-  GotoStmt: goto [?= $i8 = i1 + i2_1]
-BOTag = 67, h.size() = 1
-  AssignStmt: $i7 = i0 + i2_1
-BOTag = 68, h.size() = 2
-  IfStmt: if $i7 != 0 goto z1 = 1
-    IfStmt(ne): v = $i7 != 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-BOTag = 72, h.size() = 3
-  AssignStmt: z0 = 0
-BOTag = 74, h.size() = 4
-  GotoStmt: goto [?= $i8 = i1 + i2_1]
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b6, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 15))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($i7, EQ, i0 + i2_1), LOGICAL_AND, new ComplexNonLinearIntegerExpression(z0, EQ, new IntegerConstant(0))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 16)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 15), LOGICAL_AND, new ComplexNonLinearIntegerExpression($i8, EQ, null)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 16), LOGICAL_AND, new ComplexNonLinearIntegerExpression($i8, EQ, null))))
 
-BOTag = 82
-  AssignStmt: $i8 = i1 + i2_1
-BOTag = 83
-  IfStmt: if $i8 >= 0 goto $i10 = i1 + i2_1
-    IfStmt(ge): v = $i8 >= 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 87, h.size() = 6
-  AssignStmt: b9 = -1
-BOTag = 89, h.size() = 7
-  GotoStmt: goto [?= i2_2 = i2_1 + 1]
-BOTag = 94, h.size() = 1
-  AssignStmt: $i10 = i1 + i2_1
-BOTag = 95, h.size() = 2
-  IfStmt: if $i10 != 0 goto z3 = 1
-    IfStmt(ne): v = $i10 != 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-BOTag = 99, h.size() = 3
-  AssignStmt: z2 = 0
-BOTag = 101, h.size() = 4
-  GotoStmt: goto [?= i2_2 = i2_1 + 1]
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b9, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 17))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($i10, EQ, i1 + i2_1), LOGICAL_AND, new ComplexNonLinearIntegerExpression(z2, EQ, new IntegerConstant(0))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 18)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 17), LOGICAL_AND, new ComplexNonLinearIntegerExpression(i2_2, EQ, null)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 18), LOGICAL_AND, new ComplexNonLinearIntegerExpression(i2_2, EQ, null))))
+Solving time of z3 bitvector is 1 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-BOTag = 107
-  AssignStmt: i2_2 = i2_1 + 1
-BOTag = 110
-  GotoStmt: goto [?= i2_1 = Phi(i2, i2_2)]
-BOTag = null
-  AssignStmt: i2_1 = Phi(i2, i2_2)
-BOTag = 50
-  IfStmt: if i2_1 >= 1 goto $r8 = <java.lang.System: java.io.PrintStream out>
-    IfStmt(ge): v = i2_1 >= 1
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-Starting doAnalysis
-BOTag = 113
-  AssignStmt: $r8 = <java.lang.System: java.io.PrintStream out>
-BOTag = 118
-  InvokeStmt: virtualinvoke $r8.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
-BOTag = 121
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 121
-  ReturnVoidStmt: return
- calling doAnalysis on succ 1
-Starting doAnalysis
-BOTag = 113
-  AssignStmt: $r8 = <java.lang.System: java.io.PrintStream out>
-BOTag = 118
-  InvokeStmt: virtualinvoke $r8.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
-BOTag = 121
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 121
-  ReturnVoidStmt: return
-Found a loop
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($i5, EQ, i0 + i2_1), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b6, EQ, new IntegerConstant(-1))), LOGICAL_AND, new ComplexNonLinearIntegerExpression($i8, EQ, i1 + i2_1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(b9, EQ, new IntegerConstant(-1))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(i2_2, EQ, i2_1 + 1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 13))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(, LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 14)))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 13), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r8, EQ, null)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel, EQ, 14), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r8, EQ, null))))
 
-BOTag = 113
-  AssignStmt: $r8 = <java.lang.System: java.io.PrintStream out>
-BOTag = 118
-  InvokeStmt: virtualinvoke $r8.<java.io.PrintStream: void println(java.lang.String)>("-x-x-x-x-")
-BOTag = 121
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 121
-  ReturnVoidStmt: return
-Starting analysis for testMe
-Starting doAnalysis
-BOTag = null
-  IdentityStmt: i0 := @parameter0: int
-BOTag = null
-  IdentityStmt: z0 := @parameter1: boolean
-BOTag = 0
-  AssignStmt: $r0 = <java.lang.System: java.io.PrintStream out>
-BOTag = 3
-  AssignStmt: $r1 = new java.lang.StringBuilder
-BOTag = 7
-  InvokeStmt: specialinvoke $r1.<java.lang.StringBuilder: void <init>()>()
-BOTag = 12
-  AssignStmt: $r2 = virtualinvoke $r1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("x = ")
-BOTag = 16
-  AssignStmt: $r3 = virtualinvoke $r2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(i0)
-BOTag = 19
-  AssignStmt: $r4 = virtualinvoke $r3.<java.lang.StringBuilder: java.lang.String toString()>()
-BOTag = 22
-  InvokeStmt: virtualinvoke $r0.<java.io.PrintStream: void println(java.lang.String)>($r4)
-BOTag = 26
-  AssignStmt: z1 = 0
-BOTag = 31
-  IfStmt: if i0 > 1200 goto (branch)
-    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), ifNot_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200))
-  #succs = 2
-BOTag = 35, h.size() = 11
-  AssignStmt: b1 = -1
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(b1, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 19))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(, LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 20)))), LOGICAL_AND, )
+numeric PC: constraint # = 3
+%NonLinInteger% (sum_new0 + sum_new1) >= 0 &&
+((((x1 < 0) && (sum_new1 = -1)) || ((x1 > 0) && (sum_new1 = 1))) || ((x1 = 0) && (sum_new1 = 0)))(null) && 
+((((x0 < 0) && (sum_new0 = -1)) || ((x0 > 0) && (sum_new0 = 1))) || ((x0 = 0) && (sum_new0 = 0)))(null) -> true
 
-BOTag = 40
-  IfStmt: if i0 < 1200 goto return
-    IfStmt(lt): v = i0 < 1200
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 44, h.size() = 1
-  AssignStmt: z2 = 1
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(z2, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 21))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(, LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 22)))), LOGICAL_AND, )
+### PCs: total:1 sat:1 unsat:0
 
-BOTag = 45
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 45
-  ReturnVoidStmt: return
-Starting analysis for testMe2
-Starting doAnalysis
-BOTag = null
-  IdentityStmt: r0 := @this: VeritestingPerf
-BOTag = null
-  IdentityStmt: i0 := @parameter0: int
-BOTag = null
-  IdentityStmt: z0 := @parameter1: boolean
-BOTag = 0
-  AssignStmt: $r1 = <java.lang.System: java.io.PrintStream out>
-BOTag = 5
-  InvokeStmt: virtualinvoke $r1.<java.io.PrintStream: void println(java.lang.String)>("!!!!!!!!!!!!!!! First step! ")
-BOTag = 9
-  IfStmt: if z0 == 0 goto $r4 = <java.lang.System: java.io.PrintStream out>
-    IfStmt(eq): v = z0 == 0
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-  #succs = 2
-BOTag = 16, h.size() = 6
-  IfStmt: if i0 > 1200 goto (branch)
-    IfStmt: if_SPFExpr = new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), ifNot_SPFExpr = new ComplexNonLinearIntegerExpression(i0, LE, new IntegerConstant(1200))
-BOTag = 19, h.size() = 7
-  AssignStmt: $r2 = <java.lang.System: java.io.PrintStream out>
-BOTag = 24, h.size() = 8
-  InvokeStmt: virtualinvoke $r2.<java.io.PrintStream: void println(java.lang.String)>("  <= 1200")
-BOTag = 31, h.size() = 9
-  IfStmt: if i0 < 1200 goto return
-    IfStmt(lt): v = i0 < 1200
-    IfStmt: if_SPFExpr = null, ifNot_SPFExpr = null
-BOTag = 34, h.size() = 10
-  AssignStmt: $r3 = <java.lang.System: java.io.PrintStream out>
-BOTag = 39, h.size() = 11
-  InvokeStmt: virtualinvoke $r3.<java.io.PrintStream: void println(java.lang.String)>("  >= 1200")
-BOTag = 42, h.size() = 12
-  GotoStmt: goto [?= return]
-BOTag = 45, h.size() = 1
-  AssignStmt: $r4 = <java.lang.System: java.io.PrintStream out>
-BOTag = 50, h.size() = 2
-  InvokeStmt: virtualinvoke $r4.<java.io.PrintStream: void println(java.lang.String)>("  b is false")
-finalPathExpr = new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(i0, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r2, EQ, <java.lang.System: java.io.PrintStream out>)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r3, EQ, <java.lang.System: java.io.PrintStream out>)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 23))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r4, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel, EQ, 24)))), LOGICAL_AND, )
+string analysis: SPC # = 0
+NPC constraint # = 3
+%NonLinInteger% (sum_new0 + sum_new1) >= 0 &&
+((((x1 < 0) && (sum_new1 = -1)) || ((x1 > 0) && (sum_new1 = 1))) || ((x1 = 0) && (sum_new1 = 0)))(null) && 
+((((x0 < 0) && (sum_new0 = -1)) || ((x0 > 0) && (sum_new0 = 1))) || ((x0 = 0) && (sum_new0 = 0)))(null)
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
 
-BOTag = 53
-  ReturnVoidStmt: return
-Starting doAnalysis
-BOTag = 53
-  ReturnVoidStmt: return
-Writing to sootOutput/VeritestingPerf.shimple
-Soot finished on Thu Aug 17 14:57:47 CDT 2017
-Soot has run for 0 min. 1 sec.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun sum_new0 () (_ BitVec 32))
+(declare-fun sum_new1 () (_ BitVec 32))
+(declare-fun x1 () (_ BitVec 32))
+(declare-fun x0 () (_ BitVec 32))
+(assert (bvsge sum_new0 #x80000000))
+(assert (bvsle sum_new0 #x7fffffff))
+(assert (bvsge sum_new1 #x80000000))
+(assert (bvsle sum_new1 #x7fffffff))
+(assert (bvslt (bvadd sum_new0 sum_new1) #x00000000))
+(assert (bvsge x1 #x80000000))
+(assert (bvsle x1 #x7fffffff))
+(assert (or (and (bvslt x1 #x00000000) (= sum_new1 #xffffffff))
+    (and (bvsgt x1 #x00000000) (= sum_new1 #x00000001))
+    (and (= x1 #x00000000) (= sum_new1 #x00000000))))
+(assert (bvsge x0 #x80000000))
+(assert (bvsle x0 #x7fffffff))
+(assert (or (and (bvslt x0 #x00000000) (= sum_new0 #xffffffff))
+    (and (bvsgt x0 #x00000000) (= sum_new0 #x00000001))
+    (and (= x0 #x00000000) (= sum_new0 #x00000000))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 3
+%NonLinInteger% (sum_new0 + sum_new1) < 0 &&
+((((x1 < 0) && (sum_new1 = -1)) || ((x1 > 0) && (sum_new1 = 1))) || ((x1 = 0) && (sum_new1 = 0)))(null) && 
+((((x0 < 0) && (sum_new0 = -1)) || ((x0 > 0) && (sum_new0 = 1))) || ((x0 = 0) && (sum_new0 = 0)))(null) -> true
+
+### PCs: total:2 sat:2 unsat:0
+
+string analysis: SPC # = 0
+NPC constraint # = 3
+%NonLinInteger% (sum_new0 + sum_new1) < 0 &&
+((((x1 < 0) && (sum_new1 = -1)) || ((x1 > 0) && (sum_new1 = 1))) || ((x1 = 0) && (sum_new1 = 0)))(null) && 
+((((x0 < 0) && (sum_new0 = -1)) || ((x0 > 0) && (sum_new0 = 1))) || ((x0 = 0) && (sum_new0 = 0)))(null)
+neg
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun sum_new0 () (_ BitVec 32))
+(declare-fun sum_new1 () (_ BitVec 32))
+(declare-fun x1 () (_ BitVec 32))
+(declare-fun x0 () (_ BitVec 32))
+(assert (bvsge sum_new0 #x80000000))
+(assert (bvsle sum_new0 #x7fffffff))
+(assert (bvsge sum_new1 #x80000000))
+(assert (bvsle sum_new1 #x7fffffff))
+(assert (bvsle (bvadd sum_new0 sum_new1) #x00000000))
+(assert (bvsge (bvadd sum_new0 sum_new1) #x00000000))
+(assert (bvsge x1 #x80000000))
+(assert (bvsle x1 #x7fffffff))
+(assert (or (and (bvslt x1 #x00000000) (= sum_new1 #xffffffff))
+    (and (bvsgt x1 #x00000000) (= sum_new1 #x00000001))
+    (and (= x1 #x00000000) (= sum_new1 #x00000000))))
+(assert (bvsge x0 #x80000000))
+(assert (bvsle x0 #x7fffffff))
+(assert (or (and (bvslt x0 #x00000000) (= sum_new0 #xffffffff))
+    (and (bvsgt x0 #x00000000) (= sum_new0 #x00000001))
+    (and (= x0 #x00000000) (= sum_new0 #x00000000))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 4
+%NonLinInteger% (sum_new0 + sum_new1) <= 0 &&
+%NonLinInteger% (sum_new0 + sum_new1) >= 0 &&
+((((x1 < 0) && (sum_new1 = -1)) || ((x1 > 0) && (sum_new1 = 1))) || ((x1 = 0) && (sum_new1 = 0)))(null) && 
+((((x0 < 0) && (sum_new0 = -1)) || ((x0 > 0) && (sum_new0 = 1))) || ((x0 = 0) && (sum_new0 = 0)))(null) -> true
+
+### PCs: total:3 sat:3 unsat:0
+
+string analysis: SPC # = 0
+NPC constraint # = 4
+%NonLinInteger% (sum_new0 + sum_new1) <= 0 &&
+%NonLinInteger% (sum_new0 + sum_new1) >= 0 &&
+((((x1 < 0) && (sum_new1 = -1)) || ((x1 > 0) && (sum_new1 = 1))) || ((x1 = 0) && (sum_new1 = 0)))(null) && 
+((((x0 < 0) && (sum_new0 = -1)) || ((x0 > 0) && (sum_new0 = 1))) || ((x0 = 0) && (sum_new0 = 0)))(null)
+Z3bitvector using 32-bit bitvectors.
+Allowed [min,max] values: [-2147483648,2147483647].
+Using floating point for reals: no
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+(declare-fun sum_new0 () (_ BitVec 32))
+(declare-fun sum_new1 () (_ BitVec 32))
+(declare-fun x1 () (_ BitVec 32))
+(declare-fun x0 () (_ BitVec 32))
+(assert (bvsge sum_new0 #x80000000))
+(assert (bvsle sum_new0 #x7fffffff))
+(assert (bvsge sum_new1 #x80000000))
+(assert (bvsle sum_new1 #x7fffffff))
+(assert (bvsgt (bvadd sum_new0 sum_new1) #x00000000))
+(assert (bvsge (bvadd sum_new0 sum_new1) #x00000000))
+(assert (bvsge x1 #x80000000))
+(assert (bvsle x1 #x7fffffff))
+(assert (or (and (bvslt x1 #x00000000) (= sum_new1 #xffffffff))
+    (and (bvsgt x1 #x00000000) (= sum_new1 #x00000001))
+    (and (= x1 #x00000000) (= sum_new1 #x00000000))))
+(assert (bvsge x0 #x80000000))
+(assert (bvsle x0 #x7fffffff))
+(assert (or (and (bvslt x0 #x00000000) (= sum_new0 #xffffffff))
+    (and (bvsgt x0 #x00000000) (= sum_new0 #x00000001))
+    (and (= x0 #x00000000) (= sum_new0 #x00000000))))
+
+
+Solving time of z3 bitvector is 0 ms
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+numeric PC: constraint # = 4
+%NonLinInteger% (sum_new0 + sum_new1) > 0 &&
+%NonLinInteger% (sum_new0 + sum_new1) >= 0 &&
+((((x1 < 0) && (sum_new1 = -1)) || ((x1 > 0) && (sum_new1 = 1))) || ((x1 = 0) && (sum_new1 = 0)))(null) && 
+((((x0 < 0) && (sum_new0 = -1)) || ((x0 > 0) && (sum_new0 = 1))) || ((x0 = 0) && (sum_new0 = 0)))(null) -> true
+
+### PCs: total:4 sat:4 unsat:0
+
+string analysis: SPC # = 0
+NPC constraint # = 4
+%NonLinInteger% (sum_new0 + sum_new1) > 0 &&
+%NonLinInteger% (sum_new0 + sum_new1) >= 0 &&
+((((x1 < 0) && (sum_new1 = -1)) || ((x1 > 0) && (sum_new1 = 1))) || ((x1 = 0) && (sum_new1 = 0)))(null) && 
+((((x0 < 0) && (sum_new0 = -1)) || ((x0 > 0) && (sum_new0 = 1))) || ((x0 = 0) && (sum_new0 = 0)))(null)
+pos
+bug
+
+====================================================== results
+no errors detected
+
+====================================================== statistics
+elapsed time:       00:00:00
+states:             new=6,visited=0,backtracked=6,end=3
+search:             maxDepth=4,constraints=0
+choice generators:  thread=1 (signal=0,lock=1,sharedRef=0,threadApi=0,reschedule=0), data=3
+heap:               new=377,released=49,maxLive=361,gcCycles=5
+instructions:       3252
+max memory:         240MB
+loaded code:        classes=63,methods=1470
+
+====================================================== search finished: 9/11/17 3:51 PM

@@ -57,18 +57,18 @@ class LocalVarsTable {
             G.v().out.println("mapped " + name + " to slot = " + slot);
           }
         }
-				if(methodOfInterest && s.contains("if_")) {
-					// assume setup instruction is previous-previous from current
-					int start = getOffsetFromLine(s), end = getOffsetFromLine(prevprevStr);
-					ifToSetup.put(start, end);
-					// System.out.println("Adding ("+start+", "+end+") to ifToSetup");
-				}
-				if(methodOfInterest) {
-					prevprevStr = prevStr;
-					prevStr = s;
-				}
+	if(methodOfInterest && s.contains("if_")) {
+	  // assume setup instruction is previous-previous from current
+	  int start = getOffsetFromLine(s), end = getOffsetFromLine(prevprevStr);
+	  ifToSetup.put(start, end);
+	  // System.out.println("Adding ("+start+", "+end+") to ifToSetup");
+	}
+	if(methodOfInterest) {
+	  prevprevStr = prevStr;
+	  prevStr = s;
+	}
       }
-    
+      
       // read any errors from the attempted command
       // G.v().out.println("Here is the standard error of the command (if any):\n");
       // while ((s = stdError.readLine()) != null) {

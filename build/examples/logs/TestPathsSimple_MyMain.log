@@ -1,4 +1,4 @@
-Soot started on Sun Aug 27 19:57:09 CDT 2017
+Soot started on Thu Sep 14 15:03:39 CDT 2017
 Transforming TestPathsSimple... 
 Starting analysis for <init>
 Starting doAnalysis
@@ -67,59 +67,9 @@ public void TestPathsSimple_testMe3_VT_62_74
 }
 
 
-    IfStmt(ne): v = a_3 != -1
-    IfStmt(ne): v = a_3 != 1
-public void TestPathsSimple_testMe3_VT_77_116
- (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-  if(ti.getTopFrame().getPC().getPosition() == 77 && 
-     ti.getTopFrame().getMethodInfo().getName().equals("testMe3") && 
-     ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
-    StackFrame sf = ti.getTopFrame();
-    SymbolicInteger $r0_2 = makeSymbolicInteger(ti.getEnv(), "$r0_2");
-    SymbolicInteger $r0_1 = makeSymbolicInteger(ti.getEnv(), "$r0_1");
-    SymbolicInteger $r0_4 = makeSymbolicInteger(ti.getEnv(), "$r0_4");
-    SymbolicInteger pathLabel2 = makeSymbolicInteger(ti.getEnv(), "pathLabel2");
-    PathCondition pc;
-    pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-    pc._addDet(new ComplexNonLinearIntegerConstraint(
-    new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r0_1, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel2, EQ, new IntegerConstant(5)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r0_2, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel2, EQ, new IntegerConstant(6))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel2, EQ, new IntegerConstant(5)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r0_4, EQ, $r0_1)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel2, EQ, new IntegerConstant(6)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r0_4, EQ, $r0_2))))));
-    sf.setSlotAttr(-1, $r0_4);
-    Instruction insn=instructionToExecute;
-    while(insn.getPosition() < 116)
-      insn = insn.getNext();
-    sf.pop(); sf.pop();
-    ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
-    ti.setNextPC(insn);
-  }
-}
+Stmt virtualinvoke $r0_1.<java.io.PrintStream: void println(java.lang.String)>("a = -1") cannot veritest
 
-
-    IfStmt(ne): v = b_3 != -1
-    IfStmt(ne): v = b_3 != 1
-public void TestPathsSimple_testMe3_VT_119_158
- (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-  if(ti.getTopFrame().getPC().getPosition() == 119 && 
-     ti.getTopFrame().getMethodInfo().getName().equals("testMe3") && 
-     ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
-    StackFrame sf = ti.getTopFrame();
-    SymbolicInteger $r0_6 = makeSymbolicInteger(ti.getEnv(), "$r0_6");
-    SymbolicInteger $r0_5 = makeSymbolicInteger(ti.getEnv(), "$r0_5");
-    SymbolicInteger $r0_8 = makeSymbolicInteger(ti.getEnv(), "$r0_8");
-    SymbolicInteger pathLabel3 = makeSymbolicInteger(ti.getEnv(), "pathLabel3");
-    PathCondition pc;
-    pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-    pc._addDet(new ComplexNonLinearIntegerConstraint(
-    new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r0_5, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel3, EQ, new IntegerConstant(7)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r0_6, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel3, EQ, new IntegerConstant(8))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel3, EQ, new IntegerConstant(7)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r0_8, EQ, $r0_5)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel3, EQ, new IntegerConstant(8)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r0_8, EQ, $r0_6))))));
-    sf.setSlotAttr(-1, $r0_8);
-    Instruction insn=instructionToExecute;
-    while(insn.getPosition() < 158)
-      insn = insn.getNext();
-    sf.pop(); sf.pop();
-    ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
-    ti.setNextPC(insn);
-  }
-}
-
+Stmt virtualinvoke $r0_5.<java.io.PrintStream: void println(java.lang.String)>("b = -1") cannot veritest
 
 Starting doAnalysis
 mapped x to slot = 0
@@ -136,11 +86,11 @@ public void TestPathsSimple_testMe_VT_31_36
     SymbolicInteger x = (SymbolicInteger) sf.getLocalAttr(0);
     SymbolicInteger y_1 = makeSymbolicInteger(ti.getEnv(), "y_1");
     SymbolicInteger  = makeSymbolicInteger(ti.getEnv(), "");
-    SymbolicInteger pathLabel4 = makeSymbolicInteger(ti.getEnv(), "pathLabel4");
+    SymbolicInteger pathLabel2 = makeSymbolicInteger(ti.getEnv(), "pathLabel2");
     PathCondition pc;
     pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
     pc._addDet(new ComplexNonLinearIntegerConstraint(
-    new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(y_1, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel4, EQ, new IntegerConstant(9)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, LE, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(, LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel4, EQ, new IntegerConstant(10))))), LOGICAL_AND, )));
+    new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(y_1, EQ, new IntegerConstant(-1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel2, EQ, new IntegerConstant(9)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, LE, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(, LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel2, EQ, new IntegerConstant(10))))), LOGICAL_AND, )));
     
     Instruction insn=instructionToExecute;
     while(insn.getPosition() < 36)
@@ -152,7 +102,6 @@ public void TestPathsSimple_testMe_VT_31_36
 }
 
 
-    IfStmt(lt): v = x < 1200
 public void TestPathsSimple_testMe_VT_40_45
  (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
   if(ti.getTopFrame().getPC().getPosition() == 40 && 
@@ -161,11 +110,11 @@ public void TestPathsSimple_testMe_VT_40_45
     StackFrame sf = ti.getTopFrame();
     SymbolicInteger y_1_1 = makeSymbolicInteger(ti.getEnv(), "y_1_1");
     SymbolicInteger y_2 = makeSymbolicInteger(ti.getEnv(), "y_2");
-    SymbolicInteger pathLabel5 = makeSymbolicInteger(ti.getEnv(), "pathLabel5");
+    SymbolicInteger pathLabel3 = makeSymbolicInteger(ti.getEnv(), "pathLabel3");
     PathCondition pc;
     pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
     pc._addDet(new ComplexNonLinearIntegerConstraint(
-    new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(y_1_1, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel5, EQ, new IntegerConstant(11)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(, LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel5, EQ, new IntegerConstant(12))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel5, EQ, new IntegerConstant(11)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(y_2, EQ, y)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel5, EQ, new IntegerConstant(12)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(y_2, EQ, y_1_1))))));
+    new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(y_1_1, EQ, new IntegerConstant(1)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel3, EQ, new IntegerConstant(11)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(, LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel3, EQ, new IntegerConstant(12))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel3, EQ, new IntegerConstant(11)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(y_2, EQ, y)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel3, EQ, new IntegerConstant(12)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(y_2, EQ, y_1_1))))));
     sf.setSlotAttr(2, y_2);
     Instruction insn=instructionToExecute;
     while(insn.getPosition() < 45)
@@ -183,37 +132,9 @@ mapped x to slot = 1
 mapped b to slot = 2
 Starting analysis for testMe2
 Starting doAnalysis
-    IfStmt(eq): v = b == 0
-    IfStmt(lt): v = x < 1200
-public void TestPathsSimple_testMe2_VT_9_53
- (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-  if(ti.getTopFrame().getPC().getPosition() == 9 && 
-     ti.getTopFrame().getMethodInfo().getName().equals("testMe2") && 
-     ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
-    StackFrame sf = ti.getTopFrame();
-    SymbolicInteger x = (SymbolicInteger) sf.getLocalAttr(1);
-    SymbolicInteger $r0_2 = makeSymbolicInteger(ti.getEnv(), "$r0_2");
-    SymbolicInteger $r0_1 = makeSymbolicInteger(ti.getEnv(), "$r0_1");
-    SymbolicInteger $r0_4 = makeSymbolicInteger(ti.getEnv(), "$r0_4");
-    SymbolicInteger $r0_3 = makeSymbolicInteger(ti.getEnv(), "$r0_3");
-    SymbolicInteger $r0_5 = makeSymbolicInteger(ti.getEnv(), "$r0_5");
-    SymbolicInteger pathLabel6 = makeSymbolicInteger(ti.getEnv(), "pathLabel6");
-    PathCondition pc;
-    pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-    pc._addDet(new ComplexNonLinearIntegerConstraint(
-    new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(x, GT, new IntegerConstant(1200)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r0_1, EQ, <java.lang.System: java.io.PrintStream out>)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r0_2, EQ, Phi($r0, $r0_1))), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r0_3, EQ, <java.lang.System: java.io.PrintStream out>)), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel6, EQ, new IntegerConstant(13)))), LOGICAL_OR, new ComplexNonLinearIntegerExpression(null, LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression($r0_4, EQ, <java.lang.System: java.io.PrintStream out>), LOGICAL_AND, new ComplexNonLinearIntegerExpression(pathLabel6, EQ, new IntegerConstant(14))))), LOGICAL_AND, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel6, EQ, new IntegerConstant(13)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r0_5, EQ, $r0_2)), LOGICAL_OR, new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(pathLabel6, EQ, new IntegerConstant(14)), LOGICAL_AND, new ComplexNonLinearIntegerExpression($r0_5, EQ, $r0_3))))));
-    sf.setSlotAttr(-1, $r0_5);
-    Instruction insn=instructionToExecute;
-    while(insn.getPosition() < 53)
-      insn = insn.getNext();
-    sf.pop(); sf.pop();
-    ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
-    ti.setNextPC(insn);
-  }
-}
-
+Stmt virtualinvoke $r0_1.<java.io.PrintStream: void println(java.lang.String)>("  <= 1200") cannot veritest
 
 Starting doAnalysis
 Writing to sootOutput/TestPathsSimple.shimple
-Soot finished on Sun Aug 27 19:57:11 CDT 2017
+Soot finished on Thu Sep 14 15:03:40 CDT 2017
 Soot has run for 0 min. 1 sec.

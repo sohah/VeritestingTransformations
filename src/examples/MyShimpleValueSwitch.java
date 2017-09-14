@@ -60,19 +60,19 @@ class MyShimpleValueSwitch extends AbstractShimpleValueSwitch {
   }
   
 	public void caseEqExpr(EqExpr v) {
-    G.v().out.println("    IfStmt(eq): v = "+v);
+    // G.v().out.println("    IfStmt(eq): v = "+v);
   }
   public void caseGeExpr(GeExpr v) {
-    G.v().out.println("    IfStmt(ge): v = "+v);
+    // G.v().out.println("    IfStmt(ge): v = "+v);
   }
   public void caseLtExpr(LtExpr v) {
-    G.v().out.println("    IfStmt(lt): v = "+v);
+    // G.v().out.println("    IfStmt(lt): v = "+v);
   }
   public void caseLeExpr(LeExpr v) {
-    G.v().out.println("    IfStmt(le): v = "+v);
+    // G.v().out.println("    IfStmt(le): v = "+v);
   }
   public void caseNeExpr(NeExpr v) {
-    G.v().out.println("    IfStmt(ne): v = "+v);
+    // G.v().out.println("    IfStmt(ne): v = "+v);
   }
 	public void casePhiExpr(PhiExpr e) {
 		List<ValueUnitPair> args = e.getArgs();
