@@ -33,9 +33,9 @@ public class VeritestingPerf {
   }
 
   public void testMe4 (int[] x, int len) {
-    int sum = Debug.makeSymbolicInteger("sum");
-    for(int i=0; i < len; i++) 
-      x[i] = Debug.makeSymbolicInteger("x"+i);
+    int sum = 0; //Debug.makeSymbolicInteger("sum");
+    // for(int i=0; i < len; i++) 
+    //   x[i] = Debug.makeSymbolicInteger("x"+i);
     for (int i=0; i < len; i++) {
       if (x[i] < 0) sum += -1;
       else if (x[i] > 0) sum += 1;
