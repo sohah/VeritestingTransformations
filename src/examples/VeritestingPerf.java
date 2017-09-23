@@ -26,9 +26,10 @@ import gov.nasa.jpf.symbc.Debug;
 public class VeritestingPerf {
 
   public static void main (String[] args){
-    int len = Integer.parseInt(args[0]);
-    int arr[] = new int [len];
-    (new VeritestingPerf()).testMe4(arr,len);
+    // int len = Integer.parseInt(args[0]);
+    // int arr[] = new int [len];
+    // (new VeritestingPerf()).testMe4(arr,len);
+    (new VeritestingPerf()).threeWayBranch(0);
   }
 
   public void testMe4 (int[] x, int len) {
@@ -42,6 +43,12 @@ public class VeritestingPerf {
     if (sum < 0) System.out.println("neg");
     else if (sum > 0) System.out.println("pos");
     else System.out.println("bug");
+  }
+
+  public void threeWayBranch(int x) {
+    int sum=0;
+    if(x < 0) sum += -1;
+    else if(x > 0) sum += 1;
   }
 
 }

@@ -1,87 +1,89 @@
 Compiled from "VeritestingPerf.java"
-public class VeritestingPerf extends java.lang.Object{
-public VeritestingPerf();
-  Code:
-   0:	aload_0
-   1:	invokespecial	#1; //Method java/lang/Object."<init>":()V
-   4:	return
+public class VeritestingPerf {
+  public VeritestingPerf();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
 
-public static void main(java.lang.String[]);
-  Code:
-   0:	aload_0
-   1:	iconst_0
-   2:	aaload
-   3:	invokestatic	#2; //Method java/lang/Integer.parseInt:(Ljava/lang/String;)I
-   6:	istore_1
-   7:	iload_1
-   8:	newarray int
-   10:	astore_2
-   11:	new	#3; //class VeritestingPerf
-   14:	dup
-   15:	invokespecial	#4; //Method "<init>":()V
-   18:	aload_2
-   19:	iload_1
-   20:	invokevirtual	#5; //Method testMe4:([II)V
-   23:	return
+  public static void main(java.lang.String[]);
+    Code:
+       0: new           #2                  // class VeritestingPerf
+       3: dup
+       4: invokespecial #3                  // Method "<init>":()V
+       7: iconst_0
+       8: invokevirtual #4                  // Method threeWayBranch:(I)V
+      11: return
 
-public void testMe4(int[], int);
-  Code:
-   0:	ldc	#6; //String sum
-   2:	invokestatic	#7; //Method gov/nasa/jpf/symbc/Debug.makeSymbolicInteger:(Ljava/lang/String;)I
-   5:	istore_3
-   6:	iconst_0
-   7:	istore	4
-   9:	iload	4
-   11:	iload_2
-   12:	if_icmpge	48
-   15:	aload_1
-   16:	iload	4
-   18:	new	#8; //class java/lang/StringBuilder
-   21:	dup
-   22:	invokespecial	#9; //Method java/lang/StringBuilder."<init>":()V
-   25:	ldc	#10; //String x
-   27:	invokevirtual	#11; //Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
-   30:	iload	4
-   32:	invokevirtual	#12; //Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
-   35:	invokevirtual	#13; //Method java/lang/StringBuilder.toString:()Ljava/lang/String;
-   38:	invokestatic	#7; //Method gov/nasa/jpf/symbc/Debug.makeSymbolicInteger:(Ljava/lang/String;)I
-   41:	iastore
-   42:	iinc	4, 1
-   45:	goto	9
-   48:	iconst_0
-   49:	istore	4
-   51:	iload	4
-   53:	iload_2
-   54:	if_icmpge	86
-   57:	aload_1
-   58:	iload	4
-   60:	iaload
-   61:	ifge	70
-   64:	iinc	3, -1
-   67:	goto	80
-   70:	aload_1
-   71:	iload	4
-   73:	iaload
-   74:	ifle	80
-   77:	iinc	3, 1
-   80:	iinc	4, 1
-   83:	goto	51
-   86:	iload_3
-   87:	ifge	101
-   90:	getstatic	#14; //Field java/lang/System.out:Ljava/io/PrintStream;
-   93:	ldc	#15; //String neg
-   95:	invokevirtual	#16; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
-   98:	goto	124
-   101:	iload_3
-   102:	ifle	116
-   105:	getstatic	#14; //Field java/lang/System.out:Ljava/io/PrintStream;
-   108:	ldc	#17; //String pos
-   110:	invokevirtual	#16; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
-   113:	goto	124
-   116:	getstatic	#14; //Field java/lang/System.out:Ljava/io/PrintStream;
-   119:	ldc	#18; //String bug
-   121:	invokevirtual	#16; //Method java/io/PrintStream.println:(Ljava/lang/String;)V
-   124:	return
+  public void testMe4(int[], int);
+    Code:
+       0: ldc           #5                  // String sum
+       2: invokestatic  #6                  // Method gov/nasa/jpf/symbc/Debug.makeSymbolicInteger:(Ljava/lang/String;)I
+       5: istore_3
+       6: iconst_0
+       7: istore        4
+       9: iload         4
+      11: iload_2
+      12: if_icmpge     48
+      15: aload_1
+      16: iload         4
+      18: new           #7                  // class java/lang/StringBuilder
+      21: dup
+      22: invokespecial #8                  // Method java/lang/StringBuilder."<init>":()V
+      25: ldc           #9                  // String x
+      27: invokevirtual #10                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      30: iload         4
+      32: invokevirtual #11                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+      35: invokevirtual #12                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      38: invokestatic  #6                  // Method gov/nasa/jpf/symbc/Debug.makeSymbolicInteger:(Ljava/lang/String;)I
+      41: iastore
+      42: iinc          4, 1
+      45: goto          9
+      48: iconst_0
+      49: istore        4
+      51: iload         4
+      53: iload_2
+      54: if_icmpge     86
+      57: aload_1
+      58: iload         4
+      60: iaload
+      61: ifge          70
+      64: iinc          3, -1
+      67: goto          80
+      70: aload_1
+      71: iload         4
+      73: iaload
+      74: ifle          80
+      77: iinc          3, 1
+      80: iinc          4, 1
+      83: goto          51
+      86: iload_3
+      87: ifge          101
+      90: getstatic     #13                 // Field java/lang/System.out:Ljava/io/PrintStream;
+      93: ldc           #14                 // String neg
+      95: invokevirtual #15                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      98: goto          124
+     101: iload_3
+     102: ifle          116
+     105: getstatic     #13                 // Field java/lang/System.out:Ljava/io/PrintStream;
+     108: ldc           #16                 // String pos
+     110: invokevirtual #15                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     113: goto          124
+     116: getstatic     #13                 // Field java/lang/System.out:Ljava/io/PrintStream;
+     119: ldc           #17                 // String bug
+     121: invokevirtual #15                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+     124: return
 
+  public void threeWayBranch(int);
+    Code:
+       0: iconst_0
+       1: istore_2
+       2: iload_1
+       3: ifge          12
+       6: iinc          2, -1
+       9: goto          19
+      12: iload_1
+      13: ifle          19
+      16: iinc          2, 1
+      19: return
 }
-

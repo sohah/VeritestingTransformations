@@ -151,8 +151,8 @@ public class MyMain {
           u.apply(myStmtSwitch);
           String if_SPFExpr = myStmtSwitch.getSPFExpr();
           String ifNot_SPFExpr = myStmtSwitch.getIfNotSPFExpr();
-          Unit thenUnit = succs.get(0); //assuming this order for now
-          Unit elseUnit = succs.get(1);
+          Unit thenUnit = succs.get(1); //assuming this order for now
+          Unit elseUnit = succs.get(0);
           String thenExpr="", elseExpr="";
           final int thenPathLabel = MyUtils.getPathCounter();
           final int elsePathLabel = MyUtils.getPathCounter();
@@ -199,7 +199,8 @@ public class MyMain {
             thenUnit = g.getUnexceptionalSuccsOf(thenUnit).get(0);
           }
           if(isLoop) {
-            // G.v().out.println("Found a loop");
+            G.v().out.println("Found a loop");
+	    canVeritest = false;
           }
           // Assign pathLabel a value in the thenExpr
           if(canVeritest) 
@@ -240,7 +241,8 @@ public class MyMain {
             elseUnit = g.getUnexceptionalSuccsOf(elseUnit).get(0);
           }
           if(isLoop) {
-            // G.v().out.println("Found an Else loop");
+            G.v().out.println("Found an Else loop");
+	    canVeritest = false;
           }
           // Assign pathLabel a value in the elseExpr
           if(canVeritest) {

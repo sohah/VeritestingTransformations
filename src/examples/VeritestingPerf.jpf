@@ -4,7 +4,8 @@ classpath=${jpf-symbc}/build/examples
 
 sourcepath=${jpf-symbc}/src/examples
 
-symbolic.method= VeritestingPerf.testMe4(con#con)
+# symbolic.method= VeritestingPerf.testMe4(con#con)
+symbolic.method= VeritestingPerf.threeWayBranch(sym)
 symbolic.dp=z3bitvector
 
 listener = .symbc.VeritestingListener
