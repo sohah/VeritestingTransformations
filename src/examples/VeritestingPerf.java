@@ -21,15 +21,70 @@
  * modified for veritesting
  */
 
-import gov.nasa.jpf.symbc.Debug;
+
+
+
+
 
 public class VeritestingPerf {
 
-  public static void main (String[] args){
-    // int len = Integer.parseInt(args[0]);
-    // int arr[] = new int [len];
-    // (new VeritestingPerf()).testMe4(arr,len);
-    (new VeritestingPerf()).threeWayBranch(0);
+    public static void main(String[] args) {
+        (new VeritestingPerf()).countBitsSet(1);
+    }
+
+    public int countBitsSet(int l) {
+        int count = 0;
+        while (l != 0) {
+            int lowbit = l & 1;
+            int flag;
+            if (lowbit != 0) flag = 1;
+            else flag = 0;
+            count += flag;
+            l = l >>> 1;
+        }
+        return count;
+    }
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+  public void collatz(int n) {
+    int inter;
+    while(n != 1) {
+      if( (n & 1) == 1) {
+        inter = 3*n + 1;
+      } else {
+        inter = (n >> 1);
+      }
+      n = inter;
+    }
   }
 
   public void testMe4 (int[] x, int len) {
@@ -45,10 +100,21 @@ public class VeritestingPerf {
     else System.out.println("bug");
   }
 
-  public void threeWayBranch(int x) {
-    int sum=0;
-    if(x < 0) sum += -1;
-    else if(x > 0) sum += 1;
+  public int gcd(int a, int b) {
+    while( a != b ) {
+      if ( a > b ) a = a - b;
+      else b = b - a;
+    }
+    return a;
   }
 
-}
+
+
+  public int oneBranch(int x) {
+    int sum=0;
+    if(x < 0) sum += -1;
+    else sum += 1;
+	return sum;
+  }
+
+}*/

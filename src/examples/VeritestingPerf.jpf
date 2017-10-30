@@ -1,17 +1,15 @@
 target=VeritestingPerf
-
 classpath=${jpf-symbc}/build/examples
-
 sourcepath=${jpf-symbc}/src/examples
+vm.storage.class=nil
+symbolic.debug=false
 
-# symbolic.method= VeritestingPerf.testMe4(con#con)
-symbolic.method= VeritestingPerf.threeWayBranch(sym)
+symbolic.method= VeritestingPerf.countBitsSet(sym)
 symbolic.dp=z3bitvector
 
-listener = .symbc.VeritestingListener
+symbolic.min_int=-16
+symbolic.max_int=16
 
-vm.storage.class=nil
-
-symbolic.debug=true
+# listener = .symbc.VeritestingListener
 # symbolic.min_int=-2147483648
 # symbolic.max_int=2147483647

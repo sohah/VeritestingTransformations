@@ -1,89 +1,73 @@
 Compiled from "VeritestingPerf.java"
 public class VeritestingPerf {
   public VeritestingPerf();
+    descriptor: ()V
     Code:
        0: aload_0
        1: invokespecial #1                  // Method java/lang/Object."<init>":()V
        4: return
 
   public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
     Code:
        0: new           #2                  // class VeritestingPerf
        3: dup
        4: invokespecial #3                  // Method "<init>":()V
        7: iconst_0
-       8: invokevirtual #4                  // Method threeWayBranch:(I)V
-      11: return
+       8: invokevirtual #4                  // Method oneBranch:(I)I
+      11: pop
+      12: return
 
   public void testMe4(int[], int);
+    descriptor: ([II)V
     Code:
-       0: ldc           #5                  // String sum
-       2: invokestatic  #6                  // Method gov/nasa/jpf/symbc/Debug.makeSymbolicInteger:(Ljava/lang/String;)I
-       5: istore_3
-       6: iconst_0
-       7: istore        4
-       9: iload         4
-      11: iload_2
-      12: if_icmpge     48
-      15: aload_1
-      16: iload         4
-      18: new           #7                  // class java/lang/StringBuilder
-      21: dup
-      22: invokespecial #8                  // Method java/lang/StringBuilder."<init>":()V
-      25: ldc           #9                  // String x
-      27: invokevirtual #10                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
-      30: iload         4
-      32: invokevirtual #11                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
-      35: invokevirtual #12                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
-      38: invokestatic  #6                  // Method gov/nasa/jpf/symbc/Debug.makeSymbolicInteger:(Ljava/lang/String;)I
-      41: iastore
-      42: iinc          4, 1
-      45: goto          9
-      48: iconst_0
-      49: istore        4
-      51: iload         4
-      53: iload_2
-      54: if_icmpge     86
-      57: aload_1
-      58: iload         4
-      60: iaload
-      61: ifge          70
-      64: iinc          3, -1
-      67: goto          80
-      70: aload_1
-      71: iload         4
-      73: iaload
-      74: ifle          80
-      77: iinc          3, 1
-      80: iinc          4, 1
-      83: goto          51
-      86: iload_3
-      87: ifge          101
-      90: getstatic     #13                 // Field java/lang/System.out:Ljava/io/PrintStream;
-      93: ldc           #14                 // String neg
-      95: invokevirtual #15                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-      98: goto          124
-     101: iload_3
-     102: ifle          116
-     105: getstatic     #13                 // Field java/lang/System.out:Ljava/io/PrintStream;
-     108: ldc           #16                 // String pos
-     110: invokevirtual #15                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     113: goto          124
-     116: getstatic     #13                 // Field java/lang/System.out:Ljava/io/PrintStream;
-     119: ldc           #17                 // String bug
-     121: invokevirtual #15                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
-     124: return
+       0: iconst_0
+       1: istore_3
+       2: iconst_0
+       3: istore        4
+       5: iload         4
+       7: iload_2
+       8: if_icmpge     40
+      11: aload_1
+      12: iload         4
+      14: iaload
+      15: ifge          24
+      18: iinc          3, -1
+      21: goto          34
+      24: aload_1
+      25: iload         4
+      27: iaload
+      28: ifle          34
+      31: iinc          3, 1
+      34: iinc          4, 1
+      37: goto          5
+      40: iload_3
+      41: ifge          55
+      44: getstatic     #5                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      47: ldc           #6                  // String neg
+      49: invokevirtual #7                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      52: goto          78
+      55: iload_3
+      56: ifle          70
+      59: getstatic     #5                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      62: ldc           #8                  // String pos
+      64: invokevirtual #7                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      67: goto          78
+      70: getstatic     #5                  // Field java/lang/System.out:Ljava/io/PrintStream;
+      73: ldc           #9                  // String bug
+      75: invokevirtual #7                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      78: return
 
-  public void threeWayBranch(int);
+  public int oneBranch(int);
+    descriptor: (I)I
     Code:
        0: iconst_0
        1: istore_2
        2: iload_1
        3: ifge          12
        6: iinc          2, -1
-       9: goto          19
-      12: iload_1
-      13: ifle          19
-      16: iinc          2, 1
-      19: return
+       9: goto          15
+      12: iinc          2, 1
+      15: iload_2
+      16: ireturn
 }
