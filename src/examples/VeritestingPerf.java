@@ -21,6 +21,30 @@ public class VeritestingPerf {
         return count;
     }
 
+    public int cfgTest(int x) {
+        int ret = 0;
+        while(x >= 0) {
+            x--;
+            if (x == 0) ret = 1;
+            else ret = -1;
+            x = x - 1;
+        }
+        return ret;
+    }
+
+    public void testMe4 (int[] x, int len) {
+        int sum = 0; //Debug.makeSymbolicInteger("sum");
+        // for(int i=0; i < len; i++)
+        //   x[i] = Debug.makeSymbolicInteger("x"+i);
+        for (int i = 0; i < len; i++) {
+            if (x[i] < 0) sum += -1;
+            else if (x[i] > 0) sum += 1;
+        }
+        if (sum < 0) System.out.println("neg");
+        else if (sum > 0) System.out.println("pos");
+        else System.out.println("bug");
+    }
+
 };
 
 

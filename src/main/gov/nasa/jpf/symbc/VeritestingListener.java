@@ -24,7 +24,6 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.GOTO;
-import gov.nasa.jpf.symbc.bytecode.ISHR;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.vm.*;
 
@@ -332,7 +331,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     else if(ti.getTopFrame().getPC().getPosition() == 11 &&
             ti.getTopFrame().getMethodInfo().getName().equals("countBitsSet") &&
             ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
-      VeritestingPerf_countBitsSet_VT_11_27(vm, ti, instructionToExecute);
+      VeritestingPerf_countBitsSet_VT_11_23(vm, ti, instructionToExecute);
     }
   }
 
@@ -389,7 +388,8 @@ public void TestPathsSimple_testMe3_VT_46_58
 
   public static int pathLabelCount = 1;
 
-  public void VeritestingPerf_countBitsSet_VT_11_27
+  // produced by Soot
+  public void VeritestingPerf_countBitsSet_VT_11_23_soot
           (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     if(ti.getTopFrame().getPC().getPosition() == 11 &&
             ti.getTopFrame().getMethodInfo().getName().equals("countBitsSet") &&
@@ -438,12 +438,138 @@ public void TestPathsSimple_testMe3_VT_46_58
       }    sf.pop();
       ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
       ti.setNextPC(insn);
-      pathLabelCount+=2;
+      pathLabelCount+=5;
+    }
+  }
+
+  public void VeritestingPerf_countBitsSet_VT_11_23
+          (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+    if(ti.getTopFrame().getPC().getPosition() == 11 &&
+            ti.getTopFrame().getMethodInfo().getName().equals("countBitsSet") &&
+            ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
+      StackFrame sf = ti.getTopFrame();
+      InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
+      Comparator trueComparator = instructionInfo.getTrueComparator();
+      Comparator falseComparator = instructionInfo.getFalseComparator();
+      int numOperands = instructionInfo.getNumOperands();
+      PathCondition pc;
+      pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
+      PathCondition eqPC = pc.make_copy();
+      PathCondition nePC = pc.make_copy();
+      IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
+      eqPC._addDet(trueComparator, sym_v, 0);
+      nePC._addDet(falseComparator, sym_v, 0);
+      boolean eqSat = eqPC.simplify();
+      boolean neSat = nePC.simplify();
+      if(!eqSat && !neSat) {
+        System.out.println("both sides of branch at offset 11 are unsat");
+        assert(false);
+      }
+      if( (eqSat && !neSat) || (!eqSat && neSat)) {
+        return;
+      }
+      BinaryLinearIntegerExpression v6 = (BinaryLinearIntegerExpression) sf.getLocalAttr(3);
+      SymbolicInteger v7 = makeSymbolicInteger(ti.getEnv(), "v7" + pathLabelCount);
+      SymbolicInteger pathLabel0 = makeSymbolicInteger(ti.getEnv(), "pathLabel0" + pathLabelCount);
+      pc._addDet(new ComplexNonLinearIntegerConstraint(
+
+              new ComplexNonLinearIntegerExpression(
+                      new ComplexNonLinearIntegerExpression(
+                              new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(v6, EQ, new IntegerConstant(0)),
+                                      LOGICAL_AND,
+                                      new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(1))),
+                              LOGICAL_OR,
+                              new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(v6, NE, new IntegerConstant(0)),
+                                      LOGICAL_AND,
+                                      new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(2)))),
+                      LOGICAL_AND,
+                      new ComplexNonLinearIntegerExpression(
+                              new ComplexNonLinearIntegerExpression(
+                                      new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(1)),
+                                      LOGICAL_AND,
+                                      new ComplexNonLinearIntegerExpression(v7, EQ, new IntegerConstant(0))),
+                              LOGICAL_OR,
+                              new ComplexNonLinearIntegerExpression(
+                                      new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(2)),
+                                      LOGICAL_AND,
+                                      new ComplexNonLinearIntegerExpression(v7, EQ, new IntegerConstant(1)))))));
+      sf.setSlotAttr(4,  v7);
+
+      Instruction insn=instructionToExecute;
+      while(insn.getPosition() != 23) {
+        if(insn instanceof GOTO)  insn = ((GOTO) insn).getTarget();
+        else insn = insn.getNext();
+      }
+      while(numOperands > 0) { sf.pop(); numOperands--; }
+      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
+      ti.setNextPC(insn);
+      pathLabelCount+=1;
     }
   }
 
 
+  public class InstructionInfo {
+    private ThreadInfo ti;
+    private int numOperands;
+    private Comparator trueComparator;
+    private Comparator falseComparator;
 
+    public InstructionInfo(ThreadInfo ti) {
+      this.ti = ti;
+    }
 
+    public int getNumOperands() {
+      return numOperands;
+    }
 
+    public Comparator getTrueComparator() {
+      return trueComparator;
+    }
+
+    public Comparator getFalseComparator() {
+      return falseComparator;
+    }
+
+    public InstructionInfo invoke() {
+      switch(ti.getTopFrame().getPC().getMnemonic()) {
+        case "ifeq" :
+          numOperands = 1;
+          trueComparator = EQ; falseComparator = NE;
+          break;
+        case "ifne":
+          trueComparator = NE; falseComparator = EQ;
+          numOperands = 1;
+          break;
+        case "iflt":
+          trueComparator = LT; falseComparator = GE;
+          numOperands = 1;
+          break;
+        case "ifle":
+          trueComparator = LE; falseComparator = GT;
+          numOperands = 1;
+          break;
+        case "ifgt":
+          trueComparator = GT; falseComparator = LE;
+          numOperands = 1;
+          break;
+        case "ifge":
+          trueComparator = GE; falseComparator = LT;
+          numOperands = 1;
+          break;
+        case "ifnull":
+          trueComparator = EQ; falseComparator = NE;
+          numOperands = 1;
+          break;
+        case "ifnonnull":
+          trueComparator = EQ; falseComparator = NE;
+          numOperands = 1;
+          break;
+        default :
+          trueComparator = EQ; falseComparator = NE;
+          numOperands = 2;
+          break;
+      }
+      return this;
+    }
+  }
 }
