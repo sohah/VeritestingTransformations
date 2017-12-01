@@ -26,6 +26,7 @@ import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.vm.*;
+import org.apache.commons.math.complex.Complex;
 
 import static gov.nasa.jpf.symbc.numeric.Comparator.*;
 import static gov.nasa.jpf.symbc.numeric.Operator.*;
@@ -331,7 +332,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     else if(ti.getTopFrame().getPC().getPosition() == 11 &&
             ti.getTopFrame().getMethodInfo().getName().equals("countBitsSet") &&
             ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
-      VeritestingPerf_countBitsSet_VT_11_23(vm, ti, instructionToExecute);
+      VeritestingPerf_countBitsSet_VT_11_23(ti, instructionToExecute);
     }
   }
 
@@ -443,7 +444,7 @@ public void TestPathsSimple_testMe3_VT_46_58
   }
 
   public void VeritestingPerf_countBitsSet_VT_11_23
-          (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+          (ThreadInfo ti, Instruction instructionToExecute) {
     if(ti.getTopFrame().getPC().getPosition() == 11 &&
             ti.getTopFrame().getMethodInfo().getName().equals("countBitsSet") &&
             ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
@@ -452,6 +453,9 @@ public void TestPathsSimple_testMe3_VT_46_58
       Comparator trueComparator = instructionInfo.getTrueComparator();
       Comparator falseComparator = instructionInfo.getFalseComparator();
       int numOperands = instructionInfo.getNumOperands();
+      ComplexNonLinearIntegerExpression condition = instructionInfo.getCondition();
+      ComplexNonLinearIntegerExpression negCondition = instructionInfo.getNegCondition();
+      if(condition == null || negCondition == null) return;
       PathCondition pc;
       pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
       PathCondition eqPC = pc.make_copy();
@@ -468,18 +472,18 @@ public void TestPathsSimple_testMe3_VT_46_58
       if( (eqSat && !neSat) || (!eqSat && neSat)) {
         return;
       }
-      BinaryLinearIntegerExpression v6 = (BinaryLinearIntegerExpression) sf.getLocalAttr(3);
+      //BinaryLinearIntegerExpression v6 = (BinaryLinearIntegerExpression) sf.getLocalAttr(3);
+
       SymbolicInteger v7 = makeSymbolicInteger(ti.getEnv(), "v7" + pathLabelCount);
       SymbolicInteger pathLabel0 = makeSymbolicInteger(ti.getEnv(), "pathLabel0" + pathLabelCount);
       pc._addDet(new ComplexNonLinearIntegerConstraint(
-
               new ComplexNonLinearIntegerExpression(
                       new ComplexNonLinearIntegerExpression(
-                              new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(v6, EQ, new IntegerConstant(0)),
+                              new ComplexNonLinearIntegerExpression(condition,
                                       LOGICAL_AND,
                                       new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(1))),
                               LOGICAL_OR,
-                              new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(v6, NE, new IntegerConstant(0)),
+                              new ComplexNonLinearIntegerExpression(negCondition,
                                       LOGICAL_AND,
                                       new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(2)))),
                       LOGICAL_AND,
@@ -513,6 +517,11 @@ public void TestPathsSimple_testMe3_VT_46_58
     private int numOperands;
     private Comparator trueComparator;
     private Comparator falseComparator;
+    private ComplexNonLinearIntegerExpression condition, negCondition;
+
+    public ComplexNonLinearIntegerExpression getCondition() { return condition; }
+
+    public ComplexNonLinearIntegerExpression getNegCondition() { return negCondition; }
 
     public InstructionInfo(ThreadInfo ti) {
       this.ti = ti;
@@ -569,7 +578,26 @@ public void TestPathsSimple_testMe3_VT_46_58
           numOperands = 2;
           break;
       }
+      IntegerExpression operand1 = null, operand2 = null;
+      operand1 = (BinaryLinearIntegerExpression) ti.getTopFrame().getOperandAttr();
+      boolean isConcreteCondition = true;
+      if(operand1 == null) {
+        operand1 = new IntegerConstant(ti.getTopFrame().peek());
+      } else isConcreteCondition = false;
+      if(numOperands == 2) {
+        operand2 = (BinaryLinearIntegerExpression) ti.getTopFrame().getOperandAttr(1);
+        if(operand2 != null) isConcreteCondition = false;
+      }
+      if(operand2 == null) {
+        operand2 = new IntegerConstant(ti.getTopFrame().peek(1));
+      }
+      if(isConcreteCondition) { condition = null; negCondition = null; }
+      else {
+        condition = new ComplexNonLinearIntegerExpression(operand1, trueComparator, operand2);
+        negCondition = new ComplexNonLinearIntegerExpression(operand1, falseComparator, operand2);
+      }
       return this;
     }
+
   }
 }
