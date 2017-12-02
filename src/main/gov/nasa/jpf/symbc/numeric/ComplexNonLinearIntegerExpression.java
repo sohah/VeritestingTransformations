@@ -46,29 +46,31 @@ import java.util.Map;
 public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpression {
   public IntegerExpression left;
 
-  public Operator op;
+  private Operator operator;
 
-  public Comparator cmprtr;
+  private Comparator cmprtr;
 
   public IntegerExpression right;
 
   public IntegerExpression base;
 
-	public Comparator getComparator() { return cmprtr; }
+  public Comparator getComparator() { return cmprtr; }
 
-	public IntegerExpression getLeft() { return left; }
+  public Operator getOperator() { return operator; }
+
+  public IntegerExpression getLeft() { return left; }
 	
-	public IntegerExpression getRight() { return right; }
+  public IntegerExpression getRight() { return right; }
 
   public ComplexNonLinearIntegerExpression() {
     left = right = null;
-    op = Operator.NONE_OP;
+    operator = Operator.NONE_OP;
     cmprtr = Comparator.NONE_CMP;
   }
 
   public ComplexNonLinearIntegerExpression(IntegerExpression l) {
     base = l;
-    op = Operator.NONE_OP;
+    operator = Operator.NONE_OP;
     cmprtr = Comparator.NONE_CMP;
     left = right = null;
   }
@@ -82,34 +84,34 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
 
   public ComplexNonLinearIntegerExpression(IntegerExpression l, Operator o, IntegerExpression r) {
     initLR(l, r);
-    op = o;
+    operator = o;
     cmprtr = Comparator.NONE_CMP;
   }
 
   public ComplexNonLinearIntegerExpression(IntegerExpression l, Comparator c, IntegerExpression r) {
     initLR(l, r);
     cmprtr = c;
-    op = Operator.NONE_OP;
+    operator = Operator.NONE_OP;
   }
 
   public ComplexNonLinearIntegerExpression(long l, Operator o, IntegerExpression r) {
     initLR(new IntegerConstant(l), r);
-    op = o;
+    operator = o;
     cmprtr = Comparator.NONE_CMP;
   }
 
   public ComplexNonLinearIntegerExpression(long l, Comparator c, IntegerExpression r) {
     initLR(new IntegerConstant(l), r);
     cmprtr = c;
-    op = Operator.NONE_OP;
+    operator = Operator.NONE_OP;
   }
 
   public long solution() {
     long l = left.solution();
-    if (op == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return base.solution();
+    if (operator == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return base.solution();
     long r = right.solution();
-    if (op != Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) {
-      switch(op){
+    if (operator != Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) {
+      switch(operator){
         case PLUS:       return l + r;
         case MINUS:      return l - r;
         case MUL: return l * r;
@@ -120,14 +122,14 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
         case SHIFTL: return l << r;
         case SHIFTR: return l >> r;
         case SHIFTUR: return l >>> r;
-        default: throw new RuntimeException("## Error: ComplexNonLinearSolution solution: l " + l + " op " + op + " r " + r);
+        default: throw new RuntimeException("## Error: ComplexNonLinearSolution solution: l " + l + " operator " + operator + " r " + r);
       }
-    } else if (cmprtr != Comparator.NONE_CMP && op == Operator.NONE_OP) {
+    } else if (cmprtr != Comparator.NONE_CMP && operator == Operator.NONE_OP) {
       if(cmprtr.evaluate(l, r)) return l;
       else return r;
     }
     else { 
-      throw new RuntimeException("## Error: ComplexNonLinearIntegerExpression with both op("+op.toString() + "), cmprtr("+cmprtr.toString()+") set\n");
+      throw new RuntimeException("## Error: ComplexNonLinearIntegerExpression with both operator("+ operator.toString() + "), cmprtr("+cmprtr.toString()+") set\n");
     }
   }
 
@@ -137,19 +139,19 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
   }
 
   public String stringPC() {
-    if(op == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return base.stringPC();
-    if(op == Operator.NONE_OP)  
+    if(operator == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return base.stringPC();
+    if(operator == Operator.NONE_OP)
       return "(" + left.stringPC() + cmprtr.toString() + right.stringPC() + ")";
     else 
-      return "(" + left.stringPC() + op.toString() + right.stringPC() + ")";
+      return "(" + left.stringPC() + operator.toString() + right.stringPC() + ")";
   }
 
   public String toString() {
-    if(op == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return base.toString();
-    if(op == Operator.NONE_OP)  
+    if(operator == Operator.NONE_OP && cmprtr == Comparator.NONE_CMP) return base.toString();
+    if(operator == Operator.NONE_OP)
       return "(" + left.toString() + cmprtr.toString() + right.toString() + ")";
     else 
-      return "(" + left.toString() + op.toString() + right.toString() + ")";
+      return "(" + left.toString() + operator.toString() + right.toString() + ")";
   }
 
   // JacoGeldenhuys
@@ -166,12 +168,12 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
     if (expr instanceof ComplexNonLinearIntegerExpression) {
       ComplexNonLinearIntegerExpression e = (ComplexNonLinearIntegerExpression) expr;
       int r = -1;
-      if(e.op == Operator.NONE_OP && op == Operator.NONE_OP)
+      if(e.operator == Operator.NONE_OP && operator == Operator.NONE_OP)
         if(e.cmprtr == Comparator.NONE_CMP && cmprtr == Comparator.NONE_CMP)
           base._cmp(e.base); // use left if no operators used 
         else 
           r = cmprtr.compareTo(e.cmprtr);
-      else r = op.compareTo(e.op);
+      else r = operator.compareTo(e.operator);
       if (r == 0) {
         r = left.compareTo(e.left);
       }
@@ -184,4 +186,11 @@ public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpressio
     }
   }
 
+    public void setLeft(IntegerExpression left) {
+        this.left = left;
+    }
+
+    public void setRight(IntegerExpression right) {
+        this.right = right;
+    }
 }

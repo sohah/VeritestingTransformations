@@ -92,7 +92,7 @@ public class PCParser {
 
 		if (eRef instanceof ComplexNonLinearIntegerExpression) {
 			ComplexNonLinearIntegerExpression c = ((ComplexNonLinearIntegerExpression)eRef);
-		  if(c.op == Operator.NONE_OP && c.cmprtr == Comparator.NONE_CMP) {
+		  if(c.getOperator() == Operator.NONE_OP && c.getComparator() == Comparator.NONE_CMP) {
 				IntegerExpression l = (IntegerExpression)c.getLeft();
 				if(l == null) l = (IntegerExpression) eRef;
 				System.out.println("examining plain expression (" + l + ")");
@@ -111,7 +111,7 @@ public class PCParser {
     } else { // bin non lin expr
       if(pb instanceof ProblemCoral || pb instanceof ProblemZ3 || pb instanceof ProblemZ3BitVector ||  pb instanceof ProblemZ3Incremental || pb instanceof ProblemZ3BitVectorIncremental) {
 				if( eRef instanceof ComplexNonLinearIntegerExpression) {
-          opRef = ((ComplexNonLinearIntegerExpression)eRef).op;
+          opRef = ((ComplexNonLinearIntegerExpression)eRef).getOperator();
           e_leftRef = ((ComplexNonLinearIntegerExpression)eRef).getLeft();
           e_rightRef = ((ComplexNonLinearIntegerExpression)eRef).getRight();
 				} else {
@@ -237,7 +237,7 @@ public class PCParser {
           return pb.shiftL(getExpression(e_leftRef),getExpression(e_rightRef));
       case NONE_OP:
     		if(eRef instanceof ComplexNonLinearIntegerExpression) {
-					Comparator cmpRef = ((ComplexNonLinearIntegerExpression) eRef).cmprtr;
+					Comparator cmpRef = ((ComplexNonLinearIntegerExpression) eRef).getComparator();
 					if(cmpRef != null) return getComparatorExpression(e_leftRef, cmpRef, e_rightRef);
 					else throw new RuntimeException("Expression " + eRef + 
 							" has neither operator nor comparator");

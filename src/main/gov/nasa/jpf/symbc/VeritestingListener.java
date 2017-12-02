@@ -333,6 +333,10 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             ti.getTopFrame().getMethodInfo().getName().equals("countBitsSet") &&
             ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
       VeritestingPerf_countBitsSet_VT_11_23(ti, instructionToExecute);
+    } else if(ti.getTopFrame().getPC().getPosition() == 57 &&
+            ti.getTopFrame().getMethodInfo().getName().equals("testMe4") &&
+            ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
+      VeritestingPerf_testMe4_VT_57_69(ti, instructionToExecute);
     }
   }
 
@@ -472,11 +476,10 @@ public void TestPathsSimple_testMe3_VT_46_58
       if( (eqSat && !neSat) || (!eqSat && neSat)) {
         return;
       }
-      //BinaryLinearIntegerExpression v6 = (BinaryLinearIntegerExpression) sf.getLocalAttr(3);
-
       SymbolicInteger v7 = makeSymbolicInteger(ti.getEnv(), "v7" + pathLabelCount);
       SymbolicInteger pathLabel0 = makeSymbolicInteger(ti.getEnv(), "pathLabel0" + pathLabelCount);
       pc._addDet(new ComplexNonLinearIntegerConstraint(
+
               new ComplexNonLinearIntegerExpression(
                       new ComplexNonLinearIntegerExpression(
                               new ComplexNonLinearIntegerExpression(condition,
@@ -509,6 +512,186 @@ public void TestPathsSimple_testMe3_VT_46_58
       ti.setNextPC(insn);
       pathLabelCount+=1;
     }
+  }
+
+  public void VeritestingPerf_testMe4_VT_57_69
+          (ThreadInfo ti, Instruction instructionToExecute) {
+    if(ti.getTopFrame().getPC().getPosition() == 57 &&
+            ti.getTopFrame().getMethodInfo().getName().equals("testMe4") &&
+            ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
+      StackFrame sf = ti.getTopFrame();
+      InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
+      Comparator trueComparator = instructionInfo.getTrueComparator();
+      Comparator falseComparator = instructionInfo.getFalseComparator();
+      int numOperands = instructionInfo.getNumOperands();
+      ComplexNonLinearIntegerExpression condition = instructionInfo.getCondition();
+      ComplexNonLinearIntegerExpression negCondition = instructionInfo.getNegCondition();
+      if(condition == null || negCondition == null) return;
+      PathCondition pc;
+      pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
+      PathCondition eqPC = pc.make_copy();
+      PathCondition nePC = pc.make_copy();
+      IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
+      eqPC._addDet(trueComparator, sym_v, 0);
+      nePC._addDet(falseComparator, sym_v, 0);
+      boolean eqSat = eqPC.simplify();
+      boolean neSat = nePC.simplify();
+      if(!eqSat && !neSat) {
+        System.out.println("both sides of branch at offset 11 are unsat");
+        assert(false);
+      }
+      if( (eqSat && !neSat) || (!eqSat && neSat)) {
+        return;
+      }
+      IntegerExpression v26 = (IntegerExpression) sf.getLocalAttr(3);
+      if (v26 == null) {
+        v26 = new IntegerConstant(sf.getLocalVariable(3));
+      }
+      SymbolicInteger v22 = makeSymbolicInteger(ti.getEnv(), "v22" + pathLabelCount);
+      SymbolicInteger v23 = makeSymbolicInteger(ti.getEnv(), "v23" + pathLabelCount);
+      SymbolicInteger v24 = makeSymbolicInteger(ti.getEnv(), "v24" + pathLabelCount);
+      SymbolicInteger pathLabel0        = makeSymbolicInteger(ti.getEnv(), "pathLabel0" + pathLabelCount);
+      IntegerExpression cnlie = new ComplexNonLinearIntegerExpression(
+              new ComplexNonLinearIntegerExpression(
+                      new ComplexNonLinearIntegerExpression(condition,
+                              LOGICAL_AND,
+                              new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(v23, EQ, new ComplexNonLinearIntegerExpression(v26, PLUS, new IntegerConstant(1)) ),
+                                      LOGICAL_AND,
+                                      new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(3)))),
+                      LOGICAL_OR,
+                      new ComplexNonLinearIntegerExpression(negCondition,
+                              LOGICAL_AND,
+                              new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(v22, EQ, new ComplexNonLinearIntegerExpression(v26, PLUS, new IntegerConstant(-1)) ),
+                                      LOGICAL_AND,
+                                      new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(4))))),
+              LOGICAL_AND,
+              new ComplexNonLinearIntegerExpression(
+                      new ComplexNonLinearIntegerExpression(
+                              new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(3)),
+                              LOGICAL_AND,
+                              new ComplexNonLinearIntegerExpression(v24, EQ, v23)),
+                      LOGICAL_OR,
+                      new ComplexNonLinearIntegerExpression(
+                              new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(4)),
+                              LOGICAL_AND,
+                              new ComplexNonLinearIntegerExpression(v24, EQ, v22))));
+      cnlie = constantFold(cnlie);
+      pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression) cnlie));
+      sf.setSlotAttr(3,  v24);
+
+      Instruction insn=instructionToExecute;
+      while(insn.getPosition() != 69) {
+        if(insn instanceof GOTO)  insn = ((GOTO) insn).getTarget();
+        else insn = insn.getNext();
+      }
+      while(numOperands > 0) { sf.pop(); numOperands--; }
+      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
+      ti.setNextPC(insn);
+      pathLabelCount+=1;
+    }
+  }
+
+  public IntegerExpression constantFold(IntegerExpression integerExpression) {
+    if(integerExpression instanceof IntegerConstant) return integerExpression;
+    if(integerExpression instanceof ComplexNonLinearIntegerExpression) {
+      ComplexNonLinearIntegerExpression cnlie = (ComplexNonLinearIntegerExpression) integerExpression;
+      if (cnlie.getLeft() instanceof IntegerConstant && cnlie.getRight() instanceof IntegerConstant) {
+        int left = ((IntegerConstant) cnlie.getLeft()).value();
+        int right = ((IntegerConstant) cnlie.getRight()).value();
+        int result = 0;
+        switch (cnlie.getOperator()) {
+          case DIV:
+            result = left / right;
+            break;
+          case MUL:
+            result = left * right;
+            break;
+          case MINUS:
+            result = left - right;
+            break;
+          case PLUS:
+            result = left + right;
+            break;
+          case CMP:
+            result = Integer.compare(left, right);
+            break;
+          case AND:
+            result = left & right;
+            break;
+          case OR:
+            result = left | right;
+            break;
+          case XOR:
+            result = left ^ right;
+            break;
+          case SHIFTL:
+            result = left << right;
+            break;
+          case SHIFTR:
+            result = left >> right;
+            break;
+          case SHIFTUR:
+            result = left >>> right;
+            break;
+          case REM:
+            result = left % right;
+            break;
+          case NONE_OP:
+            switch (cnlie.getComparator()) {
+              case EQ:
+                result = (left == right) ? 1 : 0;
+                break;
+              case NE:
+                result = (left != right) ? 1 : 0;
+                break;
+              case LT:
+                result = (left < right) ? 1 : 0;
+                break;
+              case LE:
+                result = (left <= right) ? 1 : 0;
+                break;
+              case GT:
+                result = (left > right) ? 1 : 0;
+                break;
+              case GE:
+                result = (left >= right) ? 1 : 0;
+                break;
+              case LOGICAL_AND:
+                result = ((left != 0) && (right != 0)) ? 1 : 0;
+                break;
+              case LOGICAL_OR:
+                result = ((left != 0) || (right != 0)) ? 1 : 0;
+                break;
+              case NONE_CMP:
+                System.out.println("constantFold found NONE_OP and NONE_CMP");
+                assert(false);
+                break;
+              default:
+                System.out.println("constantFold found NONE_OP and undefined comparator (" + cnlie.getComparator() + ")");
+                assert(false);
+                break;
+            }
+            break;
+          default:
+            System.out.println("constantFold found undefined operator (" + cnlie.getOperator() + ")");
+            assert (false);
+        }
+        return new IntegerConstant(result);
+      }
+      cnlie.setLeft(constantFold(cnlie.getLeft()));
+      cnlie.setRight(constantFold(cnlie.getRight()));
+      if(cnlie.getLeft() instanceof IntegerConstant) {
+        if(cnlie.getRight() instanceof IntegerConstant) {
+          if(cnlie.getOperator() == NONE_OP) {
+            return constantFold(new ComplexNonLinearIntegerExpression(cnlie.getLeft(), cnlie.getComparator(), cnlie.getRight()));
+          }
+          if(cnlie.getComparator() == NONE_CMP) {
+            return constantFold(new ComplexNonLinearIntegerExpression(cnlie.getLeft(), cnlie.getOperator(), cnlie.getRight()));
+          }
+        }
+      }
+    }
+    return integerExpression;
   }
 
 
@@ -579,13 +762,13 @@ public void TestPathsSimple_testMe3_VT_46_58
           break;
       }
       IntegerExpression operand1 = null, operand2 = null;
-      operand1 = (BinaryLinearIntegerExpression) ti.getTopFrame().getOperandAttr();
+      operand1 = (IntegerExpression) ti.getTopFrame().getOperandAttr();
       boolean isConcreteCondition = true;
       if(operand1 == null) {
         operand1 = new IntegerConstant(ti.getTopFrame().peek());
       } else isConcreteCondition = false;
       if(numOperands == 2) {
-        operand2 = (BinaryLinearIntegerExpression) ti.getTopFrame().getOperandAttr(1);
+        operand2 = (IntegerExpression) ti.getTopFrame().getOperandAttr(1);
         if(operand2 != null) isConcreteCondition = false;
       }
       if(operand2 == null) {

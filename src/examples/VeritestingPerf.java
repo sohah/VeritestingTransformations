@@ -2,10 +2,15 @@
  * example to demonstrate veritesting
 */
 
+
+import gov.nasa.jpf.symbc.Debug;
+
 public class VeritestingPerf {
 
     public static void main(String[] args) {
-        (new VeritestingPerf()).countBitsSet(1);
+        //(new VeritestingPerf()).countBitsSet(1);
+        int x[] = {1, 2, 3, 4};
+        (new VeritestingPerf()).testMe4(x, 4);
     }
 
     public int countBitsSet(int x) {
@@ -34,11 +39,11 @@ public class VeritestingPerf {
 
     public void testMe4 (int[] x, int len) {
         int sum = 0; //Debug.makeSymbolicInteger("sum");
-        // for(int i=0; i < len; i++)
-        //   x[i] = Debug.makeSymbolicInteger("x"+i);
+        for(int i=0; i < len; i++)
+            x[i] = Debug.makeSymbolicInteger("x"+i);
         for (int i = 0; i < len; i++) {
             if (x[i] < 0) sum += -1;
-            else if (x[i] > 0) sum += 1;
+            else sum += 1;
         }
         if (sum < 0) System.out.println("neg");
         else if (sum > 0) System.out.println("pos");
