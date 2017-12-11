@@ -25,8 +25,14 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.symbc.veritesting.ReflectUtil;
+import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
+import com.ibm.wala.util.WalaException;
+import gov.nasa.jpf.symbc.veritesting.VeritestingRegion;
 import gov.nasa.jpf.vm.*;
-import org.apache.commons.math.complex.Complex;
+
+import java.util.HashMap;
+import java.util.Hashtable;
 
 import static gov.nasa.jpf.symbc.numeric.Comparator.*;
 import static gov.nasa.jpf.symbc.numeric.Operator.*;
@@ -34,7 +40,10 @@ import static gov.nasa.jpf.symbc.numeric.Operator.*;
 public class VeritestingListener extends PropertyListenerAdapter  {
 
   int sumId=0;
-  
+  private HashMap<String, IntegerExpression> varCache;
+
+  private static Hashtable<Integer, gov.nasa.jpf.symbc.veritesting.VeritestingRegion> veritestingRegions;
+
   public VeritestingListener(Config conf, JPF jpf) {
   }
  
@@ -87,7 +96,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     return pc;
   }
 
-  public SymbolicInteger makeSymbolicInteger(MJIEnv env, String name) {
+  public SymbolicInteger makeSymbolicInteger(String name) {
     return new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name));
   }
 
@@ -110,8 +119,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       SymbolicInteger y_v = (SymbolicInteger) sf.getLocalAttr(y_slot_index);
       if(y_v == null) System.out.println("failed to get y expr");
       
-      SymbolicInteger a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
-      SymbolicInteger b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
+      SymbolicInteger a_v = makeSymbolicInteger("a_final");
+      SymbolicInteger b_v = makeSymbolicInteger("b_final");
       // IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(af_slot_index);
       // if(a_v == null) System.out.println("failed to get a_final expr");
       // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(bf_slot_index);
@@ -209,7 +218,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       IntegerExpression sum_v = (IntegerExpression) sf.getLocalAttr(sum_slot_index);
       if(sum_v == null) System.out.println("failed to get sum expr");
 
-      SymbolicInteger sum_new = makeSymbolicInteger(ti.getEnv(),"sum_new"+sumId);
+      SymbolicInteger sum_new = makeSymbolicInteger("sum_new"+sumId);
       sumId++;
       PathCondition pc = null;
       pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
@@ -289,8 +298,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       if(x_v == null) System.out.println("failed to get x expr");
       IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(y_slot_index);
       if(y_v == null) System.out.println("failed to get y expr");
-      SymbolicInteger a_v = makeSymbolicInteger(ti.getEnv(),"a_final");
-      SymbolicInteger b_v = makeSymbolicInteger(ti.getEnv(),"b_final");
+      SymbolicInteger a_v = makeSymbolicInteger("a_final");
+      SymbolicInteger b_v = makeSymbolicInteger("b_final");
       // IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(a_final_slot_index);
       // if(a_v == null) System.out.println("failed to get a_final expr");
       // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(b_final_slot_index);
@@ -319,7 +328,23 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
 
   public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-    if(ti.getTopFrame().getPC().getPosition() == 46 && 
+    Config conf = ti.getVM().getConfig();
+    String[] lazy = conf.getStringArray("listener");
+    if (lazy == null || !lazy[0].contains("Veritesting"))
+      return;
+    //System.out.println("CLASSPATH = " + System.getenv("CLASSPATH"));
+    if(veritestingRegions == null) {
+      String classPath = conf.getStringArray("classpath")[0] + "/";
+      String className = conf.getString("target");
+      String methodName = conf.getStringArray("symbolic.method")[0];
+      methodName = methodName.substring(methodName.indexOf(".")+1);
+      methodName = methodName.substring(0, methodName.indexOf("("));
+      String methodSig = ReflectUtil.getSignature(classPath, className, methodName);
+      gov.nasa.jpf.symbc.veritesting.VeritestingMain veritestingMain;
+      veritestingMain = new gov.nasa.jpf.symbc.veritesting.VeritestingMain();
+      veritestingRegions = veritestingMain.getVeritestingRegions(className + ".class", methodSig);
+    }
+    if(ti.getTopFrame().getPC().getPosition() == 46 &&
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
       TestPathsSimple_testMe3_VT_46_58(vm, ti, instructionToExecute);
@@ -332,25 +357,113 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     else if(ti.getTopFrame().getPC().getPosition() == 11 &&
             ti.getTopFrame().getMethodInfo().getName().equals("countBitsSet") &&
             ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
-      VeritestingPerf_countBitsSet_VT_11_23(ti, instructionToExecute);
+      VeritestingPerf_countBitsSet_VT_11_16(ti, instructionToExecute);
     } else if(ti.getTopFrame().getPC().getPosition() == 57 &&
             ti.getTopFrame().getMethodInfo().getName().equals("testMe4") &&
             ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
       VeritestingPerf_testMe4_VT_57_69(ti, instructionToExecute);
     }
+
+/*    else if(veritestingRegions.contains(ti.getTopFrame().getPC().getPosition())) {
+      int offset = ti.getTopFrame().getPC().getPosition();
+      VeritestingRegion region = veritestingRegions.get(offset);
+      StackFrame sf = ti.getTopFrame();
+      InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
+      Comparator trueComparator = instructionInfo.getTrueComparator();
+      Comparator falseComparator = instructionInfo.getFalseComparator();
+      int numOperands = instructionInfo.getNumOperands();
+      ComplexNonLinearIntegerExpression condition = instructionInfo.getCondition();
+      ComplexNonLinearIntegerExpression negCondition = instructionInfo.getNegCondition();
+      if(condition == null || negCondition == null) return;
+      PathCondition pc;
+      pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
+      PathCondition eqPC = pc.make_copy();
+      PathCondition nePC = pc.make_copy();
+      IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
+      eqPC._addDet(trueComparator, sym_v, 0);
+      nePC._addDet(falseComparator, sym_v, 0);
+      boolean eqSat = eqPC.simplify();
+      boolean neSat = nePC.simplify();
+      if(!eqSat && !neSat) {
+        System.out.println("both sides of branch at offset 11 are unsat");
+        assert(false);
+      }
+      if( (eqSat && !neSat) || (!eqSat && neSat)) {
+        return;
+      }
+      if(!createLocalVars(region.getLocalVars())) { return; }
+      if(!createIntermediateVars(region.getIntermediateVars())) return;
+      ComplexNonLinearIntegerExpression cnlie = region.getCNLIE();
+      if(!fillAllHoles(cnlie)) { return; }
+      region.setCNLIE(constantFold(cnlie));
+      pc._addDet(new ComplexNonLinearIntegerConstraint(cnlie));
+      if(!populateOutputs(region.getOutputVars())) { return;} //sf.setSlotAttr(3,   v24);
+
+      Instruction insn=instructionToExecute;
+      while(insn.getPosition() != region.getEndInsnPosition()) {
+        if(insn instanceof GOTO)  insn = ((GOTO) insn).getTarget();
+        else insn = insn.getNext();
+      }
+      while(numOperands > 0) { sf.pop(); numOperands--; }
+      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
+      ti.setNextPC(insn);
+      pathLabelCount+=1;
+    }*/
   }
 
-public void TestPathsSimple_testMe3_VT_46_58
+  //TODO
+  /*
+  generate sf.setSlotAttr(3, v24)-like statements for all the outputs of the veritesting region
+  using region
+   */
+  private boolean populateOutputs(String[] outputVars) {
+    return false;
+  }
+
+  //TODO
+  /*
+  Walk the CNLIE expression, looking for holes (which will always be at the leaf nodes), and ensure that all holes
+  are filled in using varCache
+   */
+  private boolean fillAllHoles(ComplexNonLinearIntegerExpression cnlie) {
+    return false;
+  }
+
+  //TODO
+  /*
+  Load intermediate vars as SymbolicInteger objects and store them into varCache
+   */
+  private boolean createIntermediateVars(String[] intermediateVars) {
+    return false;
+  }
+
+  //TODO
+  /*
+  Load from local variable stack slots IntegerExpression objects and store them into the varCache
+   */
+  private boolean createLocalVars(String[] localVars) {
+    return false;
+  }
+
+  //TODO
+  /*
+  Returns a hastable mapping instruction bytecode offsets to method name and class name
+   */
+  private Hashtable<Integer,VeritestingRegion> getVeritestingRegions() {
+    return null;
+  }
+
+  public void TestPathsSimple_testMe3_VT_46_58
  (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
   if(ti.getTopFrame().getPC().getPosition() == 46 && 
      ti.getTopFrame().getMethodInfo().getName().equals("testMe3") && 
      ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
     StackFrame sf = ti.getTopFrame();
     SymbolicInteger x = (SymbolicInteger) sf.getLocalAttr(1);
-    SymbolicInteger a_2 = makeSymbolicInteger(ti.getEnv(), "a_2");
-    SymbolicInteger a_1 = makeSymbolicInteger(ti.getEnv(), "a_1");
-    SymbolicInteger a_3 = makeSymbolicInteger(ti.getEnv(), "a_3");
-    SymbolicInteger pathLabel0 = makeSymbolicInteger(ti.getEnv(), "pathLabel0");
+    SymbolicInteger a_2 = makeSymbolicInteger("a_2");
+    SymbolicInteger a_1 = makeSymbolicInteger("a_1");
+    SymbolicInteger a_3 = makeSymbolicInteger("a_3");
+    SymbolicInteger pathLabel0 = makeSymbolicInteger("pathLabel0");
     PathCondition pc;
     pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
     pc._addDet(new ComplexNonLinearIntegerConstraint(
@@ -373,10 +486,10 @@ public void TestPathsSimple_testMe3_VT_46_58
             ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
       StackFrame sf = ti.getTopFrame();
       SymbolicInteger y = (SymbolicInteger) sf.getLocalAttr(2);
-      SymbolicInteger b_1 = makeSymbolicInteger(ti.getEnv(), "b_1");
-      SymbolicInteger b_2 = makeSymbolicInteger(ti.getEnv(), "b_2");
-      SymbolicInteger b_3 = makeSymbolicInteger(ti.getEnv(), "b_3");
-      SymbolicInteger pathLabel1 = makeSymbolicInteger(ti.getEnv(), "pathLabel1");
+      SymbolicInteger b_1 = makeSymbolicInteger("b_1");
+      SymbolicInteger b_2 = makeSymbolicInteger("b_2");
+      SymbolicInteger b_3 = makeSymbolicInteger("b_3");
+      SymbolicInteger pathLabel1 = makeSymbolicInteger("pathLabel1");
       PathCondition pc;
       pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
       pc._addDet(new ComplexNonLinearIntegerConstraint(
@@ -401,10 +514,10 @@ public void TestPathsSimple_testMe3_VT_46_58
             ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
       StackFrame sf = ti.getTopFrame();
       BinaryLinearIntegerExpression lowbit = (BinaryLinearIntegerExpression) sf.getLocalAttr(3);
-      SymbolicInteger flag_2 = makeSymbolicInteger(ti.getEnv(), "flag_2"+pathLabelCount);
-      SymbolicInteger flag_1 = makeSymbolicInteger(ti.getEnv(), "flag_1"+pathLabelCount);
-      SymbolicInteger flag_3 = makeSymbolicInteger(ti.getEnv(), "flag_3"+pathLabelCount);
-      SymbolicInteger pathLabel0 = makeSymbolicInteger(ti.getEnv(), "pathLabel"+pathLabelCount);
+      SymbolicInteger flag_2 = makeSymbolicInteger("flag_2"+pathLabelCount);
+      SymbolicInteger flag_1 = makeSymbolicInteger("flag_1"+pathLabelCount);
+      SymbolicInteger flag_3 = makeSymbolicInteger("flag_3"+pathLabelCount);
+      SymbolicInteger pathLabel0 = makeSymbolicInteger("pathLabel"+pathLabelCount);
       PathCondition pc;
       pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
       pc._addDet(new ComplexNonLinearIntegerConstraint(
@@ -447,7 +560,7 @@ public void TestPathsSimple_testMe3_VT_46_58
     }
   }
 
-  public void VeritestingPerf_countBitsSet_VT_11_23
+  public void VeritestingPerf_countBitsSet_VT_11_16
           (ThreadInfo ti, Instruction instructionToExecute) {
     if(ti.getTopFrame().getPC().getPosition() == 11 &&
             ti.getTopFrame().getMethodInfo().getName().equals("countBitsSet") &&
@@ -476,10 +589,9 @@ public void TestPathsSimple_testMe3_VT_46_58
       if( (eqSat && !neSat) || (!eqSat && neSat)) {
         return;
       }
-      SymbolicInteger v7 = makeSymbolicInteger(ti.getEnv(), "v7" + pathLabelCount);
-      SymbolicInteger pathLabel0 = makeSymbolicInteger(ti.getEnv(), "pathLabel0" + pathLabelCount);
-      pc._addDet(new ComplexNonLinearIntegerConstraint(
-
+      SymbolicInteger v7 = makeSymbolicInteger("v7" + pathLabelCount);
+      SymbolicInteger pathLabel0 = makeSymbolicInteger("pathLabel0" + pathLabelCount);
+      IntegerExpression cnlie =
               new ComplexNonLinearIntegerExpression(
                       new ComplexNonLinearIntegerExpression(
                               new ComplexNonLinearIntegerExpression(condition,
@@ -499,11 +611,13 @@ public void TestPathsSimple_testMe3_VT_46_58
                               new ComplexNonLinearIntegerExpression(
                                       new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(2)),
                                       LOGICAL_AND,
-                                      new ComplexNonLinearIntegerExpression(v7, EQ, new IntegerConstant(1)))))));
-      sf.setSlotAttr(4,  v7);
+                                      new ComplexNonLinearIntegerExpression(v7, EQ, new IntegerConstant(1)))));
+      cnlie = constantFold(cnlie);
+      pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression) cnlie));
+      sf.setSlotAttr(3,  v7);
 
       Instruction insn=instructionToExecute;
-      while(insn.getPosition() != 23) {
+      while(insn.getPosition() != 16) {
         if(insn instanceof GOTO)  insn = ((GOTO) insn).getTarget();
         else insn = insn.getNext();
       }
@@ -513,6 +627,8 @@ public void TestPathsSimple_testMe3_VT_46_58
       pathLabelCount+=1;
     }
   }
+
+
 
   public void VeritestingPerf_testMe4_VT_57_69
           (ThreadInfo ti, Instruction instructionToExecute) {
@@ -547,37 +663,38 @@ public void TestPathsSimple_testMe3_VT_46_58
       if (v26 == null) {
         v26 = new IntegerConstant(sf.getLocalVariable(3));
       }
-      SymbolicInteger v22 = makeSymbolicInteger(ti.getEnv(), "v22" + pathLabelCount);
-      SymbolicInteger v23 = makeSymbolicInteger(ti.getEnv(), "v23" + pathLabelCount);
-      SymbolicInteger v24 = makeSymbolicInteger(ti.getEnv(), "v24" + pathLabelCount);
-      SymbolicInteger pathLabel0        = makeSymbolicInteger(ti.getEnv(), "pathLabel0" + pathLabelCount);
-      IntegerExpression cnlie = new ComplexNonLinearIntegerExpression(
-              new ComplexNonLinearIntegerExpression(
-                      new ComplexNonLinearIntegerExpression(condition,
-                              LOGICAL_AND,
-                              new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(v23, EQ, new ComplexNonLinearIntegerExpression(v26, PLUS, new IntegerConstant(1)) ),
-                                      LOGICAL_AND,
-                                      new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(3)))),
-                      LOGICAL_OR,
-                      new ComplexNonLinearIntegerExpression(negCondition,
-                              LOGICAL_AND,
-                              new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(v22, EQ, new ComplexNonLinearIntegerExpression(v26, PLUS, new IntegerConstant(-1)) ),
-                                      LOGICAL_AND,
-                                      new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(4))))),
-              LOGICAL_AND,
+      IntegerExpression v22 = makeSymbolicInteger("v22" + pathLabelCount);
+      IntegerExpression v23 = makeSymbolicInteger("v23" + pathLabelCount);
+      IntegerExpression v24 = makeSymbolicInteger("v24" + pathLabelCount);
+      IntegerExpression pathLabel0 = makeSymbolicInteger("pathLabel0" + pathLabelCount);
+      IntegerExpression cnlie =
               new ComplexNonLinearIntegerExpression(
                       new ComplexNonLinearIntegerExpression(
-                              new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(3)),
-                              LOGICAL_AND,
-                              new ComplexNonLinearIntegerExpression(v24, EQ, v23)),
-                      LOGICAL_OR,
+                              new ComplexNonLinearIntegerExpression(condition,
+                                      LOGICAL_AND,
+                                      new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(v23, EQ, new ComplexNonLinearIntegerExpression(v26, PLUS, new IntegerConstant(1)) ),
+                                              LOGICAL_AND,
+                                              new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(3)))),
+                              LOGICAL_OR,
+                              new ComplexNonLinearIntegerExpression(negCondition,
+                                      LOGICAL_AND,
+                                      new ComplexNonLinearIntegerExpression(new ComplexNonLinearIntegerExpression(v22, EQ, new ComplexNonLinearIntegerExpression(v26, PLUS, new IntegerConstant(-1)) ),
+                                              LOGICAL_AND,
+                                              new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(4))))),
+                      LOGICAL_AND,
                       new ComplexNonLinearIntegerExpression(
-                              new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(4)),
-                              LOGICAL_AND,
-                              new ComplexNonLinearIntegerExpression(v24, EQ, v22))));
+                              new ComplexNonLinearIntegerExpression(
+                                      new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(3)),
+                                      LOGICAL_AND,
+                                      new ComplexNonLinearIntegerExpression(v24, EQ,  v23)),
+                              LOGICAL_OR,
+                              new ComplexNonLinearIntegerExpression(
+                                      new ComplexNonLinearIntegerExpression(pathLabel0, EQ, new IntegerConstant(4)),
+                                      LOGICAL_AND,
+                                      new ComplexNonLinearIntegerExpression(v24, EQ, v22))));
       cnlie = constantFold(cnlie);
       pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression) cnlie));
-      sf.setSlotAttr(3,  v24);
+      sf.setSlotAttr(3,   v24);
 
       Instruction insn=instructionToExecute;
       while(insn.getPosition() != 69) {
@@ -590,6 +707,50 @@ public void TestPathsSimple_testMe3_VT_46_58
       pathLabelCount+=1;
     }
   }
+
+  //TODO
+  /*
+  Returns a SymbolicInteger or BinaryLinearIntegerExpression based on whether var is an intermediate or a local
+  variable to be loaded from a stack slot
+   */
+  private IntegerExpression getVar(StackFrame sf, String var) {
+    if(isCached(var)) return varCache.get(var);
+    IntegerExpression ret = null;
+    if(isIntermediate(var)) ret = makeSymbolicInteger(var);
+    else if(isLocal(var)) ret = (IntegerExpression) sf.getLocalAttr(getLocalStackSlot(var));
+    varCache.put(var, ret);
+    return varCache.get(var);
+  }
+
+  private boolean isCached(String var) {
+    return varCache.containsKey(var);
+  }
+
+  //TODO
+  /*
+  Returns the stack slot corresponding to local variable var
+   */
+  private int getLocalStackSlot(String var) {
+    assert(isLocal(var));
+    return -1;
+  }
+
+  //TODO
+  /*
+  Returns true if var is a local variable and var has a non-null stack slot assigned to it
+   */
+  private boolean isLocal(String var) {
+    return false;
+  }
+
+  //TODO
+  /*
+  Returns true if var is an intermediate variable
+   */
+  private boolean isIntermediate(String var) {
+    return false;
+  }
+
 
   public IntegerExpression constantFold(IntegerExpression integerExpression) {
     if(integerExpression instanceof IntegerConstant) return integerExpression;
@@ -695,7 +856,7 @@ public void TestPathsSimple_testMe3_VT_46_58
   }
 
 
-  public class InstructionInfo {
+  private class InstructionInfo {
     private ThreadInfo ti;
     private int numOperands;
     private Comparator trueComparator;
@@ -780,6 +941,31 @@ public void TestPathsSimple_testMe3_VT_46_58
         negCondition = new ComplexNonLinearIntegerExpression(operand1, falseComparator, operand2);
       }
       return this;
+    }
+
+  }
+  public class Pair<L,R> {
+
+    private final L left;
+    private final R right;
+
+    public Pair(L left, R right) {
+      this.left = left;
+      this.right = right;
+    }
+
+    public L getLeft() { return left; }
+    public R getRight() { return right; }
+
+    @Override
+    public int hashCode() { return left.hashCode() ^ right.hashCode(); }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof Pair)) return false;
+      Pair pairo = (Pair) o;
+      return this.left.equals(pairo.getLeft()) &&
+              this.right.equals(pairo.getRight());
     }
 
   }
