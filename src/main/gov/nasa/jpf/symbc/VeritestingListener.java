@@ -28,6 +28,7 @@ import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.ReflectUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingRegion;
+import gov.nasa.jpf.symbc.veritesting.VeritestingRegionKey;
 import gov.nasa.jpf.vm.*;
 
 import java.util.HashMap;
@@ -364,9 +365,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       VeritestingPerf_testMe4_VT_57_69(ti, instructionToExecute);
     }
 
-    else */
-    if(veritestingRegions.containsKey(ti.getTopFrame().getPC().getPosition())) {
-      int position = ti.getTopFrame().getPC().getPosition();
+    /* else*/
+    int position = ti.getTopFrame().getPC().getPosition();
+    if(veritestingRegions.containsKey(position)) {
       String thisClassName, thisMethodName;
       thisClassName = ti.getTopFrame().getClassInfo().getName();
       thisMethodName = ti.getTopFrame().getMethodInfo().getName();
@@ -494,7 +495,12 @@ public class VeritestingListener extends PropertyListenerAdapter  {
           holeHashMap.put(key, finalValue);
           break;
         case LOCAL_OUTPUT:
-          finalValue = makeSymbolicInteger(key.getHoleVarName());
+          finalValue = makeSymbolicInteger(key.getHoleVarName() + pathLabelCount);
+          finalValue.setHole(false, Expression.HoleType.NONE);
+          holeHashMap.put(key, finalValue);
+          break;
+        case INTERMEDIATE:
+          finalValue = makeSymbolicInteger(key.getHoleVarName() + pathLabelCount);
           finalValue.setHole(false, Expression.HoleType.NONE);
           holeHashMap.put(key, finalValue);
           break;

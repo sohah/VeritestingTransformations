@@ -28,18 +28,19 @@ public class VarUtil {
 
     public static final int getPathCounter() { pathCounter++; return pathCounter; }
 
-    public SymbolicInteger makeIntermediateVar(int val) {
+    public IntegerExpression makeIntermediateVar(int val) {
         String name = "v" + val;
         return makeIntermediateVar(name);
     }
 
-    public SymbolicInteger makeIntermediateVar(String name) {
+    public IntegerExpression makeIntermediateVar(String name) {
         if(varCache.containsKey(name))
-            return (SymbolicInteger) varCache.get(name);
-        SymbolicInteger s = new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name));
-        s.setHole(false, Expression.HoleType.NONE);
-        varCache.put(name, s);
-        return s;
+            return varCache.get(name);
+        IntegerExpression integerExpression = new IntegerConstant(nextInt());
+        integerExpression.setHole(true, Expression.HoleType.INTERMEDIATE);
+        integerExpression.setHoleVarName(name);
+        varCache.put(name, integerExpression);
+        return integerExpression;
     }
 
     public IntegerExpression makeLocalInputVar(int val) {
@@ -376,5 +377,6 @@ public class VarUtil {
         holeID++;
         return holeID;
     }
+
 }
 

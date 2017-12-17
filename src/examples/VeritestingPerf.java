@@ -12,7 +12,7 @@ public class VeritestingPerf {
     public static void main(String[] args) {
         //(new VeritestingPerf()).countBitsSet(1);
         int x[] = {1, 2, 3, 4, 5, 6};
-        (new VeritestingPerf()).testMe4(x, 6);
+        (new VeritestingPerf()).testMe4(x, 2);
         //(new VeritestingPerf()).arrayTest(x, 6);
     }
 

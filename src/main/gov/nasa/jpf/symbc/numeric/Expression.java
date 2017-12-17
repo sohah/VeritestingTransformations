@@ -55,6 +55,7 @@ public abstract class Expression implements Comparable<Expression> {
 	public enum HoleType {
 		LOCAL_INPUT("local_input"),
 		LOCAL_OUTPUT("local_output"),
+		INTERMEDIATE("intermediate"),
 		NONE ("none"),
 		CONDITION("condition"),
 		NEGCONDITION("negcondition");
@@ -85,6 +86,7 @@ public abstract class Expression implements Comparable<Expression> {
 		isHole = hole; holeType = h;
 		assert((isHole && holeType == HoleType.LOCAL_INPUT) ||
 				(isHole && holeType == HoleType.LOCAL_OUTPUT) ||
+				(isHole && holeType == HoleType.INTERMEDIATE) ||
 				(isHole && holeType == HoleType.CONDITION) ||
 				(isHole && holeType == HoleType.NEGCONDITION) ||
 				(!isHole && holeType == HoleType.NONE));
