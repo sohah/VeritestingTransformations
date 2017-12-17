@@ -2,6 +2,15 @@ package gov.nasa.jpf.symbc.veritesting;
 
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.ssa.*;
+import gov.nasa.jpf.symbc.numeric.ComplexNonLinearIntegerExpression;
+import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.numeric.IntegerExpression;
+import gov.nasa.jpf.symbc.numeric.Operator;
+
+import static gov.nasa.jpf.symbc.numeric.Comparator.EQ;
+import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_AND;
+import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_OR;
+import static gov.nasa.jpf.symbc.numeric.Operator.*;
 
 
 public class MyIVisitor implements SSAInstruction.IVisitor {
@@ -10,9 +19,9 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
     boolean isPhiInstruction = false;
     VarUtil varUtil;
     SSAInstruction lastInstruction;
-    private String phiExprThen;
-    private String phiExprElse;
-    private String phiExprLHS;
+    private IntegerExpression phiExprThen;
+    private IntegerExpression phiExprElse;
+    private IntegerExpression phiExprLHS;
 
     public boolean canVeritest() {
         return canVeritest;
@@ -30,13 +39,13 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
 
     private String ifExprStr_SPF, ifNotExprStr_SPF;*/
 
-    private String SPFExpr;
+    private ComplexNonLinearIntegerExpression SPFExpr;
 
     public MyIVisitor(VarUtil _varUtil, int _thenUseNum, int _elseUseNum) {
         varUtil = _varUtil;
         thenUseNum = _thenUseNum;
         elseUseNum = _elseUseNum;
-        SPFExpr = new String();
+        //SPFExpr = new String();
     }
 
     @Override
@@ -70,33 +79,31 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         int lhs = instruction.getDef();
         int operand1 = instruction.getUse(0);
         int operand2 = instruction.getUse(1);
-        varUtil.addVal(operand1);
-        varUtil.addVal(operand2);
-        varUtil.addIntermediateVar(lhs);
-        String operand1String = new String("v" + operand1), operand2String = new String("v" + operand2);
-        String lhsString = new String("v" + lhs);
-        if(varUtil.isConstant(operand1))
-            operand1String = new String("new IntegerConstant(" + varUtil.getConstant(operand1) + ")");
-        if(varUtil.isConstant(operand2))
-            operand2String = new String("new IntegerConstant(" + varUtil.getConstant(operand2) + ")");
+        //variables written to in a veritesting region will always become intermediates because they will be
+        //phi'd at the end of the region
+        IntegerExpression lhsExpr = varUtil.makeIntermediateVar(lhs);
+        IntegerExpression operand1Expr = varUtil.addVal(operand1);
+        IntegerExpression operand2Expr = varUtil.addVal(operand2);
+
         assert(!varUtil.isConstant(lhs));
-        String operatorString = new String();
+        Operator operator = NONE_OP;
         // ADD, SUB, MUL, DIV, REM, AND, OR, XOR
         switch((IBinaryOpInstruction.Operator) instruction.getOperator()) {
-            case ADD: operatorString = "PLUS"; break;
-            case SUB: operatorString = "MINUS"; break;
-            case MUL: operatorString = "MINUS"; break;
-            case DIV: operatorString = "MUL"; break;
-            case REM: operatorString = "REM"; break;
-            case AND: operatorString = "AND"; break;
-            case OR: operatorString = "OR"; break;
-            case XOR: operatorString = "XOR"; break;
+            case ADD: operator = PLUS; break;
+            case SUB: operator = MINUS; break;
+            case MUL: operator = MUL; break;
+            case DIV: operator = DIV; break;
+            case REM: operator = REM; break;
+            case AND: operator = AND; break;
+            case OR: operator = OR; break;
+            case XOR: operator = XOR; break;
             default:
                 System.out.println("unsupported operator (" + instruction.getOperator() + ") in SSABinaryOpInstruction");
                 assert(false);
         }
-        SPFExpr = varUtil.nCNLIE + "(" + lhsString + ", EQ, " +
-                varUtil.nCNLIE + "(" + operand1String + ", " + operatorString + ", " + operand2String + ") )";
+        SPFExpr =
+                new ComplexNonLinearIntegerExpression(lhsExpr, EQ,
+                        new ComplexNonLinearIntegerExpression(operand1Expr, operator, operand2Expr));
         canVeritest = true;
     }
 
@@ -253,14 +260,12 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
 
         assert(thenUseNum != -1);
         assert(elseUseNum != -1);
-        phiExprThen = varUtil.getValueString(instruction.getUse(thenUseNum));
-        phiExprElse = varUtil.getValueString(instruction.getUse(elseUseNum));
-        phiExprLHS = varUtil.getValueString(instruction.getDef(0));
+        phiExprThen = varUtil.addVal(instruction.getUse(thenUseNum));
+        phiExprElse = varUtil.addVal(instruction.getUse(elseUseNum));
+        phiExprLHS = varUtil.addDefVal(instruction.getDef(0));
+        assert(!(phiExprLHS instanceof IntegerConstant && !phiExprLHS.isHole()));
         assert(varUtil.ir.getSymbolTable().isConstant(instruction.getDef(0)) == false);
-        varUtil.addVal(instruction.getUse(0));
-        varUtil.addVal(instruction.getUse(1));
         //while other instructions may also update local variables, those should always become intermediate variables
-        varUtil.addDefVal(instruction.getDef(0));
     }
 
     @Override
@@ -284,7 +289,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         canVeritest = false;
     }
 
-    public String getSPFExpr() {
+    public ComplexNonLinearIntegerExpression getSPFExpr() {
         return SPFExpr;
     }
 
@@ -292,19 +297,21 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         return lastInstruction.toString();
     }
 
-    public String getPhiExprSPF(String thenPLAssignSPF, String elsePLAssignSPF) {
-        assert(phiExprThen != null && phiExprThen != "");
-        assert(phiExprElse != null && phiExprElse != "");
-        assert(phiExprLHS != null && phiExprLHS != "");
-        String phiExprThen_s = StringUtil.nCNLIE + phiExprLHS + ", EQ, " + phiExprThen + ")";
-        String phiExprElse_s = StringUtil.nCNLIE + phiExprLHS + ", EQ, " + phiExprElse + ")";
+    public ComplexNonLinearIntegerExpression getPhiExprSPF(ComplexNonLinearIntegerExpression thenPLAssignSPF,
+                                ComplexNonLinearIntegerExpression elsePLAssignSPF) {
+        assert(phiExprThen != null);
+        assert(phiExprElse != null);
+        assert(phiExprLHS != null);
         // (pathLabel == 1 && lhs == phiExprThen) || (pathLabel == 2 && lhs == phiExprElse)
-        return StringUtil.SPFLogicalOr(
-                StringUtil.SPFLogicalAnd( thenPLAssignSPF,
-                        phiExprThen_s),
-                StringUtil.SPFLogicalAnd( elsePLAssignSPF,
-                        phiExprElse_s
-                ));
+        ComplexNonLinearIntegerExpression thenExpr =
+                new ComplexNonLinearIntegerExpression(phiExprLHS, EQ, phiExprThen);
+        ComplexNonLinearIntegerExpression elseExpr =
+                new ComplexNonLinearIntegerExpression(phiExprLHS, EQ, phiExprElse);
+        return new ComplexNonLinearIntegerExpression(
+                new ComplexNonLinearIntegerExpression(thenPLAssignSPF, LOGICAL_AND, thenExpr),
+                LOGICAL_OR,
+                new ComplexNonLinearIntegerExpression(elsePLAssignSPF, LOGICAL_AND, elseExpr)
+        );
     }
 
 }

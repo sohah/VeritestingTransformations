@@ -7,17 +7,20 @@ import gov.nasa.jpf.symbc.Debug;
 
 public class VeritestingPerf {
 
+    private int count;
+
     public static void main(String[] args) {
         //(new VeritestingPerf()).countBitsSet(1);
-        int x[] = {1, 2, 3, 4};
-        (new VeritestingPerf()).testMe4(x, 4);
+        int x[] = {1, 2, 3, 4, 5, 6};
+        (new VeritestingPerf()).testMe4(x, 6);
+        //(new VeritestingPerf()).arrayTest(x, 6);
     }
 
     public int countBitsSet(int x) {
-        int count = 0;
+        //int count = 0;
         while (x != 0) {
             int lowbit = x & 1;
-            int flag;
+            int flag;// = 0;
             if (lowbit != 0) flag = 1;
             else flag = 0;
             count += flag;
@@ -48,6 +51,15 @@ public class VeritestingPerf {
         if (sum < 0) System.out.println("neg");
         else if (sum > 0) System.out.println("pos");
         else System.out.println("bug");
+    }
+
+    public void arrayTest (int[] x, int len) {
+        for(int i=0; i < len; i++)
+            x[i] = Debug.makeSymbolicInteger("x"+i);
+        for (int i = 0; i < len; i++) {
+            if (x[i] < 0) x[i] *= -1;
+            else x[i] *= 2;
+        }
     }
 
 };

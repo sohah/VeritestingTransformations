@@ -31,8 +31,17 @@ import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.StringStuff;
+import gov.nasa.jpf.symbc.VeritestingListener;
+import gov.nasa.jpf.symbc.numeric.Comparator;
+import gov.nasa.jpf.symbc.numeric.ComplexNonLinearIntegerExpression;
+import gov.nasa.jpf.symbc.numeric.Expression;
+import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
+
+import static gov.nasa.jpf.symbc.numeric.Comparator.EQ;
+import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_AND;
+import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_OR;
 
 
 public class VeritestingMain {
@@ -44,11 +53,11 @@ public class VeritestingMain {
         new MyAnalysis(args[1], args[3]);
     }*/
 
-    public Hashtable<Integer,VeritestingRegion> getVeritestingRegions(String appJar, String methodSig) {
+    public void analyzeForVeritesting(String appJar, String methodSig) {
         System.out.println(appJar + " " + methodSig);
         // causes java.lang.IllegalArgumentException: ill-formed sig testMe4(int[],int)
-        //startAnalysis(appJar, methodSig);
-        return null;
+        endingInsnsHash = new HashSet();
+        startAnalysis(appJar, methodSig);
     }
 
     SSACFG cfg;
@@ -103,116 +112,50 @@ public class VeritestingMain {
         return false;
     }
 
-    public void printSPFExpr(String thenExpr, String elseExpr,
-                             final String thenPLAssignSPF, final String elsePLAssignSPF,
+    public void constructVeritestingRegion(ComplexNonLinearIntegerExpression thenExpr,
+                                           ComplexNonLinearIntegerExpression elseExpr,
+                                           final ComplexNonLinearIntegerExpression thenPLAssignSPF,
+                                           final ComplexNonLinearIntegerExpression elsePLAssignSPF,
                              //String if_SPFExpr, String ifNot_SPFExpr,
                              ISSABasicBlock currUnit, ISSABasicBlock commonSucc,
                              int thenUseNum, int elseUseNum) throws InvalidClassFileException {
-        thenExpr = StringUtil.SPFLogicalAnd(thenExpr, thenPLAssignSPF);
-        elseExpr = StringUtil.SPFLogicalAnd(elseExpr, elsePLAssignSPF);
+        thenExpr = new ComplexNonLinearIntegerExpression(thenExpr, Comparator.LOGICAL_AND, thenPLAssignSPF);
+        elseExpr = new ComplexNonLinearIntegerExpression(elseExpr, Comparator.LOGICAL_AND, elsePLAssignSPF);
 
         // (If && thenExpr) || (ifNot && elseExpr)
-        String pathExpr1 =
-                StringUtil.SPFLogicalOr(
-                        StringUtil.SPFLogicalAnd("condition", thenExpr),
-                        StringUtil.SPFLogicalAnd("negCondition", elseExpr));
+        IntegerConstant condition = new IntegerConstant(varUtil.nextInt());
+        condition.setHole(true, Expression.HoleType.CONDITION);
+        IntegerConstant negCondition = new IntegerConstant(varUtil.nextInt());
+        negCondition.setHole(true, Expression.HoleType.NEGCONDITION);
+        varUtil.holeHashMap.put(condition, condition);
+        varUtil.holeHashMap.put(negCondition, negCondition);
+        ComplexNonLinearIntegerExpression pathExpr1 =
+                new ComplexNonLinearIntegerExpression(
+                        new ComplexNonLinearIntegerExpression(condition, LOGICAL_AND, thenExpr),
+                        LOGICAL_OR,
+                        new ComplexNonLinearIntegerExpression(negCondition, LOGICAL_AND, elseExpr));
 
-        String setSlotAttr = new String();
-        final ArrayList<String> lhs_SB = new ArrayList();
         MyIVisitor myIVisitor = new MyIVisitor(varUtil, thenUseNum, elseUseNum);
         commonSucc.iterator().next().visit(myIVisitor);
-        String phiExprSPF = myIVisitor.getPhiExprSPF(thenPLAssignSPF, elsePLAssignSPF);
+        ComplexNonLinearIntegerExpression phiExprSPF = myIVisitor.getPhiExprSPF(thenPLAssignSPF, elsePLAssignSPF);
         int startingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(currUnit.getLastInstructionIndex());
         int endingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(commonSucc.getFirstInstructionIndex());
 
-        String finalPathExpr = StringUtil.SPFLogicalAnd(pathExpr1, phiExprSPF);
-        // System.out.println("At offset = " + startingInsn +
-        //     " finalPathExpr = "+finalPathExpr);
-        // System.out.println("lvt.usedLocalVars.size = " + lvt.usedLocalVars.size());
+        ComplexNonLinearIntegerExpression finalPathExpr =
+                new ComplexNonLinearIntegerExpression(pathExpr1, LOGICAL_AND, phiExprSPF);
 
-        // Generate the executeInstruction listener function
-        String fn = "public void " + className +
-                "_" + methodName + "_VT_" + startingBC + "_" + endingBC + "\n";
-        fn += " (ThreadInfo ti, Instruction instructionToExecute) {\n";
-        fn += "  if(ti.getTopFrame().getPC().getPosition() == " + startingBC + " && \n";
-        fn += "     ti.getTopFrame().getMethodInfo().getName().equals(\"" + methodName + "\") && \n";
-        fn += "     ti.getTopFrame().getClassInfo().getName().equals(\"" + className + "\")) {\n";
-        fn +=   "      StackFrame sf = ti.getTopFrame();\n" +
-                "      InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();\n" +
-                "      Comparator trueComparator = instructionInfo.getTrueComparator();\n" +
-                "      Comparator falseComparator = instructionInfo.getFalseComparator();\n" +
-                "      int numOperands = instructionInfo.getNumOperands();\n" +
-                "      ComplexNonLinearIntegerExpression condition = instructionInfo.getCondition();\n" +
-                "      ComplexNonLinearIntegerExpression negCondition = instructionInfo.getNegCondition();\n" +
-                "      if(condition == null || negCondition == null) return;\n" +
-                "      PathCondition pc;\n" +
-                "      pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();\n" +
-                "      PathCondition eqPC = pc.make_copy();\n" +
-                "      PathCondition nePC = pc.make_copy();\n" +
-                "      IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();\n" +
-                "      eqPC._addDet(trueComparator, sym_v, 0);\n" +
-                "      nePC._addDet(falseComparator, sym_v, 0);\n" +
-                "      boolean eqSat = eqPC.simplify();\n" +
-                "      boolean neSat = nePC.simplify();\n" +
-                "      if(!eqSat && !neSat) {\n" +
-                "        System.out.println(\"both sides of branch at offset 11 are unsat\");\n" +
-                "        assert(false);\n" +
-                "      }\n" +
-                "      if( (eqSat && !neSat) || (!eqSat && neSat)) {\n" +
-                "        return;\n" +
-                "      }\n";
-        Iterator<Integer> it = varUtil.usedLocalVars.iterator();
-        while(it.hasNext()) {
-            Integer integer = it.next();
-            int slot = varUtil.getLocalVarSlot(integer);
-            if(slot!=-1) {
-                fn += "      IntegerExpression v"+integer+" = (IntegerExpression) sf.getLocalAttr("+slot+");\n";
-                fn += "      if (v" + integer + " == null) {\n" +
-                        "        v" + integer + " = new IntegerConstant(sf.getLocalVariable(" + slot + "));\n" +
-                        "      }\n";
-            }
-        }
-        it = varUtil.intermediateVars.iterator();
-        while(it.hasNext()) {
-            String string = it.next().toString();
-            fn += "      SymbolicInteger v" + string + " = makeSymbolicInteger(\"v" + string + "\" + pathLabelCount);\n";
-        }
-        it = varUtil.defLocalVars.iterator();
-        while(it.hasNext()) {
-            Integer integer = it.next();
-            String string = integer.toString();
-            setSlotAttr += "      sf.setSlotAttr(" + varUtil.getLocalVarSlot(integer) + ",  v" + string + ");\n";
-            fn += "      SymbolicInteger v" + string + " = makeSymbolicInteger(\"v" + string + "\" + pathLabelCount);\n";
-        }
-        for(int lhs_SB_i = 0; lhs_SB_i < lhs_SB.size(); lhs_SB_i++) {
-            String tmpStr = lhs_SB.get(lhs_SB_i);
-            fn += "      SymbolicInteger " + tmpStr + " = makeSymbolicInteger(\"" + tmpStr + "\" + pathLabelCount);\n";
-        }
-        fn += "      SymbolicInteger pathLabel" + pathLabelVarNum +
-                "        = makeSymbolicInteger(\"pathLabel" + pathLabelVarNum+ "\" + pathLabelCount);\n";
-        fn += "      IntegerExpression cnlie = " + finalPathExpr + ";\n";
-        fn += "      cnlie = constantFold(cnlie);\n" +
-                "      pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression) cnlie));\n";
-        fn += setSlotAttr + "\n";
-        fn += "      Instruction insn=instructionToExecute;\n";
-        fn += "      while(insn.getPosition() != " + endingBC + ") {\n";
-        fn += "        if(insn instanceof GOTO)  insn = ((GOTO) insn).getTarget();\n";
-        fn += "        else insn = insn.getNext();\n";
-        fn += "      }\n";
-        if(!endingInsnsHash.contains(startingBC)) {
-            fn += "      while(numOperands > 0) { sf.pop(); numOperands--; }\n";
-        }
-        fn += "      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);\n";
-        fn += "      ti.setNextPC(insn);\n";
-        fn += "      pathLabelCount+=1;\n";
-        fn += "    }\n";
-        fn += "  }\n";
+        VeritestingRegion veritestingRegion = new VeritestingRegion();
+        veritestingRegion.setCNLIE(finalPathExpr);
+        veritestingRegion.setStartInsnPosition(startingBC);
+        veritestingRegion.setEndInsnPosition(endingBC);
+        veritestingRegion.setOutputVars(varUtil.defLocalVars);
+        veritestingRegion.setClassName(className);
+        veritestingRegion.setMethodName(methodName);
+        veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
+        if(VeritestingListener.veritestingRegions == null)
+            VeritestingListener.veritestingRegions = new HashMap<Integer, VeritestingRegion>();
+        VeritestingListener.veritestingRegions.put(startingBC, veritestingRegion);
 
-        System.out.println(fn);
-        endingInsnsHash.add(endingBC);
-
-        varUtil.resetUsedLocalVars();
-        varUtil.resetIntermediateVars();
         pathLabelVarNum++;
     }
 
@@ -237,8 +180,7 @@ public class VeritestingMain {
                 break;
             } else if(succs.size() == 2 && !startingPointsHistory.contains(currUnit)) {
                 startingPointsHistory.add(currUnit);
-                varUtil.resetUsedLocalVars();
-                varUtil.resetIntermediateVars();
+                varUtil.reset();
                 // System.out.printf("  #succs = %d\n", succs.size());
                 myIVisitor = new MyIVisitor(varUtil, -1, -1);
                 currUnit.getLastInstruction().visit(myIVisitor);
@@ -251,17 +193,18 @@ public class VeritestingMain {
                     return;
                 }
 
-                String thenExpr="", elseExpr="";
-                final int thenPathLabel = StringUtil.getPathCounter();
-                final int elsePathLabel = StringUtil.getPathCounter();
+                ComplexNonLinearIntegerExpression thenExpr=null, elseExpr=null;
+                final int thenPathLabel = varUtil.getPathCounter();
+                final int elsePathLabel = varUtil.getPathCounter();
                 ISSABasicBlock thenPred = thenUnit, elsePred = elseUnit;
                 int thenUseNum=-1, elseUseNum=-1;
-                final String thenPLAssignSPF =
-                        StringUtil.nCNLIE + "pathLabel" + pathLabelVarNum +
-                                ", EQ, new IntegerConstant(" + thenPathLabel + "))";
-                final String elsePLAssignSPF =
-                        StringUtil.nCNLIE + "pathLabel" + pathLabelVarNum +
-                                ", EQ, new IntegerConstant(" + elsePathLabel + "))";
+                String pathLabel = "pathLabel" + pathLabelVarNum;
+                final ComplexNonLinearIntegerExpression thenPLAssignSPF =
+                        new ComplexNonLinearIntegerExpression(varUtil.makeIntermediateVar(pathLabel), EQ,
+                                new IntegerConstant(thenPathLabel));
+                final ComplexNonLinearIntegerExpression elsePLAssignSPF =
+                        new ComplexNonLinearIntegerExpression(varUtil.makeIntermediateVar(pathLabel), EQ,
+                                new IntegerConstant(elsePathLabel));
                 boolean canVeritest = true;
 
                 // Create thenExpr
@@ -277,10 +220,12 @@ public class VeritestingMain {
                             System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
                             break;
                         }
-                        String thenExpr1 = myIVisitor.getSPFExpr();
-                        if(thenExpr1 != null && !thenExpr1.equals("")) {
-                            if (!thenExpr.equals(""))
-                                thenExpr = StringUtil.SPFLogicalAnd(thenExpr, thenExpr1);
+                        ComplexNonLinearIntegerExpression thenExpr1 = myIVisitor.getSPFExpr();
+                        if(thenExpr1 != null) {
+                            if (thenExpr != null)
+                                thenExpr =
+                                        new ComplexNonLinearIntegerExpression(
+                                                thenExpr, LOGICAL_AND, thenExpr1);
                             else thenExpr = thenExpr1;
                         }
                     }
@@ -306,10 +251,12 @@ public class VeritestingMain {
                             System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
                             break;
                         }
-                        String elseExpr1 = myIVisitor.getSPFExpr();
-                        if(elseExpr1 != null && !elseExpr1.equals("")) {
-                            if (!elseExpr.equals(""))
-                                elseExpr = StringUtil.SPFLogicalAnd(elseExpr, elseExpr1);
+                        ComplexNonLinearIntegerExpression elseExpr1 = myIVisitor.getSPFExpr();
+                        if(elseExpr1 != null) {
+                            if (elseExpr != null)
+                                elseExpr =
+                                        new ComplexNonLinearIntegerExpression(
+                                                elseExpr, LOGICAL_AND, elseExpr1);
                             else elseExpr = elseExpr1;
                         }
                     }
@@ -317,10 +264,9 @@ public class VeritestingMain {
                     if(cfg.getNormalSuccessors(elseUnit).size() > 1) { canVeritest = false; break; }
                     elsePred = elseUnit;
                     elseUnit = cfg.getNormalSuccessors(elseUnit).iterator().next();
-
                     if(elseUnit == endingUnit) break;
                 }
-                // if there is no "else" side, then set else's predecessor to currUnit
+                // if there is no "else" side, else set else's predecessor to currUnit
                 if(canVeritest && (elsePred == commonSucc)) elsePred = currUnit;
 
                 // Assign pathLabel a value in the elseExpr
@@ -330,7 +276,7 @@ public class VeritestingMain {
                     }
                     thenUseNum = Util.whichPred(cfg, thenPred, commonSucc);
                     elseUseNum = Util.whichPred(cfg, elsePred, commonSucc);
-                    printSPFExpr(thenExpr, elseExpr, thenPLAssignSPF, elsePLAssignSPF,
+                    constructVeritestingRegion(thenExpr, elseExpr, thenPLAssignSPF, elsePLAssignSPF,
                             currUnit, commonSucc, thenUseNum, elseUseNum);
                 }
                 currUnit = commonSucc;

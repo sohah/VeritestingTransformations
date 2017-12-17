@@ -43,10 +43,65 @@ import java.util.LinkedList;
 
 
 public abstract class Expression implements Comparable<Expression> {
+
+	public void setHoleVarName(String holeVarName) {
+		this.holeVarName = holeVarName;
+	}
+	public String getHoleVarName() {
+		return holeVarName;
+	}
+	String holeVarName = "";
+
+	public enum HoleType {
+		LOCAL_INPUT("local_input"),
+		LOCAL_OUTPUT("local_output"),
+		NONE ("none"),
+		CONDITION("condition"),
+		NEGCONDITION("negcondition");
+		private final String string;
+
+		HoleType(String string) {
+			this.string = string;
+		}
+	}
+
 	public static LinkedList<String> trackedSymVars = new LinkedList<String>();
     public abstract String stringPC();
     public abstract void getVarsVals(Map<String,Object> varsVals);
 	public abstract void accept(ConstraintExpressionVisitor visitor);
 	public String prefix_notation() {throw new RuntimeException("error printing");}
+
+	public HoleType getHoleType() {
+		return holeType;
+	}
+
+	HoleType holeType = HoleType.NONE;
+
+	public boolean isHole() {
+		return isHole;
+	}
+
+	public void setHole(boolean hole, HoleType h) {
+		isHole = hole; holeType = h;
+		assert((isHole && holeType == HoleType.LOCAL_INPUT) ||
+				(isHole && holeType == HoleType.LOCAL_OUTPUT) ||
+				(isHole && holeType == HoleType.CONDITION) ||
+				(isHole && holeType == HoleType.NEGCONDITION) ||
+				(!isHole && holeType == HoleType.NONE));
+	}
+
+	protected boolean isHole = false;
+
+	public void setLocalStackSlot(int localStackSlot) {
+		assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
+		this.localStackSlot = localStackSlot;
+	}
+
+	public int getLocalStackSlot() {
+		assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
+		return localStackSlot;
+	}
+
+	protected int localStackSlot = -1;
 	
 }

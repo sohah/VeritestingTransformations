@@ -27,12 +27,13 @@ import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.ReflectUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
-import com.ibm.wala.util.WalaException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingRegion;
 import gov.nasa.jpf.vm.*;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import static gov.nasa.jpf.symbc.numeric.Comparator.*;
 import static gov.nasa.jpf.symbc.numeric.Operator.*;
@@ -40,9 +41,8 @@ import static gov.nasa.jpf.symbc.numeric.Operator.*;
 public class VeritestingListener extends PropertyListenerAdapter  {
 
   int sumId=0;
-  private HashMap<String, IntegerExpression> varCache;
 
-  private static Hashtable<Integer, gov.nasa.jpf.symbc.veritesting.VeritestingRegion> veritestingRegions;
+  public static HashMap<Integer, VeritestingRegion> veritestingRegions;
 
   public VeritestingListener(Config conf, JPF jpf) {
   }
@@ -332,7 +332,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     String[] lazy = conf.getStringArray("listener");
     if (lazy == null || !lazy[0].contains("Veritesting"))
       return;
-    //System.out.println("CLASSPATH = " + System.getenv("CLASSPATH"));
     if(veritestingRegions == null) {
       String classPath = conf.getStringArray("classpath")[0] + "/";
       String className = conf.getString("target");
@@ -340,11 +339,12 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       methodName = methodName.substring(methodName.indexOf(".")+1);
       methodName = methodName.substring(0, methodName.indexOf("("));
       String methodSig = ReflectUtil.getSignature(classPath, className, methodName);
-      gov.nasa.jpf.symbc.veritesting.VeritestingMain veritestingMain;
-      veritestingMain = new gov.nasa.jpf.symbc.veritesting.VeritestingMain();
-      veritestingRegions = veritestingMain.getVeritestingRegions(className + ".class", methodSig);
+      methodSig = className + "." + methodSig;
+      VeritestingMain veritestingMain = new VeritestingMain();
+      //veritestingRegions = veritestingMain.analyzeForVeritesting(className + ".class", "VeritestingPerf.testMe4([II)V");
+      veritestingMain.analyzeForVeritesting(className + ".class", methodSig);
     }
-    if(ti.getTopFrame().getPC().getPosition() == 46 &&
+    /*if(ti.getTopFrame().getPC().getPosition() == 46 &&
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
        ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
       TestPathsSimple_testMe3_VT_46_58(vm, ti, instructionToExecute);
@@ -364,51 +364,68 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       VeritestingPerf_testMe4_VT_57_69(ti, instructionToExecute);
     }
 
-/*    else if(veritestingRegions.contains(ti.getTopFrame().getPC().getPosition())) {
-      int offset = ti.getTopFrame().getPC().getPosition();
-      VeritestingRegion region = veritestingRegions.get(offset);
-      StackFrame sf = ti.getTopFrame();
-      InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
-      Comparator trueComparator = instructionInfo.getTrueComparator();
-      Comparator falseComparator = instructionInfo.getFalseComparator();
-      int numOperands = instructionInfo.getNumOperands();
-      ComplexNonLinearIntegerExpression condition = instructionInfo.getCondition();
-      ComplexNonLinearIntegerExpression negCondition = instructionInfo.getNegCondition();
-      if(condition == null || negCondition == null) return;
-      PathCondition pc;
-      pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-      PathCondition eqPC = pc.make_copy();
-      PathCondition nePC = pc.make_copy();
-      IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
-      eqPC._addDet(trueComparator, sym_v, 0);
-      nePC._addDet(falseComparator, sym_v, 0);
-      boolean eqSat = eqPC.simplify();
-      boolean neSat = nePC.simplify();
-      if(!eqSat && !neSat) {
-        System.out.println("both sides of branch at offset 11 are unsat");
-        assert(false);
-      }
-      if( (eqSat && !neSat) || (!eqSat && neSat)) {
-        return;
-      }
-      if(!createLocalVars(region.getLocalVars())) { return; }
-      if(!createIntermediateVars(region.getIntermediateVars())) return;
-      ComplexNonLinearIntegerExpression cnlie = region.getCNLIE();
-      if(!fillAllHoles(cnlie)) { return; }
-      region.setCNLIE(constantFold(cnlie));
-      pc._addDet(new ComplexNonLinearIntegerConstraint(cnlie));
-      if(!populateOutputs(region.getOutputVars())) { return;} //sf.setSlotAttr(3,   v24);
+    else */
+    if(veritestingRegions.containsKey(ti.getTopFrame().getPC().getPosition())) {
+      int position = ti.getTopFrame().getPC().getPosition();
+      String thisClassName, thisMethodName;
+      thisClassName = ti.getTopFrame().getClassInfo().getName();
+      thisMethodName = ti.getTopFrame().getMethodInfo().getName();
+      if(thisClassName.equals(veritestingRegions.get(position).getClassName()) &&
+              thisMethodName.equals(veritestingRegions.get(position).getMethodName())) {
+        int offset = ti.getTopFrame().getPC().getPosition();
+        VeritestingRegion region = veritestingRegions.get(offset);
+        StackFrame sf = ti.getTopFrame();
+        InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
+        Comparator trueComparator = instructionInfo.getTrueComparator();
+        Comparator falseComparator = instructionInfo.getFalseComparator();
+        int numOperands = instructionInfo.getNumOperands();
+        ComplexNonLinearIntegerExpression condition = instructionInfo.getCondition();
+        ComplexNonLinearIntegerExpression negCondition = instructionInfo.getNegCondition();
+        if (condition == null || negCondition == null) return;
+        PathCondition pc;
+        pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
+        PathCondition eqPC = pc.make_copy();
+        PathCondition nePC = pc.make_copy();
+        IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
+        eqPC._addDet(trueComparator, sym_v, 0);
+        nePC._addDet(falseComparator, sym_v, 0);
+        boolean eqSat = eqPC.simplify();
+        boolean neSat = nePC.simplify();
+        if (!eqSat && !neSat) {
+          System.out.println("both sides of branch at offset 11 are unsat");
+          assert (false);
+        }
+        if ((eqSat && !neSat) || (!eqSat && neSat)) {
+          return;
+        }
+        // this does not matter because the objects in cnlie will still need
+        // to be filled as a separate pass
+        HashMap<IntegerExpression, IntegerExpression> holeHashMap =
+                fillHoles(region.getHoleHashMap(), instructionInfo, sf);
+        if(holeHashMap == null) return;
+        region.setHoleHashMap(holeHashMap);
+        ComplexNonLinearIntegerExpression cnlie = region.getCNLIE();
+        fillASTHoles(cnlie, region.getHoleHashMap());
+        region.setCNLIE(constantFold(cnlie));
+        pc._addDet(new ComplexNonLinearIntegerConstraint(region.getCNLIE()));
+        if (!populateOutputs(region.getOutputVars(), holeHashMap, sf)) {
+          return;
+        } //sf.setSlotAttr(3,   v24);
 
-      Instruction insn=instructionToExecute;
-      while(insn.getPosition() != region.getEndInsnPosition()) {
-        if(insn instanceof GOTO)  insn = ((GOTO) insn).getTarget();
-        else insn = insn.getNext();
+        Instruction insn = instructionToExecute;
+        while (insn.getPosition() != region.getEndInsnPosition()) {
+          if (insn instanceof GOTO) insn = ((GOTO) insn).getTarget();
+          else insn = insn.getNext();
+        }
+        while (numOperands > 0) {
+          sf.pop();
+          numOperands--;
+        }
+        ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
+        ti.setNextPC(insn);
+        pathLabelCount += 1;
       }
-      while(numOperands > 0) { sf.pop(); numOperands--; }
-      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
-      ti.setNextPC(insn);
-      pathLabelCount+=1;
-    }*/
+    }
   }
 
   //TODO
@@ -416,33 +433,91 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   generate sf.setSlotAttr(3, v24)-like statements for all the outputs of the veritesting region
   using region
    */
-  private boolean populateOutputs(String[] outputVars) {
-    return false;
+  private boolean populateOutputs(HashSet<IntegerExpression> outputVars,
+                                  HashMap<IntegerExpression, IntegerExpression> holeHashMap,
+                                  StackFrame stackFrame) {
+    Iterator iterator = outputVars.iterator();
+    while(iterator.hasNext()) {
+      IntegerExpression holeExpression = (IntegerExpression) iterator.next(), finalValue;
+      assert(holeExpression.isHole());
+      assert(holeHashMap.containsKey(holeExpression));
+      assert(holeExpression.getHoleType() == Expression.HoleType.LOCAL_OUTPUT);
+      finalValue = holeHashMap.get(holeExpression);
+      stackFrame.setSlotAttr(holeExpression.getLocalStackSlot(), finalValue);
+    }
+    return true;
   }
 
   //TODO
   /*
   Walk the CNLIE expression, looking for holes (which will always be at the leaf nodes), and ensure that all holes
-  are filled in using varCache
+  are filled in
    */
-  private boolean fillAllHoles(ComplexNonLinearIntegerExpression cnlie) {
-    return false;
+  private IntegerExpression fillASTHoles(IntegerExpression integerExpression,
+                                         HashMap<IntegerExpression, IntegerExpression> holeHashMap) {
+    if(integerExpression instanceof IntegerConstant && !integerExpression.isHole()) return integerExpression;
+    if(integerExpression instanceof SymbolicInteger) return integerExpression;
+    if(integerExpression instanceof IntegerConstant && integerExpression.isHole()) {
+      assert(holeHashMap.containsKey(integerExpression));
+      IntegerExpression ret = holeHashMap.get(integerExpression);
+      assert(!ret.isHole());
+      assert(ret.getHoleType() == Expression.HoleType.NONE);
+      return ret;
+    }
+    if(integerExpression instanceof ComplexNonLinearIntegerExpression && !integerExpression.isHole()) {
+      ComplexNonLinearIntegerExpression cnlie = (ComplexNonLinearIntegerExpression) integerExpression;
+      cnlie.setLeft(fillASTHoles(cnlie.getLeft(), holeHashMap));
+      cnlie.setRight(fillASTHoles(cnlie.getRight(), holeHashMap));
+      return integerExpression;
+    }
+    return null;
   }
+
 
   //TODO
   /*
-  Load intermediate vars as SymbolicInteger objects and store them into varCache
+  Load from local variable stack slots IntegerExpression objects and store them into holeHashMap
    */
-  private boolean createIntermediateVars(String[] intermediateVars) {
-    return false;
-  }
-
-  //TODO
-  /*
-  Load from local variable stack slots IntegerExpression objects and store them into the varCache
-   */
-  private boolean createLocalVars(String[] localVars) {
-    return false;
+  private HashMap<IntegerExpression, IntegerExpression> fillHoles(
+          HashMap<IntegerExpression, IntegerExpression> holeHashMap,
+          InstructionInfo instructionInfo,
+          StackFrame stackFrame) {
+    for(HashMap.Entry<IntegerExpression, IntegerExpression> entry : holeHashMap.entrySet()) {
+      IntegerExpression key = entry.getKey(), finalValue;
+      assert(key.isHole());
+      switch(key.getHoleType()) {
+        case LOCAL_INPUT:
+          finalValue = (IntegerExpression) stackFrame.getLocalAttr(key.getLocalStackSlot());
+          if(finalValue == null) finalValue = new IntegerConstant(stackFrame.getLocalVariable(key.getLocalStackSlot()));
+          finalValue.setHole(false, Expression.HoleType.NONE);
+          //finalValue.setLocalStackSlot(key.getLocalStackSlot());
+          holeHashMap.put(key, finalValue);
+          break;
+        case LOCAL_OUTPUT:
+          finalValue = makeSymbolicInteger(key.getHoleVarName());
+          finalValue.setHole(false, Expression.HoleType.NONE);
+          holeHashMap.put(key, finalValue);
+          break;
+        case NONE:
+          System.out.println("expression marked as hole with NONE hole type: " +
+                  key.toString());
+          assert(false);
+          break;
+        case CONDITION:
+          finalValue = instructionInfo.getCondition();
+          finalValue.setHole(false, Expression.HoleType.NONE);
+          holeHashMap.put(key, finalValue);
+          break;
+        case NEGCONDITION:
+          finalValue = instructionInfo.getNegCondition();
+          finalValue.setHole(false, Expression.HoleType.NONE);
+          holeHashMap.put(key, finalValue);
+          break;
+        default:
+          return null;
+      }
+    }
+    return holeHashMap;
   }
 
   //TODO
@@ -708,49 +783,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
   }
 
-  //TODO
-  /*
-  Returns a SymbolicInteger or BinaryLinearIntegerExpression based on whether var is an intermediate or a local
-  variable to be loaded from a stack slot
-   */
-  private IntegerExpression getVar(StackFrame sf, String var) {
-    if(isCached(var)) return varCache.get(var);
-    IntegerExpression ret = null;
-    if(isIntermediate(var)) ret = makeSymbolicInteger(var);
-    else if(isLocal(var)) ret = (IntegerExpression) sf.getLocalAttr(getLocalStackSlot(var));
-    varCache.put(var, ret);
-    return varCache.get(var);
-  }
-
-  private boolean isCached(String var) {
-    return varCache.containsKey(var);
-  }
-
-  //TODO
-  /*
-  Returns the stack slot corresponding to local variable var
-   */
-  private int getLocalStackSlot(String var) {
-    assert(isLocal(var));
-    return -1;
-  }
-
-  //TODO
-  /*
-  Returns true if var is a local variable and var has a non-null stack slot assigned to it
-   */
-  private boolean isLocal(String var) {
-    return false;
-  }
-
-  //TODO
-  /*
-  Returns true if var is an intermediate variable
-   */
-  private boolean isIntermediate(String var) {
-    return false;
-  }
-
 
   public IntegerExpression constantFold(IntegerExpression integerExpression) {
     if(integerExpression instanceof IntegerConstant) return integerExpression;
@@ -941,31 +973,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
         negCondition = new ComplexNonLinearIntegerExpression(operand1, falseComparator, operand2);
       }
       return this;
-    }
-
-  }
-  public class Pair<L,R> {
-
-    private final L left;
-    private final R right;
-
-    public Pair(L left, R right) {
-      this.left = left;
-      this.right = right;
-    }
-
-    public L getLeft() { return left; }
-    public R getRight() { return right; }
-
-    @Override
-    public int hashCode() { return left.hashCode() ^ right.hashCode(); }
-
-    @Override
-    public boolean equals(Object o) {
-      if (!(o instanceof Pair)) return false;
-      Pair pairo = (Pair) o;
-      return this.left.equals(pairo.getLeft()) &&
-              this.right.equals(pairo.getRight());
     }
 
   }

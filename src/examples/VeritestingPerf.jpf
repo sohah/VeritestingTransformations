@@ -14,4 +14,4 @@ symbolic.dp=z3bitvector
 
 symbolic.min_int=-2147483648
 symbolic.max_int=2147483647
-#listener = .symbc.VeritestingListener
+listener = .symbc.VeritestingListener

@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting;
 
 import com.ibm.wala.ssa.*;
+import gov.nasa.jpf.symbc.numeric.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,21 +13,73 @@ public class VarUtil {
     IR ir;
     // Maps each WALA IR variable to its corresponding stack slot, if one exists
     HashMap<Integer, Integer> varsMap;
-    public HashSet<Integer> usedLocalVars, intermediateVars;
-    // Contains how many bytes before an if statement did its operands get populated
-    HashMap<Integer, Integer> ifToSetup;
-    public HashSet<Integer> defLocalVars;
-    private HashSet<Integer> conditionalVars;
-    public String nCNLIE;
+
+    public HashMap<String, IntegerExpression> varCache;
+
+    // these represent the outputs of a veritesting region
+    public HashSet<IntegerExpression> defLocalVars;
+
+    // contains all the holes in the cnlie AST
+    public HashMap<IntegerExpression, IntegerExpression> holeHashMap;
+
+    public static int pathCounter=0;
+    private static long holeID = 0;
+
+
+    public static final int getPathCounter() { pathCounter++; return pathCounter; }
+
+    public SymbolicInteger makeIntermediateVar(int val) {
+        String name = "v" + val;
+        return makeIntermediateVar(name);
+    }
+
+    public SymbolicInteger makeIntermediateVar(String name) {
+        if(varCache.containsKey(name))
+            return (SymbolicInteger) varCache.get(name);
+        SymbolicInteger s = new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name));
+        s.setHole(false, Expression.HoleType.NONE);
+        varCache.put(name, s);
+        return s;
+    }
+
+    public IntegerExpression makeLocalInputVar(int val) {
+        assert(varsMap.containsKey(val));
+        if(varCache.containsKey("v" + val))
+            return varCache.get("v" + val);
+        IntegerExpression integerExpression = new IntegerConstant(nextInt());
+        integerExpression.setHole(true, Expression.HoleType.LOCAL_INPUT);
+        integerExpression.setLocalStackSlot(varsMap.get(val));
+        varCache.put("v" + val, integerExpression);
+        return integerExpression;
+    }
+
+    public IntegerExpression makeLocalOutputVar(int val) {
+        assert(varsMap.containsKey(val));
+        if(varCache.containsKey("v" + val))
+            return varCache.get("v" + val);
+        IntegerExpression integerExpression = new IntegerConstant(nextInt());
+        integerExpression.setHole(true, Expression.HoleType.LOCAL_OUTPUT);
+        integerExpression.setLocalStackSlot(varsMap.get(val));
+        integerExpression.setHoleVarName("v" + val);
+        varCache.put("v" + val, integerExpression);
+        return integerExpression;
+    }
 
     public VarUtil(IR _ir, String _className, String _methodName) {
-        nCNLIE = new String("new ComplexNonLinearIntegerExpression");
         varsMap = new HashMap<> ();
-        intermediateVars = new HashSet<Integer> ();
-        usedLocalVars = new HashSet<Integer> ();
         defLocalVars = new HashSet<>();
-        conditionalVars = new HashSet<>();
-        ifToSetup = new HashMap<> ();
+        holeHashMap = new HashMap<>();
+        varCache = new HashMap<String, IntegerExpression> () {
+            @Override
+            public IntegerExpression put(String key, IntegerExpression integerExpression) {
+                if(integerExpression instanceof IntegerConstant && integerExpression.isHole()) {
+                    // using non-hole IntegerConstant object containing 0 as placeholder
+                    // for final filled-up hole object
+                    holeHashMap.put(integerExpression, integerExpression);
+                }
+                return super.put(key, integerExpression);
+            }
+        };
         className = _className;
         methodName = _methodName;
         ir = _ir;
@@ -263,11 +316,20 @@ public class VarUtil {
         return ret;
     }
 
-    public void addVal(int val) {
-        if(ir.getSymbolTable().isConstant(val)) return;
-        if(intermediateVars.contains(val) || defLocalVars.contains(val)) return;
-        if(isLocalVariable(val)) addUsedLocalVar(val);
-        else addIntermediateVar(val);
+    public IntegerExpression addVal(int val) {
+        String name = "v" + val;
+        if(varCache.containsKey(name))
+            return varCache.get(name);
+        IntegerExpression ret;
+        if(ir.getSymbolTable().isConstant(val)) {
+            ret = new IntegerConstant(getConstant(val));
+            varCache.put(name, ret);
+            return ret;
+        }
+        if(isLocalVariable(val)) ret = makeLocalInputVar(val);
+        else ret = makeIntermediateVar(val);
+        varCache.put(name, ret);
+        return ret;
     }
 
     public boolean isLocalVariable(int val) {
@@ -279,60 +341,40 @@ public class VarUtil {
         else return -1;
     }
 
-    public void addUsedLocalVar(int varName) {
-        usedLocalVars.add(varName);
-        return;
-    }
-
-    public void addIntermediateVar(int varName) {
-        intermediateVars.add(varName);
-        return;
-    }
-
-    public void addDefVal(int def) {
+    public IntegerExpression addDefVal(int def) {
+        //this assumes that we dont need to do anything special for intermediate vars defined in a region
         if(isLocalVariable(def)) {
-            addDefLocalVar(def);
+            return addDefLocalVar(def);
         }
-        else addIntermediateVar(def);
+        System.out.println("non-local value cannot be defined");
+        assert(false);
+        return null;
     }
 
-    private void addDefLocalVar(int def) { defLocalVars.add(def); }
-
-    public void addConditionalVal(int use) {
-        if(ir.getSymbolTable().isConstant(use)) return;
-        conditionalVars.add(use);
+    private IntegerExpression addDefLocalVar(int def) {
+        IntegerExpression ret = makeLocalOutputVar(def);
+        defLocalVars.add(ret);
+        return ret;
     }
-
-    public void resetUsedLocalVars() {
-        // G.v().out.println("resetUsedLocalVars");
-        usedLocalVars = new HashSet<Integer> ();
-    }
-    public void resetIntermediateVars() { intermediateVars = new HashSet<Integer> (); }
-
-    public int getOffsetFromLine(String line) {
-        int p1 = line.indexOf(':');
-        int p2 = line.substring(0,p1).lastIndexOf(' ');
-        return Integer.parseInt(line.substring(p2+1,p1));
-    }
-    public int getSetupInsn(int offset) {
-        if(ifToSetup.containsKey(offset)) return ifToSetup.get(offset);
-        else return -1;
-    }
-
-    public String getValueString(int use) {
-        return ir.getSymbolTable().isConstant(use) ?
-                "new IntegerConstant(" + Integer.toString(ir.getSymbolTable().getIntValue(use)) + ")" :
-                ir.getSymbolTable().getValueString(use);
-    }
-
 
     public boolean isConstant(int operand1) {
         return ir.getSymbolTable().isConstant(operand1);
     }
 
-    public String getConstant(int operand1) {
+    public int getConstant(int operand1) {
         assert(isConstant(operand1));
-        return new String(Integer.toString(ir.getSymbolTable().getIntValue(operand1)));
+        return ir.getSymbolTable().getIntValue(operand1);
+    }
+
+    public void reset() {
+        defLocalVars.clear();
+        varCache.clear();
+        holeHashMap.clear();
+    }
+
+    public long nextInt() {
+        holeID++;
+        return holeID;
     }
 }
 
