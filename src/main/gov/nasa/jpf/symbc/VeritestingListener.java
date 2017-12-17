@@ -343,7 +343,11 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       methodSig = className + "." + methodSig;
       VeritestingMain veritestingMain = new VeritestingMain();
       //veritestingRegions = veritestingMain.analyzeForVeritesting(className + ".class", "VeritestingPerf.testMe4([II)V");
+      long startTime = System.nanoTime();
       veritestingMain.analyzeForVeritesting(className + ".class", methodSig);
+      long endTime = System.nanoTime();
+      long duration = (endTime - startTime) / 1000000; //milliseconds
+      System.out.println("veritesting analysis took " + duration + " milliseconds");
     }
     /*if(ti.getTopFrame().getPC().getPosition() == 46 &&
        ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
