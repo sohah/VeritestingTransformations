@@ -119,8 +119,12 @@ public class VeritestingMain {
                              //String if_SPFExpr, String ifNot_SPFExpr,
                              ISSABasicBlock currUnit, ISSABasicBlock commonSucc,
                              int thenUseNum, int elseUseNum) throws InvalidClassFileException {
-        thenExpr = new ComplexNonLinearIntegerExpression(thenExpr, Comparator.LOGICAL_AND, thenPLAssignSPF);
-        elseExpr = new ComplexNonLinearIntegerExpression(elseExpr, Comparator.LOGICAL_AND, elsePLAssignSPF);
+        if(thenExpr != null)
+            thenExpr = new ComplexNonLinearIntegerExpression(thenExpr, Comparator.LOGICAL_AND, thenPLAssignSPF);
+        else thenExpr = thenPLAssignSPF;
+        if(elseExpr != null)
+            elseExpr = new ComplexNonLinearIntegerExpression(elseExpr, Comparator.LOGICAL_AND, elsePLAssignSPF);
+        else elseExpr = elsePLAssignSPF;
 
         // (If && thenExpr) || (ifNot && elseExpr)
         IntegerConstant condition = new IntegerConstant(varUtil.nextInt());

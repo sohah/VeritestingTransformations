@@ -46,6 +46,14 @@ import java.util.Map;
 public class ComplexNonLinearIntegerExpression extends NonLinearIntegerExpression {
   public IntegerExpression left;
 
+  public void setOperator(Operator operator) {
+    this.operator = operator;
+  }
+
+  public void setCmprtr(Comparator cmprtr) {
+    this.cmprtr = cmprtr;
+  }
+
   private Operator operator;
 
   private Comparator cmprtr;

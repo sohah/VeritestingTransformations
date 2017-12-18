@@ -339,10 +339,10 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       String methodName = conf.getStringArray("symbolic.method")[0];
       methodName = methodName.substring(methodName.indexOf(".")+1);
       methodName = methodName.substring(0, methodName.indexOf("("));
+      // should be like VeritestingPerf.testMe4([II)V aka jvm internal format
       String methodSig = ReflectUtil.getSignature(classPath, className, methodName);
       methodSig = className + "." + methodSig;
       VeritestingMain veritestingMain = new VeritestingMain();
-      //veritestingRegions = veritestingMain.analyzeForVeritesting(className + ".class", "VeritestingPerf.testMe4([II)V");
       long startTime = System.nanoTime();
       veritestingMain.analyzeForVeritesting(className + ".class", methodSig);
       long endTime = System.nanoTime();
@@ -408,11 +408,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
         HashMap<IntegerExpression, IntegerExpression> holeHashMap =
                 fillHoles(region.getHoleHashMap(), instructionInfo, sf);
         if(holeHashMap == null) return;
-        region.setHoleHashMap(holeHashMap);
         ComplexNonLinearIntegerExpression cnlie = region.getCNLIE();
-        fillASTHoles(cnlie, region.getHoleHashMap());
-        region.setCNLIE(constantFold(cnlie));
-        pc._addDet(new ComplexNonLinearIntegerConstraint(region.getCNLIE()));
+        cnlie = (ComplexNonLinearIntegerExpression) fillASTHoles(cnlie, holeHashMap);
+        pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(cnlie)));
         if (!populateOutputs(region.getOutputVars(), holeHashMap, sf)) {
           return;
         } //sf.setSlotAttr(3,   v24);
@@ -458,24 +456,27 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   Walk the CNLIE expression, looking for holes (which will always be at the leaf nodes), and ensure that all holes
   are filled in
    */
-  private IntegerExpression fillASTHoles(IntegerExpression integerExpression,
+  private IntegerExpression fillASTHoles(IntegerExpression holeExpression,
                                          HashMap<IntegerExpression, IntegerExpression> holeHashMap) {
-    if(integerExpression instanceof IntegerConstant && !integerExpression.isHole()) return integerExpression;
-    if(integerExpression instanceof SymbolicInteger) return integerExpression;
-    if(integerExpression instanceof IntegerConstant && integerExpression.isHole()) {
-      assert(holeHashMap.containsKey(integerExpression));
-      IntegerExpression ret = holeHashMap.get(integerExpression);
+    if(holeExpression instanceof IntegerConstant && holeExpression.isHole()) {
+      assert(holeHashMap.containsKey(holeExpression));
+      IntegerExpression ret = holeHashMap.get(holeExpression);
       assert(!ret.isHole());
       assert(ret.getHoleType() == Expression.HoleType.NONE);
       return ret;
     }
-    if(integerExpression instanceof ComplexNonLinearIntegerExpression && !integerExpression.isHole()) {
-      ComplexNonLinearIntegerExpression cnlie = (ComplexNonLinearIntegerExpression) integerExpression;
-      cnlie.setLeft(fillASTHoles(cnlie.getLeft(), holeHashMap));
-      cnlie.setRight(fillASTHoles(cnlie.getRight(), holeHashMap));
-      return integerExpression;
+    if(holeExpression instanceof ComplexNonLinearIntegerExpression) {
+      assert(!holeExpression.isHole());
+      ComplexNonLinearIntegerExpression newCNLIE = new ComplexNonLinearIntegerExpression();
+      ComplexNonLinearIntegerExpression oldCNLIE = (ComplexNonLinearIntegerExpression) holeExpression;
+      newCNLIE.base = oldCNLIE.base;
+      newCNLIE.setCmprtr(oldCNLIE.getComparator());
+      newCNLIE.setOperator(oldCNLIE.getOperator());
+      newCNLIE.setLeft(fillASTHoles(oldCNLIE.getLeft(), holeHashMap));
+      newCNLIE.setRight(fillASTHoles(oldCNLIE.getRight(), holeHashMap));
+      return newCNLIE;
     }
-    return null;
+    return holeExpression;
   }
 
 
@@ -487,6 +488,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
           HashMap<IntegerExpression, IntegerExpression> holeHashMap,
           InstructionInfo instructionInfo,
           StackFrame stackFrame) {
+    HashMap<IntegerExpression, IntegerExpression> retHoleHashMap = new HashMap<>();
     for(HashMap.Entry<IntegerExpression, IntegerExpression> entry : holeHashMap.entrySet()) {
       IntegerExpression key = entry.getKey(), finalValue;
       assert(key.isHole());
@@ -496,17 +498,17 @@ public class VeritestingListener extends PropertyListenerAdapter  {
           if(finalValue == null) finalValue = new IntegerConstant(stackFrame.getLocalVariable(key.getLocalStackSlot()));
           finalValue.setHole(false, Expression.HoleType.NONE);
           //finalValue.setLocalStackSlot(key.getLocalStackSlot());
-          holeHashMap.put(key, finalValue);
+          retHoleHashMap.put(key, finalValue);
           break;
         case LOCAL_OUTPUT:
           finalValue = makeSymbolicInteger(key.getHoleVarName() + pathLabelCount);
           finalValue.setHole(false, Expression.HoleType.NONE);
-          holeHashMap.put(key, finalValue);
+          retHoleHashMap.put(key, finalValue);
           break;
         case INTERMEDIATE:
           finalValue = makeSymbolicInteger(key.getHoleVarName() + pathLabelCount);
           finalValue.setHole(false, Expression.HoleType.NONE);
-          holeHashMap.put(key, finalValue);
+          retHoleHashMap.put(key, finalValue);
           break;
         case NONE:
           System.out.println("expression marked as hole with NONE hole type: " +
@@ -516,18 +518,18 @@ public class VeritestingListener extends PropertyListenerAdapter  {
         case CONDITION:
           finalValue = instructionInfo.getCondition();
           finalValue.setHole(false, Expression.HoleType.NONE);
-          holeHashMap.put(key, finalValue);
+          retHoleHashMap.put(key, finalValue);
           break;
         case NEGCONDITION:
           finalValue = instructionInfo.getNegCondition();
           finalValue.setHole(false, Expression.HoleType.NONE);
-          holeHashMap.put(key, finalValue);
+          retHoleHashMap.put(key, finalValue);
           break;
         default:
           return null;
       }
     }
-    return holeHashMap;
+    return retHoleHashMap;
   }
 
   //TODO
