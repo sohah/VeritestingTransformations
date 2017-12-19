@@ -21,6 +21,7 @@
 	NOTE: this file is local - it is never in the repository!
   -->
   <property file="local.properties"/>
+
   <property environment="env"/>
 
   <!-- this is where we get the 'jpf.core' location from -->
@@ -30,7 +31,8 @@
   <property name="jpf-core" value = "../jpf-core"/>
 
   <!-- get the jpf-core path properties -->
-  <property file="${jpf-core}/jpf.properties"/>
+	<property file="${jpf-core}/jpf.properties"/>
+
 
   <!-- compiler settings -->
   <property name="src_level"     value="8"/> 

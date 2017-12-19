@@ -18,6 +18,7 @@ limitations under the License.
 //package org.jwatter.util;
 //http://www.java2s.com/Code/Java/Reflection/Methodsignature.htm
 import com.ibm.wala.types.TypeName;
+import org.apache.bcel.classfile.Utility;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -27,48 +28,23 @@ import java.net.URLClassLoader;
 
 public class ReflectUtil
 {
-    public static String parametersAsString ( Method method )
-    {
-        return parametersAsString(method, true);
-    }
-    public static String getSignature ( Method method, boolean longTypeNames )
+    public static String getSignature ( Method method )
     {
         return method.getName() + "("
-                + parametersAsString(method, longTypeNames) + ")" + JVMize(method.getReturnType().getName());
+                + parametersAsString(method) + ")"
+                + Utility.getSignature(method.getReturnType().getSimpleName());
     }
-    public static String parametersAsString ( Method method,
-                                              boolean longTypeNames )
+    public static String parametersAsString ( Method method )
     {
         Class<?>[] parameterTypes = method.getParameterTypes();
         if ( parameterTypes.length == 0 ) return "";
         StringBuilder paramString = new StringBuilder();
 
-        paramString.append(JVMize(parameterTypes[0].getName()));
-        for ( int i = 1 ; i < parameterTypes.length ; i++ )
+        for ( int i = 0 ; i < parameterTypes.length ; i++ )
         {
-            paramString.append(JVMize(parameterTypes[i].getName()));
+            paramString.append(Utility.getSignature(parameterTypes[i].getSimpleName()));
         }
         return paramString.toString();
-    }
-
-    private static String JVMize(String name) {
-        switch(name) {
-            case "void": return "V";
-            case "boolean": return "Z";
-            case "byte": return "B";
-            case "char": return "C";
-            case "short": return "S";
-            case "int": return "I";
-            case "long": return "J";
-            case "float": return "F";
-            case "double": return "D";
-            default: return name;
-        }
-    }
-
-    public static String getSignature ( Method method )
-    {
-        return getSignature(method, true);
     }
 
     public static String getSignature(String classPath, String className, String methodPartialName) {

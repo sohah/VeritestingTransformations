@@ -11,9 +11,9 @@ public class VeritestingPerf {
 
     public static void main(String[] args) {
         //(new VeritestingPerf()).cfgTest(1);
-        //(new VeritestingPerf()).countBitsSet(1);
-        int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-        (new VeritestingPerf()).testMe4(x, 12);
+        (new VeritestingPerf()).countBitsSet(1);
+        //int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+        //(new VeritestingPerf()).testMe4(x, 12);
         //(new VeritestingPerf()).arrayTest(x, 6);
     }
 
