@@ -1,11 +1,11 @@
 package gov.nasa.jpf.symbc.veritesting;
 
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
+import com.ibm.wala.shrikeBT.IShiftInstruction;
 import com.ibm.wala.ssa.*;
-import gov.nasa.jpf.symbc.numeric.ComplexNonLinearIntegerExpression;
-import gov.nasa.jpf.symbc.numeric.IntegerConstant;
-import gov.nasa.jpf.symbc.numeric.IntegerExpression;
-import gov.nasa.jpf.symbc.numeric.Operator;
+import com.ibm.wala.types.FieldReference;
+import com.ibm.wala.util.strings.Atom;
+import gov.nasa.jpf.symbc.numeric.*;
 
 import static gov.nasa.jpf.symbc.numeric.Comparator.EQ;
 import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_AND;
@@ -80,26 +80,39 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         int operand1 = instruction.getUse(0);
         int operand2 = instruction.getUse(1);
         //variables written to in a veritesting region will always become intermediates because they will be
-        //phi'd at the end of the region
+        //phi'd at the end of the region or be written into a class field later
         IntegerExpression lhsExpr = varUtil.makeIntermediateVar(lhs);
         IntegerExpression operand1Expr = varUtil.addVal(operand1);
         IntegerExpression operand2Expr = varUtil.addVal(operand2);
 
         assert(!varUtil.isConstant(lhs));
         Operator operator = NONE_OP;
-        // ADD, SUB, MUL, DIV, REM, AND, OR, XOR
-        switch((IBinaryOpInstruction.Operator) instruction.getOperator()) {
-            case ADD: operator = PLUS; break;
-            case SUB: operator = MINUS; break;
-            case MUL: operator = MUL; break;
-            case DIV: operator = DIV; break;
-            case REM: operator = REM; break;
-            case AND: operator = AND; break;
-            case OR: operator = OR; break;
-            case XOR: operator = XOR; break;
-            default:
-                System.out.println("unsupported operator (" + instruction.getOperator() + ") in SSABinaryOpInstruction");
-                assert(false);
+        if(instruction.getOperator() instanceof IBinaryOpInstruction.Operator) {
+            switch((IBinaryOpInstruction.Operator) instruction.getOperator()) {
+                case ADD: operator = PLUS; break;
+                case SUB: operator = MINUS; break;
+                case MUL: operator = MUL; break;
+                case DIV: operator = DIV; break;
+                case REM: operator = REM; break;
+                case AND: operator = AND; break;
+                case OR: operator = OR; break;
+                case XOR: operator = XOR; break;
+                default:
+                    System.out.println("unsupported operator (" + instruction.getOperator() + ") in SSABinaryOpInstruction");
+                    assert(false);
+            }
+        } else if(instruction.getOperator() instanceof IShiftInstruction.Operator) {
+            switch((IShiftInstruction.Operator) instruction.getOperator()) {
+                case SHL: operator = SHIFTL; break;
+                case SHR: operator = SHIFTR; break;
+                case USHR: operator = SHIFTUR; break;
+                default:
+                    System.out.println("unsupported operator (" + instruction.getOperator() + ") in SSABinaryOpInstruction");
+                    assert(false);
+            }
+        } else {
+            System.out.println("unknown type of operator (" + instruction.getOperator() + ") in SSABinaryOpInstruction");
+            assert(false);
         }
         SPFExpr =
                 new ComplexNonLinearIntegerExpression(lhsExpr, EQ,
@@ -190,15 +203,32 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
     @Override
     public void visitGet(SSAGetInstruction instruction) {
         System.out.println("SSAGetInstruction = " + instruction);
+        assert(instruction.getNumberOfDefs()==1);
+        assert(instruction.getNumberOfUses()==1);
+        FieldReference fieldReference = instruction.getDeclaredField();
+        Atom declaringClass = fieldReference.getDeclaringClass().getName().getClassName();
+        Atom fieldName = fieldReference.getName();
+        System.out.println("declaringClass = " + declaringClass + ", methodName = " + fieldName);
+        int use = instruction.getUse(0);
+        int def = instruction.getDef(0);
+        varUtil.addFieldVal(def, use, declaringClass.toString(), fieldName.toString(), Expression.HoleType.FIELD_INPUT);
         lastInstruction = instruction;
-        canVeritest = false;
+        canVeritest = true;
     }
 
     @Override
     public void visitPut(SSAPutInstruction instruction) {
         System.out.println("SSAPutInstruction = " + instruction);
+        assert(instruction.getNumberOfUses()==2);
+        assert(instruction.getNumberOfDefs()==0);
+        int objRef = instruction.getRef();
+        int defVal = instruction.getVal();
+        FieldReference fieldReference = instruction.getDeclaredField();
+        Atom declaringClass = fieldReference.getDeclaringClass().getName().getClassName();
+        Atom fieldName = fieldReference.getName();
+        varUtil.addFieldVal(defVal, objRef, declaringClass.toString(), fieldName.toString(), Expression.HoleType.FIELD_OUTPUT);
         lastInstruction = instruction;
-        canVeritest = false;
+        canVeritest = true;
     }
 
     @Override
@@ -314,4 +344,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         );
     }
 
+    public boolean hasPhiExpr() {
+        return phiExprThen != null && phiExprElse != null && phiExprLHS != null;
+    }
 }

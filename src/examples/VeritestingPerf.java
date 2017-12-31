@@ -7,7 +7,7 @@ import gov.nasa.jpf.symbc.Debug;
 
 public class VeritestingPerf {
 
-    private int count;
+    private int count = 0;
 
     public static void main(String[] args) {
         //(new VeritestingPerf()).cfgTest(1);
@@ -17,7 +17,7 @@ public class VeritestingPerf {
         //(new VeritestingPerf()).arrayTest(x, 6);
     }
 
-    public int countBitsSet(int x) {
+    public int countBitsSetSimple(int x) {
         //int count = 0;
         while (x != 0) {
             int lowbit = x & 1;
@@ -25,6 +25,14 @@ public class VeritestingPerf {
             if (lowbit != 0) flag = 1;
             else flag = 0;
             count += flag;
+            x = x >>> 1; // logical right shift
+        }
+        return count;
+    }
+
+    public int countBitsSet(int x) {
+        while (x != 0) {
+            if ((x & 1) != 0) count += 1;
             x = x >>> 1; // logical right shift
         }
         return count;

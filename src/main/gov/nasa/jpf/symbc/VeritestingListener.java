@@ -24,11 +24,11 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.GOTO;
+import gov.nasa.jpf.jvm.bytecode.PutHelper;
 import gov.nasa.jpf.symbc.numeric.*;
-import gov.nasa.jpf.symbc.veritesting.ReflectUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingRegion;
-import gov.nasa.jpf.symbc.veritesting.VeritestingRegionKey;
+import gov.nasa.jpf.util.InstructionState;
 import gov.nasa.jpf.vm.*;
 
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 
   int sumId=0;
 
-  public static HashMap<Integer, VeritestingRegion> veritestingRegions;
+  public static HashMap<String, VeritestingRegion> veritestingRegions;
 
   public VeritestingListener(Config conf, JPF jpf) {
   }
@@ -98,7 +98,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   }
 
   public SymbolicInteger makeSymbolicInteger(String name) {
-    return new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name));
+    //return new SymbolicInteger(name, MinMax.getVarMinInt(name), MinMax.getVarMaxInt(name));
+    return new SymbolicInteger(name, Integer.MIN_VALUE, Integer.MAX_VALUE);
   }
 
   // TestPathsSimple listener for testMe3
@@ -336,15 +337,10 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     if(veritestingRegions == null) {
       String classPath = conf.getStringArray("classpath")[0] + "/";
       String className = conf.getString("target");
-      String methodName = conf.getStringArray("symbolic.method")[0];
-      methodName = methodName.substring(methodName.indexOf(".")+1);
-      methodName = methodName.substring(0, methodName.indexOf("("));
       // should be like VeritestingPerf.testMe4([II)V aka jvm internal format
-      String methodSig = ReflectUtil.getSignature(classPath, className, methodName);
-      methodSig = className + "." + methodSig;
-      VeritestingMain veritestingMain = new VeritestingMain();
+      VeritestingMain veritestingMain = new VeritestingMain(className + ".class");
       long startTime = System.nanoTime();
-      veritestingMain.analyzeForVeritesting(className + ".class", methodSig);
+      veritestingMain.analyzeForVeritesting(classPath, className);
       long endTime = System.nanoTime();
       long duration = (endTime - startTime) / 1000000; //milliseconds
       System.out.println("veritesting analysis took " + duration + " milliseconds");
@@ -370,64 +366,62 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
 
     /* else*/
-    int position = ti.getTopFrame().getPC().getPosition();
-    if(veritestingRegions.containsKey(position)) {
-      String thisClassName, thisMethodName;
-      thisClassName = ti.getTopFrame().getClassInfo().getName();
-      thisMethodName = ti.getTopFrame().getMethodInfo().getName();
-      if(thisClassName.equals(veritestingRegions.get(position).getClassName()) &&
-              thisMethodName.equals(veritestingRegions.get(position).getMethodName())) {
-        int offset = ti.getTopFrame().getPC().getPosition();
-        VeritestingRegion region = veritestingRegions.get(offset);
-        StackFrame sf = ti.getTopFrame();
-        InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
-        Comparator trueComparator = instructionInfo.getTrueComparator();
-        Comparator falseComparator = instructionInfo.getFalseComparator();
-        int numOperands = instructionInfo.getNumOperands();
-        ComplexNonLinearIntegerExpression condition = instructionInfo.getCondition();
-        ComplexNonLinearIntegerExpression negCondition = instructionInfo.getNegCondition();
-        if (condition == null || negCondition == null) return;
-        PathCondition pc;
-        pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-        PathCondition eqPC = pc.make_copy();
-        PathCondition nePC = pc.make_copy();
-        IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
-        eqPC._addDet(trueComparator, sym_v, 0);
-        nePC._addDet(falseComparator, sym_v, 0);
-        boolean eqSat = eqPC.simplify();
-        boolean neSat = nePC.simplify();
-        if (!eqSat && !neSat) {
-          System.out.println("both sides of branch at offset 11 are unsat");
-          assert (false);
-        }
-        if ((eqSat && !neSat) || (!eqSat && neSat)) {
-          return;
-        }
-        // this does not matter because the objects in cnlie will still need
-        // to be filled as a separate pass
-        HashMap<IntegerExpression, IntegerExpression> holeHashMap =
-                fillHoles(region.getHoleHashMap(), instructionInfo, sf);
-        if(holeHashMap == null) return;
-        ComplexNonLinearIntegerExpression cnlie = region.getCNLIE();
-        cnlie = (ComplexNonLinearIntegerExpression) fillASTHoles(cnlie, holeHashMap);
-        pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(cnlie)));
-        if (!populateOutputs(region.getOutputVars(), holeHashMap, sf)) {
-          return;
-        } //sf.setSlotAttr(3,   v24);
-
-        Instruction insn = instructionToExecute;
-        while (insn.getPosition() != region.getEndInsnPosition()) {
-          if (insn instanceof GOTO) insn = ((GOTO) insn).getTarget();
-          else insn = insn.getNext();
-        }
-        while (numOperands > 0) {
-          sf.pop();
-          numOperands--;
-        }
-        ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
-        ti.setNextPC(insn);
-        pathLabelCount += 1;
+    String key = ti.getTopFrame().getClassInfo().getName() + "." + ti.getTopFrame().getMethodInfo().getName() +
+            "#" + ti.getTopFrame().getPC().getPosition();
+    if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
+      VeritestingRegion region = veritestingRegions.get(key);
+      StackFrame sf = ti.getTopFrame();
+      InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
+      Comparator trueComparator = instructionInfo.getTrueComparator();
+      Comparator falseComparator = instructionInfo.getFalseComparator();
+      int numOperands = instructionInfo.getNumOperands();
+      ComplexNonLinearIntegerExpression condition = instructionInfo.getCondition();
+      ComplexNonLinearIntegerExpression negCondition = instructionInfo.getNegCondition();
+      if (condition == null || negCondition == null) return;
+      PathCondition pc;
+      pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
+      PathCondition eqPC = pc.make_copy();
+      PathCondition nePC = pc.make_copy();
+      IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
+      eqPC._addDet(trueComparator, sym_v, 0);
+      nePC._addDet(falseComparator, sym_v, 0);
+      boolean eqSat = eqPC.simplify();
+      boolean neSat = nePC.simplify();
+      if (!eqSat && !neSat) {
+        System.out.println("both sides of branch at offset " + ti.getTopFrame().getPC().getPosition() + " are unsat");
+        assert (false);
       }
+      if ((eqSat && !neSat) || (!eqSat && neSat)) {
+        return;
+      }
+      // this does not matter because the objects in cnlie will still need
+      // to be filled as a separate pass
+      HashMap<IntegerExpression, IntegerExpression> holeHashMap =
+              fillHoles(region.getHoleHashMap(), instructionInfo, sf, ti);
+      if(holeHashMap == null) return;
+      ComplexNonLinearIntegerExpression cnlie = region.getCNLIE();
+      cnlie = (ComplexNonLinearIntegerExpression) fillASTHoles(cnlie, holeHashMap);
+      pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(cnlie)));
+      if(!pc.simplify()) {
+        System.out.println("veritesting region added unsat summary");
+        assert(false);
+      }
+      if (!populateOutputs(region.getOutputVars(), holeHashMap, sf, ti)) {
+        return;
+      } //sf.setSlotAttr(3,   v24);
+
+      Instruction insn = instructionToExecute;
+      while (insn.getPosition() != region.getEndInsnPosition()) {
+        if (insn instanceof GOTO) insn = ((GOTO) insn).getTarget();
+        else insn = insn.getNext();
+      }
+      while (numOperands > 0) {
+        sf.pop();
+        numOperands--;
+      }
+      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
+      ti.setNextPC(insn);
+      pathLabelCount += 1;
     }
   }
 
@@ -438,15 +432,23 @@ public class VeritestingListener extends PropertyListenerAdapter  {
    */
   private boolean populateOutputs(HashSet<IntegerExpression> outputVars,
                                   HashMap<IntegerExpression, IntegerExpression> holeHashMap,
-                                  StackFrame stackFrame) {
+                                  StackFrame stackFrame, ThreadInfo ti) {
     Iterator iterator = outputVars.iterator();
     while(iterator.hasNext()) {
       IntegerExpression holeExpression = (IntegerExpression) iterator.next(), finalValue;
       assert(holeExpression.isHole());
       assert(holeHashMap.containsKey(holeExpression));
-      assert(holeExpression.getHoleType() == Expression.HoleType.LOCAL_OUTPUT);
       finalValue = holeHashMap.get(holeExpression);
-      stackFrame.setSlotAttr(holeExpression.getLocalStackSlot(), finalValue);
+      switch(holeExpression.getHoleType()) {
+        case LOCAL_OUTPUT:
+          stackFrame.setSlotAttr(holeExpression.getLocalStackSlot(), finalValue);
+          break;
+        case FIELD_OUTPUT:
+          Expression.FieldInfo fieldInfo = holeExpression.getFieldInfo();
+          assert(fieldInfo != null);
+          fillFieldOutputHole(ti, stackFrame, fieldInfo, finalValue);
+          break;
+      }
     }
     return true;
   }
@@ -487,7 +489,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   private HashMap<IntegerExpression, IntegerExpression> fillHoles(
           HashMap<IntegerExpression, IntegerExpression> holeHashMap,
           InstructionInfo instructionInfo,
-          StackFrame stackFrame) {
+          StackFrame stackFrame,
+          ThreadInfo ti) {
     HashMap<IntegerExpression, IntegerExpression> retHoleHashMap = new HashMap<>();
     for(HashMap.Entry<IntegerExpression, IntegerExpression> entry : holeHashMap.entrySet()) {
       IntegerExpression key = entry.getKey(), finalValue;
@@ -501,7 +504,16 @@ public class VeritestingListener extends PropertyListenerAdapter  {
           retHoleHashMap.put(key, finalValue);
           break;
         case LOCAL_OUTPUT:
+        case FIELD_OUTPUT:
           finalValue = makeSymbolicInteger(key.getHoleVarName() + pathLabelCount);
+          finalValue.setHole(false, Expression.HoleType.NONE);
+          retHoleHashMap.put(key, finalValue);
+          break;
+        case FIELD_INPUT:
+          Expression.FieldInfo fieldInfo = key.getFieldInfo();
+          assert(fieldInfo != null);
+          finalValue = fillFieldInputHole(ti, stackFrame, fieldInfo);
+          assert(finalValue != null);
           finalValue.setHole(false, Expression.HoleType.NONE);
           retHoleHashMap.put(key, finalValue);
           break;
@@ -532,7 +544,75 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     return retHoleHashMap;
   }
 
-  //TODO
+  IntegerExpression fillFieldInputHole(ThreadInfo ti,
+                                       StackFrame stackFrame,
+                                       Expression.FieldInfo fieldInputInfo) {
+    //get the object reference from fieldInputInfo.use's local stack slot
+    int objRef = stackFrame.getLocalVariable(fieldInputInfo.use.getLocalStackSlot());
+    if (objRef == 0) {
+      System.out.println("java.lang.NullPointerException" + "referencing field '" +
+              fieldInputInfo.fieldName+ "' on null object");
+      assert(false);
+    } else {
+      ElementInfo eiFieldOwner = ti.getElementInfo(objRef);
+      FieldInfo fieldInfo = null;
+      ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(fieldInputInfo.className);
+      if (ci != null) {
+        fieldInfo = ci.getInstanceField(fieldInputInfo.fieldName);
+      }
+      if (fieldInfo == null) {
+         System.out.println("java.lang.NoSuchFieldError" + "referencing field '" + fieldInputInfo.fieldName
+                + "' in " + eiFieldOwner);
+         assert(false);
+      } else {
+        Object fieldAttr = eiFieldOwner.getFieldAttr(fieldInfo);
+        if(fieldAttr != null) {
+          return (IntegerExpression) fieldAttr;
+        } else {
+          if (fieldInfo.getStorageSize() == 1) {
+            return new IntegerConstant(eiFieldOwner.get1SlotField(fieldInfo));
+          } else {
+            return new IntegerConstant(eiFieldOwner.get2SlotField(fieldInfo));
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  void fillFieldOutputHole(ThreadInfo ti,
+                                        StackFrame stackFrame,
+                                        Expression.FieldInfo fieldInputInfo,
+                                        IntegerExpression finalValue) {
+    int objRef = stackFrame.getLocalVariable(fieldInputInfo.use.getLocalStackSlot());
+    if (objRef == 0) {
+      System.out.println("java.lang.NullPointerException" + "referencing field '" +
+              fieldInputInfo.fieldName+ "' on null object");
+      assert(false);
+    } else {
+      ElementInfo eiFieldOwner = ti.getModifiableElementInfo(objRef);
+      FieldInfo fieldInfo = null;
+      ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(fieldInputInfo.className);
+      if (ci != null) {
+        fieldInfo = ci.getInstanceField(fieldInputInfo.fieldName);
+      }
+      if (fieldInfo == null) {
+        System.out.println("java.lang.NoSuchFieldError" + "referencing field '" + fieldInputInfo.fieldName
+                + "' in " + eiFieldOwner);
+        assert(false);
+      } else {
+        int fieldSize = fieldInfo.getStorageSize();
+        if (fieldSize == 1) {
+          eiFieldOwner.set1SlotField(fieldInfo, 0); // field value should not matter (I think)
+          eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+        } else {
+          eiFieldOwner.set2SlotField(fieldInfo, 0); // field value should not matter (I think)
+          eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+        }
+      }
+    }
+  }
+
   /*
   Returns a hastable mapping instruction bytecode offsets to method name and class name
    */

@@ -77,6 +77,9 @@ public class VarUtil {
                     // using non-hole IntegerConstant object containing 0 as placeholder
                     // for final filled-up hole object
                     holeHashMap.put(integerExpression, integerExpression);
+                    if(integerExpression.getHoleType() == Expression.HoleType.FIELD_OUTPUT ||
+                            integerExpression.getHoleType() == Expression.HoleType.LOCAL_OUTPUT)
+                        defLocalVars.add(integerExpression);
                 }
                 return super.put(key, integerExpression);
             }
@@ -345,17 +348,40 @@ public class VarUtil {
     public IntegerExpression addDefVal(int def) {
         //this assumes that we dont need to do anything special for intermediate vars defined in a region
         if(isLocalVariable(def)) {
-            return addDefLocalVar(def);
+            return makeLocalOutputVar(def);
         }
         System.out.println("non-local value cannot be defined");
         assert(false);
         return null;
     }
 
-    private IntegerExpression addDefLocalVar(int def) {
+    /*private IntegerExpression addDefLocalVar(int def) {
         IntegerExpression ret = makeLocalOutputVar(def);
         defLocalVars.add(ret);
         return ret;
+    }*/
+
+    public IntegerExpression addFieldVal(int def, int use,
+                                         String className,
+                                         String fieldName,
+                                         Expression.HoleType holeType) {
+        IntegerExpression ret = makeFieldVar(def, addVal(use), className, fieldName, holeType);
+        String name = "v" + def;
+        varCache.put(name, ret);
+        return ret;
+    }
+
+    private IntegerExpression makeFieldVar(int def, IntegerExpression use, String className, String fieldName,
+                                                Expression.HoleType holeType) {
+        assert(use.getHoleType() == Expression.HoleType.LOCAL_INPUT);
+        assert(holeType == Expression.HoleType.FIELD_OUTPUT || holeType == Expression.HoleType.FIELD_INPUT);
+        IntegerExpression integerExpression = new IntegerConstant(nextInt());
+        integerExpression.setHole(true, holeType);
+        integerExpression.setFieldInfo(use, className, fieldName);
+        String name = "v" + def;
+        integerExpression.setHoleVarName(name);
+        varCache.put("v" + def, integerExpression);
+        return integerExpression;
     }
 
     public boolean isConstant(int operand1) {

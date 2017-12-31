@@ -58,7 +58,10 @@ public abstract class Expression implements Comparable<Expression> {
 		INTERMEDIATE("intermediate"),
 		NONE ("none"),
 		CONDITION("condition"),
-		NEGCONDITION("negcondition");
+		NEGCONDITION("negcondition"),
+		FIELD_INPUT("field_input"),
+		FIELD_OUTPUT("field_output");
+
 		private final String string;
 
 		HoleType(String string) {
@@ -89,6 +92,8 @@ public abstract class Expression implements Comparable<Expression> {
 				(isHole && holeType == HoleType.INTERMEDIATE) ||
 				(isHole && holeType == HoleType.CONDITION) ||
 				(isHole && holeType == HoleType.NEGCONDITION) ||
+				(isHole && holeType == HoleType.FIELD_INPUT) ||
+				(isHole && holeType == HoleType.FIELD_OUTPUT) ||
 				(!isHole && holeType == HoleType.NONE));
 	}
 
@@ -98,12 +103,33 @@ public abstract class Expression implements Comparable<Expression> {
 		assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
 		this.localStackSlot = localStackSlot;
 	}
-
 	public int getLocalStackSlot() {
 		assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
 		return localStackSlot;
 	}
-
 	protected int localStackSlot = -1;
+
+	public void setFieldInfo(IntegerExpression use, String className, String fieldName) {
+		assert(holeType == HoleType.FIELD_INPUT || holeType == HoleType.FIELD_OUTPUT);
+		assert(use.getHoleType() == HoleType.LOCAL_INPUT);
+		fieldInfo = new FieldInfo(use, className, fieldName);
+	}
+
+	public FieldInfo getFieldInfo() {
+		return fieldInfo;
+	}
+
+	public class FieldInfo {
+		public IntegerExpression use;
+		public String className, fieldName;
+
+		public FieldInfo(IntegerExpression use, String className, String fieldName) {
+			this.use = use;
+			this.className = className;
+			this.fieldName = fieldName;
+		}
+	}
+
+	FieldInfo fieldInfo = null;
 	
 }

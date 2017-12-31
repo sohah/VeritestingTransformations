@@ -7,7 +7,12 @@ package gov.nasa.jpf.symbc.veritesting;
     cp ~/git_repos/MyWALA/$file/target/*.jar ~/IdeaProjects/jpf-symbc/lib/;
   done
 */
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 
 import com.ibm.wala.cfg.Util;
@@ -42,22 +47,52 @@ import x10.wala.util.NatLoopSolver;
 import static gov.nasa.jpf.symbc.numeric.Comparator.EQ;
 import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_AND;
 import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_OR;
+import static gov.nasa.jpf.symbc.veritesting.ReflectUtil.getSignature;
 
 
 public class VeritestingMain {
 
     public int pathLabelVarNum=0;
     public HashSet endingInsnsHash;
+    ClassHierarchy cha;
+
+    public VeritestingMain(String appJar) {
+        try {
+            appJar = System.getenv("TARGET_CLASSPATH_WALA") + appJar;
+            AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
+                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
+            cha = ClassHierarchyFactory.make(scope);
+        }
+        catch (WalaException|IOException e) {
+            e.printStackTrace();
+        }
+    }
     /*public static void main(String[] args) {
         endingInsnsHash = new HashSet();
         new MyAnalysis(args[1], args[3]);
     }*/
 
-    public void analyzeForVeritesting(String appJar, String methodSig) {
-        System.out.println(appJar + " " + methodSig);
+    public void analyzeForVeritesting(String classPath, String _className) {
         // causes java.lang.IllegalArgumentException: ill-formed sig testMe4(int[],int)
         endingInsnsHash = new HashSet();
-        startAnalysis(appJar, methodSig);
+
+        try {
+            File f = new File(classPath);
+            URL[] cp = new URL[]{f.toURI().toURL()};
+            URLClassLoader urlcl = new URLClassLoader(cp);
+            className = _className;
+            Class c = urlcl.loadClass(className);
+            Method[] allMethods = c.getDeclaredMethods();
+            for (Method m : allMethods) {
+                String signature = getSignature(m);
+                startAnalysis(className + "." + signature);
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        //startAnalysis(appJar, methodSig);
     }
 
     SSACFG cfg;
@@ -66,18 +101,15 @@ public class VeritestingMain {
     VarUtil varUtil;
     HashSet<NatLoop> loops;
     IR ir;
-    public void startAnalysis(String appJar, String methodSig) {
+    public void startAnalysis(String methodSig) {
         try {
-            System.out.println("appJar = " + appJar + ", methodSig = " + methodSig);
             startingPointsHistory = new HashSet();
-            appJar = System.getenv("TARGET_CLASSPATH_WALA") + appJar;
-            AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
-                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
-            ClassHierarchy cha = ClassHierarchyFactory.make(scope);
             MethodReference mr = StringStuff.makeMethodReference(methodSig);
             IMethod m = cha.resolveMethod(mr);
             if (m == null) {
-                Assertions.UNREACHABLE("could not resolve " + mr);
+                System.out.println("could not resolve " + mr);
+                return;
+                //Assertions.UNREACHABLE("could not resolve " + mr);
             }
             AnalysisOptions options = new AnalysisOptions();
             options.getSSAOptions().setPiNodePolicy(SSAOptions.getAllBuiltInPiNodes());
@@ -87,9 +119,8 @@ public class VeritestingMain {
                 Assertions.UNREACHABLE("Null IR for " + m);
             }
             cfg = ir.getControlFlowGraph();
-            className = m.getDeclaringClass().getName().getClassName().toString();
             methodName = m.getName().toString();
-            System.out.println("Starting analysis for " + methodName);
+            System.out.println("Starting analysis for " + methodName + "(" + methodSig + ")");
             varUtil = new VarUtil(ir, className, methodName);
             NumberedDominators<ISSABasicBlock> uninverteddom =
                     (NumberedDominators<ISSABasicBlock>) Dominators.make(cfg, cfg.entry());
@@ -97,7 +128,7 @@ public class VeritestingMain {
             HashSet<Integer> visited = new HashSet<>();
             NatLoopSolver.findAllLoops(cfg, uninverteddom,loops,visited,cfg.getNode(0));
             doAnalysis(cfg.entry(), null);
-        } catch (WalaException|IOException |InvalidClassFileException e) {
+        } catch (InvalidClassFileException e) {
             e.printStackTrace();
         }
     }
@@ -141,12 +172,15 @@ public class VeritestingMain {
 
         MyIVisitor myIVisitor = new MyIVisitor(varUtil, thenUseNum, elseUseNum);
         commonSucc.iterator().next().visit(myIVisitor);
-        ComplexNonLinearIntegerExpression phiExprSPF = myIVisitor.getPhiExprSPF(thenPLAssignSPF, elsePLAssignSPF);
+        ComplexNonLinearIntegerExpression phiExprSPF, finalPathExpr;
+        if(myIVisitor.hasPhiExpr()) {
+            phiExprSPF = myIVisitor.getPhiExprSPF(thenPLAssignSPF, elsePLAssignSPF);
+            finalPathExpr =
+                    new ComplexNonLinearIntegerExpression(pathExpr1, LOGICAL_AND, phiExprSPF);
+        } else finalPathExpr = pathExpr1;
+
         int startingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(currUnit.getLastInstructionIndex());
         int endingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(commonSucc.getFirstInstructionIndex());
-
-        ComplexNonLinearIntegerExpression finalPathExpr =
-                new ComplexNonLinearIntegerExpression(pathExpr1, LOGICAL_AND, phiExprSPF);
 
         VeritestingRegion veritestingRegion = new VeritestingRegion();
         veritestingRegion.setCNLIE(finalPathExpr);
@@ -157,8 +191,8 @@ public class VeritestingMain {
         veritestingRegion.setMethodName(methodName);
         veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
         if(VeritestingListener.veritestingRegions == null)
-            VeritestingListener.veritestingRegions = new HashMap<Integer, VeritestingRegion>();
-        VeritestingListener.veritestingRegions.put(startingBC, veritestingRegion);
+            VeritestingListener.veritestingRegions = new HashMap<String, VeritestingRegion>();
+        VeritestingListener.veritestingRegions.put(className+"."+methodName+"#"+startingBC, veritestingRegion);
 
         pathLabelVarNum++;
     }
