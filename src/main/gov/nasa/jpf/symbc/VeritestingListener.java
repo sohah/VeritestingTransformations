@@ -412,7 +412,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 
       Instruction insn = instructionToExecute;
       while (insn.getPosition() != region.getEndInsnPosition()) {
-        if (insn instanceof GOTO) insn = ((GOTO) insn).getTarget();
+        if (insn instanceof GOTO && (((GOTO) insn).getTarget().getPosition() <= region.getEndInsnPosition()))
+          insn = ((GOTO) insn).getTarget();
         else insn = insn.getNext();
       }
       while (numOperands > 0) {

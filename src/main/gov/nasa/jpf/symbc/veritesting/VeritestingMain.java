@@ -136,20 +136,20 @@ public class VeritestingMain {
     public boolean isLoopStart(ISSABasicBlock b) {
         Iterator var1 = loops.iterator();
 
-        for(int var2 = 1; var1.hasNext(); ++var2) {
+        while(var1.hasNext()) {
             NatLoop var3 = (NatLoop)var1.next();
             if(b == var3.getStart()) return true;
         }
         return false;
     }
 
-    public void constructVeritestingRegion(ComplexNonLinearIntegerExpression thenExpr,
-                                           ComplexNonLinearIntegerExpression elseExpr,
-                                           final ComplexNonLinearIntegerExpression thenPLAssignSPF,
-                                           final ComplexNonLinearIntegerExpression elsePLAssignSPF,
-                             //String if_SPFExpr, String ifNot_SPFExpr,
-                             ISSABasicBlock currUnit, ISSABasicBlock commonSucc,
-                             int thenUseNum, int elseUseNum) throws InvalidClassFileException {
+    public VeritestingRegion constructVeritestingRegion(
+            ComplexNonLinearIntegerExpression thenExpr,
+            ComplexNonLinearIntegerExpression elseExpr,
+            final ComplexNonLinearIntegerExpression thenPLAssignSPF,
+            final ComplexNonLinearIntegerExpression elsePLAssignSPF,
+            ISSABasicBlock currUnit, ISSABasicBlock commonSucc,
+            int thenUseNum, int elseUseNum) throws InvalidClassFileException {
         if(thenExpr != null)
             thenExpr = new ComplexNonLinearIntegerExpression(thenExpr, Comparator.LOGICAL_AND, thenPLAssignSPF);
         else thenExpr = thenPLAssignSPF;
@@ -192,9 +192,9 @@ public class VeritestingMain {
         veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
         if(VeritestingListener.veritestingRegions == null)
             VeritestingListener.veritestingRegions = new HashMap<String, VeritestingRegion>();
-        VeritestingListener.veritestingRegions.put(className+"."+methodName+"#"+startingBC, veritestingRegion);
 
         pathLabelVarNum++;
+        return veritestingRegion;
     }
 
     public void doAnalysis(ISSABasicBlock startingUnit, ISSABasicBlock endingUnit) throws InvalidClassFileException {
@@ -204,8 +204,6 @@ public class VeritestingMain {
         if(startingPointsHistory.contains(startingUnit)) return;
         while(true) {
             if(currUnit == null || currUnit == endingUnit) break;
-            //printTags((Stmt)currUnit);
-            // System.out.println("BOTag = " + ((Stmt)currUnit).getTag("BytecodeOffsetTag"));
             List<ISSABasicBlock> succs = new ArrayList<>(cfg.getNormalSuccessors(currUnit));
             ISSABasicBlock commonSucc = cfg.getIPdom(currUnit.getNumber());
             if(succs.size()==1) {
@@ -219,9 +217,6 @@ public class VeritestingMain {
             } else if(succs.size() == 2 && !startingPointsHistory.contains(currUnit)) {
                 startingPointsHistory.add(currUnit);
                 varUtil.reset();
-                // System.out.printf("  #succs = %d\n", succs.size());
-                myIVisitor = new MyIVisitor(varUtil, -1, -1);
-                currUnit.getLastInstruction().visit(myIVisitor);
 
                 ISSABasicBlock thenUnit = Util.getTakenSuccessor(cfg, currUnit);
                 ISSABasicBlock elseUnit = Util.getNotTakenSuccessor(cfg, currUnit);
@@ -247,8 +242,6 @@ public class VeritestingMain {
 
                 // Create thenExpr
                 while(thenUnit != commonSucc) {
-                    // System.out.println("BOTag = " + ((Stmt)thenUnit).getTag("BytecodeOffsetTag") +
-                    //     ", h.size() = " + h.size());
                     Iterator<SSAInstruction> ssaInstructionIterator = thenUnit.iterator();
                     while(ssaInstructionIterator.hasNext()) {
                         myIVisitor = new MyIVisitor(varUtil, -1, -1);
@@ -268,7 +261,11 @@ public class VeritestingMain {
                         }
                     }
                     if(!canVeritest) break;
-                    if(cfg.getNormalSuccessors(thenUnit).size() > 1) { canVeritest = false; break; }
+                    //TODO instead of giving up, try to compute a summary of everything from thenUnit up to commonSucc
+                    if(cfg.getNormalSuccessors(thenUnit).size() > 1) {
+                        canVeritest = false;
+                        break;
+                    }
                     thenPred = thenUnit;
                     thenUnit = cfg.getNormalSuccessors(thenUnit).iterator().next();
                     if(thenUnit == endingUnit) break;
@@ -278,8 +275,6 @@ public class VeritestingMain {
 
                 // Create elseExpr
                 while(canVeritest && elseUnit != commonSucc) {
-                    // System.out.println("BOTag = " + ((Stmt)elseUnit).getTag("BytecodeOffsetTag") +
-                    //     ", h.size() = " + h.size());
                     Iterator<SSAInstruction> ssaInstructionIterator = elseUnit.iterator();
                     while(ssaInstructionIterator.hasNext()) {
                         myIVisitor = new MyIVisitor(varUtil, -1, -1);
@@ -299,7 +294,11 @@ public class VeritestingMain {
                         }
                     }
                     if(!canVeritest) break;
-                    if(cfg.getNormalSuccessors(elseUnit).size() > 1) { canVeritest = false; break; }
+                    //TODO instead of giving up, try to compute a summary of everything from elseUnit up to commonSucc
+                    if(cfg.getNormalSuccessors(elseUnit).size() > 1) {
+                        canVeritest = false;
+                        break;
+                    }
                     elsePred = elseUnit;
                     elseUnit = cfg.getNormalSuccessors(elseUnit).iterator().next();
                     if(elseUnit == endingUnit) break;
@@ -314,8 +313,17 @@ public class VeritestingMain {
                     }
                     thenUseNum = Util.whichPred(cfg, thenPred, commonSucc);
                     elseUseNum = Util.whichPred(cfg, elsePred, commonSucc);
-                    constructVeritestingRegion(thenExpr, elseExpr, thenPLAssignSPF, elsePLAssignSPF,
-                            currUnit, commonSucc, thenUseNum, elseUseNum);
+                    VeritestingRegion veritestingRegion = constructVeritestingRegion(thenExpr, elseExpr,
+                            thenPLAssignSPF, elsePLAssignSPF,
+                            currUnit, commonSucc,
+                            thenUseNum, elseUseNum);
+                    if(veritestingRegion != null) {
+                        /*TODO At this point we can modify the current region based on the region created for
+                        the then or else side, if one of them encountered more than one successor */
+                        VeritestingListener.veritestingRegions.put(
+                                veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() + "#" +
+                                        veritestingRegion.getStartInsnPosition(), veritestingRegion);
+                    }
                 }
                 currUnit = commonSucc;
             } else {

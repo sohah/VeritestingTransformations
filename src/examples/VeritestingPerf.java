@@ -13,6 +13,7 @@ public class VeritestingPerf {
         //(new VeritestingPerf()).cfgTest(1);
         (new VeritestingPerf()).countBitsSet(1);
         //int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+        //(new VeritestingPerf()).testMe5(x, 1);
         //(new VeritestingPerf()).testMe4(x, 12);
         //(new VeritestingPerf()).arrayTest(x, 6);
     }
@@ -56,6 +57,21 @@ public class VeritestingPerf {
         for (int i = 0; i < len; i++) {
             if (x[i] < 0) sum += -1;
             else sum += 1;
+        }
+        if (sum < 0) System.out.println("neg");
+        else if (sum > 0) System.out.println("pos");
+        else System.out.println("bug");
+    }
+
+    public void testMe5 (int[] x, int len) {
+        int sum = 0; //Debug.makeSymbolicInteger("sum");
+        for(int i=0; i < len; i++)
+            x[i] = Debug.makeSymbolicInteger("x"+i);
+        for (int i = 0; i < len; i++) {
+            int val = x[i];
+            if (val < 0) sum += -1;
+            else if(val > 0) sum += 1;
+            else sum += 0;
         }
         if (sum < 0) System.out.println("neg");
         else if (sum > 0) System.out.println("pos");
