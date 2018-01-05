@@ -38,13 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import static gov.nasa.jpf.symbc.numeric.Comparator.NONE_CMP;
-import static gov.nasa.jpf.symbc.numeric.Operator.NONE_OP;
-
-
 public class VeritestingListener extends PropertyListenerAdapter  {
-
-  int sumId=0;
 
   public static HashMap<String, VeritestingRegion> veritestingRegions;
 
@@ -123,25 +117,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       long duration = (endTime - startTime) / 1000000; //milliseconds
       System.out.println("veritesting analysis took " + duration + " milliseconds");
     }
-    /*if(ti.getTopFrame().getPC().getPosition() == 46 &&
-       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
-       ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
-      TestPathsSimple_testMe3_VT_46_58(vm, ti, instructionToExecute);
-    } 
-    else if(ti.getTopFrame().getPC().getPosition() == 62 && 
-       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
-       ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
-      TestPathsSimple_testMe3_VT_62_74(vm, ti, instructionToExecute);
-    }
-    else if(ti.getTopFrame().getPC().getPosition() == 11 &&
-            ti.getTopFrame().getMethodInfo().getName().equals("countBitsSet") &&
-            ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
-      VeritestingPerf_countBitsSet_VT_11_16(ti, instructionToExecute);
-    } else if(ti.getTopFrame().getPC().getPosition() == 57 &&
-            ti.getTopFrame().getMethodInfo().getName().equals("testMe4") &&
-            ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
-      VeritestingPerf_testMe4_VT_57_69(ti, instructionToExecute);
-    } else*/
     String key = ti.getTopFrame().getClassInfo().getName() + "." + ti.getTopFrame().getMethodInfo().getName() +
             "#" + ti.getTopFrame().getPC().getPosition();
     if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
@@ -167,13 +142,11 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       if ((eqSat && !neSat) || (!eqSat && neSat)) {
         return;
       }
-      // this does not matter because the objects in summaryExpression will still need
-      // to be filled as a separate pass
       HashMap<Expression, Expression> holeHashMap =
               fillHoles(region.getHoleHashMap(), instructionInfo, sf, ti);
       if(holeHashMap == null) return;
       Expression summaryExpression = region.getSummaryExpression();
-      summaryExpression = fillASTHoles(summaryExpression, holeHashMap);
+      summaryExpression = fillASTHoles(summaryExpression, holeHashMap); //not constant-folding for now
       //pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(summaryExpression)));
       pc._addDet(new GreenConstraint(summaryExpression));
       if(!pc.simplify()) {
@@ -182,7 +155,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       }
       if (!populateOutputs(region.getOutputVars(), holeHashMap, sf, ti)) {
         return;
-      } //sf.setSlotAttr(3,   v24);
+      }
 
       Instruction insn = instructionToExecute;
       while (insn.getPosition() != region.getEndInsnPosition()) {
@@ -215,12 +188,11 @@ public class VeritestingListener extends PropertyListenerAdapter  {
         assert(false);
         break;
     }
-    return NONE_CMP;
+    return null;
   }
 
   /*
-  generate sf.setSlotAttr(3, v24)-like statements for all the outputs of the veritesting region
-  using region
+  write all outputs of the veritesting region
    */
   private boolean populateOutputs(HashSet<Expression> outputVars,
                                   HashMap<Expression, Expression> holeHashMap,
@@ -403,7 +375,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
   }
 
-  public IntegerExpression constantFold(IntegerExpression integerExpression) {
+  /*public IntegerExpression constantFold(IntegerExpression integerExpression) {
     if(integerExpression instanceof IntegerConstant) return integerExpression;
     if(integerExpression instanceof ComplexNonLinearIntegerExpression) {
       ComplexNonLinearIntegerExpression cnlie = (ComplexNonLinearIntegerExpression) integerExpression;
@@ -504,7 +476,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       }
     }
     return integerExpression;
-  }
+  }*/
 
 
   private class InstructionInfo {
