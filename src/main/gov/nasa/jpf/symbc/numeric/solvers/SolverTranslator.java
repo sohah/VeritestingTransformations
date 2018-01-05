@@ -164,7 +164,7 @@ public class SolverTranslator {
 
 	}
 
-	private final static class Translator extends ConstraintExpressionVisitor {
+	public final static class Translator extends ConstraintExpressionVisitor {
 
 		private Stack<Expression> stack;
 		
@@ -281,24 +281,66 @@ public class SolverTranslator {
 			Expression l;
 			Expression r;
 			switch (expression.getOp()) {
-			case PLUS:
-				r = stack.pop();
-				l = stack.pop();
-				stack.push(new Operation(Operation.Operator.ADD, l, r));
-				break;
-			case MINUS:
-				r = stack.pop();
-				l = stack.pop();
-				stack.push(new Operation(Operation.Operator.SUB, l, r));
-				break;
-			case MUL:
-				r = stack.pop();
-				l = stack.pop();
-				stack.push(new Operation(Operation.Operator.MUL, l, r));
-				break;
-			default:
-				System.out.println("SolverTranslator : unsupported operation " + expression.getOp());
-				throw new RuntimeException();
+				case PLUS:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.ADD, l, r));
+					break;
+				case MINUS:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.SUB, l, r));
+					break;
+				case DIV:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.DIV, l, r));
+					break;
+				case MUL:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.MUL, l, r));
+					break;
+				case AND:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.BIT_AND, l, r));
+					break;
+				case OR:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.BIT_OR, l, r));
+					break;
+				case XOR:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.BIT_XOR, l, r));
+					break;
+				case SHIFTL:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.SHIFTL, l, r));
+					break;
+				case SHIFTR:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.SHIFTR, l, r));
+					break;
+				case SHIFTUR:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.SHIFTUR, l, r));
+					break;
+				case REM:
+					r = stack.pop();
+					l = stack.pop();
+					stack.push(new Operation(Operation.Operator.MOD, l, r));
+					break;
+				case NONE_OP:
+				case CMP:
+				default:
+					System.out.println("SolverTranslator : unsupported operation " + expression.getOp());
+					throw new RuntimeException();
 			}
 		}
 

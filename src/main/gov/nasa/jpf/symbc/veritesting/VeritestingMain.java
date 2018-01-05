@@ -37,17 +37,13 @@ import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.StringStuff;
 import gov.nasa.jpf.symbc.VeritestingListener;
-import gov.nasa.jpf.symbc.numeric.Comparator;
-import gov.nasa.jpf.symbc.numeric.ComplexNonLinearIntegerExpression;
-import gov.nasa.jpf.symbc.numeric.Expression;
-import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
 
-import static gov.nasa.jpf.symbc.numeric.Comparator.EQ;
-import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_AND;
-import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_OR;
 import static gov.nasa.jpf.symbc.veritesting.ReflectUtil.getSignature;
+import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
+import za.ac.sun.cs.green.expr.Operation;
 
 
 public class VeritestingMain {
@@ -144,46 +140,45 @@ public class VeritestingMain {
     }
 
     public VeritestingRegion constructVeritestingRegion(
-            ComplexNonLinearIntegerExpression thenExpr,
-            ComplexNonLinearIntegerExpression elseExpr,
-            final ComplexNonLinearIntegerExpression thenPLAssignSPF,
-            final ComplexNonLinearIntegerExpression elsePLAssignSPF,
+            Expression thenExpr,
+            Expression elseExpr,
+            final Expression thenPLAssignSPF,
+            final Expression elsePLAssignSPF,
             ISSABasicBlock currUnit, ISSABasicBlock commonSucc,
             int thenUseNum, int elseUseNum) throws InvalidClassFileException {
         if(thenExpr != null)
-            thenExpr = new ComplexNonLinearIntegerExpression(thenExpr, Comparator.LOGICAL_AND, thenPLAssignSPF);
+            thenExpr = new Operation(Operation.Operator.AND, thenExpr, thenPLAssignSPF);
         else thenExpr = thenPLAssignSPF;
         if(elseExpr != null)
-            elseExpr = new ComplexNonLinearIntegerExpression(elseExpr, Comparator.LOGICAL_AND, elsePLAssignSPF);
+            elseExpr = new Operation(Operation.Operator.AND, elseExpr, elsePLAssignSPF);
         else elseExpr = elsePLAssignSPF;
 
         // (If && thenExpr) || (ifNot && elseExpr)
-        IntegerConstant condition = new IntegerConstant(varUtil.nextInt());
-        condition.setHole(true, Expression.HoleType.CONDITION);
-        IntegerConstant negCondition = new IntegerConstant(varUtil.nextInt());
-        negCondition.setHole(true, Expression.HoleType.NEGCONDITION);
+        HoleExpression condition = new HoleExpression(varUtil.nextInt());
+        condition.setHole(true, HoleExpression.HoleType.CONDITION);
+        HoleExpression negCondition = new HoleExpression(varUtil.nextInt());
+        negCondition.setHole(true, HoleExpression.HoleType.NEGCONDITION);
         varUtil.holeHashMap.put(condition, condition);
         varUtil.holeHashMap.put(negCondition, negCondition);
-        ComplexNonLinearIntegerExpression pathExpr1 =
-                new ComplexNonLinearIntegerExpression(
-                        new ComplexNonLinearIntegerExpression(condition, LOGICAL_AND, thenExpr),
-                        LOGICAL_OR,
-                        new ComplexNonLinearIntegerExpression(negCondition, LOGICAL_AND, elseExpr));
+        Expression pathExpr1 =
+                new Operation(Operation.Operator.OR,
+                        new Operation(Operation.Operator.AND, condition, thenExpr),
+                        new Operation(Operation.Operator.AND, negCondition, elseExpr));
 
         MyIVisitor myIVisitor = new MyIVisitor(varUtil, thenUseNum, elseUseNum);
         commonSucc.iterator().next().visit(myIVisitor);
-        ComplexNonLinearIntegerExpression phiExprSPF, finalPathExpr;
+        Expression phiExprSPF, finalPathExpr;
         if(myIVisitor.hasPhiExpr()) {
             phiExprSPF = myIVisitor.getPhiExprSPF(thenPLAssignSPF, elsePLAssignSPF);
             finalPathExpr =
-                    new ComplexNonLinearIntegerExpression(pathExpr1, LOGICAL_AND, phiExprSPF);
+                    new Operation(Operation.Operator.AND, pathExpr1, phiExprSPF);
         } else finalPathExpr = pathExpr1;
 
         int startingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(currUnit.getLastInstructionIndex());
         int endingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(commonSucc.getFirstInstructionIndex());
 
         VeritestingRegion veritestingRegion = new VeritestingRegion();
-        veritestingRegion.setCNLIE(finalPathExpr);
+        veritestingRegion.setSummaryExpression(finalPathExpr);
         veritestingRegion.setStartInsnPosition(startingBC);
         veritestingRegion.setEndInsnPosition(endingBC);
         veritestingRegion.setOutputVars(varUtil.defLocalVars);
@@ -226,18 +221,18 @@ public class VeritestingMain {
                     return;
                 }
 
-                ComplexNonLinearIntegerExpression thenExpr=null, elseExpr=null;
+                Expression thenExpr=null, elseExpr=null;
                 final int thenPathLabel = varUtil.getPathCounter();
                 final int elsePathLabel = varUtil.getPathCounter();
                 ISSABasicBlock thenPred = thenUnit, elsePred = elseUnit;
                 int thenUseNum=-1, elseUseNum=-1;
                 String pathLabel = "pathLabel" + pathLabelVarNum;
-                final ComplexNonLinearIntegerExpression thenPLAssignSPF =
-                        new ComplexNonLinearIntegerExpression(varUtil.makeIntermediateVar(pathLabel), EQ,
-                                new IntegerConstant(thenPathLabel));
-                final ComplexNonLinearIntegerExpression elsePLAssignSPF =
-                        new ComplexNonLinearIntegerExpression(varUtil.makeIntermediateVar(pathLabel), EQ,
-                                new IntegerConstant(elsePathLabel));
+                final Expression thenPLAssignSPF =
+                        new Operation(Operation.Operator.EQ, varUtil.makeIntermediateVar(pathLabel),
+                                new IntConstant(thenPathLabel));
+                final Expression elsePLAssignSPF =
+                        new Operation(Operation.Operator.EQ, varUtil.makeIntermediateVar(pathLabel),
+                                new IntConstant(elsePathLabel));
                 boolean canVeritest = true;
 
                 // Create thenExpr
@@ -251,12 +246,12 @@ public class VeritestingMain {
                             System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
                             break;
                         }
-                        ComplexNonLinearIntegerExpression thenExpr1 = myIVisitor.getSPFExpr();
+                        Expression thenExpr1 = myIVisitor.getSPFExpr();
                         if(thenExpr1 != null) {
                             if (thenExpr != null)
                                 thenExpr =
-                                        new ComplexNonLinearIntegerExpression(
-                                                thenExpr, LOGICAL_AND, thenExpr1);
+                                        new Operation(Operation.Operator.AND,
+                                                thenExpr, thenExpr1);
                             else thenExpr = thenExpr1;
                         }
                     }
@@ -284,12 +279,12 @@ public class VeritestingMain {
                             System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
                             break;
                         }
-                        ComplexNonLinearIntegerExpression elseExpr1 = myIVisitor.getSPFExpr();
+                        Expression elseExpr1 = myIVisitor.getSPFExpr();
                         if(elseExpr1 != null) {
                             if (elseExpr != null)
                                 elseExpr =
-                                        new ComplexNonLinearIntegerExpression(
-                                                elseExpr, LOGICAL_AND, elseExpr1);
+                                        new Operation(Operation.Operator.AND,
+                                                elseExpr, elseExpr1);
                             else elseExpr = elseExpr1;
                         }
                     }

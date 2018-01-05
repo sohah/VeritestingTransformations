@@ -5,13 +5,10 @@ import com.ibm.wala.shrikeBT.IShiftInstruction;
 import com.ibm.wala.ssa.*;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.util.strings.Atom;
-import gov.nasa.jpf.symbc.numeric.*;
+import za.ac.sun.cs.green.expr.Expression;
 
-import static gov.nasa.jpf.symbc.numeric.Comparator.EQ;
-import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_AND;
-import static gov.nasa.jpf.symbc.numeric.Comparator.LOGICAL_OR;
-import static gov.nasa.jpf.symbc.numeric.Operator.*;
-
+import za.ac.sun.cs.green.expr.Operation;
+import za.ac.sun.cs.green.expr.Operation.Operator;
 
 public class MyIVisitor implements SSAInstruction.IVisitor {
     private final int thenUseNum;
@@ -19,9 +16,9 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
     boolean isPhiInstruction = false;
     VarUtil varUtil;
     SSAInstruction lastInstruction;
-    private IntegerExpression phiExprThen;
-    private IntegerExpression phiExprElse;
-    private IntegerExpression phiExprLHS;
+    private Expression phiExprThen;
+    private Expression phiExprElse;
+    private Expression phiExprLHS;
 
     public boolean canVeritest() {
         return canVeritest;
@@ -39,7 +36,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
 
     private String ifExprStr_SPF, ifNotExprStr_SPF;*/
 
-    private ComplexNonLinearIntegerExpression SPFExpr;
+    private Expression SPFExpr;
 
     public MyIVisitor(VarUtil _varUtil, int _thenUseNum, int _elseUseNum) {
         varUtil = _varUtil;
@@ -81,31 +78,31 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         int operand2 = instruction.getUse(1);
         //variables written to in a veritesting region will always become intermediates because they will be
         //phi'd at the end of the region or be written into a class field later
-        IntegerExpression lhsExpr = varUtil.makeIntermediateVar(lhs);
-        IntegerExpression operand1Expr = varUtil.addVal(operand1);
-        IntegerExpression operand2Expr = varUtil.addVal(operand2);
+        Expression lhsExpr = varUtil.makeIntermediateVar(lhs);
+        Expression operand1Expr = varUtil.addVal(operand1);
+        Expression operand2Expr = varUtil.addVal(operand2);
 
         assert(!varUtil.isConstant(lhs));
-        Operator operator = NONE_OP;
+        Operator operator = null;
         if(instruction.getOperator() instanceof IBinaryOpInstruction.Operator) {
             switch((IBinaryOpInstruction.Operator) instruction.getOperator()) {
-                case ADD: operator = PLUS; break;
-                case SUB: operator = MINUS; break;
-                case MUL: operator = MUL; break;
-                case DIV: operator = DIV; break;
-                case REM: operator = REM; break;
-                case AND: operator = AND; break;
-                case OR: operator = OR; break;
-                case XOR: operator = XOR; break;
+                case ADD: operator = Operator.ADD; break;
+                case SUB: operator = Operator.SUB; break;
+                case MUL: operator = Operator.MUL; break;
+                case DIV: operator = Operator.DIV; break;
+                case REM: operator = Operator.MOD; break;
+                case AND: operator = Operator.BIT_AND; break;
+                case OR: operator = Operator.BIT_OR; break;
+                case XOR: operator = Operator.BIT_XOR; break;
                 default:
                     System.out.println("unsupported operator (" + instruction.getOperator() + ") in SSABinaryOpInstruction");
                     assert(false);
             }
         } else if(instruction.getOperator() instanceof IShiftInstruction.Operator) {
             switch((IShiftInstruction.Operator) instruction.getOperator()) {
-                case SHL: operator = SHIFTL; break;
-                case SHR: operator = SHIFTR; break;
-                case USHR: operator = SHIFTUR; break;
+                case SHL: operator = Operator.SHIFTL; break;
+                case SHR: operator = Operator.SHIFTR; break;
+                case USHR: operator = Operator.SHIFTUR; break;
                 default:
                     System.out.println("unsupported operator (" + instruction.getOperator() + ") in SSABinaryOpInstruction");
                     assert(false);
@@ -115,8 +112,8 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
             assert(false);
         }
         SPFExpr =
-                new ComplexNonLinearIntegerExpression(lhsExpr, EQ,
-                        new ComplexNonLinearIntegerExpression(operand1Expr, operator, operand2Expr));
+                new Operation(Operator.EQ, lhsExpr,
+                        new Operation(operator, operand1Expr, operand2Expr));
         canVeritest = true;
     }
 
@@ -211,7 +208,8 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         System.out.println("declaringClass = " + declaringClass + ", methodName = " + fieldName);
         int use = instruction.getUse(0);
         int def = instruction.getDef(0);
-        varUtil.addFieldVal(def, use, declaringClass.toString(), fieldName.toString(), Expression.HoleType.FIELD_INPUT);
+        varUtil.addFieldVal(def, use, declaringClass.toString(), fieldName.toString(),
+                HoleExpression.HoleType.FIELD_INPUT);
         lastInstruction = instruction;
         canVeritest = true;
     }
@@ -226,7 +224,8 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         FieldReference fieldReference = instruction.getDeclaredField();
         Atom declaringClass = fieldReference.getDeclaringClass().getName().getClassName();
         Atom fieldName = fieldReference.getName();
-        varUtil.addFieldVal(defVal, objRef, declaringClass.toString(), fieldName.toString(), Expression.HoleType.FIELD_OUTPUT);
+        varUtil.addFieldVal(defVal, objRef, declaringClass.toString(), fieldName.toString(),
+                HoleExpression.HoleType.FIELD_OUTPUT);
         lastInstruction = instruction;
         canVeritest = true;
     }
@@ -293,7 +292,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         phiExprThen = varUtil.addVal(instruction.getUse(thenUseNum));
         phiExprElse = varUtil.addVal(instruction.getUse(elseUseNum));
         phiExprLHS = varUtil.addDefVal(instruction.getDef(0));
-        assert(!(phiExprLHS instanceof IntegerConstant && !phiExprLHS.isHole()));
+        assert(!(phiExprLHS instanceof HoleExpression && !((HoleExpression)phiExprLHS).isHole()));
         assert(varUtil.ir.getSymbolTable().isConstant(instruction.getDef(0)) == false);
         //while other instructions may also update local variables, those should always become intermediate variables
     }
@@ -319,7 +318,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         canVeritest = false;
     }
 
-    public ComplexNonLinearIntegerExpression getSPFExpr() {
+    public Expression getSPFExpr() {
         return SPFExpr;
     }
 
@@ -327,20 +326,19 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         return lastInstruction.toString();
     }
 
-    public ComplexNonLinearIntegerExpression getPhiExprSPF(ComplexNonLinearIntegerExpression thenPLAssignSPF,
-                                ComplexNonLinearIntegerExpression elsePLAssignSPF) {
+    public Expression getPhiExprSPF(Expression thenPLAssignSPF,
+                                    Expression elsePLAssignSPF) {
         assert(phiExprThen != null);
         assert(phiExprElse != null);
         assert(phiExprLHS != null);
         // (pathLabel == 1 && lhs == phiExprThen) || (pathLabel == 2 && lhs == phiExprElse)
-        ComplexNonLinearIntegerExpression thenExpr =
-                new ComplexNonLinearIntegerExpression(phiExprLHS, EQ, phiExprThen);
-        ComplexNonLinearIntegerExpression elseExpr =
-                new ComplexNonLinearIntegerExpression(phiExprLHS, EQ, phiExprElse);
-        return new ComplexNonLinearIntegerExpression(
-                new ComplexNonLinearIntegerExpression(thenPLAssignSPF, LOGICAL_AND, thenExpr),
-                LOGICAL_OR,
-                new ComplexNonLinearIntegerExpression(elsePLAssignSPF, LOGICAL_AND, elseExpr)
+        Operation thenExpr =
+                new Operation(Operator.EQ, phiExprLHS, phiExprThen);
+        Operation elseExpr =
+                new Operation(Operator.EQ, phiExprLHS, phiExprElse);
+        return new Operation(Operator.OR,
+                new Operation(Operator.AND, thenPLAssignSPF, thenExpr),
+                new Operation(Operator.AND, elsePLAssignSPF, elseExpr)
         );
     }
 

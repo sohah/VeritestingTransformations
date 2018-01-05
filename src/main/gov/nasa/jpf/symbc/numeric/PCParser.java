@@ -60,6 +60,8 @@ import java.util.Map;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemGeneral;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3;
+import za.ac.sun.cs.green.expr.VisitorException;
+import com.microsoft.z3.Expr;
 
 
 // parses PCs
@@ -1063,29 +1065,45 @@ public class PCParser {
     boolean constraintResult = true;
 
     if (cRef instanceof RealConstraint)
-      constraintResult= createDPRealConstraint((RealConstraint)cRef);// create choco real constraint
+      constraintResult = createDPRealConstraint((RealConstraint) cRef);// create choco real constraint
     else if (cRef instanceof LinearIntegerConstraint)
-      constraintResult= createDPLinearIntegerConstraint((LinearIntegerConstraint)cRef);// create choco linear integer constraint
+      constraintResult = createDPLinearIntegerConstraint((LinearIntegerConstraint) cRef);// create choco linear integer constraint
     else if (cRef instanceof MixedConstraint)
       // System.out.println("Mixed Constraint");
-      constraintResult= createDPMixedConstraint((MixedConstraint)cRef);
+      constraintResult = createDPMixedConstraint((MixedConstraint) cRef);
     else if (cRef instanceof LogicalORLinearIntegerConstraints) {
       //if (!(pb instanceof ProblemChoco)) {
       //  throw new RuntimeException ("String solving only works with Choco for now");
       //}
       //System.out.println("[SymbolicConstraintsGeneral] reached");
-      constraintResult= createDPLinearOrIntegerConstraint((LogicalORLinearIntegerConstraints)cRef);
+      constraintResult = createDPLinearOrIntegerConstraint((LogicalORLinearIntegerConstraints) cRef);
 
-    }
-    else {
+    } else {
       //System.out.println("## Warning: Non Linear Integer Constraint (only coral or z3 can handle it)" + cRef);
-      if(pb instanceof ProblemCoral || pb instanceof ProblemZ3 || pb instanceof ProblemZ3BitVector ||  pb instanceof ProblemZ3Incremental || pb instanceof ProblemZ3BitVectorIncremental)
-        constraintResult= createDPNonLinearIntegerConstraint((NonLinearIntegerConstraint)cRef);
+      if (pb instanceof ProblemCoral || pb instanceof ProblemZ3 || pb instanceof ProblemZ3BitVector || pb instanceof ProblemZ3Incremental || pb instanceof ProblemZ3BitVectorIncremental)
+        if (cRef instanceof GreenConstraint)
+          constraintResult = createDPGreenConstraint((GreenConstraint) cRef);
+        else
+          constraintResult = createDPNonLinearIntegerConstraint((NonLinearIntegerConstraint) cRef);
       else
         throw new RuntimeException("## Error: Non Linear Integer Constraint not handled " + cRef);
     }
-    
+
     return constraintResult; //false -> not sat
 
+  }
+
+  private static boolean createDPGreenConstraint(GreenConstraint cRef) {
+    ProblemZ3BitVector greenPb = new ProblemZ3BitVector();
+    GreenPbTranslator greenPbTranslator = new GreenPbTranslator(greenPb);
+    try {
+      cRef.getExp().accept(greenPbTranslator);
+    }
+    catch (VisitorException e1) {
+      System.out.println("Error in translation to Z3");
+    }
+    Expr result = (Expr) greenPbTranslator.getTranslation() ;
+    pb.post(result);
+    return true;
   }
 }

@@ -107,6 +107,17 @@ public class PathCondition implements Comparable<PathCondition> {
 		return pc_new;
 	}
 
+	// Added by Soha
+	public void _addDet(GreenConstraint greenConstraint) {
+		if (!this.hasConstraint(greenConstraint)) {
+			flagSolved = false;
+			Constraint t = (Constraint) greenConstraint;
+			t.and = header;
+			header = t;
+			count++;
+		}
+	}
+
     public void _addDet(ComplexNonLinearIntegerConstraint clic) {
 			if (!this.hasConstraint(clic)) {
 				flagSolved = false;

@@ -24,20 +24,23 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.GOTO;
-import gov.nasa.jpf.jvm.bytecode.PutHelper;
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.symbc.veritesting.HoleExpression;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingRegion;
-import gov.nasa.jpf.util.InstructionState;
 import gov.nasa.jpf.vm.*;
+
+import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
+import za.ac.sun.cs.green.expr.Operation;
+import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 
-import static gov.nasa.jpf.symbc.numeric.Comparator.*;
-import static gov.nasa.jpf.symbc.numeric.Operator.*;
+import static gov.nasa.jpf.symbc.numeric.Comparator.NONE_CMP;
+import static gov.nasa.jpf.symbc.numeric.Operator.NONE_OP;
+
 
 public class VeritestingListener extends PropertyListenerAdapter  {
 
@@ -102,232 +105,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     return new SymbolicInteger(name, Integer.MIN_VALUE, Integer.MAX_VALUE);
   }
 
-  // TestPathsSimple listener for testMe3
-  public void executeInstruction_TestPathsSimple_testMe3(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-    int x_slot_index = 1, y_slot_index = 2;
-    // int af_slot_index = 3, bf_slot_index = 4;
-    int a_slot_index = 3, b_slot_index = 4;
-    int startInsn = 41, endInsn = 71;  
-    if(ti.getTopFrame().getPC().getPosition() == startInsn && 
-       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
-       ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) { 
-      StackFrame sf = ti.getTopFrame();
-      System.out.println("time to start veritesting for " + 
-       ti.getTopFrame().getMethodInfo().getName());
-      System.out.println("topPos = "+sf.getTopPos());
-      
-      SymbolicInteger x_v = (SymbolicInteger) sf.getLocalAttr(x_slot_index);
-      if(x_v == null) System.out.println("failed to get x expr");
-      SymbolicInteger y_v = (SymbolicInteger) sf.getLocalAttr(y_slot_index);
-      if(y_v == null) System.out.println("failed to get y expr");
-      
-      SymbolicInteger a_v = makeSymbolicInteger("a_final");
-      SymbolicInteger b_v = makeSymbolicInteger("b_final");
-      // IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(af_slot_index);
-      // if(a_v == null) System.out.println("failed to get a_final expr");
-      // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(bf_slot_index);
-      // if(b_v == null) System.out.println("failed to get b_final expr");
-     
-      // PathCondition pc = null;
-      // pc = getPC(vm, ti, instructionToExecute, pc);
-      ChoiceGenerator<?> cg;
-
-			// if (!ti.isFirstStepInsn()) { // first time around
-      //   System.out.println("first time around");
-			// 	cg = new PCChoiceGenerator(2);
-      //   ((PCChoiceGenerator)cg).setOffset(instructionToExecute.getPosition());
-      //   ((PCChoiceGenerator)cg).setMethodName(ti.getTopFrame().getMethodInfo().getFullName());
-			// 	ti.getVM().getSystemState().setNextChoiceGenerator(cg);
-			// 	return ;
-			// } else {  // this is what really returns results
-				cg = ti.getVM().getSystemState().getChoiceGenerator();
-				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
-			// }
-
-			PathCondition pc;
-
-			// pc is updated with the pc stored in the choice generator above
-			// get the path condition from the
-			// previous choice generator of the same type
-			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
-			
-
-			if (prev_cg == null)
-				pc = new PathCondition();
-			else
-				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
-
-			assert pc != null;
-      // Generate symbolic expressions to unroll lines 39-42 of TestPaths.java
-      pc._addDet(new ComplexNonLinearIntegerConstraint( 
-            new ComplexNonLinearIntegerExpression(
-              new ComplexNonLinearIntegerExpression(
-                new ComplexNonLinearIntegerExpression(x_v, LE, new IntegerConstant(800)), 
-                LOGICAL_AND, 
-                new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(-1))), 
-              LOGICAL_OR, 
-              new ComplexNonLinearIntegerExpression(
-                new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(800)), 
-                LOGICAL_AND, 
-                new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(1))))));
-
-      pc._addDet(new ComplexNonLinearIntegerConstraint( 
-            new ComplexNonLinearIntegerExpression( 
-              new ComplexNonLinearIntegerExpression(
-                new ComplexNonLinearIntegerExpression(y_v, LE, new IntegerConstant(1200)), 
-                LOGICAL_AND, 
-                new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(-1))), 
-              LOGICAL_OR, 
-              new ComplexNonLinearIntegerExpression(
-                new ComplexNonLinearIntegerExpression(y_v, GT, new IntegerConstant(1200)), 
-                LOGICAL_AND, 
-                new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(1))))));
-      ((PCChoiceGenerator) cg).setCurrentPC(pc);
-
-      // Assign a', b' (aka a_final, b_final) back into a, b respectively
-      int a_val = sf.getSlot(a_slot_index);
-      sf.setSlotAttr(a_slot_index, a_v); 
-      int b_val = sf.getSlot(b_slot_index);
-      sf.setSlotAttr(b_slot_index, b_v); 
-      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
-     	
-      Instruction insn=instructionToExecute;
-      while(insn.getPosition() < endInsn) 
-        insn = insn.getNext();
-      ti.setNextPC(insn);
-    }
-    // if(ti.getTopFrame().getPC().getPosition() == 71 && 
-    //    ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
-    //    ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) { 
-    //   System.out.println("At later offset, PC = " + getPC(vm, ti, instructionToExecute, null));
-    // }
-
-  }
-
-  // Veritesting listener for testMe4 method
-  public void executeInstruction_VeritestingPerf_testMe4(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-    int sum_slot_index = 3;
-    int startInsn = 61, endInsn = 80; //TODO: read some of these from config 
-    if(ti.getTopFrame().getPC().getPosition() == startInsn && 
-       ti.getTopFrame().getMethodInfo().getName().equals("testMe4") &&
-       ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) { 
-      StackFrame sf = ti.getTopFrame();
-      System.out.println("time to start veritesting for " + 
-       ti.getTopFrame().getMethodInfo().getName());
-      
-      IntegerExpression x_v = (IntegerExpression) sf.getOperandAttr(0);
-      if(x_v == null) System.out.println("failed to get x expr");
-      IntegerExpression sum_v = (IntegerExpression) sf.getLocalAttr(sum_slot_index);
-      if(sum_v == null) System.out.println("failed to get sum expr");
-
-      SymbolicInteger sum_new = makeSymbolicInteger("sum_new"+sumId);
-      sumId++;
-      PathCondition pc = null;
-      pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-     
-      // LogicalORLinearIntegerConstraints lolic = new LogicalORLinearIntegerConstraints();
-      // lolic.addToList(
-      //     new LinearIntegerConstraint(
-      //       new ComplexNonLinearIntegerExpression(x_v, LT, new IntegerConstant(0)), 
-      //     LOGICAL_AND,
-      //       new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(-1))));
-      // lolic.addToList(
-      //     new LinearIntegerConstraint(
-      //       new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(0)), 
-      //     LOGICAL_AND,
-      //       new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(1))));
-
-      // lolic.addToList(
-      //     new LinearIntegerConstraint(
-      //       new ComplexNonLinearIntegerExpression(x_v, EQ, new IntegerConstant(0)), 
-      //     LOGICAL_AND,
-      //       new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(0))));
-
-      // pc._addDet(lolic);
-
-      // pc._addDet(EQ, sum_new, 
-      //   new BinaryNonLinearIntegerExpression(x_v, CMP, new IntegerConstant(0)));
-  
-      ComplexNonLinearIntegerExpression cnlie1 = new ComplexNonLinearIntegerExpression(
-          new ComplexNonLinearIntegerExpression(x_v, LT, new IntegerConstant(0)),
-          LOGICAL_AND,
-          new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(-1)) );
-      ComplexNonLinearIntegerExpression cnlie2 = new ComplexNonLinearIntegerExpression(
-          new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(0)),
-          LOGICAL_AND,
-          new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(1)) );
-      ComplexNonLinearIntegerExpression cnlie3 = new ComplexNonLinearIntegerExpression(
-          new ComplexNonLinearIntegerExpression(x_v, EQ, new IntegerConstant(0)),
-          LOGICAL_AND,
-          new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(0)) );
-      ComplexNonLinearIntegerExpression cnlie1_2 = 
-        new ComplexNonLinearIntegerExpression(cnlie1, LOGICAL_OR, cnlie2);
-      ComplexNonLinearIntegerExpression cnlie1_2_3 = 
-        new ComplexNonLinearIntegerExpression(cnlie1_2, LOGICAL_OR, cnlie3);
-
-      pc._addDet(new ComplexNonLinearIntegerConstraint(cnlie1_2_3));
-
-      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
-      
-      if(sumId > 1)
-        sf.setSlotAttr(sum_slot_index, new BinaryNonLinearIntegerExpression(sum_v, PLUS, sum_new));
-      else 
-        sf.setSlotAttr(sum_slot_index, sum_new);
-      sf.pop(); //pops off the x expr
-      
-      Instruction insn=instructionToExecute;
-      while(insn.getPosition() < endInsn) 
-        insn = insn.getNext();
-      ti.setNextPC(insn);
-    }
-  }
-
-  // TestPaths listener
-  public void executeInstruction_TestPaths(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-    int x_slot_index = 1, y_slot_index = 2;
-    //int a_final_slot_index = 3, b_final_slot_index = 4;
-    int a_slot_index = 3, b_slot_index = 4;
-    int startInsn = 7, endInsn = 46; //TODO: read some of these from config 
-    if(ti.getTopFrame().getPC().getPosition() == startInsn && 
-       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
-       ti.getTopFrame().getClassInfo().getName().equals("TestPaths")) { 
-      StackFrame sf = ti.getTopFrame();
-      System.out.println("time to start veritesting for " + 
-       ti.getTopFrame().getMethodInfo().getName());
-      System.out.println("topPos = "+sf.getTopPos());
-      
-      IntegerExpression x_v = (IntegerExpression) sf.getLocalAttr(x_slot_index);
-      if(x_v == null) System.out.println("failed to get x expr");
-      IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(y_slot_index);
-      if(y_v == null) System.out.println("failed to get y expr");
-      SymbolicInteger a_v = makeSymbolicInteger("a_final");
-      SymbolicInteger b_v = makeSymbolicInteger("b_final");
-      // IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(a_final_slot_index);
-      // if(a_v == null) System.out.println("failed to get a_final expr");
-      // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(b_final_slot_index);
-      // if(b_v == null) System.out.println("failed to get b_final expr");
-      
-      PathCondition pc = null;
-      pc = getPC(vm, ti, instructionToExecute, pc);
-
-      // Generate symbolic expressions to unroll lines 40-45 of TestPaths.java
-      pc._addDet(EQ, a_v, new BinaryNonLinearIntegerExpression(
-            x_v, CMP, new IntegerConstant(0)));
-      pc._addDet(EQ, b_v, new BinaryNonLinearIntegerExpression(
-            y_v, CMP, new IntegerConstant(0)));
-
-      // Assign a', b' (aka a_final, b_final) back into a, b respectively
-      int a_val = sf.getSlot(a_slot_index);
-      sf.setSlotAttr(a_slot_index, a_v); 
-      int b_val = sf.getSlot(b_slot_index);
-      sf.setSlotAttr(b_slot_index, b_v); 
-      
-      Instruction insn=instructionToExecute;
-      while(insn.getPosition() < endInsn) 
-        insn = insn.getNext();
-      ti.setNextPC(insn);
-    }
-  }
+  public static int pathLabelCount = 1;
 
   public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
     Config conf = ti.getVM().getConfig();
@@ -363,28 +141,23 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             ti.getTopFrame().getMethodInfo().getName().equals("testMe4") &&
             ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
       VeritestingPerf_testMe4_VT_57_69(ti, instructionToExecute);
-    }
-
-    /* else*/
+    } else*/
     String key = ti.getTopFrame().getClassInfo().getName() + "." + ti.getTopFrame().getMethodInfo().getName() +
             "#" + ti.getTopFrame().getPC().getPosition();
     if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
       VeritestingRegion region = veritestingRegions.get(key);
       StackFrame sf = ti.getTopFrame();
       InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
-      Comparator trueComparator = instructionInfo.getTrueComparator();
-      Comparator falseComparator = instructionInfo.getFalseComparator();
+      Operation.Operator trueComparator = instructionInfo.getTrueComparator();
+      Operation.Operator falseComparator = instructionInfo.getFalseComparator();
       int numOperands = instructionInfo.getNumOperands();
-      ComplexNonLinearIntegerExpression condition = instructionInfo.getCondition();
-      ComplexNonLinearIntegerExpression negCondition = instructionInfo.getNegCondition();
-      if (condition == null || negCondition == null) return;
       PathCondition pc;
       pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
       PathCondition eqPC = pc.make_copy();
       PathCondition nePC = pc.make_copy();
       IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
-      eqPC._addDet(trueComparator, sym_v, 0);
-      nePC._addDet(falseComparator, sym_v, 0);
+      eqPC._addDet(GreenToSPFComparator(trueComparator), sym_v, 0);
+      nePC._addDet(GreenToSPFComparator(falseComparator), sym_v, 0);
       boolean eqSat = eqPC.simplify();
       boolean neSat = nePC.simplify();
       if (!eqSat && !neSat) {
@@ -394,14 +167,15 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       if ((eqSat && !neSat) || (!eqSat && neSat)) {
         return;
       }
-      // this does not matter because the objects in cnlie will still need
+      // this does not matter because the objects in summaryExpression will still need
       // to be filled as a separate pass
-      HashMap<IntegerExpression, IntegerExpression> holeHashMap =
+      HashMap<Expression, Expression> holeHashMap =
               fillHoles(region.getHoleHashMap(), instructionInfo, sf, ti);
       if(holeHashMap == null) return;
-      ComplexNonLinearIntegerExpression cnlie = region.getCNLIE();
-      cnlie = (ComplexNonLinearIntegerExpression) fillASTHoles(cnlie, holeHashMap);
-      pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(cnlie)));
+      Expression summaryExpression = region.getSummaryExpression();
+      summaryExpression = fillASTHoles(summaryExpression, holeHashMap);
+      //pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(summaryExpression)));
+      pc._addDet(new GreenConstraint(summaryExpression));
       if(!pc.simplify()) {
         System.out.println("veritesting region added unsat summary");
         assert(false);
@@ -426,117 +200,132 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
   }
 
-  //TODO
+  private Comparator GreenToSPFComparator(Operation.Operator operator) {
+    switch(operator) {
+      case EQ: return Comparator.EQ;
+      case NE: return Comparator.NE;
+      case LT: return Comparator.LT;
+      case LE: return Comparator.LE;
+      case GT: return Comparator.GT;
+      case GE: return Comparator.GE;
+      case AND: return Comparator.LOGICAL_AND;
+      case OR: return Comparator.LOGICAL_OR;
+      default:
+        System.out.println("Cannot convert Green operator (" + operator + ") to SPF comparator" );
+        assert(false);
+        break;
+    }
+    return NONE_CMP;
+  }
+
   /*
   generate sf.setSlotAttr(3, v24)-like statements for all the outputs of the veritesting region
   using region
    */
-  private boolean populateOutputs(HashSet<IntegerExpression> outputVars,
-                                  HashMap<IntegerExpression, IntegerExpression> holeHashMap,
+  private boolean populateOutputs(HashSet<Expression> outputVars,
+                                  HashMap<Expression, Expression> holeHashMap,
                                   StackFrame stackFrame, ThreadInfo ti) {
     Iterator iterator = outputVars.iterator();
     while(iterator.hasNext()) {
-      IntegerExpression holeExpression = (IntegerExpression) iterator.next(), finalValue;
-      assert(holeExpression.isHole());
+      Expression expression = (Expression) iterator.next(), finalValue;
+      assert(expression instanceof HoleExpression);
+      HoleExpression holeExpression = (HoleExpression) expression;
       assert(holeHashMap.containsKey(holeExpression));
       finalValue = holeHashMap.get(holeExpression);
       switch(holeExpression.getHoleType()) {
         case LOCAL_OUTPUT:
-          stackFrame.setSlotAttr(holeExpression.getLocalStackSlot(), finalValue);
+          stackFrame.setSlotAttr(holeExpression.getLocalStackSlot(), GreenToSPFExpression(finalValue));
           break;
         case FIELD_OUTPUT:
-          Expression.FieldInfo fieldInfo = holeExpression.getFieldInfo();
+          HoleExpression.FieldInfo fieldInfo = holeExpression.getFieldInfo();
           assert(fieldInfo != null);
-          fillFieldOutputHole(ti, stackFrame, fieldInfo, finalValue);
+          fillFieldOutputHole(ti, stackFrame, fieldInfo, GreenToSPFExpression(finalValue));
           break;
       }
     }
     return true;
   }
 
-  //TODO
+  private gov.nasa.jpf.symbc.numeric.Expression GreenToSPFExpression(Expression greenExpression) {
+    GreenToSPFTranslator toSPFTranslator = new GreenToSPFTranslator();
+    return toSPFTranslator.translate(greenExpression);
+  }
+
   /*
   Walk the CNLIE expression, looking for holes (which will always be at the leaf nodes), and ensure that all holes
   are filled in
    */
-  private IntegerExpression fillASTHoles(IntegerExpression holeExpression,
-                                         HashMap<IntegerExpression, IntegerExpression> holeHashMap) {
-    if(holeExpression instanceof IntegerConstant && holeExpression.isHole()) {
+  private Expression fillASTHoles(Expression holeExpression,
+                                         HashMap<Expression, Expression> holeHashMap) {
+    if(holeExpression instanceof HoleExpression && ((HoleExpression)holeExpression).isHole()) {
       assert(holeHashMap.containsKey(holeExpression));
-      IntegerExpression ret = holeHashMap.get(holeExpression);
-      assert(!ret.isHole());
-      assert(ret.getHoleType() == Expression.HoleType.NONE);
+      Expression ret = holeHashMap.get(holeExpression);
       return ret;
     }
-    if(holeExpression instanceof ComplexNonLinearIntegerExpression) {
-      assert(!holeExpression.isHole());
-      ComplexNonLinearIntegerExpression newCNLIE = new ComplexNonLinearIntegerExpression();
-      ComplexNonLinearIntegerExpression oldCNLIE = (ComplexNonLinearIntegerExpression) holeExpression;
-      newCNLIE.base = oldCNLIE.base;
-      newCNLIE.setCmprtr(oldCNLIE.getComparator());
-      newCNLIE.setOperator(oldCNLIE.getOperator());
-      newCNLIE.setLeft(fillASTHoles(oldCNLIE.getLeft(), holeHashMap));
-      newCNLIE.setRight(fillASTHoles(oldCNLIE.getRight(), holeHashMap));
-      return newCNLIE;
+    if(holeExpression instanceof Operation) {
+      Operation oldOperation = (Operation) holeExpression;
+      Operation newOperation = new Operation(oldOperation.getOperator(),
+              fillASTHoles(oldOperation.getOperand(0), holeHashMap),
+              fillASTHoles(oldOperation.getOperand(1), holeHashMap));
+      return newOperation;
     }
     return holeExpression;
   }
 
-
-  //TODO
   /*
   Load from local variable stack slots IntegerExpression objects and store them into holeHashMap
    */
-  private HashMap<IntegerExpression, IntegerExpression> fillHoles(
-          HashMap<IntegerExpression, IntegerExpression> holeHashMap,
+  private HashMap<Expression, Expression> fillHoles(
+          HashMap<Expression, Expression> holeHashMap,
           InstructionInfo instructionInfo,
           StackFrame stackFrame,
           ThreadInfo ti) {
-    HashMap<IntegerExpression, IntegerExpression> retHoleHashMap = new HashMap<>();
-    for(HashMap.Entry<IntegerExpression, IntegerExpression> entry : holeHashMap.entrySet()) {
-      IntegerExpression key = entry.getKey(), finalValue;
-      assert(key.isHole());
-      switch(key.getHoleType()) {
+    HashMap<Expression, Expression> retHoleHashMap = new HashMap<>();
+    for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
+      Expression key = entry.getKey(), finalValue;
+      gov.nasa.jpf.symbc.numeric.Expression finalValueSPF;
+      assert(key instanceof HoleExpression);
+      HoleExpression keyHoleExpression = (HoleExpression) key;
+      assert(keyHoleExpression.isHole());
+      switch(keyHoleExpression.getHoleType()) {
         case LOCAL_INPUT:
-          finalValue = (IntegerExpression) stackFrame.getLocalAttr(key.getLocalStackSlot());
-          if(finalValue == null) finalValue = new IntegerConstant(stackFrame.getLocalVariable(key.getLocalStackSlot()));
-          finalValue.setHole(false, Expression.HoleType.NONE);
-          //finalValue.setLocalStackSlot(key.getLocalStackSlot());
-          retHoleHashMap.put(key, finalValue);
+          finalValueSPF =
+                  (gov.nasa.jpf.symbc.numeric.Expression) stackFrame.getLocalAttr(keyHoleExpression.getLocalStackSlot());
+          if(finalValueSPF == null)
+            finalValueSPF = new IntegerConstant(stackFrame.getLocalVariable(keyHoleExpression.getLocalStackSlot()));
+          finalValue = SPFToGreenExpr(finalValueSPF);
+          retHoleHashMap.put(keyHoleExpression, finalValue);
           break;
         case LOCAL_OUTPUT:
         case FIELD_OUTPUT:
-          finalValue = makeSymbolicInteger(key.getHoleVarName() + pathLabelCount);
-          finalValue.setHole(false, Expression.HoleType.NONE);
-          retHoleHashMap.put(key, finalValue);
+        case INTERMEDIATE:
+          finalValueSPF =
+                  makeSymbolicInteger(keyHoleExpression.getHoleVarName() + pathLabelCount);
+          finalValue = SPFToGreenExpr(finalValueSPF);
+          retHoleHashMap.put(keyHoleExpression, finalValue);
           break;
         case FIELD_INPUT:
-          Expression.FieldInfo fieldInfo = key.getFieldInfo();
+          HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
           assert(fieldInfo != null);
-          finalValue = fillFieldInputHole(ti, stackFrame, fieldInfo);
-          assert(finalValue != null);
-          finalValue.setHole(false, Expression.HoleType.NONE);
-          retHoleHashMap.put(key, finalValue);
-          break;
-        case INTERMEDIATE:
-          finalValue = makeSymbolicInteger(key.getHoleVarName() + pathLabelCount);
-          finalValue.setHole(false, Expression.HoleType.NONE);
-          retHoleHashMap.put(key, finalValue);
+          finalValueSPF = fillFieldInputHole(ti, stackFrame, fieldInfo);
+          assert(finalValueSPF != null);
+          finalValue = SPFToGreenExpr(finalValueSPF);
+          retHoleHashMap.put(keyHoleExpression, finalValue);
           break;
         case NONE:
           System.out.println("expression marked as hole with NONE hole type: " +
-                  key.toString());
+                  keyHoleExpression.toString());
           assert(false);
           break;
         case CONDITION:
           finalValue = instructionInfo.getCondition();
-          finalValue.setHole(false, Expression.HoleType.NONE);
-          retHoleHashMap.put(key, finalValue);
+          assert(finalValue != null);
+          retHoleHashMap.put(keyHoleExpression, finalValue);
           break;
         case NEGCONDITION:
           finalValue = instructionInfo.getNegCondition();
-          finalValue.setHole(false, Expression.HoleType.NONE);
-          retHoleHashMap.put(key, finalValue);
+          assert(finalValue != null);
+          retHoleHashMap.put(keyHoleExpression, finalValue);
           break;
         default:
           return null;
@@ -545,11 +334,11 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     return retHoleHashMap;
   }
 
-  IntegerExpression fillFieldInputHole(ThreadInfo ti,
+  gov.nasa.jpf.symbc.numeric.Expression fillFieldInputHole(ThreadInfo ti,
                                        StackFrame stackFrame,
-                                       Expression.FieldInfo fieldInputInfo) {
+                                       HoleExpression.FieldInfo fieldInputInfo) {
     //get the object reference from fieldInputInfo.use's local stack slot
-    int objRef = stackFrame.getLocalVariable(fieldInputInfo.use.getLocalStackSlot());
+    int objRef = stackFrame.getLocalVariable(((HoleExpression)fieldInputInfo.use).getLocalStackSlot());
     if (objRef == 0) {
       System.out.println("java.lang.NullPointerException" + "referencing field '" +
               fieldInputInfo.fieldName+ "' on null object");
@@ -568,12 +357,12 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       } else {
         Object fieldAttr = eiFieldOwner.getFieldAttr(fieldInfo);
         if(fieldAttr != null) {
-          return (IntegerExpression) fieldAttr;
+          return (gov.nasa.jpf.symbc.numeric.Expression) fieldAttr;
         } else {
           if (fieldInfo.getStorageSize() == 1) {
-            return new IntegerConstant(eiFieldOwner.get1SlotField(fieldInfo));
+            return (gov.nasa.jpf.symbc.numeric.Expression) new IntegerConstant(eiFieldOwner.get1SlotField(fieldInfo));
           } else {
-            return new IntegerConstant(eiFieldOwner.get2SlotField(fieldInfo));
+            return (gov.nasa.jpf.symbc.numeric.Expression) new IntegerConstant(eiFieldOwner.get2SlotField(fieldInfo));
           }
         }
       }
@@ -583,9 +372,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 
   void fillFieldOutputHole(ThreadInfo ti,
                                         StackFrame stackFrame,
-                                        Expression.FieldInfo fieldInputInfo,
-                                        IntegerExpression finalValue) {
-    int objRef = stackFrame.getLocalVariable(fieldInputInfo.use.getLocalStackSlot());
+                                        HoleExpression.FieldInfo fieldInputInfo,
+                                        gov.nasa.jpf.symbc.numeric.Expression finalValue) {
+    int objRef = stackFrame.getLocalVariable(((HoleExpression)fieldInputInfo.use).getLocalStackSlot());
     if (objRef == 0) {
       System.out.println("java.lang.NullPointerException" + "referencing field '" +
               fieldInputInfo.fieldName+ "' on null object");
@@ -614,17 +403,434 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
   }
 
-  /*
-  Returns a hastable mapping instruction bytecode offsets to method name and class name
-   */
-  private Hashtable<Integer,VeritestingRegion> getVeritestingRegions() {
-    return null;
+  public IntegerExpression constantFold(IntegerExpression integerExpression) {
+    if(integerExpression instanceof IntegerConstant) return integerExpression;
+    if(integerExpression instanceof ComplexNonLinearIntegerExpression) {
+      ComplexNonLinearIntegerExpression cnlie = (ComplexNonLinearIntegerExpression) integerExpression;
+      if (cnlie.getLeft() instanceof IntegerConstant && cnlie.getRight() instanceof IntegerConstant) {
+        int left = ((IntegerConstant) cnlie.getLeft()).value();
+        int right = ((IntegerConstant) cnlie.getRight()).value();
+        int result = 0;
+        switch (cnlie.getOperator()) {
+          case DIV:
+            result = left / right;
+            break;
+          case MUL:
+            result = left * right;
+            break;
+          case MINUS:
+            result = left - right;
+            break;
+          case PLUS:
+            result = left + right;
+            break;
+          case CMP:
+            result = Integer.compare(left, right);
+            break;
+          case AND:
+            result = left & right;
+            break;
+          case OR:
+            result = left | right;
+            break;
+          case XOR:
+            result = left ^ right;
+            break;
+          case SHIFTL:
+            result = left << right;
+            break;
+          case SHIFTR:
+            result = left >> right;
+            break;
+          case SHIFTUR:
+            result = left >>> right;
+            break;
+          case REM:
+            result = left % right;
+            break;
+          case NONE_OP:
+            switch (cnlie.getComparator()) {
+              case EQ:
+                result = (left == right) ? 1 : 0;
+                break;
+              case NE:
+                result = (left != right) ? 1 : 0;
+                break;
+              case LT:
+                result = (left < right) ? 1 : 0;
+                break;
+              case LE:
+                result = (left <= right) ? 1 : 0;
+                break;
+              case GT:
+                result = (left > right) ? 1 : 0;
+                break;
+              case GE:
+                result = (left >= right) ? 1 : 0;
+                break;
+              case LOGICAL_AND:
+                result = ((left != 0) && (right != 0)) ? 1 : 0;
+                break;
+              case LOGICAL_OR:
+                result = ((left != 0) || (right != 0)) ? 1 : 0;
+                break;
+              case NONE_CMP:
+                System.out.println("constantFold found NONE_OP and NONE_CMP");
+                assert(false);
+                break;
+              default:
+                System.out.println("constantFold found NONE_OP and undefined comparator (" + cnlie.getComparator() + ")");
+                assert(false);
+                break;
+            }
+            break;
+          default:
+            System.out.println("constantFold found undefined operator (" + cnlie.getOperator() + ")");
+            assert (false);
+        }
+        return new IntegerConstant(result);
+      }
+      cnlie.setLeft(constantFold(cnlie.getLeft()));
+      cnlie.setRight(constantFold(cnlie.getRight()));
+      if(cnlie.getLeft() instanceof IntegerConstant) {
+        if(cnlie.getRight() instanceof IntegerConstant) {
+          if(cnlie.getOperator() == NONE_OP) {
+            return constantFold(new ComplexNonLinearIntegerExpression(cnlie.getLeft(), cnlie.getComparator(), cnlie.getRight()));
+          }
+          if(cnlie.getComparator() == NONE_CMP) {
+            return constantFold(new ComplexNonLinearIntegerExpression(cnlie.getLeft(), cnlie.getOperator(), cnlie.getRight()));
+          }
+        }
+      }
+    }
+    return integerExpression;
   }
 
+
+  private class InstructionInfo {
+    private ThreadInfo ti;
+    private int numOperands;
+    private Operation.Operator trueComparator, falseComparator;
+    private Expression condition, negCondition;
+
+    public Expression getCondition() { return condition; }
+
+    public Expression getNegCondition() { return negCondition; }
+
+    public InstructionInfo(ThreadInfo ti) {
+      this.ti = ti;
+    }
+
+    public int getNumOperands() {
+      return numOperands;
+    }
+
+    public Operation.Operator getTrueComparator() {
+      return trueComparator;
+    }
+
+    public Operation.Operator getFalseComparator() {
+      return falseComparator;
+    }
+
+    public InstructionInfo invoke() {
+      switch(ti.getTopFrame().getPC().getMnemonic()) {
+        case "ifeq" :
+          numOperands = 1;
+          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
+          break;
+        case "ifne":
+          trueComparator = Operation.Operator.NE; falseComparator = Operation.Operator.EQ;
+          numOperands = 1;
+          break;
+        case "iflt":
+          trueComparator = Operation.Operator.LT; falseComparator = Operation.Operator.GE;
+          numOperands = 1;
+          break;
+        case "ifle":
+          trueComparator = Operation.Operator.LE; falseComparator = Operation.Operator.GT;
+          numOperands = 1;
+          break;
+        case "ifgt":
+          trueComparator = Operation.Operator.GT; falseComparator = Operation.Operator.LE;
+          numOperands = 1;
+          break;
+        case "ifge":
+          trueComparator = Operation.Operator.GE; falseComparator = Operation.Operator.LT;
+          numOperands = 1;
+          break;
+        case "ifnull":
+          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
+          numOperands = 1;
+          break;
+        case "ifnonnull":
+          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
+          numOperands = 1;
+          break;
+        default :
+          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
+          numOperands = 2;
+          break;
+      }
+      IntegerExpression operand1 = null, operand2 = null;
+      operand1 = (IntegerExpression) ti.getTopFrame().getOperandAttr();
+      boolean isConcreteCondition = true;
+      if(operand1 == null) {
+        operand1 = new IntegerConstant(ti.getTopFrame().peek());
+      } else isConcreteCondition = false;
+      if(numOperands == 2) {
+        operand2 = (IntegerExpression) ti.getTopFrame().getOperandAttr(1);
+        if(operand2 != null) isConcreteCondition = false;
+      }
+      if(operand2 == null) {
+        operand2 = new IntegerConstant(ti.getTopFrame().peek(1));
+      }
+      if(isConcreteCondition) { condition = null; negCondition = null; }
+      else {
+        condition = new Operation(trueComparator, SPFToGreenExpr(operand1), SPFToGreenExpr(operand2));
+        negCondition = new Operation(falseComparator, SPFToGreenExpr(operand1), SPFToGreenExpr(operand2));
+      }
+      return this;
+    }
+
+  }
+
+  Expression SPFToGreenExpr(gov.nasa.jpf.symbc.numeric.Expression spfExp) {
+    SolverTranslator.Translator toGreenTranslator = new SolverTranslator.Translator();
+    spfExp.accept(toGreenTranslator);
+    return toGreenTranslator.getExpression();
+  }
+
+  // TestPathsSimple listener for testMe3
+  /*public void executeInstruction_TestPathsSimple_testMe3(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+    int x_slot_index = 1, y_slot_index = 2;
+    // int af_slot_index = 3, bf_slot_index = 4;
+    int a_slot_index = 3, b_slot_index = 4;
+    int startInsn = 41, endInsn = 71;
+    if(ti.getTopFrame().getPC().getPosition() == startInsn &&
+       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
+       ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
+      StackFrame sf = ti.getTopFrame();
+      System.out.println("time to start veritesting for " +
+       ti.getTopFrame().getMethodInfo().getName());
+      System.out.println("topPos = "+sf.getTopPos());
+
+      SymbolicInteger x_v = (SymbolicInteger) sf.getLocalAttr(x_slot_index);
+      if(x_v == null) System.out.println("failed to get x expr");
+      SymbolicInteger y_v = (SymbolicInteger) sf.getLocalAttr(y_slot_index);
+      if(y_v == null) System.out.println("failed to get y expr");
+
+      SymbolicInteger a_v = makeSymbolicInteger("a_final");
+      SymbolicInteger b_v = makeSymbolicInteger("b_final");
+      // IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(af_slot_index);
+      // if(a_v == null) System.out.println("failed to get a_final expr");
+      // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(bf_slot_index);
+      // if(b_v == null) System.out.println("failed to get b_final expr");
+
+      // PathCondition pc = null;
+      // pc = getPC(vm, ti, instructionToExecute, pc);
+      ChoiceGenerator<?> cg;
+
+			// if (!ti.isFirstStepInsn()) { // first time around
+      //   System.out.println("first time around");
+			// 	cg = new PCChoiceGenerator(2);
+      //   ((PCChoiceGenerator)cg).setOffset(instructionToExecute.getPosition());
+      //   ((PCChoiceGenerator)cg).setMethodName(ti.getTopFrame().getMethodInfo().getFullName());
+			// 	ti.getVM().getSystemState().setNextChoiceGenerator(cg);
+			// 	return ;
+			// } else {  // this is what really returns results
+				cg = ti.getVM().getSystemState().getChoiceGenerator();
+				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
+			// }
+
+			PathCondition pc;
+
+			// pc is updated with the pc stored in the choice generator above
+			// get the path condition from the
+			// previous choice generator of the same type
+			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
+
+
+			if (prev_cg == null)
+				pc = new PathCondition();
+			else
+				pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
+
+			assert pc != null;
+      // Generate symbolic expressions to unroll lines 39-42 of TestPaths.java
+      pc._addDet(new ComplexNonLinearIntegerConstraint(
+            new ComplexNonLinearIntegerExpression(
+              new ComplexNonLinearIntegerExpression(
+                new ComplexNonLinearIntegerExpression(x_v, LE, new IntegerConstant(800)),
+                LOGICAL_AND,
+                new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(-1))),
+              LOGICAL_OR,
+              new ComplexNonLinearIntegerExpression(
+                new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(800)),
+                LOGICAL_AND,
+                new ComplexNonLinearIntegerExpression(a_v, EQ, new IntegerConstant(1))))));
+
+      pc._addDet(new ComplexNonLinearIntegerConstraint(
+            new ComplexNonLinearIntegerExpression(
+              new ComplexNonLinearIntegerExpression(
+                new ComplexNonLinearIntegerExpression(y_v, LE, new IntegerConstant(1200)),
+                LOGICAL_AND,
+                new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(-1))),
+              LOGICAL_OR,
+              new ComplexNonLinearIntegerExpression(
+                new ComplexNonLinearIntegerExpression(y_v, GT, new IntegerConstant(1200)),
+                LOGICAL_AND,
+                new ComplexNonLinearIntegerExpression(b_v, EQ, new IntegerConstant(1))))));
+      ((PCChoiceGenerator) cg).setCurrentPC(pc);
+
+      // Assign a', b' (aka a_final, b_final) back into a, b respectively
+      int a_val = sf.getSlot(a_slot_index);
+      sf.setSlotAttr(a_slot_index, a_v);
+      int b_val = sf.getSlot(b_slot_index);
+      sf.setSlotAttr(b_slot_index, b_v);
+      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
+
+      Instruction insn=instructionToExecute;
+      while(insn.getPosition() < endInsn)
+        insn = insn.getNext();
+      ti.setNextPC(insn);
+    }
+    // if(ti.getTopFrame().getPC().getPosition() == 71 &&
+    //    ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
+    //    ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
+    //   System.out.println("At later offset, PC = " + getPC(vm, ti, instructionToExecute, null));
+    // }
+
+  }*/
+
+  // Veritesting listener for testMe4 method
+  /*public void executeInstruction_VeritestingPerf_testMe4(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+    int sum_slot_index = 3;
+    int startInsn = 61, endInsn = 80;
+    if(ti.getTopFrame().getPC().getPosition() == startInsn &&
+       ti.getTopFrame().getMethodInfo().getName().equals("testMe4") &&
+       ti.getTopFrame().getClassInfo().getName().equals("VeritestingPerf")) {
+      StackFrame sf = ti.getTopFrame();
+      System.out.println("time to start veritesting for " +
+       ti.getTopFrame().getMethodInfo().getName());
+
+      IntegerExpression x_v = (IntegerExpression) sf.getOperandAttr(0);
+      if(x_v == null) System.out.println("failed to get x expr");
+      IntegerExpression sum_v = (IntegerExpression) sf.getLocalAttr(sum_slot_index);
+      if(sum_v == null) System.out.println("failed to get sum expr");
+
+      SymbolicInteger sum_new = makeSymbolicInteger("sum_new"+sumId);
+      sumId++;
+      PathCondition pc = null;
+      pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
+
+      // LogicalORLinearIntegerConstraints lolic = new LogicalORLinearIntegerConstraints();
+      // lolic.addToList(
+      //     new LinearIntegerConstraint(
+      //       new ComplexNonLinearIntegerExpression(x_v, LT, new IntegerConstant(0)),
+      //     LOGICAL_AND,
+      //       new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(-1))));
+      // lolic.addToList(
+      //     new LinearIntegerConstraint(
+      //       new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(0)),
+      //     LOGICAL_AND,
+      //       new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(1))));
+
+      // lolic.addToList(
+      //     new LinearIntegerConstraint(
+      //       new ComplexNonLinearIntegerExpression(x_v, EQ, new IntegerConstant(0)),
+      //     LOGICAL_AND,
+      //       new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(0))));
+
+      // pc._addDet(lolic);
+
+      // pc._addDet(EQ, sum_new,
+      //   new BinaryNonLinearIntegerExpression(x_v, CMP, new IntegerConstant(0)));
+
+      ComplexNonLinearIntegerExpression cnlie1 = new ComplexNonLinearIntegerExpression(
+          new ComplexNonLinearIntegerExpression(x_v, LT, new IntegerConstant(0)),
+          LOGICAL_AND,
+          new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(-1)) );
+      ComplexNonLinearIntegerExpression cnlie2 = new ComplexNonLinearIntegerExpression(
+          new ComplexNonLinearIntegerExpression(x_v, GT, new IntegerConstant(0)),
+          LOGICAL_AND,
+          new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(1)) );
+      ComplexNonLinearIntegerExpression cnlie3 = new ComplexNonLinearIntegerExpression(
+          new ComplexNonLinearIntegerExpression(x_v, EQ, new IntegerConstant(0)),
+          LOGICAL_AND,
+          new ComplexNonLinearIntegerExpression(sum_new, EQ, new IntegerConstant(0)) );
+      ComplexNonLinearIntegerExpression cnlie1_2 =
+        new ComplexNonLinearIntegerExpression(cnlie1, LOGICAL_OR, cnlie2);
+      ComplexNonLinearIntegerExpression cnlie1_2_3 =
+        new ComplexNonLinearIntegerExpression(cnlie1_2, LOGICAL_OR, cnlie3);
+
+      pc._addDet(new ComplexNonLinearIntegerConstraint(cnlie1_2_3));
+
+      ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
+
+      if(sumId > 1)
+        sf.setSlotAttr(sum_slot_index, new BinaryNonLinearIntegerExpression(sum_v, PLUS, sum_new));
+      else
+        sf.setSlotAttr(sum_slot_index, sum_new);
+      sf.pop(); //pops off the x expr
+
+      Instruction insn=instructionToExecute;
+      while(insn.getPosition() < endInsn)
+        insn = insn.getNext();
+      ti.setNextPC(insn);
+    }
+  }*/
+
+  // TestPaths listener
+  /*public void executeInstruction_TestPaths(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+    int x_slot_index = 1, y_slot_index = 2;
+    //int a_final_slot_index = 3, b_final_slot_index = 4;
+    int a_slot_index = 3, b_slot_index = 4;
+    int startInsn = 7, endInsn = 46;
+    if(ti.getTopFrame().getPC().getPosition() == startInsn &&
+       ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
+       ti.getTopFrame().getClassInfo().getName().equals("TestPaths")) {
+      StackFrame sf = ti.getTopFrame();
+      System.out.println("time to start veritesting for " +
+       ti.getTopFrame().getMethodInfo().getName());
+      System.out.println("topPos = "+sf.getTopPos());
+
+      IntegerExpression x_v = (IntegerExpression) sf.getLocalAttr(x_slot_index);
+      if(x_v == null) System.out.println("failed to get x expr");
+      IntegerExpression y_v = (IntegerExpression) sf.getLocalAttr(y_slot_index);
+      if(y_v == null) System.out.println("failed to get y expr");
+      SymbolicInteger a_v = makeSymbolicInteger("a_final");
+      SymbolicInteger b_v = makeSymbolicInteger("b_final");
+      // IntegerExpression a_v = (IntegerExpression) sf.getLocalAttr(a_final_slot_index);
+      // if(a_v == null) System.out.println("failed to get a_final expr");
+      // IntegerExpression b_v = (IntegerExpression) sf.getLocalAttr(b_final_slot_index);
+      // if(b_v == null) System.out.println("failed to get b_final expr");
+
+      PathCondition pc = null;
+      pc = getPC(vm, ti, instructionToExecute, pc);
+
+      // Generate symbolic expressions to unroll lines 40-45 of TestPaths.java
+      pc._addDet(EQ, a_v, new BinaryNonLinearIntegerExpression(
+            x_v, CMP, new IntegerConstant(0)));
+      pc._addDet(EQ, b_v, new BinaryNonLinearIntegerExpression(
+            y_v, CMP, new IntegerConstant(0)));
+
+      // Assign a', b' (aka a_final, b_final) back into a, b respectively
+      int a_val = sf.getSlot(a_slot_index);
+      sf.setSlotAttr(a_slot_index, a_v);
+      int b_val = sf.getSlot(b_slot_index);
+      sf.setSlotAttr(b_slot_index, b_v);
+
+      Instruction insn=instructionToExecute;
+      while(insn.getPosition() < endInsn)
+        insn = insn.getNext();
+      ti.setNextPC(insn);
+    }
+  }
   public void TestPathsSimple_testMe3_VT_46_58
  (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-  if(ti.getTopFrame().getPC().getPosition() == 46 && 
-     ti.getTopFrame().getMethodInfo().getName().equals("testMe3") && 
+  if(ti.getTopFrame().getPC().getPosition() == 46 &&
+     ti.getTopFrame().getMethodInfo().getName().equals("testMe3") &&
      ti.getTopFrame().getClassInfo().getName().equals("TestPathsSimple")) {
     StackFrame sf = ti.getTopFrame();
     SymbolicInteger x = (SymbolicInteger) sf.getLocalAttr(1);
@@ -645,7 +851,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     ti.setNextPC(insn);
   }
 }
-
 
   public void TestPathsSimple_testMe3_VT_62_74
           (VM vm, ThreadInfo ti, Instruction instructionToExecute) {
@@ -671,8 +876,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       ti.setNextPC(insn);
     }
   }
-
-  public static int pathLabelCount = 1;
 
   // produced by Soot
   public void VeritestingPerf_countBitsSet_VT_11_23_soot
@@ -796,8 +999,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
   }
 
-
-
   public void VeritestingPerf_testMe4_VT_57_69
           (ThreadInfo ti, Instruction instructionToExecute) {
     if(ti.getTopFrame().getPC().getPosition() == 57 &&
@@ -876,197 +1077,5 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
   }
 
-
-  public IntegerExpression constantFold(IntegerExpression integerExpression) {
-    if(integerExpression instanceof IntegerConstant) return integerExpression;
-    if(integerExpression instanceof ComplexNonLinearIntegerExpression) {
-      ComplexNonLinearIntegerExpression cnlie = (ComplexNonLinearIntegerExpression) integerExpression;
-      if (cnlie.getLeft() instanceof IntegerConstant && cnlie.getRight() instanceof IntegerConstant) {
-        int left = ((IntegerConstant) cnlie.getLeft()).value();
-        int right = ((IntegerConstant) cnlie.getRight()).value();
-        int result = 0;
-        switch (cnlie.getOperator()) {
-          case DIV:
-            result = left / right;
-            break;
-          case MUL:
-            result = left * right;
-            break;
-          case MINUS:
-            result = left - right;
-            break;
-          case PLUS:
-            result = left + right;
-            break;
-          case CMP:
-            result = Integer.compare(left, right);
-            break;
-          case AND:
-            result = left & right;
-            break;
-          case OR:
-            result = left | right;
-            break;
-          case XOR:
-            result = left ^ right;
-            break;
-          case SHIFTL:
-            result = left << right;
-            break;
-          case SHIFTR:
-            result = left >> right;
-            break;
-          case SHIFTUR:
-            result = left >>> right;
-            break;
-          case REM:
-            result = left % right;
-            break;
-          case NONE_OP:
-            switch (cnlie.getComparator()) {
-              case EQ:
-                result = (left == right) ? 1 : 0;
-                break;
-              case NE:
-                result = (left != right) ? 1 : 0;
-                break;
-              case LT:
-                result = (left < right) ? 1 : 0;
-                break;
-              case LE:
-                result = (left <= right) ? 1 : 0;
-                break;
-              case GT:
-                result = (left > right) ? 1 : 0;
-                break;
-              case GE:
-                result = (left >= right) ? 1 : 0;
-                break;
-              case LOGICAL_AND:
-                result = ((left != 0) && (right != 0)) ? 1 : 0;
-                break;
-              case LOGICAL_OR:
-                result = ((left != 0) || (right != 0)) ? 1 : 0;
-                break;
-              case NONE_CMP:
-                System.out.println("constantFold found NONE_OP and NONE_CMP");
-                assert(false);
-                break;
-              default:
-                System.out.println("constantFold found NONE_OP and undefined comparator (" + cnlie.getComparator() + ")");
-                assert(false);
-                break;
-            }
-            break;
-          default:
-            System.out.println("constantFold found undefined operator (" + cnlie.getOperator() + ")");
-            assert (false);
-        }
-        return new IntegerConstant(result);
-      }
-      cnlie.setLeft(constantFold(cnlie.getLeft()));
-      cnlie.setRight(constantFold(cnlie.getRight()));
-      if(cnlie.getLeft() instanceof IntegerConstant) {
-        if(cnlie.getRight() instanceof IntegerConstant) {
-          if(cnlie.getOperator() == NONE_OP) {
-            return constantFold(new ComplexNonLinearIntegerExpression(cnlie.getLeft(), cnlie.getComparator(), cnlie.getRight()));
-          }
-          if(cnlie.getComparator() == NONE_CMP) {
-            return constantFold(new ComplexNonLinearIntegerExpression(cnlie.getLeft(), cnlie.getOperator(), cnlie.getRight()));
-          }
-        }
-      }
-    }
-    return integerExpression;
-  }
-
-
-  private class InstructionInfo {
-    private ThreadInfo ti;
-    private int numOperands;
-    private Comparator trueComparator;
-    private Comparator falseComparator;
-    private ComplexNonLinearIntegerExpression condition, negCondition;
-
-    public ComplexNonLinearIntegerExpression getCondition() { return condition; }
-
-    public ComplexNonLinearIntegerExpression getNegCondition() { return negCondition; }
-
-    public InstructionInfo(ThreadInfo ti) {
-      this.ti = ti;
-    }
-
-    public int getNumOperands() {
-      return numOperands;
-    }
-
-    public Comparator getTrueComparator() {
-      return trueComparator;
-    }
-
-    public Comparator getFalseComparator() {
-      return falseComparator;
-    }
-
-    public InstructionInfo invoke() {
-      switch(ti.getTopFrame().getPC().getMnemonic()) {
-        case "ifeq" :
-          numOperands = 1;
-          trueComparator = EQ; falseComparator = NE;
-          break;
-        case "ifne":
-          trueComparator = NE; falseComparator = EQ;
-          numOperands = 1;
-          break;
-        case "iflt":
-          trueComparator = LT; falseComparator = GE;
-          numOperands = 1;
-          break;
-        case "ifle":
-          trueComparator = LE; falseComparator = GT;
-          numOperands = 1;
-          break;
-        case "ifgt":
-          trueComparator = GT; falseComparator = LE;
-          numOperands = 1;
-          break;
-        case "ifge":
-          trueComparator = GE; falseComparator = LT;
-          numOperands = 1;
-          break;
-        case "ifnull":
-          trueComparator = EQ; falseComparator = NE;
-          numOperands = 1;
-          break;
-        case "ifnonnull":
-          trueComparator = EQ; falseComparator = NE;
-          numOperands = 1;
-          break;
-        default :
-          trueComparator = EQ; falseComparator = NE;
-          numOperands = 2;
-          break;
-      }
-      IntegerExpression operand1 = null, operand2 = null;
-      operand1 = (IntegerExpression) ti.getTopFrame().getOperandAttr();
-      boolean isConcreteCondition = true;
-      if(operand1 == null) {
-        operand1 = new IntegerConstant(ti.getTopFrame().peek());
-      } else isConcreteCondition = false;
-      if(numOperands == 2) {
-        operand2 = (IntegerExpression) ti.getTopFrame().getOperandAttr(1);
-        if(operand2 != null) isConcreteCondition = false;
-      }
-      if(operand2 == null) {
-        operand2 = new IntegerConstant(ti.getTopFrame().peek(1));
-      }
-      if(isConcreteCondition) { condition = null; negCondition = null; }
-      else {
-        condition = new ComplexNonLinearIntegerExpression(operand1, trueComparator, operand2);
-        negCondition = new ComplexNonLinearIntegerExpression(operand1, falseComparator, operand2);
-      }
-      return this;
-    }
-
-  }
+  */
 }

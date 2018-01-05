@@ -1,7 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting;
 
-import gov.nasa.jpf.symbc.numeric.ComplexNonLinearIntegerExpression;
-import gov.nasa.jpf.symbc.numeric.IntegerExpression;
+
+import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,21 +25,21 @@ public class VeritestingRegion {
     }
     private int endInsnPosition;
 
-    public ComplexNonLinearIntegerExpression getCNLIE() {
-        return cnlie;
+    public Expression getSummaryExpression() {
+        return summaryExpression;
     }
-    public void setCNLIE(IntegerExpression CNLIE) {
-        this.cnlie = (ComplexNonLinearIntegerExpression) CNLIE;
+    public void setSummaryExpression(Expression CNLIE) {
+        this.summaryExpression = CNLIE;
     }
-    private ComplexNonLinearIntegerExpression cnlie;
+    private Expression summaryExpression;
 
-    public HashSet<IntegerExpression> getOutputVars() {
+    public HashSet<Expression> getOutputVars() {
         return outputVars;
     }
     public void setOutputVars(HashSet outputVars) {
         this.outputVars = outputVars;
     }
-    private HashSet<IntegerExpression>  outputVars;
+    private HashSet<Expression>  outputVars;
 
     public String getClassName() {
         return className;
@@ -59,12 +59,12 @@ public class VeritestingRegion {
 
     private String className, methodName;
 
-    public void setHoleHashMap(HashMap<IntegerExpression,IntegerExpression> holeHashMap) {
+    public void setHoleHashMap(HashMap<Expression,Expression> holeHashMap) {
         this.holeHashMap = holeHashMap;
     }
-    public HashMap<IntegerExpression, IntegerExpression> getHoleHashMap() {
+    public HashMap<Expression, Expression> getHoleHashMap() {
         return holeHashMap;
     }
-    private HashMap<IntegerExpression, IntegerExpression> holeHashMap;
+    private HashMap<Expression, Expression> holeHashMap;
 }
 

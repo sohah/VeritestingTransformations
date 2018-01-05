@@ -3,6 +3,9 @@ package gov.nasa.jpf.symbc.veritesting;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.numeric.*;
 
+import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,13 +17,13 @@ public class VarUtil {
     // Maps each WALA IR variable to its corresponding stack slot, if one exists
     HashMap<Integer, Integer> varsMap;
 
-    public HashMap<String, IntegerExpression> varCache;
+    public HashMap<String, Expression> varCache;
 
     // these represent the outputs of a veritesting region
-    public HashSet<IntegerExpression> defLocalVars;
+    public HashSet<Expression> defLocalVars;
 
     // contains all the holes in the cnlie AST
-    public HashMap<IntegerExpression, IntegerExpression> holeHashMap;
+    public HashMap<Expression, Expression> holeHashMap;
 
     public static int pathCounter=0;
     private static long holeID = 0;
@@ -28,60 +31,60 @@ public class VarUtil {
 
     public static final int getPathCounter() { pathCounter++; return pathCounter; }
 
-    public IntegerExpression makeIntermediateVar(int val) {
+    public Expression makeIntermediateVar(int val) {
         String name = "v" + val;
         return makeIntermediateVar(name);
     }
 
-    public IntegerExpression makeIntermediateVar(String name) {
+    public Expression makeIntermediateVar(String name) {
         if(varCache.containsKey(name))
             return varCache.get(name);
-        IntegerExpression integerExpression = new IntegerConstant(nextInt());
-        integerExpression.setHole(true, Expression.HoleType.INTERMEDIATE);
-        integerExpression.setHoleVarName(name);
-        varCache.put(name, integerExpression);
-        return integerExpression;
+        HoleExpression holeExpression = new HoleExpression(nextInt());
+        holeExpression.setHole(true, HoleExpression.HoleType.INTERMEDIATE);
+        holeExpression.setHoleVarName(name);
+        varCache.put(name, holeExpression);
+        return holeExpression;
     }
 
-    public IntegerExpression makeLocalInputVar(int val) {
+    public Expression makeLocalInputVar(int val) {
         assert(varsMap.containsKey(val));
         if(varCache.containsKey("v" + val))
             return varCache.get("v" + val);
-        IntegerExpression integerExpression = new IntegerConstant(nextInt());
-        integerExpression.setHole(true, Expression.HoleType.LOCAL_INPUT);
-        integerExpression.setLocalStackSlot(varsMap.get(val));
-        varCache.put("v" + val, integerExpression);
-        return integerExpression;
+        HoleExpression holeExpression = new HoleExpression(nextInt());
+        holeExpression.setHole(true, HoleExpression.HoleType.LOCAL_INPUT);
+        holeExpression.setLocalStackSlot(varsMap.get(val));
+        varCache.put("v" + val, holeExpression);
+        return holeExpression;
     }
 
-    public IntegerExpression makeLocalOutputVar(int val) {
+    public Expression makeLocalOutputVar(int val) {
         assert(varsMap.containsKey(val));
         if(varCache.containsKey("v" + val))
             return varCache.get("v" + val);
-        IntegerExpression integerExpression = new IntegerConstant(nextInt());
-        integerExpression.setHole(true, Expression.HoleType.LOCAL_OUTPUT);
-        integerExpression.setLocalStackSlot(varsMap.get(val));
-        integerExpression.setHoleVarName("v" + val);
-        varCache.put("v" + val, integerExpression);
-        return integerExpression;
+        HoleExpression holeExpression = new HoleExpression(nextInt());
+        holeExpression.setHole(true, HoleExpression.HoleType.LOCAL_OUTPUT);
+        holeExpression.setLocalStackSlot(varsMap.get(val));
+        holeExpression.setHoleVarName("v" + val);
+        varCache.put("v" + val, holeExpression);
+        return holeExpression;
     }
 
     public VarUtil(IR _ir, String _className, String _methodName) {
         varsMap = new HashMap<> ();
         defLocalVars = new HashSet<>();
         holeHashMap = new HashMap<>();
-        varCache = new HashMap<String, IntegerExpression> () {
+        varCache = new HashMap<String, Expression> () {
             @Override
-            public IntegerExpression put(String key, IntegerExpression integerExpression) {
-                if(integerExpression instanceof IntegerConstant && integerExpression.isHole()) {
+            public Expression put(String key, Expression expression) {
+                if(expression instanceof HoleExpression && ((HoleExpression)expression).isHole()) {
                     // using non-hole IntegerConstant object containing 0 as placeholder
                     // for final filled-up hole object
-                    holeHashMap.put(integerExpression, integerExpression);
-                    if(integerExpression.getHoleType() == Expression.HoleType.FIELD_OUTPUT ||
-                            integerExpression.getHoleType() == Expression.HoleType.LOCAL_OUTPUT)
-                        defLocalVars.add(integerExpression);
+                    holeHashMap.put(expression, expression);
+                    if(((HoleExpression)expression).getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT ||
+                            ((HoleExpression)expression).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT)
+                        defLocalVars.add(expression);
                 }
-                return super.put(key, integerExpression);
+                return super.put(key, expression);
             }
         };
         className = _className;
@@ -320,13 +323,13 @@ public class VarUtil {
         return ret;
     }
 
-    public IntegerExpression addVal(int val) {
+    public Expression addVal(int val) {
         String name = "v" + val;
         if(varCache.containsKey(name))
             return varCache.get(name);
-        IntegerExpression ret;
+        Expression ret;
         if(ir.getSymbolTable().isConstant(val)) {
-            ret = new IntegerConstant(getConstant(val));
+            ret = new IntConstant(getConstant(val));
             varCache.put(name, ret);
             return ret;
         }
@@ -345,7 +348,7 @@ public class VarUtil {
         else return -1;
     }
 
-    public IntegerExpression addDefVal(int def) {
+    public Expression addDefVal(int def) {
         //this assumes that we dont need to do anything special for intermediate vars defined in a region
         if(isLocalVariable(def)) {
             return makeLocalOutputVar(def);
@@ -355,33 +358,33 @@ public class VarUtil {
         return null;
     }
 
-    /*private IntegerExpression addDefLocalVar(int def) {
-        IntegerExpression ret = makeLocalOutputVar(def);
+    /*private Expression addDefLocalVar(int def) {
+        Expression ret = makeLocalOutputVar(def);
         defLocalVars.add(ret);
         return ret;
     }*/
 
-    public IntegerExpression addFieldVal(int def, int use,
-                                         String className,
-                                         String fieldName,
-                                         Expression.HoleType holeType) {
-        IntegerExpression ret = makeFieldVar(def, addVal(use), className, fieldName, holeType);
+    public Expression addFieldVal(int def, int use,
+                                  String className,
+                                  String fieldName,
+                                  HoleExpression.HoleType holeType) {
+        Expression ret = makeFieldVar(def, addVal(use), className, fieldName, holeType);
         String name = "v" + def;
         varCache.put(name, ret);
         return ret;
     }
 
-    private IntegerExpression makeFieldVar(int def, IntegerExpression use, String className, String fieldName,
-                                                Expression.HoleType holeType) {
-        assert(use.getHoleType() == Expression.HoleType.LOCAL_INPUT);
-        assert(holeType == Expression.HoleType.FIELD_OUTPUT || holeType == Expression.HoleType.FIELD_INPUT);
-        IntegerExpression integerExpression = new IntegerConstant(nextInt());
-        integerExpression.setHole(true, holeType);
-        integerExpression.setFieldInfo(use, className, fieldName);
+    private Expression makeFieldVar(int def, Expression use, String className, String fieldName,
+                                    HoleExpression.HoleType holeType) {
+        assert(((HoleExpression)use).getHoleType() == HoleExpression.HoleType.LOCAL_INPUT);
+        assert(holeType == HoleExpression.HoleType.FIELD_OUTPUT || holeType == HoleExpression.HoleType.FIELD_INPUT);
+        HoleExpression holeExpression = new HoleExpression(nextInt());
+        holeExpression.setHole(true, holeType);
+        holeExpression.setFieldInfo(use, className, fieldName);
         String name = "v" + def;
-        integerExpression.setHoleVarName(name);
-        varCache.put("v" + def, integerExpression);
-        return integerExpression;
+        holeExpression.setHoleVarName(name);
+        varCache.put("v" + def, holeExpression);
+        return holeExpression;
     }
 
     public boolean isConstant(int operand1) {
