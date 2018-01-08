@@ -171,6 +171,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       ti.setNextPC(insn);
       pathLabelCount += 1;
     }
+    System.out.println("Number of veritesting regions = " + veritestingRegions.size());
   }
 
   private Comparator GreenToSPFComparator(Operation.Operator operator) {
