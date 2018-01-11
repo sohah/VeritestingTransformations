@@ -17,6 +17,7 @@ import java.util.*;
 
 import com.ibm.wala.cfg.Util;
 import com.ibm.wala.classLoader.IBytecodeMethod;
+import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.core.tests.callGraph.CallGraphTestUtil;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
@@ -53,7 +54,7 @@ public class VeritestingMain {
     public int pathLabelVarNum = 0;
     public HashSet endingInsnsHash;
     ClassHierarchy cha;
-    ArrayList<String> additionalClassNames;
+    ArrayList<String> methodSummaryClassNames, methodSummarySubClassNames;
 
     public int getObjectReference() {
         return objectReference;
@@ -74,11 +75,11 @@ public class VeritestingMain {
 
     public VeritestingMain(String appJar) {
         try {
-            appJar = System.getenv("TARGET_CLASSPATH_WALA") + appJar;
+            appJar = System.getenv("TARGET_CLASSPATH_WALA");// + appJar;
             AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
                     (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
-            additionalClassNames = new ArrayList<String>();
+            methodSummaryClassNames = new ArrayList<String>();
             VeritestingListener.veritestingRegions = new HashMap<String, VeritestingRegion>();
         } catch (WalaException | IOException e) {
             e.printStackTrace();
@@ -103,17 +104,43 @@ public class VeritestingMain {
                 String signature = getSignature(m);
                 startAnalysis(_className,signature);
             }
-            for(String additionalClassName: additionalClassNames) {
-                Class cAdditional = urlcl.loadClass(additionalClassName);
+            methodSummarySubClassNames = new ArrayList<String>();
+            for(Iterator it = methodSummaryClassNames.iterator(); it.hasNext();) {
+                String methodSummaryClassName = (String) it.next();
+                Class cAdditional = urlcl.loadClass(methodSummaryClassName);
+                Method[] allMethodsAdditional = cAdditional.getDeclaredMethods();
+                for (Method m: allMethodsAdditional) {
+                    String signature = getSignature(m);
+                    MethodReference mr = StringStuff.makeMethodReference(methodSummaryClassName + "." + signature);
+                    IMethod iMethod = cha.resolveMethod(mr);
+                    if (iMethod == null) {
+                        System.out.println("could not resolve " + mr);
+                        continue;
+                    }
+                    IClass iClass = iMethod.getDeclaringClass();
+                    for(IClass subClass: cha.computeSubClasses(iClass.getReference())) {
+                        if(iClass.equals(subClass)) continue;
+                        methodSummarySubClassNames.add(subClass.getReference().getName().getClassName().toString());
+                    }
+                    //Only need to add subclass once for all the methods in the class
+                    break;
+                }
+            }
+            methodSummaryClassNames.addAll(methodSummarySubClassNames);
+            for(Iterator it = methodSummaryClassNames.iterator(); it.hasNext();) {
+                String methodSummaryClassName = (String) it.next();
+                Class cAdditional = urlcl.loadClass(methodSummaryClassName);
                 Method[] allMethodsAdditional = cAdditional.getDeclaredMethods();
                 for (Method m : allMethodsAdditional) {
                     String signature = getSignature(m);
-                    startMethodAnalysis(additionalClassName, signature);
+                    startMethodAnalysis(methodSummaryClassName, signature);
                 }
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -124,17 +151,13 @@ public class VeritestingMain {
             MethodReference mr = StringStuff.makeMethodReference(className + "." + methodSig);
             IMethod m = cha.resolveMethod(mr);
             if (m == null) {
-                String appJar = System.getenv("TARGET_CLASSPATH_WALA") + className;
-                if(!appJar.endsWith(".class")) appJar += ".class";
-                AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
-                        (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
-                cha = ClassHierarchyFactory.make(scope);
-                m = cha.resolveMethod(mr);
-                if(m == null) {
-                    System.out.println("could not resolve " + mr);
-                    return;
-                }
-                //Assertions.UNREACHABLE("could not resolve " + mr);
+                System.out.println("could not resolve " + mr);
+                return;
+            }
+            IClass iClass = m.getDeclaringClass();
+            for(IClass subClass: cha.computeSubClasses(iClass.getReference())) {
+                if(iClass.equals(subClass)) continue;
+                methodSummarySubClassNames.add(subClass.getReference().getName().getClassName().toString());
             }
             AnalysisOptions options = new AnalysisOptions();
             options.getSSAOptions().setPiNodePolicy(SSAOptions.getAllBuiltInPiNodes());
@@ -149,10 +172,6 @@ public class VeritestingMain {
             System.out.println("Starting analysis for " + methodName + "(" + currentClassName + "." + methodSig + ")");
             varUtil = new VarUtil(ir, currentClassName, methodName);
             doMethodAnalysis(ir, cfg);
-        } catch (ClassHierarchyException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (InvalidClassFileException e) {
             e.printStackTrace();
         }
@@ -164,8 +183,8 @@ public class VeritestingMain {
             MethodReference mr = StringStuff.makeMethodReference(className + "." + methodSig);
             IMethod m = cha.resolveMethod(mr);
             if (m == null) {
-                String appJar = System.getenv("TARGET_CLASSPATH_WALA") + className;
-                if(!appJar.endsWith(".class")) appJar += ".class";
+                String appJar = System.getenv("TARGET_CLASSPATH_WALA");// + className;
+                //if(!appJar.endsWith(".class")) appJar += ".class";
                 AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
                         (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
                 cha = ClassHierarchyFactory.make(scope);
@@ -319,7 +338,7 @@ public class VeritestingMain {
                             break;
                         }
                         if(myIVisitor.isInvokeVirtual()) {
-                            additionalClassNames.add(myIVisitor.getInvokeVirtualClassName());
+                            methodSummaryClassNames.add(myIVisitor.getInvokeVirtualClassName());
                         }
                         Expression thenExpr1 = myIVisitor.getSPFExpr();
                         if (thenExpr1 != null) {
@@ -356,7 +375,7 @@ public class VeritestingMain {
                             break;
                         }
                         if(myIVisitor.isInvokeVirtual()) {
-                            additionalClassNames.add(myIVisitor.getInvokeVirtualClassName());
+                            methodSummaryClassNames.add(myIVisitor.getInvokeVirtualClassName());
                         }
                         Expression elseExpr1 = myIVisitor.getSPFExpr();
                         if (elseExpr1 != null) {

@@ -29,6 +29,7 @@ import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.vm.*;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.ArrayList;
@@ -325,6 +326,10 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       switch(keyHoleExpression.getHoleType()) {
         case INVOKEVIRTUAL:
           InvokeVirtualInfo callSiteInfo = keyHoleExpression.getInvokeVirtualInfo();
+          Expression callingObject = retHoleHashMap.get(callSiteInfo.paramList.get(0));
+          ClassInfo ci = ti.getClassInfo(((IntConstant)callingObject).getValue());
+          //Change the class name based on the call site object reference
+          callSiteInfo.className = ci.getName();
           //If there exists a invokeVirtual for a method that we weren't able to summarize, skip veritesting
           if(!veritestingRegions.containsKey(callSiteInfo.className+"."+callSiteInfo.methodName+"#0"))
             return null;

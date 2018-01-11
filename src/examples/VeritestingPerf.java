@@ -32,7 +32,7 @@ public class VeritestingPerf {
     }
 
     public int countBitsSet(int x) {
-        TempClass tempClass = new TempClass();
+        TempClass tempClass = new TempClassDerived();
         while (x != 0) {
             if ((x & 1) != 0) count += tempClass.getOne(1);
             x = x >>> 1; // logical right shift
@@ -96,6 +96,15 @@ public class VeritestingPerf {
     }
 
 };
+
+class TempClassDerived extends TempClass {
+
+    private int tempInt = 1;
+
+    public int getTempInt() { return tempInt; }
+
+    public int getOne(int a) { tempInt = a; return tempInt; }
+}
 
 class TempClass {
 
