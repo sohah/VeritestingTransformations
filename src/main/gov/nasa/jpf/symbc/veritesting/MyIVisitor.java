@@ -14,6 +14,8 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 import za.ac.sun.cs.green.expr.Operation.Operator;
 
+import java.util.ArrayList;
+
 public class MyIVisitor implements SSAInstruction.IVisitor {
     private final int thenUseNum;
     private final int elseUseNum;
@@ -229,8 +231,13 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitGet(SSAGetInstruction instruction) {
+        lastInstruction = instruction;
         if(isMeetVisitor) return;
         System.out.println("SSAGetInstruction = " + instruction);
+        if(instruction.isStatic()) {
+            canVeritest = false;
+            return;
+        }
         assert(instruction.getNumberOfDefs()==1);
         assert(instruction.getNumberOfUses()==1);
         FieldReference fieldReference = instruction.getDeclaredField();
@@ -241,13 +248,18 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         int def = instruction.getDef(0);
         varUtil.addFieldVal(def, use, declaringClass.toString(), fieldName.toString(),
                 HoleExpression.HoleType.FIELD_INPUT);
-        lastInstruction = instruction;
+
         canVeritest = true;
     }
 
     @Override
     public void visitPut(SSAPutInstruction instruction) {
+        lastInstruction = instruction;
         if(isMeetVisitor) return;
+        if(instruction.isStatic()) {
+            canVeritest = false;
+            return;
+        }
         System.out.println("SSAPutInstruction = " + instruction);
         assert(instruction.getNumberOfUses()==2);
         assert(instruction.getNumberOfDefs()==0);
@@ -258,7 +270,6 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         Atom fieldName = fieldReference.getName();
         varUtil.addFieldVal(defVal, objRef, declaringClass.toString(), fieldName.toString(),
                 HoleExpression.HoleType.FIELD_OUTPUT);
-        lastInstruction = instruction;
         canVeritest = true;
     }
 
@@ -275,9 +286,9 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         Atom declaringClass = methodReference.getDeclaringClass().getName().getClassName();
         Atom methodName = methodReference.getName();
         int defVal = instruction.getDef(); // represents the return value
-        Expression[] paramList = new HoleExpression[instruction.getNumberOfParameters()];
+        ArrayList<Expression> paramList = new ArrayList<>();
         for(int i=0; i < instruction.getNumberOfParameters(); i++) {
-            paramList[i] = varUtil.addVal(instruction.getUse(i));
+            paramList.add(varUtil.addVal(instruction.getUse(i)));
         }
         InvokeVirtualInfo virtualInfo = new InvokeVirtualInfo();
         virtualInfo.setDefVal(defVal);

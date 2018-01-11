@@ -2,6 +2,8 @@ package gov.nasa.jpf.symbc.veritesting;
 
 import za.ac.sun.cs.green.expr.Expression;
 
+import java.util.ArrayList;
+
 public class InvokeVirtualInfo {
 
     public String className;
@@ -14,8 +16,8 @@ public class InvokeVirtualInfo {
         this.methodName = methodName;
     }
 
-    public Expression[] paramList;
-    public void setParamList(Expression[] paramList) {
+    public ArrayList<Expression> paramList;
+    public void setParamList(ArrayList<Expression> paramList) {
         this.paramList = paramList;
     }
 

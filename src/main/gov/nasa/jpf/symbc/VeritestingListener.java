@@ -345,14 +345,14 @@ public class VeritestingListener extends PropertyListenerAdapter  {
               // in other words, we cannot support summarization of functions that create something on the stack
               case LOCAL_INPUT:
                 //local inputs used in method summary have to come from the filled-up holes in paramList
-                if (methodKeyHole.getLocalStackSlot() < callSiteInfo.paramList.length) {
+                if (methodKeyHole.getLocalStackSlot() < callSiteInfo.paramList.size()) {
                   int methodLocalStackSlot = methodKeyHole.getLocalStackSlot();
                   //int callSiteLocalStackSlot = ((HoleExpression)callSiteInfo.paramList[methodLocalStackSlot]).getLocalStackSlot();
                   //methodKeyHole.setLocalStackSlot(callSiteLocalStackSlot);
-                  retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(callSiteInfo.paramList[methodLocalStackSlot]));
+                  retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(callSiteInfo.paramList.get(methodLocalStackSlot)));
                   paramEqList.add(new Operation(Operation.Operator.EQ,
                           methodKeyHole,
-                          callSiteInfo.paramList[methodLocalStackSlot]));
+                          callSiteInfo.paramList.get(methodLocalStackSlot)));
                 } else {
                   System.out.println("Don't know how to fill method summary hole: " + methodKeyHole);
                   return null;
@@ -385,9 +385,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                 HoleExpression.FieldInfo fieldInfo = methodKeyHole.getFieldInfo();
                 //The object reference where this field lives HAS to be present in the current method's stack frame
                 //and we populate that stack slot in fieldInfo for fillFieldInputHole to use
-                assert(((HoleExpression)callSiteInfo.paramList[0]).getHoleType() == HoleExpression.HoleType.LOCAL_INPUT ||
-                        ((HoleExpression)callSiteInfo.paramList[0]).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
-                int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList[0]).getLocalStackSlot();
+                assert(((HoleExpression)callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_INPUT ||
+                        ((HoleExpression)callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
+                int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
                 fieldInfo.callSiteStackSlot = callSiteStackSlot;
                 //retHoleHashMap.put(fieldInfo.use, retHoleHashMap.get(callSiteInfo.paramList[0]));
                 //paramEqList.add(new Operation(Operation.Operator.EQ, fieldInfo.use, callSiteInfo.paramList[0]));
@@ -401,7 +401,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                 fieldInfo = methodKeyHole.getFieldInfo();
                 //The object reference where this field lives HAS to be present in the current method's stack frame
                 //and we populate that stack slot in fieldInfo for fillFieldOutputHole to use later
-                fieldInfo.callSiteStackSlot = ((HoleExpression)callSiteInfo.paramList[0]).getLocalStackSlot();
+                fieldInfo.callSiteStackSlot = ((HoleExpression)callSiteInfo.paramList.get(0)).getLocalStackSlot();
                 methodKeyHole.setFieldInfo(fieldInfo.className, fieldInfo.fieldName,
                         fieldInfo.localStackSlot, fieldInfo.callSiteStackSlot);
                 break;
