@@ -25,15 +25,13 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.symbc.numeric.*;
-import gov.nasa.jpf.symbc.veritesting.HoleExpression;
-import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
-import gov.nasa.jpf.symbc.veritesting.VeritestingRegion;
-import gov.nasa.jpf.vm.*;
-
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
-import za.ac.sun.cs.green.expr.Operation;
+import gov.nasa.jpf.symbc.veritesting.*;
+import gov.nasa.jpf.vm.*;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.Operation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -116,6 +114,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       long endTime = System.nanoTime();
       long duration = (endTime - startTime) / 1000000; //milliseconds
       System.out.println("veritesting analysis took " + duration + " milliseconds");
+      System.out.println("Number of veritesting regions = " + veritestingRegions.size());
     }
     String key = ti.getTopFrame().getClassInfo().getName() + "." + ti.getTopFrame().getMethodInfo().getName() +
             "#" + ti.getTopFrame().getPC().getPosition();
@@ -123,6 +122,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       VeritestingRegion region = veritestingRegions.get(key);
       StackFrame sf = ti.getTopFrame();
       InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
+      if(instructionInfo == null) return;
       Operation.Operator trueComparator = instructionInfo.getTrueComparator();
       Operation.Operator falseComparator = instructionInfo.getFalseComparator();
       int numOperands = instructionInfo.getNumOperands();
@@ -142,18 +142,21 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       if ((eqSat && !neSat) || (!eqSat && neSat)) {
         return;
       }
-      HashMap<Expression, Expression> holeHashMap =
+      FillHolesOutput fillHolesOutput =
               fillHoles(region.getHoleHashMap(), instructionInfo, sf, ti);
-      if(holeHashMap == null) return;
+      if(fillHolesOutput.holeHashMap == null) return;
       Expression summaryExpression = region.getSummaryExpression();
-      summaryExpression = fillASTHoles(summaryExpression, holeHashMap); //not constant-folding for now
+      Expression finalSummaryExpression = summaryExpression;
+      if(fillHolesOutput.additionalAST != null)
+        finalSummaryExpression = new Operation(Operation.Operator.AND, summaryExpression, fillHolesOutput.additionalAST);
+      finalSummaryExpression = fillASTHoles(finalSummaryExpression, fillHolesOutput.holeHashMap); //not constant-folding for now
       //pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(summaryExpression)));
-      pc._addDet(new GreenConstraint(summaryExpression));
+      pc._addDet(new GreenConstraint(finalSummaryExpression));
       if(!pc.simplify()) {
         System.out.println("veritesting region added unsat summary");
         assert(false);
       }
-      if (!populateOutputs(region.getOutputVars(), holeHashMap, sf, ti)) {
+      if (!populateOutputs(region.getOutputVars(), fillHolesOutput.holeHashMap, sf, ti)) {
         return;
       }
 
@@ -171,7 +174,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
       ti.setNextPC(insn);
       pathLabelCount += 1;
     }
-    System.out.println("Number of veritesting regions = " + veritestingRegions.size());
   }
 
   private Comparator GreenToSPFComparator(Operation.Operator operator) {
@@ -231,8 +233,19 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   private Expression fillASTHoles(Expression holeExpression,
                                          HashMap<Expression, Expression> holeHashMap) {
     if(holeExpression instanceof HoleExpression && ((HoleExpression)holeExpression).isHole()) {
-      assert(holeHashMap.containsKey(holeExpression));
+      //assert(holeHashMap.containsKey(holeExpression));
+      if(!holeHashMap.containsKey(holeExpression)) {
+        System.out.println("fillASTHoles does not know how to fill hole " + holeExpression.toString());
+        assert(false);
+      }
       Expression ret = holeHashMap.get(holeExpression);
+      if(ret instanceof Operation) {
+        Operation oldOperation = (Operation) ret;
+        Operation newOperation = new Operation(oldOperation.getOperator(),
+                fillASTHoles(oldOperation.getOperand(0), holeHashMap),
+                fillASTHoles(oldOperation.getOperand(1), holeHashMap));
+        return newOperation;
+      }
       return ret;
     }
     if(holeExpression instanceof Operation) {
@@ -248,70 +261,184 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   /*
   Load from local variable stack slots IntegerExpression objects and store them into holeHashMap
    */
-  private HashMap<Expression, Expression> fillHoles(
+  private FillHolesOutput fillHoles(
           HashMap<Expression, Expression> holeHashMap,
           InstructionInfo instructionInfo,
           StackFrame stackFrame,
           ThreadInfo ti) {
     HashMap<Expression, Expression> retHoleHashMap = new HashMap<>();
+    Operation additionalAST = null;
     for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
-      Expression key = entry.getKey(), finalValue;
+      Expression key = entry.getKey(), finalValueGreen;
       gov.nasa.jpf.symbc.numeric.Expression finalValueSPF;
-      assert(key instanceof HoleExpression);
+      assert (key instanceof HoleExpression);
       HoleExpression keyHoleExpression = (HoleExpression) key;
-      assert(keyHoleExpression.isHole());
-      switch(keyHoleExpression.getHoleType()) {
+      assert (keyHoleExpression.isHole());
+      switch (keyHoleExpression.getHoleType()) {
         case LOCAL_INPUT:
           finalValueSPF =
                   (gov.nasa.jpf.symbc.numeric.Expression) stackFrame.getLocalAttr(keyHoleExpression.getLocalStackSlot());
-          if(finalValueSPF == null)
+          if (finalValueSPF == null)
             finalValueSPF = new IntegerConstant(stackFrame.getLocalVariable(keyHoleExpression.getLocalStackSlot()));
-          finalValue = SPFToGreenExpr(finalValueSPF);
-          retHoleHashMap.put(keyHoleExpression, finalValue);
+          finalValueGreen = SPFToGreenExpr(finalValueSPF);
+          retHoleHashMap.put(keyHoleExpression, finalValueGreen);
           break;
         case LOCAL_OUTPUT:
         case FIELD_OUTPUT:
         case INTERMEDIATE:
           finalValueSPF =
                   makeSymbolicInteger(keyHoleExpression.getHoleVarName() + pathLabelCount);
-          finalValue = SPFToGreenExpr(finalValueSPF);
-          retHoleHashMap.put(keyHoleExpression, finalValue);
+          finalValueGreen = SPFToGreenExpr(finalValueSPF);
+          retHoleHashMap.put(keyHoleExpression, finalValueGreen);
           break;
         case FIELD_INPUT:
           HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
-          assert(fieldInfo != null);
+          assert (fieldInfo != null);
           finalValueSPF = fillFieldInputHole(ti, stackFrame, fieldInfo);
-          assert(finalValueSPF != null);
-          finalValue = SPFToGreenExpr(finalValueSPF);
-          retHoleHashMap.put(keyHoleExpression, finalValue);
+          assert (finalValueSPF != null);
+          finalValueGreen = SPFToGreenExpr(finalValueSPF);
+          retHoleHashMap.put(keyHoleExpression, finalValueGreen);
           break;
         case NONE:
           System.out.println("expression marked as hole with NONE hole type: " +
                   keyHoleExpression.toString());
-          assert(false);
+          assert (false);
           break;
         case CONDITION:
-          finalValue = instructionInfo.getCondition();
-          assert(finalValue != null);
-          retHoleHashMap.put(keyHoleExpression, finalValue);
+          finalValueGreen = instructionInfo.getCondition();
+          assert (finalValueGreen != null);
+          retHoleHashMap.put(keyHoleExpression, finalValueGreen);
           break;
         case NEGCONDITION:
-          finalValue = instructionInfo.getNegCondition();
-          assert(finalValue != null);
-          retHoleHashMap.put(keyHoleExpression, finalValue);
+          finalValueGreen = instructionInfo.getNegCondition();
+          assert (finalValueGreen != null);
+          retHoleHashMap.put(keyHoleExpression, finalValueGreen);
           break;
-        default:
-          return null;
       }
     }
-    return retHoleHashMap;
+    for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
+      Expression key = entry.getKey(), greenExpr = null;
+      gov.nasa.jpf.symbc.numeric.Expression spfExpr;
+      assert(key instanceof HoleExpression);
+      HoleExpression keyHoleExpression = (HoleExpression) key;
+      assert(keyHoleExpression.isHole());
+      switch(keyHoleExpression.getHoleType()) {
+        case INVOKEVIRTUAL:
+          InvokeVirtualInfo callSiteInfo = keyHoleExpression.getInvokeVirtualInfo();
+          //If there exists a invokeVirtual for a method that we weren't able to summarize, skip veritesting
+          if(!veritestingRegions.containsKey(callSiteInfo.className+"."+callSiteInfo.methodName+"#0"))
+            return null;
+          //All holes in callSiteInfo.paramList will also be present in holeHashmap and will be filled up here
+          for(Expression h: callSiteInfo.paramList) {
+            if(h instanceof HoleExpression) assert(holeHashMap.containsKey(h));
+          }
+          VeritestingRegion methodSummary = veritestingRegions.get(callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
+          HashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
+          ArrayList<Expression> paramEqList = new ArrayList<>();
+          for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
+            Expression methodKeyExpr = entry1.getKey();
+            assert(methodKeyExpr instanceof HoleExpression);
+            HoleExpression methodKeyHole = (HoleExpression) methodKeyExpr;
+            assert(methodKeyHole.isHole());
+            switch(methodKeyHole.getHoleType()) {
+              //LOCAL_INPUTs can be mapped to parameters at the call site, but non-parameter local inputs cannot
+              // in other words, we cannot support summarization of functions that create something on the stack
+              case LOCAL_INPUT:
+                //local inputs used in method summary have to come from the filled-up holes in paramList
+                if (methodKeyHole.getLocalStackSlot() < callSiteInfo.paramList.length) {
+                  int methodLocalStackSlot = methodKeyHole.getLocalStackSlot();
+                  //int callSiteLocalStackSlot = ((HoleExpression)callSiteInfo.paramList[methodLocalStackSlot]).getLocalStackSlot();
+                  //methodKeyHole.setLocalStackSlot(callSiteLocalStackSlot);
+                  retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(callSiteInfo.paramList[methodLocalStackSlot]));
+                  paramEqList.add(new Operation(Operation.Operator.EQ,
+                          methodKeyHole,
+                          callSiteInfo.paramList[methodLocalStackSlot]));
+                } else {
+                  System.out.println("Don't know how to fill method summary hole: " + methodKeyHole);
+                  return null;
+                }
+                break;
+              case CONDITION:
+                System.out.println("unsupported condition hole in method summary");
+                assert(false);
+                break;
+              case NEGCONDITION:
+                System.out.println("unsupported negCondition hole in method summary");
+                assert(false);
+                break;
+              case INVOKEVIRTUAL:
+                System.out.println("unsupported invokeVirtual hole in method summary");
+                assert(false);
+                break;
+              case LOCAL_OUTPUT:
+                System.out.println("unsupported local variable output in method summary");
+                assert(false);
+                break;
+              case INTERMEDIATE:
+                spfExpr = makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
+                greenExpr = SPFToGreenExpr(spfExpr);
+                retHoleHashMap.put(methodKeyHole, greenExpr);
+                break;
+              case NONE:
+                break;
+              case FIELD_INPUT:
+                HoleExpression.FieldInfo fieldInfo = methodKeyHole.getFieldInfo();
+                //The object reference where this field lives HAS to be present in the current method's stack frame
+                //and we populate that stack slot in fieldInfo for fillFieldInputHole to use
+                assert(((HoleExpression)callSiteInfo.paramList[0]).getHoleType() == HoleExpression.HoleType.LOCAL_INPUT ||
+                        ((HoleExpression)callSiteInfo.paramList[0]).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
+                int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList[0]).getLocalStackSlot();
+                fieldInfo.callSiteStackSlot = callSiteStackSlot;
+                //retHoleHashMap.put(fieldInfo.use, retHoleHashMap.get(callSiteInfo.paramList[0]));
+                //paramEqList.add(new Operation(Operation.Operator.EQ, fieldInfo.use, callSiteInfo.paramList[0]));
+                assert (fieldInfo != null);
+                spfExpr = fillFieldInputHole(ti, stackFrame, fieldInfo);
+                assert (spfExpr != null);
+                greenExpr = SPFToGreenExpr(spfExpr);
+                retHoleHashMap.put(methodKeyHole, greenExpr);
+                break;
+              case FIELD_OUTPUT:
+                fieldInfo = methodKeyHole.getFieldInfo();
+                //The object reference where this field lives HAS to be present in the current method's stack frame
+                //and we populate that stack slot in fieldInfo for fillFieldOutputHole to use later
+                fieldInfo.callSiteStackSlot = ((HoleExpression)callSiteInfo.paramList[0]).getLocalStackSlot();
+                methodKeyHole.setFieldInfo(fieldInfo.className, fieldInfo.fieldName,
+                        fieldInfo.localStackSlot, fieldInfo.callSiteStackSlot);
+                break;
+              default:
+                System.out.println("expression marked with unknown hole type: " +
+                        keyHoleExpression.toString());
+                assert(false);
+                return null;
+            }
+          }
+          Operation retValEq = new Operation(Operation.Operator.EQ, methodSummary.retVal, keyHoleExpression);
+          Operation mappingOperation = retValEq;
+          for(int i=0; i < paramEqList.size(); i++) {
+            //paramList.length-1 because there won't be a constraint created for the object reference which is always
+            //parameter 0
+            mappingOperation = new Operation(Operation.Operator.EQ, mappingOperation, paramEqList.get(i));
+          }
+          if(methodSummary.getSummaryExpression() != null)
+            mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, methodSummary.getSummaryExpression());
+          if(additionalAST != null) additionalAST = new Operation(Operation.Operator.AND, additionalAST, mappingOperation);
+          else additionalAST = mappingOperation;
+          Expression finalValueGreen = SPFToGreenExpr(makeSymbolicInteger(keyHoleExpression.getHoleVarName() + pathLabelCount));
+          retHoleHashMap.put(keyHoleExpression, finalValueGreen);
+          break;
+      }
+    }
+    return new FillHolesOutput(retHoleHashMap, additionalAST);
   }
 
-  gov.nasa.jpf.symbc.numeric.Expression fillFieldInputHole(ThreadInfo ti,
-                                       StackFrame stackFrame,
-                                       HoleExpression.FieldInfo fieldInputInfo) {
-    //get the object reference from fieldInputInfo.use's local stack slot
-    int objRef = stackFrame.getLocalVariable(((HoleExpression)fieldInputInfo.use).getLocalStackSlot());
+  gov.nasa.jpf.symbc.numeric.Expression fillFieldInputHole(
+          ThreadInfo ti,
+          StackFrame stackFrame,
+          HoleExpression.FieldInfo fieldInputInfo) {
+    //get the object reference from fieldInputInfo.use's local stack slot if not from the call site stack slot
+    int stackSlot = fieldInputInfo.callSiteStackSlot;
+    if(stackSlot == -1) stackSlot = fieldInputInfo.localStackSlot;
+    int objRef = stackFrame.getLocalVariable(stackSlot);
     if (objRef == 0) {
       System.out.println("java.lang.NullPointerException" + "referencing field '" +
               fieldInputInfo.fieldName+ "' on null object");
@@ -347,7 +474,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                                         StackFrame stackFrame,
                                         HoleExpression.FieldInfo fieldInputInfo,
                                         gov.nasa.jpf.symbc.numeric.Expression finalValue) {
-    int objRef = stackFrame.getLocalVariable(((HoleExpression)fieldInputInfo.use).getLocalStackSlot());
+    int stackSlot = fieldInputInfo.callSiteStackSlot;
+    if(stackSlot == -1) stackSlot = fieldInputInfo.localStackSlot;
+    int objRef = stackFrame.getLocalVariable(stackSlot);
     if (objRef == 0) {
       System.out.println("java.lang.NullPointerException" + "referencing field '" +
               fieldInputInfo.fieldName+ "' on null object");
@@ -374,6 +503,96 @@ public class VeritestingListener extends PropertyListenerAdapter  {
         }
       }
     }
+  }
+
+  private class InstructionInfo {
+    private ThreadInfo ti;
+    private int numOperands;
+    private Operation.Operator trueComparator, falseComparator;
+    private Expression condition, negCondition;
+
+    public Expression getCondition() { return condition; }
+
+    public Expression getNegCondition() { return negCondition; }
+
+    public InstructionInfo(ThreadInfo ti) {
+      this.ti = ti;
+    }
+
+    public int getNumOperands() {
+      return numOperands;
+    }
+
+    public Operation.Operator getTrueComparator() {
+      return trueComparator;
+    }
+
+    public Operation.Operator getFalseComparator() {
+      return falseComparator;
+    }
+
+    public InstructionInfo invoke() {
+      switch(ti.getTopFrame().getPC().getMnemonic()) {
+        case "ifeq" :
+          numOperands = 1;
+          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
+          break;
+        case "ifne":
+          trueComparator = Operation.Operator.NE; falseComparator = Operation.Operator.EQ;
+          numOperands = 1;
+          break;
+        case "iflt":
+          trueComparator = Operation.Operator.LT; falseComparator = Operation.Operator.GE;
+          numOperands = 1;
+          break;
+        case "ifle":
+          trueComparator = Operation.Operator.LE; falseComparator = Operation.Operator.GT;
+          numOperands = 1;
+          break;
+        case "ifgt":
+          trueComparator = Operation.Operator.GT; falseComparator = Operation.Operator.LE;
+          numOperands = 1;
+          break;
+        case "ifge":
+          trueComparator = Operation.Operator.GE; falseComparator = Operation.Operator.LT;
+          numOperands = 1;
+          break;
+        case "ifnull":
+          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
+          numOperands = 1;
+          break;
+        case "ifnonnull":
+          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
+          numOperands = 1;
+          break;
+        default :
+          return null;
+      }
+      IntegerExpression operand1 = null, operand2 = null;
+      operand1 = (IntegerExpression) ti.getTopFrame().getOperandAttr();
+      boolean isConcreteCondition = true;
+      if(operand1 == null) {
+        operand1 = new IntegerConstant(ti.getTopFrame().peek());
+      } else isConcreteCondition = false;
+      if(numOperands == 2) {
+        operand2 = (IntegerExpression) ti.getTopFrame().getOperandAttr(1);
+        if(operand2 != null) isConcreteCondition = false;
+        else operand2 = new IntegerConstant(ti.getTopFrame().peek(1));
+      } else operand2 = new IntegerConstant(0);
+      if(isConcreteCondition) { condition = null; negCondition = null; }
+      else {
+        condition = new Operation(trueComparator, SPFToGreenExpr(operand1), SPFToGreenExpr(operand2));
+        negCondition = new Operation(falseComparator, SPFToGreenExpr(operand1), SPFToGreenExpr(operand2));
+      }
+      return this;
+    }
+
+  }
+
+  Expression SPFToGreenExpr(gov.nasa.jpf.symbc.numeric.Expression spfExp) {
+    SolverTranslator.Translator toGreenTranslator = new SolverTranslator.Translator();
+    spfExp.accept(toGreenTranslator);
+    return toGreenTranslator.getExpression();
   }
 
   /*public IntegerExpression constantFold(IntegerExpression integerExpression) {
@@ -478,101 +697,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
     return integerExpression;
   }*/
-
-
-  private class InstructionInfo {
-    private ThreadInfo ti;
-    private int numOperands;
-    private Operation.Operator trueComparator, falseComparator;
-    private Expression condition, negCondition;
-
-    public Expression getCondition() { return condition; }
-
-    public Expression getNegCondition() { return negCondition; }
-
-    public InstructionInfo(ThreadInfo ti) {
-      this.ti = ti;
-    }
-
-    public int getNumOperands() {
-      return numOperands;
-    }
-
-    public Operation.Operator getTrueComparator() {
-      return trueComparator;
-    }
-
-    public Operation.Operator getFalseComparator() {
-      return falseComparator;
-    }
-
-    public InstructionInfo invoke() {
-      switch(ti.getTopFrame().getPC().getMnemonic()) {
-        case "ifeq" :
-          numOperands = 1;
-          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
-          break;
-        case "ifne":
-          trueComparator = Operation.Operator.NE; falseComparator = Operation.Operator.EQ;
-          numOperands = 1;
-          break;
-        case "iflt":
-          trueComparator = Operation.Operator.LT; falseComparator = Operation.Operator.GE;
-          numOperands = 1;
-          break;
-        case "ifle":
-          trueComparator = Operation.Operator.LE; falseComparator = Operation.Operator.GT;
-          numOperands = 1;
-          break;
-        case "ifgt":
-          trueComparator = Operation.Operator.GT; falseComparator = Operation.Operator.LE;
-          numOperands = 1;
-          break;
-        case "ifge":
-          trueComparator = Operation.Operator.GE; falseComparator = Operation.Operator.LT;
-          numOperands = 1;
-          break;
-        case "ifnull":
-          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
-          numOperands = 1;
-          break;
-        case "ifnonnull":
-          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
-          numOperands = 1;
-          break;
-        default :
-          trueComparator = Operation.Operator.EQ; falseComparator = Operation.Operator.NE;
-          numOperands = 2;
-          break;
-      }
-      IntegerExpression operand1 = null, operand2 = null;
-      operand1 = (IntegerExpression) ti.getTopFrame().getOperandAttr();
-      boolean isConcreteCondition = true;
-      if(operand1 == null) {
-        operand1 = new IntegerConstant(ti.getTopFrame().peek());
-      } else isConcreteCondition = false;
-      if(numOperands == 2) {
-        operand2 = (IntegerExpression) ti.getTopFrame().getOperandAttr(1);
-        if(operand2 != null) isConcreteCondition = false;
-      }
-      if(operand2 == null) {
-        operand2 = new IntegerConstant(ti.getTopFrame().peek(1));
-      }
-      if(isConcreteCondition) { condition = null; negCondition = null; }
-      else {
-        condition = new Operation(trueComparator, SPFToGreenExpr(operand1), SPFToGreenExpr(operand2));
-        negCondition = new Operation(falseComparator, SPFToGreenExpr(operand1), SPFToGreenExpr(operand2));
-      }
-      return this;
-    }
-
-  }
-
-  Expression SPFToGreenExpr(gov.nasa.jpf.symbc.numeric.Expression spfExp) {
-    SolverTranslator.Translator toGreenTranslator = new SolverTranslator.Translator();
-    spfExp.accept(toGreenTranslator);
-    return toGreenTranslator.getExpression();
-  }
 
   // TestPathsSimple listener for testMe3
   /*public void executeInstruction_TestPathsSimple_testMe3(VM vm, ThreadInfo ti, Instruction instructionToExecute) {

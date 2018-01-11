@@ -7,7 +7,6 @@ package gov.nasa.jpf.symbc.veritesting;
     cp ~/git_repos/MyWALA/$file/target/*.jar ~/IdeaProjects/jpf-symbc/lib/;
   done
 */
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -26,8 +25,8 @@ import com.ibm.wala.ipa.callgraph.AnalysisScope;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.cha.ClassHierarchy;
+import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
-import com.ibm.wala.ipa.summaries.SummarizedMethod;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.*;
 import com.ibm.wala.types.MethodReference;
@@ -54,9 +53,21 @@ public class VeritestingMain {
     public int pathLabelVarNum = 0;
     public HashSet endingInsnsHash;
     ClassHierarchy cha;
+    ArrayList<String> additionalClassNames;
+
+    public int getObjectReference() {
+        return objectReference;
+    }
+    public void setObjectReference(int objectReference) {
+        this.objectReference = objectReference;
+    }
+    // Relevant only if this region is a method summary
+    // Used to point to the object on which the method will be called
+    // Useful to get fields of the object in this method summary
+    int objectReference = -1;
     SSACFG cfg;
     HashSet startingPointsHistory;
-    String className, methodName;
+    String currentClassName, methodName;
     VarUtil varUtil;
     HashSet<NatLoop> loops;
     IR ir;
@@ -67,6 +78,8 @@ public class VeritestingMain {
             AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
                     (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
+            additionalClassNames = new ArrayList<String>();
+            VeritestingListener.veritestingRegions = new HashMap<String, VeritestingRegion>();
         } catch (WalaException | IOException e) {
             e.printStackTrace();
         }
@@ -84,29 +97,43 @@ public class VeritestingMain {
             File f = new File(classPath);
             URL[] cp = new URL[]{f.toURI().toURL()};
             URLClassLoader urlcl = new URLClassLoader(cp);
-            className = _className;
-            Class c = urlcl.loadClass(className);
+            Class c = urlcl.loadClass(_className);
             Method[] allMethods = c.getDeclaredMethods();
             for (Method m : allMethods) {
                 String signature = getSignature(m);
-                startAnalysis(className + "." + signature);
+                startAnalysis(_className,signature);
+            }
+            for(String additionalClassName: additionalClassNames) {
+                Class cAdditional = urlcl.loadClass(additionalClassName);
+                Method[] allMethodsAdditional = cAdditional.getDeclaredMethods();
+                for (Method m : allMethodsAdditional) {
+                    String signature = getSignature(m);
+                    startMethodAnalysis(additionalClassName, signature);
+                }
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
-        //startAnalysis(appJar, methodSig);
     }
 
-    public void startAnalysis(String methodSig) {
+    public void startMethodAnalysis(String className, String methodSig) {
         try {
             startingPointsHistory = new HashSet();
-            MethodReference mr = StringStuff.makeMethodReference(methodSig);
+            MethodReference mr = StringStuff.makeMethodReference(className + "." + methodSig);
             IMethod m = cha.resolveMethod(mr);
             if (m == null) {
-                System.out.println("could not resolve " + mr);
-                return;
+                String appJar = System.getenv("TARGET_CLASSPATH_WALA") + className;
+                if(!appJar.endsWith(".class")) appJar += ".class";
+                AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
+                        (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
+                cha = ClassHierarchyFactory.make(scope);
+                m = cha.resolveMethod(mr);
+                if(m == null) {
+                    System.out.println("could not resolve " + mr);
+                    return;
+                }
                 //Assertions.UNREACHABLE("could not resolve " + mr);
             }
             AnalysisOptions options = new AnalysisOptions();
@@ -117,9 +144,50 @@ public class VeritestingMain {
                 Assertions.UNREACHABLE("Null IR for " + m);
             }
             cfg = ir.getControlFlowGraph();
+            currentClassName = m.getDeclaringClass().getName().getClassName().toString();
             methodName = m.getName().toString();
-            System.out.println("Starting analysis for " + methodName + "(" + methodSig + ")");
-            varUtil = new VarUtil(ir, className, methodName);
+            System.out.println("Starting analysis for " + methodName + "(" + currentClassName + "." + methodSig + ")");
+            varUtil = new VarUtil(ir, currentClassName, methodName);
+            doMethodAnalysis(ir, cfg);
+        } catch (ClassHierarchyException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InvalidClassFileException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void startAnalysis(String className, String methodSig) {
+        try {
+            startingPointsHistory = new HashSet();
+            MethodReference mr = StringStuff.makeMethodReference(className + "." + methodSig);
+            IMethod m = cha.resolveMethod(mr);
+            if (m == null) {
+                String appJar = System.getenv("TARGET_CLASSPATH_WALA") + className;
+                if(!appJar.endsWith(".class")) appJar += ".class";
+                AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
+                        (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
+                cha = ClassHierarchyFactory.make(scope);
+                m = cha.resolveMethod(mr);
+                if(m == null) {
+                    System.out.println("could not resolve " + mr);
+                    return;
+                }
+                //Assertions.UNREACHABLE("could not resolve " + mr);
+            }
+            AnalysisOptions options = new AnalysisOptions();
+            options.getSSAOptions().setPiNodePolicy(SSAOptions.getAllBuiltInPiNodes());
+            IAnalysisCacheView cache = new AnalysisCacheImpl(options.getSSAOptions());
+            ir = cache.getIR(m, Everywhere.EVERYWHERE);
+            if (ir == null) {
+                Assertions.UNREACHABLE("Null IR for " + m);
+            }
+            cfg = ir.getControlFlowGraph();
+            currentClassName = m.getDeclaringClass().getName().getClassName().toString();
+            methodName = m.getName().toString();
+            System.out.println("Starting analysis for " + methodName + "(" + currentClassName + "." + methodSig + ")");
+            varUtil = new VarUtil(ir, currentClassName, methodName);
             NumberedDominators<ISSABasicBlock> uninverteddom =
                     (NumberedDominators<ISSABasicBlock>) Dominators.make(cfg, cfg.entry());
             loops = new HashSet<>();
@@ -127,6 +195,10 @@ public class VeritestingMain {
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             doAnalysis(cfg.entry(), null);
         } catch (InvalidClassFileException e) {
+            e.printStackTrace();
+        } catch (ClassHierarchyException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -167,7 +239,7 @@ public class VeritestingMain {
                         new Operation(Operation.Operator.AND, condition, thenExpr),
                         new Operation(Operation.Operator.AND, negCondition, elseExpr));
 
-        MyIVisitor myIVisitor = new MyIVisitor(varUtil, thenUseNum, elseUseNum);
+        MyIVisitor myIVisitor = new MyIVisitor(varUtil, thenUseNum, elseUseNum, true);
         commonSucc.iterator().next().visit(myIVisitor);
         Expression phiExprSPF, finalPathExpr;
         if (myIVisitor.hasPhiExpr()) {
@@ -184,38 +256,13 @@ public class VeritestingMain {
         veritestingRegion.setStartInsnPosition(startingBC);
         veritestingRegion.setEndInsnPosition(endingBC);
         veritestingRegion.setOutputVars(varUtil.defLocalVars);
-        veritestingRegion.setClassName(className);
+        veritestingRegion.setClassName(currentClassName);
         veritestingRegion.setMethodName(methodName);
         veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
-        if (VeritestingListener.veritestingRegions == null)
-            VeritestingListener.veritestingRegions = new HashMap<String, VeritestingRegion>();
 
         pathLabelVarNum++;
         return veritestingRegion;
     }
-
-
-    public VeritestingRegion constructMethodRegion(
-            Expression summaryExp,
-            ISSABasicBlock currUnit) throws InvalidClassFileException {
-
-        int startingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(currUnit.getLastInstructionIndex());
-        int endingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(currUnit.getLastInstructionIndex());
-
-        VeritestingRegion veritestingRegion = new VeritestingRegion();
-        veritestingRegion.setSummaryExpression(summaryExp);
-        veritestingRegion.setStartInsnPosition(startingBC);
-        veritestingRegion.setEndInsnPosition(endingBC);
-        veritestingRegion.setOutputVars(varUtil.defLocalVars);
-        veritestingRegion.setClassName(className);
-        veritestingRegion.setMethodName(methodName);
-        veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
-        if (VeritestingListener.veritestingRegions == null)
-            VeritestingListener.veritestingRegions = new HashMap<String, VeritestingRegion>();
-        return veritestingRegion;
-    }
-
-
 
     public void doAnalysis(ISSABasicBlock startingUnit, ISSABasicBlock endingUnit) throws InvalidClassFileException {
         System.out.println("Starting doAnalysis");
@@ -264,12 +311,15 @@ public class VeritestingMain {
                 while (thenUnit != commonSucc) {
                     Iterator<SSAInstruction> ssaInstructionIterator = thenUnit.iterator();
                     while (ssaInstructionIterator.hasNext()) {
-                        myIVisitor = new MyIVisitor(varUtil, -1, -1);
+                        myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
                         ssaInstructionIterator.next().visit(myIVisitor);
                         if (!myIVisitor.canVeritest()) {
                             canVeritest = false;
                             System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
                             break;
+                        }
+                        if(myIVisitor.isInvokeVirtual()) {
+                            additionalClassNames.add(myIVisitor.getInvokeVirtualClassName());
                         }
                         Expression thenExpr1 = myIVisitor.getSPFExpr();
                         if (thenExpr1 != null) {
@@ -282,7 +332,8 @@ public class VeritestingMain {
                     }
                     if (!canVeritest) break;
                     //TODO instead of giving up, try to compute a summary of everything from thenUnit up to commonSucc
-                    if (cfg.getNormalSuccessors(thenUnit).size() > 1) {
+                    //to allow complex regions
+                    if(cfg.getNormalSuccessors(thenUnit).size() > 1) {
                         canVeritest = false;
                         break;
                     }
@@ -297,12 +348,15 @@ public class VeritestingMain {
                 while (canVeritest && elseUnit != commonSucc) {
                     Iterator<SSAInstruction> ssaInstructionIterator = elseUnit.iterator();
                     while (ssaInstructionIterator.hasNext()) {
-                        myIVisitor = new MyIVisitor(varUtil, -1, -1);
+                        myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
                         ssaInstructionIterator.next().visit(myIVisitor);
                         if (!myIVisitor.canVeritest()) {
                             canVeritest = false;
                             System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
                             break;
+                        }
+                        if(myIVisitor.isInvokeVirtual()) {
+                            additionalClassNames.add(myIVisitor.getInvokeVirtualClassName());
                         }
                         Expression elseExpr1 = myIVisitor.getSPFExpr();
                         if (elseExpr1 != null) {
@@ -315,7 +369,8 @@ public class VeritestingMain {
                     }
                     if (!canVeritest) break;
                     //TODO instead of giving up, try to compute a summary of everything from elseUnit up to commonSucc
-                    if (cfg.getNormalSuccessors(elseUnit).size() > 1) {
+                    //to allow complex regions
+                    if(cfg.getNormalSuccessors(elseUnit).size() > 1) {
                         canVeritest = false;
                         break;
                     }
@@ -356,18 +411,19 @@ public class VeritestingMain {
                 cfg.getNormalSuccessors(currUnit).size() > 0) doAnalysis(currUnit, endingUnit);
     } // end doAnalysis
 
-    public void doMethodAnalysis(ISSABasicBlock startingUnit, ISSABasicBlock endingUnit) throws InvalidClassFileException {
-        System.out.println("Starting doAnalysis");
-        ISSABasicBlock currUnit = startingUnit;
+    public void doMethodAnalysis(IR ir, SSACFG cfg) throws InvalidClassFileException {
         MyIVisitor myIVisitor;
-        startingPointsHistory.add(currUnit);
-        varUtil.reset();
+        startingPointsHistory.add(cfg.entry());
 
-        Iterator<SSAInstruction> ssaInstructionIterator = currUnit.iterator();
+        Iterator<SSAInstruction> ssaInstructionIterator = ir.iterateNormalInstructions();
         Expression summaryExp = null;
         while (ssaInstructionIterator.hasNext()) {
-            myIVisitor = new MyIVisitor(varUtil, -1, -1);
-            ssaInstructionIterator.next().visit(myIVisitor);
+            myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
+            SSAInstruction instruction = ssaInstructionIterator.next();
+            instruction.visit(myIVisitor);
+            if(!myIVisitor.canVeritest()) return;
+            //TODO what if this method has CFG nodes with more than one successor ?
+            //TODO what if this method calls another method ?
             Expression expr1 = myIVisitor.getSPFExpr();
             if (expr1 != null) {
                 if (summaryExp != null)
@@ -378,12 +434,25 @@ public class VeritestingMain {
             }
         }
 
-        VeritestingRegion veritestingRegion = constructMethodRegion(summaryExp, currUnit);
-            if (veritestingRegion != null) {
-                VeritestingListener.veritestingRegions.put(
-                        veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() + "#" +
-                                veritestingRegion.getStartInsnPosition(), veritestingRegion);
-            }
+        VeritestingRegion veritestingRegion = constructMethodRegion(summaryExp);
+        VeritestingListener.veritestingRegions.put(
+                veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() + "#" +
+                        veritestingRegion.getStartInsnPosition(), veritestingRegion);
     } // end doMethodAnalysis
+
+    public VeritestingRegion constructMethodRegion(
+            Expression summaryExp) throws InvalidClassFileException {
+        VeritestingRegion veritestingRegion = new VeritestingRegion();
+        veritestingRegion.setSummaryExpression(summaryExp);
+        veritestingRegion.setStartInsnPosition(0);
+        // assuming ending instruction position is not needed for using a method summary
+        veritestingRegion.setEndInsnPosition(-1);
+        veritestingRegion.setOutputVars(varUtil.defLocalVars);
+        veritestingRegion.setRetValVars(varUtil.retVal);
+        veritestingRegion.setClassName(currentClassName);
+        veritestingRegion.setMethodName(methodName);
+        veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
+        return veritestingRegion;
+    }
 }
 

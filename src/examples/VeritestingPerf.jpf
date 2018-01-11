@@ -6,7 +6,7 @@ symbolic.debug=false
 
 symbolic.method=VeritestingPerf.countBitsSet(sym)
 #symbolic.method=VeritestingPerf.cfgTest(sym)
-#symbolic.method=VeritestingPerf.testMe4(con#con)
+#symbolic.method=VeritestingPerf.testMe4(con#con#con#con)
 
 symbolic.dp=z3bitvector
 

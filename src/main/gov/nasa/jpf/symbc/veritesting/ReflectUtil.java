@@ -47,13 +47,13 @@ public class ReflectUtil
         return paramString.toString();
     }
 
-    /*public static String getSignature(String classPath, String className, String methodPartialName) {
+    /*public static String getSignature(String classPath, String currentClassName, String methodPartialName) {
         //https://docs.oracle.com/javase/tutorial/reflect/member/methodType.html
         try {
             File f = new File(classPath);
             URL[] cp = {f.toURI().toURL()};
             URLClassLoader urlcl = new URLClassLoader(cp);
-            Class c = urlcl.loadClass(className);
+            Class c = urlcl.loadClass(currentClassName);
             Method[] allMethods = c.getDeclaredMethods();
             for (Method m : allMethods) {
                 String signature = getSignature(m);

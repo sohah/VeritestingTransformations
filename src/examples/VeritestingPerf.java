@@ -14,7 +14,7 @@ public class VeritestingPerf {
         (new VeritestingPerf()).countBitsSet(1);
         //int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
         //(new VeritestingPerf()).testMe5(x, 1);
-        //(new VeritestingPerf()).testMe4(x, 12);
+        //(new VeritestingPerf()).testMe4(x, 12, -1, 1);
         //(new VeritestingPerf()).arrayTest(x, 6);
     }
 
@@ -32,8 +32,9 @@ public class VeritestingPerf {
     }
 
     public int countBitsSet(int x) {
+        TempClass tempClass = new TempClass();
         while (x != 0) {
-            if ((x & 1) != 0) count += 1;
+            if ((x & 1) != 0) count += tempClass.getOne(1);
             x = x >>> 1; // logical right shift
         }
         return count;
@@ -50,13 +51,20 @@ public class VeritestingPerf {
         return ret;
     }
 
-    public void testMe4 (int[] x, int len) {
+    public void testMe4 (int[] x, int len, int minusOne, int plusOne) {
         int sum = 0; //Debug.makeSymbolicInteger("sum");
+        int temp = 2;
         for(int i=0; i < len; i++)
             x[i] = Debug.makeSymbolicInteger("x"+i);
         for (int i = 0; i < len; i++) {
-            if (x[i] < 0) sum += -1;
-            else sum += 1;
+            if (x[i] < 0) {
+                temp = minusOne;
+                sum += temp;
+            }
+            else {
+                temp = plusOne;
+                sum += temp;
+            }
         }
         if (sum < 0) System.out.println("neg");
         else if (sum > 0) System.out.println("pos");
@@ -88,6 +96,15 @@ public class VeritestingPerf {
     }
 
 };
+
+class TempClass {
+
+    private int tempInt = 1;
+
+    public int getTempInt() { return tempInt; }
+
+    public int getOne(int a) { tempInt = a; return tempInt; }
+}
 
 
 

@@ -28,6 +28,8 @@ public class VarUtil {
     public static int pathCounter=0;
     private static long holeID = 0;
 
+    // contains the return values hole expression found in the region
+    public Expression retVal;
 
     public static final int getPathCounter() { pathCounter++; return pathCounter; }
 
@@ -39,6 +41,7 @@ public class VarUtil {
     public Expression makeIntermediateVar(String name) {
         if(varCache.containsKey(name))
             return varCache.get(name);
+        name = className + "." + methodName + "." + name;
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, HoleExpression.HoleType.INTERMEDIATE);
         holeExpression.setHoleVarName(name);
@@ -48,24 +51,27 @@ public class VarUtil {
 
     public Expression makeLocalInputVar(int val) {
         assert(varsMap.containsKey(val));
-        if(varCache.containsKey("v" + val))
-            return varCache.get("v" + val);
+        String name = className + "." + methodName + ".v" + val;
+        if(varCache.containsKey(name))
+            return varCache.get(name);
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, HoleExpression.HoleType.LOCAL_INPUT);
         holeExpression.setLocalStackSlot(varsMap.get(val));
-        varCache.put("v" + val, holeExpression);
+        holeExpression.setHoleVarName(name);
+        varCache.put(name, holeExpression);
         return holeExpression;
     }
 
     public Expression makeLocalOutputVar(int val) {
         assert(varsMap.containsKey(val));
-        if(varCache.containsKey("v" + val))
-            return varCache.get("v" + val);
+        String name = className + "." + methodName + ".v" + val;
+        if(varCache.containsKey(name))
+            return varCache.get(name);
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, HoleExpression.HoleType.LOCAL_OUTPUT);
         holeExpression.setLocalStackSlot(varsMap.get(val));
-        holeExpression.setHoleVarName("v" + val);
-        varCache.put("v" + val, holeExpression);
+        holeExpression.setHoleVarName(name);
+        varCache.put(name, holeExpression);
         return holeExpression;
     }
 
@@ -324,7 +330,7 @@ public class VarUtil {
     }
 
     public Expression addVal(int val) {
-        String name = "v" + val;
+        String name = className + "." + methodName + ".v" + val;
         if(varCache.containsKey(name))
             return varCache.get(name);
         Expression ret;
@@ -368,22 +374,23 @@ public class VarUtil {
                                   String className,
                                   String fieldName,
                                   HoleExpression.HoleType holeType) {
-        Expression ret = makeFieldVar(def, addVal(use), className, fieldName, holeType);
-        String name = "v" + def;
-        varCache.put(name, ret);
+        Expression ret = makeFieldVar(def, use, className, fieldName, holeType);
+        varCache.put(((HoleExpression)ret).getHoleVarName(), ret);
         return ret;
     }
 
-    private Expression makeFieldVar(int def, Expression use, String className, String fieldName,
+    private Expression makeFieldVar(int def, int use, String className, String fieldName,
                                     HoleExpression.HoleType holeType) {
-        assert(((HoleExpression)use).getHoleType() == HoleExpression.HoleType.LOCAL_INPUT);
         assert(holeType == HoleExpression.HoleType.FIELD_OUTPUT || holeType == HoleExpression.HoleType.FIELD_INPUT);
+        // Assuming fields have to be used from local objects
+        assert(varsMap.containsKey(use));
+        int localStackSlot = varsMap.get(use);
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, holeType);
-        holeExpression.setFieldInfo(use, className, fieldName);
-        String name = "v" + def;
+        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1);
+        String name = className + "." + methodName + ".v" + def;
         holeExpression.setHoleVarName(name);
-        varCache.put("v" + def, holeExpression);
+        varCache.put(name, holeExpression);
         return holeExpression;
     }
 
@@ -400,6 +407,7 @@ public class VarUtil {
         defLocalVars.clear();
         varCache.clear();
         holeHashMap.clear();
+        retVal = null;
     }
 
     public long nextInt() {
@@ -407,5 +415,22 @@ public class VarUtil {
         return holeID;
     }
 
+    public Expression addInvokeVirtualHole(InvokeVirtualInfo virtualInfo) {
+        HoleExpression holeExpression = new HoleExpression(nextInt());
+        String name = className + "." + methodName + ".v" + virtualInfo.defVal;
+        holeExpression.setHole(true, HoleExpression.HoleType.INVOKEVIRTUAL);
+        holeExpression.setInvokeVirtualInfo(virtualInfo);
+        //The return value of this invokeVirtual will be this holeExpression object.
+        //The only way to fill up this hole is to map it to the corresponding method summary return value
+        holeExpression.setHoleVarName(name);
+        varCache.put(name, holeExpression);
+        return holeExpression;
+    }
+
+    public void addRetValHole(int use) {
+        String name = className + "." + methodName + ".v" + use;
+        assert(varCache.containsKey(name));
+        retVal = varCache.get(name);
+    }
 }
 

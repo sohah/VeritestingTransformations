@@ -40,9 +40,13 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
                     FieldInfo fieldInfo1 = holeExpression.getFieldInfo();
                     if(!fieldInfo1.className.equals(fieldInfo.className) ||
                             !fieldInfo1.fieldName.equals(fieldInfo.fieldName) ||
-                            !fieldInfo1.use.equals(fieldInfo.use))
+                            fieldInfo1.localStackSlot != fieldInfo.localStackSlot ||
+                            fieldInfo1.callSiteStackSlot != fieldInfo.callSiteStackSlot)
                         return false;
                     else return true;
+                case INVOKEVIRTUAL:
+                    InvokeVirtualInfo otherInvokeVirtualInfo = holeExpression.invokeVirtualInfo;
+                    return (!otherInvokeVirtualInfo.equals(invokeVirtualInfo));
             }
             return true;
         }
@@ -70,6 +74,12 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
             case FIELD_OUTPUT:
                 ret += ", fieldInfo = " + fieldInfo.toString();
                 break;
+            case INVOKEVIRTUAL:
+                ret += ", invokeVirtualInfo = " + invokeVirtualInfo.toString();
+                break;
+            default:
+                System.out.println("undefined toString for holeType (" + holeType + ")");
+                assert(false);
         }
         ret += ")";
         return ret;
@@ -100,7 +110,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
         return null;
     }
 
-    long holeID;
+    final long holeID;
     HoleExpression(long _holeID) { holeID = _holeID; }
 
     public void setHoleVarName(String holeVarName) {
@@ -119,7 +129,8 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
         CONDITION("condition"),
         NEGCONDITION("negcondition"),
         FIELD_INPUT("field_input"),
-        FIELD_OUTPUT("field_output");
+        FIELD_OUTPUT("field_output"),
+        INVOKEVIRTUAL("invokevirtual");
 
         private final String string;
 
@@ -147,6 +158,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
                 (isHole && holeType == HoleType.NEGCONDITION) ||
                 (isHole && holeType == HoleType.FIELD_INPUT) ||
                 (isHole && holeType == HoleType.FIELD_OUTPUT) ||
+                (isHole && holeType == HoleType.INVOKEVIRTUAL) ||
                 (!isHole && holeType == HoleType.NONE));
     }
 
@@ -154,6 +166,10 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
 
     public void setLocalStackSlot(int localStackSlot) {
         assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
+        if(this.localStackSlot != -1) {
+            System.out.println("Hole " + toString() + " cannot be given new stack slot (" + localStackSlot + ")");
+            assert(false);
+        }
         this.localStackSlot = localStackSlot;
     }
     public int getLocalStackSlot() {
@@ -162,11 +178,9 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     }
     protected int localStackSlot = -1;
 
-    public void setFieldInfo(Expression use, String className, String fieldName) {
+    public void setFieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot) {
         assert(holeType == HoleType.FIELD_INPUT || holeType == HoleType.FIELD_OUTPUT);
-        assert(use instanceof HoleExpression);
-        assert(((HoleExpression)use).getHoleType() == HoleType.LOCAL_INPUT);
-        fieldInfo = new FieldInfo(use, className, fieldName);
+        fieldInfo = new FieldInfo(className, fieldName, localStackSlot, callSiteStackSlot);
     }
 
     public FieldInfo getFieldInfo() {
@@ -174,20 +188,29 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     }
 
     public class FieldInfo {
-        public Expression use;
         public String className, fieldName;
+        public int localStackSlot = -1, callSiteStackSlot = -1;
 
-        public FieldInfo(Expression use, String className, String fieldName) {
-            this.use = use;
+        public FieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot) {
+            this.localStackSlot = localStackSlot;
+            this.callSiteStackSlot = callSiteStackSlot;
             this.className = className;
             this.fieldName = fieldName;
         }
 
         public String toString() {
-            return use.toString() + ", className = " + className + ", fieldName = " + fieldName;
+            return "currentClassName = " + className + ", fieldName = " + fieldName +
+                    ", stackSlots (local = " + localStackSlot + ", callSite = " + callSiteStackSlot;
         }
     }
 
     FieldInfo fieldInfo = null;
 
+    public void setInvokeVirtualInfo(InvokeVirtualInfo invokeVirtualInfo) {
+        this.invokeVirtualInfo = invokeVirtualInfo;
+    }
+    public InvokeVirtualInfo getInvokeVirtualInfo() {
+        return invokeVirtualInfo;
+    }
+    InvokeVirtualInfo invokeVirtualInfo = null;
 }

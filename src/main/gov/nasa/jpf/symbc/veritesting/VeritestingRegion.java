@@ -66,5 +66,18 @@ public class VeritestingRegion {
         return holeHashMap;
     }
     private HashMap<Expression, Expression> holeHashMap;
+
+    public void setIsMethodSummary(boolean isMethodSummary) {
+        this.isMethodSummary = isMethodSummary;
+    }
+    public boolean isMethodSummary() {
+        return isMethodSummary;
+    }
+    private boolean isMethodSummary = false;
+
+    public void setRetValVars(Expression retVal) {
+        this.retVal = retVal;
+    }
+    public Expression retVal;
 }
 
