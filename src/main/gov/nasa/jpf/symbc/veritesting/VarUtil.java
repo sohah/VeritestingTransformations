@@ -383,8 +383,9 @@ public class VarUtil {
                                     HoleExpression.HoleType holeType) {
         assert(holeType == HoleExpression.HoleType.FIELD_OUTPUT || holeType == HoleExpression.HoleType.FIELD_INPUT);
         // Assuming fields have to be used from local objects
-        assert(varsMap.containsKey(use));
-        int localStackSlot = varsMap.get(use);
+        assert(varsMap.containsKey(use) || use == -1);
+        int localStackSlot = -1;
+        if(use != -1) localStackSlot = varsMap.get(use);
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, holeType);
         holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1);

@@ -478,36 +478,43 @@ public class VeritestingListener extends PropertyListenerAdapter  {
   void fillFieldOutputHole(ThreadInfo ti,
                                         StackFrame stackFrame,
                                         HoleExpression.FieldInfo fieldInputInfo,
-                                        gov.nasa.jpf.symbc.numeric.Expression finalValue) {
-    int stackSlot = fieldInputInfo.callSiteStackSlot;
-    if(stackSlot == -1) stackSlot = fieldInputInfo.localStackSlot;
-    int objRef = stackFrame.getLocalVariable(stackSlot);
-    if (objRef == 0) {
-      System.out.println("java.lang.NullPointerException" + "referencing field '" +
-              fieldInputInfo.fieldName+ "' on null object");
-      assert(false);
-    } else {
-      ElementInfo eiFieldOwner = ti.getModifiableElementInfo(objRef);
-      FieldInfo fieldInfo = null;
-      ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(fieldInputInfo.className);
-      if (ci != null) {
-        fieldInfo = ci.getInstanceField(fieldInputInfo.fieldName);
-      }
-      if (fieldInfo == null) {
-        System.out.println("java.lang.NoSuchFieldError" + "referencing field '" + fieldInputInfo.fieldName
-                + "' in " + eiFieldOwner);
-        assert(false);
+                           gov.nasa.jpf.symbc.numeric.Expression finalValue) {
+      boolean isStatic = false;
+      int objRef = -1;
+      int stackSlot = fieldInputInfo.callSiteStackSlot;
+      if(stackSlot == -1) stackSlot = fieldInputInfo.localStackSlot;
+      if(stackSlot == -1) isStatic = true;
+      else objRef = stackFrame.getLocalVariable(stackSlot);
+      if (objRef == 0) {
+          System.out.println("java.lang.NullPointerException" + "referencing field '" +
+                  fieldInputInfo.fieldName+ "' on null object");
+          assert(false);
       } else {
-        int fieldSize = fieldInfo.getStorageSize();
-        if (fieldSize == 1) {
-          eiFieldOwner.set1SlotField(fieldInfo, 0); // field value should not matter (I think)
-          eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
-        } else {
-          eiFieldOwner.set2SlotField(fieldInfo, 0); // field value should not matter (I think)
-          eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
-        }
+          ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(fieldInputInfo.className);
+          ElementInfo eiFieldOwner;
+          if(!isStatic) eiFieldOwner = ti.getModifiableElementInfo(objRef);
+          else eiFieldOwner = ci.getModifiableStaticElementInfo();
+          FieldInfo fieldInfo = null;
+
+          if (ci != null && !isStatic)
+              fieldInfo = ci.getInstanceField(fieldInputInfo.fieldName);
+          if(ci != null && isStatic)
+              fieldInfo = ci.getStaticField(fieldInputInfo.fieldName);
+          if (fieldInfo == null) {
+              System.out.println("java.lang.NoSuchFieldError" + "referencing field '" + fieldInputInfo.fieldName
+                      + "' in " + eiFieldOwner);
+              assert(false);
+          } else {
+              int fieldSize = fieldInfo.getStorageSize();
+              if (fieldSize == 1) {
+                  eiFieldOwner.set1SlotField(fieldInfo, 0); // field value should not matter (I think)
+                  eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+              } else {
+                  eiFieldOwner.set2SlotField(fieldInfo, 0); // field value should not matter (I think)
+                  eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+              }
+          }
       }
-    }
   }
 
   private class InstructionInfo {

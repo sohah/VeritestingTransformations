@@ -256,13 +256,14 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
     public void visitPut(SSAPutInstruction instruction) {
         lastInstruction = instruction;
         if(isMeetVisitor) return;
-        if(instruction.isStatic()) {
-            canVeritest = false;
-            return;
-        }
         System.out.println("SSAPutInstruction = " + instruction);
-        assert(instruction.getNumberOfUses()==2);
-        assert(instruction.getNumberOfDefs()==0);
+        if(instruction.isStatic()) {
+            assert(instruction.getNumberOfUses()==1);
+            assert(instruction.getNumberOfDefs()==0);
+        } else {
+            assert (instruction.getNumberOfUses() == 2);
+            assert (instruction.getNumberOfDefs() == 0);
+        }
         int objRef = instruction.getRef();
         int defVal = instruction.getVal();
         FieldReference fieldReference = instruction.getDeclaredField();
@@ -281,7 +282,10 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         MethodReference methodReference = instruction.getDeclaredTarget();
         CallSiteReference site = instruction.getCallSite();
         //Only adding support for invokeVirtual statements
-        assert(site.getInvocationCode() == IInvokeInstruction.Dispatch.VIRTUAL);
+        if(site.getInvocationCode() != IInvokeInstruction.Dispatch.VIRTUAL) {
+            canVeritest = false;
+            return;
+        }
         assert(instruction.getNumberOfUses() == instruction.getNumberOfParameters());
         Atom declaringClass = methodReference.getDeclaringClass().getName().getClassName();
         Atom methodName = methodReference.getName();

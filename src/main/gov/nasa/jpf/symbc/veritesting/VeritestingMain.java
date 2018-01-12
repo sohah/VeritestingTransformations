@@ -274,10 +274,18 @@ public class VeritestingMain {
         veritestingRegion.setSummaryExpression(finalPathExpr);
         veritestingRegion.setStartInsnPosition(startingBC);
         veritestingRegion.setEndInsnPosition(endingBC);
-        veritestingRegion.setOutputVars(varUtil.defLocalVars);
+        HashSet<Expression> hashSet = new HashSet<>();
+        for(Expression e: varUtil.defLocalVars) {
+            hashSet.add(e);
+        }
+        veritestingRegion.setOutputVars(hashSet);
         veritestingRegion.setClassName(currentClassName);
         veritestingRegion.setMethodName(methodName);
-        veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
+        HashMap<Expression, Expression> hashMap = new HashMap<>();
+        for(Map.Entry<Expression, Expression> entry: varUtil.holeHashMap.entrySet()) {
+            hashMap.put(entry.getKey(), entry.getValue());
+        }
+        veritestingRegion.setHoleHashMap(hashMap);
 
         pathLabelVarNum++;
         return veritestingRegion;
