@@ -259,13 +259,16 @@ public class VeritestingMain {
                         new Operation(Operation.Operator.AND, negCondition, elseExpr));
 
         MyIVisitor myIVisitor = new MyIVisitor(varUtil, thenUseNum, elseUseNum, true);
-        commonSucc.iterator().next().visit(myIVisitor);
         Expression phiExprSPF, finalPathExpr;
-        if (myIVisitor.hasPhiExpr()) {
-            phiExprSPF = myIVisitor.getPhiExprSPF(thenPLAssignSPF, elsePLAssignSPF);
-            finalPathExpr =
-                    new Operation(Operation.Operator.AND, pathExpr1, phiExprSPF);
-        } else finalPathExpr = pathExpr1;
+        if(commonSucc.iterator().hasNext()) {
+            commonSucc.iterator().next().visit(myIVisitor);
+            if (myIVisitor.hasPhiExpr()) {
+                phiExprSPF = myIVisitor.getPhiExprSPF(thenPLAssignSPF, elsePLAssignSPF);
+                finalPathExpr =
+                        new Operation(Operation.Operator.AND, pathExpr1, phiExprSPF);
+            } else finalPathExpr = pathExpr1;
+        } else
+            finalPathExpr = pathExpr1;
 
         int startingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(currUnit.getLastInstructionIndex());
         int endingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(commonSucc.getFirstInstructionIndex());
@@ -345,6 +348,10 @@ public class VeritestingMain {
                             System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
                             break;
                         }
+                        if (myIVisitor.isExitNode()) {
+                            doAnalysis(commonSucc, endingUnit);
+                            return;
+                        }
                         if(myIVisitor.isInvokeVirtual()) {
                             methodSummaryClassNames.add(myIVisitor.getInvokeVirtualClassName());
                         }
@@ -381,6 +388,10 @@ public class VeritestingMain {
                             canVeritest = false;
                             System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
                             break;
+                        }
+                        if (myIVisitor.isExitNode()) {
+                            doAnalysis(commonSucc, endingUnit);
+                            return;
                         }
                         if(myIVisitor.isInvokeVirtual()) {
                             methodSummaryClassNames.add(myIVisitor.getInvokeVirtualClassName());

@@ -13,7 +13,7 @@ public class tcas {
 	public static int Own_Tracked_Alt_Rate;
 	public static int Other_Tracked_Alt;
 
-	public static int Alt_Layer_Value; 
+	public static int Alt_Layer_Value;
 
 	static int Positive_RA_Alt_Thresh_0;
 	static int Positive_RA_Alt_Thresh_1;
@@ -23,17 +23,17 @@ public class tcas {
 	public static int Up_Separation;
 	public static int Down_Separation;
 
-	public static int Other_RAC; 
-	
+	public static int Other_RAC;
+
 	public static int NO_INTENT = 0;
 	public static int DO_NOT_CLIMB = 1;
 	public static int DO_NOT_DESCEND = 2;
 
-	public static int Other_Capability; 
+	public static int Other_Capability;
 	public static int TCAS_TA = 1;
 	public static int OTHER = 2;
 
-	public static int Climb_Inhibit; 
+	public static int Climb_Inhibit;
 
 	public static int UNRESOLVED = 0;
 	public static int UPWARD_RA = 1;
@@ -65,7 +65,7 @@ public class tcas {
 		if (Climb_Inhibit > 0) {
 			int ret = Up_Separation + NOZCROSS;
 			return ret;
-		} 
+		}
 		else{
 			return Up_Separation;
 		}
@@ -87,7 +87,7 @@ public class tcas {
 			else{
 				return false;
 			}
-		} 
+		}
 		else {
 			if (!(Cur_Vertical_Sep >= MINSEP)){
 				return false;
@@ -105,8 +105,8 @@ public class tcas {
 					else{
 						return true;
 					}
-				} 
-				
+				}
+
 			}
 		}
 	}
@@ -116,7 +116,7 @@ public class tcas {
 		int inhibit_biased_climb = Inhibit_Biased_Climb();
 		if (inhibit_biased_climb > Down_Separation) {
 			upward_preferred = 1;
-		} 
+		}
 		else {
 			upward_preferred = 0;
 		}
@@ -149,7 +149,7 @@ public class tcas {
 			}
 			else{
 				return true;
-			} 
+			}
 		}
 	}
 
@@ -168,7 +168,7 @@ public class tcas {
 		}
 		return ret;
 	}
-	
+
 	public static int alt_assign(){
 		int alt_sep = UNRESOLVED;
 		boolean need_upward_RA = false;
@@ -203,7 +203,7 @@ public class tcas {
 				 alt_sep = UNRESOLVED;
 			}
 		}
-	
+
 	    return alt_sep;
 	}
 
@@ -212,7 +212,7 @@ public class tcas {
 	    boolean tcas_equipped = false;
 	    boolean intent_not_known = false;
 	    int alt_sep = UNRESOLVED;
-	    
+
 	    if(High_Confidence){
 	    	if(Own_Tracked_Alt_Rate <= OLEV){
 	    		if(Cur_Vertical_Sep > MAXALTDIFF){
@@ -238,26 +238,26 @@ public class tcas {
 	    		alt_sep = alt_assign();
 	    	}
 	    }
-	    
+
 	    return alt_sep;
 	}
-	
+
 	public static void mainProcess(int a1, int a2, int a3, int a4, int a5,int a6, int a7, int a8, int a9, int a10, int a11, int a12) {
 		initialize();
 		Cur_Vertical_Sep = a1;
 		if (a2 == 0) {
 			High_Confidence = false;
-		} 
+		}
 		else {
 			High_Confidence = true;
 		}
 		if (a3 == 0) {
 			Two_of_Three_Reports_Valid = false;
-		} 
+		}
 		else {
 			Two_of_Three_Reports_Valid = true;
 		}
-		
+
 		Own_Tracked_Alt = a4;
 		Own_Tracked_Alt_Rate = a5;
 		Other_Tracked_Alt = a6;

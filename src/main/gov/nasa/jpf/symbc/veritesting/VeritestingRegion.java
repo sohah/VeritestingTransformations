@@ -79,5 +79,9 @@ public class VeritestingRegion {
         this.retVal = retVal;
     }
     public Expression retVal;
+
+    public String toString() {
+        return "(" + className + ", " + methodName + ", " + startInsnPosition + ", " + endInsnPosition + ")";
+    }
 }
 
