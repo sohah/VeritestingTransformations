@@ -429,9 +429,11 @@ public class VarUtil {
     }
 
     public void addRetValHole(int use) {
-        String name = className + "." + methodName + ".v" + use;
-        assert(varCache.containsKey(name));
-        retVal = varCache.get(name);
+        if(!isConstant(use)) {
+            String name = className + "." + methodName + ".v" + use;
+            assert (varCache.containsKey(name));
+            retVal = varCache.get(name);
+        } else retVal = new IntConstant(getConstant(use));
     }
 }
 

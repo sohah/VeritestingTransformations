@@ -4,8 +4,8 @@ sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil
 symbolic.debug=false
 
-symbolic.method=VeritestingPerf.checkOperator()
-#symbolic.method=VeritestingPerf.countBitsSet(sym)
+#symbolic.method=VeritestingPerf.checkOperator()
+symbolic.method=VeritestingPerf.countBitsSet(sym)
 #symbolic.method=VeritestingPerf.cfgTest(sym)
 #symbolic.method=VeritestingPerf.testMe4(con#con#con#con)
 

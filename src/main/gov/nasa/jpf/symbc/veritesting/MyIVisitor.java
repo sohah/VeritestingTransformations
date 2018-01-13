@@ -224,7 +224,11 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
             return;
         }
         isExitNode = true;
-        varUtil.addRetValHole(instruction.getUse(0));
+        if(instruction.getNumberOfUses()==1) {
+            varUtil.addRetValHole(instruction.getUse(0));
+        } else {
+            varUtil.retVal = null;
+        }
         lastInstruction = instruction;
         canVeritest = true;
     }
@@ -282,14 +286,16 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         MethodReference methodReference = instruction.getDeclaredTarget();
         CallSiteReference site = instruction.getCallSite();
         //Only adding support for invokeVirtual statements
-        if(site.getInvocationCode() != IInvokeInstruction.Dispatch.VIRTUAL) {
+        if(site.getInvocationCode() != IInvokeInstruction.Dispatch.VIRTUAL ||
+                instruction.getNumberOfReturnValues() > 1) {
             canVeritest = false;
             return;
         }
         assert(instruction.getNumberOfUses() == instruction.getNumberOfParameters());
         Atom declaringClass = methodReference.getDeclaringClass().getName().getClassName();
         Atom methodName = methodReference.getName();
-        int defVal = instruction.getDef(); // represents the return value
+        int defVal = -1;
+        if(instruction.getNumberOfReturnValues() == 1) defVal = instruction.getDef(); // represents the return value
         ArrayList<Expression> paramList = new ArrayList<>();
         for(int i=0; i < instruction.getNumberOfParameters(); i++) {
             paramList.add(varUtil.addVal(instruction.getUse(i)));

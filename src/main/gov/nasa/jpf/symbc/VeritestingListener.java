@@ -122,8 +122,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
         if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
             VeritestingRegion region = veritestingRegions.get(key);
             StackFrame sf = ti.getTopFrame();
-            System.out.println("Starting region (" + region.toString()+") at instruction " + instructionToExecute
-            + " (pos = " + instructionToExecute.getPosition() + ")");
+            //System.out.println("Starting region (" + region.toString()+") at instruction " + instructionToExecute
+            //+ " (pos = " + instructionToExecute.getPosition() + ")");
             InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
             if(instructionInfo == null) return;
             if(instructionInfo.getCondition() == null && instructionInfo.getNegCondition() == null) return;
@@ -153,10 +153,10 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             finalSummaryExpression = fillASTHoles(finalSummaryExpression, fillHolesOutput.holeHashMap); //not constant-folding for now
             //pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(summaryExpression)));
             pc._addDet(new GreenConstraint(finalSummaryExpression));
-            if(!pc.simplify()) {
+            /*if(!pc.simplify()) {
                 System.out.println("veritesting region added unsat summary");
                 assert(false);
-            }
+            }*/
             if (!populateOutputs(region.getOutputVars(), fillHolesOutput.holeHashMap, sf, ti)) {
                 return;
             }
@@ -175,7 +175,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             ti.setNextPC(insn);
             pathLabelCount += 1;
-            System.out.println("Used region (" + region.getMethodName()+")");
+            //System.out.println("Used region (" + region.getMethodName()+")");
         }
     }
 
@@ -272,7 +272,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             StackFrame stackFrame,
             ThreadInfo ti) {
         HashMap<Expression, Expression> retHoleHashMap = new HashMap<>();
-        Operation additionalAST = null;
+        Expression additionalAST = null;
         for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
             Expression key = entry.getKey(), finalValueGreen;
             gov.nasa.jpf.symbc.numeric.Expression finalValueSPF;
@@ -421,12 +421,16 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                                 return null;
                         }
                     }
-                    Operation retValEq = new Operation(Operation.Operator.EQ, methodSummary.retVal, keyHoleExpression);
-                    Operation mappingOperation = retValEq;
+                    Expression retValEq = null;
+                    if(methodSummary.retVal != null)
+                        retValEq = new Operation(Operation.Operator.EQ, methodSummary.retVal, keyHoleExpression);
+                    Expression mappingOperation = retValEq;
                     for(int i=0; i < paramEqList.size(); i++) {
                         //paramList.length-1 because there won't be a constraint created for the object reference which is always
                         //parameter 0
-                        mappingOperation = new Operation(Operation.Operator.EQ, mappingOperation, paramEqList.get(i));
+                        if(mappingOperation != null)
+                            mappingOperation = new Operation(Operation.Operator.EQ, mappingOperation, paramEqList.get(i));
+                        else mappingOperation = paramEqList.get(i);
                     }
                     if(methodSummary.getSummaryExpression() != null)
                         mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, methodSummary.getSummaryExpression());
@@ -549,7 +553,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 
         public InstructionInfo invoke() {
             String mnemonic = ti.getTopFrame().getPC().getMnemonic();
-            System.out.println("mne = " + mnemonic);
+            //System.out.println("mne = " + mnemonic);
             switch(mnemonic) {
                 case "ifeq" :
                     numOperands = 1;

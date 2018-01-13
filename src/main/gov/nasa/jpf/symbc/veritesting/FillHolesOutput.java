@@ -7,8 +7,8 @@ import java.util.HashMap;
 
 public class FillHolesOutput extends HashMap<Expression, Expression> {
     public HashMap<Expression, Expression> holeHashMap;
-    public Operation additionalAST;
-    public FillHolesOutput(HashMap<Expression, Expression> h, Operation additionalAST) {
+    public Expression additionalAST;
+    public FillHolesOutput(HashMap<Expression, Expression> h, Expression additionalAST) {
         this.holeHashMap = h;
         this.additionalAST = additionalAST;
     }

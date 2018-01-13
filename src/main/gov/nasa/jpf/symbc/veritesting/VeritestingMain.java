@@ -171,7 +171,7 @@ public class VeritestingMain {
             methodName = m.getName().toString();
             System.out.println("Starting analysis for " + methodName + "(" + currentClassName + "." + methodSig + ")");
             varUtil = new VarUtil(ir, currentClassName, methodName);
-            doMethodAnalysis(ir, cfg);
+            doMethodAnalysis(cfg);
         } catch (InvalidClassFileException e) {
             e.printStackTrace();
         }
@@ -449,29 +449,37 @@ public class VeritestingMain {
                 cfg.getNormalSuccessors(currUnit).size() > 0) doAnalysis(currUnit, endingUnit);
     } // end doAnalysis
 
-    public void doMethodAnalysis(IR ir, SSACFG cfg) throws InvalidClassFileException {
+    public void doMethodAnalysis(SSACFG cfg) throws InvalidClassFileException {
         MyIVisitor myIVisitor;
         startingPointsHistory.add(cfg.entry());
 
-        Iterator<SSAInstruction> ssaInstructionIterator = ir.iterateNormalInstructions();
         Expression summaryExp = null;
-        while (ssaInstructionIterator.hasNext()) {
-            myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
-            SSAInstruction instruction = ssaInstructionIterator.next();
-            instruction.visit(myIVisitor);
-            if(!myIVisitor.canVeritest()) return;
-            //TODO what if this method has CFG nodes with more than one successor ?
-            //TODO what if this method calls another method ?
-            Expression expr1 = myIVisitor.getSPFExpr();
-            if (expr1 != null) {
-                if (summaryExp != null)
-                    summaryExp =
-                            new Operation(Operation.Operator.AND,
-                                    summaryExp, expr1);
-                else summaryExp = expr1;
+        ISSABasicBlock currUnit = cfg.entry();
+        ISSABasicBlock endingUnit = cfg.exit();
+        while(currUnit != endingUnit) {
+            List<ISSABasicBlock> succs = new ArrayList<>(cfg.getNormalSuccessors(currUnit));
+            //Cannot summarize methods with more than execution path in them
+            if(succs.size() > 1) return;
+            Iterator<SSAInstruction> ssaInstructionIterator = currUnit.iterator();
+            while (ssaInstructionIterator.hasNext()) {
+                myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
+                SSAInstruction instruction = ssaInstructionIterator.next();
+                instruction.visit(myIVisitor);
+                if(!myIVisitor.canVeritest()) return;
+                //Cannot summarize methods that call other methods
+                if(myIVisitor.isInvokeVirtual()) return;
+                Expression expr1 = myIVisitor.getSPFExpr();
+                if (expr1 != null) {
+                    if (summaryExp != null)
+                        summaryExp =
+                                new Operation(Operation.Operator.AND,
+                                        summaryExp, expr1);
+                    else summaryExp = expr1;
+                }
+                if(myIVisitor.isExitNode()) break;
             }
+            currUnit = succs.get(0);
         }
-
         VeritestingRegion veritestingRegion = constructMethodRegion(summaryExp);
         VeritestingListener.veritestingRegions.put(
                 veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() + "#" +
