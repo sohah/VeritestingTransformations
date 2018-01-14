@@ -41,7 +41,8 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
                     if(!fieldInfo1.className.equals(fieldInfo.className) ||
                             !fieldInfo1.fieldName.equals(fieldInfo.fieldName) ||
                             fieldInfo1.localStackSlot != fieldInfo.localStackSlot ||
-                            fieldInfo1.callSiteStackSlot != fieldInfo.callSiteStackSlot)
+                            fieldInfo1.callSiteStackSlot != fieldInfo.callSiteStackSlot ||
+                            !fieldInfo1.writeValue.equals(fieldInfo.writeValue))
                         return false;
                     else return true;
                 case INVOKEVIRTUAL:
@@ -178,9 +179,16 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     }
     protected int localStackSlot = -1;
 
-    public void setFieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot) {
+    public void setFieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot,
+                             Expression writeExpr) {
         assert(holeType == HoleType.FIELD_INPUT || holeType == HoleType.FIELD_OUTPUT);
-        fieldInfo = new FieldInfo(className, fieldName, localStackSlot, callSiteStackSlot);
+        if(holeType == HoleType.FIELD_OUTPUT) {
+            assert (writeExpr != null);
+            assert (writeExpr instanceof HoleExpression);
+            assert (((HoleExpression)writeExpr).getHoleType() == HoleType.INTERMEDIATE);
+        }
+        if(holeType == HoleType.FIELD_INPUT) assert(writeExpr == null);
+        fieldInfo = new FieldInfo(className, fieldName, localStackSlot, callSiteStackSlot, writeExpr);
     }
 
     public FieldInfo getFieldInfo() {
@@ -190,17 +198,21 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     public class FieldInfo {
         public String className, fieldName;
         public int localStackSlot = -1, callSiteStackSlot = -1;
+        public Expression writeValue = null;
 
-        public FieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot) {
+        public FieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot,
+                         Expression writeValue) {
             this.localStackSlot = localStackSlot;
             this.callSiteStackSlot = callSiteStackSlot;
             this.className = className;
             this.fieldName = fieldName;
+            this.writeValue = writeValue;
         }
 
         public String toString() {
             return "currentClassName = " + className + ", fieldName = " + fieldName +
-                    ", stackSlots (local = " + localStackSlot + ", callSite = " + callSiteStackSlot;
+                    ", stackSlots (local = " + localStackSlot + ", callSite = " + callSiteStackSlot +
+                    ", writeValue (" + writeValue.toString() + ")";
         }
     }
 

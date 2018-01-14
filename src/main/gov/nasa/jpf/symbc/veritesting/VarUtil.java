@@ -39,9 +39,9 @@ public class VarUtil {
     }
 
     public Expression makeIntermediateVar(String name) {
+        name = className + "." + methodName + "." + name;
         if(varCache.containsKey(name))
             return varCache.get(name);
-        name = className + "." + methodName + "." + name;
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, HoleExpression.HoleType.INTERMEDIATE);
         holeExpression.setHoleVarName(name);
@@ -85,7 +85,7 @@ public class VarUtil {
                 if(expression instanceof HoleExpression && ((HoleExpression)expression).isHole()) {
                     // using non-hole IntegerConstant object containing 0 as placeholder
                     // for final filled-up hole object
-                    holeHashMap.put(expression, expression);
+                    if(!holeHashMap.containsKey(expression)) holeHashMap.put(expression, expression);
                     if(((HoleExpression)expression).getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT ||
                             ((HoleExpression)expression).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT)
                         defLocalVars.add(expression);
@@ -371,26 +371,40 @@ public class VarUtil {
         return ret;
     }*/
 
-    public Expression addFieldVal(int def, int use,
+    // def will be value being defined in case of FIELD_INPUT hole
+    public Expression addFieldInputVal(int def, int use,
                                   String className,
                                   String fieldName,
                                   HoleExpression.HoleType holeType) {
-        Expression ret = makeFieldVar(def, use, className, fieldName, holeType);
-        varCache.put(((HoleExpression)ret).getHoleVarName(), ret);
-        return ret;
-    }
-
-    private Expression makeFieldVar(int def, int use, String className, String fieldName,
-                                    HoleExpression.HoleType holeType) {
-        assert(holeType == HoleExpression.HoleType.FIELD_OUTPUT || holeType == HoleExpression.HoleType.FIELD_INPUT);
+        assert(holeType == HoleExpression.HoleType.FIELD_INPUT);
         // Assuming fields have to be used from local objects
         assert(varsMap.containsKey(use) || use == -1);
         int localStackSlot = -1;
         if(use != -1) localStackSlot = varsMap.get(use);
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, holeType);
-        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1);
+        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, null);
         String name = className + "." + methodName + ".v" + def;
+        holeExpression.setHoleVarName(name);
+        varCache.put(holeExpression.getHoleVarName(), holeExpression);
+        return holeExpression;
+    }
+
+    // def will be value being defined in case of FIELD_INPUT hole
+    public Expression addFieldOutputVal(Expression writeExpr, int use,
+                                       String className,
+                                       String fieldName,
+                                       HoleExpression.HoleType holeType) {
+        assert(holeType == HoleExpression.HoleType.FIELD_OUTPUT);
+        // Assuming fields have to be used from local objects
+        assert(varsMap.containsKey(use) || use == -1);
+        String name = "FIELD_OUTPUT." + ((HoleExpression)writeExpr).getHoleVarName();
+        if(varCache.containsKey(name)) return varCache.get(name);
+        int localStackSlot = -1;
+        if(use != -1) localStackSlot = varsMap.get(use);
+        HoleExpression holeExpression = new HoleExpression(nextInt());
+        holeExpression.setHole(true, holeType);
+        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, writeExpr);
         holeExpression.setHoleVarName(name);
         varCache.put(name, holeExpression);
         return holeExpression;

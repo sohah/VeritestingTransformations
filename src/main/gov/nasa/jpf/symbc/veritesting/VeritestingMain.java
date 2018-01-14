@@ -490,7 +490,8 @@ public class VeritestingMain {
             if(succs.size() > 1) return;
             Iterator<SSAInstruction> ssaInstructionIterator = currUnit.iterator();
             while (ssaInstructionIterator.hasNext()) {
-                myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
+                myIVisitor = new MyIVisitor(varUtil, -1, -1,
+                        false );
                 SSAInstruction instruction = ssaInstructionIterator.next();
                 instruction.visit(myIVisitor);
                 if(!myIVisitor.canVeritest()) return;

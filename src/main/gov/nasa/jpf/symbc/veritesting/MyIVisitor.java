@@ -248,9 +248,9 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         Atom declaringClass = fieldReference.getDeclaringClass().getName().getClassName();
         Atom fieldName = fieldReference.getName();
         System.out.println("declaringClass = " + declaringClass + ", methodName = " + fieldName);
-        int use = instruction.getUse(0);
+        int objRef = instruction.getUse(0);
         int def = instruction.getDef(0);
-        varUtil.addFieldVal(def, use, declaringClass.toString(), fieldName.toString(),
+        varUtil.addFieldInputVal(def, objRef, declaringClass.toString(), fieldName.toString(),
                 HoleExpression.HoleType.FIELD_INPUT);
 
         canVeritest = true;
@@ -261,20 +261,28 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         lastInstruction = instruction;
         if(isMeetVisitor) return;
         System.out.println("SSAPutInstruction = " + instruction);
+        String intermediateVarName = "";
         if(instruction.isStatic()) {
             assert(instruction.getNumberOfUses()==1);
             assert(instruction.getNumberOfDefs()==0);
+            intermediateVarName = "putStatic.";
         } else {
             assert (instruction.getNumberOfUses() == 2);
             assert (instruction.getNumberOfDefs() == 0);
+            intermediateVarName = "putField.";
         }
-        int objRef = instruction.getRef();
-        int defVal = instruction.getVal();
         FieldReference fieldReference = instruction.getDeclaredField();
-        Atom declaringClass = fieldReference.getDeclaringClass().getName().getClassName();
-        Atom fieldName = fieldReference.getName();
-        varUtil.addFieldVal(defVal, objRef, declaringClass.toString(), fieldName.toString(),
+        int objRef = instruction.getRef();
+        String className = fieldReference.getDeclaringClass().getName().getClassName().toString();
+        String fieldName = fieldReference.getName().toString();
+        intermediateVarName += objRef + ".";
+        intermediateVarName += className + "." + fieldName;
+        Expression intermediate = varUtil.makeIntermediateVar(intermediateVarName);
+        Expression writeVal = varUtil.addVal(instruction.getVal());
+        SPFExpr = new Operation(Operator.EQ, intermediate, writeVal);
+        varUtil.addFieldOutputVal(intermediate, objRef, className.toString(), fieldName.toString(),
                 HoleExpression.HoleType.FIELD_OUTPUT);
+
         canVeritest = true;
     }
 

@@ -124,8 +124,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                 "#" + ti.getTopFrame().getPC().getPosition();
         if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
             VeritestingRegion region = veritestingRegions.get(key);
-            ranIntoRegions.add(region);
-            System.out.println("ranIntoRegions.size() = " + ranIntoRegions.size());
+            /*ranIntoRegions.add(region);
+            System.out.println("ranIntoRegions.size() = " + ranIntoRegions.size());*/
             StackFrame sf = ti.getTopFrame();
             //System.out.println("Starting region (" + region.toString()+") at instruction " + instructionToExecute
             //+ " (pos = " + instructionToExecute.getPosition() + ")");
@@ -158,10 +158,10 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             finalSummaryExpression = fillASTHoles(finalSummaryExpression, fillHolesOutput.holeHashMap); //not constant-folding for now
             //pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(summaryExpression)));
             pc._addDet(new GreenConstraint(finalSummaryExpression));
-            if(!pc.simplify()) {
+            /*if(!pc.simplify()) {
                 System.out.println("veritesting region added unsat summary");
                 assert(false);
-            }
+            }*/
             if (!populateOutputs(region.getOutputVars(), fillHolesOutput.holeHashMap, sf, ti)) {
                 return;
             }
@@ -182,8 +182,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             ti.setNextPC(insn);
             pathLabelCount += 1;
             //System.out.println("Used region (" + region.getMethodName()+")");
-            usedRegions.add(region);
-            System.out.println("usedRegions.size() = " + usedRegions.size());
+            /*usedRegions.add(region);
+            System.out.println("usedRegions.size() = " + usedRegions.size());*/
         }
     }
 
@@ -219,14 +219,15 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             assert(expression instanceof HoleExpression);
             HoleExpression holeExpression = (HoleExpression) expression;
             assert(holeHashMap.containsKey(holeExpression));
-            finalValue = holeHashMap.get(holeExpression);
             switch(holeExpression.getHoleType()) {
                 case LOCAL_OUTPUT:
+                    finalValue = holeHashMap.get(holeExpression);
                     stackFrame.setSlotAttr(holeExpression.getLocalStackSlot(), GreenToSPFExpression(finalValue));
                     break;
                 case FIELD_OUTPUT:
                     HoleExpression.FieldInfo fieldInfo = holeExpression.getFieldInfo();
                     assert(fieldInfo != null);
+                    finalValue = holeHashMap.get(fieldInfo.writeValue);
                     fillFieldOutputHole(ti, stackFrame, fieldInfo, GreenToSPFExpression(finalValue));
                     break;
             }
@@ -297,12 +298,18 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                     retHoleHashMap.put(keyHoleExpression, finalValueGreen);
                     break;
                 case LOCAL_OUTPUT:
-                case FIELD_OUTPUT:
                 case INTERMEDIATE:
                     finalValueSPF =
                             makeSymbolicInteger(keyHoleExpression.getHoleVarName() + pathLabelCount);
                     finalValueGreen = SPFToGreenExpr(finalValueSPF);
                     retHoleHashMap.put(keyHoleExpression, finalValueGreen);
+                    break;
+                case FIELD_OUTPUT:
+                    /*HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
+                    finalValueSPF =
+                            makeSymbolicInteger(((HoleExpression)fieldInfo.writeValue).getHoleVarName() + pathLabelCount);
+                    finalValueGreen = SPFToGreenExpr(finalValueSPF);*/
+                    retHoleHashMap.put(keyHoleExpression, null);
                     break;
                 case FIELD_INPUT:
                     HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
@@ -422,7 +429,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                                 //and we populate that stack slot in fieldInfo for fillFieldOutputHole to use later
                                 fieldInfo.callSiteStackSlot = ((HoleExpression)callSiteInfo.paramList.get(0)).getLocalStackSlot();
                                 methodKeyHole.setFieldInfo(fieldInfo.className, fieldInfo.fieldName,
-                                        fieldInfo.localStackSlot, fieldInfo.callSiteStackSlot);
+                                        fieldInfo.localStackSlot, fieldInfo.callSiteStackSlot, fieldInfo.writeValue);
                                 break;
                             default:
                                 System.out.println("expression marked with unknown hole type: " +
