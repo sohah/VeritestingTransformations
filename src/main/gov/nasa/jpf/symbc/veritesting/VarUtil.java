@@ -290,18 +290,19 @@ public class VarUtil {
                 for(int use = 0; use < phiInstruction.getNumberOfUses(); use++) {
                     int valNum = phiInstruction.getUse(use);
                     if(!isConstant(valNum) && varsMap.containsKey(valNum)) {
-                        localVarUpdated = updateLocalVarsForPhi(phiInstruction, valNum);
+                        if(updateLocalVarsForPhi(phiInstruction, valNum)) localVarUpdated = true;
                         break;
                     }
                 }
-                if(localVarUpdated) continue;
+                if(localVarUpdated) break;
                 for(int def = 0; def < phiInstruction.getNumberOfDefs(); def++) {
                     int valNum = phiInstruction.getDef(def);
                     if(!isConstant(valNum) && varsMap.containsKey(valNum)) {
-                        localVarUpdated = updateLocalVarsForPhi(phiInstruction, valNum);
+                        if(updateLocalVarsForPhi(phiInstruction, valNum)) localVarUpdated = true;
                         break;
                     }
                 }
+                if(localVarUpdated) break;
             }
         } while(localVarUpdated);
     }
@@ -359,7 +360,7 @@ public class VarUtil {
         if(isLocalVariable(def)) {
             return makeLocalOutputVar(def);
         }
-        System.out.println("non-local value cannot be defined");
+        System.out.println("non-local value cannot be defined (" + def + ")");
         assert(false);
         return null;
     }

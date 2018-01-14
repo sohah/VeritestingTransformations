@@ -294,8 +294,9 @@ public class VeritestingMain {
         return veritestingRegion;
     }
 
+    //TODO I (Vaibhav) think endingUnit can be dropped
     public void doAnalysis(ISSABasicBlock startingUnit, ISSABasicBlock endingUnit) throws InvalidClassFileException {
-        System.out.println("Starting doAnalysis");
+        //System.out.println("Starting doAnalysis");
         ISSABasicBlock currUnit = startingUnit;
         MyIVisitor myIVisitor;
         if (startingPointsHistory.contains(startingUnit)) return;
@@ -339,6 +340,11 @@ public class VeritestingMain {
 
                 // Create thenExpr
                 while (thenUnit != commonSucc) {
+                    if(cfg.getNormalSuccessors(thenUnit).size() > 1) {
+                        doAnalysis(thenUnit, null);
+                        canVeritest = false;
+                        break;
+                    }
                     Iterator<SSAInstruction> ssaInstructionIterator = thenUnit.iterator();
                     while (ssaInstructionIterator.hasNext()) {
                         myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
@@ -367,10 +373,6 @@ public class VeritestingMain {
                     if (!canVeritest) break;
                     //TODO instead of giving up, try to compute a summary of everything from thenUnit up to commonSucc
                     //to allow complex regions
-                    if(cfg.getNormalSuccessors(thenUnit).size() > 1) {
-                        canVeritest = false;
-                        break;
-                    }
                     thenPred = thenUnit;
                     thenUnit = cfg.getNormalSuccessors(thenUnit).iterator().next();
                     if (thenUnit == endingUnit) break;
@@ -378,12 +380,30 @@ public class VeritestingMain {
                 // if there is no "then" side, then set then's predecessor to currUnit
                 if (canVeritest && (thenPred == commonSucc)) thenPred = currUnit;
 
+                //move static analysis deeper into the then-side searching for veritesting regions
+                if (!canVeritest) {
+                    while(thenUnit != commonSucc) {
+                        if(cfg.getNormalSuccessors(thenUnit).size() > 1) {
+                            doAnalysis(thenUnit, null);
+                            break;
+                        }
+                        if(cfg.getNormalSuccessors(thenUnit).size() == 0) break;
+                        thenUnit = cfg.getNormalSuccessors(thenUnit).iterator().next();
+                    }
+                }
+
                 // Create elseExpr
                 while (canVeritest && elseUnit != commonSucc) {
+                    if(cfg.getNormalSuccessors(elseUnit).size() > 1) {
+                        doAnalysis(elseUnit, null);
+                        canVeritest = false;
+                        break;
+                    }
                     Iterator<SSAInstruction> ssaInstructionIterator = elseUnit.iterator();
                     while (ssaInstructionIterator.hasNext()) {
                         myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
                         ssaInstructionIterator.next().visit(myIVisitor);
+
                         if (!myIVisitor.canVeritest()) {
                             canVeritest = false;
                             System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
@@ -408,16 +428,24 @@ public class VeritestingMain {
                     if (!canVeritest) break;
                     //TODO instead of giving up, try to compute a summary of everything from elseUnit up to commonSucc
                     //to allow complex regions
-                    if(cfg.getNormalSuccessors(elseUnit).size() > 1) {
-                        canVeritest = false;
-                        break;
-                    }
                     elsePred = elseUnit;
                     elseUnit = cfg.getNormalSuccessors(elseUnit).iterator().next();
                     if (elseUnit == endingUnit) break;
                 }
                 // if there is no "else" side, else set else's predecessor to currUnit
                 if (canVeritest && (elsePred == commonSucc)) elsePred = currUnit;
+
+                //move static analysis deeper into the else-side searching for veritesting regions
+                if (!canVeritest) {
+                    while(elseUnit != commonSucc) {
+                        if(cfg.getNormalSuccessors(elseUnit).size() > 1) {
+                            doAnalysis(elseUnit, null);
+                            break;
+                        }
+                        if(cfg.getNormalSuccessors(elseUnit).size() == 0) break;
+                        elseUnit = cfg.getNormalSuccessors(elseUnit).iterator().next();
+                    }
+                }
 
                 // Assign pathLabel a value in the elseExpr
                 if (canVeritest) {

@@ -40,6 +40,7 @@ import java.util.Iterator;
 public class VeritestingListener extends PropertyListenerAdapter  {
 
     public static HashMap<String, VeritestingRegion> veritestingRegions;
+    public HashSet<VeritestingRegion> usedRegions, ranIntoRegions;
 
     public VeritestingListener(Config conf, JPF jpf) {
     }
@@ -116,11 +117,15 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             long duration = (endTime - startTime) / 1000000; //milliseconds
             System.out.println("veritesting analysis took " + duration + " milliseconds");
             System.out.println("Number of veritesting regions = " + veritestingRegions.size());
+            usedRegions = new HashSet<>();
+            ranIntoRegions = new HashSet<>();
         }
         String key = ti.getTopFrame().getClassInfo().getName() + "." + ti.getTopFrame().getMethodInfo().getName() +
                 "#" + ti.getTopFrame().getPC().getPosition();
         if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
             VeritestingRegion region = veritestingRegions.get(key);
+            ranIntoRegions.add(region);
+            System.out.println("ranIntoRegions.size() = " + ranIntoRegions.size());
             StackFrame sf = ti.getTopFrame();
             //System.out.println("Starting region (" + region.toString()+") at instruction " + instructionToExecute
             //+ " (pos = " + instructionToExecute.getPosition() + ")");
@@ -145,7 +150,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             }
             FillHolesOutput fillHolesOutput =
                     fillHoles(region.getHoleHashMap(), instructionInfo, sf, ti);
-            if(fillHolesOutput.holeHashMap == null) return;
+            if(fillHolesOutput == null || fillHolesOutput.holeHashMap == null) return;
             Expression summaryExpression = region.getSummaryExpression();
             Expression finalSummaryExpression = summaryExpression;
             if(fillHolesOutput.additionalAST != null)
@@ -153,10 +158,10 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             finalSummaryExpression = fillASTHoles(finalSummaryExpression, fillHolesOutput.holeHashMap); //not constant-folding for now
             //pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(summaryExpression)));
             pc._addDet(new GreenConstraint(finalSummaryExpression));
-            /*if(!pc.simplify()) {
+            if(!pc.simplify()) {
                 System.out.println("veritesting region added unsat summary");
                 assert(false);
-            }*/
+            }
             if (!populateOutputs(region.getOutputVars(), fillHolesOutput.holeHashMap, sf, ti)) {
                 return;
             }
@@ -167,6 +172,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                     insn = ((GOTO) insn).getTarget();
                 else insn = insn.getNext();
             }
+            if(insn.getMnemonic().contains("store")) insn = insn.getNext();
             StackFrame modifiableTopFrame = ti.getModifiableTopFrame();
             while (numOperands > 0) {
                 modifiableTopFrame.pop();
@@ -176,6 +182,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             ti.setNextPC(insn);
             pathLabelCount += 1;
             //System.out.println("Used region (" + region.getMethodName()+")");
+            usedRegions.add(region);
+            System.out.println("usedRegions.size() = " + usedRegions.size());
         }
     }
 
@@ -335,8 +343,10 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                     //Change the class name based on the call site object reference
                     callSiteInfo.className = ci.getName();
                     //If there exists a invokeVirtual for a method that we weren't able to summarize, skip veritesting
-                    if(!veritestingRegions.containsKey(callSiteInfo.className+"."+callSiteInfo.methodName+"#0"))
+                    if(!veritestingRegions.containsKey(callSiteInfo.className+"."+callSiteInfo.methodName+"#0")) {
+                        System.out.println("Could not find method summary for " + callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
                         return null;
+                    }
                     //All holes in callSiteInfo.paramList will also be present in holeHashmap and will be filled up here
                     for(Expression h: callSiteInfo.paramList) {
                         if(h instanceof HoleExpression) assert(holeHashMap.containsKey(h));
@@ -618,7 +628,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             IntegerExpression operand1 = null, operand2 = null;
             boolean isConcreteCondition = true;
             if(numOperands == 1) {
-                operand1 = (IntegerExpression) ti.getTopFrame().getOperandAttr();
+                gov.nasa.jpf.symbc.numeric.Expression operand1_expr = (gov.nasa.jpf.symbc.numeric.Expression)
+                        ti.getTopFrame().getOperandAttr();
+                operand1 = (IntegerExpression) operand1_expr;
                 if(operand1 == null) operand1 = new IntegerConstant(ti.getTopFrame().peek());
                 else isConcreteCondition = false;
                 operand2 = new IntegerConstant(0);

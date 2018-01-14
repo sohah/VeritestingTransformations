@@ -364,7 +364,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         isPhiInstruction = true;
         System.out.println("SSAPhiInstruction = " + instruction);
         lastInstruction = instruction;
-        assert(instruction.getNumberOfUses()==2);
+        assert(instruction.getNumberOfUses()>=2);
         assert(instruction.getNumberOfDefs()==1);
 
         assert(thenUseNum != -1);

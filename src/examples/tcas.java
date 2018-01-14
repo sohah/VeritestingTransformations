@@ -204,6 +204,11 @@ public class tcas {
 			}
 		}
 
+		/*if(need_upward_RA && need_downward_RA) alt_sep = 0;
+		if(need_upward_RA && !need_downward_RA) alt_sep = 1;
+		if(!need_upward_RA && need_downward_RA) alt_sep = 2;
+		if(!need_upward_RA && !need_downward_RA) alt_sep = 0;*/
+
 	    return alt_sep;
 	}
 
