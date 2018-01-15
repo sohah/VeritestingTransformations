@@ -125,30 +125,28 @@ public class VeritestingListener extends PropertyListenerAdapter  {
         if(veritestingRegions != null && veritestingRegions.containsKey(hash)) {
             VeritestingRegion region = veritestingRegions.get(hash);
             //if(!isGoodRegion(region)) return;
-            /*ranIntoRegions.add(region);
-            System.out.println("ranIntoRegions.size() = " + ranIntoRegions.size());*/
+            //ranIntoRegions.add(region);
+            //System.out.println("ranIntoRegions.size() = " + ranIntoRegions.size());
             StackFrame sf = ti.getTopFrame();
             //System.out.println("Starting region (" + region.toString()+") at instruction " + instructionToExecute
             //+ " (pos = " + instructionToExecute.getPosition() + ")");
-            InstructionInfo instructionInfo = new InstructionInfo(ti).invoke();
+            InstructionInfo instructionInfo = new InstructionInfo().invoke(sf);
             if(instructionInfo == null) return;
-            if(instructionInfo.getCondition() == null && instructionInfo.getNegCondition() == null) return;
             int numOperands = instructionInfo.getNumOperands();
             PathCondition pc;
             pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-            /*PathCondition eqPC = pc.make_copy();
-            PathCondition nePC = pc.make_copy();
+            PathCondition eqPC = pc.make_copy();
             eqPC._addDet(new GreenConstraint(instructionInfo.getCondition()));
-            nePC._addDet(new GreenConstraint(instructionInfo.getNegCondition()));
             boolean eqSat = eqPC.simplify();
+            if(!eqSat) return;
+            PathCondition nePC = pc.make_copy();
+            nePC._addDet(new GreenConstraint(instructionInfo.getNegCondition()));
             boolean neSat = nePC.simplify();
-            if (!eqSat && !neSat) {
-                System.out.println("both sides of branch at offset " + ti.getTopFrame().getPC().getPosition() + " are unsat");
-                assert (false);
-            }
-            if ((eqSat && !neSat) || (!eqSat && neSat)) {
-                return;
-            }*/
+            if (!neSat) return;
+//            if (!eqSat && !neSat) {
+//                System.out.println("both sides of branch at offset " + ti.getTopFrame().getPC().getPosition() + " are unsat");
+//                assert (false);
+//            }
             FillHolesOutput fillHolesOutput =
                     fillHoles(region.getHoleHashMap(), instructionInfo, sf, ti);
             if(fillHolesOutput == null || fillHolesOutput.holeHashMap == null) return;
@@ -184,9 +182,9 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             pathLabelCount += 1;
             //System.out.println("pathLabelCount = " + pathLabelCount);
             //System.out.println("Used region (" + region.getMethodName()+")");
-            /*usedRegions.add(region);
-            System.out.println("usedRegions.size() = " + usedRegions.size());
-            System.out.println("usedRegions = " + usedRegions);*/
+//            usedRegions.add(region);
+//            System.out.println("usedRegions.size() = " + usedRegions.size());
+//            System.out.println("usedRegions = " + usedRegions);
         }
     }
 
@@ -561,7 +559,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
     }
 
     private class InstructionInfo {
-        private ThreadInfo ti;
         private int numOperands;
         private Operation.Operator trueComparator, falseComparator;
         private Expression condition, negCondition;
@@ -569,11 +566,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
         public Expression getCondition() { return condition; }
 
         public Expression getNegCondition() { return negCondition; }
-
-        public InstructionInfo(ThreadInfo ti) {
-            this.ti = ti;
-        }
-
+        
         public int getNumOperands() {
             return numOperands;
         }
@@ -586,8 +579,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             return falseComparator;
         }
 
-        public InstructionInfo invoke() {
-            String mnemonic = ti.getTopFrame().getPC().getMnemonic();
+        public InstructionInfo invoke(StackFrame stackFrame) {
+            String mnemonic = stackFrame.getPC().getMnemonic();
             //System.out.println("mne = " + mnemonic);
             switch(mnemonic) {
                 case "ifeq" :
@@ -654,21 +647,21 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             boolean isConcreteCondition = true;
             if(numOperands == 1) {
                 gov.nasa.jpf.symbc.numeric.Expression operand1_expr = (gov.nasa.jpf.symbc.numeric.Expression)
-                        ti.getTopFrame().getOperandAttr();
+                        stackFrame.getOperandAttr();
                 operand1 = (IntegerExpression) operand1_expr;
-                if(operand1 == null) operand1 = new IntegerConstant(ti.getTopFrame().peek());
+                if(operand1 == null) operand1 = new IntegerConstant(stackFrame.peek());
                 else isConcreteCondition = false;
                 operand2 = new IntegerConstant(0);
             }
             if(numOperands == 2) {
-                operand1 = (IntegerExpression) ti.getTopFrame().getOperandAttr(1);
-                if(operand1 == null) operand1 = new IntegerConstant(ti.getTopFrame().peek(1));
+                operand1 = (IntegerExpression) stackFrame.getOperandAttr(1);
+                if(operand1 == null) operand1 = new IntegerConstant(stackFrame.peek(1));
                 else isConcreteCondition = false;
-                operand2 = (IntegerExpression) ti.getTopFrame().getOperandAttr(0);
-                if(operand2 == null) operand2 = new IntegerConstant(ti.getTopFrame().peek(0));
+                operand2 = (IntegerExpression) stackFrame.getOperandAttr(0);
+                if(operand2 == null) operand2 = new IntegerConstant(stackFrame.peek(0));
                 else isConcreteCondition = false;
             }
-            if(isConcreteCondition) { condition = null; negCondition = null; }
+            if(isConcreteCondition) { return null; }
             else {
                 condition = new Operation(trueComparator, SPFToGreenExpr(operand1), SPFToGreenExpr(operand2));
                 negCondition = new Operation(falseComparator, SPFToGreenExpr(operand1), SPFToGreenExpr(operand2));
