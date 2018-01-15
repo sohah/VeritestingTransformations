@@ -39,7 +39,7 @@ import java.util.Iterator;
 
 public class VeritestingListener extends PropertyListenerAdapter  {
 
-    public static HashMap<Long, VeritestingRegion> veritestingRegions;
+    public static HashMap<String, VeritestingRegion> veritestingRegions;
     public HashSet<VeritestingRegion> usedRegions, ranIntoRegions;
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -122,8 +122,8 @@ public class VeritestingListener extends PropertyListenerAdapter  {
         FNV1 fnv = new FNV1a64();
         fnv.init(key);
         long hash = fnv.getHash();
-        if(veritestingRegions != null && veritestingRegions.containsKey(hash)) {
-            VeritestingRegion region = veritestingRegions.get(hash);
+        if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
+            VeritestingRegion region = veritestingRegions.get(key);
             //if(!isGoodRegion(region)) return;
             //ranIntoRegions.add(region);
             //System.out.println("ranIntoRegions.size() = " + ranIntoRegions.size());
@@ -185,7 +185,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 //            usedRegions.add(region);
 //            System.out.println("usedRegions.size() = " + usedRegions.size());
 //            System.out.println("usedRegions = " + usedRegions);
-        }
+       }
     }
 
     private boolean isGoodRegion(VeritestingRegion region) {
@@ -359,7 +359,11 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                     //Change the class name based on the call site object reference
                     callSiteInfo.className = ci.getName();
                     //If there exists a invokeVirtual for a method that we weren't able to summarize, skip veritesting
-                    if(!veritestingRegions.containsKey(callSiteInfo.className+"."+callSiteInfo.methodName+"#0")) {
+                    String key1 = callSiteInfo.className+"."+callSiteInfo.methodName+"#0";
+                    FNV1 fnv = new FNV1a64();
+                    fnv.init(key1);
+                    long hash = fnv.getHash();
+                    if(!veritestingRegions.containsKey(key1)) {
                         System.out.println("Could not find method summary for " + callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
                         return null;
                     }
@@ -367,7 +371,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
                     for(Expression h: callSiteInfo.paramList) {
                         if(h instanceof HoleExpression) assert(holeHashMap.containsKey(h));
                     }
-                    VeritestingRegion methodSummary = veritestingRegions.get(callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
+                    VeritestingRegion methodSummary = veritestingRegions.get(key1);
                     HashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
                     ArrayList<Expression> paramEqList = new ArrayList<>();
                     for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {

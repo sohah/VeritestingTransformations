@@ -6,5 +6,6 @@ symbolic.method = tcas.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#s
 #symbolic.maxint=100
 vm.storage.class=nil
 listener = .symbc.VeritestingListener
-symbolic.dp=z3bitvector
+#listener = .symbc.SymbolicListener
 #listener = .listener.ChoiceTracker
+symbolic.dp=z3bitvector

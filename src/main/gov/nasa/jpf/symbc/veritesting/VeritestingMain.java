@@ -80,7 +80,7 @@ public class VeritestingMain {
                     (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
             methodSummaryClassNames = new ArrayList<String>();
-            VeritestingListener.veritestingRegions = new HashMap<Long, VeritestingRegion>();
+            VeritestingListener.veritestingRegions = new HashMap<String, VeritestingRegion>();
         } catch (WalaException | IOException e) {
             e.printStackTrace();
         }
@@ -466,7 +466,7 @@ public class VeritestingMain {
                         FNV1 fnv = new FNV1a64();
                         fnv.init(key);
                         long hash = fnv.getHash();
-                        VeritestingListener.veritestingRegions.put(hash, veritestingRegion);
+                        VeritestingListener.veritestingRegions.put(key, veritestingRegion);
                     }
                 }
                 currUnit = commonSucc;
@@ -518,7 +518,7 @@ public class VeritestingMain {
         FNV1 fnv = new FNV1a64();
         fnv.init(key);
         long hash = fnv.getHash();
-        VeritestingListener.veritestingRegions.put(hash, veritestingRegion);
+        VeritestingListener.veritestingRegions.put(key, veritestingRegion);
     } // end doMethodAnalysis
 
     public VeritestingRegion constructMethodRegion(
