@@ -238,17 +238,20 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         lastInstruction = instruction;
         if(isMeetVisitor) return;
         System.out.println("SSAGetInstruction = " + instruction);
+        int objRef;
         if(instruction.isStatic()) {
-            canVeritest = false;
-            return;
+            assert (instruction.getNumberOfDefs() == 1);
+            assert (instruction.getNumberOfUses() == 0);
+            objRef = -1;
+        } else {
+            assert (instruction.getNumberOfDefs() == 1);
+            assert (instruction.getNumberOfUses() == 1);
+            objRef = instruction.getUse(0);
         }
-        assert(instruction.getNumberOfDefs()==1);
-        assert(instruction.getNumberOfUses()==1);
         FieldReference fieldReference = instruction.getDeclaredField();
         Atom declaringClass = fieldReference.getDeclaringClass().getName().getClassName();
         Atom fieldName = fieldReference.getName();
         System.out.println("declaringClass = " + declaringClass + ", methodName = " + fieldName);
-        int objRef = instruction.getUse(0);
         int def = instruction.getDef(0);
         varUtil.addFieldInputVal(def, objRef, declaringClass.toString(), fieldName.toString(),
                 HoleExpression.HoleType.FIELD_INPUT);

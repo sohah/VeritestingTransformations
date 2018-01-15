@@ -80,7 +80,7 @@ public class VeritestingMain {
                     (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
             methodSummaryClassNames = new ArrayList<String>();
-            VeritestingListener.veritestingRegions = new HashMap<String, VeritestingRegion>();
+            VeritestingListener.veritestingRegions = new HashMap<Long, VeritestingRegion>();
         } catch (WalaException | IOException e) {
             e.printStackTrace();
         }
@@ -461,9 +461,12 @@ public class VeritestingMain {
                     if (veritestingRegion != null) {
                         /*TODO At this point we can modify the current region based on the region created for
                         the then or else side, if one of them encountered more than one successor */
-                        VeritestingListener.veritestingRegions.put(
-                                veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() + "#" +
-                                        veritestingRegion.getStartInsnPosition(), veritestingRegion);
+                        String key = veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() + "#" +
+                                veritestingRegion.getStartInsnPosition();
+                        FNV1 fnv = new FNV1a64();
+                        fnv.init(key);
+                        long hash = fnv.getHash();
+                        VeritestingListener.veritestingRegions.put(hash, veritestingRegion);
                     }
                 }
                 currUnit = commonSucc;
@@ -510,9 +513,12 @@ public class VeritestingMain {
             currUnit = succs.get(0);
         }
         VeritestingRegion veritestingRegion = constructMethodRegion(summaryExp);
-        VeritestingListener.veritestingRegions.put(
-                veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() + "#" +
-                        veritestingRegion.getStartInsnPosition(), veritestingRegion);
+        String key = veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() + "#" +
+                veritestingRegion.getStartInsnPosition();
+        FNV1 fnv = new FNV1a64();
+        fnv.init(key);
+        long hash = fnv.getHash();
+        VeritestingListener.veritestingRegions.put(hash, veritestingRegion);
     } // end doMethodAnalysis
 
     public VeritestingRegion constructMethodRegion(

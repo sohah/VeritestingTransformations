@@ -42,7 +42,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
                             !fieldInfo1.fieldName.equals(fieldInfo.fieldName) ||
                             fieldInfo1.localStackSlot != fieldInfo.localStackSlot ||
                             fieldInfo1.callSiteStackSlot != fieldInfo.callSiteStackSlot ||
-                            !fieldInfo1.writeValue.equals(fieldInfo.writeValue))
+                            (fieldInfo1.writeValue != null && fieldInfo.writeValue != null && !fieldInfo1.writeValue.equals(fieldInfo.writeValue)))
                         return false;
                     else return true;
                 case INVOKEVIRTUAL:
@@ -210,9 +210,11 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
         }
 
         public String toString() {
-            return "currentClassName = " + className + ", fieldName = " + fieldName +
-                    ", stackSlots (local = " + localStackSlot + ", callSite = " + callSiteStackSlot +
-                    ", writeValue (" + writeValue.toString() + ")";
+            String ret = "currentClassName = " + className + ", fieldName = " + fieldName +
+                    ", stackSlots (local = " + localStackSlot + ", callSite = " + callSiteStackSlot;
+            if(writeValue != null) ret += ", writeValue (" + writeValue.toString() + ")";
+            else ret += ")";
+            return ret;
         }
     }
 

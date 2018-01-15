@@ -39,7 +39,7 @@ import java.util.Iterator;
 
 public class VeritestingListener extends PropertyListenerAdapter  {
 
-    public static HashMap<String, VeritestingRegion> veritestingRegions;
+    public static HashMap<Long, VeritestingRegion> veritestingRegions;
     public HashSet<VeritestingRegion> usedRegions, ranIntoRegions;
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -103,9 +103,6 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
         Config conf = ti.getVM().getConfig();
-        String[] lazy = conf.getStringArray("listener");
-        if (lazy == null || !lazy[0].contains("Veritesting"))
-            return;
         if(veritestingRegions == null) {
             String classPath = conf.getStringArray("classpath")[0] + "/";
             String className = conf.getString("target");
@@ -121,9 +118,13 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             ranIntoRegions = new HashSet<>();
         }
         String key = ti.getTopFrame().getClassInfo().getName() + "." + ti.getTopFrame().getMethodInfo().getName() +
-                "#" + ti.getTopFrame().getPC().getPosition();
-        if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
-            VeritestingRegion region = veritestingRegions.get(key);
+                "#" + instructionToExecute.getPosition();
+        FNV1 fnv = new FNV1a64();
+        fnv.init(key);
+        long hash = fnv.getHash();
+        if(veritestingRegions != null && veritestingRegions.containsKey(hash)) {
+            VeritestingRegion region = veritestingRegions.get(hash);
+            //if(!isGoodRegion(region)) return;
             /*ranIntoRegions.add(region);
             System.out.println("ranIntoRegions.size() = " + ranIntoRegions.size());*/
             StackFrame sf = ti.getTopFrame();
@@ -135,7 +136,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             int numOperands = instructionInfo.getNumOperands();
             PathCondition pc;
             pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-            PathCondition eqPC = pc.make_copy();
+            /*PathCondition eqPC = pc.make_copy();
             PathCondition nePC = pc.make_copy();
             eqPC._addDet(new GreenConstraint(instructionInfo.getCondition()));
             nePC._addDet(new GreenConstraint(instructionInfo.getNegCondition()));
@@ -147,7 +148,7 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             }
             if ((eqSat && !neSat) || (!eqSat && neSat)) {
                 return;
-            }
+            }*/
             FillHolesOutput fillHolesOutput =
                     fillHoles(region.getHoleHashMap(), instructionInfo, sf, ti);
             if(fillHolesOutput == null || fillHolesOutput.holeHashMap == null) return;
@@ -158,10 +159,10 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             finalSummaryExpression = fillASTHoles(finalSummaryExpression, fillHolesOutput.holeHashMap); //not constant-folding for now
             //pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(summaryExpression)));
             pc._addDet(new GreenConstraint(finalSummaryExpression));
-            /*if(!pc.simplify()) {
+            if(!pc.simplify()) {
                 System.out.println("veritesting region added unsat summary");
                 assert(false);
-            }*/
+            }
             if (!populateOutputs(region.getOutputVars(), fillHolesOutput.holeHashMap, sf, ti)) {
                 return;
             }
@@ -181,10 +182,20 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             ti.setNextPC(insn);
             pathLabelCount += 1;
+            //System.out.println("pathLabelCount = " + pathLabelCount);
             //System.out.println("Used region (" + region.getMethodName()+")");
             /*usedRegions.add(region);
-            System.out.println("usedRegions.size() = " + usedRegions.size());*/
+            System.out.println("usedRegions.size() = " + usedRegions.size());
+            System.out.println("usedRegions = " + usedRegions);*/
         }
+    }
+
+    private boolean isGoodRegion(VeritestingRegion region) {
+        if(region.getMethodName().equals("mainProcess")) return true;
+        if(region.getMethodName().equals("Own_Below_Threat")) return true;
+        if(region.getMethodName().equals("Own_Above_Threat")) return true;
+        if(region.getMethodName().equals("alt_assign") && region.getStartInsnPosition() == 19) return true;
+        return false;
     }
 
     private Comparator GreenToSPFComparator(Operation.Operator operator) {
@@ -465,21 +476,28 @@ public class VeritestingListener extends PropertyListenerAdapter  {
             ThreadInfo ti,
             StackFrame stackFrame,
             HoleExpression.FieldInfo fieldInputInfo) {
+
+        boolean isStatic = false;
+        int objRef = -1;
         //get the object reference from fieldInputInfo.use's local stack slot if not from the call site stack slot
         int stackSlot = fieldInputInfo.callSiteStackSlot;
         if(stackSlot == -1) stackSlot = fieldInputInfo.localStackSlot;
-        int objRef = stackFrame.getLocalVariable(stackSlot);
+        if(stackSlot == -1) isStatic = true;
+        else objRef = stackFrame.getLocalVariable(stackSlot);
         if (objRef == 0) {
             System.out.println("java.lang.NullPointerException" + "referencing field '" +
                     fieldInputInfo.fieldName+ "' on null object");
             assert(false);
         } else {
-            ElementInfo eiFieldOwner = ti.getElementInfo(objRef);
-            FieldInfo fieldInfo = null;
             ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(fieldInputInfo.className);
-            if (ci != null) {
+            ElementInfo eiFieldOwner;
+            if(!isStatic) eiFieldOwner = ti.getElementInfo(objRef);
+            else eiFieldOwner = ci.getStaticElementInfo();
+            FieldInfo fieldInfo = null;
+            if (ci != null && !isStatic)
                 fieldInfo = ci.getInstanceField(fieldInputInfo.fieldName);
-            }
+            if(ci != null && isStatic)
+                fieldInfo = ci.getStaticField(fieldInputInfo.fieldName);
             if (fieldInfo == null) {
                 System.out.println("java.lang.NoSuchFieldError" + "referencing field '" + fieldInputInfo.fieldName
                         + "' in " + eiFieldOwner);

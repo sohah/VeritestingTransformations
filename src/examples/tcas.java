@@ -174,9 +174,9 @@ public class tcas {
 		boolean need_upward_RA = false;
 		boolean non_crossing_biased_climb = Non_Crossing_Biased_Climb();
 		if(non_crossing_biased_climb){
-			boolean own_below_threat = Own_Below_Threat();
+			boolean own_below_threat = Own_Below_Threat(); //return symbolic temp variable
 			if(own_below_threat){
-				need_upward_RA = true;
+				need_upward_RA = true; //is symbolic
 			}
 		}
 		boolean need_downward_RA = false;
