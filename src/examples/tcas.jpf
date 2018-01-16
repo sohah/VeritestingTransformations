@@ -5,7 +5,11 @@ symbolic.method = tcas.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#s
 #symbolic.minint=-100
 #symbolic.maxint=100
 vm.storage.class=nil
+
+#coverage.include=tcas
+
 listener = .symbc.VeritestingListener
+#,gov.nasa.jpf.listener.CoverageAnalyzer
 #listener = .symbc.SymbolicListener
 #listener = .listener.ChoiceTracker
 symbolic.dp=z3bitvector

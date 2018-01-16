@@ -37,6 +37,7 @@
 
 package gov.nasa.jpf.symbc.numeric;
 
+import gov.nasa.jpf.symbc.VeritestingListener;
 import za.ac.sun.cs.green.Instance;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.arrays.ArrayConstraint;
@@ -464,6 +465,7 @@ public class PathCondition implements Comparable<PathCondition> {
 			return true;
 		}
 
+		long startTime = System.nanoTime();
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 		boolean result1;
 
@@ -474,7 +476,9 @@ public class PathCondition implements Comparable<PathCondition> {
 		else
 			result1 = solver.isSatisfiable(this);
 		solverCalls++;
+		long t1 = System.nanoTime();
 		solver.cleanup();
+		VeritestingListener.cleanupTime += ((System.nanoTime() - t1)/1000000);
 
 		if (SymbolicInstructionFactory.debugMode) {
 			MinMax.Debug_no_path_constraints ++;
@@ -484,6 +488,14 @@ public class PathCondition implements Comparable<PathCondition> {
 				MinMax.Debug_no_path_constraints_unsat ++;
 			System.out.println("### PCs: total:" + MinMax.Debug_no_path_constraints + " sat:" +MinMax.Debug_no_path_constraints_sat + " unsat:" + MinMax.Debug_no_path_constraints_unsat +"\n");
 		}
+		long endTime = System.nanoTime();
+		VeritestingListener.totalSolverTime += ((endTime - startTime)/1000000);
+//		System.out.println("solver time = " + (endTime - startTime)/1000000 + " msecs");
+//		System.out.println("totalSolverTime = " + VeritestingListener.totalSolverTime);
+//		System.out.println("z3Time = " + VeritestingListener.z3Time);
+//		System.out.println("parsingTime = " + VeritestingListener.parseTime);
+//		System.out.println("solverAllocTime = " + VeritestingListener.solverAllocTime);
+//		System.out.println("cleanupTime = " + VeritestingListener.cleanupTime);
 
 		if (! result1) return false;
 		boolean result2 = spc.simplify(); // TODO to review: used for strings

@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.z3.*;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.string.translate.BVExpr;
 
 public class ProblemZ3BitVector extends ProblemGeneral {
@@ -178,7 +179,9 @@ public class ProblemZ3BitVector extends ProblemGeneral {
                 System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n");
         	}
         	else{
+        	    long t1 = System.nanoTime();
         		result = solver.check() == Status.SATISFIABLE ? true : false;
+                VeritestingListener.z3Time += ((System.nanoTime() - t1)/1000000);
         	}
             return result;
         } catch(Exception e){

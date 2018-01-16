@@ -44,6 +44,7 @@ import java.util.Set;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.numeric.solvers.*;
 //import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco2;
 
@@ -84,6 +85,8 @@ public class SymbolicConstraintsGeneral {
 
 //		if (SymbolicInstructionFactory.debugMode)
 //			System.out.println("checking: PC "+pc);
+
+		long t0 = System.nanoTime();
 
 		final String[] dp = SymbolicInstructionFactory.dp;
 		if(dp == null) { // default: use choco
@@ -131,8 +134,11 @@ public class SymbolicConstraintsGeneral {
 		else
 			throw new RuntimeException("## Error: unknown decision procedure symbolic.dp="+dp[0]+
 					"\n(use choco or IAsolver or CVC3)");
-		
+
+		VeritestingListener.solverAllocTime += ((System.nanoTime() - t0)/1000000);
+		long t1 = System.nanoTime();
 		pb = PCParser.parse(pc,pb);
+		VeritestingListener.parseTime += ((System.nanoTime() - t1)/1000000);
 		if(pb==null)
 			result = Boolean.FALSE;
 		else

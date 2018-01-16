@@ -29,8 +29,8 @@ class GreenPbTranslator extends Visitor {
 
     private Map<Variable, Expr> v2e = null;
 
-    public GreenPbTranslator(ProblemGeneral c) {
-        this.context = c;
+    public GreenPbTranslator() {
+        this.context = PCParser.pb;
         stack = new Stack<Expr>();
         v2e = new HashMap<Variable, Expr>();
         domains = new LinkedList<Expr>();

@@ -24,7 +24,11 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.GOTO;
+import gov.nasa.jpf.report.ConsolePublisher;
+import gov.nasa.jpf.report.Publisher;
+import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.vm.*;
@@ -32,17 +36,20 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.io.PrintWriter;
+import java.util.*;
 
-public class VeritestingListener extends PropertyListenerAdapter  {
+public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
 
     public static HashMap<String, VeritestingRegion> veritestingRegions;
+    public static long totalSolverTime = 0, z3Time = 0;
+    public static long parseTime = 0;
+    public static long solverAllocTime = 0;
+    public static long cleanupTime = 0;
     public HashSet<VeritestingRegion> usedRegions, ranIntoRegions;
 
     public VeritestingListener(Config conf, JPF jpf) {
+        jpf.addPublisherExtension(ConsolePublisher.class, this);
     }
 
     // helper function to print local vars
@@ -186,6 +193,16 @@ public class VeritestingListener extends PropertyListenerAdapter  {
 //            System.out.println("usedRegions.size() = " + usedRegions.size());
 //            System.out.println("usedRegions = " + usedRegions);
        }
+    }
+
+    public void publishFinished (Publisher publisher) {
+        PrintWriter pw = publisher.getOut();
+        publisher.publishTopicStart("VeritestingListener time report");
+        pw.println("totalSolverTime = " + VeritestingListener.totalSolverTime);
+        pw.println("z3Time = " + VeritestingListener.z3Time);
+        pw.println("parsingTime = " + VeritestingListener.parseTime);
+        pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime);
+        pw.println("cleanupTime = " + VeritestingListener.cleanupTime);
     }
 
     private boolean isGoodRegion(VeritestingRegion region) {

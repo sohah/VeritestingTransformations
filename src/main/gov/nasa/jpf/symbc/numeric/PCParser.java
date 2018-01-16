@@ -1094,8 +1094,8 @@ public class PCParser {
   }
 
   private static boolean createDPGreenConstraint(GreenConstraint cRef) {
-    ProblemZ3BitVector greenPb = new ProblemZ3BitVector();
-    GreenPbTranslator greenPbTranslator = new GreenPbTranslator(greenPb);
+    //ProblemZ3BitVector greenPb = new ProblemZ3BitVector();
+    GreenPbTranslator greenPbTranslator = new GreenPbTranslator();
     try {
       cRef.getExp().accept(greenPbTranslator);
     }
