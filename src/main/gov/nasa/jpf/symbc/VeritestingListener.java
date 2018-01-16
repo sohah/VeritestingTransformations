@@ -198,11 +198,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public void publishFinished (Publisher publisher) {
         PrintWriter pw = publisher.getOut();
         publisher.publishTopicStart("VeritestingListener time report");
-        pw.println("totalSolverTime = " + VeritestingListener.totalSolverTime);
-        pw.println("z3Time = " + VeritestingListener.z3Time);
-        pw.println("parsingTime = " + VeritestingListener.parseTime);
-        pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime);
-        pw.println("cleanupTime = " + VeritestingListener.cleanupTime);
+        pw.println("totalSolverTime = " + VeritestingListener.totalSolverTime/1000000);
+        pw.println("z3Time = " + VeritestingListener.z3Time/1000000);
+        pw.println("parsingTime = " + VeritestingListener.parseTime/1000000);
+        pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime/1000000);
+        pw.println("cleanupTime = " + VeritestingListener.cleanupTime/1000000);
     }
 
     private boolean isGoodRegion(VeritestingRegion region) {

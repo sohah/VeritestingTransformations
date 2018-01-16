@@ -465,10 +465,10 @@ public class PathCondition implements Comparable<PathCondition> {
 			return true;
 		}
 
-		long startTime = System.nanoTime();
+
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 		boolean result1;
-
+        long startTime = System.nanoTime();
 		if (SymbolicInstructionFactory.concolicMode) {
 			PCAnalyzer pa = new PCAnalyzer();
 			result1 = pa.isSatisfiable(this,solver);
@@ -478,7 +478,7 @@ public class PathCondition implements Comparable<PathCondition> {
 		solverCalls++;
 		long t1 = System.nanoTime();
 		solver.cleanup();
-		VeritestingListener.cleanupTime += ((System.nanoTime() - t1)/1000000);
+		VeritestingListener.cleanupTime += (System.nanoTime() - t1);
 
 		if (SymbolicInstructionFactory.debugMode) {
 			MinMax.Debug_no_path_constraints ++;
@@ -489,7 +489,7 @@ public class PathCondition implements Comparable<PathCondition> {
 			System.out.println("### PCs: total:" + MinMax.Debug_no_path_constraints + " sat:" +MinMax.Debug_no_path_constraints_sat + " unsat:" + MinMax.Debug_no_path_constraints_unsat +"\n");
 		}
 		long endTime = System.nanoTime();
-		VeritestingListener.totalSolverTime += ((endTime - startTime)/1000000);
+		VeritestingListener.totalSolverTime += (endTime - startTime);
 //		System.out.println("solver time = " + (endTime - startTime)/1000000 + " msecs");
 //		System.out.println("totalSolverTime = " + VeritestingListener.totalSolverTime);
 //		System.out.println("z3Time = " + VeritestingListener.z3Time);

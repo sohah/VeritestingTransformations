@@ -181,7 +181,7 @@ public class ProblemZ3BitVector extends ProblemGeneral {
         	else{
         	    long t1 = System.nanoTime();
         		result = solver.check() == Status.SATISFIABLE ? true : false;
-                VeritestingListener.z3Time += ((System.nanoTime() - t1)/1000000);
+                VeritestingListener.z3Time += (System.nanoTime() - t1);
         	}
             return result;
         } catch(Exception e){

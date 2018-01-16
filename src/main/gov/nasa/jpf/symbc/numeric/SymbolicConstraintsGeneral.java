@@ -66,6 +66,7 @@ public class SymbolicConstraintsGeneral {
 	  protected Boolean result; // tells whether result is satisfiable or not
 	  
 	public boolean isSatisfiable(final PathCondition pc) {
+        long t0 = System.nanoTime();
 		if (pc == null || pc.count == 0) {
 			if (SymbolicInstructionFactory.debugMode)
 				System.out.println("## Warning: empty path condition");
@@ -86,7 +87,7 @@ public class SymbolicConstraintsGeneral {
 //		if (SymbolicInstructionFactory.debugMode)
 //			System.out.println("checking: PC "+pc);
 
-		long t0 = System.nanoTime();
+
 
 		final String[] dp = SymbolicInstructionFactory.dp;
 		if(dp == null) { // default: use choco
@@ -135,10 +136,10 @@ public class SymbolicConstraintsGeneral {
 			throw new RuntimeException("## Error: unknown decision procedure symbolic.dp="+dp[0]+
 					"\n(use choco or IAsolver or CVC3)");
 
-		VeritestingListener.solverAllocTime += ((System.nanoTime() - t0)/1000000);
+		VeritestingListener.solverAllocTime += (System.nanoTime() - t0);
 		long t1 = System.nanoTime();
 		pb = PCParser.parse(pc,pb);
-		VeritestingListener.parseTime += ((System.nanoTime() - t1)/1000000);
+		VeritestingListener.parseTime += (System.nanoTime() - t1);
 		if(pb==null)
 			result = Boolean.FALSE;
 		else
