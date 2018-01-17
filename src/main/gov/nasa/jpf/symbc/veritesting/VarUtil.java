@@ -335,7 +335,7 @@ public class VarUtil {
         if(varCache.containsKey(name))
             return varCache.get(name);
         Expression ret;
-        if(ir.getSymbolTable().isConstant(val)) {
+        if(isConstant(val)) {
             ret = new IntConstant(getConstant(val));
             varCache.put(name, ret);
             return ret;
@@ -411,7 +411,7 @@ public class VarUtil {
     }
 
     public boolean isConstant(int operand1) {
-        return ir.getSymbolTable().isConstant(operand1);
+        return ir.getSymbolTable().isNumberConstant(operand1);
     }
 
     public int getConstant(int operand1) {

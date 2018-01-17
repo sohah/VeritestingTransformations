@@ -54,7 +54,7 @@ public class VeritestingMain {
     public int pathLabelVarNum = 0;
     public HashSet endingInsnsHash;
     ClassHierarchy cha;
-    ArrayList<String> methodSummaryClassNames, methodSummarySubClassNames;
+    HashSet<String> methodSummaryClassNames, methodSummarySubClassNames;
 
     public int getObjectReference() {
         return objectReference;
@@ -68,7 +68,7 @@ public class VeritestingMain {
     int objectReference = -1;
     SSACFG cfg;
     HashSet startingPointsHistory;
-    String currentClassName, methodName;
+    String currentClassName, methodName, methodSig;
     VarUtil varUtil;
     HashSet<NatLoop> loops;
     IR ir;
@@ -79,7 +79,7 @@ public class VeritestingMain {
             AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
                     (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
-            methodSummaryClassNames = new ArrayList<String>();
+            methodSummaryClassNames = new HashSet<String>();
             VeritestingListener.veritestingRegions = new HashMap<String, VeritestingRegion>();
         } catch (WalaException | IOException e) {
             e.printStackTrace();
@@ -104,10 +104,13 @@ public class VeritestingMain {
                 String signature = getSignature(m);
                 startAnalysis(_className,signature);
             }
-            methodSummarySubClassNames = new ArrayList<String>();
+            methodSummarySubClassNames = new HashSet<String>();
             for(Iterator it = methodSummaryClassNames.iterator(); it.hasNext();) {
                 String methodSummaryClassName = (String) it.next();
-                Class cAdditional = urlcl.loadClass(methodSummaryClassName);
+                Class cAdditional;
+                try {
+                    cAdditional = urlcl.loadClass(methodSummaryClassName);
+                } catch (ClassNotFoundException e) { continue; }
                 Method[] allMethodsAdditional = cAdditional.getDeclaredMethods();
                 for (Method m: allMethodsAdditional) {
                     String signature = getSignature(m);
@@ -129,7 +132,9 @@ public class VeritestingMain {
             methodSummaryClassNames.addAll(methodSummarySubClassNames);
             for(Iterator it = methodSummaryClassNames.iterator(); it.hasNext();) {
                 String methodSummaryClassName = (String) it.next();
-                Class cAdditional = urlcl.loadClass(methodSummaryClassName);
+                Class cAdditional;
+                try { cAdditional = urlcl.loadClass(methodSummaryClassName); }
+                catch (ClassNotFoundException e) { continue; }
                 Method[] allMethodsAdditional = cAdditional.getDeclaredMethods();
                 for (Method m : allMethodsAdditional) {
                     String signature = getSignature(m);
@@ -169,6 +174,7 @@ public class VeritestingMain {
             cfg = ir.getControlFlowGraph();
             currentClassName = m.getDeclaringClass().getName().getClassName().toString();
             methodName = m.getName().toString();
+            this.methodSig = methodSig.substring(methodSig.indexOf('('));
             System.out.println("Starting analysis for " + methodName + "(" + currentClassName + "." + methodSig + ")");
             varUtil = new VarUtil(ir, currentClassName, methodName);
             doMethodAnalysis(cfg);
@@ -205,6 +211,7 @@ public class VeritestingMain {
             cfg = ir.getControlFlowGraph();
             currentClassName = m.getDeclaringClass().getName().getClassName().toString();
             methodName = m.getName().toString();
+            this.methodSig = methodSig.substring(methodSig.indexOf('('));
             System.out.println("Starting analysis for " + methodName + "(" + currentClassName + "." + methodSig + ")");
             varUtil = new VarUtil(ir, currentClassName, methodName);
             NumberedDominators<ISSABasicBlock> uninverteddom =
@@ -284,6 +291,7 @@ public class VeritestingMain {
         veritestingRegion.setOutputVars(hashSet);
         veritestingRegion.setClassName(currentClassName);
         veritestingRegion.setMethodName(methodName);
+        veritestingRegion.setMethodSignature(methodSig);
         HashMap<Expression, Expression> hashMap = new HashMap<>();
         for(Map.Entry<Expression, Expression> entry: varUtil.holeHashMap.entrySet()) {
             hashMap.put(entry.getKey(), entry.getValue());
@@ -341,6 +349,8 @@ public class VeritestingMain {
                 // Create thenExpr
                 while (thenUnit != commonSucc) {
                     if(cfg.getNormalSuccessors(thenUnit).size() > 1) {
+                        //TODO instead of giving up, try to compute a summary of everything from thenUnit up to commonSucc
+                        //to allow complex regions
                         doAnalysis(thenUnit, null);
                         canVeritest = false;
                         break;
@@ -371,8 +381,6 @@ public class VeritestingMain {
                         }
                     }
                     if (!canVeritest) break;
-                    //TODO instead of giving up, try to compute a summary of everything from thenUnit up to commonSucc
-                    //to allow complex regions
                     thenPred = thenUnit;
                     thenUnit = cfg.getNormalSuccessors(thenUnit).iterator().next();
                     if (thenUnit == endingUnit) break;
@@ -395,6 +403,8 @@ public class VeritestingMain {
                 // Create elseExpr
                 while (canVeritest && elseUnit != commonSucc) {
                     if(cfg.getNormalSuccessors(elseUnit).size() > 1) {
+                        //TODO instead of giving up, try to compute a summary of everything from elseUnit up to commonSucc
+                        //to allow complex regions
                         doAnalysis(elseUnit, null);
                         canVeritest = false;
                         break;
@@ -426,8 +436,6 @@ public class VeritestingMain {
                         }
                     }
                     if (!canVeritest) break;
-                    //TODO instead of giving up, try to compute a summary of everything from elseUnit up to commonSucc
-                    //to allow complex regions
                     elsePred = elseUnit;
                     elseUnit = cfg.getNormalSuccessors(elseUnit).iterator().next();
                     if (elseUnit == endingUnit) break;
@@ -461,7 +469,8 @@ public class VeritestingMain {
                     if (veritestingRegion != null) {
                         /*TODO At this point we can modify the current region based on the region created for
                         the then or else side, if one of them encountered more than one successor */
-                        String key = veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() + "#" +
+                        String key = veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() +
+                                veritestingRegion.getMethodSignature() + "#" +
                                 veritestingRegion.getStartInsnPosition();
                         FNV1 fnv = new FNV1a64();
                         fnv.init(key);
@@ -513,7 +522,8 @@ public class VeritestingMain {
             currUnit = succs.get(0);
         }
         VeritestingRegion veritestingRegion = constructMethodRegion(summaryExp);
-        String key = veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() + "#" +
+        String key = veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() +
+                veritestingRegion.getMethodSignature() + "#" +
                 veritestingRegion.getStartInsnPosition();
         FNV1 fnv = new FNV1a64();
         fnv.init(key);
@@ -532,6 +542,7 @@ public class VeritestingMain {
         veritestingRegion.setRetValVars(varUtil.retVal);
         veritestingRegion.setClassName(currentClassName);
         veritestingRegion.setMethodName(methodName);
+        veritestingRegion.setMethodSignature(methodSig);
         veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
         return veritestingRegion;
     }

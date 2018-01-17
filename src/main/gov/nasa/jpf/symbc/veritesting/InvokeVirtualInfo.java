@@ -41,4 +41,9 @@ public class InvokeVirtualInfo {
         this.defVal = defVal;
     }
     public int defVal = -1;
+
+    public void setMethodSignature(String methodSignature) {
+        this.methodSignature = methodSignature;
+    }
+    public String methodSignature;
 }

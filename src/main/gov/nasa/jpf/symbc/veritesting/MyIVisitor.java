@@ -305,6 +305,8 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         assert(instruction.getNumberOfUses() == instruction.getNumberOfParameters());
         Atom declaringClass = methodReference.getDeclaringClass().getName().getClassName();
         Atom methodName = methodReference.getName();
+        String methodSig = methodReference.getSignature();
+        methodSig = methodSig.substring(methodSig.indexOf('('));
         int defVal = -1;
         if(instruction.getNumberOfReturnValues() == 1) defVal = instruction.getDef(); // represents the return value
         ArrayList<Expression> paramList = new ArrayList<>();
@@ -315,6 +317,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         virtualInfo.setDefVal(defVal);
         virtualInfo.setClassName(declaringClass.toString());
         virtualInfo.setMethodName(methodName.toString());
+        virtualInfo.setMethodSignature(methodSig);
         virtualInfo.setParamList(paramList);
         varUtil.addInvokeVirtualHole(virtualInfo);
         invokeVirtualClassName = declaringClass.toString();

@@ -46,6 +46,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static long parseTime = 0;
     public static long solverAllocTime = 0;
     public static long cleanupTime = 0;
+    public static int solverCount = 0;
     public HashSet<VeritestingRegion> usedRegions, ranIntoRegions;
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -125,6 +126,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             ranIntoRegions = new HashSet<>();
         }
         String key = ti.getTopFrame().getClassInfo().getName() + "." + ti.getTopFrame().getMethodInfo().getName() +
+                ti.getTopFrame().getMethodInfo().getSignature() +
                 "#" + instructionToExecute.getPosition();
         FNV1 fnv = new FNV1a64();
         fnv.init(key);
@@ -142,14 +144,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             int numOperands = instructionInfo.getNumOperands();
             PathCondition pc;
             pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-            PathCondition eqPC = pc.make_copy();
-            eqPC._addDet(new GreenConstraint(instructionInfo.getCondition()));
-            boolean eqSat = eqPC.simplify();
-            if(!eqSat) return;
-            PathCondition nePC = pc.make_copy();
-            nePC._addDet(new GreenConstraint(instructionInfo.getNegCondition()));
-            boolean neSat = nePC.simplify();
-            if (!neSat) return;
+//            PathCondition eqPC = pc.make_copy();
+//            eqPC._addDet(new GreenConstraint(instructionInfo.getCondition()));
+//            boolean eqSat = eqPC.simplify();
+//            if(!eqSat) return;
+//            PathCondition nePC = pc.make_copy();
+//            nePC._addDet(new GreenConstraint(instructionInfo.getNegCondition()));
+//            boolean neSat = nePC.simplify();
+//            if (!neSat) return;
 //            if (!eqSat && !neSat) {
 //                System.out.println("both sides of branch at offset " + ti.getTopFrame().getPC().getPosition() + " are unsat");
 //                assert (false);
@@ -164,10 +166,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             finalSummaryExpression = fillASTHoles(finalSummaryExpression, fillHolesOutput.holeHashMap); //not constant-folding for now
             //pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(summaryExpression)));
             pc._addDet(new GreenConstraint(finalSummaryExpression));
-            if(!pc.simplify()) {
-                System.out.println("veritesting region added unsat summary");
-                assert(false);
-            }
+//            if(!pc.simplify()) {
+//                System.out.println("veritesting region added unsat summary");
+//                assert(false);
+//            }
             if (!populateOutputs(region.getOutputVars(), fillHolesOutput.holeHashMap, sf, ti)) {
                 return;
             }
@@ -203,6 +205,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("parsingTime = " + VeritestingListener.parseTime/1000000);
         pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime/1000000);
         pw.println("cleanupTime = " + VeritestingListener.cleanupTime/1000000);
+        pw.println("solverCount = " + VeritestingListener.solverCount);
     }
 
     private boolean isGoodRegion(VeritestingRegion region) {
@@ -376,7 +379,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     //Change the class name based on the call site object reference
                     callSiteInfo.className = ci.getName();
                     //If there exists a invokeVirtual for a method that we weren't able to summarize, skip veritesting
-                    String key1 = callSiteInfo.className+"."+callSiteInfo.methodName+"#0";
+                    String key1 = callSiteInfo.className+"."+callSiteInfo.methodName+callSiteInfo.methodSignature+"#0";
                     FNV1 fnv = new FNV1a64();
                     fnv.init(key1);
                     long hash = fnv.getHash();

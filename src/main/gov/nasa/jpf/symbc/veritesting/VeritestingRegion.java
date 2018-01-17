@@ -83,5 +83,13 @@ public class VeritestingRegion {
     public String toString() {
         return "(" + className + ", " + methodName + ", " + startInsnPosition + ", " + endInsnPosition + ")";
     }
+
+    public void setMethodSignature(String methodSignature) {
+        this.methodSignature = methodSignature;
+    }
+    public String getMethodSignature() {
+        return methodSignature;
+    }
+    String methodSignature;
 }
 
