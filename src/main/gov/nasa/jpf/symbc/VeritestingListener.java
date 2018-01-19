@@ -49,14 +49,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static long solverAllocTime = 0;
     public static long cleanupTime = 0;
     public static int solverCount = 0;
-    private static int usedRegionCount = 0;
     private long staticAnalysisTime = 0;
-    public HashSet<VeritestingRegion> usedRegions, ranIntoRegions;
+    public HashMap<VeritestingRegion, Integer> usedRegions, ranIntoRegions;
 
     public VeritestingListener(Config conf, JPF jpf) {
         jpf.addPublisherExtension(ConsolePublisher.class, this);
-        usedRegions = new HashSet<>();
-        ranIntoRegions = new HashSet<>();
+        usedRegions = new HashMap<>();
+        ranIntoRegions = new HashMap<>();
     }
 
     // helper function to print local vars
@@ -140,7 +139,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
             VeritestingRegion region = veritestingRegions.get(key);
             //if(!isGoodRegion(region)) return;
-            if(!boostPerf) ranIntoRegions.add(region);
+            if(ranIntoRegions.containsKey(region)) {
+                ranIntoRegions.put(region, ranIntoRegions.get(region)+1);
+            } else ranIntoRegions.put(region, 1);
             StackFrame sf = ti.getTopFrame();
             //System.out.println("Starting region (" + region.toString()+") at instruction " + instructionToExecute
             //+ " (pos = " + instructionToExecute.getPosition() + ")");
@@ -199,10 +200,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             ti.setNextPC(insn);
             pathLabelCount += 1;
-            if(!boostPerf) {
-                usedRegions.add(region);
-                VeritestingListener.usedRegionCount++;
-            }
+            if(usedRegions.containsKey(region)) {
+                usedRegions.put(region, usedRegions.get(region)+1);
+            } else usedRegions.put(region, 1);
        }
     }
 
@@ -222,7 +222,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public void publishFinished (Publisher publisher) {
         PrintWriter pw = publisher.getOut();
-        publisher.publishTopicStart("VeritestingListener time report (boostPerf = " + boostPerf + ", veritesting = " + veritestingOn + ")");
+        publisher.publishTopicStart("VeritestingListener report (boostPerf = " + boostPerf + ", veritesting = " + veritestingOn + ")");
         pw.println("static analysis time = " + staticAnalysisTime/1000000);
         pw.println("totalSolverTime = " + VeritestingListener.totalSolverTime/1000000);
         pw.println("z3Time = " + VeritestingListener.z3Time/1000000);
@@ -230,9 +230,19 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime/1000000);
         pw.println("cleanupTime = " + VeritestingListener.cleanupTime/1000000);
         pw.println("solverCount = " + VeritestingListener.solverCount);
-        pw.println("usedRegionCount = " + usedRegionCount);
+        pw.println("# regions = " + VeritestingListener.veritestingRegions.size());
         pw.println("Number of regions used = " + usedRegions.size());
+        for(HashMap.Entry<VeritestingRegion, Integer> entry : usedRegions.entrySet()) {
+            VeritestingRegion region = entry.getKey();
+            int count = entry.getValue();
+            pw.println("region " + region + " used " + count + " times");
+        }
         pw.println("Number of region-use attempts = " + ranIntoRegions.size());
+        for(HashMap.Entry<VeritestingRegion, Integer> entry : ranIntoRegions.entrySet()) {
+            VeritestingRegion region = entry.getKey();
+            int count = entry.getValue();
+            pw.println("region " + region + " run into " + count + " times");
+        }
     }
 
     private boolean isGoodRegion(VeritestingRegion region) {
