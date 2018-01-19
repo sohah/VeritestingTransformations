@@ -91,5 +91,16 @@ public class VeritestingRegion {
         return methodSignature;
     }
     String methodSignature;
+
+    public void setNumBranchesSummarized(int numBranchesSummarized) {
+        this.numBranchesSummarized = numBranchesSummarized;
+    }
+    public int numBranchesSummarized = 0;
+
+    public int ranIntoCount = 0, usedCount = 0;
+
+    public int getNumBranchesSummarized() {
+        return numBranchesSummarized;
+    }
 }
 

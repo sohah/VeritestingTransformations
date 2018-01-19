@@ -50,12 +50,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static long cleanupTime = 0;
     public static int solverCount = 0;
     private long staticAnalysisTime = 0;
-    public HashMap<VeritestingRegion, Integer> usedRegions, ranIntoRegions;
 
     public VeritestingListener(Config conf, JPF jpf) {
         jpf.addPublisherExtension(ConsolePublisher.class, this);
-        usedRegions = new HashMap<>();
-        ranIntoRegions = new HashMap<>();
     }
 
     // helper function to print local vars
@@ -139,9 +136,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
             VeritestingRegion region = veritestingRegions.get(key);
             //if(!isGoodRegion(region)) return;
-            if(ranIntoRegions.containsKey(region)) {
-                ranIntoRegions.put(region, ranIntoRegions.get(region)+1);
-            } else ranIntoRegions.put(region, 1);
+            region.ranIntoCount++;
             StackFrame sf = ti.getTopFrame();
             //System.out.println("Starting region (" + region.toString()+") at instruction " + instructionToExecute
             //+ " (pos = " + instructionToExecute.getPosition() + ")");
@@ -200,9 +195,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             ti.setNextPC(insn);
             pathLabelCount += 1;
-            if(usedRegions.containsKey(region)) {
-                usedRegions.put(region, usedRegions.get(region)+1);
-            } else usedRegions.put(region, 1);
+            region.usedCount++;
        }
     }
 
@@ -231,18 +224,48 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("cleanupTime = " + VeritestingListener.cleanupTime/1000000);
         pw.println("solverCount = " + VeritestingListener.solverCount);
         pw.println("# regions = " + VeritestingListener.veritestingRegions.size());
-        pw.println("Number of regions used = " + usedRegions.size());
-        for(HashMap.Entry<VeritestingRegion, Integer> entry : usedRegions.entrySet()) {
-            VeritestingRegion region = entry.getKey();
-            int count = entry.getValue();
-            pw.println("region " + region + " used " + count + " times");
+        int maxSummarizedBranches = getMaxSummarizedBranch();
+        ArrayList<Integer> ranIntoByBranch = new ArrayList<>();
+        ArrayList<Integer> usedByBranch = new ArrayList<>();
+        ranIntoByBranch.add(0);
+        usedByBranch.add(0);
+        for(int i=1; i <= maxSummarizedBranches; i++) {
+            ranIntoByBranch.add(0);
+            usedByBranch.add(0);
+            ArrayList<VeritestingRegion> regions = getRegionsForSummarizedBranchNum(i);
+            for(int j = 0; j < regions.size(); j++) {
+                VeritestingRegion region = regions.get(j);
+                ranIntoByBranch.set(i, ranIntoByBranch.get(i) + (region.ranIntoCount!=0?1:0));
+                usedByBranch.set(i, usedByBranch.get(i) + (region.usedCount!=0?1:0));
+            }
         }
-        pw.println("Number of region-use attempts = " + ranIntoRegions.size());
-        for(HashMap.Entry<VeritestingRegion, Integer> entry : ranIntoRegions.entrySet()) {
-            VeritestingRegion region = entry.getKey();
-            int count = entry.getValue();
-            pw.println("region " + region + " run into " + count + " times");
+        pw.println("# summarized branches: # regions (#run into, #used)");
+        for(int i = 1; i <= maxSummarizedBranches; i++) {
+            if(getRegionsForSummarizedBranchNum(i).size()!=0) {
+                pw.println(i + " branches: " + getRegionsForSummarizedBranchNum(i).size() + " (" +
+                        ranIntoByBranch.get(i) + ", " + usedByBranch.get(i) + ") ");
+            }
         }
+    }
+
+    private ArrayList<VeritestingRegion> getRegionsForSummarizedBranchNum(int numBranch) {
+        ArrayList<VeritestingRegion> ret = new ArrayList<>();
+        for(HashMap.Entry<String, VeritestingRegion> entry: veritestingRegions.entrySet()) {
+            VeritestingRegion region = entry.getValue();
+            if(region.getNumBranchesSummarized() == numBranch)
+                ret.add(region);
+        }
+        return ret;
+    }
+
+    private int getMaxSummarizedBranch() {
+        int maxSummarizedBranch = 0;
+        for(HashMap.Entry<String, VeritestingRegion> entry: veritestingRegions.entrySet()) {
+            VeritestingRegion region = entry.getValue();
+            if(region.getNumBranchesSummarized() > maxSummarizedBranch)
+                maxSummarizedBranch = region.getNumBranchesSummarized();
+        }
+        return maxSummarizedBranch;
     }
 
     private boolean isGoodRegion(VeritestingRegion region) {
