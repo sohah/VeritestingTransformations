@@ -42,6 +42,7 @@ import java.util.*;
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
 
     public static HashMap<String, VeritestingRegion> veritestingRegions;
+    public static final boolean veritestingOn = true;
     public static final boolean boostPerf = true;
     public static long totalSolverTime = 0, z3Time = 0;
     public static long parseTime = 0;
@@ -49,10 +50,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static long cleanupTime = 0;
     public static int solverCount = 0;
     private static int usedRegionCount = 0;
+    private long staticAnalysisTime = 0;
     public HashSet<VeritestingRegion> usedRegions, ranIntoRegions;
 
     public VeritestingListener(Config conf, JPF jpf) {
         jpf.addPublisherExtension(ConsolePublisher.class, this);
+        usedRegions = new HashSet<>();
+        ranIntoRegions = new HashSet<>();
     }
 
     // helper function to print local vars
@@ -112,6 +116,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int pathLabelCount = 1;
 
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+        if(!veritestingOn) return;
         Config conf = ti.getVM().getConfig();
         if(veritestingRegions == null) {
             String classPath = conf.getStringArray("classpath")[0] + "/";
@@ -122,10 +127,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             veritestingMain.analyzeForVeritesting(classPath, className);
             long endTime = System.nanoTime();
             long duration = (endTime - startTime) / 1000000; //milliseconds
+            staticAnalysisTime = (endTime - startTime);
             System.out.println("veritesting analysis took " + duration + " milliseconds");
             System.out.println("Number of veritesting regions = " + veritestingRegions.size());
-            usedRegions = new HashSet<>();
-            ranIntoRegions = new HashSet<>();
         }
         String key = ti.getTopFrame().getClassInfo().getName() + "." + ti.getTopFrame().getMethodInfo().getName() +
                 ti.getTopFrame().getMethodInfo().getSignature() +
@@ -218,7 +222,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public void publishFinished (Publisher publisher) {
         PrintWriter pw = publisher.getOut();
-        publisher.publishTopicStart("VeritestingListener time report (boostPerf = " + boostPerf + ")");
+        publisher.publishTopicStart("VeritestingListener time report (boostPerf = " + boostPerf + ", veritesting = " + veritestingOn + ")");
+        pw.println("static analysis time = " + staticAnalysisTime/1000000);
         pw.println("totalSolverTime = " + VeritestingListener.totalSolverTime/1000000);
         pw.println("z3Time = " + VeritestingListener.z3Time/1000000);
         pw.println("parsingTime = " + VeritestingListener.parseTime/1000000);

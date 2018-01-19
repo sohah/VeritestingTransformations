@@ -255,6 +255,8 @@ public class WBS {
 		// I prefer ite to !a || b for implications.
 
 		// This assertion should prove:
+        //boolean myassert = (PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true;
+        //assert(myassert);
 		//assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
 		// This assertion should fail:
