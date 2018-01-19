@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting;
 
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
+import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.IShiftInstruction;
 import com.ibm.wala.ssa.*;
@@ -23,11 +24,17 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
     boolean isPhiInstruction = false;
     VarUtil varUtil;
     SSAInstruction lastInstruction;
-    private Expression phiExprThen;
-    private Expression phiExprElse;
-    private Expression phiExprLHS;
+    private Expression phiExprThen = null;
+    private Expression phiExprElse = null;
+    private Expression phiExprLHS = null;
     private String invokeVirtualClassName;
     private boolean isInvokeVirtual = false;
+
+    public Expression getIfExpr() {
+        return ifExpr;
+    }
+
+    private Expression ifExpr = null;
 
     public boolean isExitNode() {
         return isExitNode;
@@ -171,38 +178,33 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
             canVeritest=false;
             return;
         }
-        /*IConditionalBranchInstruction.IOperator op = instruction.getOperator();
-        String opString = new String();
-        String opNotString = new String();
-        if (op.equals(IConditionalBranchInstruction.Operator.NE)) {
-            opString = "NE";
-            opNotString = "EQ";
-        } else if (op.equals(IConditionalBranchInstruction.Operator.EQ)) {
-            opString = "EQ";
-            opNotString = "NE";
-        } else if (op.equals(IConditionalBranchInstruction.Operator.LE)) {
-            opString = "LE";
-            opNotString = "GT";
-        } else if (op.equals(IConditionalBranchInstruction.Operator.LT)) {
-            opString = "LT";
-            opNotString = "GE";
-        } else if (op.equals(IConditionalBranchInstruction.Operator.GE)) {
-            opString = "GE";
-            opNotString = "LT";
-        } else if (op.equals(IConditionalBranchInstruction.Operator.GT)) {
-            opString = "GT";
-            opNotString = "LE";
+        assert(instruction.getNumberOfUses() == 2);
+        assert(instruction.getNumberOfDefs() == 0);
+        IConditionalBranchInstruction.IOperator opWALA = instruction.getOperator();
+        Operation.Operator opGreen = null, negOpGreen = null;
+        if (opWALA.equals(IConditionalBranchInstruction.Operator.NE)) {
+            opGreen = Operator.NE; negOpGreen = Operator.EQ;
+        } else if (opWALA.equals(IConditionalBranchInstruction.Operator.EQ)) {
+            opGreen = Operator.EQ; negOpGreen = Operator.NE;
+        } else if (opWALA.equals(IConditionalBranchInstruction.Operator.LE)) {
+            opGreen = Operator.LE; negOpGreen = Operator.GT;
+        } else if (opWALA.equals(IConditionalBranchInstruction.Operator.LT)) {
+            opGreen = Operator.LT; negOpGreen = Operator.GE;
+        } else if (opWALA.equals(IConditionalBranchInstruction.Operator.GE)) {
+            opGreen = Operator.GE; negOpGreen = Operator.LT;
+        } else if (opWALA.equals(IConditionalBranchInstruction.Operator.GT)) {
+            opGreen = Operator.GT; negOpGreen = Operator.LE;
         }
-        ifExprStr_SPF = "new ComplexNonLinearIntegerExpression(" +
-                varUtil.getValueString(instruction.getUse(0)) + ", " + opString + ", " +
-                varUtil.getValueString(instruction.getUse(1)) + ")";
-        ifNotExprStr_SPF = "new ComplexNonLinearIntegerExpression(" +
-                varUtil.getValueString(instruction.getUse(0)) + ", " + opNotString + ", " +
-                varUtil.getValueString(instruction.getUse(1)) + ")";
-        // get their definitions if they are intermediates and construct them
-        // using symbolic formulas
-        varUtil.addConditionalVal(instruction.getUse(0));
-        varUtil.addConditionalVal(instruction.getUse(1));*/
+        if(opGreen == null && negOpGreen == null) {
+            System.out.println("Don't know how to convert WALA operator (" + opWALA + ") to Green operator");
+            canVeritest = false;
+            return;
+        }
+        Expression operand1 = varUtil.addVal(instruction.getUse(0));
+        Expression operand2 = varUtil.addVal(instruction.getUse(1));
+        ifExpr = new Operation(opGreen, operand1, operand2);
+        //Expression ifNotExpr = new Operation(negOpGreen, operand1, operand2);
+        //SPFExpr = new Operation(Operator.OR, ifExpr, ifNotExpr);
         canVeritest=true;
     }
 
@@ -381,13 +383,13 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         assert(instruction.getNumberOfUses()>=2);
         assert(instruction.getNumberOfDefs()==1);
 
-        assert(thenUseNum != -1);
-        assert(elseUseNum != -1);
-        phiExprThen = varUtil.addVal(instruction.getUse(thenUseNum));
-        phiExprElse = varUtil.addVal(instruction.getUse(elseUseNum));
-        phiExprLHS = varUtil.addDefVal(instruction.getDef(0));
-        assert(!(phiExprLHS instanceof HoleExpression && !((HoleExpression)phiExprLHS).isHole()));
-        assert(varUtil.ir.getSymbolTable().isConstant(instruction.getDef(0)) == false);
+        if (thenUseNum != -1) phiExprThen = varUtil.addVal(instruction.getUse(thenUseNum));
+        if (elseUseNum != -1) phiExprElse = varUtil.addVal(instruction.getUse(elseUseNum));
+        if (thenUseNum != -1 || elseUseNum != -1) {
+            phiExprLHS = varUtil.addDefVal(instruction.getDef(0));
+            assert (!(phiExprLHS instanceof HoleExpression && !((HoleExpression) phiExprLHS).isHole()));
+            assert (varUtil.ir.getSymbolTable().isConstant(instruction.getDef(0)) == false);
+        }
         //while other instructions may also update local variables, those should always become intermediate variables
     }
 
@@ -425,22 +427,44 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
 
     public Expression getPhiExprSPF(Expression thenPLAssignSPF,
                                     Expression elsePLAssignSPF) {
-        assert(phiExprThen != null);
-        assert(phiExprElse != null);
-        assert(phiExprLHS != null);
-        // (pathLabel == 1 && lhs == phiExprThen) || (pathLabel == 2 && lhs == phiExprElse)
-        Operation thenExpr =
-                new Operation(Operator.EQ, phiExprLHS, phiExprThen);
-        Operation elseExpr =
-                new Operation(Operator.EQ, phiExprLHS, phiExprElse);
-        return new Operation(Operator.OR,
-                new Operation(Operator.AND, thenPLAssignSPF, thenExpr),
-                new Operation(Operator.AND, elsePLAssignSPF, elseExpr)
-        );
+        if (phiExprThen == null && phiExprElse == null) {
+            assert(phiExprLHS == null);
+            return new Operation(Operator.OR, thenPLAssignSPF, elsePLAssignSPF);
+        }
+        if (phiExprThen != null && phiExprElse == null) {
+            assert(phiExprLHS != null);
+            Operation thenExpr =
+                    new Operation(Operator.EQ, phiExprLHS, phiExprThen);
+            return new Operation(Operator.OR,
+                    new Operation(Operator.AND, thenPLAssignSPF, thenExpr),
+                    elsePLAssignSPF);
+        }
+        if (phiExprThen == null && phiExprElse != null) {
+            assert(phiExprLHS != null);
+            Operation elseExpr =
+                    new Operation(Operator.EQ, phiExprLHS, phiExprElse);
+            return new Operation(Operator.OR,
+                    thenPLAssignSPF,
+                    new Operation(Operator.AND, elsePLAssignSPF, elseExpr));
+        }
+        if(phiExprThen != null && phiExprElse != null) {
+            assert(phiExprLHS != null);
+            // (pathLabel == 1 && lhs == phiExprThen) || (pathLabel == 2 && lhs == phiExprElse)
+            Operation thenExpr =
+                    new Operation(Operator.EQ, phiExprLHS, phiExprThen);
+            Operation elseExpr =
+                    new Operation(Operator.EQ, phiExprLHS, phiExprElse);
+            return new Operation(Operator.OR,
+                    new Operation(Operator.AND, thenPLAssignSPF, thenExpr),
+                    new Operation(Operator.AND, elsePLAssignSPF, elseExpr)
+            );
+        }
+        assert(false);
+        return null;
     }
 
     public boolean hasPhiExpr() {
-        return phiExprThen != null && phiExprElse != null && phiExprLHS != null;
+        return phiExprLHS != null;
     }
 
     public String getInvokeVirtualClassName() {

@@ -43,21 +43,21 @@ public class WBS {
 	
 	public void update(int PedalPos, boolean AutoBrake, 
 			boolean Skid) {
-		int WBS_Node_WBS_AS_MeterValve_Switch; 
-		int WBS_Node_WBS_AccumulatorValve_Switch; 
-		int WBS_Node_WBS_BSCU_Command_AntiSkidCommand_Normal_Switch; 
-		boolean WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator; 
-		int WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1; 
-		int WBS_Node_WBS_BSCU_Command_Switch; 
-		boolean WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6; 
-		int WBS_Node_WBS_BSCU_SystemModeSelCmd_Unit_Delay; 
-		int WBS_Node_WBS_BSCU_Switch2; 
-		int WBS_Node_WBS_BSCU_Switch3; 
-		int WBS_Node_WBS_BSCU_Unit_Delay1; 
-		int WBS_Node_WBS_Green_Pump_IsolationValve_Switch; 
-		int WBS_Node_WBS_SelectorValve_Switch; 
-		int WBS_Node_WBS_SelectorValve_Switch1; 
-		int WBS_Node_WBS_Unit_Delay2; 
+		int WBS_Node_WBS_AS_MeterValve_Switch; //4
+		int WBS_Node_WBS_AccumulatorValve_Switch; //5
+		int WBS_Node_WBS_BSCU_Command_AntiSkidCommand_Normal_Switch; //6
+		boolean WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator; //7
+		int WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1; //8
+		int WBS_Node_WBS_BSCU_Command_Switch; //9
+		boolean WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6; //10
+		int WBS_Node_WBS_BSCU_SystemModeSelCmd_Unit_Delay; //11
+		int WBS_Node_WBS_BSCU_Switch2; //12
+		int WBS_Node_WBS_BSCU_Switch3; //13
+		int WBS_Node_WBS_BSCU_Unit_Delay1; //14
+		int WBS_Node_WBS_Green_Pump_IsolationValve_Switch; //15
+		int WBS_Node_WBS_SelectorValve_Switch; //16
+		int WBS_Node_WBS_SelectorValve_Switch1; //17
+		int WBS_Node_WBS_Unit_Delay2; //18
 		
 	   WBS_Node_WBS_Unit_Delay2 = WBS_Node_WBS_rlt_PRE2; 
 	   WBS_Node_WBS_BSCU_Unit_Delay1 = WBS_Node_WBS_BSCU_rlt_PRE1; 
@@ -247,7 +247,28 @@ public class WBS {
 
 	   WBS_Node_WBS_BSCU_rlt_PRE1 = WBS_Node_WBS_BSCU_Switch2; 
 
-	   WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE = Sys_Mode; 
+	   WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE = Sys_Mode;
+
+		// Assertions added by MWW: these are the truth values for "my" version of the model - may not be true for this code, but should be
+		// consistent between SPF and Veritest-SPF.
+
+		// I prefer ite to !a || b for implications.
+
+		// This assertion should prove:
+		//assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+		// This assertion should fail:
+		// assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0) : true);
+
+		// This assertion may fail (depending on encoding):
+		// assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
+
+		// This assertion should fail:
+		// assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+		// This assertion should also fail:
+		// assert((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
 
 	}
 	

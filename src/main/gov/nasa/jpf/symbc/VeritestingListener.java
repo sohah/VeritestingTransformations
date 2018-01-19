@@ -42,11 +42,13 @@ import java.util.*;
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
 
     public static HashMap<String, VeritestingRegion> veritestingRegions;
+    public static final boolean boostPerf = true;
     public static long totalSolverTime = 0, z3Time = 0;
     public static long parseTime = 0;
     public static long solverAllocTime = 0;
     public static long cleanupTime = 0;
     public static int solverCount = 0;
+    private static int usedRegionCount = 0;
     public HashSet<VeritestingRegion> usedRegions, ranIntoRegions;
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -134,8 +136,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if(veritestingRegions != null && veritestingRegions.containsKey(key)) {
             VeritestingRegion region = veritestingRegions.get(key);
             //if(!isGoodRegion(region)) return;
-            //ranIntoRegions.add(region);
-            //System.out.println("ranIntoRegions.size() = " + ranIntoRegions.size());
+            if(!boostPerf) ranIntoRegions.add(region);
             StackFrame sf = ti.getTopFrame();
             //System.out.println("Starting region (" + region.toString()+") at instruction " + instructionToExecute
             //+ " (pos = " + instructionToExecute.getPosition() + ")");
@@ -144,18 +145,20 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             int numOperands = instructionInfo.getNumOperands();
             PathCondition pc;
             pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-//            PathCondition eqPC = pc.make_copy();
-//            eqPC._addDet(new GreenConstraint(instructionInfo.getCondition()));
-//            boolean eqSat = eqPC.simplify();
-//            if(!eqSat) return;
-//            PathCondition nePC = pc.make_copy();
-//            nePC._addDet(new GreenConstraint(instructionInfo.getNegCondition()));
-//            boolean neSat = nePC.simplify();
-//            if (!neSat) return;
-//            if (!eqSat && !neSat) {
-//                System.out.println("both sides of branch at offset " + ti.getTopFrame().getPC().getPosition() + " are unsat");
-//                assert (false);
-//            }
+            if(!boostPerf) {
+                PathCondition eqPC = pc.make_copy();
+                eqPC._addDet(new GreenConstraint(instructionInfo.getCondition()));
+                boolean eqSat = eqPC.simplify();
+                if (!eqSat) return;
+                PathCondition nePC = pc.make_copy();
+                nePC._addDet(new GreenConstraint(instructionInfo.getNegCondition()));
+                boolean neSat = nePC.simplify();
+                if (!neSat) return;
+                if (!eqSat && !neSat) {
+                    System.out.println("both sides of branch at offset " + ti.getTopFrame().getPC().getPosition() + " are unsat");
+                    assert (false);
+                }
+            }
             FillHolesOutput fillHolesOutput =
                     fillHoles(region.getHoleHashMap(), instructionInfo, sf, ti);
             if(fillHolesOutput == null || fillHolesOutput.holeHashMap == null) return;
@@ -164,12 +167,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if(fillHolesOutput.additionalAST != null)
                 finalSummaryExpression = new Operation(Operation.Operator.AND, summaryExpression, fillHolesOutput.additionalAST);
             finalSummaryExpression = fillASTHoles(finalSummaryExpression, fillHolesOutput.holeHashMap); //not constant-folding for now
-            //pc._addDet(new ComplexNonLinearIntegerConstraint((ComplexNonLinearIntegerExpression)constantFold(summaryExpression)));
+
             pc._addDet(new GreenConstraint(finalSummaryExpression));
-//            if(!pc.simplify()) {
-//                System.out.println("veritesting region added unsat summary");
-//                assert(false);
-//            }
+            if(!boostPerf) {
+                String finalSummaryExpressionString = ASTToString(finalSummaryExpression);
+                if (!pc.simplify()) {
+                    System.out.println("veritesting region added unsat summary");
+                    assert (false);
+                }
+            }
             if (!populateOutputs(region.getOutputVars(), fillHolesOutput.holeHashMap, sf, ti)) {
                 return;
             }
@@ -189,23 +195,39 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             ti.setNextPC(insn);
             pathLabelCount += 1;
-            //System.out.println("pathLabelCount = " + pathLabelCount);
-            //System.out.println("Used region (" + region.getMethodName()+")");
-//            usedRegions.add(region);
-//            System.out.println("usedRegions.size() = " + usedRegions.size());
-//            System.out.println("usedRegions = " + usedRegions);
+            if(!boostPerf) {
+                usedRegions.add(region);
+                VeritestingListener.usedRegionCount++;
+            }
        }
+    }
+
+    private String ASTToString(Expression expression) {
+        if(expression instanceof Operation) {
+            Operation operation = (Operation) expression;
+            String str = new String();
+            if (operation.getOperator().getArity() == 2)
+                str = "(" + ASTToString(operation.getOperand(0)) + " " + operation.getOperator().toString() + " " +
+                        ASTToString(operation.getOperand(1)) + ")";
+            else if (operation.getOperator().getArity() == 1)
+                str = "(" + operation.getOperator().toString() + ASTToString(operation.getOperand(0)) + ")";
+            return str;
+        } else
+            return expression.toString();
     }
 
     public void publishFinished (Publisher publisher) {
         PrintWriter pw = publisher.getOut();
-        publisher.publishTopicStart("VeritestingListener time report");
+        publisher.publishTopicStart("VeritestingListener time report (boostPerf = " + boostPerf + ")");
         pw.println("totalSolverTime = " + VeritestingListener.totalSolverTime/1000000);
         pw.println("z3Time = " + VeritestingListener.z3Time/1000000);
         pw.println("parsingTime = " + VeritestingListener.parseTime/1000000);
         pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime/1000000);
         pw.println("cleanupTime = " + VeritestingListener.cleanupTime/1000000);
         pw.println("solverCount = " + VeritestingListener.solverCount);
+        pw.println("usedRegionCount = " + usedRegionCount);
+        pw.println("Number of regions used = " + usedRegions.size());
+        pw.println("Number of region-use attempts = " + ranIntoRegions.size());
     }
 
     private boolean isGoodRegion(VeritestingRegion region) {

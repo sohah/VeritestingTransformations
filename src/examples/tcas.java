@@ -225,7 +225,8 @@ public class tcas {
 	    		}
 	    	}
 	    }
-	    if(enabled){
+
+		if(enabled){
 		    if(Other_Capability == TCAS_TA){
 		    	tcas_equipped = true;
 		    }
@@ -247,7 +248,8 @@ public class tcas {
 	    return alt_sep;
 	}
 
-	public static void mainProcess(int a1, int a2, int a3, int a4, int a5,int a6, int a7, int a8, int a9, int a10, int a11, int a12) {
+	public static void mainProcess(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12) {//,
+								   //int a21, int a22, int a23, int a24, int a25, int a26, int a27, int a28, int a29, int a30, int a31, int a32) {
 		initialize();
 		Cur_Vertical_Sep = a1;
 		if (a2 == 0) {
@@ -274,9 +276,36 @@ public class tcas {
 		Climb_Inhibit = a12;
 
 		alt_sep_test();
+
+		/*Cur_Vertical_Sep = a21;
+		if (a22 == 0) {
+			High_Confidence = false;
+		}
+		else {
+			High_Confidence = true;
+		}
+		if (a23 == 0) {
+			Two_of_Three_Reports_Valid = false;
+		}
+		else {
+			Two_of_Three_Reports_Valid = true;
+		}
+
+		Own_Tracked_Alt = a24;
+		Own_Tracked_Alt_Rate = a25;
+		Other_Tracked_Alt = a26;
+		Alt_Layer_Value = a27;
+		Up_Separation = a28;
+		Down_Separation = a29;
+		Other_RAC = a30;
+		Other_Capability = a31;
+		Climb_Inhibit = a32;
+
+		alt_sep_test();*/
 	}
 
 	public static void main(String[] argv) {
-		mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1); //,
+				//601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
 	}
 }

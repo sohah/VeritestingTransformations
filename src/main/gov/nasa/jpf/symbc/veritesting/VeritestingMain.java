@@ -34,8 +34,10 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.WalaException;
 import com.ibm.wala.util.config.AnalysisScopeReader;
 import com.ibm.wala.util.debug.Assertions;
+import com.ibm.wala.util.graph.NumberedGraph;
 import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.dominators.NumberedDominators;
+import com.ibm.wala.util.graph.impl.GraphInverter;
 import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.StringStuff;
 import gov.nasa.jpf.symbc.VeritestingListener;
@@ -302,7 +304,6 @@ public class VeritestingMain {
         return veritestingRegion;
     }
 
-    //TODO I (Vaibhav) think endingUnit can be dropped
     public void doAnalysis(ISSABasicBlock startingUnit, ISSABasicBlock endingUnit) throws InvalidClassFileException {
         //System.out.println("Starting doAnalysis");
         ISSABasicBlock currUnit = startingUnit;
@@ -322,6 +323,7 @@ public class VeritestingMain {
                 break;
             } else if (succs.size() == 2 && !startingPointsHistory.contains(currUnit)) {
                 startingPointsHistory.add(currUnit);
+                //TODO fix this varUtil reset because it screws up varUtil.holeHashMap
                 varUtil.reset();
 
                 ISSABasicBlock thenUnit = Util.getTakenSuccessor(cfg, currUnit);
@@ -333,53 +335,81 @@ public class VeritestingMain {
                 }
 
                 Expression thenExpr = null, elseExpr = null;
+                String pathLabelString = "pathLabel" + varUtil.getPathCounter();
                 final int thenPathLabel = varUtil.getPathCounter();
                 final int elsePathLabel = varUtil.getPathCounter();
                 ISSABasicBlock thenPred = thenUnit, elsePred = elseUnit;
                 int thenUseNum = -1, elseUseNum = -1;
-                String pathLabel = "pathLabel" + pathLabelVarNum;
+                Expression pathLabel = varUtil.makeIntermediateVar(pathLabelString);
                 final Expression thenPLAssignSPF =
-                        new Operation(Operation.Operator.EQ, varUtil.makeIntermediateVar(pathLabel),
+                        new Operation(Operation.Operator.EQ, pathLabel,
                                 new IntConstant(thenPathLabel));
                 final Expression elsePLAssignSPF =
-                        new Operation(Operation.Operator.EQ, varUtil.makeIntermediateVar(pathLabel),
+                        new Operation(Operation.Operator.EQ, pathLabel,
                                 new IntConstant(elsePathLabel));
                 boolean canVeritest = true;
 
                 // Create thenExpr
                 while (thenUnit != commonSucc) {
-                    if(cfg.getNormalSuccessors(thenUnit).size() > 1) {
+                    boolean isPhithenUnit = false;
+                    while(cfg.getNormalSuccessors(thenUnit).size() > 1 && thenUnit != commonSucc && canVeritest) {
                         //TODO instead of giving up, try to compute a summary of everything from thenUnit up to commonSucc
                         //to allow complex regions
-                        doAnalysis(thenUnit, null);
-                        canVeritest = false;
-                        break;
+                        HashMap<Expression, Expression> savedHoleHashMap = saveHoleHashMap();
+                        HashMap<String, Expression> savedVarCache = saveVarCache();
+                        doAnalysis(thenUnit, commonSucc);
+                        for(Map.Entry<Expression, Expression> entry: savedHoleHashMap.entrySet()) {
+                            varUtil.holeHashMap.put(entry.getKey(), entry.getValue());
+                        }
+                        for(Map.Entry<String, Expression> entry: savedVarCache.entrySet()) {
+                            varUtil.varCache.put(entry.getKey(), entry.getValue());
+                        }
+                        int offset = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(thenUnit.getLastInstructionIndex());
+                        String key = currentClassName + "." + methodName + methodSig + "#" + offset;
+                        if(VeritestingListener.veritestingRegions.containsKey(key)) {
+                            System.out.println("Veritested inner region with key = " + key);
+                            BlockSummary blockSummary = new BlockSummary(thenUnit, thenExpr, canVeritest, isPhithenUnit).invoke();
+                            canVeritest = blockSummary.isCanVeritest();
+                            thenExpr = blockSummary.getExpression();
+                            Expression conditionExpression = blockSummary.getIfExpression();
+                            if(!canVeritest) break;
+                            ISSABasicBlock commonSuccthenUnit = cfg.getIPdom(thenUnit.getNumber());
+
+                            NumberedGraph<ISSABasicBlock> invertedCFG = GraphInverter.invert(cfg);
+                            NumberedDominators<ISSABasicBlock> postDom = (NumberedDominators<ISSABasicBlock>)
+                                    Dominators.make(invertedCFG, cfg.exit());
+                            boolean bPostDom = (postDom.isDominatedBy(commonSuccthenUnit, commonSucc));
+                            assert(bPostDom);
+
+
+                            VeritestingRegion innerRegion = VeritestingListener.veritestingRegions.get(key);
+                            for(Expression e: innerRegion.getOutputVars()) {
+                                varUtil.defLocalVars.add(e);
+                            }
+                            for(Map.Entry<Expression, Expression> entry: innerRegion.getHoleHashMap().entrySet()) {
+                                varUtil.holeHashMap.put(entry.getKey(), entry.getValue());
+                                if(((HoleExpression)entry.getKey()).getHoleType() == HoleExpression.HoleType.CONDITION ||
+                                        ((HoleExpression)entry.getKey()).getHoleType() == HoleExpression.HoleType.NEGCONDITION)
+                                    varUtil.holeHashMap.remove(entry.getKey());
+                            }
+                            Expression thenExpr1 = innerRegion.getSummaryExpression();
+                            thenExpr1 = replaceCondition(thenExpr1, conditionExpression);
+                            if (thenExpr1 != null) {
+                                if (thenExpr != null)
+                                    thenExpr =
+                                            new Operation(Operation.Operator.AND,
+                                                    thenExpr, thenExpr1);
+                                else thenExpr = thenExpr1;
+                            }
+                            thenPred = null;
+                            thenUnit = commonSuccthenUnit;
+                            isPhithenUnit = true;
+                        } else canVeritest = false;
                     }
-                    Iterator<SSAInstruction> ssaInstructionIterator = thenUnit.iterator();
-                    while (ssaInstructionIterator.hasNext()) {
-                        myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
-                        ssaInstructionIterator.next().visit(myIVisitor);
-                        if (!myIVisitor.canVeritest()) {
-                            canVeritest = false;
-                            System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
-                            break;
-                        }
-                        if (myIVisitor.isExitNode()) {
-                            doAnalysis(commonSucc, endingUnit);
-                            return;
-                        }
-                        if(myIVisitor.isInvokeVirtual()) {
-                            methodSummaryClassNames.add(myIVisitor.getInvokeVirtualClassName());
-                        }
-                        Expression thenExpr1 = myIVisitor.getSPFExpr();
-                        if (thenExpr1 != null) {
-                            if (thenExpr != null)
-                                thenExpr =
-                                        new Operation(Operation.Operator.AND,
-                                                thenExpr, thenExpr1);
-                            else thenExpr = thenExpr1;
-                        }
-                    }
+                    if (!canVeritest || thenUnit == commonSucc) break;
+                    BlockSummary blockSummary = new BlockSummary(thenUnit, thenExpr, canVeritest, isPhithenUnit).invoke();
+                    canVeritest = blockSummary.isCanVeritest();
+                    thenExpr = blockSummary.getExpression();
                     if (!canVeritest) break;
                     thenPred = thenUnit;
                     thenUnit = cfg.getNormalSuccessors(thenUnit).iterator().next();
@@ -392,7 +422,7 @@ public class VeritestingMain {
                 if (!canVeritest) {
                     while(thenUnit != commonSucc) {
                         if(cfg.getNormalSuccessors(thenUnit).size() > 1) {
-                            doAnalysis(thenUnit, null);
+                            doAnalysis(thenUnit, commonSucc);
                             break;
                         }
                         if(cfg.getNormalSuccessors(thenUnit).size() == 0) break;
@@ -402,39 +432,67 @@ public class VeritestingMain {
 
                 // Create elseExpr
                 while (canVeritest && elseUnit != commonSucc) {
-                    if(cfg.getNormalSuccessors(elseUnit).size() > 1) {
+                    boolean isPhielseUnit = false;
+                    while(cfg.getNormalSuccessors(elseUnit).size() > 1 && elseUnit != commonSucc && canVeritest) {
                         //TODO instead of giving up, try to compute a summary of everything from elseUnit up to commonSucc
                         //to allow complex regions
-                        doAnalysis(elseUnit, null);
-                        canVeritest = false;
-                        break;
-                    }
-                    Iterator<SSAInstruction> ssaInstructionIterator = elseUnit.iterator();
-                    while (ssaInstructionIterator.hasNext()) {
-                        myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
-                        ssaInstructionIterator.next().visit(myIVisitor);
+                        HashMap<Expression, Expression> savedHoleHashMap = saveHoleHashMap();
+                        HashMap<String, Expression> savedVarCache = saveVarCache();
+                        doAnalysis(elseUnit, commonSucc);
+                        for(Map.Entry<Expression, Expression> entry: savedHoleHashMap.entrySet()) {
+                            varUtil.holeHashMap.put(entry.getKey(), entry.getValue());
+                        }
+                        for(Map.Entry<String, Expression> entry: savedVarCache.entrySet()) {
+                            varUtil.varCache.put(entry.getKey(), entry.getValue());
+                        }
+                        int offset = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(elseUnit.getLastInstructionIndex());
+                        String key = currentClassName + "." + methodName + methodSig + "#" + offset;
+                        if(VeritestingListener.veritestingRegions.containsKey(key)) {
+                            System.out.println("Veritested inner region with key = " + key);
+                            BlockSummary blockSummary = new BlockSummary(elseUnit, elseExpr, canVeritest, isPhielseUnit).invoke();
+                            canVeritest = blockSummary.isCanVeritest();
+                            elseExpr = blockSummary.getExpression();
+                            Expression conditionExpression = blockSummary.getIfExpression();
+                            if(!canVeritest) break;
+                            ISSABasicBlock commonSuccelseUnit = cfg.getIPdom(elseUnit.getNumber());
 
-                        if (!myIVisitor.canVeritest()) {
-                            canVeritest = false;
-                            System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
-                            break;
-                        }
-                        if (myIVisitor.isExitNode()) {
-                            doAnalysis(commonSucc, endingUnit);
-                            return;
-                        }
-                        if(myIVisitor.isInvokeVirtual()) {
-                            methodSummaryClassNames.add(myIVisitor.getInvokeVirtualClassName());
-                        }
-                        Expression elseExpr1 = myIVisitor.getSPFExpr();
-                        if (elseExpr1 != null) {
-                            if (elseExpr != null)
-                                elseExpr =
-                                        new Operation(Operation.Operator.AND,
-                                                elseExpr, elseExpr1);
-                            else elseExpr = elseExpr1;
-                        }
+                            if(!VeritestingListener.boostPerf) {
+                                NumberedGraph<ISSABasicBlock> invertedCFG = GraphInverter.invert(cfg);
+                                NumberedDominators<ISSABasicBlock> postDom = (NumberedDominators<ISSABasicBlock>)
+                                        Dominators.make(invertedCFG, cfg.exit());
+                                boolean bPostDom = (postDom.isDominatedBy(commonSuccelseUnit, commonSucc));
+                                assert (bPostDom);
+                            }
+
+
+                            VeritestingRegion innerRegion = VeritestingListener.veritestingRegions.get(key);
+                            for(Expression e: innerRegion.getOutputVars()) {
+                                varUtil.defLocalVars.add(e);
+                            }
+                            for(Map.Entry<Expression, Expression> entry: innerRegion.getHoleHashMap().entrySet()) {
+                                varUtil.holeHashMap.put(entry.getKey(), entry.getValue());
+                                if(((HoleExpression)entry.getKey()).getHoleType() == HoleExpression.HoleType.CONDITION ||
+                                        ((HoleExpression)entry.getKey()).getHoleType() == HoleExpression.HoleType.NEGCONDITION)
+                                    varUtil.holeHashMap.remove(entry.getKey());
+                            }
+                            Expression elseExpr1 = innerRegion.getSummaryExpression();
+                            elseExpr1 = replaceCondition(elseExpr1, conditionExpression);
+                            if (elseExpr1 != null) {
+                                if (elseExpr != null)
+                                    elseExpr =
+                                            new Operation(Operation.Operator.AND,
+                                                    elseExpr, elseExpr1);
+                                else elseExpr = elseExpr1;
+                            }
+                            elsePred = null;
+                            elseUnit = commonSuccelseUnit;
+                            isPhielseUnit = true;
+                        } else canVeritest = false;
                     }
+                    if (!canVeritest || elseUnit == commonSucc) break;
+                    BlockSummary blockSummary = new BlockSummary(elseUnit, elseExpr, canVeritest, isPhielseUnit).invoke();
+                    canVeritest = blockSummary.isCanVeritest();
+                    elseExpr = blockSummary.getExpression();
                     if (!canVeritest) break;
                     elsePred = elseUnit;
                     elseUnit = cfg.getNormalSuccessors(elseUnit).iterator().next();
@@ -447,7 +505,7 @@ public class VeritestingMain {
                 if (!canVeritest) {
                     while(elseUnit != commonSucc) {
                         if(cfg.getNormalSuccessors(elseUnit).size() > 1) {
-                            doAnalysis(elseUnit, null);
+                            doAnalysis(elseUnit, commonSucc);
                             break;
                         }
                         if(cfg.getNormalSuccessors(elseUnit).size() == 0) break;
@@ -457,11 +515,10 @@ public class VeritestingMain {
 
                 // Assign pathLabel a value in the elseExpr
                 if (canVeritest) {
-                    if (thenPred == null || elsePred == null) {
-                        Assertions.UNREACHABLE("thenPred or elsePred was null");
-                    }
-                    thenUseNum = Util.whichPred(cfg, thenPred, commonSucc);
-                    elseUseNum = Util.whichPred(cfg, elsePred, commonSucc);
+                    if(thenPred != null)
+                        thenUseNum = Util.whichPred(cfg, thenPred, commonSucc);
+                    if(elsePred != null)
+                        elseUseNum = Util.whichPred(cfg, elsePred, commonSucc);
                     VeritestingRegion veritestingRegion = constructVeritestingRegion(thenExpr, elseExpr,
                             thenPLAssignSPF, elsePLAssignSPF,
                             currUnit, commonSucc,
@@ -488,6 +545,61 @@ public class VeritestingMain {
         if (currUnit != null && currUnit != startingUnit && currUnit != endingUnit &&
                 cfg.getNormalSuccessors(currUnit).size() > 0) doAnalysis(currUnit, endingUnit);
     } // end doAnalysis
+
+    private HashMap<String, Expression> saveVarCache() {
+        HashMap<String, Expression> ret = new HashMap<>();
+        for (Map.Entry<String, Expression> entry : varUtil.varCache.entrySet()) {
+            ret.put(entry.getKey(), entry.getValue());
+        }
+        return ret;
+    }
+
+    private HashMap<Expression,Expression> saveHoleHashMap() {
+        HashMap<Expression, Expression> ret = new HashMap<>();
+        for (Map.Entry<Expression, Expression> entry : varUtil.holeHashMap.entrySet()) {
+            ret.put(entry.getKey(), entry.getValue());
+        }
+        return ret;
+    }
+
+    // Replace all holes of type CONDITION with conditionExpression
+    // Replace all holes of type NEGCONDITION with !(conditionExpression)
+    private Expression replaceCondition(Expression holeExpression, Expression conditionExpression) {
+        if(holeExpression instanceof HoleExpression && ((HoleExpression)holeExpression).isHole()) {
+            Expression ret = holeExpression;
+            if(((HoleExpression)holeExpression).getHoleType() == HoleExpression.HoleType.CONDITION)
+                ret = conditionExpression;
+            if(((HoleExpression)holeExpression).getHoleType() == HoleExpression.HoleType.NEGCONDITION)
+                ret = new Operation(
+                        negateOperator(((Operation)conditionExpression).getOperator()),
+                        ((Operation) conditionExpression).getOperand(0),
+                        ((Operation) conditionExpression).getOperand(1));
+            return ret;
+        }
+        if(holeExpression instanceof Operation) {
+            Operation oldOperation = (Operation) holeExpression;
+            Operation newOperation = new Operation(oldOperation.getOperator(),
+                    replaceCondition(oldOperation.getOperand(0), conditionExpression),
+                    replaceCondition(oldOperation.getOperand(1), conditionExpression));
+            return newOperation;
+        }
+        return holeExpression;
+
+    }
+
+    private Operation.Operator negateOperator(Operation.Operator operator) {
+        switch(operator) {
+            case NE: return Operation.Operator.EQ;
+            case EQ: return Operation.Operator.NE;
+            case GT: return Operation.Operator.LE;
+            case GE: return Operation.Operator.LT;
+            case LT: return Operation.Operator.GE;
+            case LE: return Operation.Operator.GT;
+            default:
+                System.out.println("Don't know how to negate Green operator (" + operator + ")");
+                return null;
+        }
+    }
 
     public void doMethodAnalysis(SSACFG cfg) throws InvalidClassFileException {
         MyIVisitor myIVisitor;
@@ -545,6 +657,70 @@ public class VeritestingMain {
         veritestingRegion.setMethodSignature(methodSig);
         veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
         return veritestingRegion;
+    }
+
+    private class BlockSummary {
+        private ISSABasicBlock unit;
+        private Expression expression;
+        private Expression lastExpression;
+
+        public Expression getIfExpression() {
+            return ifExpression;
+        }
+        private Expression ifExpression = null;
+
+        private boolean canVeritest;
+        private boolean isPhiUnit;
+
+        public BlockSummary(ISSABasicBlock thenUnit, Expression thenExpr, boolean canVeritest, boolean isPhithenUnit) {
+            this.unit = thenUnit;
+            this.expression = thenExpr;
+            this.canVeritest = canVeritest;
+            this.isPhiUnit = isPhithenUnit;
+        }
+
+        public Expression getExpression() {
+            return expression;
+        }
+
+        public boolean isCanVeritest() {
+            return canVeritest;
+        }
+
+        public Expression getLastExpression() {
+            return lastExpression;
+        }
+
+        public BlockSummary invoke() {
+            MyIVisitor myIVisitor;Iterator<SSAInstruction> ssaInstructionIterator = unit.iterator();
+            if(isPhiUnit && ssaInstructionIterator.hasNext()){
+                assert(ssaInstructionIterator.next() instanceof SSAPhiInstruction);
+            }
+            while (ssaInstructionIterator.hasNext()) {
+                myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
+                ssaInstructionIterator.next().visit(myIVisitor);
+
+                if (!myIVisitor.canVeritest() || myIVisitor.isExitNode()) {
+                    canVeritest = false;
+                    System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
+                    break;
+                }
+                if(myIVisitor.isInvokeVirtual()) {
+                    methodSummaryClassNames.add(myIVisitor.getInvokeVirtualClassName());
+                }
+                Expression expression1 = myIVisitor.getSPFExpr();
+                lastExpression = expression1;
+                ifExpression = myIVisitor.getIfExpr();
+                if (expression1 != null) {
+                    if (expression != null)
+                        expression =
+                                new Operation(Operation.Operator.AND,
+                                        expression, expression1);
+                    else expression = expression1;
+                }
+            }
+            return this;
+        }
     }
 }
 
