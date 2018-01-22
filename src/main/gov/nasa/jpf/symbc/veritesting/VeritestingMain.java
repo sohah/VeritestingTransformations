@@ -248,7 +248,7 @@ public class VeritestingMain {
             final Expression elsePLAssignSPF,
             ISSABasicBlock currUnit, ISSABasicBlock commonSucc,
             int thenUseNum, int elseUseNum,
-            int numBranchesSummarized) throws InvalidClassFileException {
+            HashSet<Integer> summarizedRegionStartBB) throws InvalidClassFileException {
         if (thenExpr != null)
             thenExpr = new Operation(Operation.Operator.AND, thenExpr, thenPLAssignSPF);
         else thenExpr = thenPLAssignSPF;
@@ -295,12 +295,14 @@ public class VeritestingMain {
         veritestingRegion.setClassName(currentClassName);
         veritestingRegion.setMethodName(methodName);
         veritestingRegion.setMethodSignature(methodSig);
+        veritestingRegion.setStartBBNum(currUnit.getNumber());
+        veritestingRegion.setEndBBNum(commonSucc.getNumber());
         HashMap<Expression, Expression> hashMap = new HashMap<>();
         for(Map.Entry<Expression, Expression> entry: varUtil.holeHashMap.entrySet()) {
             hashMap.put(entry.getKey(), entry.getValue());
         }
         veritestingRegion.setHoleHashMap(hashMap);
-        veritestingRegion.setNumBranchesSummarized(numBranchesSummarized);
+        veritestingRegion.setSummarizedRegionStartBB(summarizedRegionStartBB);
 
         pathLabelVarNum++;
         return veritestingRegion;
@@ -350,7 +352,8 @@ public class VeritestingMain {
                         new Operation(Operation.Operator.EQ, pathLabel,
                                 new IntConstant(elsePathLabel));
                 boolean canVeritest = true;
-                int numBranchesSummarized = 1;
+                HashSet<Integer> summarizedRegionStartBB = new HashSet<>();
+                summarizedRegionStartBB.add(currUnit.getNumber());
 
                 // Create thenExpr
                 while (thenUnit != commonSucc) {
@@ -407,7 +410,7 @@ public class VeritestingMain {
                             thenPred = null;
                             thenUnit = commonSuccthenUnit;
                             isPhithenUnit = true;
-                            numBranchesSummarized+=innerRegion.numBranchesSummarized;
+                            summarizedRegionStartBB.addAll(innerRegion.summarizedRegionStartBB);
                         } else canVeritest = false;
                     }
                     if (!canVeritest || thenUnit == commonSucc) break;
@@ -491,7 +494,7 @@ public class VeritestingMain {
                             elsePred = null;
                             elseUnit = commonSuccelseUnit;
                             isPhielseUnit = true;
-                            numBranchesSummarized+=innerRegion.numBranchesSummarized;
+                            summarizedRegionStartBB.addAll(innerRegion.summarizedRegionStartBB);
                         } else canVeritest = false;
                     }
                     if (!canVeritest || elseUnit == commonSucc) break;
@@ -527,7 +530,7 @@ public class VeritestingMain {
                     VeritestingRegion veritestingRegion = constructVeritestingRegion(thenExpr, elseExpr,
                             thenPLAssignSPF, elsePLAssignSPF,
                             currUnit, commonSucc,
-                            thenUseNum, elseUseNum, numBranchesSummarized);
+                            thenUseNum, elseUseNum, summarizedRegionStartBB);
                     if (veritestingRegion != null) {
                         /*TODO At this point we can modify the current region based on the region created for
                         the then or else side, if one of them encountered more than one successor */

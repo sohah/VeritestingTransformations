@@ -223,27 +223,29 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime/1000000);
         pw.println("cleanupTime = " + VeritestingListener.cleanupTime/1000000);
         pw.println("solverCount = " + VeritestingListener.solverCount);
-        pw.println("# regions = " + VeritestingListener.veritestingRegions.size());
-        int maxSummarizedBranches = getMaxSummarizedBranch();
-        ArrayList<Integer> ranIntoByBranch = new ArrayList<>();
-        ArrayList<Integer> usedByBranch = new ArrayList<>();
-        ranIntoByBranch.add(0);
-        usedByBranch.add(0);
-        for(int i=1; i <= maxSummarizedBranches; i++) {
+        if(veritestingOn) {
+            pw.println("# regions = " + VeritestingListener.veritestingRegions.size());
+            int maxSummarizedBranches = getMaxSummarizedBranch();
+            ArrayList<Integer> ranIntoByBranch = new ArrayList<>();
+            ArrayList<Integer> usedByBranch = new ArrayList<>();
             ranIntoByBranch.add(0);
             usedByBranch.add(0);
-            ArrayList<VeritestingRegion> regions = getRegionsForSummarizedBranchNum(i);
-            for(int j = 0; j < regions.size(); j++) {
-                VeritestingRegion region = regions.get(j);
-                ranIntoByBranch.set(i, ranIntoByBranch.get(i) + (region.ranIntoCount!=0?1:0));
-                usedByBranch.set(i, usedByBranch.get(i) + (region.usedCount!=0?1:0));
+            for (int i = 1; i <= maxSummarizedBranches; i++) {
+                ranIntoByBranch.add(0);
+                usedByBranch.add(0);
+                ArrayList<VeritestingRegion> regions = getRegionsForSummarizedBranchNum(i);
+                for (int j = 0; j < regions.size(); j++) {
+                    VeritestingRegion region = regions.get(j);
+                    ranIntoByBranch.set(i, ranIntoByBranch.get(i) + (region.ranIntoCount != 0 ? 1 : 0));
+                    usedByBranch.set(i, usedByBranch.get(i) + (region.usedCount != 0 ? 1 : 0));
+                }
             }
-        }
-        pw.println("# summarized branches: # regions (#run into, #used)");
-        for(int i = 1; i <= maxSummarizedBranches; i++) {
-            if(getRegionsForSummarizedBranchNum(i).size()!=0) {
-                pw.println(i + " branches: " + getRegionsForSummarizedBranchNum(i).size() + " (" +
-                        ranIntoByBranch.get(i) + ", " + usedByBranch.get(i) + ") ");
+            pw.println("# summarized branches: # regions (#run into, #used)");
+            for (int i = 1; i <= maxSummarizedBranches; i++) {
+                if (getRegionsForSummarizedBranchNum(i).size() != 0) {
+                    pw.println(i + " branches: " + getRegionsForSummarizedBranchNum(i).size() + " (" +
+                            ranIntoByBranch.get(i) + ", " + usedByBranch.get(i) + ") ");
+                }
             }
         }
     }

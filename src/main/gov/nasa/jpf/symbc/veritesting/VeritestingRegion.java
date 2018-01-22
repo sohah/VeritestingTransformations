@@ -81,7 +81,8 @@ public class VeritestingRegion {
     public Expression retVal;
 
     public String toString() {
-        return "(" + className + ", " + methodName + ", " + startInsnPosition + ", " + endInsnPosition + ")";
+        return "(" + className + ", " + methodName + ", " + startInsnPosition + ", " + endInsnPosition +
+                ", BB" + startBBNum + ", BB" + endBBNum + ", " + getNumBranchesSummarized() + ")";
     }
 
     public void setMethodSignature(String methodSignature) {
@@ -92,15 +93,26 @@ public class VeritestingRegion {
     }
     String methodSignature;
 
-    public void setNumBranchesSummarized(int numBranchesSummarized) {
-        this.numBranchesSummarized = numBranchesSummarized;
+    public void setSummarizedRegionStartBB(HashSet<Integer> summarizedRegionStartBB) {
+        this.summarizedRegionStartBB = new HashSet<>();
+        this.summarizedRegionStartBB.addAll(summarizedRegionStartBB);
     }
-    public int numBranchesSummarized = 0;
+    public HashSet<Integer> summarizedRegionStartBB = null;
 
     public int ranIntoCount = 0, usedCount = 0;
 
     public int getNumBranchesSummarized() {
-        return numBranchesSummarized;
+        return summarizedRegionStartBB.size();
     }
+
+    public void setEndBBNum(int endBBNum) {
+        this.endBBNum = endBBNum;
+    }
+    public int endBBNum;
+
+    public void setStartBBNum(int startBBNum) {
+        this.startBBNum = startBBNum;
+    }
+    public int startBBNum;
 }
 
