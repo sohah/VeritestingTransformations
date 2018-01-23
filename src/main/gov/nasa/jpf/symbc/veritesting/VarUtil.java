@@ -1,7 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting;
 
 import com.ibm.wala.ssa.*;
-import gov.nasa.jpf.symbc.numeric.*;
 
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
@@ -29,7 +28,7 @@ public class VarUtil {
     private static long holeID = 0;
 
     // contains the return values hole expression found in the region
-    public Expression retVal;
+    public Expression retValVar;
 
     public static final int getPathCounter() { pathCounter++; return pathCounter; }
 
@@ -423,7 +422,7 @@ public class VarUtil {
         defLocalVars.clear();
         varCache.clear();
         holeHashMap.clear();
-        retVal = null;
+        retValVar = null;
     }
 
     public long nextInt() {
@@ -431,11 +430,11 @@ public class VarUtil {
         return holeID;
     }
 
-    public Expression addInvokeVirtualHole(InvokeVirtualInfo virtualInfo) {
+    public Expression addInvokeVirtualHole(InvokeInfo virtualInfo) {
         HoleExpression holeExpression = new HoleExpression(nextInt());
         String name = className + "." + methodName + ".v" + virtualInfo.defVal;
-        holeExpression.setHole(true, HoleExpression.HoleType.INVOKEVIRTUAL);
-        holeExpression.setInvokeVirtualInfo(virtualInfo);
+        holeExpression.setHole(true, HoleExpression.HoleType.INVOKE);
+        holeExpression.setInvokeInfo(virtualInfo);
         //The return value of this invokeVirtual will be this holeExpression object.
         //The only way to fill up this hole is to map it to the corresponding method summary return value
         holeExpression.setHoleVarName(name);
@@ -446,9 +445,12 @@ public class VarUtil {
     public void addRetValHole(int use) {
         if(!isConstant(use)) {
             String name = className + "." + methodName + ".v" + use;
+            if(!varCache.containsKey(name)) {
+                System.out.println("var does not contain " + name);
+            }
             assert (varCache.containsKey(name));
-            retVal = varCache.get(name);
-        } else retVal = new IntConstant(getConstant(use));
+            retValVar = varCache.get(name);
+        } else retValVar = new IntConstant(getConstant(use));
     }
 }
 

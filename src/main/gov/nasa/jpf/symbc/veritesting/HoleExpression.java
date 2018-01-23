@@ -4,7 +4,6 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Visitor;
 import za.ac.sun.cs.green.expr.VisitorException;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
@@ -45,9 +44,9 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
                             (fieldInfo1.writeValue != null && fieldInfo.writeValue != null && !fieldInfo1.writeValue.equals(fieldInfo.writeValue)))
                         return false;
                     else return true;
-                case INVOKEVIRTUAL:
-                    InvokeVirtualInfo otherInvokeVirtualInfo = holeExpression.invokeVirtualInfo;
-                    return (!otherInvokeVirtualInfo.equals(invokeVirtualInfo));
+                case INVOKE:
+                    InvokeInfo otherInvokeInfo = holeExpression.invokeInfo;
+                    return (!otherInvokeInfo.equals(invokeInfo));
             }
             return true;
         }
@@ -75,8 +74,8 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
             case FIELD_OUTPUT:
                 ret += ", fieldInfo = " + fieldInfo.toString();
                 break;
-            case INVOKEVIRTUAL:
-                ret += ", invokeVirtualInfo = " + invokeVirtualInfo.toString();
+            case INVOKE:
+                ret += ", invokeInfo = " + invokeInfo.toString();
                 break;
             default:
                 System.out.println("undefined toString for holeType (" + holeType + ")");
@@ -131,7 +130,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
         NEGCONDITION("negcondition"),
         FIELD_INPUT("field_input"),
         FIELD_OUTPUT("field_output"),
-        INVOKEVIRTUAL("invokevirtual");
+        INVOKE("invoke");
 
         private final String string;
 
@@ -159,7 +158,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
                 (isHole && holeType == HoleType.NEGCONDITION) ||
                 (isHole && holeType == HoleType.FIELD_INPUT) ||
                 (isHole && holeType == HoleType.FIELD_OUTPUT) ||
-                (isHole && holeType == HoleType.INVOKEVIRTUAL) ||
+                (isHole && holeType == HoleType.INVOKE) ||
                 (!isHole && holeType == HoleType.NONE));
     }
 
@@ -220,11 +219,11 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
 
     FieldInfo fieldInfo = null;
 
-    public void setInvokeVirtualInfo(InvokeVirtualInfo invokeVirtualInfo) {
-        this.invokeVirtualInfo = invokeVirtualInfo;
+    public void setInvokeInfo(InvokeInfo invokeInfo) {
+        this.invokeInfo = invokeInfo;
     }
-    public InvokeVirtualInfo getInvokeVirtualInfo() {
-        return invokeVirtualInfo;
+    public InvokeInfo getInvokeInfo() {
+        return invokeInfo;
     }
-    InvokeVirtualInfo invokeVirtualInfo = null;
+    InvokeInfo invokeInfo = null;
 }

@@ -230,7 +230,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             ArrayList<Integer> usedByBranch = new ArrayList<>();
             ranIntoByBranch.add(0);
             usedByBranch.add(0);
-            for (int i = 1; i <= maxSummarizedBranches; i++) {
+            for (int i = 0; i <= maxSummarizedBranches; i++) {
                 ranIntoByBranch.add(0);
                 usedByBranch.add(0);
                 ArrayList<VeritestingRegion> regions = getRegionsForSummarizedBranchNum(i);
@@ -241,7 +241,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 }
             }
             pw.println("# summarized branches: # regions (#run into, #used)");
-            for (int i = 1; i <= maxSummarizedBranches; i++) {
+            for (int i = 0; i <= maxSummarizedBranches; i++) {
                 if (getRegionsForSummarizedBranchNum(i).size() != 0) {
                     pw.println(i + " branches: " + getRegionsForSummarizedBranchNum(i).size() + " (" +
                             ranIntoByBranch.get(i) + ", " + usedByBranch.get(i) + ") ");
@@ -366,6 +366,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     /*
     Load from local variable stack slots IntegerExpression objects and store them into holeHashMap
      */
+    //TODO Handle read after write on class fields
+    //if a read after write happens on a class field, the read operation should return the latest value written to
+    //the field
     private FillHolesOutput fillHoles(
             HashMap<Expression, Expression> holeHashMap,
             InstructionInfo instructionInfo,
@@ -434,10 +437,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             HoleExpression keyHoleExpression = (HoleExpression) key;
             assert(keyHoleExpression.isHole());
             switch(keyHoleExpression.getHoleType()) {
-                case INVOKEVIRTUAL:
-                    InvokeVirtualInfo callSiteInfo = keyHoleExpression.getInvokeVirtualInfo();
-                    Expression callingObject = retHoleHashMap.get(callSiteInfo.paramList.get(0));
-                    ClassInfo ci = ti.getClassInfo(((IntConstant)callingObject).getValue());
+                case INVOKE:
+                    InvokeInfo callSiteInfo = keyHoleExpression.getInvokeInfo();
+                    ClassInfo ci = null;
+                    if(callSiteInfo.isVirtualInvoke) {
+                        Expression callingObject = retHoleHashMap.get(callSiteInfo.paramList.get(0));
+                        ci = ti.getClassInfo(((IntConstant) callingObject).getValue());
+                    }
+                    if(callSiteInfo.isStaticInvoke) {
+                        ci = ClassLoaderInfo.getCurrentResolvedClassInfo(callSiteInfo.className);
+                    }
+                    // if ci is null, that means either MyIVisitor.visitInvoke has a bug or we failed to load the class
+                    assert(ci != null);
                     //Change the class name based on the call site object reference
                     callSiteInfo.className = ci.getName();
                     //If there exists a invokeVirtual for a method that we weren't able to summarize, skip veritesting
@@ -470,31 +481,30 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                                     int methodLocalStackSlot = methodKeyHole.getLocalStackSlot();
                                     //int callSiteLocalStackSlot = ((HoleExpression)callSiteInfo.paramList[methodLocalStackSlot]).getLocalStackSlot();
                                     //methodKeyHole.setLocalStackSlot(callSiteLocalStackSlot);
-                                    retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(callSiteInfo.paramList.get(methodLocalStackSlot)));
+                                    if(callSiteInfo.paramList.get(methodLocalStackSlot) instanceof  HoleExpression)
+                                        retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(callSiteInfo.paramList.get(methodLocalStackSlot)));
+                                    else retHoleHashMap.put(methodKeyHole, callSiteInfo.paramList.get(methodLocalStackSlot));
                                     paramEqList.add(new Operation(Operation.Operator.EQ,
                                             methodKeyHole,
                                             callSiteInfo.paramList.get(methodLocalStackSlot)));
                                 } else {
-                                    System.out.println("Don't know how to fill method summary hole: " + methodKeyHole);
-                                    return null;
+                                    //Local variables in the method summary should just become intermediate variables
+                                    gov.nasa.jpf.symbc.numeric.Expression finalValueSPF =
+                                            makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
+                                    Expression finalValueGreen = SPFToGreenExpr(finalValueSPF);
+                                    retHoleHashMap.put(methodKeyHole, finalValueGreen);
                                 }
                                 break;
                             case CONDITION:
                                 System.out.println("unsupported condition hole in method summary");
-                                assert(false);
-                                break;
+                                return null;
                             case NEGCONDITION:
                                 System.out.println("unsupported negCondition hole in method summary");
-                                assert(false);
-                                break;
-                            case INVOKEVIRTUAL:
-                                System.out.println("unsupported invokeVirtual hole in method summary");
-                                assert(false);
-                                break;
+                                return null;
+                            case INVOKE:
+                                System.out.println("unsupported invoke hole in method summary");
+                                return null;
                             case LOCAL_OUTPUT:
-                                System.out.println("unsupported local variable output in method summary");
-                                assert(false);
-                                break;
                             case INTERMEDIATE:
                                 spfExpr = makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
                                 greenExpr = SPFToGreenExpr(spfExpr);
@@ -506,10 +516,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                                 HoleExpression.FieldInfo fieldInfo = methodKeyHole.getFieldInfo();
                                 //The object reference where this field lives HAS to be present in the current method's stack frame
                                 //and we populate that stack slot in fieldInfo for fillFieldInputHole to use
-                                assert(((HoleExpression)callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_INPUT ||
-                                        ((HoleExpression)callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
-                                int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
-                                fieldInfo.callSiteStackSlot = callSiteStackSlot;
+                                if(callSiteInfo.paramList.size() > 0) {
+                                    assert (((HoleExpression) callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_INPUT ||
+                                            ((HoleExpression) callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
+                                    int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
+                                    fieldInfo.callSiteStackSlot = callSiteStackSlot;
+                                }
                                 //retHoleHashMap.put(fieldInfo.use, retHoleHashMap.get(callSiteInfo.paramList[0]));
                                 //paramEqList.add(new Operation(Operation.Operator.EQ, fieldInfo.use, callSiteInfo.paramList[0]));
                                 assert (fieldInfo != null);
@@ -541,7 +553,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         //paramList.length-1 because there won't be a constraint created for the object reference which is always
                         //parameter 0
                         if(mappingOperation != null)
-                            mappingOperation = new Operation(Operation.Operator.EQ, mappingOperation, paramEqList.get(i));
+                            mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, paramEqList.get(i));
                         else mappingOperation = paramEqList.get(i);
                     }
                     if(methodSummary.getSummaryExpression() != null)

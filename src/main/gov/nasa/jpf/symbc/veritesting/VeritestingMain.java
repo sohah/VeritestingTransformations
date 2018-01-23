@@ -57,6 +57,7 @@ public class VeritestingMain {
     public HashSet endingInsnsHash;
     ClassHierarchy cha;
     HashSet<String> methodSummaryClassNames, methodSummarySubClassNames;
+    private boolean methodAnalysis = false;
 
     public int getObjectReference() {
         return objectReference;
@@ -95,6 +96,7 @@ public class VeritestingMain {
     public void analyzeForVeritesting(String classPath, String _className) {
         // causes java.lang.IllegalArgumentException: ill-formed sig testMe4(int[],int)
         endingInsnsHash = new HashSet();
+        methodAnalysis = false;
 
         try {
             File f = new File(classPath);
@@ -140,7 +142,19 @@ public class VeritestingMain {
                 Method[] allMethodsAdditional = cAdditional.getDeclaredMethods();
                 for (Method m : allMethodsAdditional) {
                     String signature = getSignature(m);
-                    startMethodAnalysis(methodSummaryClassName, signature);
+                    startAnalysis(methodSummaryClassName, signature);
+                }
+            }
+            methodAnalysis = true;
+            for(Iterator it = methodSummaryClassNames.iterator(); it.hasNext();) {
+                String methodSummaryClassName = (String) it.next();
+                Class cAdditional;
+                try { cAdditional = urlcl.loadClass(methodSummaryClassName); }
+                catch (ClassNotFoundException e) { continue; }
+                Method[] allMethodsAdditional = cAdditional.getDeclaredMethods();
+                for (Method m : allMethodsAdditional) {
+                    String signature = getSignature(m);
+                    startAnalysis(methodSummaryClassName, signature);
                 }
             }
         } catch (MalformedURLException e) {
@@ -148,39 +162,6 @@ public class VeritestingMain {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void startMethodAnalysis(String className, String methodSig) {
-        try {
-            startingPointsHistory = new HashSet();
-            MethodReference mr = StringStuff.makeMethodReference(className + "." + methodSig);
-            IMethod m = cha.resolveMethod(mr);
-            if (m == null) {
-                System.out.println("could not resolve " + mr);
-                return;
-            }
-            IClass iClass = m.getDeclaringClass();
-            for(IClass subClass: cha.computeSubClasses(iClass.getReference())) {
-                if(iClass.equals(subClass)) continue;
-                methodSummarySubClassNames.add(subClass.getReference().getName().getClassName().toString());
-            }
-            AnalysisOptions options = new AnalysisOptions();
-            options.getSSAOptions().setPiNodePolicy(SSAOptions.getAllBuiltInPiNodes());
-            IAnalysisCacheView cache = new AnalysisCacheImpl(options.getSSAOptions());
-            ir = cache.getIR(m, Everywhere.EVERYWHERE);
-            if (ir == null) {
-                Assertions.UNREACHABLE("Null IR for " + m);
-            }
-            cfg = ir.getControlFlowGraph();
-            currentClassName = m.getDeclaringClass().getName().getClassName().toString();
-            methodName = m.getName().toString();
-            this.methodSig = methodSig.substring(methodSig.indexOf('('));
-            System.out.println("Starting analysis for " + methodName + "(" + currentClassName + "." + methodSig + ")");
-            varUtil = new VarUtil(ir, currentClassName, methodName);
-            doMethodAnalysis(cfg);
-        } catch (InvalidClassFileException e) {
             e.printStackTrace();
         }
     }
@@ -221,7 +202,8 @@ public class VeritestingMain {
             loops = new HashSet<>();
             HashSet<Integer> visited = new HashSet<>();
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
-            doAnalysis(cfg.entry(), null);
+            if(!methodAnalysis) doAnalysis(cfg.entry(), null);
+            else doMethodAnalysis(cfg.entry(), cfg.exit());
         } catch (InvalidClassFileException e) {
             e.printStackTrace();
         } catch (ClassHierarchyException e) {
@@ -311,23 +293,24 @@ public class VeritestingMain {
     public void doAnalysis(ISSABasicBlock startingUnit, ISSABasicBlock endingUnit) throws InvalidClassFileException {
         //System.out.println("Starting doAnalysis");
         ISSABasicBlock currUnit = startingUnit;
-        MyIVisitor myIVisitor;
         if (startingPointsHistory.contains(startingUnit)) return;
+        Expression methodExpression = null;
+        HashSet<Integer> methodSummarizedRegionStartBB = new HashSet<>();
         while (true) {
             if (currUnit == null || currUnit == endingUnit) break;
             List<ISSABasicBlock> succs = new ArrayList<>(cfg.getNormalSuccessors(currUnit));
             ISSABasicBlock commonSucc = cfg.getIPdom(currUnit.getNumber());
             if (succs.size() == 1) {
+                if(succs.size() == 0) break;
                 currUnit = succs.get(0);
                 continue;
-            } else if (succs.size() == 0)
-                break;
+            } else if (succs.size() == 0) break;
             else if (succs.size() == 2 && startingPointsHistory.contains(currUnit)) {
                 currUnit = commonSucc;
                 break;
             } else if (succs.size() == 2 && !startingPointsHistory.contains(currUnit)) {
                 startingPointsHistory.add(currUnit);
-                //TODO fix this varUtil reset because it screws up varUtil.holeHashMap
+                //fix this varUtil reset because it screws up varUtil.holeHashMap
                 varUtil.reset();
 
                 ISSABasicBlock thenUnit = Util.getTakenSuccessor(cfg, currUnit);
@@ -359,7 +342,7 @@ public class VeritestingMain {
                 while (thenUnit != commonSucc) {
                     boolean isPhithenUnit = false;
                     while(cfg.getNormalSuccessors(thenUnit).size() > 1 && thenUnit != commonSucc && canVeritest) {
-                        //TODO instead of giving up, try to compute a summary of everything from thenUnit up to commonSucc
+                        //instead of giving up, try to compute a summary of everything from thenUnit up to commonSucc
                         //to allow complex regions
                         HashMap<Expression, Expression> savedHoleHashMap = saveHoleHashMap();
                         HashMap<String, Expression> savedVarCache = saveVarCache();
@@ -374,10 +357,13 @@ public class VeritestingMain {
                         String key = currentClassName + "." + methodName + methodSig + "#" + offset;
                         if(VeritestingListener.veritestingRegions.containsKey(key)) {
                             System.out.println("Veritested inner region with key = " + key);
+                            //visit all instructions up to and including the condition
                             BlockSummary blockSummary = new BlockSummary(thenUnit, thenExpr, canVeritest, isPhithenUnit).invoke();
                             canVeritest = blockSummary.isCanVeritest();
                             thenExpr = blockSummary.getExpression();
                             Expression conditionExpression = blockSummary.getIfExpression();
+                            //cannot handle returns inside a if-then-else
+                            if(blockSummary.getIsExitNode()) canVeritest = false;
                             if(!canVeritest) break;
                             ISSABasicBlock commonSuccthenUnit = cfg.getIPdom(thenUnit.getNumber());
 
@@ -417,6 +403,10 @@ public class VeritestingMain {
                     BlockSummary blockSummary = new BlockSummary(thenUnit, thenExpr, canVeritest, isPhithenUnit).invoke();
                     canVeritest = blockSummary.isCanVeritest();
                     thenExpr = blockSummary.getExpression();
+                    //we should not encounter a BB with more than one successor at this point
+                    assert(blockSummary.getIfExpression() == null);
+                    //cannot handle returns inside a if-then-else
+                    if(blockSummary.getIsExitNode()) canVeritest = false;
                     if (!canVeritest) break;
                     thenPred = thenUnit;
                     thenUnit = cfg.getNormalSuccessors(thenUnit).iterator().next();
@@ -441,7 +431,7 @@ public class VeritestingMain {
                 while (canVeritest && elseUnit != commonSucc) {
                     boolean isPhielseUnit = false;
                     while(cfg.getNormalSuccessors(elseUnit).size() > 1 && elseUnit != commonSucc && canVeritest) {
-                        //TODO instead of giving up, try to compute a summary of everything from elseUnit up to commonSucc
+                        //instead of giving up, try to compute a summary of everything from elseUnit up to commonSucc
                         //to allow complex regions
                         HashMap<Expression, Expression> savedHoleHashMap = saveHoleHashMap();
                         HashMap<String, Expression> savedVarCache = saveVarCache();
@@ -456,10 +446,13 @@ public class VeritestingMain {
                         String key = currentClassName + "." + methodName + methodSig + "#" + offset;
                         if(VeritestingListener.veritestingRegions.containsKey(key)) {
                             System.out.println("Veritested inner region with key = " + key);
+                            //visit all instructions up to and including the condition
                             BlockSummary blockSummary = new BlockSummary(elseUnit, elseExpr, canVeritest, isPhielseUnit).invoke();
                             canVeritest = blockSummary.isCanVeritest();
                             elseExpr = blockSummary.getExpression();
                             Expression conditionExpression = blockSummary.getIfExpression();
+                            //cannot handle returns inside a if-then-else
+                            if(blockSummary.getIsExitNode()) canVeritest = false;
                             if(!canVeritest) break;
                             ISSABasicBlock commonSuccelseUnit = cfg.getIPdom(elseUnit.getNumber());
 
@@ -501,6 +494,10 @@ public class VeritestingMain {
                     BlockSummary blockSummary = new BlockSummary(elseUnit, elseExpr, canVeritest, isPhielseUnit).invoke();
                     canVeritest = blockSummary.isCanVeritest();
                     elseExpr = blockSummary.getExpression();
+                    //we should not encounter a BB with more than one successor at this point
+                    assert(blockSummary.getIfExpression() == null);
+                    //cannot handle returns inside a if-then-else
+                    if(blockSummary.getIsExitNode()) canVeritest = false;
                     if (!canVeritest) break;
                     elsePred = elseUnit;
                     elseUnit = cfg.getNormalSuccessors(elseUnit).iterator().next();
@@ -532,8 +529,6 @@ public class VeritestingMain {
                             currUnit, commonSucc,
                             thenUseNum, elseUseNum, summarizedRegionStartBB);
                     if (veritestingRegion != null) {
-                        /*TODO At this point we can modify the current region based on the region created for
-                        the then or else side, if one of them encountered more than one successor */
                         String key = veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() +
                                 veritestingRegion.getMethodSignature() + "#" +
                                 veritestingRegion.getStartInsnPosition();
@@ -609,61 +604,105 @@ public class VeritestingMain {
         }
     }
 
-    public void doMethodAnalysis(SSACFG cfg) throws InvalidClassFileException {
-        MyIVisitor myIVisitor;
-        startingPointsHistory.add(cfg.entry());
-
-        Expression summaryExp = null;
-        ISSABasicBlock currUnit = cfg.entry();
-        ISSABasicBlock endingUnit = cfg.exit();
-        while(currUnit != endingUnit) {
+    public void doMethodAnalysis(ISSABasicBlock startingUnit, ISSABasicBlock endingUnit) throws InvalidClassFileException {
+        assert(methodAnalysis);
+        //System.out.println("Starting doMethodAnalysis");
+        //currUnit represents the next BB to be summarized
+        ISSABasicBlock currUnit = startingUnit;
+        Expression methodExpression = null;
+        HashSet<Integer> methodSummarizedRegionStartBB = new HashSet<>();
+        boolean canVeritestMethod = true;
+        while (true) {
             List<ISSABasicBlock> succs = new ArrayList<>(cfg.getNormalSuccessors(currUnit));
-            //Cannot summarize methods with more than execution path in them
-            if(succs.size() > 1) return;
-            Iterator<SSAInstruction> ssaInstructionIterator = currUnit.iterator();
-            while (ssaInstructionIterator.hasNext()) {
-                myIVisitor = new MyIVisitor(varUtil, -1, -1,
-                        false );
-                SSAInstruction instruction = ssaInstructionIterator.next();
-                instruction.visit(myIVisitor);
-                if(!myIVisitor.canVeritest()) return;
-                //Cannot summarize methods that call other methods
-                if(myIVisitor.isInvokeVirtual()) return;
-                Expression expr1 = myIVisitor.getSPFExpr();
-                if (expr1 != null) {
-                    if (summaryExp != null)
-                        summaryExp =
-                                new Operation(Operation.Operator.AND,
-                                        summaryExp, expr1);
-                    else summaryExp = expr1;
+            ISSABasicBlock commonSucc = cfg.getIPdom(currUnit.getNumber());
+            if (succs.size() == 1 || succs.size() == 0) {
+                //Assuming that it would be ok to visit a BB that starts with a phi expression
+                BlockSummary blockSummary = new BlockSummary(currUnit, methodExpression, canVeritestMethod, false).invoke();
+                canVeritestMethod = blockSummary.isCanVeritest();
+                methodExpression = blockSummary.getExpression();
+                assert(blockSummary.getIfExpression() == null);
+                if(!canVeritestMethod) return;
+                if(blockSummary.getIsExitNode() || succs.size() == 0) {
+                    VeritestingRegion veritestingRegion =
+                            constructMethodRegion(methodExpression, cfg.entry().getNumber(),
+                                    cfg.entry().getNumber(), methodSummarizedRegionStartBB);
+                    String key = veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() +
+                            veritestingRegion.getMethodSignature() + "#" +
+                            veritestingRegion.getStartInsnPosition();
+                    FNV1 fnv = new FNV1a64();
+                    fnv.init(key);
+                    long hash = fnv.getHash();
+                    VeritestingListener.veritestingRegions.put(key, veritestingRegion);
+                    return;
                 }
-                if(myIVisitor.isExitNode()) break;
+                if (!canVeritestMethod) return;
+                if(succs.size() == 0) return;
+                currUnit = succs.get(0);
+                continue;
             }
-            currUnit = succs.get(0);
-        }
-        VeritestingRegion veritestingRegion = constructMethodRegion(summaryExp);
-        String key = veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() +
-                veritestingRegion.getMethodSignature() + "#" +
-                veritestingRegion.getStartInsnPosition();
-        FNV1 fnv = new FNV1a64();
-        fnv.init(key);
-        long hash = fnv.getHash();
-        VeritestingListener.veritestingRegions.put(key, veritestingRegion);
+            else if (succs.size() == 2) {
+                //Summarize instructions before the condition
+                BlockSummary blockSummary = new BlockSummary(currUnit, methodExpression, canVeritestMethod, false).invoke();
+                canVeritestMethod = blockSummary.isCanVeritest();
+                methodExpression = blockSummary.getExpression();
+                Expression conditionExpression = blockSummary.getIfExpression();
+                if(!canVeritestMethod) return;
+                //cannot handle returns inside a if-then-else
+                if(blockSummary.getIsExitNode()) return;
+                int startingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(currUnit.getLastInstructionIndex());
+                String key = currentClassName + "." + methodName + methodSig + "#" + startingBC;
+                if(!VeritestingListener.veritestingRegions.containsKey(key)) return;
+                VeritestingRegion veritestingRegion = VeritestingListener.veritestingRegions.get(key);
+                Expression summaryExpression = veritestingRegion.getSummaryExpression();
+                summaryExpression = replaceCondition(summaryExpression, conditionExpression);
+                assert(veritestingRegion != null);
+                if(methodExpression != null) {
+                    if(veritestingRegion.getSummaryExpression() != null) {
+                        methodExpression = new Operation(Operation.Operator.AND, methodExpression,
+                                summaryExpression);
+                    }
+                }
+                else methodExpression = summaryExpression;
+                methodSummarizedRegionStartBB.addAll(veritestingRegion.summarizedRegionStartBB);
+                varUtil.defLocalVars.addAll(veritestingRegion.getOutputVars());
+                for(Map.Entry<Expression, Expression> entry: veritestingRegion.getHoleHashMap().entrySet()) {
+                    if(((HoleExpression)entry.getKey()).getHoleType() == HoleExpression.HoleType.CONDITION ||
+                            ((HoleExpression)entry.getKey()).getHoleType() == HoleExpression.HoleType.NEGCONDITION)
+                        continue;
+                    varUtil.holeHashMap.put(entry.getKey(), entry.getValue());
+                }
+                for(HashMap.Entry<Expression, Expression> entry: veritestingRegion.getHoleHashMap().entrySet()) {
+                    if(((HoleExpression)entry.getKey()).getHoleType() == HoleExpression.HoleType.CONDITION ||
+                            ((HoleExpression)entry.getKey()).getHoleType() == HoleExpression.HoleType.NEGCONDITION)
+                        continue;
+                    HoleExpression holeExpression = (HoleExpression) entry.getKey();
+                    varUtil.varCache.put(holeExpression.getHoleVarName(), holeExpression);
+                }
+                currUnit = commonSucc;
+            } else {
+                System.out.println("doMethodAnalysis: cannot summarize more than 2 successors in BB = " + currUnit);
+                return;
+            }
+        } // end while(true)
     } // end doMethodAnalysis
 
     public VeritestingRegion constructMethodRegion(
-            Expression summaryExp) throws InvalidClassFileException {
+            Expression summaryExp, int startBBNum, int endBBNum, HashSet<Integer> summarizedRegionStartBB) throws InvalidClassFileException {
         VeritestingRegion veritestingRegion = new VeritestingRegion();
         veritestingRegion.setSummaryExpression(summaryExp);
         veritestingRegion.setStartInsnPosition(0);
         // assuming ending instruction position is not needed for using a method summary
         veritestingRegion.setEndInsnPosition(-1);
         veritestingRegion.setOutputVars(varUtil.defLocalVars);
-        veritestingRegion.setRetValVars(varUtil.retVal);
+        veritestingRegion.setRetValVars(varUtil.retValVar);
         veritestingRegion.setClassName(currentClassName);
         veritestingRegion.setMethodName(methodName);
         veritestingRegion.setMethodSignature(methodSig);
         veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
+        veritestingRegion.setStartBBNum(startBBNum);
+        veritestingRegion.setEndBBNum(endBBNum);
+        veritestingRegion.setIsMethodSummary(true);
+        veritestingRegion.setSummarizedRegionStartBB(summarizedRegionStartBB);
         return veritestingRegion;
     }
 
@@ -671,6 +710,7 @@ public class VeritestingMain {
         private ISSABasicBlock unit;
         private Expression expression;
         private Expression lastExpression;
+        private boolean isExitNode = false;
 
         public Expression getIfExpression() {
             return ifExpression;
@@ -708,13 +748,13 @@ public class VeritestingMain {
                 myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
                 ssaInstructionIterator.next().visit(myIVisitor);
 
-                if (!myIVisitor.canVeritest() || myIVisitor.isExitNode()) {
+                if (!myIVisitor.canVeritest()) {
                     canVeritest = false;
                     System.out.println("Cannot veritest SSAInstruction: " + myIVisitor.getLastInstruction());
                     break;
                 }
-                if(myIVisitor.isInvokeVirtual()) {
-                    methodSummaryClassNames.add(myIVisitor.getInvokeVirtualClassName());
+                if(myIVisitor.isInvoke()) {
+                    methodSummaryClassNames.add(myIVisitor.getInvokeClassName());
                 }
                 Expression expression1 = myIVisitor.getSPFExpr();
                 lastExpression = expression1;
@@ -726,8 +766,16 @@ public class VeritestingMain {
                                         expression, expression1);
                     else expression = expression1;
                 }
+                if(myIVisitor.isExitNode()) {
+                    isExitNode = true;
+                    break;
+                }
             }
             return this;
+        }
+
+        public boolean getIsExitNode() {
+            return isExitNode;
         }
     }
 }

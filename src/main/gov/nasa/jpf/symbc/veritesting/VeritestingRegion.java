@@ -102,6 +102,9 @@ public class VeritestingRegion {
     public int ranIntoCount = 0, usedCount = 0;
 
     public int getNumBranchesSummarized() {
+        if(summarizedRegionStartBB == null) {
+            return 0;
+        }
         return summarizedRegionStartBB.size();
     }
 

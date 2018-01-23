@@ -9,7 +9,6 @@ import com.ibm.wala.ssa.*;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.strings.Atom;
-import gov.nasa.jpf.symbc.bytecode.INVOKEVIRTUAL;
 import za.ac.sun.cs.green.expr.Expression;
 
 import za.ac.sun.cs.green.expr.Operation;
@@ -27,8 +26,8 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
     private Expression phiExprThen = null;
     private Expression phiExprElse = null;
     private Expression phiExprLHS = null;
-    private String invokeVirtualClassName;
-    private boolean isInvokeVirtual = false;
+    private String invokeClassName;
+    private boolean isInvoke = false;
 
     public Expression getIfExpr() {
         return ifExpr;
@@ -225,11 +224,14 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
             canVeritest = false;
             return;
         }
+        if(varUtil.retValVar != null) {
+            System.out.println("cannot handle multiple returns");
+            canVeritest = false;
+            return;
+        }
         isExitNode = true;
         if(instruction.getNumberOfUses()==1) {
             varUtil.addRetValHole(instruction.getUse(0));
-        } else {
-            varUtil.retVal = null;
         }
         lastInstruction = instruction;
         canVeritest = true;
@@ -299,8 +301,9 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         MethodReference methodReference = instruction.getDeclaredTarget();
         CallSiteReference site = instruction.getCallSite();
         //Only adding support for invokeVirtual statements
-        if(site.getInvocationCode() != IInvokeInstruction.Dispatch.VIRTUAL ||
-                instruction.getNumberOfReturnValues() > 1) {
+        if(instruction.getNumberOfReturnValues() > 1 ||
+                site.getInvocationCode() == IInvokeInstruction.Dispatch.SPECIAL ||
+                site.getInvocationCode() == IInvokeInstruction.Dispatch.INTERFACE) {
             canVeritest = false;
             return;
         }
@@ -315,15 +318,17 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         for(int i=0; i < instruction.getNumberOfParameters(); i++) {
             paramList.add(varUtil.addVal(instruction.getUse(i)));
         }
-        InvokeVirtualInfo virtualInfo = new InvokeVirtualInfo();
+        InvokeInfo virtualInfo = new InvokeInfo();
+        virtualInfo.isVirtualInvoke = (site.getInvocationCode() == IInvokeInstruction.Dispatch.VIRTUAL);
+        virtualInfo.isStaticInvoke = (site.getInvocationCode() == IInvokeInstruction.Dispatch.STATIC);
         virtualInfo.setDefVal(defVal);
         virtualInfo.setClassName(declaringClass.toString());
         virtualInfo.setMethodName(methodName.toString());
         virtualInfo.setMethodSignature(methodSig);
         virtualInfo.setParamList(paramList);
         varUtil.addInvokeVirtualHole(virtualInfo);
-        invokeVirtualClassName = declaringClass.toString();
-        isInvokeVirtual = true;
+        invokeClassName = declaringClass.toString();
+        isInvoke = true;
         canVeritest = true;
     }
 
@@ -390,6 +395,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
             assert (!(phiExprLHS instanceof HoleExpression && !((HoleExpression) phiExprLHS).isHole()));
             assert (varUtil.ir.getSymbolTable().isConstant(instruction.getDef(0)) == false);
         }
+        canVeritest = true;
         //while other instructions may also update local variables, those should always become intermediate variables
     }
 
@@ -467,11 +473,11 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         return phiExprLHS != null;
     }
 
-    public String getInvokeVirtualClassName() {
-        return invokeVirtualClassName;
+    public String getInvokeClassName() {
+        return invokeClassName;
     }
 
-    public boolean isInvokeVirtual() {
-        return isInvokeVirtual;
+    public boolean isInvoke() {
+        return isInvoke;
     }
 }
