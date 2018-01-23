@@ -42,8 +42,11 @@ import java.util.*;
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
 
     public static HashMap<String, VeritestingRegion> veritestingRegions;
-    public static final boolean veritestingOn = true;
-    public static final boolean boostPerf = true;
+    //TODO: make these into configuration options
+    public static boolean veritestingOn = true;
+    public static boolean methodSummarizationOn = true;
+    public static boolean boostPerf = true;
+
     public static long totalSolverTime = 0, z3Time = 0;
     public static long parseTime = 0;
     public static long solverAllocTime = 0;
@@ -225,7 +228,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("solverCount = " + VeritestingListener.solverCount);
         if(veritestingOn) {
             pw.println("# regions = " + VeritestingListener.veritestingRegions.size());
-            int maxSummarizedBranches = getMaxSummarizedBranch();
+            int maxSummarizedBranches = getMaxSummarizedBranch(false);
             ArrayList<Integer> ranIntoByBranch = new ArrayList<>();
             ArrayList<Integer> usedByBranch = new ArrayList<>();
             ranIntoByBranch.add(0);
@@ -233,7 +236,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             for (int i = 0; i <= maxSummarizedBranches; i++) {
                 ranIntoByBranch.add(0);
                 usedByBranch.add(0);
-                ArrayList<VeritestingRegion> regions = getRegionsForSummarizedBranchNum(i);
+                ArrayList<VeritestingRegion> regions = getRegionsForSummarizedBranchNum(i, false);
                 for (int j = 0; j < regions.size(); j++) {
                     VeritestingRegion region = regions.get(j);
                     ranIntoByBranch.set(i, ranIntoByBranch.get(i) + (region.ranIntoCount != 0 ? 1 : 0));
@@ -242,30 +245,67 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             }
             pw.println("# summarized branches: # regions (#run into, #used)");
             for (int i = 0; i <= maxSummarizedBranches; i++) {
-                if (getRegionsForSummarizedBranchNum(i).size() != 0) {
-                    pw.println(i + " branches: " + getRegionsForSummarizedBranchNum(i).size() + " (" +
+                if (getRegionsForSummarizedBranchNum(i, false).size() != 0) {
+                    pw.println(i + " branches: " + getRegionsForSummarizedBranchNum(i, false).size() + " (" +
+                            ranIntoByBranch.get(i) + ", " + usedByBranch.get(i) + ") ");
+                }
+            }
+            maxSummarizedBranches = getMaxSummarizedBranch(true);
+            ranIntoByBranch = new ArrayList<>();
+            usedByBranch = new ArrayList<>();
+            ranIntoByBranch.add(0);
+            usedByBranch.add(0);
+            for (int i = 0; i <= maxSummarizedBranches; i++) {
+                ranIntoByBranch.add(0);
+                usedByBranch.add(0);
+                ArrayList<VeritestingRegion> regions = getRegionsForSummarizedBranchNum(i, true);
+                for (int j = 0; j < regions.size(); j++) {
+                    VeritestingRegion region = regions.get(j);
+                    ranIntoByBranch.set(i, ranIntoByBranch.get(i) + (region.ranIntoCount != 0 ? 1 : 0));
+                    usedByBranch.set(i, usedByBranch.get(i) + (region.usedCount != 0 ? 1 : 0));
+                }
+            }
+            pw.println("# summarized methods: # regions (#run into, #used)");
+            for (int i = 0; i <= maxSummarizedBranches; i++) {
+                if (getRegionsForSummarizedBranchNum(i, true).size() != 0) {
+                    pw.println(i + " branches: " + getRegionsForSummarizedBranchNum(i, true).size() + " (" +
                             ranIntoByBranch.get(i) + ", " + usedByBranch.get(i) + ") ");
                 }
             }
         }
+        ArrayList<String> regions = new ArrayList<>();
+        for(HashMap.Entry<String, VeritestingRegion> entry: veritestingRegions.entrySet()) {
+            regions.add(entry.getKey());
+        }
+
+        System.out.println("Sorted regions:");
+        regions.sort(String::compareTo);
+        for(int i=0; i < regions.size(); i++) {
+            System.out.println(regions.get(i));
+        }
     }
 
-    private ArrayList<VeritestingRegion> getRegionsForSummarizedBranchNum(int numBranch) {
+
+    private ArrayList<VeritestingRegion> getRegionsForSummarizedBranchNum(int numBranch, boolean methodSummary) {
         ArrayList<VeritestingRegion> ret = new ArrayList<>();
         for(HashMap.Entry<String, VeritestingRegion> entry: veritestingRegions.entrySet()) {
             VeritestingRegion region = entry.getValue();
-            if(region.getNumBranchesSummarized() == numBranch)
-                ret.add(region);
+            if(region.getNumBranchesSummarized() == numBranch) {
+                if(!methodSummary || (methodSummary && region.isMethodSummary()))
+                    ret.add(region);
+            }
         }
         return ret;
     }
 
-    private int getMaxSummarizedBranch() {
+    private int getMaxSummarizedBranch(boolean methodSummary) {
         int maxSummarizedBranch = 0;
         for(HashMap.Entry<String, VeritestingRegion> entry: veritestingRegions.entrySet()) {
             VeritestingRegion region = entry.getValue();
-            if(region.getNumBranchesSummarized() > maxSummarizedBranch)
-                maxSummarizedBranch = region.getNumBranchesSummarized();
+            if(region.getNumBranchesSummarized() > maxSummarizedBranch) {
+                if(!methodSummary || (methodSummary && region.isMethodSummary()))
+                    maxSummarizedBranch = region.getNumBranchesSummarized();
+            }
         }
         return maxSummarizedBranch;
     }
@@ -562,6 +602,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     else additionalAST = mappingOperation;
                     Expression finalValueGreen = SPFToGreenExpr(makeSymbolicInteger(keyHoleExpression.getHoleVarName() + pathLabelCount));
                     retHoleHashMap.put(keyHoleExpression, finalValueGreen);
+                    methodSummary.ranIntoCount++;
+                    methodSummary.usedCount++;
                     break;
             }
         }

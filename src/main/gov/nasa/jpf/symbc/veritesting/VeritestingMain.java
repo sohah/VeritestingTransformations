@@ -40,6 +40,7 @@ import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import com.ibm.wala.util.graph.impl.GraphInverter;
 import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.StringStuff;
+import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
@@ -606,6 +607,9 @@ public class VeritestingMain {
 
     public void doMethodAnalysis(ISSABasicBlock startingUnit, ISSABasicBlock endingUnit) throws InvalidClassFileException {
         assert(methodAnalysis);
+        if(VeritestingListener.methodSummarizationOn == false) {
+            return;
+        }
         //System.out.println("Starting doMethodAnalysis");
         //currUnit represents the next BB to be summarized
         ISSABasicBlock currUnit = startingUnit;
