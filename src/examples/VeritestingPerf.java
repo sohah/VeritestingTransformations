@@ -5,18 +5,24 @@
 
 import gov.nasa.jpf.symbc.Debug;
 
+import java.util.ArrayList;
+
 public class VeritestingPerf {
 
     private int count = 0;
 
     public static void main(String[] args) {
         //(new VeritestingPerf()).cfgTest(1);
-        (new VeritestingPerf()).countBitsSet(1);
+        //(new VeritestingPerf()).countBitsSet(1);
         //int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
         //(new VeritestingPerf()).testMe5(x, 1);
         //(new VeritestingPerf()).testMe4(x, 12, -1, 1);
         //(new VeritestingPerf()).arrayTest(x, 6);
         //(new VeritestingPerf()).checkOperator();
+        ArrayList<Integer> list = new ArrayList<>();
+        list.add(Debug.makeSymbolicInteger("a1"));
+        list.add(Debug.makeSymbolicInteger("a2"));
+        (new VeritestingPerf()).countArrayList(list);
     }
 
     public int countBitsSetSimple(int x) {
@@ -39,6 +45,22 @@ public class VeritestingPerf {
             x = x >>> 1; // logical right shift
         }
         return count;
+    }
+
+    public int countArrayList(ArrayList<Integer> x) {
+        // x = ArrayList of symbolic integers with
+        // concrete length
+        int sum = 0;
+        for (int i = 0; i < x.size(); i++) {
+            // Begin region for static unrolling
+            if (x.get(i) < 0) sum += -1;
+            else if (x.get(i) > 0) sum += 1;
+            // End region for static unrolling
+        }
+        if (sum < 0) System.out.println("neg");
+        else if (sum > 0) System.out.println("pos");
+        else System.out.println("bug");
+        return sum;
     }
 
     static int a, b, c, d, e, f;
@@ -112,7 +134,11 @@ class TempClassDerived extends TempClass {
 
     private int tempInt = 1; //change this to 2 to test read after write on a class field inside a Veritesting region
 
-    public int getTempInt() { return tempInt; }
+    public int getTempInt() {
+        TempClass2 t = new TempClass2();
+        t.tempMethod();
+        return tempInt;
+    }
 
     public int getOne(int a) { tempInt = a; return tempInt; }
 }
@@ -126,6 +152,9 @@ class TempClass {
     public int getOne(int a) { tempInt = a; return tempInt; }
 }
 
+class TempClass2 {
+    public int tempMethod() { return 0;}
+}
 
 
 

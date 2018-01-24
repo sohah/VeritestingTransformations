@@ -16,6 +16,7 @@ import java.net.URLClassLoader;
 import java.util.*;
 
 import com.ibm.wala.cfg.Util;
+import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IBytecodeMethod;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
@@ -39,6 +40,7 @@ import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import com.ibm.wala.util.graph.impl.GraphInverter;
 import com.ibm.wala.util.io.FileProvider;
+import com.ibm.wala.util.strings.Atom;
 import com.ibm.wala.util.strings.StringStuff;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.VeritestingListener;
@@ -98,6 +100,7 @@ public class VeritestingMain {
         // causes java.lang.IllegalArgumentException: ill-formed sig testMe4(int[],int)
         endingInsnsHash = new HashSet();
         methodAnalysis = false;
+        findClasses(classPath, _className);
 
         try {
             File f = new File(classPath);
@@ -167,22 +170,62 @@ public class VeritestingMain {
         }
     }
 
+    private void findClasses(String classPath, String startingClassName) {
+
+        methodSummaryClassNames.add(startingClassName);
+        HashSet<String> newClassNames;
+        do {
+            newClassNames = new HashSet<>();
+            for (String className : methodSummaryClassNames) {
+                File f = new File(classPath);
+                URL[] cp = new URL[0];
+                try {
+                    cp = new URL[]{f.toURI().toURL()};
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+                URLClassLoader urlcl = new URLClassLoader(cp);
+                Class c = null;
+                try {
+                    c = urlcl.loadClass(className);
+                } catch (ClassNotFoundException e) {
+                    continue;
+                }
+                if(c == null) continue;
+                Method[] allMethods = c.getDeclaredMethods();
+                for (Method method : allMethods) {
+                    String signature = getSignature(method);
+                    MethodReference mr = StringStuff.makeMethodReference(className + "." + signature);
+                    IMethod iMethod = cha.resolveMethod(mr);
+                    if(iMethod == null)
+                        continue;
+                    AnalysisOptions options = new AnalysisOptions();
+                    options.getSSAOptions().setPiNodePolicy(SSAOptions.getAllBuiltInPiNodes());
+                    IAnalysisCacheView cache = new AnalysisCacheImpl(options.getSSAOptions());
+                    ir = cache.getIR(iMethod, Everywhere.EVERYWHERE);
+                    Iterator<CallSiteReference> iterator = ir.iterateCallSites();
+                    while (iterator.hasNext()) {
+                        CallSiteReference reference = iterator.next();
+                        MethodReference methodReference = reference.getDeclaredTarget();
+                        String declaringClass = methodReference.getDeclaringClass().getName().getClassName().toString();
+                        if (!methodSummaryClassNames.contains(declaringClass)) {
+                            newClassNames.add(declaringClass);
+                        }
+                    }
+                }
+            }
+            methodSummaryClassNames.addAll(newClassNames);
+        } while(newClassNames.size() != 0);
+    }
+
     public void startAnalysis(String className, String methodSig) {
         try {
             startingPointsHistory = new HashSet();
             MethodReference mr = StringStuff.makeMethodReference(className + "." + methodSig);
             IMethod m = cha.resolveMethod(mr);
             if (m == null) {
-                String appJar = System.getenv("TARGET_CLASSPATH_WALA");// + className;
-                //if(!appJar.endsWith(".class")) appJar += ".class";
-                AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
-                        (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
-                cha = ClassHierarchyFactory.make(scope);
-                m = cha.resolveMethod(mr);
-                if(m == null) {
-                    System.out.println("could not resolve " + mr);
-                    return;
-                }
+                System.out.println("could not resolve " + mr);
+                return;
                 //Assertions.UNREACHABLE("could not resolve " + mr);
             }
             AnalysisOptions options = new AnalysisOptions();
@@ -206,10 +249,6 @@ public class VeritestingMain {
             if(!methodAnalysis) doAnalysis(cfg.entry(), null);
             else doMethodAnalysis(cfg.entry(), cfg.exit());
         } catch (InvalidClassFileException e) {
-            e.printStackTrace();
-        } catch (ClassHierarchyException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
             e.printStackTrace();
         }
     }

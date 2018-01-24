@@ -20,6 +20,7 @@ limitations under the License.
 import com.ibm.wala.types.TypeName;
 import org.apache.bcel.classfile.Utility;
 
+import javax.rmi.CORBA.Util;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -42,7 +43,14 @@ public class ReflectUtil
 
         for ( int i = 0 ; i < parameterTypes.length ; i++ )
         {
-            paramString.append(Utility.getSignature(parameterTypes[i].getSimpleName()));
+            paramString.append(Utility.getSignature(parameterTypes[i].getCanonicalName()));
+            /*String correct = Utility.getSignature(parameterTypes[i].getCanonicalName());
+            String y = Utility.getSignature(parameterTypes[i].getSimpleName());
+            String z = parameterTypes[i].getSimpleName();
+            String a = parameterTypes[i].getCanonicalName();
+            String b = parameterTypes[i].getName();
+            String c = parameterTypes[i].getTypeName();
+            System.out.println("");*/
         }
         return paramString.toString();
     }
