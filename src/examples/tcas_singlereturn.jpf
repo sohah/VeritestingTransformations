@@ -7,8 +7,8 @@ symbolic.method = tcas_singlereturn.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#
 vm.storage.class=nil
 
 #coverage.include=tcas_singlereturn
-
 listener = .symbc.VeritestingListener
+veritestingMode = 1
 #,gov.nasa.jpf.listener.CoverageAnalyzer
 #listener = .symbc.SymbolicListener
 #listener = .listener.ChoiceTracker

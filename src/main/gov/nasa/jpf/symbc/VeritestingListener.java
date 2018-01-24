@@ -43,9 +43,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public static HashMap<String, VeritestingRegion> veritestingRegions;
     //TODO: make these into configuration options
-    public static boolean veritestingOn = true;
     public static boolean methodSummarizationOn = true;
     public static boolean boostPerf = true;
+    public static int veritestingMode = 0;
 
     public static long totalSolverTime = 0, z3Time = 0;
     public static long parseTime = 0;
@@ -55,6 +55,22 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private long staticAnalysisTime = 0;
 
     public VeritestingListener(Config conf, JPF jpf) {
+        if(conf.hasValue("veritestingMode")) {
+            veritestingMode = conf.getInt("veritestingMode");
+            if (veritestingMode < 0 || veritestingMode > 3) {
+                System.out.println("Warning: veritestingMode should be between 0 and 3 (both 0 and 3 included)");
+                System.out.println("Warning: resetting veritestingMode to 0 (aka use vanilla SPF)");
+                veritestingMode = 0;
+            }
+        } else {
+            System.out.println("* Warning: no veritestingMode specified");
+            System.out.println("* Warning: set veritestingMode to 0 to use vanilla SPF with VeritestingListener");
+            System.out.println("* Warning: set veritestingMode to 1 to use veritesting with simple regions");
+            System.out.println("* Warning: set veritestingMode to 2 to use veritesting with complex regions");
+            System.out.println("* Warning: set veritestingMode to 3 to use veritesting with complex regions and method summaries");
+            System.out.println("* Warning: resetting veritestingMode to 0 (aka use vanilla SPF)");
+            veritestingMode = 0;
+        }
         jpf.addPublisherExtension(ConsolePublisher.class, this);
     }
 
@@ -115,7 +131,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int pathLabelCount = 1;
 
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
-        if(!veritestingOn) return;
+        if(veritestingMode == 0) return;
         Config conf = ti.getVM().getConfig();
         if(veritestingRegions == null) {
             String classPath = conf.getStringArray("classpath")[0] + "/";
@@ -218,7 +234,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public void publishFinished (Publisher publisher) {
         PrintWriter pw = publisher.getOut();
-        publisher.publishTopicStart("VeritestingListener report (boostPerf = " + boostPerf + ", veritesting = " + veritestingOn + ")");
+        publisher.publishTopicStart("VeritestingListener report (boostPerf = " + boostPerf + ", veritestingMode = " + veritestingMode + ")");
         pw.println("static analysis time = " + staticAnalysisTime/1000000);
         pw.println("totalSolverTime = " + VeritestingListener.totalSolverTime/1000000);
         pw.println("z3Time = " + VeritestingListener.z3Time/1000000);
@@ -226,7 +242,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime/1000000);
         pw.println("cleanupTime = " + VeritestingListener.cleanupTime/1000000);
         pw.println("solverCount = " + VeritestingListener.solverCount);
-        if(veritestingOn) {
+        if(veritestingMode > 0) {
             pw.println("# regions = " + VeritestingListener.veritestingRegions.size());
             int maxSummarizedBranches = getMaxSummarizedBranch(false);
             ArrayList<Integer> ranIntoByBranch = new ArrayList<>();
@@ -272,17 +288,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             ranIntoByBranch.get(i) + ", " + usedByBranch.get(i) + ") ");
                 }
             }
-        }
-        ArrayList<String> regions = new ArrayList<>();
-        for(HashMap.Entry<String, VeritestingRegion> entry: veritestingRegions.entrySet()) {
-            regions.add(entry.getKey());
+            ArrayList<String> regions = new ArrayList<>();
+            for(HashMap.Entry<String, VeritestingRegion> entry: veritestingRegions.entrySet()) {
+                regions.add(entry.getKey());
+            }
+
+            System.out.println("Sorted regions:");
+            regions.sort(String::compareTo);
+            for(int i=0; i < regions.size(); i++) {
+                System.out.println(regions.get(i));
+            }
         }
 
-        System.out.println("Sorted regions:");
-        regions.sort(String::compareTo);
-        for(int i=0; i < regions.size(); i++) {
-            System.out.println(regions.get(i));
-        }
     }
 
 
@@ -449,7 +466,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
                     assert (fieldInfo != null);
                     finalValueSPF = fillFieldInputHole(ti, stackFrame, fieldInfo);
-                    assert (finalValueSPF != null);
+                    if (finalValueSPF == null) return null;
                     finalValueGreen = SPFToGreenExpr(finalValueSPF);
                     retHoleHashMap.put(keyHoleExpression, finalValueGreen);
                     break;
@@ -566,7 +583,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                                 //paramEqList.add(new Operation(Operation.Operator.EQ, fieldInfo.use, callSiteInfo.paramList[0]));
                                 assert (fieldInfo != null);
                                 spfExpr = fillFieldInputHole(ti, stackFrame, fieldInfo);
-                                assert (spfExpr != null);
+                                if (spfExpr == null) return null;
                                 greenExpr = SPFToGreenExpr(spfExpr);
                                 retHoleHashMap.put(methodKeyHole, greenExpr);
                                 break;
@@ -627,7 +644,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     fieldInputInfo.fieldName+ "' on null object");
             assert(false);
         } else {
-            ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(fieldInputInfo.className);
+            ClassInfo ci;
+            try {
+                ci = ClassLoaderInfo.getCurrentResolvedClassInfo(fieldInputInfo.className);
+            } catch(ClassInfoException e) { return null; }
             ElementInfo eiFieldOwner;
             if(!isStatic) eiFieldOwner = ti.getElementInfo(objRef);
             else eiFieldOwner = ci.getStaticElementInfo();
