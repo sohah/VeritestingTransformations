@@ -382,6 +382,11 @@ public class VeritestingMain {
                 while (thenUnit != commonSucc) {
                     boolean isPhithenUnit = false;
                     while(cfg.getNormalSuccessors(thenUnit).size() > 1 && thenUnit != commonSucc && canVeritest) {
+                        if (VeritestingListener.veritestingMode == 1) {
+                            canVeritest = false;
+                            break;
+                        }
+                        assert(VeritestingListener.veritestingMode == 2 || VeritestingListener.veritestingMode == 3);
                         //instead of giving up, try to compute a summary of everything from thenUnit up to commonSucc
                         //to allow complex regions
                         HashMap<Expression, Expression> savedHoleHashMap = saveHoleHashMap();
@@ -471,6 +476,11 @@ public class VeritestingMain {
                 while (canVeritest && elseUnit != commonSucc) {
                     boolean isPhielseUnit = false;
                     while(cfg.getNormalSuccessors(elseUnit).size() > 1 && elseUnit != commonSucc && canVeritest) {
+                        if (VeritestingListener.veritestingMode == 1) {
+                            canVeritest = false;
+                            break;
+                        }
+                        assert(VeritestingListener.veritestingMode == 2 || VeritestingListener.veritestingMode == 3);
                         //instead of giving up, try to compute a summary of everything from elseUnit up to commonSucc
                         //to allow complex regions
                         HashMap<Expression, Expression> savedHoleHashMap = saveHoleHashMap();
@@ -646,7 +656,7 @@ public class VeritestingMain {
 
     public void doMethodAnalysis(ISSABasicBlock startingUnit, ISSABasicBlock endingUnit) throws InvalidClassFileException {
         assert(methodAnalysis);
-        if(VeritestingListener.methodSummarizationOn == false) {
+        if(VeritestingListener.veritestingMode != 3) {
             return;
         }
         //System.out.println("Starting doMethodAnalysis");
@@ -655,7 +665,10 @@ public class VeritestingMain {
         Expression methodExpression = null;
         HashSet<Integer> methodSummarizedRegionStartBB = new HashSet<>();
         boolean canVeritestMethod = true;
+        int endingBC = 0;
         while (true) {
+            if(((SSACFG.BasicBlock) currUnit).getAllInstructions().size() > 0)
+                endingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(currUnit.getLastInstructionIndex());
             List<ISSABasicBlock> succs = new ArrayList<>(cfg.getNormalSuccessors(currUnit));
             ISSABasicBlock commonSucc = cfg.getIPdom(currUnit.getNumber());
             if (succs.size() == 1 || succs.size() == 0) {
@@ -668,7 +681,7 @@ public class VeritestingMain {
                 if(blockSummary.getIsExitNode() || succs.size() == 0) {
                     VeritestingRegion veritestingRegion =
                             constructMethodRegion(methodExpression, cfg.entry().getNumber(),
-                                    cfg.entry().getNumber(), methodSummarizedRegionStartBB);
+                                    cfg.entry().getNumber(), methodSummarizedRegionStartBB, endingBC);
                     String key = veritestingRegion.getClassName() + "." + veritestingRegion.getMethodName() +
                             veritestingRegion.getMethodSignature() + "#" +
                             veritestingRegion.getStartInsnPosition();
@@ -730,12 +743,13 @@ public class VeritestingMain {
     } // end doMethodAnalysis
 
     public VeritestingRegion constructMethodRegion(
-            Expression summaryExp, int startBBNum, int endBBNum, HashSet<Integer> summarizedRegionStartBB) throws InvalidClassFileException {
+            Expression summaryExp, int startBBNum, int endBBNum, HashSet<Integer> summarizedRegionStartBB,
+            int endingBC) throws InvalidClassFileException {
         VeritestingRegion veritestingRegion = new VeritestingRegion();
         veritestingRegion.setSummaryExpression(summaryExp);
         veritestingRegion.setStartInsnPosition(0);
         // assuming ending instruction position is not needed for using a method summary
-        veritestingRegion.setEndInsnPosition(-1);
+        veritestingRegion.setEndInsnPosition(endingBC);
         veritestingRegion.setOutputVars(varUtil.defLocalVars);
         veritestingRegion.setRetValVars(varUtil.retValVar);
         veritestingRegion.setClassName(currentClassName);

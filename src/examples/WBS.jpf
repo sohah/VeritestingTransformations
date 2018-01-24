@@ -7,6 +7,7 @@ symbolic.method = WBS.launch(sym#sym#sym#sym#sym#sym#sym#sym#sym)
 vm.storage.class=nil
 #coverage.include=WBS
 listener = .symbc.VeritestingListener
+veritestingMode = 3
 #,gov.nasa.jpf.listener.CoverageAnalyzer
 #listener = .symbc.SymbolicListener
 #listener = .listener.ChoiceTracker

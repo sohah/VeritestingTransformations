@@ -43,7 +43,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public static HashMap<String, VeritestingRegion> veritestingRegions;
     //TODO: make these into configuration options
-    public static boolean methodSummarizationOn = true;
     public static boolean boostPerf = true;
     public static int veritestingMode = 0;
 
@@ -160,11 +159,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             //System.out.println("Starting region (" + region.toString()+") at instruction " + instructionToExecute
             //+ " (pos = " + instructionToExecute.getPosition() + ")");
             InstructionInfo instructionInfo = new InstructionInfo().invoke(sf);
-            if(instructionInfo == null) return;
-            int numOperands = instructionInfo.getNumOperands();
+            if(instructionInfo == null && !region.isMethodSummary()) return;
+            int numOperands = 0;
+            if(instructionInfo != null && region.isMethodSummary())
+                numOperands = instructionInfo.getNumOperands();
             PathCondition pc;
+            //We've intercepted execution before any symbolic state was reached, so return
+            if(!(ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)) return;
             pc = ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).getCurrentPC();
-            if(!boostPerf) {
+            if(!boostPerf && instructionInfo != null) {
                 PathCondition eqPC = pc.make_copy();
                 eqPC._addDet(new GreenConstraint(instructionInfo.getCondition()));
                 boolean eqSat = eqPC.simplify();
@@ -441,6 +444,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             assert (keyHoleExpression.isHole());
             switch (keyHoleExpression.getHoleType()) {
                 case LOCAL_INPUT:
+                    //TODO get the latest value written into this local, not the value in the local at the beginning of
+                    //this region
                     finalValueSPF =
                             (gov.nasa.jpf.symbc.numeric.Expression) stackFrame.getLocalAttr(keyHoleExpression.getLocalStackSlot());
                     if (finalValueSPF == null)
@@ -463,6 +468,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     retHoleHashMap.put(keyHoleExpression, null);
                     break;
                 case FIELD_INPUT:
+                    //TODO get the latest value written into this field, not the value in the field at the beginning of
+                    //this region
                     HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
                     assert (fieldInfo != null);
                     finalValueSPF = fillFieldInputHole(ti, stackFrame, fieldInfo);
@@ -476,11 +483,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     assert (false);
                     break;
                 case CONDITION:
+                    assert(instructionInfo != null);
                     finalValueGreen = instructionInfo.getCondition();
                     assert (finalValueGreen != null);
                     retHoleHashMap.put(keyHoleExpression, finalValueGreen);
                     break;
                 case NEGCONDITION:
+                    assert (instructionInfo != null);
                     finalValueGreen = instructionInfo.getNegCondition();
                     assert (finalValueGreen != null);
                     retHoleHashMap.put(keyHoleExpression, finalValueGreen);
@@ -533,6 +542,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             //LOCAL_INPUTs can be mapped to parameters at the call site, but non-parameter local inputs cannot
                             // in other words, we cannot support summarization of functions that create something on the stack
                             case LOCAL_INPUT:
+                                //TODO get the latest value written into this local, not the value in the local at the beginning of
+                                //this region
                                 //local inputs used in method summary have to come from the filled-up holes in paramList
                                 if (methodKeyHole.getLocalStackSlot() < callSiteInfo.paramList.size()) {
                                     int methodLocalStackSlot = methodKeyHole.getLocalStackSlot();
@@ -570,6 +581,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             case NONE:
                                 break;
                             case FIELD_INPUT:
+                                //TODO get the latest value written into this field, not the value in the field at the beginning of
+                                //this region
                                 HoleExpression.FieldInfo fieldInfo = methodKeyHole.getFieldInfo();
                                 //The object reference where this field lives HAS to be present in the current method's stack frame
                                 //and we populate that stack slot in fieldInfo for fillFieldInputHole to use
