@@ -258,7 +258,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         System.out.println("declaringClass = " + declaringClass + ", methodName = " + fieldName);
         int def = instruction.getDef(0);
         varUtil.addFieldInputVal(def, objRef, declaringClass.toString(), fieldName.toString(),
-                HoleExpression.HoleType.FIELD_INPUT);
+                HoleExpression.HoleType.FIELD_INPUT, instruction.isStatic());
 
         canVeritest = true;
     }
@@ -288,7 +288,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         Expression writeVal = varUtil.addVal(instruction.getVal());
         SPFExpr = new Operation(Operator.EQ, intermediate, writeVal);
         varUtil.addFieldOutputVal(intermediate, objRef, className.toString(), fieldName.toString(),
-                HoleExpression.HoleType.FIELD_OUTPUT);
+                HoleExpression.HoleType.FIELD_OUTPUT, instruction.isStatic());
 
         canVeritest = true;
     }

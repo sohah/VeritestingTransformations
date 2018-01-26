@@ -161,7 +161,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             InstructionInfo instructionInfo = new InstructionInfo().invoke(sf);
             if(instructionInfo == null && !region.isMethodSummary()) return;
             int numOperands = 0;
-            if(instructionInfo != null && region.isMethodSummary())
+            if(instructionInfo != null && !region.isMethodSummary())
                 numOperands = instructionInfo.getNumOperands();
             PathCondition pc;
             //We've intercepted execution before any symbolic state was reached, so return
@@ -443,16 +443,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             HoleExpression keyHoleExpression = (HoleExpression) key;
             assert (keyHoleExpression.isHole());
             switch (keyHoleExpression.getHoleType()) {
-                case LOCAL_INPUT:
-                    //TODO get the latest value written into this local, not the value in the local at the beginning of
-                    //this region
-                    finalValueSPF =
-                            (gov.nasa.jpf.symbc.numeric.Expression) stackFrame.getLocalAttr(keyHoleExpression.getLocalStackSlot());
-                    if (finalValueSPF == null)
-                        finalValueSPF = new IntegerConstant(stackFrame.getLocalVariable(keyHoleExpression.getLocalStackSlot()));
-                    finalValueGreen = SPFToGreenExpr(finalValueSPF);
-                    retHoleHashMap.put(keyHoleExpression, finalValueGreen);
-                    break;
                 case LOCAL_OUTPUT:
                 case INTERMEDIATE:
                     finalValueSPF =
@@ -466,16 +456,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             makeSymbolicInteger(((HoleExpression)fieldInfo.writeValue).getHoleVarName() + pathLabelCount);
                     finalValueGreen = SPFToGreenExpr(finalValueSPF);*/
                     retHoleHashMap.put(keyHoleExpression, null);
-                    break;
-                case FIELD_INPUT:
-                    //TODO get the latest value written into this field, not the value in the field at the beginning of
-                    //this region
-                    HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
-                    assert (fieldInfo != null);
-                    finalValueSPF = fillFieldInputHole(ti, stackFrame, fieldInfo);
-                    if (finalValueSPF == null) return null;
-                    finalValueGreen = SPFToGreenExpr(finalValueSPF);
-                    retHoleHashMap.put(keyHoleExpression, finalValueGreen);
                     break;
                 case NONE:
                     System.out.println("expression marked as hole with NONE hole type: " +
@@ -494,6 +474,55 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     assert (finalValueGreen != null);
                     retHoleHashMap.put(keyHoleExpression, finalValueGreen);
                     break;
+                case FIELD_INPUT:
+                case LOCAL_INPUT:
+                    break;
+            }
+        }
+        for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
+            Expression key = entry.getKey(), finalValueGreen;
+            gov.nasa.jpf.symbc.numeric.Expression finalValueSPF;
+            assert (key instanceof HoleExpression);
+            HoleExpression keyHoleExpression = (HoleExpression) key;
+            assert (keyHoleExpression.isHole());
+            switch (keyHoleExpression.getHoleType()) {
+                case FIELD_INPUT:
+                    //get the latest value written into this field, not the value in the field at the beginning of
+                    //this region
+                    if(keyHoleExpression.dependsOn != null) {
+                        HoleExpression holeExpression = (HoleExpression) keyHoleExpression.dependsOn;
+                        assert(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT);
+                        assert(holeExpression.isLatestWrite);
+                        assert(retHoleHashMap.containsKey(holeExpression.getFieldInfo().writeValue));
+                        retHoleHashMap.put(keyHoleExpression, retHoleHashMap.get(holeExpression.getFieldInfo().writeValue));
+                    } else {
+                        HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
+                        assert (fieldInfo != null);
+                        finalValueSPF = fillFieldInputHole(ti, stackFrame, fieldInfo);
+                        if (finalValueSPF == null) return null;
+                        finalValueGreen = SPFToGreenExpr(finalValueSPF);
+                        retHoleHashMap.put(keyHoleExpression, finalValueGreen);
+                    }
+                    break;
+                case LOCAL_INPUT:
+                    //get the latest value written into this local, not the value in the local at the beginning of
+                    //this region
+                    if(keyHoleExpression.dependsOn != null) {
+                        HoleExpression holeExpression = (HoleExpression) keyHoleExpression.dependsOn;
+                        assert(holeExpression.getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
+                        assert(holeExpression.isLatestWrite);
+                        assert(retHoleHashMap.containsKey(holeExpression));
+                        retHoleHashMap.put(keyHoleExpression, retHoleHashMap.get(holeExpression));
+                    } else {
+                        finalValueSPF =
+                                (gov.nasa.jpf.symbc.numeric.Expression) stackFrame.getLocalAttr(keyHoleExpression.getLocalStackSlot());
+                        if (finalValueSPF == null)
+                            finalValueSPF = new IntegerConstant(stackFrame.getLocalVariable(keyHoleExpression.getLocalStackSlot()));
+                        finalValueGreen = SPFToGreenExpr(finalValueSPF);
+                        retHoleHashMap.put(keyHoleExpression, finalValueGreen);
+                    }
+                    break;
+                default: break;
             }
         }
         for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
@@ -532,37 +561,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     }
                     VeritestingRegion methodSummary = veritestingRegions.get(key1);
                     HashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
-                    ArrayList<Expression> paramEqList = new ArrayList<>();
                     for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
                         Expression methodKeyExpr = entry1.getKey();
                         assert(methodKeyExpr instanceof HoleExpression);
                         HoleExpression methodKeyHole = (HoleExpression) methodKeyExpr;
                         assert(methodKeyHole.isHole());
                         switch(methodKeyHole.getHoleType()) {
-                            //LOCAL_INPUTs can be mapped to parameters at the call site, but non-parameter local inputs cannot
-                            // in other words, we cannot support summarization of functions that create something on the stack
-                            case LOCAL_INPUT:
-                                //TODO get the latest value written into this local, not the value in the local at the beginning of
-                                //this region
-                                //local inputs used in method summary have to come from the filled-up holes in paramList
-                                if (methodKeyHole.getLocalStackSlot() < callSiteInfo.paramList.size()) {
-                                    int methodLocalStackSlot = methodKeyHole.getLocalStackSlot();
-                                    //int callSiteLocalStackSlot = ((HoleExpression)callSiteInfo.paramList[methodLocalStackSlot]).getLocalStackSlot();
-                                    //methodKeyHole.setLocalStackSlot(callSiteLocalStackSlot);
-                                    if(callSiteInfo.paramList.get(methodLocalStackSlot) instanceof  HoleExpression)
-                                        retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(callSiteInfo.paramList.get(methodLocalStackSlot)));
-                                    else retHoleHashMap.put(methodKeyHole, callSiteInfo.paramList.get(methodLocalStackSlot));
-                                    paramEqList.add(new Operation(Operation.Operator.EQ,
-                                            methodKeyHole,
-                                            callSiteInfo.paramList.get(methodLocalStackSlot)));
-                                } else {
-                                    //Local variables in the method summary should just become intermediate variables
-                                    gov.nasa.jpf.symbc.numeric.Expression finalValueSPF =
-                                            makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
-                                    Expression finalValueGreen = SPFToGreenExpr(finalValueSPF);
-                                    retHoleHashMap.put(methodKeyHole, finalValueGreen);
-                                }
-                                break;
                             case CONDITION:
                                 System.out.println("unsupported condition hole in method summary");
                                 return null;
@@ -580,41 +584,93 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                                 break;
                             case NONE:
                                 break;
-                            case FIELD_INPUT:
-                                //TODO get the latest value written into this field, not the value in the field at the beginning of
-                                //this region
+                            case FIELD_OUTPUT:
                                 HoleExpression.FieldInfo fieldInfo = methodKeyHole.getFieldInfo();
                                 //The object reference where this field lives HAS to be present in the current method's stack frame
-                                //and we populate that stack slot in fieldInfo for fillFieldInputHole to use
-                                if(callSiteInfo.paramList.size() > 0) {
-                                    assert (((HoleExpression) callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_INPUT ||
-                                            ((HoleExpression) callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
-                                    int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
-                                    fieldInfo.callSiteStackSlot = callSiteStackSlot;
-                                }
-                                //retHoleHashMap.put(fieldInfo.use, retHoleHashMap.get(callSiteInfo.paramList[0]));
-                                //paramEqList.add(new Operation(Operation.Operator.EQ, fieldInfo.use, callSiteInfo.paramList[0]));
-                                assert (fieldInfo != null);
-                                spfExpr = fillFieldInputHole(ti, stackFrame, fieldInfo);
-                                if (spfExpr == null) return null;
-                                greenExpr = SPFToGreenExpr(spfExpr);
-                                retHoleHashMap.put(methodKeyHole, greenExpr);
-                                break;
-                            case FIELD_OUTPUT:
-                                fieldInfo = methodKeyHole.getFieldInfo();
-                                //The object reference where this field lives HAS to be present in the current method's stack frame
                                 //and we populate that stack slot in fieldInfo for fillFieldOutputHole to use later
-                                fieldInfo.callSiteStackSlot = ((HoleExpression)callSiteInfo.paramList.get(0)).getLocalStackSlot();
-                                methodKeyHole.setFieldInfo(fieldInfo.className, fieldInfo.fieldName,
-                                        fieldInfo.localStackSlot, fieldInfo.callSiteStackSlot, fieldInfo.writeValue);
+                                if(!fieldInfo.isStaticField) {
+                                    fieldInfo.callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
+                                    methodKeyHole.setFieldInfo(fieldInfo.className, fieldInfo.fieldName,
+                                            fieldInfo.localStackSlot, fieldInfo.callSiteStackSlot, fieldInfo.writeValue,
+                                            fieldInfo.isStaticField);
+                                }
                                 break;
                             default:
-                                System.out.println("expression marked with unknown hole type: " +
-                                        keyHoleExpression.toString());
-                                assert(false);
-                                return null;
+                                break;
                         }
                     }
+                    ArrayList<Expression> paramEqList = new ArrayList<>();
+                    for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
+                        Expression methodKeyExpr = entry1.getKey();
+                        assert(methodKeyExpr instanceof HoleExpression);
+                        HoleExpression methodKeyHole = (HoleExpression) methodKeyExpr;
+                        assert(methodKeyHole.isHole());
+                        switch(methodKeyHole.getHoleType()) {
+                            //LOCAL_INPUTs can be mapped to parameters at the call site, non-parameter local inputs
+                            // need to be mapped to intermediate variables since we cannot create a stack for the summarized method
+                            case LOCAL_INPUT:
+                                //get the latest value written into this local, not the value in the local at the beginning of
+                                //this region
+                                if(methodKeyHole.dependsOn != null) {
+                                    HoleExpression holeExpression = (HoleExpression) methodKeyHole.dependsOn;
+                                    assert(holeExpression.getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
+                                    assert(holeExpression.isLatestWrite);
+                                    assert(retHoleHashMap.containsKey(holeExpression));
+                                    retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(holeExpression));
+                                } else {
+                                    //local inputs used in method summary have to come from the filled-up holes in paramList
+                                    if (methodKeyHole.getLocalStackSlot() < callSiteInfo.paramList.size()) {
+                                        int methodLocalStackSlot = methodKeyHole.getLocalStackSlot();
+                                        //int callSiteLocalStackSlot = ((HoleExpression)callSiteInfo.paramList[methodLocalStackSlot]).getLocalStackSlot();
+                                        //methodKeyHole.setLocalStackSlot(callSiteLocalStackSlot);
+                                        if (callSiteInfo.paramList.get(methodLocalStackSlot) instanceof HoleExpression)
+                                            retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(callSiteInfo.paramList.get(methodLocalStackSlot)));
+                                        else //a constant could have been passed as an argument instead of a variable
+                                            retHoleHashMap.put(methodKeyHole, callSiteInfo.paramList.get(methodLocalStackSlot));
+                                        paramEqList.add(new Operation(Operation.Operator.EQ,
+                                                methodKeyHole,
+                                                callSiteInfo.paramList.get(methodLocalStackSlot)));
+                                    } else {
+                                        //Local variables in the method summary should just become intermediate variables
+                                        gov.nasa.jpf.symbc.numeric.Expression finalValueSPF =
+                                                makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
+                                        Expression finalValueGreen = SPFToGreenExpr(finalValueSPF);
+                                        retHoleHashMap.put(methodKeyHole, finalValueGreen);
+                                    }
+                                }
+                                break;
+                            case FIELD_INPUT:
+                                //get the latest value written into this field, not the value in the field at the beginning of
+                                //this region
+                                if(methodKeyHole.dependsOn != null) {
+                                    HoleExpression holeExpression = (HoleExpression) methodKeyHole.dependsOn;
+                                    assert(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT);
+                                    assert(holeExpression.isLatestWrite);
+                                    assert(retHoleHashMap.containsKey(holeExpression.getFieldInfo().writeValue));
+                                    retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(holeExpression.getFieldInfo().writeValue));
+                                } else {
+                                    HoleExpression.FieldInfo fieldInfo = methodKeyHole.getFieldInfo();
+                                    //The object reference where this field lives HAS to be present in the current method's stack frame
+                                    //and we populate that stack slot in fieldInfo for fillFieldInputHole to use
+                                    if (callSiteInfo.paramList.size() > 0 && !fieldInfo.isStaticField) {
+                                        assert (((HoleExpression) callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_INPUT ||
+                                                ((HoleExpression) callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
+                                        int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
+                                        fieldInfo.callSiteStackSlot = callSiteStackSlot;
+                                    }
+                                    //retHoleHashMap.put(fieldInfo.use, retHoleHashMap.get(callSiteInfo.paramList[0]));
+                                    //paramEqList.add(new Operation(Operation.Operator.EQ, fieldInfo.use, callSiteInfo.paramList[0]));
+                                    assert (fieldInfo != null);
+                                    spfExpr = fillFieldInputHole(ti, stackFrame, fieldInfo);
+                                    if (spfExpr == null) return null;
+                                    greenExpr = SPFToGreenExpr(spfExpr);
+                                    retHoleHashMap.put(methodKeyHole, greenExpr);
+                                }
+                                break;
+                            default: break;
+                        }
+                    }
+
                     Expression retValEq = null;
                     if(methodSummary.retVal != null)
                         retValEq = new Operation(Operation.Operator.EQ, methodSummary.retVal, keyHoleExpression);
@@ -645,13 +701,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             StackFrame stackFrame,
             HoleExpression.FieldInfo fieldInputInfo) {
 
-        boolean isStatic = false;
+        boolean isStatic = fieldInputInfo.isStaticField;
         int objRef = -1;
         //get the object reference from fieldInputInfo.use's local stack slot if not from the call site stack slot
         int stackSlot = fieldInputInfo.callSiteStackSlot;
         if(stackSlot == -1) stackSlot = fieldInputInfo.localStackSlot;
-        if(stackSlot == -1) isStatic = true;
-        else objRef = stackFrame.getLocalVariable(stackSlot);
+        if(!isStatic) objRef = stackFrame.getLocalVariable(stackSlot);
         if (objRef == 0) {
             System.out.println("java.lang.NullPointerException" + "referencing field '" +
                     fieldInputInfo.fieldName+ "' on null object");

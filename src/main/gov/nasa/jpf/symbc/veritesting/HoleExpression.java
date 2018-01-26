@@ -7,6 +7,8 @@ import za.ac.sun.cs.green.expr.VisitorException;
 import java.util.List;
 
 public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
+    public boolean isLatestWrite = true;
+
     @Override
     public void accept(Visitor visitor) throws VisitorException {
         visitor.preVisit(this);
@@ -179,7 +181,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     protected int localStackSlot = -1;
 
     public void setFieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot,
-                             Expression writeExpr) {
+                             Expression writeExpr, boolean isStaticField) {
         assert(holeType == HoleType.FIELD_INPUT || holeType == HoleType.FIELD_OUTPUT);
         if(holeType == HoleType.FIELD_OUTPUT) {
             assert (writeExpr != null);
@@ -187,7 +189,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
             assert (((HoleExpression)writeExpr).getHoleType() == HoleType.INTERMEDIATE);
         }
         if(holeType == HoleType.FIELD_INPUT) assert(writeExpr == null);
-        fieldInfo = new FieldInfo(className, fieldName, localStackSlot, callSiteStackSlot, writeExpr);
+        fieldInfo = new FieldInfo(className, fieldName, localStackSlot, callSiteStackSlot, writeExpr, isStaticField);
     }
 
     public FieldInfo getFieldInfo() {
@@ -198,14 +200,16 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
         public String className, fieldName;
         public int localStackSlot = -1, callSiteStackSlot = -1;
         public Expression writeValue = null;
+        public boolean isStaticField = false;
 
         public FieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot,
-                         Expression writeValue) {
+                         Expression writeValue, boolean isStaticField) {
             this.localStackSlot = localStackSlot;
             this.callSiteStackSlot = callSiteStackSlot;
             this.className = className;
             this.fieldName = fieldName;
             this.writeValue = writeValue;
+            this.isStaticField = isStaticField;
         }
 
         public String toString() {
@@ -214,6 +218,18 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
             if(writeValue != null) ret += ", writeValue (" + writeValue.toString() + ")";
             else ret += ")";
             return ret;
+        }
+
+        public boolean equals(Object o) {
+            if(!(o instanceof FieldInfo)) return false;
+            FieldInfo fieldInfo1 = (FieldInfo) o;
+            if(!fieldInfo1.className.equals(this.className) ||
+                    !fieldInfo1.fieldName.equals(this.fieldName) ||
+                    fieldInfo1.localStackSlot != this.localStackSlot ||
+                    fieldInfo1.callSiteStackSlot != this.callSiteStackSlot ||
+                    (fieldInfo1.writeValue != null && this.writeValue != null && !fieldInfo1.writeValue.equals(this.writeValue)))
+                return false;
+            else return true;
         }
     }
 
@@ -226,4 +242,6 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
         return invokeInfo;
     }
     InvokeInfo invokeInfo = null;
+
+    public Expression dependsOn = null;
 }

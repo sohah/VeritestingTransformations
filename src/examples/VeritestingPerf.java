@@ -13,16 +13,16 @@ public class VeritestingPerf {
 
     public static void main(String[] args) {
         //(new VeritestingPerf()).cfgTest(1);
-        //(new VeritestingPerf()).countBitsSet(1);
+        (new VeritestingPerf()).countBitsSet(1);
         //int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
         //(new VeritestingPerf()).testMe5(x, 1);
         //(new VeritestingPerf()).testMe4(x, 12, -1, 1);
         //(new VeritestingPerf()).arrayTest(x, 6);
         //(new VeritestingPerf()).checkOperator();
-        ArrayList<Integer> list = new ArrayList<>();
-        list.add(Debug.makeSymbolicInteger("a1"));
-        list.add(Debug.makeSymbolicInteger("a2"));
-        (new VeritestingPerf()).countArrayList(list);
+//        ArrayList<Integer> list = new ArrayList<>();
+//        list.add(Debug.makeSymbolicInteger("a1"));
+//        list.add(Debug.makeSymbolicInteger("a2"));
+//        (new VeritestingPerf()).countArrayList(list);
     }
 
     public int countBitsSetSimple(int x) {
@@ -132,7 +132,7 @@ public class VeritestingPerf {
 
 class TempClassDerived extends TempClass {
 
-    private int tempInt = 1; //change this to 2 to test read after write on a class field inside a Veritesting region
+    private static int tempInt = 2; //change this to 2 to test read after write on a class field inside a Veritesting region
 
     public int getTempInt() {
         TempClass2 t = new TempClass2();

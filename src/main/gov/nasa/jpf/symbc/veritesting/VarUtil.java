@@ -84,7 +84,11 @@ public class VarUtil {
                 if(expression instanceof HoleExpression && ((HoleExpression)expression).isHole()) {
                     // using non-hole IntegerConstant object containing 0 as placeholder
                     // for final filled-up hole object
-                    if(!holeHashMap.containsKey(expression)) holeHashMap.put(expression, expression);
+                    if(!holeHashMap.containsKey(expression)) {
+                        setLatestWrite(expression);
+                        holeHashMap.put(expression, expression);
+                        checkReadAfterWrite(expression);
+                    }
                     if(((HoleExpression)expression).getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT ||
                             ((HoleExpression)expression).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT)
                         defLocalVars.add(expression);
@@ -306,6 +310,28 @@ public class VarUtil {
         } while(localVarUpdated);
     }
 
+    private void checkReadAfterWrite(Expression expression) {
+        HoleExpression holeExpression = ((HoleExpression)expression);
+        if(holeExpression.getHoleType() == HoleExpression.HoleType.LOCAL_INPUT) {
+            for(HashMap.Entry<Expression, Expression> entry: holeHashMap.entrySet()) {
+                HoleExpression holeExpression1 = (HoleExpression) entry.getKey();
+                if(holeExpression1.getHoleType() != HoleExpression.HoleType.LOCAL_OUTPUT) continue;
+                if(holeExpression.getLocalStackSlot() == holeExpression1.getLocalStackSlot() &&
+                        holeExpression1.isLatestWrite)
+                    holeExpression.dependsOn = holeExpression1;
+            }
+        }
+        if(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_INPUT) {
+            for(HashMap.Entry<Expression, Expression> entry: holeHashMap.entrySet()) {
+                HoleExpression holeExpression1 = (HoleExpression) entry.getKey();
+                if(holeExpression1.getHoleType() != HoleExpression.HoleType.FIELD_OUTPUT) continue;
+                if(holeExpression.getFieldInfo().equals(holeExpression1.getFieldInfo()) &&
+                        holeExpression1.isLatestWrite)
+                    holeExpression.dependsOn = holeExpression1;
+            }
+        }
+    }
+
     private boolean updateLocalVarsForPhi(SSAPhiInstruction phiInstruction, int val) {
         boolean ret = false;
         for(int use = 0; use < phiInstruction.getNumberOfUses(); use++) {
@@ -374,15 +400,19 @@ public class VarUtil {
     public Expression addFieldInputVal(int def, int use,
                                   String className,
                                   String fieldName,
-                                  HoleExpression.HoleType holeType) {
+                                  HoleExpression.HoleType holeType,
+                                       boolean isStaticField) {
         assert(holeType == HoleExpression.HoleType.FIELD_INPUT);
         // Assuming fields have to be used from local objects
         assert(varsMap.containsKey(use) || use == -1);
         int localStackSlot = -1;
-        if(use != -1) localStackSlot = varsMap.get(use);
+        if(!isStaticField) {
+            assert(use != -1);
+            localStackSlot = varsMap.get(use);
+        }
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, holeType);
-        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, null);
+        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, null, isStaticField);
         String name = className + "." + methodName + ".v" + def;
         holeExpression.setHoleVarName(name);
         varCache.put(holeExpression.getHoleVarName(), holeExpression);
@@ -393,17 +423,21 @@ public class VarUtil {
     public Expression addFieldOutputVal(Expression writeExpr, int use,
                                        String className,
                                        String fieldName,
-                                       HoleExpression.HoleType holeType) {
+                                       HoleExpression.HoleType holeType,
+                                        boolean isStaticField) {
         assert(holeType == HoleExpression.HoleType.FIELD_OUTPUT);
         // Assuming fields have to be used from local objects
         assert(varsMap.containsKey(use) || use == -1);
         String name = "FIELD_OUTPUT." + ((HoleExpression)writeExpr).getHoleVarName();
         if(varCache.containsKey(name)) return varCache.get(name);
         int localStackSlot = -1;
-        if(use != -1) localStackSlot = varsMap.get(use);
+        if(!isStaticField) {
+            assert(use != -1);
+            localStackSlot = varsMap.get(use);
+        }
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, holeType);
-        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, writeExpr);
+        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, writeExpr, isStaticField);
         holeExpression.setHoleVarName(name);
         varCache.put(name, holeExpression);
         return holeExpression;
@@ -451,6 +485,26 @@ public class VarUtil {
             assert (varCache.containsKey(name));
             retValVar = varCache.get(name);
         } else retValVar = new IntConstant(getConstant(use));
+    }
+
+    public void setLatestWrite(Expression expression) {
+        HoleExpression holeExpression = (HoleExpression) expression;
+        if(holeExpression.getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT) {
+            for(HashMap.Entry<Expression, Expression> entry: holeHashMap.entrySet()) {
+                HoleExpression holeExpression1 = (HoleExpression) entry.getKey();
+                if(holeExpression1.getHoleType() != HoleExpression.HoleType.LOCAL_OUTPUT) continue;
+                if(holeExpression.getLocalStackSlot() == holeExpression1.getLocalStackSlot())
+                    holeExpression1.isLatestWrite = false;
+            }
+        }
+        if(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT) {
+            for(HashMap.Entry<Expression, Expression> entry: holeHashMap.entrySet()) {
+                HoleExpression holeExpression1 = (HoleExpression) entry.getKey();
+                if(holeExpression1.getHoleType() != HoleExpression.HoleType.FIELD_OUTPUT) continue;
+                if(holeExpression.getFieldInfo().equals(holeExpression1.getFieldInfo()))
+                    holeExpression1.isLatestWrite = false;
+            }
+        }
     }
 }
 
