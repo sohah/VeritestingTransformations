@@ -585,14 +585,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             case NONE:
                                 break;
                             case FIELD_OUTPUT:
-                                HoleExpression.FieldInfo fieldInfo = methodKeyHole.getFieldInfo();
-                                //The object reference where this field lives HAS to be present in the current method's stack frame
-                                //and we populate that stack slot in fieldInfo for fillFieldOutputHole to use later
-                                if(!fieldInfo.isStaticField) {
-                                    fieldInfo.callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
-                                    methodKeyHole.setFieldInfo(fieldInfo.className, fieldInfo.fieldName,
-                                            fieldInfo.localStackSlot, fieldInfo.callSiteStackSlot, fieldInfo.writeValue,
-                                            fieldInfo.isStaticField);
+                                HoleExpression.FieldInfo methodKeyHoleFieldInfo = methodKeyHole.getFieldInfo();
+                                if(!methodKeyHoleFieldInfo.isStaticField) {
+                                    if(methodKeyHoleFieldInfo.localStackSlot == 0) {
+                                        assert(callSiteInfo.paramList.size() > 0);
+                                        methodKeyHoleFieldInfo.callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
+                                        methodKeyHole.setFieldInfo(methodKeyHoleFieldInfo.className, methodKeyHoleFieldInfo.fieldName,
+                                                methodKeyHoleFieldInfo.localStackSlot, methodKeyHoleFieldInfo.callSiteStackSlot, methodKeyHoleFieldInfo.writeValue,
+                                                methodKeyHoleFieldInfo.isStaticField);
+                                    } else return null;
                                 }
                                 break;
                             default:
