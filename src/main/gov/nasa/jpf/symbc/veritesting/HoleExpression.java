@@ -217,6 +217,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
                     ", stackSlots (local = " + localStackSlot + ", callSite = " + callSiteStackSlot;
             if(writeValue != null) ret += ", writeValue (" + writeValue.toString() + ")";
             else ret += ")";
+            ret += ", isStaticField = " + isStaticField;
             return ret;
         }
 

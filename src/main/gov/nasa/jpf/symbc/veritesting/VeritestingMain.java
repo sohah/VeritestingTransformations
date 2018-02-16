@@ -291,6 +291,7 @@ public class VeritestingMain {
                         new Operation(Operation.Operator.AND, negCondition, elseExpr));
 
         MyIVisitor myIVisitor = new MyIVisitor(varUtil, thenUseNum, elseUseNum, true);
+        //TODO there could be multiple outputs of this region, keep going until you don't find any more Phi's
         Expression phiExprSPF, finalPathExpr;
         if(commonSucc.iterator().hasNext()) {
             commonSucc.iterator().next().visit(myIVisitor);

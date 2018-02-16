@@ -42,7 +42,6 @@ import java.util.*;
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
 
     public static HashMap<String, VeritestingRegion> veritestingRegions;
-    //TODO: make these into configuration options
     public static boolean boostPerf = true;
     public static int veritestingMode = 0;
 
@@ -426,9 +425,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     /*
     Load from local variable stack slots IntegerExpression objects and store them into holeHashMap
      */
-    //TODO Handle read after write on class fields
-    //if a read after write happens on a class field, the read operation should return the latest value written to
-    //the field
     private FillHolesOutput fillHoles(
             HashMap<Expression, Expression> holeHashMap,
             InstructionInfo instructionInfo,
@@ -436,6 +432,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             ThreadInfo ti) {
         HashMap<Expression, Expression> retHoleHashMap = new HashMap<>();
         Expression additionalAST = null;
+        //resolve all non-input holes inside the current region's summary
         for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
             Expression key = entry.getKey(), finalValueGreen;
             gov.nasa.jpf.symbc.numeric.Expression finalValueSPF;
@@ -479,6 +476,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     break;
             }
         }
+        //resolve all input holes inside the current region's summary
         for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
             Expression key = entry.getKey(), finalValueGreen;
             gov.nasa.jpf.symbc.numeric.Expression finalValueSPF;
@@ -525,6 +523,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 default: break;
             }
         }
+        // resolve all invoke holes in the current region's summary expression
         for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
             Expression key = entry.getKey(), greenExpr = null;
             gov.nasa.jpf.symbc.numeric.Expression spfExpr;
@@ -561,6 +560,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     }
                     VeritestingRegion methodSummary = veritestingRegions.get(key1);
                     HashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
+                    //fill all holes inside the method summary
                     for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
                         Expression methodKeyExpr = entry1.getKey();
                         assert(methodKeyExpr instanceof HoleExpression);
@@ -640,28 +640,30 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                                 }
                                 break;
                             case FIELD_INPUT:
-                                //get the latest value written into this field, not the value in the field at the beginning of
-                                //this region
                                 if(methodKeyHole.dependsOn != null) {
+                                    //get the latest value written into this field, not the value in the field at the beginning of
+                                    //this region
                                     HoleExpression holeExpression = (HoleExpression) methodKeyHole.dependsOn;
                                     assert(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT);
                                     assert(holeExpression.isLatestWrite);
                                     assert(retHoleHashMap.containsKey(holeExpression.getFieldInfo().writeValue));
                                     retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(holeExpression.getFieldInfo().writeValue));
                                 } else {
-                                    HoleExpression.FieldInfo fieldInfo = methodKeyHole.getFieldInfo();
-                                    //The object reference where this field lives HAS to be present in the current method's stack frame
-                                    //and we populate that stack slot in fieldInfo for fillFieldInputHole to use
-                                    if (callSiteInfo.paramList.size() > 0 && !fieldInfo.isStaticField) {
-                                        assert (((HoleExpression) callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_INPUT ||
-                                                ((HoleExpression) callSiteInfo.paramList.get(0)).getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
-                                        int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
-                                        fieldInfo.callSiteStackSlot = callSiteStackSlot;
+                                    HoleExpression.FieldInfo methodKeyHoleFieldInfo = methodKeyHole.getFieldInfo();
+                                    assert (methodKeyHoleFieldInfo != null);
+                                    if (!methodKeyHoleFieldInfo.isStaticField) {
+                                        if(methodKeyHoleFieldInfo.localStackSlot == 0) {
+                                            assert(callSiteInfo.paramList.size() > 0);
+                                            int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
+                                            methodKeyHoleFieldInfo.callSiteStackSlot = callSiteStackSlot;
+                                        } else {
+                                            // method summary uses a field from an object that is a local inside the method
+                                            // this cannot be handled during veritesting because we cannot create an object
+                                            // when using a method summary
+                                            return null;
+                                        }
                                     }
-                                    //retHoleHashMap.put(fieldInfo.use, retHoleHashMap.get(callSiteInfo.paramList[0]));
-                                    //paramEqList.add(new Operation(Operation.Operator.EQ, fieldInfo.use, callSiteInfo.paramList[0]));
-                                    assert (fieldInfo != null);
-                                    spfExpr = fillFieldInputHole(ti, stackFrame, fieldInfo);
+                                    spfExpr = fillFieldInputHole(ti, stackFrame, methodKeyHoleFieldInfo);
                                     if (spfExpr == null) return null;
                                     greenExpr = SPFToGreenExpr(spfExpr);
                                     retHoleHashMap.put(methodKeyHole, greenExpr);

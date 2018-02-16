@@ -444,12 +444,24 @@ public class VarUtil {
     }
 
     public boolean isConstant(int operand1) {
-        return ir.getSymbolTable().isNumberConstant(operand1);
+        SymbolTable table = ir.getSymbolTable();
+        return table.isNumberConstant(operand1) ||
+                table.isBooleanOrZeroOneConstant(operand1) ||
+                table.isNullConstant(operand1);
     }
 
     public int getConstant(int operand1) {
         assert(isConstant(operand1));
-        return ir.getSymbolTable().getIntValue(operand1);
+        SymbolTable table = ir.getSymbolTable();
+        if(table.isNumberConstant(operand1))
+            return table.getIntValue(operand1);
+        if(table.isBooleanOrZeroOneConstant(operand1))
+            return (table.isTrue(operand1) ? 1 : 0);
+        if(table.isNullConstant(operand1))
+            return 0;
+        System.out.println("Unknown constant type");
+        assert(false);
+        return -1;
     }
 
     public void reset() {
@@ -480,7 +492,7 @@ public class VarUtil {
         if(!isConstant(use)) {
             String name = className + "." + methodName + ".v" + use;
             if(!varCache.containsKey(name)) {
-                System.out.println("var does not contain " + name);
+                System.out.println("varCache does not contain " + name);
             }
             assert (varCache.containsKey(name));
             retValVar = varCache.get(name);

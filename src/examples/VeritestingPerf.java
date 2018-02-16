@@ -140,7 +140,10 @@ class TempClassDerived extends TempClass {
         return tempInt;
     }
 
-    public int getOne(int a) { tempInt = a; return tempInt; }
+    public int getOne(int a) {
+        //tempInt = a;
+        return tempInt;
+    }
 }
 
 class TempClass {

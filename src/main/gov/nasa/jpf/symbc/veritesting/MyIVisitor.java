@@ -103,6 +103,8 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         int operand2 = instruction.getUse(1);
         //variables written to in a veritesting region will always become intermediates because they will be
         //phi'd at the end of the region or be written into a class field later
+        //TODO lhsExpr will not be a intermediate variable if we are summarizing a method
+        //TODO assert that operand1Expr and operand2Expr are not local outputs or field outputs
         Expression lhsExpr = varUtil.makeIntermediateVar(lhs);
         Expression operand1Expr = varUtil.addVal(operand1);
         Expression operand2Expr = varUtil.addVal(operand2);
