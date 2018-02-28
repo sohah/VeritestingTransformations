@@ -51,6 +51,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static long cleanupTime = 0;
     public static int solverCount = 0;
     private long staticAnalysisTime = 0;
+    public static int fieldReadAfterWrite = 0;
+    public static int fieldWriteAfterWrite = 0;
+    public static int fieldWriteAfterRead = 0;
+    public static final boolean allowFieldReadAfterWrite = false;
+    public static final boolean allowFieldWriteAfterRead = true;
+    public static final boolean allowFieldWriteAfterWrite = false;
 
     public VeritestingListener(Config conf, JPF jpf) {
         if(conf.hasValue("veritestingMode")) {
@@ -244,6 +250,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime/1000000);
         pw.println("cleanupTime = " + VeritestingListener.cleanupTime/1000000);
         pw.println("solverCount = " + VeritestingListener.solverCount);
+        pw.println("(fieldReadAfterWrite, fieldWriteAfterRead, fieldWriteAfterWrite = (" + VeritestingListener.fieldReadAfterWrite + ", " +
+                VeritestingListener.fieldWriteAfterRead + ", " + VeritestingListener.fieldWriteAfterWrite + ")");
         if(veritestingMode > 0) {
             pw.println("# regions = " + VeritestingListener.veritestingRegions.size());
             int maxSummarizedBranches = getMaxSummarizedBranch(false);
@@ -375,10 +383,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     stackFrame.setSlotAttr(holeExpression.getLocalStackSlot(), GreenToSPFExpression(finalValue));
                     break;
                 case FIELD_OUTPUT:
-                    HoleExpression.FieldInfo fieldInfo = holeExpression.getFieldInfo();
-                    assert(fieldInfo != null);
-                    finalValue = holeHashMap.get(fieldInfo.writeValue);
-                    fillFieldOutputHole(ti, stackFrame, fieldInfo, GreenToSPFExpression(finalValue));
+                    if(holeExpression.isLatestWrite) {
+                        HoleExpression.FieldInfo fieldInfo = holeExpression.getFieldInfo();
+                        assert (fieldInfo != null);
+                        finalValue = holeHashMap.get(fieldInfo.writeValue);
+                        fillFieldOutputHole(ti, stackFrame, fieldInfo, GreenToSPFExpression(finalValue));
+                    }
                     break;
             }
         }
