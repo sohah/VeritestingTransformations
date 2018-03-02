@@ -20,6 +20,7 @@
 package gov.nasa.jpf.symbc;
 
 
+import choco.Var;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
@@ -57,6 +58,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static final boolean allowFieldReadAfterWrite = false;
     public static final boolean allowFieldWriteAfterRead = true;
     public static final boolean allowFieldWriteAfterWrite = false;
+    private static int methodSummaryRWInterference = 0;
 
     public VeritestingListener(Config conf, JPF jpf) {
         if(conf.hasValue("veritestingMode")) {
@@ -244,14 +246,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         PrintWriter pw = publisher.getOut();
         publisher.publishTopicStart("VeritestingListener report (boostPerf = " + boostPerf + ", veritestingMode = " + veritestingMode + ")");
         pw.println("static analysis time = " + staticAnalysisTime/1000000);
-        pw.println("totalSolverTime = " + VeritestingListener.totalSolverTime/1000000);
-        pw.println("z3Time = " + VeritestingListener.z3Time/1000000);
-        pw.println("parsingTime = " + VeritestingListener.parseTime/1000000);
-        pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime/1000000);
-        pw.println("cleanupTime = " + VeritestingListener.cleanupTime/1000000);
-        pw.println("solverCount = " + VeritestingListener.solverCount);
-        pw.println("(fieldReadAfterWrite, fieldWriteAfterRead, fieldWriteAfterWrite = (" + VeritestingListener.fieldReadAfterWrite + ", " +
-                VeritestingListener.fieldWriteAfterRead + ", " + VeritestingListener.fieldWriteAfterWrite + ")");
+        pw.println("totalSolverTime = " + totalSolverTime/1000000);
+        pw.println("z3Time = " + z3Time/1000000);
+        pw.println("parsingTime = " + parseTime/1000000);
+        pw.println("solverAllocTime = " + solverAllocTime/1000000);
+        pw.println("cleanupTime = " + cleanupTime/1000000);
+        pw.println("solverCount = " + solverCount);
+        pw.println("(fieldReadAfterWrite, fieldWriteAfterRead, fieldWriteAfterWrite = (" + fieldReadAfterWrite + ", " +
+                VeritestingListener.fieldWriteAfterRead + ", " + fieldWriteAfterWrite + ")");
+        pw.println("methodSummaryRWInterference = " + methodSummaryRWInterference);
         if(veritestingMode > 0) {
             pw.println("# regions = " + VeritestingListener.veritestingRegions.size());
             int maxSummarizedBranches = getMaxSummarizedBranch(false);
@@ -561,7 +564,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     fnv.init(key1);
                     long hash = fnv.getHash();
                     if(!veritestingRegions.containsKey(key1)) {
-                        System.out.println("Could not find method summary for " + callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
+                        System.out.println("Could not find method summary for " +
+                                callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
                         return null;
                     }
                     //All holes in callSiteInfo.paramList will also be present in holeHashmap and will be filled up here
@@ -570,6 +574,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     }
                     VeritestingRegion methodSummary = veritestingRegions.get(key1);
                     HashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
+                    if(hasRWInterference(holeHashMap, methodHoles)) {
+                        methodSummaryRWInterference++;
+                        return null;
+                    }
                     //fill all holes inside the method summary
                     for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
                         Expression methodKeyExpr = entry1.getKey();
@@ -707,6 +715,28 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             }
         }
         return new FillHolesOutput(retHoleHashMap, additionalAST);
+    }
+
+    /*
+    Checks if a method's holeHashMap has a read-write interference with the outer region's holeHashmap.
+    The only kind of interference allowed is a both the outer region and the method reading the same field.
+     */
+    private boolean hasRWInterference(HashMap<Expression, Expression> holeHashMap, HashMap<Expression, Expression> methodHoles) {
+        for(HashMap.Entry<Expression, Expression> entry: methodHoles.entrySet()) {
+            HoleExpression holeExpression = (HoleExpression) entry.getKey();
+            if(!(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_INPUT ||
+                    holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT)) continue;
+            if(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT) {
+                if(VarUtil.fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap) ||
+                        VarUtil.fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap))
+                    return true;
+            }
+            if(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_INPUT) {
+                if(VarUtil.fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap))
+                    return true;
+            }
+        }
+        return false;
     }
 
     gov.nasa.jpf.symbc.numeric.Expression fillFieldInputHole(

@@ -416,7 +416,7 @@ public class VarUtil {
         holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, null, isStaticField);
         String name = className + "." + methodName + ".v" + def;
         holeExpression.setHoleVarName(name);
-        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT) &&
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap) &&
                 !VeritestingListener.allowFieldReadAfterWrite) {
             VeritestingListener.fieldReadAfterWrite += 1;
             return null;
@@ -425,7 +425,8 @@ public class VarUtil {
         return holeExpression;
     }
 
-    private boolean fieldHasRWOperation(HoleExpression holeExpression, HoleExpression.HoleType holeType) {
+    public static boolean fieldHasRWOperation(HoleExpression holeExpression, HoleExpression.HoleType holeType,
+                                        HashMap<Expression, Expression> holeHashMap) {
         assert(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_INPUT ||
                 holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT);
         for(HashMap.Entry<Expression, Expression> entry: holeHashMap.entrySet()) {
@@ -457,12 +458,12 @@ public class VarUtil {
         holeExpression.setHole(true, holeType);
         holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, writeExpr, isStaticField);
         holeExpression.setHoleVarName(name);
-        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT) &&
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap) &&
                 !VeritestingListener.allowFieldWriteAfterRead) {
             VeritestingListener.fieldWriteAfterRead += 1;
             return null;
         }
-        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT) &&
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap) &&
                 !VeritestingListener.allowFieldWriteAfterWrite) {
             VeritestingListener.fieldWriteAfterWrite += 1;
             return null;
