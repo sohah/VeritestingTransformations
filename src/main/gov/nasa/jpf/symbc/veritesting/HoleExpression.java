@@ -1,9 +1,11 @@
 package gov.nasa.jpf.symbc.veritesting;
 
+import com.ibm.wala.types.TypeReference;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Visitor;
 import za.ac.sun.cs.green.expr.VisitorException;
 
+import java.lang.reflect.Array;
 import java.util.List;
 
 public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
@@ -79,6 +81,9 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
             case INVOKE:
                 ret += ", invokeInfo = " + invokeInfo.toString();
                 break;
+            case ARRAYLOAD:
+                ret += ", arrayInfo = " + arrayInfoHole.toString();
+                break;
             default:
                 System.out.println("undefined toString for holeType (" + holeType + ")");
                 assert(false);
@@ -132,8 +137,8 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
         NEGCONDITION("negcondition"),
         FIELD_INPUT("field_input"),
         FIELD_OUTPUT("field_output"),
-        INVOKE("invoke");
-
+        INVOKE("invoke"),
+        ARRAYLOAD("array_load");
         private final String string;
 
         HoleType(String string) {
@@ -161,6 +166,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
                 (isHole && holeType == HoleType.FIELD_INPUT) ||
                 (isHole && holeType == HoleType.FIELD_OUTPUT) ||
                 (isHole && holeType == HoleType.INVOKE) ||
+                (isHole && holeType == HoleType.ARRAYLOAD) ||
                 (!isHole && holeType == HoleType.NONE));
     }
 
@@ -194,6 +200,51 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
 
     public FieldInfo getFieldInfo() {
         return fieldInfo;
+    }
+
+    public ArrayInfoHole getArrayInfo() {return  arrayInfoHole;}
+    public void setArrayInfo(Expression arrayRef, Expression arrayIndex, TypeReference arrayType, String pathLabelString, int pathLabel){
+        assert(this.isHole && this.holeType== HoleType.ARRAYLOAD);
+        arrayInfoHole = new ArrayInfoHole(arrayRef, arrayIndex, arrayType, pathLabelString, pathLabel);
+    }
+    ArrayInfoHole arrayInfoHole = null;
+
+    public class ArrayInfoHole{
+        public Expression arrayRefHole,arrayIndexHole;
+        public TypeReference arrayType;
+        String pathLabelString;
+        int pathLabel;
+
+        public ArrayInfoHole(Expression arrayRef, Expression arrayIndex, TypeReference arrayType, String pathLabelString, int pathLabel){
+            this.arrayRefHole = arrayRef;
+            this.arrayIndexHole = arrayIndex;
+            this.arrayType = arrayType;
+            this.pathLabelString = pathLabelString;
+            this.pathLabel = pathLabel;
+        }
+
+        public String getPathLabelString() {
+            return pathLabelString;
+        }
+
+        public int getPathLabel() {
+            return pathLabel;
+        }
+
+        @Override
+        public String toString() {
+            return arrayRefHole + "[" + arrayType +":" +arrayIndexHole + "]";
+        }
+
+        public boolean equals(Object o) {
+            if(!(o instanceof ArrayInfoHole)) return false;
+            ArrayInfoHole arrayInfoHole = (ArrayInfoHole) o;
+            if(arrayInfoHole.arrayIndexHole != (this.arrayIndexHole) ||
+                    arrayInfoHole.arrayType != (this.arrayType) ||
+                    arrayInfoHole.arrayRefHole != (this.arrayRefHole) )
+                return false;
+            else return true;
+        }
     }
 
     public class FieldInfo {

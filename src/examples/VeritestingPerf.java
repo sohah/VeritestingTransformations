@@ -4,6 +4,7 @@
 
 
 import gov.nasa.jpf.symbc.Debug;
+import sun.reflect.annotation.ExceptionProxy;
 
 import java.util.ArrayList;
 
@@ -14,10 +15,16 @@ public class VeritestingPerf {
     public static void main(String[] args) {
         //(new VeritestingPerf()).cfgTest(1);
         (new VeritestingPerf()).countBitsSet(1);
-        //int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+        int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+//        (new VeritestingPerf()).inRangeloadArrayTC( 22, 10);
+
+
+//        (new VeritestingPerf()).outRangeloadArrayTC( 2, 10);
+ //       (new VeritestingPerf()).outRangeConcreteTC( 20, 10);
         //(new VeritestingPerf()).testMe5(x, 1);
+        //(new VeritestingPerf()).testMe6(x, 12, -1, 1);
         //(new VeritestingPerf()).testMe4(x, 12, -1, 1);
-        //(new VeritestingPerf()).arrayTest(x, 6);
+ //       (new VeritestingPerf()).arrayTest(x, 6);
         //(new VeritestingPerf()).checkOperator();
 //        ArrayList<Integer> list = new ArrayList<>();
 //        list.add(Debug.makeSymbolicInteger("a1"));
@@ -45,6 +52,42 @@ public class VeritestingPerf {
             x = x >>> 1; // logical right shift
         }
         return count;
+    }
+
+    //testing inRangeArrayLoad for symbolic & concrete index
+    public int inRangeloadArrayTC(int index, int length)  {
+        int[] x = {1,2,3,4,5,6,7,8};
+        int temp = 0;
+        int y = 1;
+        if(length>0)
+             temp = x[index];
+        else
+            temp =1;
+        return temp;
+    }
+
+    //testing outRangeArrayLoad for symbolic index
+    public int outRangeloadArrayTC(int index, int length) throws ArrayIndexOutOfBoundsException {
+        int[] x = {1,2,3,4,5,6,7,8};
+        int temp = 0;
+        int y = 1;
+        if(length>0)
+            temp = x[index];
+        else
+            temp =1;
+        return temp;
+    }
+
+    //testing outOfRange for concrete Index
+    public int outRangeConcreteTC(int index, int length) throws ArrayIndexOutOfBoundsException{
+        int[] x = {1,2,3,4,5,6,7,8};
+        int temp = 0;
+        int y = 1;
+        if(length>0)
+            temp = x[index];
+        else
+            temp =1;
+        return temp;
     }
 
     public int countArrayList(ArrayList<Integer> x) {
@@ -91,6 +134,7 @@ public class VeritestingPerf {
             x[i] = Debug.makeSymbolicInteger("x"+i);
         for (int i = 0; i < len; i++) {
             if (x[i] < 0) {
+                int temp2 = x[0];
                 temp = minusOne;
                 sum += temp;
             }
@@ -119,6 +163,29 @@ public class VeritestingPerf {
         else System.out.println("bug");
     }
 
+    public int testMe6 (int[] x, int len, int minusOne, int plusOne) {
+//        int sum = 0; //Debug.makeSymbolicInteger("sum");
+//        int temp = 2;
+//        for(int i=0; i < len; i++)
+//            x[i] = Debug.makeSymbolicInteger("x"+i);
+//        int temp2 =0;
+//        for (int i = 0; i < len; i++) {
+//            if (len < 0) {
+//                temp2 = x[minusOne];
+//                temp = minusOne;
+//                sum += temp;
+//            }
+//            else {
+//                x[0] = 0;
+//                temp = plusOne;
+//                sum += temp;
+//            }
+//        }
+//        if (sum < 0) {System.out.println("neg"); temp2=x[minusOne];}
+//        else if (sum > 0) System.out.println("pos");
+//        else System.out.println("bug");
+        return 1;
+    }
     public void arrayTest (int[] x, int len) {
         for(int i=0; i < len; i++)
             x[i] = Debug.makeSymbolicInteger("x"+i);
@@ -127,7 +194,6 @@ public class VeritestingPerf {
             else x[i] *= 2;
         }
     }
-
 };
 
 class TempClassDerived extends TempClass {
@@ -158,10 +224,6 @@ class TempClass {
 class TempClass2 {
     public int tempMethod() { return 0;}
 }
-
-
-
-
 
 
 

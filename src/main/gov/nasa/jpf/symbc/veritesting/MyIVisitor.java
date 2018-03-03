@@ -8,6 +8,7 @@ import com.ibm.wala.shrikeBT.IShiftInstruction;
 import com.ibm.wala.ssa.*;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
+import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.strings.Atom;
 import za.ac.sun.cs.green.expr.Expression;
 
@@ -28,6 +29,8 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
     private Expression phiExprLHS = null;
     private String invokeClassName;
     private boolean isInvoke = false;
+    private String pathLabelString = null;
+    private int pathLabel = -1;
 
     public Expression getIfExpr() {
         return ifExpr;
@@ -66,6 +69,16 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         //SPFExpr = new String();
     }
 
+    public MyIVisitor(VarUtil _varUtil, int _thenUseNum, int _elseUseNum, boolean _isMeetVisitor, String pathLabelString, int pathLabel) {
+        varUtil = _varUtil;
+        thenUseNum = _thenUseNum;
+        elseUseNum = _elseUseNum;
+        isMeetVisitor = _isMeetVisitor;
+        //SPFExpr = new String();
+        this.pathLabel = pathLabel;
+        this.pathLabelString = pathLabelString;
+    }
+
     @Override
     public void visitGoto(SSAGotoInstruction instruction) {
         if(isMeetVisitor) return;
@@ -79,7 +92,17 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         if(isMeetVisitor) return;
         System.out.println("SSAArrayLoadInstruction = " + instruction);
         lastInstruction = instruction;
-        canVeritest = false;
+        int lhs = instruction.getDef();
+        Expression lhsExpr = varUtil.addVal(lhs);
+        int arrayRef = instruction.getUse(0);
+        int arrayIndex = instruction.getUse(1);
+        TypeReference arrayType = instruction.getElementType();
+        Expression arrayRefHole = varUtil.addVal(arrayRef);
+        Expression arrayIndexHole = varUtil.addVal(arrayIndex);
+
+        Expression arrayLoadHole = varUtil.addArrayLoadVal(arrayRefHole, arrayIndexHole,arrayType, HoleExpression.HoleType.ARRAYLOAD, instruction, pathLabelString, pathLabel);
+        SPFExpr = new Operation(Operator.EQ, lhsExpr, arrayLoadHole);
+       canVeritest = true;
     }
 
     @Override

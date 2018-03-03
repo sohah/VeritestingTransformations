@@ -2,9 +2,12 @@ package gov.nasa.jpf.symbc.veritesting;
 
 import com.ibm.wala.ssa.*;
 
+//import jdk.internal.org.objectweb.asm.TypeReference;
+import com.ibm.wala.types.TypeReference;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 
+import java.lang.annotation.ElementType;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -395,6 +398,17 @@ public class VarUtil {
         defLocalVars.add(ret);
         return ret;
     }*/
+
+    public Expression addArrayLoadVal(Expression arrayRef, Expression arrayIndex, TypeReference arrayType, HoleExpression.HoleType holeType, SSAArrayLoadInstruction instructionName, String pathLabelString, int pathLabel) {
+        assert(holeType == HoleExpression.HoleType.ARRAYLOAD);
+        HoleExpression holeExpression = new HoleExpression(nextInt());
+        holeExpression.setHoleVarName(instructionName.toString());
+        holeExpression.setHole(true, holeType);
+        holeExpression.setArrayInfo(arrayRef, arrayIndex, arrayType, pathLabelString, pathLabel);
+        varCache.put(holeExpression.getHoleVarName(), holeExpression);
+        holeExpression.toString();
+        return holeExpression;
+    }
 
     // def will be value being defined in case of FIELD_INPUT hole
     public Expression addFieldInputVal(int def, int use,

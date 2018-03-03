@@ -446,7 +446,7 @@ public class VeritestingMain {
                         } else canVeritest = false;
                     }
                     if (!canVeritest || thenUnit == commonSucc) break;
-                    BlockSummary blockSummary = new BlockSummary(thenUnit, thenExpr, canVeritest, isPhithenUnit).invoke();
+                    BlockSummary blockSummary = new BlockSummary(thenUnit, thenExpr, canVeritest, isPhithenUnit, pathLabelString, thenPathLabel).invoke();
                     canVeritest = blockSummary.isCanVeritest();
                     thenExpr = blockSummary.getExpression();
                     //we should not encounter a BB with more than one successor at this point
@@ -542,7 +542,7 @@ public class VeritestingMain {
                         } else canVeritest = false;
                     }
                     if (!canVeritest || elseUnit == commonSucc) break;
-                    BlockSummary blockSummary = new BlockSummary(elseUnit, elseExpr, canVeritest, isPhielseUnit).invoke();
+                    BlockSummary blockSummary = new BlockSummary(elseUnit, elseExpr, canVeritest, isPhielseUnit, pathLabelString, elsePathLabel).invoke();
                     canVeritest = blockSummary.isCanVeritest();
                     elseExpr = blockSummary.getExpression();
                     //we should not encounter a BB with more than one successor at this point
@@ -765,6 +765,8 @@ public class VeritestingMain {
     }
 
     private class BlockSummary {
+        private int pathLabel =-1;
+        private String pathLabelString = null;
         private ISSABasicBlock unit;
         private Expression expression;
         private Expression lastExpression;
@@ -785,6 +787,15 @@ public class VeritestingMain {
             this.isPhiUnit = isPhithenUnit;
         }
 
+        public BlockSummary(ISSABasicBlock thenUnit, Expression thenExpr, boolean canVeritest, boolean isPhithenUnit, String pathLabelString, int pathLabel ) {
+            this.unit = thenUnit;
+            this.expression = thenExpr;
+            this.canVeritest = canVeritest;
+            this.isPhiUnit = isPhithenUnit;
+            this.pathLabelString = pathLabelString;
+            this.pathLabel = pathLabel;
+        }
+
         public Expression getExpression() {
             return expression;
         }
@@ -803,7 +814,7 @@ public class VeritestingMain {
                 assert(ssaInstructionIterator.next() instanceof SSAPhiInstruction);
             }
             while (ssaInstructionIterator.hasNext()) {
-                myIVisitor = new MyIVisitor(varUtil, -1, -1, false);
+                myIVisitor = new MyIVisitor(varUtil, -1, -1, false, pathLabelString, pathLabel);
                 ssaInstructionIterator.next().visit(myIVisitor);
 
                 if (!myIVisitor.canVeritest()) {
