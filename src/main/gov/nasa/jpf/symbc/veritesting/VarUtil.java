@@ -417,7 +417,7 @@ public class VarUtil {
         String name = className + "." + methodName + ".v" + def;
         holeExpression.setHoleVarName(name);
         if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap) &&
-                !VeritestingListener.allowFieldReadAfterWrite) {
+                (VeritestingListener.allowFieldReadAfterWrite == false)) {
             VeritestingListener.fieldReadAfterWrite += 1;
             return null;
         }
@@ -459,12 +459,12 @@ public class VarUtil {
         holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, writeExpr, isStaticField);
         holeExpression.setHoleVarName(name);
         if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap) &&
-                !VeritestingListener.allowFieldWriteAfterRead) {
+                (VeritestingListener.allowFieldWriteAfterRead == false)) {
             VeritestingListener.fieldWriteAfterRead += 1;
             return null;
         }
         if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap) &&
-                !VeritestingListener.allowFieldWriteAfterWrite) {
+                (VeritestingListener.allowFieldWriteAfterWrite == false)) {
             VeritestingListener.fieldWriteAfterWrite += 1;
             return null;
         }

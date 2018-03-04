@@ -890,4 +890,8 @@ public class DebugSolvers extends ProblemGeneral {
   public Object logical_and(Object exp1, Object exp2) {
 		throw new RuntimeException("## Error DebugSolvers does not support LOGICAL_AND");
 	}
+
+	public Object logical_not(Object exp1) {
+		throw new RuntimeException("## Error DebugSolvers does not support LOGICAL_NOT");
+	}
 }

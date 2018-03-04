@@ -344,14 +344,16 @@ public class ProblemZ3BitVector extends ProblemGeneral {
         }
     }
 
-//    public Object not(Object exp1){
-//        try{
-//            return  ctx.mkNot((BoolExpr)exp1);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            throw new RuntimeException("## Error Z3: not(Object) failed.\n" + e);
-//        }
-//    }
+    public Object logical_not(Object exp){
+        try{
+            if(exp instanceof BoolExpr)
+                return ctx.mkNot((BoolExpr)exp);
+            else throw new RuntimeException("## Error Z3: logical_not(Object) expected a BoolExpr.\n");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("## Error Z3: logical_not(Object) failed.\n" + e);
+        }
+    }
 
     @Override
     public Object leq(long value, Object exp){

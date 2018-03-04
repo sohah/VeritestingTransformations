@@ -311,14 +311,14 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
     }
   }
 
-  //    public Object not(Object exp1){
-  //        try{
-  //            return  ctx.mkNot((BoolExpr)exp1);
-  //        } catch (Exception e) {
-  //            e.printStackTrace();
-  //            throw new RuntimeException("## Error Z3: not(Object) failed.\n" + e);
-  //        }
-  //    }
+  public Object logical_not(Object exp1){
+    try{
+      return  ctx.mkNot((BoolExpr)exp1);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3: not(Object) failed.\n" + e);
+    }
+  }
 
   @Override
   public Object leq(long value, Object exp){

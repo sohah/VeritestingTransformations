@@ -444,7 +444,12 @@ public class ProblemChoco extends ProblemGeneral {
 		throw new RuntimeException("## Error Choco does not support LOGICAL_OR");
 	}
 
-  public Object logical_and(Object exp1, Object exp2) {
+	@Override
+	public Object logical_not(Object exp) {
+		throw new RuntimeException("## Error Choco does not support LOGICAL_NOT");
+	}
+
+	public Object logical_and(Object exp1, Object exp2) {
 		throw new RuntimeException("## Error Choco does not support LOGICAL_AND");
 	}
 

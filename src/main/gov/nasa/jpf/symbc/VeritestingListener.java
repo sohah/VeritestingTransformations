@@ -57,7 +57,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int fieldWriteAfterRead = 0;
     public static final boolean allowFieldReadAfterWrite = false;
     public static final boolean allowFieldWriteAfterRead = true;
-    public static final boolean allowFieldWriteAfterWrite = false;
+    public static final boolean allowFieldWriteAfterWrite = true;
     private static int methodSummaryRWInterference = 0;
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -576,6 +576,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     HashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
                     if(hasRWInterference(holeHashMap, methodHoles)) {
                         methodSummaryRWInterference++;
+                        System.out.println("method summary hole interferes with outer region");
                         return null;
                     }
                     //fill all holes inside the method summary
