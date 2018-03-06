@@ -20,7 +20,6 @@
 package gov.nasa.jpf.symbc;
 
 
-import choco.Var;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
@@ -78,55 +77,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             veritestingMode = 0;
         }
         jpf.addPublisherExtension(ConsolePublisher.class, this);
-    }
-
-    // helper function to print local vars
-    private void printLocals(MethodInfo mi, StackFrame mysf) {
-        // StackFrame mysf = sf.getPrevious();
-        LocalVarInfo[] lvi = mysf.getLocalVars();
-
-        String lvs = "";
-        for (LocalVarInfo lv: lvi){
-            lvs = lvs +  lv.getType() + " " + lv.getName() + ", ";
-        }
-        System.out.printf("vars: %s\n", lvs);
-
-        for (int i = 0; i < lvi.length; ++i) {
-            Expression exp = (Expression)mysf.getLocalAttr(i);
-            if (exp != null){
-                System.out.printf("SYM: %s = %s\n", lvi[i].getName(), exp.toString());
-            }
-            else{
-                int slot = lvi[i].getSlotIndex();
-                System.out.printf("CON: %s = %s\n", lvi[i].getName(), mysf.getSlot(slot));
-            }
-        }
-    }
-
-    // adapted from bytecodes/IFEQ.java
-    public PathCondition getPC(VM vm, ThreadInfo ti, Instruction instructionToExecute, PathCondition pc) {
-        ChoiceGenerator <?> cg;
-        // if (!ti.isFirstStepInsn()) { // first time around
-        //   cg = new PCChoiceGenerator(1);
-        //   ((PCChoiceGenerator)cg).setOffset(instructionToExecute.getPosition());
-        //   ((PCChoiceGenerator)cg).setMethodName(ti.getTopFrame().getMethodInfo().getFullName());
-        //   vm.getSystemState().setNextChoiceGenerator(cg);
-        //   return null;
-        // } else {  // this is what really returns results
-        cg = vm.getSystemState().getChoiceGenerator();
-        assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
-        // }
-        ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
-        if (prev_cg == null) {
-            pc = new PathCondition();
-            System.out.println("creating new PathCondition");
-        }
-        else {
-            pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
-            System.out.println("got PathCondition from prev_cg");
-        }
-        assert pc != null;
-        return pc;
     }
 
     public SymbolicInteger makeSymbolicInteger(String name) {
@@ -445,6 +395,141 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             ThreadInfo ti) {
         HashMap<Expression, Expression> retHoleHashMap = new HashMap<>();
         Expression additionalAST = null;
+        retHoleHashMap = fillNonInputHoles(holeHashMap, instructionInfo, retHoleHashMap);
+        retHoleHashMap = fillInputHoles(holeHashMap, stackFrame, ti, retHoleHashMap);
+
+        // resolve all invoke holes in the current region's summary expression
+        for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
+            Expression key = entry.getKey(), greenExpr = null;
+            gov.nasa.jpf.symbc.numeric.Expression spfExpr;
+            assert(key instanceof HoleExpression);
+            HoleExpression keyHoleExpression = (HoleExpression) key;
+            assert(keyHoleExpression.isHole());
+            switch(keyHoleExpression.getHoleType()) {
+                case INVOKE:
+                    InvokeInfo callSiteInfo = keyHoleExpression.getInvokeInfo();
+                    ClassInfo ci = null;
+                    if(callSiteInfo.isVirtualInvoke) {
+                        Expression callingObject = retHoleHashMap.get(callSiteInfo.paramList.get(0));
+                        ci = ti.getClassInfo(((IntConstant) callingObject).getValue());
+                    }
+                    if(callSiteInfo.isStaticInvoke) {
+                        ci = ClassLoaderInfo.getCurrentResolvedClassInfo(callSiteInfo.className);
+                    }
+                    // if ci failure null, that means either MyIVisitor.visitInvoke has a bug or we failed to load the class
+                    assert(ci != null);
+                    //Change the class name based on the call site object reference
+                    callSiteInfo.className = ci.getName();
+                    //If there exists a invokeVirtual for a method that we weren't able to summarize, skip veritesting
+                    String key1 = callSiteInfo.className+"."+callSiteInfo.methodName+callSiteInfo.methodSignature+"#0";
+                    FNV1 fnv = new FNV1a64();
+                    fnv.init(key1);
+                    long hash = fnv.getHash();
+                    if(!veritestingRegions.containsKey(key1)) {
+                        System.out.println("Could not find method summary for " +
+                                callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
+                        return null;
+                    }
+                    //All holes in callSiteInfo.paramList will also be present in holeHashmap and will be filled up here
+                    for(Expression h: callSiteInfo.paramList) {
+                        if(h instanceof HoleExpression) assert(holeHashMap.containsKey(h));
+                    }
+                    VeritestingRegion methodSummary = veritestingRegions.get(key1);
+                    HashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
+                    if(hasRWInterference(holeHashMap, methodHoles)) {
+                        methodSummaryRWInterference++;
+                        System.out.println("method summary hole interferes with outer region");
+                        return null;
+                    }
+                    FillNonInputHolesMS fillNonInputHolesMS =
+                            new FillNonInputHolesMS(retHoleHashMap, callSiteInfo, methodHoles);
+                    if (fillNonInputHolesMS.invoke()) return null;
+                    retHoleHashMap = fillNonInputHolesMS.retHoleHashMap;
+
+                    FillInputHolesMS fillInputHolesMS = new FillInputHolesMS(stackFrame, ti, retHoleHashMap, callSiteInfo, methodHoles).invoke();
+                    if (fillInputHolesMS.failure()) return null;
+                    ArrayList<Expression> paramEqList = fillInputHolesMS.getParamEqList();
+                    retHoleHashMap = fillInputHolesMS.retHoleHashMap;
+
+                    Expression retValEq = null;
+                    if(methodSummary.retVal != null)
+                        retValEq = new Operation(Operation.Operator.EQ, methodSummary.retVal, keyHoleExpression);
+                    Expression mappingOperation = retValEq;
+                    for(int i=0; i < paramEqList.size(); i++) {
+                        //paramList.length-1 because there won't be a constraint created for the object reference which failure always
+                        //parameter 0
+                        if(mappingOperation != null)
+                            mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, paramEqList.get(i));
+                        else mappingOperation = paramEqList.get(i);
+                    }
+                    if(methodSummary.getSummaryExpression() != null)
+                        mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, methodSummary.getSummaryExpression());
+                    if(additionalAST != null) additionalAST = new Operation(Operation.Operator.AND, additionalAST, mappingOperation);
+                    else additionalAST = mappingOperation;
+                    Expression finalValueGreen = SPFToGreenExpr(makeSymbolicInteger(keyHoleExpression.getHoleVarName() + pathLabelCount));
+                    retHoleHashMap.put(keyHoleExpression, finalValueGreen);
+                    methodSummary.ranIntoCount++;
+                    methodSummary.usedCount++;
+                    break;
+            }
+        }
+        return new FillHolesOutput(retHoleHashMap, additionalAST);
+    }
+
+    private HashMap<Expression, Expression> fillInputHoles(HashMap<Expression, Expression> holeHashMap, StackFrame stackFrame, ThreadInfo ti, HashMap<Expression, Expression> retHoleHashMap) {
+        //resolve all input holes inside the current region's summary
+        for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
+            Expression key = entry.getKey(), finalValueGreen;
+            gov.nasa.jpf.symbc.numeric.Expression finalValueSPF;
+            assert (key instanceof HoleExpression);
+            HoleExpression keyHoleExpression = (HoleExpression) key;
+            assert (keyHoleExpression.isHole());
+            switch (keyHoleExpression.getHoleType()) {
+                case FIELD_INPUT:
+                    //get the latest value written into this field, not the value in the field at the beginning of
+                    //this region
+                    if(keyHoleExpression.dependsOn != null) {
+                        HoleExpression holeExpression = (HoleExpression) keyHoleExpression.dependsOn;
+                        assert(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT);
+                        assert(holeExpression.isLatestWrite);
+                        assert(retHoleHashMap.containsKey(holeExpression.getFieldInfo().writeValue));
+                        retHoleHashMap.put(keyHoleExpression, retHoleHashMap.get(holeExpression.getFieldInfo().writeValue));
+                    } else {
+                        HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
+                        assert (fieldInfo != null);
+                        finalValueSPF = fillFieldInputHole(ti, stackFrame, fieldInfo);
+                        assert(finalValueSPF != null);
+                        finalValueGreen = SPFToGreenExpr(finalValueSPF);
+                        retHoleHashMap.put(keyHoleExpression, finalValueGreen);
+                    }
+                    break;
+                case LOCAL_INPUT:
+                    //get the latest value written into this local, not the value in the local at the beginning of
+                    //this region
+                    if(keyHoleExpression.dependsOn != null) {
+                        HoleExpression holeExpression = (HoleExpression) keyHoleExpression.dependsOn;
+                        assert(holeExpression.getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
+                        assert(holeExpression.isLatestWrite);
+                        assert(retHoleHashMap.containsKey(holeExpression));
+                        retHoleHashMap.put(keyHoleExpression, retHoleHashMap.get(holeExpression));
+                    } else {
+                        finalValueSPF =
+                                (gov.nasa.jpf.symbc.numeric.Expression) stackFrame.getLocalAttr(keyHoleExpression.getLocalStackSlot());
+                        if (finalValueSPF == null)
+                            finalValueSPF = new IntegerConstant(stackFrame.getLocalVariable(keyHoleExpression.getLocalStackSlot()));
+                        finalValueGreen = SPFToGreenExpr(finalValueSPF);
+                        retHoleHashMap.put(keyHoleExpression, finalValueGreen);
+                    }
+                    break;
+                default: break;
+            }
+        }
+        return retHoleHashMap;
+    }
+
+    private HashMap<Expression, Expression> fillNonInputHoles(HashMap<Expression, Expression> holeHashMap,
+                                                              InstructionInfo instructionInfo,
+                                                              HashMap<Expression, Expression> retHoleHashMap) {
         //resolve all non-input holes inside the current region's summary
         for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
             Expression key = entry.getKey(), finalValueGreen;
@@ -489,238 +574,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     break;
             }
         }
-        //resolve all input holes inside the current region's summary
-        for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
-            Expression key = entry.getKey(), finalValueGreen;
-            gov.nasa.jpf.symbc.numeric.Expression finalValueSPF;
-            assert (key instanceof HoleExpression);
-            HoleExpression keyHoleExpression = (HoleExpression) key;
-            assert (keyHoleExpression.isHole());
-            switch (keyHoleExpression.getHoleType()) {
-                case FIELD_INPUT:
-                    //get the latest value written into this field, not the value in the field at the beginning of
-                    //this region
-                    if(keyHoleExpression.dependsOn != null) {
-                        HoleExpression holeExpression = (HoleExpression) keyHoleExpression.dependsOn;
-                        assert(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT);
-                        assert(holeExpression.isLatestWrite);
-                        assert(retHoleHashMap.containsKey(holeExpression.getFieldInfo().writeValue));
-                        retHoleHashMap.put(keyHoleExpression, retHoleHashMap.get(holeExpression.getFieldInfo().writeValue));
-                    } else {
-                        HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
-                        assert (fieldInfo != null);
-                        finalValueSPF = fillFieldInputHole(ti, stackFrame, fieldInfo);
-                        if (finalValueSPF == null) return null;
-                        finalValueGreen = SPFToGreenExpr(finalValueSPF);
-                        retHoleHashMap.put(keyHoleExpression, finalValueGreen);
-                    }
-                    break;
-                case LOCAL_INPUT:
-                    //get the latest value written into this local, not the value in the local at the beginning of
-                    //this region
-                    if(keyHoleExpression.dependsOn != null) {
-                        HoleExpression holeExpression = (HoleExpression) keyHoleExpression.dependsOn;
-                        assert(holeExpression.getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
-                        assert(holeExpression.isLatestWrite);
-                        assert(retHoleHashMap.containsKey(holeExpression));
-                        retHoleHashMap.put(keyHoleExpression, retHoleHashMap.get(holeExpression));
-                    } else {
-                        finalValueSPF =
-                                (gov.nasa.jpf.symbc.numeric.Expression) stackFrame.getLocalAttr(keyHoleExpression.getLocalStackSlot());
-                        if (finalValueSPF == null)
-                            finalValueSPF = new IntegerConstant(stackFrame.getLocalVariable(keyHoleExpression.getLocalStackSlot()));
-                        finalValueGreen = SPFToGreenExpr(finalValueSPF);
-                        retHoleHashMap.put(keyHoleExpression, finalValueGreen);
-                    }
-                    break;
-                default: break;
-            }
-        }
-        // resolve all invoke holes in the current region's summary expression
-        for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
-            Expression key = entry.getKey(), greenExpr = null;
-            gov.nasa.jpf.symbc.numeric.Expression spfExpr;
-            assert(key instanceof HoleExpression);
-            HoleExpression keyHoleExpression = (HoleExpression) key;
-            assert(keyHoleExpression.isHole());
-            switch(keyHoleExpression.getHoleType()) {
-                case INVOKE:
-                    InvokeInfo callSiteInfo = keyHoleExpression.getInvokeInfo();
-                    ClassInfo ci = null;
-                    if(callSiteInfo.isVirtualInvoke) {
-                        Expression callingObject = retHoleHashMap.get(callSiteInfo.paramList.get(0));
-                        ci = ti.getClassInfo(((IntConstant) callingObject).getValue());
-                    }
-                    if(callSiteInfo.isStaticInvoke) {
-                        ci = ClassLoaderInfo.getCurrentResolvedClassInfo(callSiteInfo.className);
-                    }
-                    // if ci is null, that means either MyIVisitor.visitInvoke has a bug or we failed to load the class
-                    assert(ci != null);
-                    //Change the class name based on the call site object reference
-                    callSiteInfo.className = ci.getName();
-                    //If there exists a invokeVirtual for a method that we weren't able to summarize, skip veritesting
-                    String key1 = callSiteInfo.className+"."+callSiteInfo.methodName+callSiteInfo.methodSignature+"#0";
-                    FNV1 fnv = new FNV1a64();
-                    fnv.init(key1);
-                    long hash = fnv.getHash();
-                    if(!veritestingRegions.containsKey(key1)) {
-                        System.out.println("Could not find method summary for " +
-                                callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
-                        return null;
-                    }
-                    //All holes in callSiteInfo.paramList will also be present in holeHashmap and will be filled up here
-                    for(Expression h: callSiteInfo.paramList) {
-                        if(h instanceof HoleExpression) assert(holeHashMap.containsKey(h));
-                    }
-                    VeritestingRegion methodSummary = veritestingRegions.get(key1);
-                    HashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
-                    if(hasRWInterference(holeHashMap, methodHoles)) {
-                        methodSummaryRWInterference++;
-                        System.out.println("method summary hole interferes with outer region");
-                        return null;
-                    }
-                    //fill all holes inside the method summary
-                    for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
-                        Expression methodKeyExpr = entry1.getKey();
-                        assert(methodKeyExpr instanceof HoleExpression);
-                        HoleExpression methodKeyHole = (HoleExpression) methodKeyExpr;
-                        assert(methodKeyHole.isHole());
-                        switch(methodKeyHole.getHoleType()) {
-                            case CONDITION:
-                                System.out.println("unsupported condition hole in method summary");
-                                return null;
-                            case NEGCONDITION:
-                                System.out.println("unsupported negCondition hole in method summary");
-                                return null;
-                            case INVOKE:
-                                System.out.println("unsupported invoke hole in method summary");
-                                return null;
-                            case LOCAL_OUTPUT:
-                            case INTERMEDIATE:
-                                spfExpr = makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
-                                greenExpr = SPFToGreenExpr(spfExpr);
-                                retHoleHashMap.put(methodKeyHole, greenExpr);
-                                break;
-                            case NONE:
-                                break;
-                            case FIELD_OUTPUT:
-                                HoleExpression.FieldInfo methodKeyHoleFieldInfo = methodKeyHole.getFieldInfo();
-                                if(!methodKeyHoleFieldInfo.isStaticField) {
-                                    if(methodKeyHoleFieldInfo.localStackSlot == 0) {
-                                        assert(callSiteInfo.paramList.size() > 0);
-                                        methodKeyHoleFieldInfo.callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
-                                        methodKeyHole.setFieldInfo(methodKeyHoleFieldInfo.className, methodKeyHoleFieldInfo.fieldName,
-                                                methodKeyHoleFieldInfo.localStackSlot, methodKeyHoleFieldInfo.callSiteStackSlot, methodKeyHoleFieldInfo.writeValue,
-                                                methodKeyHoleFieldInfo.isStaticField);
-                                    } else return null;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    ArrayList<Expression> paramEqList = new ArrayList<>();
-                    for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
-                        Expression methodKeyExpr = entry1.getKey();
-                        assert(methodKeyExpr instanceof HoleExpression);
-                        HoleExpression methodKeyHole = (HoleExpression) methodKeyExpr;
-                        assert(methodKeyHole.isHole());
-                        switch(methodKeyHole.getHoleType()) {
-                            //LOCAL_INPUTs can be mapped to parameters at the call site, non-parameter local inputs
-                            // need to be mapped to intermediate variables since we cannot create a stack for the summarized method
-                            case LOCAL_INPUT:
-                                //get the latest value written into this local, not the value in the local at the beginning of
-                                //this region
-                                if(methodKeyHole.dependsOn != null) {
-                                    HoleExpression holeExpression = (HoleExpression) methodKeyHole.dependsOn;
-                                    assert(holeExpression.getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
-                                    assert(holeExpression.isLatestWrite);
-                                    assert(retHoleHashMap.containsKey(holeExpression));
-                                    retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(holeExpression));
-                                } else {
-                                    //local inputs used in method summary have to come from the filled-up holes in paramList
-                                    if (methodKeyHole.getLocalStackSlot() < callSiteInfo.paramList.size()) {
-                                        int methodLocalStackSlot = methodKeyHole.getLocalStackSlot();
-                                        //int callSiteLocalStackSlot = ((HoleExpression)callSiteInfo.paramList[methodLocalStackSlot]).getLocalStackSlot();
-                                        //methodKeyHole.setLocalStackSlot(callSiteLocalStackSlot);
-                                        if (callSiteInfo.paramList.get(methodLocalStackSlot) instanceof HoleExpression)
-                                            retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(callSiteInfo.paramList.get(methodLocalStackSlot)));
-                                        else //a constant could have been passed as an argument instead of a variable
-                                            retHoleHashMap.put(methodKeyHole, callSiteInfo.paramList.get(methodLocalStackSlot));
-                                        paramEqList.add(new Operation(Operation.Operator.EQ,
-                                                methodKeyHole,
-                                                callSiteInfo.paramList.get(methodLocalStackSlot)));
-                                    } else {
-                                        //Local variables in the method summary should just become intermediate variables
-                                        gov.nasa.jpf.symbc.numeric.Expression finalValueSPF =
-                                                makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
-                                        Expression finalValueGreen = SPFToGreenExpr(finalValueSPF);
-                                        retHoleHashMap.put(methodKeyHole, finalValueGreen);
-                                    }
-                                }
-                                break;
-                            case FIELD_INPUT:
-                                if(methodKeyHole.dependsOn != null) {
-                                    //get the latest value written into this field, not the value in the field at the beginning of
-                                    //this region
-                                    HoleExpression holeExpression = (HoleExpression) methodKeyHole.dependsOn;
-                                    assert(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT);
-                                    assert(holeExpression.isLatestWrite);
-                                    assert(retHoleHashMap.containsKey(holeExpression.getFieldInfo().writeValue));
-                                    retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(holeExpression.getFieldInfo().writeValue));
-                                } else {
-                                    HoleExpression.FieldInfo methodKeyHoleFieldInfo = methodKeyHole.getFieldInfo();
-                                    assert (methodKeyHoleFieldInfo != null);
-                                    if (!methodKeyHoleFieldInfo.isStaticField) {
-                                        if(methodKeyHoleFieldInfo.localStackSlot == 0) {
-                                            assert(callSiteInfo.paramList.size() > 0);
-                                            int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
-                                            methodKeyHoleFieldInfo.callSiteStackSlot = callSiteStackSlot;
-                                        } else {
-                                            // method summary uses a field from an object that is a local inside the method
-                                            // this cannot be handled during veritesting because we cannot create an object
-                                            // when using a method summary
-                                            return null;
-                                        }
-                                    }
-                                    spfExpr = fillFieldInputHole(ti, stackFrame, methodKeyHoleFieldInfo);
-                                    if (spfExpr == null) return null;
-                                    greenExpr = SPFToGreenExpr(spfExpr);
-                                    retHoleHashMap.put(methodKeyHole, greenExpr);
-                                }
-                                break;
-                            default: break;
-                        }
-                    }
-
-                    Expression retValEq = null;
-                    if(methodSummary.retVal != null)
-                        retValEq = new Operation(Operation.Operator.EQ, methodSummary.retVal, keyHoleExpression);
-                    Expression mappingOperation = retValEq;
-                    for(int i=0; i < paramEqList.size(); i++) {
-                        //paramList.length-1 because there won't be a constraint created for the object reference which is always
-                        //parameter 0
-                        if(mappingOperation != null)
-                            mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, paramEqList.get(i));
-                        else mappingOperation = paramEqList.get(i);
-                    }
-                    if(methodSummary.getSummaryExpression() != null)
-                        mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, methodSummary.getSummaryExpression());
-                    if(additionalAST != null) additionalAST = new Operation(Operation.Operator.AND, additionalAST, mappingOperation);
-                    else additionalAST = mappingOperation;
-                    Expression finalValueGreen = SPFToGreenExpr(makeSymbolicInteger(keyHoleExpression.getHoleVarName() + pathLabelCount));
-                    retHoleHashMap.put(keyHoleExpression, finalValueGreen);
-                    methodSummary.ranIntoCount++;
-                    methodSummary.usedCount++;
-                    break;
-            }
-        }
-        return new FillHolesOutput(retHoleHashMap, additionalAST);
+        return retHoleHashMap;
     }
 
     /*
     Checks if a method's holeHashMap has a read-write interference with the outer region's holeHashmap.
-    The only kind of interference allowed is a both the outer region and the method reading the same field.
+    The only kind of interference allowed failure a both the outer region and the method reading the same field.
      */
     private boolean hasRWInterference(HashMap<Expression, Expression> holeHashMap, HashMap<Expression, Expression> methodHoles) {
         for(HashMap.Entry<Expression, Expression> entry: methodHoles.entrySet()) {
@@ -949,6 +808,174 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         return toGreenTranslator.getExpression();
     }
 
+    private class FillNonInputHolesMS {
+        private HashMap<Expression, Expression> retHoleHashMap;
+        private InvokeInfo callSiteInfo;
+        private HashMap<Expression, Expression> methodHoles;
+
+        public FillNonInputHolesMS(HashMap<Expression, Expression> retHoleHashMap, InvokeInfo callSiteInfo, HashMap<Expression, Expression> methodHoles) {
+            this.retHoleHashMap = retHoleHashMap;
+            this.callSiteInfo = callSiteInfo;
+            this.methodHoles = methodHoles;
+        }
+
+        public boolean invoke() {
+            gov.nasa.jpf.symbc.numeric.Expression spfExpr;Expression greenExpr;//fill all holes inside the method summary
+            for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
+                Expression methodKeyExpr = entry1.getKey();
+                assert(methodKeyExpr instanceof HoleExpression);
+                HoleExpression methodKeyHole = (HoleExpression) methodKeyExpr;
+                assert(methodKeyHole.isHole());
+                switch(methodKeyHole.getHoleType()) {
+                    case CONDITION:
+                        System.out.println("unsupported condition hole in method summary");
+                        return true;
+                    case NEGCONDITION:
+                        System.out.println("unsupported negCondition hole in method summary");
+                        return true;
+                    case INVOKE:
+                        System.out.println("unsupported invoke hole in method summary");
+                        return true;
+                    case LOCAL_OUTPUT:
+                    case INTERMEDIATE:
+                        spfExpr = makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
+                        greenExpr = SPFToGreenExpr(spfExpr);
+                        retHoleHashMap.put(methodKeyHole, greenExpr);
+                        break;
+                    case NONE:
+                        break;
+                    case FIELD_OUTPUT:
+                        HoleExpression.FieldInfo methodKeyHoleFieldInfo = methodKeyHole.getFieldInfo();
+                        if(!methodKeyHoleFieldInfo.isStaticField) {
+                            if(methodKeyHoleFieldInfo.localStackSlot == 0) {
+                                assert(callSiteInfo.paramList.size() > 0);
+                                methodKeyHoleFieldInfo.callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
+                                methodKeyHole.setFieldInfo(methodKeyHoleFieldInfo.className, methodKeyHoleFieldInfo.fieldName,
+                                        methodKeyHoleFieldInfo.localStackSlot, methodKeyHoleFieldInfo.callSiteStackSlot, methodKeyHoleFieldInfo.writeValue,
+                                        methodKeyHoleFieldInfo.isStaticField);
+                            } else return true;
+                        }
+                        //populateOutputs does not use the value mapped to methodKeyHole for FIELD_OUTPUT holes
+                        retHoleHashMap.put(methodKeyHole, null);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return false;
+        }
+    }
+
+    private class FillInputHolesMS {
+        private boolean failure;
+        private StackFrame stackFrame;
+        private ThreadInfo ti;
+        private HashMap<Expression, Expression> retHoleHashMap;
+        private InvokeInfo callSiteInfo;
+        private HashMap<Expression, Expression> methodHoles;
+        private ArrayList<Expression> paramEqList;
+
+        public FillInputHolesMS(StackFrame stackFrame, ThreadInfo ti, HashMap<Expression, Expression> retHoleHashMap, InvokeInfo callSiteInfo, HashMap<Expression, Expression> methodHoles) {
+            this.stackFrame = stackFrame;
+            this.ti = ti;
+            this.retHoleHashMap = retHoleHashMap;
+            this.callSiteInfo = callSiteInfo;
+            this.methodHoles = methodHoles;
+        }
+
+        boolean failure() {
+            return failure;
+        }
+
+        public ArrayList<Expression> getParamEqList() {
+            return paramEqList;
+        }
+
+        public FillInputHolesMS invoke() {
+            gov.nasa.jpf.symbc.numeric.Expression spfExpr;
+            Expression greenExpr;
+            paramEqList = new ArrayList<>();
+            for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
+                Expression methodKeyExpr = entry1.getKey();
+                assert(methodKeyExpr instanceof HoleExpression);
+                HoleExpression methodKeyHole = (HoleExpression) methodKeyExpr;
+                assert(methodKeyHole.isHole());
+                switch(methodKeyHole.getHoleType()) {
+                    //LOCAL_INPUTs can be mapped to parameters at the call site, non-parameter local inputs
+                    // need to be mapped to intermediate variables since we cannot create a stack for the summarized method
+                    case LOCAL_INPUT:
+                        //get the latest value written into this local, not the value in the local at the beginning of
+                        //this region
+                        if(methodKeyHole.dependsOn != null) {
+                            HoleExpression holeExpression = (HoleExpression) methodKeyHole.dependsOn;
+                            assert(holeExpression.getHoleType() == HoleExpression.HoleType.LOCAL_OUTPUT);
+                            assert(holeExpression.isLatestWrite);
+                            assert(retHoleHashMap.containsKey(holeExpression));
+                            retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(holeExpression));
+                        } else {
+                            //local inputs used in method summary have to come from the filled-up holes in paramList
+                            if (methodKeyHole.getLocalStackSlot() < callSiteInfo.paramList.size()) {
+                                int methodLocalStackSlot = methodKeyHole.getLocalStackSlot();
+                                //int callSiteLocalStackSlot = ((HoleExpression)callSiteInfo.paramList[methodLocalStackSlot]).getLocalStackSlot();
+                                //methodKeyHole.setLocalStackSlot(callSiteLocalStackSlot);
+                                if (callSiteInfo.paramList.get(methodLocalStackSlot) instanceof HoleExpression)
+                                    retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(callSiteInfo.paramList.get(methodLocalStackSlot)));
+                                else //a constant could have been passed as an argument instead of a variable
+                                    retHoleHashMap.put(methodKeyHole, callSiteInfo.paramList.get(methodLocalStackSlot));
+                                paramEqList.add(new Operation(Operation.Operator.EQ,
+                                        methodKeyHole,
+                                        callSiteInfo.paramList.get(methodLocalStackSlot)));
+                            } else {
+                                //Local variables in the method summary should just become intermediate variables
+                                gov.nasa.jpf.symbc.numeric.Expression finalValueSPF =
+                                        makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
+                                Expression finalValueGreen = SPFToGreenExpr(finalValueSPF);
+                                retHoleHashMap.put(methodKeyHole, finalValueGreen);
+                            }
+                        }
+                        break;
+                    case FIELD_INPUT:
+                        if(methodKeyHole.dependsOn != null) {
+                            //get the latest value written into this field, not the value in the field at the beginning of
+                            //this region
+                            HoleExpression holeExpression = (HoleExpression) methodKeyHole.dependsOn;
+                            assert(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT);
+                            assert(holeExpression.isLatestWrite);
+                            assert(retHoleHashMap.containsKey(holeExpression.getFieldInfo().writeValue));
+                            retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(holeExpression.getFieldInfo().writeValue));
+                        } else {
+                            HoleExpression.FieldInfo methodKeyHoleFieldInfo = methodKeyHole.getFieldInfo();
+                            assert (methodKeyHoleFieldInfo != null);
+                            if (!methodKeyHoleFieldInfo.isStaticField) {
+                                if(methodKeyHoleFieldInfo.localStackSlot == 0) {
+                                    assert(callSiteInfo.paramList.size() > 0);
+                                    int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
+                                    methodKeyHoleFieldInfo.callSiteStackSlot = callSiteStackSlot;
+                                } else {
+                                    // method summary uses a field from an object that failure a local inside the method
+                                    // this cannot be handled during veritesting because we cannot create an object
+                                    // when using a method summary
+                                    failure = true;
+                                    return this;
+                                }
+                            }
+                            spfExpr = fillFieldInputHole(ti, stackFrame, methodKeyHoleFieldInfo);
+                            if (spfExpr == null) {
+                                failure = true;
+                                return this;
+                            }
+                            greenExpr = SPFToGreenExpr(spfExpr);
+                            retHoleHashMap.put(methodKeyHole, greenExpr);
+                        }
+                        break;
+                    default: break;
+                }
+            }
+            failure = false;
+            return this;
+        }
+    }
+
   /*public IntegerExpression constantFold(IntegerExpression integerExpression) {
     if(integerExpression instanceof IntegerConstant) return integerExpression;
     if(integerExpression instanceof ComplexNonLinearIntegerExpression) {
@@ -956,69 +983,69 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
       if (cnlie.getLeft() instanceof IntegerConstant && cnlie.getRight() instanceof IntegerConstant) {
         int left = ((IntegerConstant) cnlie.getLeft()).value();
         int right = ((IntegerConstant) cnlie.getRight()).value();
-        int result = 0;
+        int failure = 0;
         switch (cnlie.getOperator()) {
           case DIV:
-            result = left / right;
+            failure = left / right;
             break;
           case MUL:
-            result = left * right;
+            failure = left * right;
             break;
           case MINUS:
-            result = left - right;
+            failure = left - right;
             break;
           case PLUS:
-            result = left + right;
+            failure = left + right;
             break;
           case CMP:
-            result = Integer.compare(left, right);
+            failure = Integer.compare(left, right);
             break;
           case AND:
-            result = left & right;
+            failure = left & right;
             break;
           case OR:
-            result = left | right;
+            failure = left | right;
             break;
           case XOR:
-            result = left ^ right;
+            failure = left ^ right;
             break;
           case SHIFTL:
-            result = left << right;
+            failure = left << right;
             break;
           case SHIFTR:
-            result = left >> right;
+            failure = left >> right;
             break;
           case SHIFTUR:
-            result = left >>> right;
+            failure = left >>> right;
             break;
           case REM:
-            result = left % right;
+            failure = left % right;
             break;
           case NONE_OP:
             switch (cnlie.getComparator()) {
               case EQ:
-                result = (left == right) ? 1 : 0;
+                failure = (left == right) ? 1 : 0;
                 break;
               case NE:
-                result = (left != right) ? 1 : 0;
+                failure = (left != right) ? 1 : 0;
                 break;
               case LT:
-                result = (left < right) ? 1 : 0;
+                failure = (left < right) ? 1 : 0;
                 break;
               case LE:
-                result = (left <= right) ? 1 : 0;
+                failure = (left <= right) ? 1 : 0;
                 break;
               case GT:
-                result = (left > right) ? 1 : 0;
+                failure = (left > right) ? 1 : 0;
                 break;
               case GE:
-                result = (left >= right) ? 1 : 0;
+                failure = (left >= right) ? 1 : 0;
                 break;
               case LOGICAL_AND:
-                result = ((left != 0) && (right != 0)) ? 1 : 0;
+                failure = ((left != 0) && (right != 0)) ? 1 : 0;
                 break;
               case LOGICAL_OR:
-                result = ((left != 0) || (right != 0)) ? 1 : 0;
+                failure = ((left != 0) || (right != 0)) ? 1 : 0;
                 break;
               case NONE_CMP:
                 System.out.println("constantFold found NONE_OP and NONE_CMP");
@@ -1034,7 +1061,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             System.out.println("constantFold found undefined operator (" + cnlie.getOperator() + ")");
             assert (false);
         }
-        return new IntegerConstant(result);
+        return new IntegerConstant(failure);
       }
       cnlie.setLeft(constantFold(cnlie.getLeft()));
       cnlie.setRight(constantFold(cnlie.getRight()));
@@ -1089,14 +1116,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
       //   ((PCChoiceGenerator)cg).setMethodName(ti.getTopFrame().getMethodInfo().getFullName());
 			// 	ti.getVM().getSystemState().setNextChoiceGenerator(cg);
 			// 	return ;
-			// } else {  // this is what really returns results
+			// } else {  // this failure what really returns results
 				cg = ti.getVM().getSystemState().getChoiceGenerator();
 				assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got: " + cg;
 			// }
 
 			PathCondition pc;
 
-			// pc is updated with the pc stored in the choice generator above
+			// pc failure updated with the pc stored in the choice generator above
 			// get the path condition from the
 			// previous choice generator of the same type
 			ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
