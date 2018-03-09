@@ -58,6 +58,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int solverCount = 0;
     public static int pathLabelCount = 1;
     private long staticAnalysisTime = 0;
+    public static int fieldReadAfterWrite = 0;
+    public static int fieldWriteAfterWrite = 0;
+    public static int fieldWriteAfterRead = 0;
+    public static final boolean allowFieldReadAfterWrite = false;
+    public static final boolean allowFieldWriteAfterRead = true;
+    public static final boolean allowFieldWriteAfterWrite = false;
+    private static int methodSummaryRWInterference = 0;
 
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
@@ -352,14 +359,17 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public void publishFinished(Publisher publisher) {
         PrintWriter pw = publisher.getOut();
         publisher.publishTopicStart("VeritestingListener report (boostPerf = " + boostPerf + ", veritestingMode = " + veritestingMode + ")");
-        pw.println("static analysis time = " + staticAnalysisTime / 1000000);
-        pw.println("totalSolverTime = " + VeritestingListener.totalSolverTime / 1000000);
-        pw.println("z3Time = " + VeritestingListener.z3Time / 1000000);
-        pw.println("parsingTime = " + VeritestingListener.parseTime / 1000000);
-        pw.println("solverAllocTime = " + VeritestingListener.solverAllocTime / 1000000);
-        pw.println("cleanupTime = " + VeritestingListener.cleanupTime / 1000000);
-        pw.println("solverCount = " + VeritestingListener.solverCount);
-        if (veritestingMode > 0) {
+        pw.println("static analysis time = " + staticAnalysisTime/1000000);
+        pw.println("totalSolverTime = " + totalSolverTime/1000000);
+        pw.println("z3Time = " + z3Time/1000000);
+        pw.println("parsingTime = " + parseTime/1000000);
+        pw.println("solverAllocTime = " + solverAllocTime/1000000);
+        pw.println("cleanupTime = " + cleanupTime/1000000);
+        pw.println("solverCount = " + solverCount);
+        pw.println("(fieldReadAfterWrite, fieldWriteAfterRead, fieldWriteAfterWrite = (" + fieldReadAfterWrite + ", " +
+                VeritestingListener.fieldWriteAfterRead + ", " + fieldWriteAfterWrite + ")");
+        pw.println("methodSummaryRWInterference = " + methodSummaryRWInterference);
+        if(veritestingMode > 0) {
             pw.println("# regions = " + VeritestingListener.veritestingRegions.size());
             int maxSummarizedBranches = getMaxSummarizedBranch(false);
             ArrayList<Integer> ranIntoByBranch = new ArrayList<>();
@@ -497,10 +507,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     stackFrame.setSlotAttr(holeExpression.getLocalStackSlot(), GreenToSPFExpression(finalValue));
                     break;
                 case FIELD_OUTPUT:
-                    HoleExpression.FieldInfo fieldInfo = holeExpression.getFieldInfo();
-                    assert (fieldInfo != null);
-                    finalValue = holeHashMap.get(fieldInfo.writeValue);
-                    fillFieldOutputHole(ti, stackFrame, fieldInfo, GreenToSPFExpression(finalValue));
+                    if(holeExpression.isLatestWrite) {
+                        HoleExpression.FieldInfo fieldInfo = holeExpression.getFieldInfo();
+                        assert (fieldInfo != null);
+                        finalValue = holeHashMap.get(fieldInfo.writeValue);
+                        fillFieldOutputHole(ti, stackFrame, fieldInfo, GreenToSPFExpression(finalValue));
+                    }
                     break;
             }
         }
@@ -678,8 +690,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     FNV1 fnv = new FNV1a64();
                     fnv.init(key1);
                     long hash = fnv.getHash();
-                    if (!veritestingRegions.containsKey(key1)) {
-                        System.out.println("Could not find method summary for " + callSiteInfo.className + "." + callSiteInfo.methodName + "#0");
+                    if(!veritestingRegions.containsKey(key1)) {
+                        System.out.println("Could not find method summary for " +
+                                callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
                         return null;
                     }
                     //All holes in callSiteInfo.paramList will also be present in holeHashmap and will be filled up here
@@ -688,7 +701,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     }
                     VeritestingRegion methodSummary = veritestingRegions.get(key1);
                     HashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
-                    for (HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
+                    if(hasRWInterference(holeHashMap, methodHoles)) {
+                        methodSummaryRWInterference++;
+                        return null;
+                    }
+                    //fill all holes inside the method summary
+                    for(HashMap.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
                         Expression methodKeyExpr = entry1.getKey();
                         assert (methodKeyExpr instanceof HoleExpression);
                         HoleExpression methodKeyHole = (HoleExpression) methodKeyExpr;
@@ -825,14 +843,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         return new FillHolesOutput(retHoleHashMap, additionalAST);
     }
 
-    /*private Expression loadArrayElement(ElementInfo ei, TypeReference arrayType) {
-        switch (arrayType.getName()){
-            case
-
-        }
-        return null;
-    }*/
-
     // returns false if a concrete exception was discovered, true otherwise
     private boolean fillArrayLoadHoles(VeritestingRegion region, HashMap<Expression, Expression> holeHashMap, InstructionInfo instructionInfo,
                                        StackFrame stackFrame, ThreadInfo ti, HashMap<Expression, Expression> retHoleHashMap) {
@@ -899,6 +909,28 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     break;
                 default:
                     break;
+            }
+        }
+        return false;
+    }
+
+    /*
+    Checks if a method's holeHashMap has a read-write interference with the outer region's holeHashmap.
+    The only kind of interference allowed is a both the outer region and the method reading the same field.
+     */
+    private boolean hasRWInterference(HashMap<Expression, Expression> holeHashMap, HashMap<Expression, Expression> methodHoles) {
+        for(HashMap.Entry<Expression, Expression> entry: methodHoles.entrySet()) {
+            HoleExpression holeExpression = (HoleExpression) entry.getKey();
+            if(!(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_INPUT ||
+                    holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT)) continue;
+            if(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT) {
+                if(VarUtil.fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap) ||
+                        VarUtil.fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap))
+                    return true;
+            }
+            if(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_INPUT) {
+                if(VarUtil.fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap))
+                    return true;
             }
         }
         return false;

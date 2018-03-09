@@ -2,8 +2,8 @@ package gov.nasa.jpf.symbc.veritesting;
 
 import com.ibm.wala.ssa.*;
 
-//import jdk.internal.org.objectweb.asm.TypeReference;
 import com.ibm.wala.types.TypeReference;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 
@@ -429,8 +429,26 @@ public class VarUtil {
         holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, null, isStaticField);
         String name = className + "." + methodName + ".v" + def;
         holeExpression.setHoleVarName(name);
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap) &&
+                !VeritestingListener.allowFieldReadAfterWrite) {
+            VeritestingListener.fieldReadAfterWrite += 1;
+            return null;
+        }
         varCache.put(holeExpression.getHoleVarName(), holeExpression);
         return holeExpression;
+    }
+
+    public static boolean fieldHasRWOperation(HoleExpression holeExpression, HoleExpression.HoleType holeType,
+                                        HashMap<Expression, Expression> holeHashMap) {
+        assert(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_INPUT ||
+                holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT);
+        for(HashMap.Entry<Expression, Expression> entry: holeHashMap.entrySet()) {
+            HoleExpression holeExpression1 = (HoleExpression) entry.getKey();
+            if(holeExpression1.getHoleType() != holeType) continue;
+            if(holeExpression.getFieldInfo().equals(holeExpression1.getFieldInfo()))
+                return true;
+        }
+        return false;
     }
 
     // def will be value being defined in case of FIELD_INPUT hole
@@ -453,6 +471,16 @@ public class VarUtil {
         holeExpression.setHole(true, holeType);
         holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, writeExpr, isStaticField);
         holeExpression.setHoleVarName(name);
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap) &&
+                !VeritestingListener.allowFieldWriteAfterRead) {
+            VeritestingListener.fieldWriteAfterRead += 1;
+            return null;
+        }
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap) &&
+                !VeritestingListener.allowFieldWriteAfterWrite) {
+            VeritestingListener.fieldWriteAfterWrite += 1;
+            return null;
+        }
         varCache.put(name, holeExpression);
         return holeExpression;
     }

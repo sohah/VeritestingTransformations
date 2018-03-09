@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class VeritestingPerf {
 
-    private int count = 0;
+    public int count = 0;
 
     public static void main(String[] args) {
         //(new VeritestingPerf()).cfgTest(1);
@@ -198,16 +198,19 @@ public class VeritestingPerf {
 
 class TempClassDerived extends TempClass {
 
-    private static int tempInt = 2; //change this to 2 to test read after write on a class field inside a Veritesting region
+    private int tempInt = 1; //change this to 2 to test read after write on a class field inside a Veritesting region
 
-    public int getTempInt() {
+    public int getTempInt(int a) {
         TempClass2 t = new TempClass2();
         t.tempMethod();
         return tempInt;
     }
 
     public int getOne(int a) {
-        //tempInt = a;
+        //tempInt = a + 1; //LOCAL_INPUT,  FIELD_OUTPUT holes
+        //a = tempInt + 2; //LOCAL_OUTPUT, FIELD_INPUT holes
+        //tempInt = a + 3; //LOCAL_INPUT,  FIELD_INPUT holes
+        //VeritestingPerf.count += 1;
         return tempInt;
     }
 }
@@ -218,7 +221,7 @@ class TempClass {
 
     public int getTempInt() { return tempInt; }
 
-    public int getOne(int a) { tempInt = a; return tempInt; }
+    public int  getOne(int a) { tempInt = a; return tempInt; }
 }
 
 class TempClass2 {

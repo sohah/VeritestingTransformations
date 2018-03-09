@@ -10,6 +10,7 @@ import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.strings.Atom;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import za.ac.sun.cs.green.expr.Expression;
 
 import za.ac.sun.cs.green.expr.Operation;
@@ -282,10 +283,12 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         Atom fieldName = fieldReference.getName();
         System.out.println("declaringClass = " + declaringClass + ", methodName = " + fieldName);
         int def = instruction.getDef(0);
-        varUtil.addFieldInputVal(def, objRef, declaringClass.toString(), fieldName.toString(),
-                HoleExpression.HoleType.FIELD_INPUT, instruction.isStatic());
-
-        canVeritest = true;
+        if(varUtil.addFieldInputVal(def, objRef, declaringClass.toString(), fieldName.toString(),
+                HoleExpression.HoleType.FIELD_INPUT, instruction.isStatic()) == null) {
+            canVeritest = false;
+        } else {
+            canVeritest = true;
+        }
     }
 
     @Override
@@ -312,10 +315,12 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         Expression intermediate = varUtil.makeIntermediateVar(intermediateVarName);
         Expression writeVal = varUtil.addVal(instruction.getVal());
         SPFExpr = new Operation(Operator.EQ, intermediate, writeVal);
-        varUtil.addFieldOutputVal(intermediate, objRef, className.toString(), fieldName.toString(),
-                HoleExpression.HoleType.FIELD_OUTPUT, instruction.isStatic());
-
-        canVeritest = true;
+        if(varUtil.addFieldOutputVal(intermediate, objRef, className.toString(), fieldName.toString(),
+                HoleExpression.HoleType.FIELD_OUTPUT, instruction.isStatic()) == null) {
+            canVeritest = false;
+        } else {
+            canVeritest = true;
+        }
     }
 
     @Override
