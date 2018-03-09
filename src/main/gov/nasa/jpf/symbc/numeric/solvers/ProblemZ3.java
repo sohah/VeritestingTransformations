@@ -212,7 +212,7 @@ public class ProblemZ3 extends ProblemGeneral {
 	    }
 	}
 
-	public Object not(Object exp1){
+	public Object logical_not(Object exp1){
 		try{
 			return  ctx.mkNot((BoolExpr)exp1);
 		} catch (Exception e) {
@@ -1223,8 +1223,8 @@ public class ProblemZ3 extends ProblemGeneral {
     public Object logical_or(Object exp1, Object exp2) {
   		throw new RuntimeException("## Error Z3 does not support LOGICAL_OR");
   	}
-  
-    public Object logical_and(Object exp1, Object exp2) {
+
+	public Object logical_and(Object exp1, Object exp2) {
   		throw new RuntimeException("## Error Z3 does not support LOGICAL_AND");
   	}
 }

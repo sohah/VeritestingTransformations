@@ -137,6 +137,7 @@ public class VeritestingMain {
                     break;
                 }
             }
+            //find veritesting regions inside all the methods discovered so far
             methodSummaryClassNames.addAll(methodSummarySubClassNames);
             for(Iterator it = methodSummaryClassNames.iterator(); it.hasNext();) {
                 String methodSummaryClassName = (String) it.next();
@@ -149,6 +150,7 @@ public class VeritestingMain {
                     startAnalysis(methodSummaryClassName, signature);
                 }
             }
+            //summarize methods inside all methods discovered so far
             methodAnalysis = true;
             for(Iterator it = methodSummaryClassNames.iterator(); it.hasNext();) {
                 String methodSummaryClassName = (String) it.next();
@@ -292,16 +294,16 @@ public class VeritestingMain {
 
         MyIVisitor myIVisitor = new MyIVisitor(varUtil, thenUseNum, elseUseNum, true);
         //TODO there could be multiple outputs of this region, keep going until you don't find any more Phi's
-        Expression phiExprSPF, finalPathExpr;
-        if(commonSucc.iterator().hasNext()) {
-            commonSucc.iterator().next().visit(myIVisitor);
+        Expression phiExprSPF, finalPathExpr = pathExpr1;
+        Iterator<SSAInstruction> iterator = commonSucc.iterator();
+        while(iterator.hasNext()) {
+            iterator.next().visit(myIVisitor);
             if (myIVisitor.hasPhiExpr()) {
                 phiExprSPF = myIVisitor.getPhiExprSPF(thenPLAssignSPF, elsePLAssignSPF);
                 finalPathExpr =
-                        new Operation(Operation.Operator.AND, pathExpr1, phiExprSPF);
-            } else finalPathExpr = pathExpr1;
-        } else
-            finalPathExpr = pathExpr1;
+                        new Operation(Operation.Operator.AND, finalPathExpr, phiExprSPF);
+            } else break;
+        }
 
         int startingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(currUnit.getLastInstructionIndex());
         int endingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(commonSucc.getFirstInstructionIndex());

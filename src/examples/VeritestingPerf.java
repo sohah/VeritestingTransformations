@@ -207,9 +207,10 @@ class TempClassDerived extends TempClass {
     }
 
     public int getOne(int a) {
-        //tempInt = a + 1; //LOCAL_INPUT,  FIELD_OUTPUT holes
-        //a = tempInt + 2; //LOCAL_OUTPUT, FIELD_INPUT holes
-        //tempInt = a + 3; //LOCAL_INPUT,  FIELD_INPUT holes
+        /*tempInt = a + 1; //LOCAL_INPUT,  FIELD_OUTPUT holes
+        a = tempInt + 2; //LOCAL_OUTPUT, FIELD_INPUT holes
+        tempInt = a + 3; //LOCAL_INPUT,  FIELD_INPUT holes
+*/
         //VeritestingPerf.count += 1;
         return tempInt;
     }

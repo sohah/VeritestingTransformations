@@ -186,6 +186,11 @@ public abstract class ProblemDReal extends ProblemGeneral {
 			return comp(">", (Term) exp, constant(value));
 		}
 
+		@Override
+		public Object logical_not(Object exp) {
+			throw new RuntimeException("## Error dReal unsupported operation");
+		}
+
 		private static TrueFormula TRUE = new TrueFormula();
 
 		@Override
@@ -322,6 +327,11 @@ public abstract class ProblemDReal extends ProblemGeneral {
 		@Override
 		public ComparisonFormula gt(final Object exp, final double value) {
 			return comp(">", (Term) exp, constant(value + super.precision));
+		}
+
+		@Override
+		public Object logical_not(Object exp) {
+			throw new RuntimeException("## Error: dReal unsupported operation");
 		}
 
 		private final Real precision;

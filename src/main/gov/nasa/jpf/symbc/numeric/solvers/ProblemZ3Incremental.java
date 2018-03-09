@@ -189,7 +189,7 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  public Object not(Object exp1){
+  public Object logical_not(Object exp1){
     try{
       return  ctx.mkNot((BoolExpr)exp1);
     } catch (Exception e) {
