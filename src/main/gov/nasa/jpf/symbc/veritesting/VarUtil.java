@@ -4,6 +4,7 @@ import com.ibm.wala.ssa.*;
 
 import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.symbc.VeritestingListener;
+import gov.nasa.jpf.vm.StackFrame;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 
@@ -429,7 +430,7 @@ public class VarUtil {
         holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, null, isStaticField);
         String name = className + "." + methodName + ".v" + def;
         holeExpression.setHoleVarName(name);
-        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap) &&
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap, null, null) &&
                 (VeritestingListener.allowFieldReadAfterWrite == false)) {
             VeritestingListener.fieldReadAfterWrite += 1;
             return null;
@@ -438,15 +439,41 @@ public class VarUtil {
         return holeExpression;
     }
 
+    /*
+    Checks if there is a read/write (specified in holeType) operation happening on the same field in holeExpression
+    and some hole in holeHashMap.
+    This method assumes that holeExpression comes from a method summary, holeHashMap is the hashmap of holes of the
+    outer region.
+     */
     public static boolean fieldHasRWOperation(HoleExpression holeExpression, HoleExpression.HoleType holeType,
-                                        HashMap<Expression, Expression> holeHashMap) {
+                                        HashMap<Expression, Expression> holeHashMap, InvokeInfo callSiteInfo,
+                                              StackFrame stackFrame) {
         assert(holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_INPUT ||
                 holeExpression.getHoleType() == HoleExpression.HoleType.FIELD_OUTPUT);
         for(HashMap.Entry<Expression, Expression> entry: holeHashMap.entrySet()) {
             HoleExpression holeExpression1 = (HoleExpression) entry.getKey();
             if(holeExpression1.getHoleType() != holeType) continue;
-            if(holeExpression.getFieldInfo().equals(holeExpression1.getFieldInfo()))
-                return true;
+            //One of the field accesses is non-static, so there cannot be a r/w operation to the same field
+            if(holeExpression1.getFieldInfo().isStaticField && !holeExpression.getFieldInfo().isStaticField) continue;
+            if(!holeExpression1.getFieldInfo().isStaticField && holeExpression.getFieldInfo().isStaticField) continue;
+            if(!holeExpression.getFieldInfo().fieldName.equals(holeExpression1.getFieldInfo().fieldName)) continue;
+            //Both field accesses are static and access the same field
+            if(holeExpression1.getFieldInfo().isStaticField && holeExpression.getFieldInfo().isStaticField)
+                if(holeExpression.getFieldInfo().equals(holeExpression1.getFieldInfo()))
+                    return true;
+            //At this point, both field accesses operate on the same type of field and are both non-static
+            //we now need to determine if these two fields belong to the same object
+            //Assume that holeExpression comes from a method summary if callSiteInfo is not null
+            if(callSiteInfo == null) return true;
+            if(holeExpression.getFieldInfo().localStackSlot == 0) {
+                int objRefMS = stackFrame.getLocalVariable(((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot());
+                int objRefOR = stackFrame.getLocalVariable(holeExpression1.getFieldInfo().localStackSlot);
+                if(objRefMS == objRefOR) return true;
+                else return false;
+            } else {
+                //We cannot load the object reference for an object that is created locally within the method summary
+                return false;
+            }
         }
         return false;
     }
@@ -471,12 +498,12 @@ public class VarUtil {
         holeExpression.setHole(true, holeType);
         holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, writeExpr, isStaticField);
         holeExpression.setHoleVarName(name);
-        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap) &&
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap, null, null) &&
                 (VeritestingListener.allowFieldWriteAfterRead == false)) {
             VeritestingListener.fieldWriteAfterRead += 1;
             return null;
         }
-        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap) &&
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap, null, null) &&
                 (VeritestingListener.allowFieldWriteAfterWrite == false)) {
             VeritestingListener.fieldWriteAfterWrite += 1;
             return null;

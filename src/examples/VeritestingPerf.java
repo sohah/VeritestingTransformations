@@ -47,8 +47,13 @@ public class VeritestingPerf {
 
     public int countBitsSet(int x) {
         TempClass tempClass = new TempClassDerived();
+        //TempClass tempClass = new TempClass();
         while (x != 0) {
-            if ((x & 1) != 0) count += tempClass.getOne(1);
+            if ((x & 1) != 0) {
+                //count += tempClass.tempClass2.tempInt2; //use this to test nested field access
+                //tempClass.tempInt = 1; //creates r/w interference with tempClass.getOne's method summary
+                count += tempClass.getOne(0);
+            }
             x = x >>> 1; // logical right shift
         }
         return count;
@@ -198,7 +203,7 @@ public class VeritestingPerf {
 
 class TempClassDerived extends TempClass {
 
-    private int tempInt = 1; //change this to 2 to test read after write on a class field inside a Veritesting region
+    public int tempInt = 1; //change this to 2 to test read after write on a class field inside a Veritesting region
 
     public int getTempInt(int a) {
         TempClass2 t = new TempClass2();
@@ -218,14 +223,19 @@ class TempClassDerived extends TempClass {
 
 class TempClass {
 
-    private int tempInt = 1;
+    public int tempInt = 1;
 
     public int getTempInt() { return tempInt; }
 
-    public int  getOne(int a) { tempInt = a; return tempInt; }
+    public int getOne(int a) { tempInt = a; return tempInt; }
+
+    TempClass2 tempClass2;
 }
 
 class TempClass2 {
+
+    public int tempInt2 = 1;
+
     public int tempMethod() { return 0;}
 }
 
