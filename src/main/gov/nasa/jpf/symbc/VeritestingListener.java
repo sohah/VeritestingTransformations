@@ -515,13 +515,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         HashMap<Expression, Expression> holeHashMap = region.getHoleHashMap();
         HashMap<Expression, Expression> retHoleHashMap = new HashMap<>();
         Expression additionalAST = null;
-       retHoleHashMap = fillNonInputHoles(holeHashMap, instructionInfo, retHoleHashMap);
+        retHoleHashMap = fillNonInputHoles(holeHashMap, instructionInfo, retHoleHashMap);
         retHoleHashMap = fillInputHoles(holeHashMap, stackFrame, ti, retHoleHashMap);
 
         // resolve all invoke holes in the current region's summary expression
         for(HashMap.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
-            Expression key = entry.getKey(), greenExpr = null;
-            gov.nasa.jpf.symbc.numeric.Expression spfExpr;
+            Expression key = entry.getKey();
             assert (key instanceof HoleExpression);
             HoleExpression keyHoleExpression = (HoleExpression) key;
             assert (keyHoleExpression.isHole());
@@ -562,7 +561,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         System.out.println("method summary hole interferes with outer region");
                         return null;
                     }
-                   FillNonInputHolesMS fillNonInputHolesMS =
+                    FillNonInputHolesMS fillNonInputHolesMS =
                             new FillNonInputHolesMS(retHoleHashMap, callSiteInfo, methodHoles);
                     if (fillNonInputHolesMS.invoke()) return null;
                     retHoleHashMap = fillNonInputHolesMS.retHoleHashMap;
@@ -826,7 +825,10 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, HashMap<Expression,
         //get the object reference from fieldInputInfo.use's local stack slot if not from the call site stack slot
         int stackSlot = fieldInputInfo.callSiteStackSlot;
         if (stackSlot == -1) stackSlot = fieldInputInfo.localStackSlot;
-        if (!isStatic) objRef = stackFrame.getLocalVariable(stackSlot);
+        if (!isStatic) {
+            objRef = stackFrame.getLocalVariable(stackSlot);
+            fieldInputInfo.className = ti.getClassInfo(objRef).getName();
+        }
         if (objRef == 0) {
             System.out.println("java.lang.NullPointerException" + "referencing field '" +
                     fieldInputInfo.fieldName + "' on null object");

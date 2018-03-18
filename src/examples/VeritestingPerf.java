@@ -52,7 +52,8 @@ public class VeritestingPerf {
             if ((x & 1) != 0) {
                 //count += tempClass.tempClass2.tempInt2; //use this to test nested field access
                 //tempClass.tempInt = 1; //creates r/w interference with tempClass.getOne's method summary
-                count += tempClass.getOne(0);
+                //count += tempClass.getOne(0);
+                count += tempClass.myInt; //use this to test dynamic field access
             }
             x = x >>> 1; // logical right shift
         }
@@ -205,6 +206,8 @@ class TempClassDerived extends TempClass {
 
     public int tempInt = 1; //change this to 2 to test read after write on a class field inside a Veritesting region
 
+    public int myInt = 1;
+
     public int getTempInt(int a) {
         TempClass2 t = new TempClass2();
         t.tempMethod();
@@ -224,6 +227,8 @@ class TempClassDerived extends TempClass {
 class TempClass {
 
     public int tempInt = 1;
+
+    public int myInt = 0;
 
     public int getTempInt() { return tempInt; }
 
