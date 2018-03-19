@@ -50,10 +50,10 @@ public class VeritestingPerf {
         //TempClass tempClass = new TempClass();
         while (x != 0) {
             if ((x & 1) != 0) {
-                //count += tempClass.tempClass2.tempInt2; //use this to test nested field access
+                count += tempClass.tempClass2.tempInt2; //use this to test nested field access
                 //tempClass.tempInt = 1; //creates r/w interference with tempClass.getOne's method summary
                 //count += tempClass.getOne(0);
-                count += tempClass.myInt; //use this to test dynamic field access
+                //count += tempClass.myInt; //use this to test dynamic field access
             }
             x = x >>> 1; // logical right shift
         }
@@ -234,7 +234,7 @@ class TempClass {
 
     public int getOne(int a) { tempInt = a; return tempInt; }
 
-    TempClass2 tempClass2;
+    TempClass2 tempClass2 = new TempClass2();
 }
 
 class TempClass2 {

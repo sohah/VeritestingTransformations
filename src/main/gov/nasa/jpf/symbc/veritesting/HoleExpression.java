@@ -187,24 +187,26 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     protected int localStackSlot = -1;
 
     public void setFieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot,
-                             Expression writeExpr, boolean isStaticField) {
+                             Expression writeExpr, boolean isStaticField, HoleExpression useHole) {
         assert(holeType == HoleType.FIELD_INPUT || holeType == HoleType.FIELD_OUTPUT);
+        //the object reference should either be local, come from another hole, or this field should be static
+        assert((localStackSlot != -1 || callSiteStackSlot != -1) || (useHole != null) || isStaticField);
         if(holeType == HoleType.FIELD_OUTPUT) {
             assert (writeExpr != null);
             assert (writeExpr instanceof HoleExpression);
             assert (((HoleExpression)writeExpr).getHoleType() == HoleType.INTERMEDIATE);
         }
         if(holeType == HoleType.FIELD_INPUT) assert(writeExpr == null);
-        fieldInfo = new FieldInfo(className, fieldName, localStackSlot, callSiteStackSlot, writeExpr, isStaticField);
+        fieldInfo = new FieldInfo(className, fieldName, localStackSlot, callSiteStackSlot, writeExpr, isStaticField, useHole);
     }
 
     public FieldInfo getFieldInfo() {
         return fieldInfo;
     }
 
-    public ArrayInfoHole getArrayInfo() {return  arrayInfoHole;}
-    public void setArrayInfo(Expression arrayRef, Expression arrayIndex, TypeReference arrayType, String pathLabelString, int pathLabel){
-        assert(this.isHole && this.holeType== HoleType.ARRAYLOAD);
+    public ArrayInfoHole getArrayInfo() { return arrayInfoHole; }
+    public void setArrayInfo(Expression arrayRef, Expression arrayIndex, TypeReference arrayType, String pathLabelString, int pathLabel) {
+        assert(this.isHole && this.holeType == HoleType.ARRAYLOAD);
         arrayInfoHole = new ArrayInfoHole(arrayRef, arrayIndex, arrayType, pathLabelString, pathLabel);
     }
     ArrayInfoHole arrayInfoHole = null;
@@ -252,15 +254,17 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
         public int localStackSlot = -1, callSiteStackSlot = -1;
         public Expression writeValue = null;
         public boolean isStaticField = false;
+        public HoleExpression useHole = null;
 
         public FieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot,
-                         Expression writeValue, boolean isStaticField) {
+                         Expression writeValue, boolean isStaticField, HoleExpression useHole) {
             this.localStackSlot = localStackSlot;
             this.callSiteStackSlot = callSiteStackSlot;
             this.className = className;
             this.fieldName = fieldName;
             this.writeValue = writeValue;
             this.isStaticField = isStaticField;
+            this.useHole = useHole;
         }
 
         public String toString() {

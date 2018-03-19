@@ -322,7 +322,7 @@ public class VeritestingMain {
         veritestingRegion.setMethodSignature(methodSig);
         veritestingRegion.setStartBBNum(currUnit.getNumber());
         veritestingRegion.setEndBBNum(commonSucc.getNumber());
-        HashMap<Expression, Expression> hashMap = new HashMap<>();
+        LinkedHashMap<Expression, Expression> hashMap = new LinkedHashMap<>();
         for(Map.Entry<Expression, Expression> entry: varUtil.holeHashMap.entrySet()) {
             hashMap.put(entry.getKey(), entry.getValue());
         }

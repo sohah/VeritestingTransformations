@@ -12,6 +12,7 @@ import java.lang.annotation.ElementType;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 public class VarUtil {
     String className;
@@ -26,7 +27,7 @@ public class VarUtil {
     public HashSet<Expression> defLocalVars;
 
     // contains all the holes in the cnlie AST
-    public HashMap<Expression, Expression> holeHashMap;
+    public LinkedHashMap<Expression, Expression> holeHashMap;
 
     public static int pathCounter=0;
     private static long holeID = 0;
@@ -81,7 +82,7 @@ public class VarUtil {
     public VarUtil(IR _ir, String _className, String _methodName) {
         varsMap = new HashMap<> ();
         defLocalVars = new HashSet<>();
-        holeHashMap = new HashMap<>();
+        holeHashMap = new LinkedHashMap<>();
         varCache = new HashMap<String, Expression> () {
             @Override
             public Expression put(String key, Expression expression) {
@@ -288,6 +289,8 @@ public class VarUtil {
             }
         });
 
+        //Propagates mapping from WALA IR variable to local stack slot to all WALA IR variables involved in
+        //phi assignment statements
         boolean localVarUpdated;
         do {
             localVarUpdated = false;
@@ -412,23 +415,25 @@ public class VarUtil {
     }
 
     // def will be value being defined in case of FIELD_INPUT hole
-    public Expression addFieldInputVal(int def, int use,
-                                  String className,
-                                  String fieldName,
-                                  HoleExpression.HoleType holeType,
-                                       boolean isStaticField) {
+    public Expression addFieldInputVal(int def, int use, String className, String fieldName,
+                                       HoleExpression.HoleType holeType, boolean isStaticField) {
         assert(holeType == HoleExpression.HoleType.FIELD_INPUT);
-        // Assuming fields have to be used from local objects
-        assert(varsMap.containsKey(use) || use == -1);
+        HoleExpression useHole = null;
+        //If the field does not belong to a local object
+        if(!(varsMap.containsKey(use) || use == -1)) {
+            String string = this.className + "." + this.methodName + ".v" + use;
+            assert(varCache.containsKey(string));
+            useHole = (HoleExpression) varCache.get(string);
+        }
         int localStackSlot = -1;
-        if(!isStaticField) {
+        if(!isStaticField && (useHole == null)) {
             assert(use != -1);
             localStackSlot = varsMap.get(use);
         }
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, holeType);
-        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, null, isStaticField);
-        String name = className + "." + methodName + ".v" + def;
+        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, null, isStaticField, useHole);
+        String name = this.className + "." + this.methodName + ".v" + def;
         holeExpression.setHoleVarName(name);
         if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap, null, null) &&
                 (VeritestingListener.allowFieldReadAfterWrite == false)) {
@@ -485,18 +490,23 @@ public class VarUtil {
                                        HoleExpression.HoleType holeType,
                                         boolean isStaticField) {
         assert(holeType == HoleExpression.HoleType.FIELD_OUTPUT);
-        // Assuming fields have to be used from local objects
-        assert(varsMap.containsKey(use) || use == -1);
-        String name = "FIELD_OUTPUT." + ((HoleExpression)writeExpr).getHoleVarName();
-        if(varCache.containsKey(name)) return varCache.get(name);
+        HoleExpression useHole = null;
+        //If the field does not belong to a local object
+        if(!(varsMap.containsKey(use) || use == -1)) {
+            String string = this.className + "." + this.methodName + ".v" + use;
+            assert(varCache.containsKey(string));
+            useHole = (HoleExpression) varCache.get(string);
+        }
         int localStackSlot = -1;
-        if(!isStaticField) {
+        if(!isStaticField && (useHole == null)) {
             assert(use != -1);
             localStackSlot = varsMap.get(use);
         }
+        String name = "FIELD_OUTPUT." + ((HoleExpression)writeExpr).getHoleVarName();
+        if(varCache.containsKey(name)) return varCache.get(name);
         HoleExpression holeExpression = new HoleExpression(nextInt());
         holeExpression.setHole(true, holeType);
-        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, writeExpr, isStaticField);
+        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, writeExpr, isStaticField, useHole);
         holeExpression.setHoleVarName(name);
         if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap, null, null) &&
                 (VeritestingListener.allowFieldWriteAfterRead == false)) {

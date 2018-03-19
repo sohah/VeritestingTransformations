@@ -5,6 +5,7 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 
 
 public class VeritestingRegion {
@@ -59,13 +60,13 @@ public class VeritestingRegion {
 
     private String className, methodName;
 
-    public void setHoleHashMap(HashMap<Expression,Expression> holeHashMap) {
+    public void setHoleHashMap(LinkedHashMap<Expression,Expression> holeHashMap) {
         this.holeHashMap = holeHashMap;
     }
-    public HashMap<Expression, Expression> getHoleHashMap() {
+    public LinkedHashMap<Expression, Expression> getHoleHashMap() {
         return holeHashMap;
     }
-    private HashMap<Expression, Expression> holeHashMap;
+    private LinkedHashMap<Expression, Expression> holeHashMap;
 
     public void setIsMethodSummary(boolean isMethodSummary) {
         this.isMethodSummary = isMethodSummary;
