@@ -29,7 +29,6 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
-import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.vm.*;
@@ -423,7 +422,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         HoleExpression.FieldInfo fieldInfo = holeExpression.getFieldInfo();
                         assert (fieldInfo != null);
                         finalValue = holeHashMap.get(fieldInfo.writeValue);
-                        fillFieldOutputHole(ti, stackFrame, fieldInfo, GreenToSPFExpression(finalValue));
+                        fillFieldHole(ti, stackFrame, fieldInfo, holeHashMap, false, GreenToSPFExpression(finalValue));
                     }
                     break;
             }
@@ -733,10 +732,12 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
         return unrolledConstraint;
     }
 
-    gov.nasa.jpf.symbc.numeric.Expression fillFieldInputHole(ThreadInfo ti, StackFrame stackFrame,
-                                                             HoleExpression.FieldInfo fieldInputInfo,
-                                                             LinkedHashMap<Expression, Expression> retHoleHashMap) {
-        boolean isStatic = fieldInputInfo.isStaticField;
+    gov.nasa.jpf.symbc.numeric.Expression fillFieldHole(ThreadInfo ti, StackFrame stackFrame,
+                                                        HoleExpression.FieldInfo fieldInputInfo,
+                                                        LinkedHashMap<Expression, Expression> retHoleHashMap,
+                                                        boolean isRead,
+                                                        gov.nasa.jpf.symbc.numeric.Expression finalValue) {
+        final boolean isStatic = fieldInputInfo.isStaticField;
         int objRef = -1;
         //get the object reference from fieldInputInfo.use's local stack slot if not from the call site stack slot
         int stackSlot = fieldInputInfo.callSiteStackSlot;
@@ -752,6 +753,7 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
         }
         if (!isStatic && (stackSlot != -1)) {
             objRef = stackFrame.getLocalVariable(stackSlot);
+            //load the class name dynamically based on the object reference
             fieldInputInfo.className = ti.getClassInfo(objRef).getName();
         }
         if (objRef == 0) {
@@ -766,8 +768,14 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
                 return null;
             }
             ElementInfo eiFieldOwner;
-            if (!isStatic) eiFieldOwner = ti.getElementInfo(objRef);
-            else eiFieldOwner = ci.getStaticElementInfo();
+            if (!isStatic) {
+                if (isRead) eiFieldOwner = ti.getElementInfo(objRef);
+                else eiFieldOwner = ti.getModifiableElementInfo(objRef);
+            }
+            else {
+                if(isRead) eiFieldOwner = ci.getStaticElementInfo();
+                else eiFieldOwner = ci.getModifiableStaticElementInfo();
+            }
             FieldInfo fieldInfo = null;
             if (ci != null && !isStatic)
                 fieldInfo = ci.getInstanceField(fieldInputInfo.fieldName);
@@ -778,61 +786,30 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
                         + "' in " + eiFieldOwner);
                 assert (false);
             } else {
-                Object fieldAttr = eiFieldOwner.getFieldAttr(fieldInfo);
-                if (fieldAttr != null) {
-                    return (gov.nasa.jpf.symbc.numeric.Expression) fieldAttr;
-                } else {
-                    if (fieldInfo.getStorageSize() == 1) {
-                        return new IntegerConstant(eiFieldOwner.get1SlotField(fieldInfo));
+                if(isRead) {
+                    Object fieldAttr = eiFieldOwner.getFieldAttr(fieldInfo);
+                    if (fieldAttr != null) {
+                        return (gov.nasa.jpf.symbc.numeric.Expression) fieldAttr;
                     } else {
-                        return new IntegerConstant(eiFieldOwner.get2SlotField(fieldInfo));
+                        if (fieldInfo.getStorageSize() == 1) {
+                            return new IntegerConstant(eiFieldOwner.get1SlotField(fieldInfo));
+                        } else {
+                            return new IntegerConstant(eiFieldOwner.get2SlotField(fieldInfo));
+                        }
+                    }
+                } else {
+                    int fieldSize = fieldInfo.getStorageSize();
+                    if (fieldSize == 1) {
+                        eiFieldOwner.set1SlotField(fieldInfo, 0); // field value should not matter (I think)
+                        eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+                    } else {
+                        eiFieldOwner.set2SlotField(fieldInfo, 0); // field value should not matter (I think)
+                        eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
                     }
                 }
             }
         }
         return null;
-    }
-
-    void fillFieldOutputHole(ThreadInfo ti,
-                             StackFrame stackFrame,
-                             HoleExpression.FieldInfo fieldInputInfo,
-                             gov.nasa.jpf.symbc.numeric.Expression finalValue) {
-        boolean isStatic = false;
-        int objRef = -1;
-        int stackSlot = fieldInputInfo.callSiteStackSlot;
-        if (stackSlot == -1) stackSlot = fieldInputInfo.localStackSlot;
-        if (stackSlot == -1) isStatic = true;
-        else objRef = stackFrame.getLocalVariable(stackSlot);
-        if (objRef == 0) {
-            System.out.println("java.lang.NullPointerException" + "referencing field '" +
-                    fieldInputInfo.fieldName + "' on null object");
-            assert (false);
-        } else {
-            ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(fieldInputInfo.className);
-            ElementInfo eiFieldOwner;
-            if (!isStatic) eiFieldOwner = ti.getModifiableElementInfo(objRef);
-            else eiFieldOwner = ci.getModifiableStaticElementInfo();
-            FieldInfo fieldInfo = null;
-
-            if (ci != null && !isStatic)
-                fieldInfo = ci.getInstanceField(fieldInputInfo.fieldName);
-            if (ci != null && isStatic)
-                fieldInfo = ci.getStaticField(fieldInputInfo.fieldName);
-            if (fieldInfo == null) {
-                System.out.println("java.lang.NoSuchFieldError" + "referencing field '" + fieldInputInfo.fieldName
-                        + "' in " + eiFieldOwner);
-                assert (false);
-            } else {
-                int fieldSize = fieldInfo.getStorageSize();
-                if (fieldSize == 1) {
-                    eiFieldOwner.set1SlotField(fieldInfo, 0); // field value should not matter (I think)
-                    eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
-                } else {
-                    eiFieldOwner.set2SlotField(fieldInfo, 0); // field value should not matter (I think)
-                    eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
-                }
-            }
-        }
     }
 
     private class InstructionInfo {
@@ -1140,7 +1117,7 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
                                     }
                                 }
                             }
-                            spfExpr = fillFieldInputHole(ti, stackFrame, methodKeyHoleFieldInfo, retHoleHashMap);
+                            spfExpr = fillFieldHole(ti, stackFrame, methodKeyHoleFieldInfo, retHoleHashMap, true, null);
                             if (spfExpr == null) {
                                 failure = true;
                                 return this;

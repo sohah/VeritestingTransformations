@@ -47,10 +47,11 @@ public class VeritestingPerf {
 
     public int countBitsSet(int x) {
         TempClass tempClass = new TempClassDerived();
+        count = 1;
         //TempClass tempClass = new TempClass();
         while (x != 0) {
             if ((x & 1) != 0) {
-                count += tempClass.tempClass2.tempInt2; //use this to test nested field access
+                tempClass.tempClass2.tempInt2 += count; //use this to test nested field access
                 //tempClass.tempInt = 1; //creates r/w interference with tempClass.getOne's method summary
                 //count += tempClass.getOne(0);
                 //count += tempClass.myInt; //use this to test dynamic field access
