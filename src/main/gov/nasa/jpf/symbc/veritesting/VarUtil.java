@@ -419,12 +419,12 @@ public class VarUtil {
                                        HoleExpression.HoleType holeType, boolean isStaticField) {
         assert(holeType == HoleExpression.HoleType.FIELD_INPUT);
         HoleExpression useHole = null;
-        //If the field does not belong to a local object
-        if(!(varsMap.containsKey(use) || use == -1)) {
-            String string = this.className + "." + this.methodName + ".v" + use;
-            assert(varCache.containsKey(string));
-            useHole = (HoleExpression) varCache.get(string);
-        }
+        //If the field does not belong to a local object, then it has to be an already created object or a static field
+        // meaning use equals -1
+        //But the already created object hole takes priority over a local object
+        String string = this.className + "." + this.methodName + ".v" + use;
+        if(varsMap.containsKey(use) == false) assert(varCache.containsKey(string) || use == -1);
+        if(varCache.containsKey(string)) useHole = (HoleExpression) varCache.get(string);
         int localStackSlot = -1;
         if(!isStaticField && (useHole == null)) {
             assert(use != -1);
@@ -491,12 +491,12 @@ public class VarUtil {
                                         boolean isStaticField) {
         assert(holeType == HoleExpression.HoleType.FIELD_OUTPUT);
         HoleExpression useHole = null;
-        //If the field does not belong to a local object
-        if(!(varsMap.containsKey(use) || use == -1)) {
-            String string = this.className + "." + this.methodName + ".v" + use;
-            assert(varCache.containsKey(string));
-            useHole = (HoleExpression) varCache.get(string);
-        }
+        //If the field does not belong to a local object, then it has to be an already created object or a static field
+        // meaning use equals -1
+        //But the already created object hole takes priority over a local object
+        String string = this.className + "." + this.methodName + ".v" + use;
+        if(varsMap.containsKey(use) == false) assert(varCache.containsKey(string) || use == -1);
+        if(varCache.containsKey(string)) useHole = (HoleExpression) varCache.get(string);
         int localStackSlot = -1;
         if(!isStaticField && (useHole == null)) {
             assert(use != -1);

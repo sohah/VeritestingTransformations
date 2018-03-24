@@ -480,8 +480,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         LinkedHashMap<Expression, Expression> retHoleHashMap = new LinkedHashMap<>();
         Expression additionalAST = null;
         retHoleHashMap = fillNonInputHoles(holeHashMap, instructionInfo, retHoleHashMap);
-        FillInputHolesMS fillInputHoles =
-                new FillInputHolesMS(stackFrame, ti, retHoleHashMap, null, holeHashMap, false).invoke();
+        FillInputHoles fillInputHoles =
+                new FillInputHoles(stackFrame, ti, retHoleHashMap, null, holeHashMap, false).invoke();
         if (fillInputHoles.failure()) return null;
         retHoleHashMap = fillInputHoles.retHoleHashMap;
 
@@ -533,8 +533,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     if (fillNonInputHolesMS.invoke()) return null;
                     retHoleHashMap = fillNonInputHolesMS.retHoleHashMap;
 
-                    FillInputHolesMS fillInputHolesMS =
-                            new FillInputHolesMS(stackFrame, ti, retHoleHashMap, callSiteInfo, methodHoles, true).invoke();
+                    FillInputHoles fillInputHolesMS =
+                            new FillInputHoles(stackFrame, ti, retHoleHashMap, callSiteInfo, methodHoles, true).invoke();
                     if (fillInputHolesMS.failure()) return null;
                     ArrayList<Expression> paramEqList = fillInputHolesMS.getParamEqList();
                     retHoleHashMap = fillInputHolesMS.retHoleHashMap;
@@ -1009,7 +1009,7 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
         }
     }
 
-    private class FillInputHolesMS {
+    private class FillInputHoles {
         private final boolean isMethodSummary;
         private boolean failure;
         private StackFrame stackFrame;
@@ -1019,9 +1019,9 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
         private LinkedHashMap<Expression, Expression> methodHoles;
         private ArrayList<Expression> paramEqList;
 
-        public FillInputHolesMS(StackFrame stackFrame, ThreadInfo ti, LinkedHashMap<Expression, Expression> retHoleHashMap,
-                                InvokeInfo callSiteInfo, LinkedHashMap<Expression, Expression> methodHoles,
-                                boolean isMethodSummary) {
+        public FillInputHoles(StackFrame stackFrame, ThreadInfo ti, LinkedHashMap<Expression, Expression> retHoleHashMap,
+                              InvokeInfo callSiteInfo, LinkedHashMap<Expression, Expression> methodHoles,
+                              boolean isMethodSummary) {
             this.stackFrame = stackFrame;
             this.ti = ti;
             this.retHoleHashMap = retHoleHashMap;
@@ -1038,7 +1038,7 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
             return paramEqList;
         }
 
-        public FillInputHolesMS invoke() {
+        public FillInputHoles invoke() {
             gov.nasa.jpf.symbc.numeric.Expression spfExpr;
             Expression greenExpr;
             paramEqList = new ArrayList<>();
