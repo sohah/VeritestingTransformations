@@ -54,10 +54,10 @@ public class VeritestingPerf {
                 // nested field access test case 1
                 //count += tempClass.tempClass2.tempInt2;
                 //nested field access test case 2
-                TempClass2 tempClass2 = tempClass.tempClass2;
-                tempClass2.tempInt2 += count;
+                //TempClass2 tempClass2 = tempClass.tempClass2;
+                //tempClass2.tempInt2 += count;
                 //tempClass.tempInt = 1; //creates r/w interference with tempClass.getOne's method summary
-                //count += tempClass.getOne(0);
+                count += tempClass.getOne(0);
                 //count += tempClass.myInt; //use this to test dynamic field access
             }
             x = x >>> 1; // logical right shift

@@ -479,7 +479,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         LinkedHashMap<Expression, Expression> holeHashMap = region.getHoleHashMap();
         LinkedHashMap<Expression, Expression> retHoleHashMap = new LinkedHashMap<>();
         Expression additionalAST = null;
-        retHoleHashMap = fillNonInputHoles(holeHashMap, instructionInfo, retHoleHashMap);
+        FillNonInputHoles fillNonInputHoles =
+                new FillNonInputHoles(retHoleHashMap, null, holeHashMap, instructionInfo, false);
+        if (fillNonInputHoles.invoke()) return null;
+        retHoleHashMap = fillNonInputHoles.retHoleHashMap;
         FillInputHoles fillInputHoles =
                 new FillInputHoles(stackFrame, ti, retHoleHashMap, null, holeHashMap, false).invoke();
         if (fillInputHoles.failure()) return null;
@@ -528,10 +531,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         System.out.println("method summary hole interferes with outer region");
                         return null;
                     }
-                    FillNonInputHolesMS fillNonInputHolesMS =
-                            new FillNonInputHolesMS(retHoleHashMap, callSiteInfo, methodHoles);
-                    if (fillNonInputHolesMS.invoke()) return null;
-                    retHoleHashMap = fillNonInputHolesMS.retHoleHashMap;
+                    fillNonInputHoles =
+                            new FillNonInputHoles(retHoleHashMap, callSiteInfo, methodHoles, null, true);
+                    if (fillNonInputHoles.invoke()) return null;
+                    retHoleHashMap = fillNonInputHoles.retHoleHashMap;
 
                     FillInputHoles fillInputHolesMS =
                             new FillInputHoles(stackFrame, ti, retHoleHashMap, callSiteInfo, methodHoles, true).invoke();
@@ -632,56 +635,6 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
             }
         }
         return false;
-    }
-
-    private LinkedHashMap<Expression, Expression> fillNonInputHoles(LinkedHashMap<Expression, Expression> holeHashMap,
-                                                              InstructionInfo instructionInfo,
-                                                              LinkedHashMap<Expression, Expression> retHoleHashMap) {
-        //resolve all non-input holes inside the current region's summary
-        for(Map.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
-            Expression key = entry.getKey(), finalValueGreen;
-            gov.nasa.jpf.symbc.numeric.Expression finalValueSPF;
-            assert (key instanceof HoleExpression);
-            HoleExpression keyHoleExpression = (HoleExpression) key;
-            assert (keyHoleExpression.isHole());
-            switch (keyHoleExpression.getHoleType()) {
-                case LOCAL_OUTPUT:
-                case INTERMEDIATE:
-                    finalValueSPF =
-                            makeSymbolicInteger(keyHoleExpression.getHoleVarName() + pathLabelCount);
-                    finalValueGreen = SPFToGreenExpr(finalValueSPF);
-                    retHoleHashMap.put(keyHoleExpression, finalValueGreen);
-                    break;
-                case FIELD_OUTPUT:
-                /*HoleExpression.FieldInfo fieldInfo = keyHoleExpression.getFieldInfo();
-                finalValueSPF =
-                        makeSymbolicInteger(((HoleExpression)fieldInfo.writeValue).getHoleVarName() + pathLabelCount);
-                finalValueGreen = SPFToGreenExpr(finalValueSPF);*/
-                    retHoleHashMap.put(keyHoleExpression, null);
-                    break;
-                case NONE:
-                    System.out.println("expression marked as hole with NONE hole type: " +
-                            keyHoleExpression.toString());
-                    assert (false);
-                    break;
-                case CONDITION:
-                    assert(instructionInfo != null);
-                    finalValueGreen = instructionInfo.getCondition();
-                    assert (finalValueGreen != null);
-                    retHoleHashMap.put(keyHoleExpression, finalValueGreen);
-                    break;
-                case NEGCONDITION:
-                    assert (instructionInfo != null);
-                    finalValueGreen = instructionInfo.getNegCondition();
-                    assert (finalValueGreen != null);
-                    retHoleHashMap.put(keyHoleExpression, finalValueGreen);
-                    break;
-                case FIELD_INPUT:
-                case LOCAL_INPUT:
-                    break;
-            }
-        }
-        return retHoleHashMap;
     }
 
     /*
@@ -950,20 +903,26 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
         return toGreenTranslator.getExpression();
     }
 
-    private class FillNonInputHolesMS {
+    private class FillNonInputHoles {
+        private final VeritestingListener.InstructionInfo instructionInfo;
+        private final boolean isMethodSummary;
         private LinkedHashMap<Expression, Expression> retHoleHashMap;
         private InvokeInfo callSiteInfo;
         private LinkedHashMap<Expression, Expression> methodHoles;
 
-        public FillNonInputHolesMS(LinkedHashMap<Expression, Expression> retHoleHashMap, InvokeInfo callSiteInfo,
-                                   LinkedHashMap<Expression, Expression> methodHoles) {
+        public FillNonInputHoles(LinkedHashMap<Expression, Expression> retHoleHashMap, InvokeInfo callSiteInfo,
+                                 LinkedHashMap<Expression, Expression> methodHoles, InstructionInfo instructionInfo,
+                                 boolean isMethodSummary) {
             this.retHoleHashMap = retHoleHashMap;
             this.callSiteInfo = callSiteInfo;
             this.methodHoles = methodHoles;
+            this.instructionInfo = instructionInfo;
+            this.isMethodSummary = isMethodSummary;
         }
 
         public boolean invoke() {
-            gov.nasa.jpf.symbc.numeric.Expression spfExpr;Expression greenExpr;//fill all holes inside the method summary
+            gov.nasa.jpf.symbc.numeric.Expression spfExpr;
+            Expression greenExpr;//fill all holes inside the method summary
             for(Map.Entry<Expression, Expression> entry1 : methodHoles.entrySet()) {
                 Expression methodKeyExpr = entry1.getKey();
                 assert(methodKeyExpr instanceof HoleExpression);
@@ -971,36 +930,60 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
                 assert(methodKeyHole.isHole());
                 switch(methodKeyHole.getHoleType()) {
                     case CONDITION:
-                        System.out.println("unsupported condition hole in method summary");
-                        return true;
+                        if(isMethodSummary) {
+                            System.out.println("unsupported condition hole in method summary");
+                            return true;
+                        } else {
+                            assert(instructionInfo != null);
+                            greenExpr = instructionInfo.getCondition();
+                            assert (greenExpr != null);
+                            retHoleHashMap.put(methodKeyExpr, greenExpr);
+                        }
+                        break;
                     case NEGCONDITION:
-                        System.out.println("unsupported negCondition hole in method summary");
-                        return true;
+                        if(isMethodSummary) {
+                            System.out.println("unsupported negCondition hole in method summary");
+                            return true;
+                        } else {
+                            assert (instructionInfo != null);
+                            greenExpr = instructionInfo.getNegCondition();
+                            assert (greenExpr != null);
+                            retHoleHashMap.put(methodKeyExpr, greenExpr);
+                        }
                     case INVOKE:
-                        System.out.println("unsupported invoke hole in method summary");
-                        return true;
+                        if(isMethodSummary) {
+                            System.out.println("unsupported invoke hole in method summary");
+                            return true;
+                        } else break;
                     case LOCAL_OUTPUT:
                     case INTERMEDIATE:
                         spfExpr = makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
                         greenExpr = SPFToGreenExpr(spfExpr);
                         retHoleHashMap.put(methodKeyHole, greenExpr);
                         break;
-                    case NONE:
-                        break;
                     case FIELD_OUTPUT:
-                        HoleExpression.FieldInfo methodKeyHoleFieldInfo = methodKeyHole.getFieldInfo();
-                        if(!methodKeyHoleFieldInfo.isStaticField) {
-                            if(methodKeyHoleFieldInfo.localStackSlot == 0) {
-                                assert(callSiteInfo.paramList.size() > 0);
-                                methodKeyHoleFieldInfo.callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
-                                methodKeyHole.setFieldInfo(methodKeyHoleFieldInfo.className, methodKeyHoleFieldInfo.fieldName,
-                                        methodKeyHoleFieldInfo.localStackSlot, methodKeyHoleFieldInfo.callSiteStackSlot, methodKeyHoleFieldInfo.writeValue,
-                                        methodKeyHoleFieldInfo.isStaticField, methodKeyHoleFieldInfo.useHole);
-                            } else return true;
+                        if(isMethodSummary) {
+                            HoleExpression.FieldInfo methodKeyHoleFieldInfo = methodKeyHole.getFieldInfo();
+                            if (!methodKeyHoleFieldInfo.isStaticField) {
+                                if (methodKeyHoleFieldInfo.localStackSlot == 0) {
+                                    assert (callSiteInfo.paramList.size() > 0);
+                                    methodKeyHoleFieldInfo.callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
+                                    methodKeyHole.setFieldInfo(methodKeyHoleFieldInfo.className, methodKeyHoleFieldInfo.fieldName,
+                                            methodKeyHoleFieldInfo.localStackSlot, methodKeyHoleFieldInfo.callSiteStackSlot, methodKeyHoleFieldInfo.writeValue,
+                                            methodKeyHoleFieldInfo.isStaticField, methodKeyHoleFieldInfo.useHole);
+                                } else return true;
+                            }
+                            //populateOutputs does not use the value mapped to methodKeyHole for FIELD_OUTPUT holes
                         }
-                        //populateOutputs does not use the value mapped to methodKeyHole for FIELD_OUTPUT holes
                         retHoleHashMap.put(methodKeyHole, null);
                         break;
+                    case NONE:
+                        System.out.println("expression marked as hole with NONE hole type: " +
+                                methodKeyHole.toString());
+                        assert (false);
+                        break;
+                    case FIELD_INPUT:
+                    case LOCAL_INPUT:
                     default:
                         break;
                 }
