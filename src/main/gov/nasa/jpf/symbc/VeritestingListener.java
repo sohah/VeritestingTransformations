@@ -254,8 +254,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (fillHolesOutput == null || fillHolesOutput.holeHashMap == null) return null;
         Expression summaryExpression = region.getSummaryExpression();
         Expression finalSummaryExpression = summaryExpression;
-        if (fillHolesOutput.additionalAST != null)
-            finalSummaryExpression = new Operation(Operation.Operator.AND, summaryExpression, fillHolesOutput.additionalAST);
+        if (fillHolesOutput.additionalAST != null) {
+            if (summaryExpression != null)
+                finalSummaryExpression = new Operation(Operation.Operator.AND, summaryExpression, fillHolesOutput.additionalAST);
+            else finalSummaryExpression = fillHolesOutput.additionalAST;
+        }
+        assert(finalSummaryExpression != null);
         finalSummaryExpression = fillASTHoles(finalSummaryExpression, fillHolesOutput.holeHashMap); //not constant-folding for now
 
         // pc._addDet(new GreenConstraint(finalSummaryExpression));
@@ -474,8 +478,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     //the field
     private FillHolesOutput fillHoles(VeritestingRegion region,
                                       InstructionInfo instructionInfo,
-                                      StackFrame stackFrame,
-                                      ThreadInfo ti) {
+                                      final StackFrame stackFrame,
+                                      final ThreadInfo ti) {
         LinkedHashMap<Expression, Expression> holeHashMap = region.getHoleHashMap();
         LinkedHashMap<Expression, Expression> retHoleHashMap = new LinkedHashMap<>();
         Expression additionalAST = null;
@@ -487,87 +491,16 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 new FillInputHoles(stackFrame, ti, retHoleHashMap, null, holeHashMap, false).invoke();
         if (fillInputHoles.failure()) return null;
         retHoleHashMap = fillInputHoles.retHoleHashMap;
+        FillInvokeHole fillInvokeHole = new FillInvokeHole(stackFrame, ti, holeHashMap, retHoleHashMap, additionalAST).invoke();
+        if (fillInvokeHole.is()) return null;
+        retHoleHashMap = fillInvokeHole.getRetHoleHashMap();
+        additionalAST = fillInvokeHole.getAdditionalAST();
 
-        // resolve all invoke holes in the current region's summary expression
-        for(Map.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
-            Expression key = entry.getKey();
-            assert (key instanceof HoleExpression);
-            HoleExpression keyHoleExpression = (HoleExpression) key;
-            assert (keyHoleExpression.isHole());
-            switch (keyHoleExpression.getHoleType()) {
-                case INVOKE:
-                    InvokeInfo callSiteInfo = keyHoleExpression.getInvokeInfo();
-                    ClassInfo ci = null;
-                    if (callSiteInfo.isVirtualInvoke) {
-                        Expression callingObject = retHoleHashMap.get(callSiteInfo.paramList.get(0));
-                        ci = ti.getClassInfo(((IntConstant) callingObject).getValue());
-                    }
-                    if (callSiteInfo.isStaticInvoke) {
-                        ci = ClassLoaderInfo.getCurrentResolvedClassInfo(callSiteInfo.className);
-                    }
 
-                    // if ci failure null, that means either MyIVisitor.visitInvoke has a bug or we failed to load the class
-                    assert(ci != null);
-                    //Change the class name based on the call site object reference
-                    callSiteInfo.className = ci.getName();
-                    //If there exists a invokeVirtual for a method that we weren't able to summarize, skip veritesting
-                    String key1 = callSiteInfo.className + "." + callSiteInfo.methodName + callSiteInfo.methodSignature + "#0";
-                    FNV1 fnv = new FNV1a64();
-                    fnv.init(key1);
-                    long hash = fnv.getHash();
-                    if(!veritestingRegions.containsKey(key1)) {
-                        System.out.println("Could not find method summary for " +
-                                callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
-                        return null;
-                    }
-                    //All holes in callSiteInfo.paramList will also be present in holeHashmap and will be filled up here
-                    for (Expression h : callSiteInfo.paramList) {
-                        if (h instanceof HoleExpression) assert (holeHashMap.containsKey(h));
-                    }
-                    VeritestingRegion methodSummary = veritestingRegions.get(key1);
-                    LinkedHashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
-                    if(hasRWInterference(holeHashMap, methodHoles, callSiteInfo, stackFrame)) {
-                        methodSummaryRWInterference++;
-                        System.out.println("method summary hole interferes with outer region");
-                        return null;
-                    }
-                    fillNonInputHoles =
-                            new FillNonInputHoles(retHoleHashMap, callSiteInfo, methodHoles, null, true);
-                    if (fillNonInputHoles.invoke()) return null;
-                    retHoleHashMap = fillNonInputHoles.retHoleHashMap;
-
-                    FillInputHoles fillInputHolesMS =
-                            new FillInputHoles(stackFrame, ti, retHoleHashMap, callSiteInfo, methodHoles, true).invoke();
-                    if (fillInputHolesMS.failure()) return null;
-                    ArrayList<Expression> paramEqList = fillInputHolesMS.getParamEqList();
-                    retHoleHashMap = fillInputHolesMS.retHoleHashMap;
-
-                    Expression retValEq = null;
-                    if (methodSummary.retVal != null)
-                        retValEq = new Operation(Operation.Operator.EQ, methodSummary.retVal, keyHoleExpression);
-                    Expression mappingOperation = retValEq;
-                    for(int i=0; i < paramEqList.size(); i++) {
-                        //paramList.length-1 because there won't be a constraint created for the object reference
-                        if(mappingOperation != null)
-                            mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, paramEqList.get(i));
-                        else mappingOperation = paramEqList.get(i);
-                    }
-                    if (methodSummary.getSummaryExpression() != null)
-                        mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, methodSummary.getSummaryExpression());
-                    if (additionalAST != null)
-                        additionalAST = new Operation(Operation.Operator.AND, additionalAST, mappingOperation);
-                    else additionalAST = mappingOperation;
-                    Expression finalValueGreen = SPFToGreenExpr(makeSymbolicInteger(keyHoleExpression.getHoleVarName() + pathLabelCount));
-                    retHoleHashMap.put(keyHoleExpression, finalValueGreen);
-                    methodSummary.ranIntoCount++;
-                    methodSummary.usedCount++;
-                    break;
-            }
-        }
         return new FillHolesOutput(retHoleHashMap, additionalAST);
     }
-    
-private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expression, Expression> holeHashMap, InstructionInfo instructionInfo,
+
+    private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expression, Expression> holeHashMap, InstructionInfo instructionInfo,
                                        StackFrame stackFrame, ThreadInfo ti, LinkedHashMap<Expression, Expression> retHoleHashMap) {
         for (Map.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
             Expression key = entry.getKey(), finalValueGreen;
@@ -950,11 +883,7 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
                             assert (greenExpr != null);
                             retHoleHashMap.put(methodKeyExpr, greenExpr);
                         }
-                    case INVOKE:
-                        if(isMethodSummary) {
-                            System.out.println("unsupported invoke hole in method summary");
-                            return true;
-                        } else break;
+                        break;
                     case LOCAL_OUTPUT:
                     case INTERMEDIATE:
                         spfExpr = makeSymbolicInteger(methodKeyHole.getHoleVarName() + pathLabelCount);
@@ -982,6 +911,7 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
                                 methodKeyHole.toString());
                         assert (false);
                         break;
+                    case INVOKE:
                     case FIELD_INPUT:
                     case LOCAL_INPUT:
                     default:
@@ -995,8 +925,8 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
     private class FillInputHoles {
         private final boolean isMethodSummary;
         private boolean failure;
-        private StackFrame stackFrame;
-        private ThreadInfo ti;
+        private final StackFrame stackFrame;
+        private final ThreadInfo ti;
         private LinkedHashMap<Expression, Expression> retHoleHashMap;
         private InvokeInfo callSiteInfo;
         private LinkedHashMap<Expression, Expression> methodHoles;
@@ -1047,10 +977,11 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
                                 //local inputs used in method summary have to come from the filled-up holes in paramList
                                 if (methodKeyHole.getLocalStackSlot() < callSiteInfo.paramList.size()) {
                                     int methodLocalStackSlot = methodKeyHole.getLocalStackSlot();
-                                    //int callSiteLocalStackSlot = ((HoleExpression)callSiteInfo.paramList[methodLocalStackSlot]).getLocalStackSlot();
-                                    //methodKeyHole.setLocalStackSlot(callSiteLocalStackSlot);
-                                    if (callSiteInfo.paramList.get(methodLocalStackSlot) instanceof HoleExpression)
+                                    if (callSiteInfo.paramList.get(methodLocalStackSlot) instanceof HoleExpression) {
+                                        //int callSiteLocalStackSlot = ((HoleExpression)callSiteInfo.paramList.get(methodLocalStackSlot)).getLocalStackSlot();
+                                        //methodKeyHole.setLocalStackSlot(callSiteLocalStackSlot);
                                         retHoleHashMap.put(methodKeyHole, retHoleHashMap.get(callSiteInfo.paramList.get(methodLocalStackSlot)));
+                                    }
                                     else //a constant could have been passed as an argument instead of a variable
                                         retHoleHashMap.put(methodKeyHole, callSiteInfo.paramList.get(methodLocalStackSlot));
                                     paramEqList.add(new Operation(Operation.Operator.EQ,
@@ -1089,7 +1020,7 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
                                 if (!methodKeyHoleFieldInfo.isStaticField) {
                                     if (methodKeyHoleFieldInfo.localStackSlot == 0) {
                                         assert (callSiteInfo.paramList.size() > 0);
-                                        int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
+                                        int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getStackSlot();
                                         methodKeyHoleFieldInfo.callSiteStackSlot = callSiteStackSlot;
                                     } else {
                                         // method summary uses a field from an object that failure a local inside the method
@@ -1109,10 +1040,205 @@ private boolean fillArrayLoadHoles(VeritestingRegion region, LinkedHashMap<Expre
                             retHoleHashMap.put(methodKeyHole, greenExpr);
                         }
                         break;
+                    case INVOKE:
+                        if(isMethodSummary) {
+                            //Update the global stack slot of holes used in the invoke-call of method summary
+                            // based on the caller's paramList for all local holes
+                            InvokeInfo methodCallSiteInfo = methodKeyHole.getInvokeInfo();
+                            for(int i=0; i<methodCallSiteInfo.paramList.size(); i++) {
+                                if(HoleExpression.isLocal(methodCallSiteInfo.paramList.get(i))) {
+                                    HoleExpression h = (HoleExpression) methodCallSiteInfo.paramList.get(i);
+                                    int methodCallSiteStackSlot = h.getLocalStackSlot();
+                                    if(methodCallSiteStackSlot < callSiteInfo.paramList.size()) {
+                                        if(HoleExpression.isLocal(callSiteInfo.paramList.get(methodCallSiteStackSlot))) {
+                                            h.setGlobalStackSlot(((HoleExpression) callSiteInfo.paramList.get(methodCallSiteStackSlot)).getLocalStackSlot());
+                                            methodCallSiteInfo.paramList.set(i, h);
+                                        }
+                                        else methodCallSiteInfo.paramList.set(i, callSiteInfo.paramList.get(methodCallSiteStackSlot));
+                                    }
+                                }
+                            }
+                        }
+                        break;
                     default: break;
                 }
             }
             failure = false;
+            return this;
+        }
+    }
+
+    private class FillMethodSummary {
+        private boolean myResult;
+        private StackFrame stackFrame;
+        private ThreadInfo ti;
+        private LinkedHashMap<Expression, Expression> holeHashMap;
+        private LinkedHashMap<Expression, Expression> retHoleHashMap;
+        private Expression additionalAST;
+        private HoleExpression keyHoleExpression;
+        private InvokeInfo callSiteInfo;
+        private VeritestingRegion methodSummary;
+
+        public FillMethodSummary(StackFrame stackFrame, ThreadInfo ti, LinkedHashMap<Expression, Expression> holeHashMap,
+                                 LinkedHashMap<Expression, Expression> retHoleHashMap, Expression additionalAST,
+                                 HoleExpression keyHoleExpression, InvokeInfo callSiteInfo, VeritestingRegion methodSummary) {
+            this.stackFrame = stackFrame;
+            this.ti = ti;
+            this.holeHashMap = holeHashMap;
+            this.retHoleHashMap = retHoleHashMap;
+            this.additionalAST = additionalAST;
+            this.keyHoleExpression = keyHoleExpression;
+            this.callSiteInfo = callSiteInfo;
+            this.methodSummary = methodSummary;
+        }
+
+        boolean is() {
+            return myResult;
+        }
+
+        public LinkedHashMap<Expression, Expression> getRetHoleHashMap() {
+            return retHoleHashMap;
+        }
+
+        public Expression getAdditionalAST() {
+            return additionalAST;
+        }
+
+        public FillMethodSummary invoke() {
+            FillNonInputHoles fillNonInputHoles;
+            LinkedHashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
+            if(hasRWInterference(holeHashMap, methodHoles, callSiteInfo, stackFrame)) {
+                methodSummaryRWInterference++;
+                System.out.println("method summary hole interferes with outer region");
+                myResult = true;
+                return this;
+            }
+            fillNonInputHoles =
+                    new FillNonInputHoles(retHoleHashMap, callSiteInfo, methodHoles, null, true);
+            if (fillNonInputHoles.invoke()) {
+                myResult = true;
+                return this;
+            }
+            retHoleHashMap = fillNonInputHoles.retHoleHashMap;
+
+            FillInputHoles fillInputHolesMS =
+                    new FillInputHoles(stackFrame, ti, retHoleHashMap, callSiteInfo, methodHoles, true).invoke();
+            if (fillInputHolesMS.failure()) {
+                myResult = true;
+                return this;
+            }
+            ArrayList<Expression> paramEqList = fillInputHolesMS.getParamEqList();
+            retHoleHashMap = fillInputHolesMS.retHoleHashMap;
+
+            FillInvokeHole fillInvokeHole = new FillInvokeHole(stackFrame, ti, methodHoles, retHoleHashMap, additionalAST).invoke();
+            if (fillInvokeHole.is()) return null;
+            retHoleHashMap = fillInvokeHole.getRetHoleHashMap();
+            additionalAST = fillInvokeHole.getAdditionalAST();
+
+            Expression retValEq = null;
+            if (methodSummary.retVal != null)
+                retValEq = new Operation(Operation.Operator.EQ, methodSummary.retVal, keyHoleExpression);
+            Expression mappingOperation = retValEq;
+            for(int i=0; i < paramEqList.size(); i++) {
+                //paramList.length-1 because there won't be a constraint created for the object reference
+                if(mappingOperation != null)
+                    mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, paramEqList.get(i));
+                else mappingOperation = paramEqList.get(i);
+            }
+            if (methodSummary.getSummaryExpression() != null)
+                mappingOperation = new Operation(Operation.Operator.AND, mappingOperation, methodSummary.getSummaryExpression());
+            if (additionalAST != null)
+                additionalAST = new Operation(Operation.Operator.AND, additionalAST, mappingOperation);
+            else additionalAST = mappingOperation;
+            Expression finalValueGreen = SPFToGreenExpr(makeSymbolicInteger(keyHoleExpression.getHoleVarName() + pathLabelCount));
+            retHoleHashMap.put(keyHoleExpression, finalValueGreen);
+            methodSummary.ranIntoCount++;
+            methodSummary.usedCount++;
+            myResult = false;
+            return this;
+        }
+    }
+
+    private class FillInvokeHole {
+        private boolean myResult;
+        private StackFrame stackFrame;
+        private ThreadInfo ti;
+        private LinkedHashMap<Expression, Expression> holeHashMap;
+        private LinkedHashMap<Expression, Expression> retHoleHashMap;
+        private Expression additionalAST;
+
+        public FillInvokeHole(StackFrame stackFrame, ThreadInfo ti, LinkedHashMap<Expression, Expression> holeHashMap,
+                              LinkedHashMap<Expression, Expression> retHoleHashMap, Expression additionalAST) {
+            this.stackFrame = stackFrame;
+            this.ti = ti;
+            this.holeHashMap = holeHashMap;
+            this.retHoleHashMap = retHoleHashMap;
+            this.additionalAST = additionalAST;
+        }
+
+        boolean is() {
+            return myResult;
+        }
+
+        public LinkedHashMap<Expression, Expression> getRetHoleHashMap() {
+            return retHoleHashMap;
+        }
+
+        public Expression getAdditionalAST() {
+            return additionalAST;
+        }
+
+        public FillInvokeHole invoke() {
+            // resolve all invoke holes in the current region's summary expression
+            for(Map.Entry<Expression, Expression> entry : holeHashMap.entrySet()) {
+                Expression key = entry.getKey();
+                assert (key instanceof HoleExpression);
+                HoleExpression keyHoleExpression = (HoleExpression) key;
+                assert (keyHoleExpression.isHole());
+                switch (keyHoleExpression.getHoleType()) {
+                    case INVOKE:
+                        InvokeInfo callSiteInfo = keyHoleExpression.getInvokeInfo();
+                        ClassInfo ci = null;
+                        if (callSiteInfo.isVirtualInvoke) {
+                            Expression callingObject = retHoleHashMap.get(callSiteInfo.paramList.get(0));
+                            ci = ti.getClassInfo(((IntConstant) callingObject).getValue());
+                        }
+                        if (callSiteInfo.isStaticInvoke) {
+                            ci = ClassLoaderInfo.getCurrentResolvedClassInfo(callSiteInfo.className);
+                        }
+
+                        // if ci failure null, that means either MyIVisitor.visitInvoke has a bug or we failed to load the class
+                        assert(ci != null);
+                        //Change the class name based on the call site object reference
+                        callSiteInfo.className = ci.getName();
+                        //If there exists a invokeVirtual for a method that we weren't able to summarize, skip veritesting
+                        String key1 = callSiteInfo.className + "." + callSiteInfo.methodName + callSiteInfo.methodSignature + "#0";
+                        FNV1 fnv = new FNV1a64();
+                        fnv.init(key1);
+                        long hash = fnv.getHash();
+                        if(!veritestingRegions.containsKey(key1)) {
+                            System.out.println("Could not find method summary for " +
+                                    callSiteInfo.className+"."+callSiteInfo.methodName+"#0");
+                            myResult = true;
+                            return this;
+                        }
+                        //All holes in callSiteInfo.paramList will also be present in holeHashmap and will be filled up here
+                        for (Expression h : callSiteInfo.paramList) {
+                            if (h instanceof HoleExpression) assert (holeHashMap.containsKey(h));
+                        }
+                        VeritestingRegion methodSummary = veritestingRegions.get(key1);
+                        FillMethodSummary fillMethodSummary = new FillMethodSummary(stackFrame, ti, holeHashMap,
+                                retHoleHashMap, additionalAST, keyHoleExpression, callSiteInfo, methodSummary).invoke();
+                        if (fillMethodSummary.is()) {
+                            myResult = true;
+                            return this;
+                        }
+                        retHoleHashMap = fillMethodSummary.getRetHoleHashMap();
+                        additionalAST = fillMethodSummary.getAdditionalAST();
+                        break;
+                }
+            }
+            myResult = false;
             return this;
         }
     }

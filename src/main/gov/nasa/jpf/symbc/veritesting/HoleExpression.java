@@ -10,6 +10,7 @@ import java.util.List;
 
 public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     public boolean isLatestWrite = true;
+    private int globalStackSlot = -1;
 
     @Override
     public void accept(Visitor visitor) throws VisitorException {
@@ -128,6 +129,25 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     }
     String holeVarName = "";
 
+    public void setGlobalStackSlot(int globalStackSlot) {
+        assert(localStackSlot != -1);
+        assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
+        this.globalStackSlot = globalStackSlot;
+    }
+
+    public int getStackSlot() {
+        assert(localStackSlot != -1);
+        assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
+        if(globalStackSlot != -1) return globalStackSlot;
+        else return getLocalStackSlot();
+    }
+
+    public static boolean isLocal(Expression expression) {
+        if(!(expression instanceof HoleExpression)) return false;
+        HoleExpression h = (HoleExpression) expression;
+        return (h.holeType == HoleType.LOCAL_OUTPUT || h.holeType == HoleType.LOCAL_INPUT);
+    }
+
     public enum HoleType {
         LOCAL_INPUT("local_input"),
         LOCAL_OUTPUT("local_output"),
@@ -174,7 +194,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
 
     public void setLocalStackSlot(int localStackSlot) {
         assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
-        if(this.localStackSlot != -1) {
+        if(localStackSlot == -1) {
             System.out.println("Hole " + toString() + " cannot be given new stack slot (" + localStackSlot + ")");
             assert(false);
         }

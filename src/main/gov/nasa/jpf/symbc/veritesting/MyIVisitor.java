@@ -10,7 +10,6 @@ import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.strings.Atom;
-import gov.nasa.jpf.symbc.VeritestingListener;
 import za.ac.sun.cs.green.expr.Expression;
 
 import za.ac.sun.cs.green.expr.Operation;
@@ -347,15 +346,15 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         for(int i=0; i < instruction.getNumberOfParameters(); i++) {
             paramList.add(varUtil.addVal(instruction.getUse(i)));
         }
-        InvokeInfo virtualInfo = new InvokeInfo();
-        virtualInfo.isVirtualInvoke = (site.getInvocationCode() == IInvokeInstruction.Dispatch.VIRTUAL);
-        virtualInfo.isStaticInvoke = (site.getInvocationCode() == IInvokeInstruction.Dispatch.STATIC);
-        virtualInfo.setDefVal(defVal);
-        virtualInfo.setClassName(declaringClass.toString());
-        virtualInfo.setMethodName(methodName.toString());
-        virtualInfo.setMethodSignature(methodSig);
-        virtualInfo.setParamList(paramList);
-        varUtil.addInvokeVirtualHole(virtualInfo);
+        InvokeInfo callSiteInfo = new InvokeInfo();
+        callSiteInfo.isVirtualInvoke = (site.getInvocationCode() == IInvokeInstruction.Dispatch.VIRTUAL);
+        callSiteInfo.isStaticInvoke = (site.getInvocationCode() == IInvokeInstruction.Dispatch.STATIC);
+        callSiteInfo.setDefVal(defVal);
+        callSiteInfo.setClassName(declaringClass.toString());
+        callSiteInfo.setMethodName(methodName.toString());
+        callSiteInfo.setMethodSignature(methodSig);
+        callSiteInfo.setParamList(paramList);
+        varUtil.addInvokeHole(callSiteInfo);
         invokeClassName = declaringClass.toString();
         isInvoke = true;
         canVeritest = true;

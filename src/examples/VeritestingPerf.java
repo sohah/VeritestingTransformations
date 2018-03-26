@@ -214,8 +214,8 @@ class TempClassDerived extends TempClass {
     public int myInt = 1;
 
     public int getTempInt(int a) {
-        TempClass2 t = new TempClass2();
-        t.tempMethod();
+        //TempClass2 t = new TempClass2();
+//        t.tempMethod();
         return tempInt;
     }
 
@@ -225,7 +225,8 @@ class TempClassDerived extends TempClass {
         tempInt = a + 3; //LOCAL_INPUT,  FIELD_INPUT holes
 */
         //VeritestingPerf.count += 1;
-        return tempInt;
+        //return tempInt;
+        return getTempInt(a);
     }
 }
 

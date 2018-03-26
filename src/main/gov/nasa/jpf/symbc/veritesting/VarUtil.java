@@ -555,13 +555,13 @@ public class VarUtil {
         return holeID;
     }
 
-    public Expression addInvokeVirtualHole(InvokeInfo virtualInfo) {
+    public Expression addInvokeHole(InvokeInfo invokeInfo) {
         HoleExpression holeExpression = new HoleExpression(nextInt());
-        String name = className + "." + methodName + ".v" + virtualInfo.defVal;
+        String name = className + "." + methodName + ".v" + invokeInfo.defVal;
         holeExpression.setHole(true, HoleExpression.HoleType.INVOKE);
-        holeExpression.setInvokeInfo(virtualInfo);
+        holeExpression.setInvokeInfo(invokeInfo);
         //The return value of this invokeVirtual will be this holeExpression object.
-        //The only way to fill up this hole is to map it to the corresponding method summary return value
+        //The only way to fill this hole is to map it to the corresponding method summary return value
         holeExpression.setHoleVarName(name);
         varCache.put(name, holeExpression);
         return holeExpression;
