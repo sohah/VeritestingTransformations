@@ -135,7 +135,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
         this.globalStackSlot = globalStackSlot;
     }
 
-    public int getStackSlot() {
+    public int getGlobalOrLocalStackSlot() {
         assert(localStackSlot != -1);
         assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
         if(globalStackSlot != -1) return globalStackSlot;

@@ -213,10 +213,20 @@ class TempClassDerived extends TempClass {
 
     public int myInt = 1;
 
+    public int getAnotherAnotherTempInt(int a) {
+        return tempInt;
+    }
+
+    public int getAnotherTempInt(int a) {
+        //return tempInt;
+        return getAnotherAnotherTempInt(a);
+    }
+
     public int getTempInt(int a) {
         //TempClass2 t = new TempClass2();
 //        t.tempMethod();
-        return tempInt;
+        //return tempInt;
+        return getAnotherTempInt(a);
     }
 
     public int getOne(int a) {

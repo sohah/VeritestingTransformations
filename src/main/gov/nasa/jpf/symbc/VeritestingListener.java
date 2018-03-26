@@ -1020,7 +1020,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                                 if (!methodKeyHoleFieldInfo.isStaticField) {
                                     if (methodKeyHoleFieldInfo.localStackSlot == 0) {
                                         assert (callSiteInfo.paramList.size() > 0);
-                                        int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getStackSlot();
+                                        int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getGlobalOrLocalStackSlot();
                                         methodKeyHoleFieldInfo.callSiteStackSlot = callSiteStackSlot;
                                     } else {
                                         // method summary uses a field from an object that failure a local inside the method
@@ -1051,7 +1051,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                                     int methodCallSiteStackSlot = h.getLocalStackSlot();
                                     if(methodCallSiteStackSlot < callSiteInfo.paramList.size()) {
                                         if(HoleExpression.isLocal(callSiteInfo.paramList.get(methodCallSiteStackSlot))) {
-                                            h.setGlobalStackSlot(((HoleExpression) callSiteInfo.paramList.get(methodCallSiteStackSlot)).getLocalStackSlot());
+                                            //It is important to use getGlobalOrLocalStackSlot here, not getLocalStackSlot
+                                            // because we would like the caller's globalStackSlot to be used if possible
+                                            h.setGlobalStackSlot(((HoleExpression) callSiteInfo.paramList.get(methodCallSiteStackSlot)).getGlobalOrLocalStackSlot());
                                             methodCallSiteInfo.paramList.set(i, h);
                                         }
                                         else methodCallSiteInfo.paramList.set(i, callSiteInfo.paramList.get(methodCallSiteStackSlot));
