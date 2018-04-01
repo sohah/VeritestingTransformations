@@ -279,7 +279,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         FieldReference fieldReference = instruction.getDeclaredField();
         Atom declaringClass = fieldReference.getDeclaringClass().getName().getClassName();
         Atom fieldName = fieldReference.getName();
-        System.out.println("declaringClass = " + declaringClass + ", methodName = " + fieldName);
+        System.out.println("declaringClass = " + declaringClass + ", currentMethodName = " + fieldName);
         int def = instruction.getDef(0);
         if(varUtil.addFieldInputVal(def, objRef, declaringClass.toString(), fieldName.toString(),
                 HoleExpression.HoleType.FIELD_INPUT, instruction.isStatic()) == null) {

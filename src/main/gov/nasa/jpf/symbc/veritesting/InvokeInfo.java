@@ -23,7 +23,7 @@ public class InvokeInfo {
 
     public String toString() {
         String ret = new String("");
-        ret += "currentClassName = " + className + ", methodName = " + methodName + ", defVal = " + defVal;
+        ret += "currentClassName = " + className + ", currentMethodName = " + methodName + ", defVal = " + defVal;
         ret += ", paramList = " + paramList.toString();
         return ret;
     }

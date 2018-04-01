@@ -12,6 +12,26 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     public boolean isLatestWrite = true;
     private int globalStackSlot = -1;
 
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
+    }
+    //these fields are important to know the context in which the hole is being used
+    //if a local variable field is used to fill in a method summary being used then the globalStackSlot will be used
+    // and needs to be set to a value other than -1
+    private String className=null, methodName=null;
+
     @Override
     public void accept(Visitor visitor) throws VisitorException {
         visitor.preVisit(this);
@@ -20,10 +40,12 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
 
     @Override
     public boolean equals(Object object) {
+        if(object == null) return false;
         if(object instanceof HoleExpression) {
             HoleExpression holeExpression = (HoleExpression) object;
             if(holeExpression.getHoleType() != holeType) return false;
-            if(!holeExpression.getHoleVarName().equals(holeVarName))
+            if(!holeExpression.getHoleVarName().equals(holeVarName) || !holeExpression.getClassName().equals(className)
+                    || !holeExpression.getMethodName().equals(methodName))
                 return false;
             switch(holeExpression.getHoleType()) {
                 case LOCAL_INPUT:
@@ -42,11 +64,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
                 case FIELD_INPUT:
                 case FIELD_OUTPUT:
                     FieldInfo fieldInfo1 = holeExpression.getFieldInfo();
-                    if(!fieldInfo1.className.equals(fieldInfo.className) ||
-                            !fieldInfo1.fieldName.equals(fieldInfo.fieldName) ||
-                            fieldInfo1.localStackSlot != fieldInfo.localStackSlot ||
-                            fieldInfo1.callSiteStackSlot != fieldInfo.callSiteStackSlot ||
-                            (fieldInfo1.writeValue != null && fieldInfo.writeValue != null && !fieldInfo1.writeValue.equals(fieldInfo.writeValue)))
+                    if(!fieldInfo1.equals(fieldInfo))
                         return false;
                     else return true;
                 case INVOKE:
@@ -62,6 +80,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     public String toString() {
         String ret = new String();
         ret += "(type = " + holeType + ", name = " + holeVarName;
+        ret += ", className = " + className + ", methodName = " + methodName;
         switch (holeType) {
             case LOCAL_INPUT:
             case LOCAL_OUTPUT:
@@ -118,8 +137,12 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
         return null;
     }
 
-    final long holeID;
-    HoleExpression(long _holeID) { holeID = _holeID; }
+    private final long holeID;
+    HoleExpression(long _holeID, String className, String methodName) {
+        holeID = _holeID;
+        setClassName(className);
+        setMethodName(methodName);
+    }
 
     public void setHoleVarName(String holeVarName) {
         this.holeVarName = holeVarName;
@@ -127,19 +150,21 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     public String getHoleVarName() {
         return holeVarName;
     }
-    String holeVarName = "";
+    private String holeVarName = "";
 
     public void setGlobalStackSlot(int globalStackSlot) {
+        assert(className != null);
+        assert(methodName != null);
         assert(localStackSlot != -1);
         assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
         this.globalStackSlot = globalStackSlot;
     }
 
-    public int getGlobalOrLocalStackSlot() {
+    public int getGlobalOrLocalStackSlot(String className, String methodName) {
         assert(localStackSlot != -1);
         assert(holeType == HoleType.LOCAL_INPUT || holeType == HoleType.LOCAL_OUTPUT);
-        if(globalStackSlot != -1) return globalStackSlot;
-        else return getLocalStackSlot();
+        if(this.className.equals(className) && this.methodName.equals(methodName)) return getLocalStackSlot();
+        else return globalStackSlot;
     }
 
     public static boolean isLocal(Expression expression) {
@@ -169,8 +194,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     public HoleType getHoleType() {
         return holeType;
     }
-
-    HoleType holeType = HoleType.NONE;
+    private HoleType holeType = HoleType.NONE;
 
     public boolean isHole() {
         return isHole;
@@ -206,7 +230,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     }
     protected int localStackSlot = -1;
 
-    public void setFieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot,
+    public void setFieldInfo(String className, String fieldName, String methodName, int localStackSlot, int callSiteStackSlot,
                              Expression writeExpr, boolean isStaticField, HoleExpression useHole) {
         assert(holeType == HoleType.FIELD_INPUT || holeType == HoleType.FIELD_OUTPUT);
         //the object reference should either be local, come from another hole, or this field should be static
@@ -217,7 +241,7 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
             assert (((HoleExpression)writeExpr).getHoleType() == HoleType.INTERMEDIATE);
         }
         if(holeType == HoleType.FIELD_INPUT) assert(writeExpr == null);
-        fieldInfo = new FieldInfo(className, fieldName, localStackSlot, callSiteStackSlot, writeExpr, isStaticField, useHole);
+        fieldInfo = new FieldInfo(className, fieldName, methodName, localStackSlot, callSiteStackSlot, writeExpr, isStaticField, useHole);
     }
 
     public FieldInfo getFieldInfo() {
@@ -270,18 +294,20 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
     }
 
     public class FieldInfo {
+        public final String methodName;
         public String className, fieldName;
         public int localStackSlot = -1, callSiteStackSlot = -1;
         public Expression writeValue = null;
         public boolean isStaticField = false;
         public HoleExpression useHole = null;
 
-        public FieldInfo(String className, String fieldName, int localStackSlot, int callSiteStackSlot,
+        public FieldInfo(String className, String fieldName, String methodName, int localStackSlot, int callSiteStackSlot,
                          Expression writeValue, boolean isStaticField, HoleExpression useHole) {
             this.localStackSlot = localStackSlot;
             this.callSiteStackSlot = callSiteStackSlot;
             this.className = className;
             this.fieldName = fieldName;
+            this.methodName = methodName;
             this.writeValue = writeValue;
             this.isStaticField = isStaticField;
             this.useHole = useHole;
@@ -291,19 +317,23 @@ public class HoleExpression extends za.ac.sun.cs.green.expr.Expression{
             String ret = "currentClassName = " + className + ", fieldName = " + fieldName +
                     ", stackSlots (local = " + localStackSlot + ", callSite = " + callSiteStackSlot;
             if(writeValue != null) ret += ", writeValue (" + writeValue.toString() + ")";
-            else ret += ")";
             ret += ", isStaticField = " + isStaticField;
+            if(useHole!= null) ret += ", useHole = " + useHole.toString() + ")";
+            else ret+= ")";
             return ret;
         }
 
         public boolean equals(Object o) {
-            if(!(o instanceof FieldInfo)) return false;
+            if(!(o instanceof FieldInfo) || o == null) return false;
             FieldInfo fieldInfo1 = (FieldInfo) o;
             if(!fieldInfo1.className.equals(this.className) ||
                     !fieldInfo1.fieldName.equals(this.fieldName) ||
+                    !fieldInfo1.methodName.equals(this.methodName) ||
                     fieldInfo1.localStackSlot != this.localStackSlot ||
                     fieldInfo1.callSiteStackSlot != this.callSiteStackSlot ||
-                    (fieldInfo1.writeValue != null && this.writeValue != null && !fieldInfo1.writeValue.equals(this.writeValue)))
+                    (fieldInfo1.writeValue != null && this.writeValue != null && !fieldInfo1.writeValue.equals(this.writeValue)) ||
+                    (fieldInfo1.isStaticField != this.isStaticField) ||
+                    (fieldInfo1.useHole!= null && !fieldInfo1.useHole.equals(this.useHole)))
                 return false;
             else return true;
         }

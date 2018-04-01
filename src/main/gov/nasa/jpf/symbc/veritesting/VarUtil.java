@@ -46,7 +46,7 @@ public class VarUtil {
         name = className + "." + methodName + "." + name;
         if(varCache.containsKey(name))
             return varCache.get(name);
-        HoleExpression holeExpression = new HoleExpression(nextInt());
+        HoleExpression holeExpression = new HoleExpression(nextInt(), className, methodName);
         holeExpression.setHole(true, HoleExpression.HoleType.INTERMEDIATE);
         holeExpression.setHoleVarName(name);
         varCache.put(name, holeExpression);
@@ -58,7 +58,7 @@ public class VarUtil {
         String name = className + "." + methodName + ".v" + val;
         if(varCache.containsKey(name))
             return varCache.get(name);
-        HoleExpression holeExpression = new HoleExpression(nextInt());
+        HoleExpression holeExpression = new HoleExpression(nextInt(), className, methodName);
         holeExpression.setHole(true, HoleExpression.HoleType.LOCAL_INPUT);
         holeExpression.setLocalStackSlot(varsMap.get(val));
         holeExpression.setHoleVarName(name);
@@ -71,7 +71,7 @@ public class VarUtil {
         String name = className + "." + methodName + ".v" + val;
         if(varCache.containsKey(name))
             return varCache.get(name);
-        HoleExpression holeExpression = new HoleExpression(nextInt());
+        HoleExpression holeExpression = new HoleExpression(nextInt(), className, methodName);
         holeExpression.setHole(true, HoleExpression.HoleType.LOCAL_OUTPUT);
         holeExpression.setLocalStackSlot(varsMap.get(val));
         holeExpression.setHoleVarName(name);
@@ -405,7 +405,7 @@ public class VarUtil {
 
     public Expression addArrayLoadVal(Expression arrayRef, Expression arrayIndex, TypeReference arrayType, HoleExpression.HoleType holeType, SSAArrayLoadInstruction instructionName, String pathLabelString, int pathLabel) {
         assert(holeType == HoleExpression.HoleType.ARRAYLOAD);
-        HoleExpression holeExpression = new HoleExpression(nextInt());
+        HoleExpression holeExpression = new HoleExpression(nextInt(), className, methodName);
         holeExpression.setHoleVarName(instructionName.toString());
         holeExpression.setHole(true, holeType);
         holeExpression.setArrayInfo(arrayRef, arrayIndex, arrayType, pathLabelString, pathLabel);
@@ -430,9 +430,9 @@ public class VarUtil {
             assert(use != -1);
             localStackSlot = varsMap.get(use);
         }
-        HoleExpression holeExpression = new HoleExpression(nextInt());
+        HoleExpression holeExpression = new HoleExpression(nextInt(), className, methodName);
         holeExpression.setHole(true, holeType);
-        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, null, isStaticField, useHole);
+        holeExpression.setFieldInfo(className, fieldName, methodName, localStackSlot, -1, null, isStaticField, useHole);
         String name = this.className + "." + this.methodName + ".v" + def;
         holeExpression.setHoleVarName(name);
         if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap, null, null) &&
@@ -504,9 +504,9 @@ public class VarUtil {
         }
         String name = "FIELD_OUTPUT." + ((HoleExpression)writeExpr).getHoleVarName();
         if(varCache.containsKey(name)) return varCache.get(name);
-        HoleExpression holeExpression = new HoleExpression(nextInt());
+        HoleExpression holeExpression = new HoleExpression(nextInt(), className, methodName);
         holeExpression.setHole(true, holeType);
-        holeExpression.setFieldInfo(className, fieldName, localStackSlot, -1, writeExpr, isStaticField, useHole);
+        holeExpression.setFieldInfo(className, fieldName, methodName, localStackSlot, -1, writeExpr, isStaticField, useHole);
         holeExpression.setHoleVarName(name);
         if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap, null, null) &&
                 (VeritestingListener.allowFieldWriteAfterRead == false)) {
@@ -556,7 +556,7 @@ public class VarUtil {
     }
 
     public Expression addInvokeHole(InvokeInfo invokeInfo) {
-        HoleExpression holeExpression = new HoleExpression(nextInt());
+        HoleExpression holeExpression = new HoleExpression(nextInt(), className, methodName);
         String name = className + "." + methodName + ".v" + invokeInfo.defVal;
         holeExpression.setHole(true, HoleExpression.HoleType.INVOKE);
         holeExpression.setInvokeInfo(invokeInfo);

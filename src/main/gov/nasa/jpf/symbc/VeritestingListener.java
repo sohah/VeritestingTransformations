@@ -259,7 +259,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 finalSummaryExpression = new Operation(Operation.Operator.AND, summaryExpression, fillHolesOutput.additionalAST);
             else finalSummaryExpression = fillHolesOutput.additionalAST;
         }
-        assert(finalSummaryExpression != null);
+        if(finalSummaryExpression == null) {
+            //System.out.println("used empty region");
+            //assert(false);
+        }
         finalSummaryExpression = fillASTHoles(finalSummaryExpression, fillHolesOutput.holeHashMap); //not constant-folding for now
 
         // pc._addDet(new GreenConstraint(finalSummaryExpression));
@@ -626,8 +629,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         final boolean isStatic = fieldInputInfo.isStaticField;
         int objRef = -1;
         //get the object reference from fieldInputInfo.use's local stack slot if not from the call site stack slot
-        int stackSlot = fieldInputInfo.callSiteStackSlot;
-        if (stackSlot == -1) stackSlot = fieldInputInfo.localStackSlot;
+        int stackSlot = -1;
+        if(ti.getTopFrame().getClassInfo().getName().equals(fieldInputInfo.className) &&
+                ti.getTopFrame().getMethodInfo().getName().equals(fieldInputInfo.methodName))
+            stackSlot = fieldInputInfo.localStackSlot;
+        else {
+            stackSlot = fieldInputInfo.callSiteStackSlot;
+            assert(stackSlot != -1);
+        }
         //this field is being loaded from an object reference that is itself a hole
         // this object reference hole should be filled already because holes are stored in a LinkedHashMap
         // that keeps holes in the order they were created while traversing the WALA IR
@@ -639,6 +648,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
         if (!isStatic && (stackSlot != -1)) {
             objRef = stackFrame.getLocalVariable(stackSlot);
+            assert(objRef != 0);
             //load the class name dynamically based on the object reference
             fieldInputInfo.className = ti.getClassInfo(objRef).getName();
         }
@@ -898,6 +908,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                                     assert (callSiteInfo.paramList.size() > 0);
                                     methodKeyHoleFieldInfo.callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getLocalStackSlot();
                                     methodKeyHole.setFieldInfo(methodKeyHoleFieldInfo.className, methodKeyHoleFieldInfo.fieldName,
+                                            methodKeyHoleFieldInfo.methodName,
                                             methodKeyHoleFieldInfo.localStackSlot, methodKeyHoleFieldInfo.callSiteStackSlot, methodKeyHoleFieldInfo.writeValue,
                                             methodKeyHoleFieldInfo.isStaticField, methodKeyHoleFieldInfo.useHole);
                                 } else return true;
@@ -1020,7 +1031,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                                 if (!methodKeyHoleFieldInfo.isStaticField) {
                                     if (methodKeyHoleFieldInfo.localStackSlot == 0) {
                                         assert (callSiteInfo.paramList.size() > 0);
-                                        int callSiteStackSlot = ((HoleExpression) callSiteInfo.paramList.get(0)).getGlobalOrLocalStackSlot();
+                                        assert(HoleExpression.isLocal(callSiteInfo.paramList.get(0)));
+                                        int callSiteStackSlot = ((HoleExpression)
+                                                callSiteInfo.paramList.get(0)).getGlobalOrLocalStackSlot(ti.getTopFrame().getClassInfo().getName(),
+                                                ti.getTopFrame().getMethodInfo().getName());
                                         methodKeyHoleFieldInfo.callSiteStackSlot = callSiteStackSlot;
                                     } else {
                                         // method summary uses a field from an object that failure a local inside the method
@@ -1047,16 +1061,27 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             InvokeInfo methodCallSiteInfo = methodKeyHole.getInvokeInfo();
                             for(int i=0; i<methodCallSiteInfo.paramList.size(); i++) {
                                 if(HoleExpression.isLocal(methodCallSiteInfo.paramList.get(i))) {
+                                    assert(methodCallSiteInfo.paramList.get(i) instanceof HoleExpression);
                                     HoleExpression h = (HoleExpression) methodCallSiteInfo.paramList.get(i);
                                     int methodCallSiteStackSlot = h.getLocalStackSlot();
                                     if(methodCallSiteStackSlot < callSiteInfo.paramList.size()) {
                                         if(HoleExpression.isLocal(callSiteInfo.paramList.get(methodCallSiteStackSlot))) {
+                                            assert(callSiteInfo.paramList.get(methodCallSiteStackSlot) instanceof HoleExpression);
+                                            HoleExpression callSiteHole = (HoleExpression) callSiteInfo.paramList.get(methodCallSiteStackSlot);
                                             //It is important to use getGlobalOrLocalStackSlot here, not getLocalStackSlot
                                             // because we would like the caller's globalStackSlot to be used if possible
-                                            h.setGlobalStackSlot(((HoleExpression) callSiteInfo.paramList.get(methodCallSiteStackSlot)).getGlobalOrLocalStackSlot());
+                                            h.setGlobalStackSlot(callSiteHole.getGlobalOrLocalStackSlot(ti.getTopFrame().getClassInfo().getName(),
+                                                    ti.getTopFrame().getMethodInfo().getName()));
                                             methodCallSiteInfo.paramList.set(i, h);
                                         }
-                                        else methodCallSiteInfo.paramList.set(i, callSiteInfo.paramList.get(methodCallSiteStackSlot));
+                                        else {
+                                            Expression callSiteExpression = callSiteInfo.paramList.get(methodCallSiteStackSlot);
+                                            methodCallSiteInfo.paramList.set(i, callSiteExpression);
+                                            if(callSiteExpression instanceof HoleExpression) {
+                                                if (methodHoles.containsKey(callSiteInfo.paramList.get(methodCallSiteStackSlot)) == false)
+                                                    methodHoles.put(callSiteExpression, callSiteExpression);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -1133,7 +1158,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             retHoleHashMap = fillInputHolesMS.retHoleHashMap;
 
             FillInvokeHole fillInvokeHole = new FillInvokeHole(stackFrame, ti, methodHoles, retHoleHashMap, additionalAST).invoke();
-            if (fillInvokeHole.is()) return null;
+            if (fillInvokeHole.is()) {
+                myResult = true;
+                return this;
+            }
             retHoleHashMap = fillInvokeHole.getRetHoleHashMap();
             additionalAST = fillInvokeHole.getAdditionalAST();
 
@@ -1226,7 +1254,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         }
                         //All holes in callSiteInfo.paramList will also be present in holeHashmap and will be filled up here
                         for (Expression h : callSiteInfo.paramList) {
-                            if (h instanceof HoleExpression) assert (holeHashMap.containsKey(h));
+                            if (h instanceof HoleExpression) {
+                                if (holeHashMap.containsKey(h) == false) {
+                                    System.out.println("invokeHole's holeHashmap does not contain hole: " + h.toString());
+                                    assert(false);
+                                }
+                            }
                         }
                         VeritestingRegion methodSummary = veritestingRegions.get(key1);
                         FillMethodSummary fillMethodSummary = new FillMethodSummary(stackFrame, ti, holeHashMap,

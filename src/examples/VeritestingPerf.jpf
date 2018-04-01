@@ -6,6 +6,7 @@ symbolic.debug=false
 
 #symbolic.method=VeritestingPerf.checkOperator()
 symbolic.method=VeritestingPerf.countBitsSet(sym)
+#symbolic.method=VeritestingPerf.nestedRegion(sym)
 #symbolic.method=VeritestingPerf.cfgTest(sym)
 #symbolic.method=VeritestingPerf.testMe5(sym#sym)
 #symbolic.method=VeritestingPerf.testMe6(sym#sym#sym#sym)

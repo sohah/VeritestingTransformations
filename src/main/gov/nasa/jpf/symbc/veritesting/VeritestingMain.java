@@ -27,7 +27,6 @@ import com.ibm.wala.ipa.callgraph.AnalysisScope;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.cha.ClassHierarchy;
-import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.*;
@@ -40,9 +39,7 @@ import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import com.ibm.wala.util.graph.impl.GraphInverter;
 import com.ibm.wala.util.io.FileProvider;
-import com.ibm.wala.util.strings.Atom;
 import com.ibm.wala.util.strings.StringStuff;
-import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
@@ -74,7 +71,7 @@ public class VeritestingMain {
     int objectReference = -1;
     SSACFG cfg;
     HashSet startingPointsHistory;
-    String currentClassName, methodName, methodSig;
+    String currentClassName, currentMethodName, methodSig;
     VarUtil varUtil;
     HashSet<NatLoop> loops;
     IR ir;
@@ -239,10 +236,10 @@ public class VeritestingMain {
             }
             cfg = ir.getControlFlowGraph();
             currentClassName = m.getDeclaringClass().getName().getClassName().toString();
-            methodName = m.getName().toString();
+            currentMethodName = m.getName().toString();
             this.methodSig = methodSig.substring(methodSig.indexOf('('));
-            System.out.println("Starting analysis for " + methodName + "(" + currentClassName + "." + methodSig + ")");
-            varUtil = new VarUtil(ir, currentClassName, methodName);
+            System.out.println("Starting analysis for " + currentMethodName + "(" + currentClassName + "." + methodSig + ")");
+            varUtil = new VarUtil(ir, currentClassName, currentMethodName);
             NumberedDominators<ISSABasicBlock> uninverteddom =
                     (NumberedDominators<ISSABasicBlock>) Dominators.make(cfg, cfg.entry());
             loops = new HashSet<>();
@@ -281,9 +278,9 @@ public class VeritestingMain {
         else elseExpr = elsePLAssignSPF;
 
         // (If && thenExpr) || (ifNot && elseExpr)
-        HoleExpression condition = new HoleExpression(varUtil.nextInt());
+        HoleExpression condition = new HoleExpression(varUtil.nextInt(), currentClassName, currentMethodName);
         condition.setHole(true, HoleExpression.HoleType.CONDITION);
-        HoleExpression negCondition = new HoleExpression(varUtil.nextInt());
+        HoleExpression negCondition = new HoleExpression(varUtil.nextInt(), currentClassName, currentMethodName);
         negCondition.setHole(true, HoleExpression.HoleType.NEGCONDITION);
         varUtil.holeHashMap.put(condition, condition);
         varUtil.holeHashMap.put(negCondition, negCondition);
@@ -318,7 +315,7 @@ public class VeritestingMain {
         }
         veritestingRegion.setOutputVars(hashSet);
         veritestingRegion.setClassName(currentClassName);
-        veritestingRegion.setMethodName(methodName);
+        veritestingRegion.setMethodName(currentMethodName);
         veritestingRegion.setMethodSignature(methodSig);
         veritestingRegion.setStartBBNum(currUnit.getNumber());
         veritestingRegion.setEndBBNum(commonSucc.getNumber());
@@ -402,7 +399,7 @@ public class VeritestingMain {
                             varUtil.varCache.put(entry.getKey(), entry.getValue());
                         }
                         int offset = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(thenUnit.getLastInstructionIndex());
-                        String key = currentClassName + "." + methodName + methodSig + "#" + offset;
+                        String key = currentClassName + "." + currentMethodName + methodSig + "#" + offset;
                         if(VeritestingListener.veritestingRegions.containsKey(key)) {
                             System.out.println("Veritested inner region with key = " + key);
                             //visit all instructions up to and including the condition
@@ -420,7 +417,6 @@ public class VeritestingMain {
                                     Dominators.make(invertedCFG, cfg.exit());
                             boolean bPostDom = (postDom.isDominatedBy(commonSuccthenUnit, commonSucc));
                             assert(bPostDom);
-
 
                             VeritestingRegion innerRegion = VeritestingListener.veritestingRegions.get(key);
                             for(Expression e: innerRegion.getOutputVars()) {
@@ -496,7 +492,7 @@ public class VeritestingMain {
                             varUtil.varCache.put(entry.getKey(), entry.getValue());
                         }
                         int offset = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(elseUnit.getLastInstructionIndex());
-                        String key = currentClassName + "." + methodName + methodSig + "#" + offset;
+                        String key = currentClassName + "." + currentMethodName + methodSig + "#" + offset;
                         if(VeritestingListener.veritestingRegions.containsKey(key)) {
                             System.out.println("Veritested inner region with key = " + key);
                             //visit all instructions up to and including the condition
@@ -709,7 +705,7 @@ public class VeritestingMain {
                 //cannot handle returns inside a if-then-else
                 if(blockSummary.getIsExitNode()) return;
                 int startingBC = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(currUnit.getLastInstructionIndex());
-                String key = currentClassName + "." + methodName + methodSig + "#" + startingBC;
+                String key = currentClassName + "." + currentMethodName + methodSig + "#" + startingBC;
                 if(!VeritestingListener.veritestingRegions.containsKey(key)) return;
                 VeritestingRegion veritestingRegion = VeritestingListener.veritestingRegions.get(key);
                 Expression summaryExpression = veritestingRegion.getSummaryExpression();
@@ -756,7 +752,7 @@ public class VeritestingMain {
         veritestingRegion.setOutputVars(varUtil.defLocalVars);
         veritestingRegion.setRetValVars(varUtil.retValVar);
         veritestingRegion.setClassName(currentClassName);
-        veritestingRegion.setMethodName(methodName);
+        veritestingRegion.setMethodName(currentMethodName);
         veritestingRegion.setMethodSignature(methodSig);
         veritestingRegion.setHoleHashMap(varUtil.holeHashMap);
         veritestingRegion.setStartBBNum(startBBNum);

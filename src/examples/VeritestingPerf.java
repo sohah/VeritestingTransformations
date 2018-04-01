@@ -14,8 +14,9 @@ public class VeritestingPerf {
 
     public static void main(String[] args) {
         //(new VeritestingPerf()).cfgTest(1);
-        (new VeritestingPerf()).countBitsSet(1);
-        int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+        //(new VeritestingPerf()).countBitsSet(1);
+        (new VeritestingPerf()).nestedRegion(1);
+        //int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
 //        (new VeritestingPerf()).inRangeloadArrayTC( 22, 10);
 
 
@@ -63,6 +64,13 @@ public class VeritestingPerf {
             x = x >>> 1; // logical right shift
         }
         return count;
+    }
+
+    public int nestedRegion(int x) {
+        if (x != 0) {
+            if (x != 0) { x = 3; } else { x = 4;  }
+        } else { x = 5; }
+        return x;
     }
 
     //testing inRangeArrayLoad for symbolic & concrete index
@@ -214,19 +222,23 @@ class TempClassDerived extends TempClass {
     public int myInt = 1;
 
     public int getAnotherAnotherTempInt(int a) {
+        //TempClass2 t = new TempClass2();
+        //t.tempMethod();
         return tempInt;
     }
 
     public int getAnotherTempInt(int a) {
+        //TempClass2 t = new TempClass2();
+        //t.tempMethod();
         //return tempInt;
-        return getAnotherAnotherTempInt(a);
+        return getAnotherAnotherTempInt(myInt);
     }
 
     public int getTempInt(int a) {
         //TempClass2 t = new TempClass2();
-//        t.tempMethod();
+        //t.tempMethod();
         //return tempInt;
-        return getAnotherTempInt(a);
+        return getAnotherTempInt(tempInt);
     }
 
     public int getOne(int a) {
@@ -236,7 +248,14 @@ class TempClassDerived extends TempClass {
 */
         //VeritestingPerf.count += 1;
         //return tempInt;
-        return getTempInt(a);
+        return nestedRegion(myInt);
+    }
+
+    public int nestedRegion(int x) {
+        if (x != 0) {
+            if (x != 0) { tempInt = 3; } else { tempInt = 4;  }
+        } else { tempInt = 5; }
+        return tempInt + x;
     }
 }
 
