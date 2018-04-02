@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 public class VarUtil {
+    private static int nextIntermediateCount = 1;
     String className;
     String methodName;
     IR ir;
@@ -37,20 +38,31 @@ public class VarUtil {
 
     public static final int getPathCounter() { pathCounter++; return pathCounter; }
 
-    public Expression makeIntermediateVar(int val) {
+    public Expression makeIntermediateVar(int val, boolean useVarCache) {
         String name = "v" + val;
-        return makeIntermediateVar(name);
+        return makeIntermediateVar(name, useVarCache);
     }
 
-    public Expression makeIntermediateVar(String name) {
+    // makes a intermediate variable hole, does not use varCache if useVarCache is false
+    // useVarCache is useful when creating intermediate variable hole to be used in as the writeExpr in a FIELD_OUTPUT
+    // hole because we would like to creat a new intermediate variable hole for every write into a field
+    public Expression makeIntermediateVar(String name, boolean useVarCache) {
         name = className + "." + methodName + "." + name;
-        if(varCache.containsKey(name))
-            return varCache.get(name);
+        if(varCache.containsKey(name)) {
+            if(useVarCache) return varCache.get(name);
+            else name += VarUtil.nextIntermediateCount();
+        }
         HoleExpression holeExpression = new HoleExpression(nextInt(), className, methodName);
         holeExpression.setHole(true, HoleExpression.HoleType.INTERMEDIATE);
         holeExpression.setHoleVarName(name);
         varCache.put(name, holeExpression);
         return holeExpression;
+    }
+
+    private static String nextIntermediateCount() {
+        String ret = "" + VarUtil.nextIntermediateCount;
+        VarUtil.nextIntermediateCount++;
+        return ret;
     }
 
     public Expression makeLocalInputVar(int val) {
@@ -373,7 +385,7 @@ public class VarUtil {
             return ret;
         }
         if(isLocalVariable(val)) ret = makeLocalInputVar(val);
-        else ret = makeIntermediateVar(val);
+        else ret = makeIntermediateVar(val, true);
         varCache.put(name, ret);
         return ret;
     }
@@ -415,7 +427,7 @@ public class VarUtil {
     }
 
     // def will be value being defined in case of FIELD_INPUT hole
-    public Expression addFieldInputVal(int def, int use, String className, String fieldName,
+    public Expression addFieldInputVal(int def, int use, String fieldClassName, String fieldName,
                                        HoleExpression.HoleType holeType, boolean isStaticField) {
         assert(holeType == HoleExpression.HoleType.FIELD_INPUT);
         HoleExpression useHole = null;
@@ -430,15 +442,16 @@ public class VarUtil {
             assert(use != -1);
             localStackSlot = varsMap.get(use);
         }
-        HoleExpression holeExpression = new HoleExpression(nextInt(), className, methodName);
+        HoleExpression holeExpression = new HoleExpression(nextInt(), this.className, methodName);
         holeExpression.setHole(true, holeType);
-        holeExpression.setFieldInfo(className, fieldName, methodName, localStackSlot, -1, null, isStaticField, useHole);
+        holeExpression.setFieldInfo(fieldClassName, fieldName, methodName, localStackSlot, -1, null,
+                isStaticField, useHole);
         String name = this.className + "." + this.methodName + ".v" + def;
         holeExpression.setHoleVarName(name);
-        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap, null, null) &&
-                (VeritestingListener.allowFieldReadAfterWrite == false)) {
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap, null, null)) {
             VeritestingListener.fieldReadAfterWrite += 1;
-            return null;
+            if((VeritestingListener.allowFieldReadAfterWrite == false))
+                return null;
         }
         varCache.put(holeExpression.getHoleVarName(), holeExpression);
         return holeExpression;
@@ -485,38 +498,43 @@ public class VarUtil {
 
     // def will be value being defined in case of FIELD_INPUT hole
     public Expression addFieldOutputVal(Expression writeExpr, int use,
-                                       String className,
+                                       String fieldClassName,
                                        String fieldName,
                                        HoleExpression.HoleType holeType,
                                         boolean isStaticField) {
         assert(holeType == HoleExpression.HoleType.FIELD_OUTPUT);
+        assert(writeExpr instanceof HoleExpression);
+        assert(((HoleExpression)writeExpr).getHoleType() == HoleExpression.HoleType.INTERMEDIATE);
         HoleExpression useHole = null;
         //If the field does not belong to a local object, then it has to be an already created object or a static field
         // meaning use equals -1
         //But the already created object hole takes priority over a local object
         String string = this.className + "." + this.methodName + ".v" + use;
         if(varsMap.containsKey(use) == false) assert(varCache.containsKey(string) || use == -1);
-        if(varCache.containsKey(string)) useHole = (HoleExpression) varCache.get(string);
+        if(varCache.containsKey(string))
+            useHole = (HoleExpression) varCache.get(string);
         int localStackSlot = -1;
         if(!isStaticField && (useHole == null)) {
             assert(use != -1);
             localStackSlot = varsMap.get(use);
         }
         String name = "FIELD_OUTPUT." + ((HoleExpression)writeExpr).getHoleVarName();
-        if(varCache.containsKey(name)) return varCache.get(name);
-        HoleExpression holeExpression = new HoleExpression(nextInt(), className, methodName);
+        //varCache should not already have a hole with "name" holeVarName because every field output should have a
+        // new intermediate variable as the writeExpr
+        assert(!varCache.containsKey(name));
+        HoleExpression holeExpression = new HoleExpression(nextInt(), this.className, methodName);
         holeExpression.setHole(true, holeType);
-        holeExpression.setFieldInfo(className, fieldName, methodName, localStackSlot, -1, writeExpr, isStaticField, useHole);
+        holeExpression.setFieldInfo(fieldClassName, fieldName, methodName, localStackSlot, -1, writeExpr, isStaticField, useHole);
         holeExpression.setHoleVarName(name);
-        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap, null, null) &&
-                (VeritestingListener.allowFieldWriteAfterRead == false)) {
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_INPUT, holeHashMap, null, null)) {
             VeritestingListener.fieldWriteAfterRead += 1;
-            return null;
+            if((VeritestingListener.allowFieldWriteAfterRead == false))
+                return null;
         }
-        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap, null, null) &&
-                (VeritestingListener.allowFieldWriteAfterWrite == false)) {
+        if(fieldHasRWOperation(holeExpression, HoleExpression.HoleType.FIELD_OUTPUT, holeHashMap, null, null)) {
             VeritestingListener.fieldWriteAfterWrite += 1;
-            return null;
+            if((VeritestingListener.allowFieldWriteAfterWrite == false))
+                return null;
         }
         varCache.put(name, holeExpression);
         return holeExpression;

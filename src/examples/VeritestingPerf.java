@@ -14,8 +14,8 @@ public class VeritestingPerf {
 
     public static void main(String[] args) {
         //(new VeritestingPerf()).cfgTest(1);
-        //(new VeritestingPerf()).countBitsSet(1);
-        (new VeritestingPerf()).nestedRegion(1);
+        (new VeritestingPerf()).countBitsSet(1);
+        //(new VeritestingPerf()).nestedRegion(1);
         //int x[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
 //        (new VeritestingPerf()).inRangeloadArrayTC( 22, 10);
 
@@ -58,7 +58,7 @@ public class VeritestingPerf {
                 //TempClass2 tempClass2 = tempClass.tempClass2;
                 //tempClass2.tempInt2 += count;
                 //tempClass.tempInt = 1; //creates r/w interference with tempClass.getOne's method summary
-                count += tempClass.getOne(0);
+                count += tempClass.getOne(0); //method summary test + higher order region test
                 //count += tempClass.myInt; //use this to test dynamic field access
             }
             x = x >>> 1; // logical right shift
@@ -68,9 +68,9 @@ public class VeritestingPerf {
 
     public int nestedRegion(int x) {
         if (x != 0) {
-            if (x != 0) { x = 3; } else { x = 4;  }
-        } else { x = 5; }
-        return x;
+            if (x != 0) { count = 3; } else { count = 4;  }
+        } else { count = 5; }
+        return count;
     }
 
     //testing inRangeArrayLoad for symbolic & concrete index
@@ -238,17 +238,19 @@ class TempClassDerived extends TempClass {
         //TempClass2 t = new TempClass2();
         //t.tempMethod();
         //return tempInt;
-        return getAnotherTempInt(tempInt);
+        return getAnotherTempInt(myInt);
     }
 
     public int getOne(int a) {
-        /*tempInt = a + 1; //LOCAL_INPUT,  FIELD_OUTPUT holes
+        //read-after-write test on tempInt field
+        tempInt = a +1; //LOCAL_INPUT,  FIELD_OUTPUT holes
         a = tempInt + 2; //LOCAL_OUTPUT, FIELD_INPUT holes
-        tempInt = a + 3; //LOCAL_INPUT,  FIELD_INPUT holes
-*/
+        tempInt = a+ 3; //LOCAL_INPUT,  FIELD_INPUT holes
+
         //VeritestingPerf.count += 1;
         //return tempInt;
-        return nestedRegion(myInt);
+        //return nestedRegion(myInt);
+        return getTempInt(tempInt);
     }
 
     public int nestedRegion(int x) {
@@ -263,7 +265,7 @@ class TempClass {
 
     public int tempInt = 1;
 
-    public int myInt = 0;
+    public int myInt = 1;
 
     public TempClass() {
         this.tempClass2 = new TempClass2();

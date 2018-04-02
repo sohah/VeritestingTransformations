@@ -127,7 +127,7 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         //variables written to in a veritesting region will always become intermediates because they will be
         //phi'd at the end of the region or be written into a class field later
         //lhsExpr will also be a intermediate variable if we are summarizing a method
-        Expression lhsExpr = varUtil.makeIntermediateVar(lhs);
+        Expression lhsExpr = varUtil.makeIntermediateVar(lhs, true);
         Expression operand1Expr = varUtil.addVal(operand1);
         Expression operand2Expr = varUtil.addVal(operand2);
 
@@ -310,10 +310,10 @@ public class MyIVisitor implements SSAInstruction.IVisitor {
         String fieldName = fieldReference.getName().toString();
         intermediateVarName += objRef + ".";
         intermediateVarName += className + "." + fieldName;
-        Expression intermediate = varUtil.makeIntermediateVar(intermediateVarName);
+        Expression intermediate = varUtil.makeIntermediateVar(intermediateVarName, false);
         Expression writeVal = varUtil.addVal(instruction.getVal());
         SPFExpr = new Operation(Operator.EQ, intermediate, writeVal);
-        if(varUtil.addFieldOutputVal(intermediate, objRef, className.toString(), fieldName.toString(),
+        if(varUtil.addFieldOutputVal(intermediate, objRef, className, fieldName.toString(),
                 HoleExpression.HoleType.FIELD_OUTPUT, instruction.isStatic()) == null) {
             canVeritest = false;
         } else {

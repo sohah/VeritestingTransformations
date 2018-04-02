@@ -367,7 +367,7 @@ public class VeritestingMain {
                 final int elsePathLabel = varUtil.getPathCounter();
                 ISSABasicBlock thenPred = thenUnit, elsePred = elseUnit;
                 int thenUseNum = -1, elseUseNum = -1;
-                Expression pathLabel = varUtil.makeIntermediateVar(pathLabelString);
+                Expression pathLabel = varUtil.makeIntermediateVar(pathLabelString, true);
                 final Expression thenPLAssignSPF =
                         new Operation(Operation.Operator.EQ, pathLabel,
                                 new IntConstant(thenPathLabel));

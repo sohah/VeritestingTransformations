@@ -60,7 +60,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int fieldReadAfterWrite = 0;
     public static int fieldWriteAfterWrite = 0;
     public static int fieldWriteAfterRead = 0;
-    public static final boolean allowFieldReadAfterWrite = false;
+    public static final boolean allowFieldReadAfterWrite = true;
     public static final boolean allowFieldWriteAfterRead = true;
     public static final boolean allowFieldWriteAfterWrite = true;
     private static int methodSummaryRWInterference = 0;
@@ -429,7 +429,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         HoleExpression.FieldInfo fieldInfo = holeExpression.getFieldInfo();
                         assert (fieldInfo != null);
                         finalValue = holeHashMap.get(fieldInfo.writeValue);
-                        fillFieldHole(ti, stackFrame, fieldInfo, holeHashMap, false, GreenToSPFExpression(finalValue));
+                        fillFieldHole(ti, stackFrame, holeExpression, holeHashMap, false, GreenToSPFExpression(finalValue));
                     }
                     break;
             }
@@ -622,20 +622,22 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     gov.nasa.jpf.symbc.numeric.Expression fillFieldHole(ThreadInfo ti, StackFrame stackFrame,
-                                                        HoleExpression.FieldInfo fieldInputInfo,
+                                                        HoleExpression holeExpression,
                                                         LinkedHashMap<Expression, Expression> retHoleHashMap,
                                                         boolean isRead,
                                                         gov.nasa.jpf.symbc.numeric.Expression finalValue) {
+        HoleExpression.FieldInfo fieldInputInfo = holeExpression.getFieldInfo();
         final boolean isStatic = fieldInputInfo.isStaticField;
         int objRef = -1;
         //get the object reference from fieldInputInfo.use's local stack slot if not from the call site stack slot
         int stackSlot = -1;
-        if(ti.getTopFrame().getClassInfo().getName().equals(fieldInputInfo.className) &&
-                ti.getTopFrame().getMethodInfo().getName().equals(fieldInputInfo.methodName))
+        if(ti.getTopFrame().getClassInfo().getName().equals(holeExpression.getClassName()) &&
+                ti.getTopFrame().getMethodInfo().getName().equals(holeExpression.getMethodName()))
             stackSlot = fieldInputInfo.localStackSlot;
         else {
             stackSlot = fieldInputInfo.callSiteStackSlot;
-            assert(stackSlot != -1);
+            if(stackSlot == -1)
+                assert(false);
         }
         //this field is being loaded from an object reference that is itself a hole
         // this object reference hole should be filled already because holes are stored in a LinkedHashMap
@@ -1045,7 +1047,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                                     }
                                 }
                             }
-                            spfExpr = fillFieldHole(ti, stackFrame, methodKeyHoleFieldInfo, retHoleHashMap, true, null);
+                            spfExpr = fillFieldHole(ti, stackFrame, methodKeyHole, retHoleHashMap, true, null);
                             if (spfExpr == null) {
                                 failure = true;
                                 return this;
@@ -1136,7 +1138,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             LinkedHashMap<Expression, Expression> methodHoles = methodSummary.getHoleHashMap();
             if(hasRWInterference(holeHashMap, methodHoles, callSiteInfo, stackFrame)) {
                 methodSummaryRWInterference++;
-                System.out.println("method summary hole interferes with outer region");
+                System.out.println("method summary hole interferes with outer region for method ("
+                        + methodSummary.getClassName() + ", " + methodSummary.getMethodName() + ")");
                 myResult = true;
                 return this;
             }
