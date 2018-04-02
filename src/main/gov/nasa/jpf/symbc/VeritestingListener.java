@@ -636,13 +636,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             stackSlot = fieldInputInfo.localStackSlot;
         else {
             stackSlot = fieldInputInfo.callSiteStackSlot;
-            if(stackSlot == -1)
+            if(stackSlot == -1 && !fieldInputInfo.isStaticField)
                 assert(false);
         }
         //this field is being loaded from an object reference that is itself a hole
         // this object reference hole should be filled already because holes are stored in a LinkedHashMap
         // that keeps holes in the order they were created while traversing the WALA IR
-        if(stackSlot == -1) {
+        if(stackSlot == -1 && !fieldInputInfo.isStaticField) {
             gov.nasa.jpf.symbc.numeric.Expression objRefExpression =
                     GreenToSPFExpression(retHoleHashMap.get(fieldInputInfo.useHole));
             assert(objRefExpression instanceof IntegerConstant);

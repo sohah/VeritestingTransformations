@@ -217,7 +217,7 @@ public class VeritestingPerf {
 
 class TempClassDerived extends TempClass {
 
-    public int tempInt = 1; //change this to 2 to test read after write on a class field inside a Veritesting region
+    public static int tempInt = 1; //change this to 2 to test read after write on a class field inside a Veritesting region
 
     public int myInt = 1;
 
@@ -263,7 +263,7 @@ class TempClassDerived extends TempClass {
 
 class TempClass {
 
-    public int tempInt = 1;
+    public static int tempInt = 1;
 
     public int myInt = 1;
 
