@@ -1,7 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements;
 
-public interface VeriStatement {
-
+public interface VeriStatment {
     public String toString();
-    public void visitor(VeriStatVisitor v);
+    public Object visit(VeriStatVisitor v);
 }

@@ -6,10 +6,10 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.WalaVar;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Assignment;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.IfThenElse;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Skip;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeriStatement;
+import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeriStatment;
 
 public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
-    public VeriStatement veriStatement;
+    public VeriStatment veriStatement;
     public boolean canVeritest = true;
 
     @Override

@@ -1,9 +1,11 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements;
 
+import choco.cp.solver.constraints.global.geost.geometricPrim.Obj;
+
 public interface VeriStatVisitor {
-    void visitSPFCase(SPFCase spfCase);
-    void visitSkip(Skip skip);
-    void visitIfThenElse(IfThenElse ifThenElse);
-    void visitComposition(Composition composition);
-    void visitAssignment(Assignment assignment);
+    Object visitSPFCase(SPFCase spfCase);
+    Object visitSkip(Skip skip);
+    Object visitIfThenElse(IfThenElse ifThenElse);
+    Object visitComposition(Composition composition);
+    Object visitAssignment(Assignment assignment);
 }

@@ -1,29 +1,27 @@
 package gov.nasa.jpf.symbc.veritesting.AstTransformation;
 
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeriStatement;
-
 public class AstTransOutput {
-    private VeriStatement statement;
-    private VeriStatement continuation;
+    private Object statement;
+    private Object continuation;
 
-    public AstTransOutput(VeriStatement statement, VeriStatement continuation) {
+    public AstTransOutput(Object statement, Object continuation) {
         this.statement = statement;
         this.continuation = continuation;
     }
 
-    public VeriStatement getStatement() {
+    public Object getStatement() {
         return statement;
     }
 
-    public void setStatement(VeriStatement statement) {
+    public void setStatement(Object statement) {
         this.statement = statement;
     }
 
-    public VeriStatement getContinuation() {
+    public Object getContinuation() {
         return continuation;
     }
 
-    public void setContinuation(VeriStatement continuation) {
+    public void setContinuation(Object continuation) {
         this.continuation = continuation;
     }
 }

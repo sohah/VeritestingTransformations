@@ -1,6 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements;
 
-public class Skip implements VeriStatement {
+public class Skip implements VeriStatment {
 
     @Override
     public String toString() {
@@ -8,7 +8,8 @@ public class Skip implements VeriStatement {
     }
 
     @Override
-    public void visitor(VeriStatVisitor v) {
-        v.visitSkip(this);
+    public Object visit(VeriStatVisitor v) {
+        return v.visitSkip(this);
     }
+
 }

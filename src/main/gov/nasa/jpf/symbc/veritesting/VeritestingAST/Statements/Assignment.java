@@ -3,7 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.Var;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.VeriExpression;
 
-public class Assignment implements VeriStatement {
+public class Assignment implements VeriStatment {
     public Assignment(Var lhs, VeriExpression rhs) {
         this.lhs = lhs;
         this.rhs = rhs;
@@ -26,7 +26,7 @@ public class Assignment implements VeriStatement {
     }
 
     @Override
-    public void visitor(VeriStatVisitor v) {
-        v.visitAssignment(this);
+    public Object visit(VeriStatVisitor v) {
+        return v.visitAssignment(this);
     }
 }

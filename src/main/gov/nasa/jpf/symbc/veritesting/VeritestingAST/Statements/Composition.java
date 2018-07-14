@@ -1,11 +1,27 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements;
 
-public class Composition implements VeriStatement {
-    private VeriStatement s1;
-    private VeriStatement s2;
+public class Composition implements VeriStatment {
+    private VeriStatment s1;
+    private VeriStatment s2;
 
-    public Composition(VeriStatement s1, VeriStatement s2) {
+    public Composition(VeriStatment s1, VeriStatment s2) {
         this.s1 = s1;
+        this.s2 = s2;
+    }
+
+    public VeriStatment getS1() {
+        return s1;
+    }
+
+    public void setS1(VeriStatment s1) {
+        this.s1 = s1;
+    }
+
+    public VeriStatment getS2() {
+        return s2;
+    }
+
+    public void setS2(VeriStatment s2) {
         this.s2 = s2;
     }
 
@@ -15,8 +31,9 @@ public class Composition implements VeriStatement {
     }
 
     @Override
-    public void visitor(VeriStatVisitor v) {
-        v.visitComposition(this);
+    public Object visit(VeriStatVisitor v) {
+        return v.visitComposition(this);
     }
+
 }
 

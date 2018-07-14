@@ -6,7 +6,7 @@ enum SPFReason{
     OBJECT_CREATION, OUT_OF_BOUND_EXCEPTION;
 }
 
-public class SPFCase implements VeriStatement {
+public class SPFCase implements VeriStatment {
 
     private Expression spfCondition;
     private SPFReason reason;
@@ -30,9 +30,10 @@ public class SPFCase implements VeriStatement {
     }
 
     @Override
-    public void visitor(VeriStatVisitor v) {
-        v.visitSPFCase(this);
+    public Object visit(VeriStatVisitor v) {
+        return v.visitSPFCase(this);
     }
+
 
     public SPFReason getReason() {
         return reason;
