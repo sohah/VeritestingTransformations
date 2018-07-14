@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.AstTransformation;
 
 import com.ibm.wala.ssa.*;
+import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.EmptyVar;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.WalaInstruction;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.WalaVar;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Assignment;
@@ -28,9 +29,9 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitArrayStore(SSAArrayStoreInstruction ssaArrayStoreInstruction) {
-        WalaVar walaVar = null;
+        EmptyVar emptyVar = new EmptyVar();
         WalaInstruction walaInstruction = new WalaInstruction(ssaArrayStoreInstruction);
-        veriStatement = new Assignment(walaVar, walaInstruction);
+        veriStatement = new Assignment(emptyVar, walaInstruction);
     }
 
     @Override
@@ -69,9 +70,9 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitSwitch(SSASwitchInstruction ssaSwitchInstruction) {
-        WalaVar walaVar = null;
+        EmptyVar emptyVar = new EmptyVar();
         WalaInstruction walaInstruction = new WalaInstruction(ssaSwitchInstruction);
-        veriStatement = new Assignment(walaVar, walaInstruction);
+        veriStatement = new Assignment(emptyVar, walaInstruction);
     }
 
     @Override
@@ -90,9 +91,9 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitPut(SSAPutInstruction ssaPutInstruction) {
-        WalaVar walaVar = null;
+        EmptyVar emptyVar = new EmptyVar();
         WalaInstruction walaInstruction = new WalaInstruction(ssaPutInstruction);
-        veriStatement = new Assignment(walaVar, walaInstruction);
+        veriStatement = new Assignment(emptyVar, walaInstruction);
     }
 
     @Override
@@ -118,9 +119,9 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitThrow(SSAThrowInstruction ssaThrowInstruction) {
-        WalaVar walaVar = null;
+        EmptyVar emptyVar = new EmptyVar();
         WalaInstruction walaInstruction = new WalaInstruction(ssaThrowInstruction);
-        veriStatement = new Assignment(walaVar, walaInstruction);
+        veriStatement = new Assignment(emptyVar, walaInstruction);
     }
 
     @Override
@@ -156,9 +157,9 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitGetCaughtException(SSAGetCaughtExceptionInstruction ssaGetCaughtExceptionInstruction) {
-        WalaVar walaVar = null;
+        EmptyVar emptyVar = new EmptyVar();
         WalaInstruction walaInstruction = new WalaInstruction(ssaGetCaughtExceptionInstruction);
-        veriStatement = new Assignment(walaVar, walaInstruction);
+        veriStatement = new Assignment(emptyVar, walaInstruction);
     }
 
     @Override

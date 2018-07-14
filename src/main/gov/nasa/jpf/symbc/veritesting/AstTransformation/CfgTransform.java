@@ -11,9 +11,10 @@ import java.util.List;
 public class CfgTransform {
     private SSACFG cfg;
 
-    public void CfgTransform(SSACFG cfg){
+    public CfgTransform(SSACFG cfg) {
         this.cfg = cfg;
-    };
+    }
+
 
     public VeriStatment transform(ISSABasicBlock bbStart, ISSABasicBlock bbEnd) throws VeritestingException {
         VeriStatment statement = null;

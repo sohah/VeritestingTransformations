@@ -19,11 +19,12 @@ public class BBTransform {
     VeriStatment transformBasicBlock(ISSABasicBlock bb) {
         Iterator<SSAInstruction> instructionIterator = bb.iterator();
         List<SSAInstruction> instList = new ArrayList<>();
+        while(instructionIterator.hasNext())
+            instList.add(instructionIterator.next());
         if(instList.size()  == 0)
             return (new Skip());
-        while(instructionIterator.hasNext())
-        instList.add(instructionIterator.next());
-        return transformInstList(instList);
+        else
+            return transformInstList(instList);
     }
 
     private VeriStatment transformInstList(List<SSAInstruction> instList) {
