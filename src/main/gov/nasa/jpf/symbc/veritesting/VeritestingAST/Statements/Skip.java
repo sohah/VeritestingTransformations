@@ -4,7 +4,7 @@ public class Skip implements VeriStatment {
 
     @Override
     public String toString() {
-        return "skip; ";
+        return "skip ";
     }
 
     @Override

@@ -15,10 +15,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
 
-import com.ibm.wala.cfg.Util;
 import com.ibm.wala.classLoader.CallSiteReference;
-import com.ibm.wala.classLoader.IBytecodeMethod;
-import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.core.tests.callGraph.CallGraphTestUtil;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
@@ -28,31 +25,26 @@ import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.cha.ClassHierarchy;
 import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.*;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.WalaException;
 import com.ibm.wala.util.config.AnalysisScopeReader;
-import com.ibm.wala.util.debug.Assertions;
-import com.ibm.wala.util.graph.NumberedGraph;
 import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.dominators.NumberedDominators;
-import com.ibm.wala.util.graph.impl.GraphInverter;
 import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.StringStuff;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.AstTransformation.CfgTransform;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeriStatment;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ReflectUtil;
 import gov.nasa.jpf.vm.ThreadInfo;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
-import static gov.nasa.jpf.symbc.veritesting.ClassUtils.findClasses;
 
 
 import static org.apache.bcel.generic.Type.getSignature;
 
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
 
 
@@ -136,6 +128,7 @@ public class VeritestingMain {
                 }
             }
             //summarize methods inside all methods discovered so far
+
             methodAnalysis = true;
             for (String methodSummaryClassName : methodSummaryClassNames) {
                 Class cAdditional;
@@ -278,16 +271,18 @@ public class VeritestingMain {
             HashSet<Integer> visited = new HashSet<>();
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             // Here is where the magic happens.
+            CfgTransform cfgTransform = new CfgTransform(cfg);
+            List<ISSABasicBlock> entryBBList = (List<ISSABasicBlock>) cfg.getNormalSuccessors(cfg.entry());
+            assert(entryBBList.size() > 0);
+            VeriStatment statement = cfgTransform.transform(entryBBList.get(0), cfg.exit());
+
+            System.out.println(statement);
+            /*
             if (!methodAnalysis) {
                 //doAnalysis(cfg.entry(), null);
-                CfgTransform cfgTransform = new CfgTransform(cfg);
-                List<ISSABasicBlock> entryBBList = (List<ISSABasicBlock>) cfg.getNormalSuccessors(cfg.entry());
-                assert(entryBBList.size() > 0);
-                VeriStatment statment = cfgTransform.transform(entryBBList.get(0), cfg.exit());
-
-                System.out.println(statment);
-            } else
-                ;// doMethodAnalysis(cfg.entry(), cfg.exit());
+            } else {
+                // doMethodAnalysis(cfg.entry(), cfg.exit());
+            }*/
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

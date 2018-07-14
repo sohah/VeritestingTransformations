@@ -34,8 +34,8 @@ public class CfgTransform {
                 case 2: {
                     assert (continuation instanceof IfThenElse);
                     ISSABasicBlock ipdm = cfg.getIPdom(bbStart.getNumber());
-                    VeriStatment nextStat1 = transform(succList.get(0), bbEnd);
-                    VeriStatment nextStat2 = transform(succList.get(1), bbEnd);
+                    VeriStatment nextStat1 = transform(succList.get(0), ipdm);
+                    VeriStatment nextStat2 = transform(succList.get(1), ipdm);
                     ((IfThenElse) continuation).setS1(nextStat1);
                     ((IfThenElse) continuation).setS2(nextStat2);
 

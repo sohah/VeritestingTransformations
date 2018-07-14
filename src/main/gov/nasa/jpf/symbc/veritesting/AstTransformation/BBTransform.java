@@ -38,7 +38,7 @@ public class BBTransform {
         }catch (VeritestingException exception){
             System.out.println("Veritesting Exception is raised during first(AST) transformation.!!");
         }
-        VeriStatment s2 = transformInstList(instList.subList(1,instList.size()-1));
+        VeriStatment s2 = transformInstList(instList.subList(1,instList.size()));
         return new Composition(s1, s2);
     }
 

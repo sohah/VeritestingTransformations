@@ -55,6 +55,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int pathLabelCount = 1;
     private long staticAnalysisTime = 0;
     public static final int maxStaticExplorationDepth = 2;
+    public static boolean firstTime = true;
 
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -84,7 +85,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
         if (veritestingMode == 0) return;
+        if(firstTime) {
             discoverRegions(ti); // static analysis to discover regions
+            firstTime = false;
+        }
+        else
+            return;
     }
 
 

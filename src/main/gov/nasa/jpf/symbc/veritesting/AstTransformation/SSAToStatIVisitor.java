@@ -65,7 +65,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     @Override
     public void visitConditionalBranch(SSAConditionalBranchInstruction ssaConditionalBranchInstruction) {
         WalaInstruction walaInstruction = new WalaInstruction(ssaConditionalBranchInstruction);
-        veriStatement = new IfThenElse(walaInstruction, null, null);
+        veriStatement = new IfThenElse(walaInstruction, new Skip(), new Skip());
     }
 
     @Override
