@@ -2,10 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.AstTransformation;
 
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSACFG;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Composition;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.IfThenElse;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.StatReplaceVisitor;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeriStatment;
+import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingException;
 
 import java.util.List;
@@ -52,7 +49,7 @@ public class CfgTransform {
             }
         }
         else{
-            return statement;
+            return (new Skip());
         }
         return statement;
     }

@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.AstTransformation;
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAInstruction;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Composition;
+import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Skip;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeriStatment;
 import gov.nasa.jpf.symbc.veritesting.VeritestingException;
 
@@ -18,6 +19,8 @@ public class BBTransform {
     VeriStatment transformBasicBlock(ISSABasicBlock bb) {
         Iterator<SSAInstruction> instructionIterator = bb.iterator();
         List<SSAInstruction> instList = new ArrayList<>();
+        if(instList.size()  == 0)
+            return (new Skip());
         while(instructionIterator.hasNext())
         instList.add(instructionIterator.next());
         return transformInstList(instList);

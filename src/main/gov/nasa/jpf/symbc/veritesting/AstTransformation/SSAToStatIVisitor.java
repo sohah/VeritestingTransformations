@@ -8,6 +8,8 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.IfThenElse;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Skip;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeriStatment;
 
+
+//SH: translates SSAInstructions to Veritesting Statements.
 public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public VeriStatment veriStatement;
     public boolean canVeritest = true;
