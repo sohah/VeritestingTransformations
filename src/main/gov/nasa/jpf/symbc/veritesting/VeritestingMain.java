@@ -281,7 +281,10 @@ public class VeritestingMain {
             if (!methodAnalysis) {
                 //doAnalysis(cfg.entry(), null);
                 CfgTransform cfgTransform = new CfgTransform(cfg);
-                VeriStatment statment = cfgTransform.transform(cfg.entry(), cfg.exit());
+                List<ISSABasicBlock> entryBBList = (List<ISSABasicBlock>) cfg.getNormalSuccessors(cfg.entry());
+                assert(entryBBList.size() > 0);
+                VeriStatment statment = cfgTransform.transform(entryBBList.get(0), cfg.exit());
+
                 System.out.println(statment);
             } else
                 ;// doMethodAnalysis(cfg.entry(), cfg.exit());

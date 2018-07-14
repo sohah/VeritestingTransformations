@@ -40,7 +40,7 @@ public class IfThenElse implements VeriStatment {
 
     @Override
     public String toString() {
-        return " if " + this.condition + " then " + s1.toString() + " else " + s2.toString();
+        return " if (" + this.condition + ") then (" + s1.toString() + ") else (" + s2.toString() + ")";
     }
 
     @Override

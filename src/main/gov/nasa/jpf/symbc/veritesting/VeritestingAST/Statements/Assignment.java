@@ -22,7 +22,7 @@ public class Assignment implements VeriStatment {
 
     @Override
     public String toString() {
-        return lhs.toString() + ":=" + rhs.toString();
+        return lhs.toString() + " := (" + rhs.toString() +" )";
     }
 
     @Override

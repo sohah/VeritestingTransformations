@@ -27,7 +27,7 @@ public class Composition implements VeriStatment {
 
     @Override
     public String toString() {
-        return s1.toString() + ";" + s2.toString();
+        return "(( "+ s1.toString() + ") ; (" + s2.toString() + "))";
     }
 
     @Override

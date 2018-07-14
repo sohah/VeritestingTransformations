@@ -98,9 +98,9 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitInvoke(SSAInvokeInstruction ssaInvokeInstruction) {
-        WalaVar walaVar = new WalaVar(ssaInvokeInstruction.getDef());
+        EmptyVar emptyVar = new EmptyVar();
         WalaInstruction walaInstruction = new WalaInstruction(ssaInvokeInstruction);
-        veriStatement = new Assignment(walaVar, walaInstruction);
+        veriStatement = new Assignment(emptyVar, walaInstruction);
     }
 
     @Override
