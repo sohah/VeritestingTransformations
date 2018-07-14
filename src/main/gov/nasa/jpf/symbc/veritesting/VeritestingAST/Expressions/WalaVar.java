@@ -23,4 +23,9 @@ public class WalaVar implements Var{
     public String toString() {
         return String.valueOf(var);
     }
+
+    @Override
+    public void visit(VeriExpressionVisitor v) {
+
+    }
 }

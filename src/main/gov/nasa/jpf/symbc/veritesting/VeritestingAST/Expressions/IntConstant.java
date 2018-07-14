@@ -18,4 +18,9 @@ public class IntConstant implements VeritestingExpression {
     public String toString() {
         return String.valueOf(constant);
     }
+
+    @Override
+    public void visit(VeriExpressionVisitor v) {
+
+    }
 }

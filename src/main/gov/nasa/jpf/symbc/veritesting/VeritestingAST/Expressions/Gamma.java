@@ -41,4 +41,9 @@ public class Gamma implements VeritestingExpression{
         return " Gamma( " + condition.toString() + ", " + var1.toString() + ", " + var2.toString() +")";
 
     }
+
+    @Override
+    public void visit(VeriExpressionVisitor v) {
+
+    }
 }

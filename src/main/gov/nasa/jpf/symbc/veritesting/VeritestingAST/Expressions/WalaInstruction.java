@@ -22,4 +22,9 @@ public class WalaInstruction implements VeritestingExpression {
     public String toString() {
         return instruction.toString();
     }
+
+    @Override
+    public void visit(VeriExpressionVisitor v) {
+
+    }
 }

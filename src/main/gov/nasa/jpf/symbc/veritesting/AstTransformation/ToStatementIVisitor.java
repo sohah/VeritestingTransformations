@@ -1,7 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.AstTransformation;
 
 import com.ibm.wala.ssa.*;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.VeritestingExpression;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.WalaInstruction;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.WalaVar;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Assignment;
@@ -9,7 +8,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.IfThenElse;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Skip;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeritestingStatement;
 
-public class ToVeritestingExpIVisitor implements SSAInstruction.IVisitor {
+public class ToStatementIVisitor implements SSAInstruction.IVisitor {
     public VeritestingStatement veritestingStatement;
     public boolean canVeritest = true;
 

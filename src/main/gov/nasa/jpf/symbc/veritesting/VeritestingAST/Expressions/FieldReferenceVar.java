@@ -41,4 +41,9 @@ public class FieldReferenceVar implements Var{
     public String toString() {
         return "("+this.fieldReference.toString() +"," + this.subscript +")";
     }
+
+    @Override
+    public void visit(VeriExpressionVisitor v) {
+
+    }
 }

@@ -17,4 +17,9 @@ public class GreenExpression implements VeritestingExpression{
     public String toString() {
         return super.toString();
     }
+
+    @Override
+    public void visit(VeriExpressionVisitor v) {
+
+    }
 }
