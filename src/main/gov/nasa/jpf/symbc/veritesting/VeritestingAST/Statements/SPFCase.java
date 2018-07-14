@@ -6,7 +6,7 @@ enum SPFReason{
     OBJECT_CREATION, OUT_OF_BOUND_EXCEPTION;
 }
 
-public class SPFCase implements VeritestingStatement {
+public class SPFCase implements VeriStatement {
 
     private Expression spfCondition;
     private SPFReason reason;
@@ -27,6 +27,11 @@ public class SPFCase implements VeritestingStatement {
     @Override
     public String toString() {
         return "SPFCase( " + reason + "," + spfCondition.toString() + ")";
+    }
+
+    @Override
+    public void visitor(VeriStatVisitor v) {
+        v.visitSPFCase(this);
     }
 
     public SPFReason getReason() {

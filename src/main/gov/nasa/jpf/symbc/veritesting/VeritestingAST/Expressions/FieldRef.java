@@ -1,11 +1,11 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions;
 
-public class FieldReference {
+public class FieldRef {
     private int ref;
     private String field;
 
 
-    public FieldReference(int ref, String field) {
+    public FieldRef(int ref, String field) {
         this.ref = ref;
         this.field = field;
     }

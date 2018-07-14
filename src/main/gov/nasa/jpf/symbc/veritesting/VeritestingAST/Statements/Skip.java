@@ -1,11 +1,14 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements;
 
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.VeritestingExpression;
-
-public class Skip implements VeritestingStatement {
+public class Skip implements VeriStatement {
 
     @Override
     public String toString() {
         return "skip; ";
+    }
+
+    @Override
+    public void visitor(VeriStatVisitor v) {
+        v.visitSkip(this);
     }
 }

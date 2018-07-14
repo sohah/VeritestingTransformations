@@ -26,6 +26,6 @@ public class WalaVar implements Var{
 
     @Override
     public void visit(VeriExpressionVisitor v) {
-
+        v.visitWalaVar(this);
     }
 }

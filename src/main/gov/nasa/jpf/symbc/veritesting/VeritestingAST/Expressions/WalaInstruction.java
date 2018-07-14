@@ -1,9 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions;
 
 import com.ibm.wala.ssa.SSAInstruction;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.VeritestingExpression;
 
-public class WalaInstruction implements VeritestingExpression {
+public class WalaInstruction implements VeriExpression {
     private SSAInstruction instruction;
 
     public WalaInstruction(SSAInstruction ssaInstruction){
@@ -25,6 +24,6 @@ public class WalaInstruction implements VeritestingExpression {
 
     @Override
     public void visit(VeriExpressionVisitor v) {
-
+        v.visitWalaInstruction(this);
     }
 }

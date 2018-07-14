@@ -1,8 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions;
 
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.VeritestingExpression;
-
-public class IntConstant implements VeritestingExpression {
+public class IntConstant implements VeriExpression {
     private int constant;
 
     public int getConstant() {
@@ -21,6 +19,6 @@ public class IntConstant implements VeritestingExpression {
 
     @Override
     public void visit(VeriExpressionVisitor v) {
-
+        v.visitIntConstant(this);
     }
 }

@@ -2,7 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions;
 
 import za.ac.sun.cs.green.expr.Expression;
 
-public class GreenExpression implements VeritestingExpression{
+public class GreenExpression implements VeriExpression {
     private Expression expression;
 
     public Expression getExpression() {
@@ -20,6 +20,6 @@ public class GreenExpression implements VeritestingExpression{
 
     @Override
     public void visit(VeriExpressionVisitor v) {
-
+        v.visitGreen(this);
     }
 }
