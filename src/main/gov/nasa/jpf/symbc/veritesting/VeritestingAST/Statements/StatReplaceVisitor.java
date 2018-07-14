@@ -1,7 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements;
 
 
-//SH: Visitor used to replace a part of the AST
+//SH: This visitor is used to replace a part of the AST
 public class StatReplaceVisitor implements VeriStatVisitor{
     private VeriStatment oldStatement;
     private VeriStatment newStatement;

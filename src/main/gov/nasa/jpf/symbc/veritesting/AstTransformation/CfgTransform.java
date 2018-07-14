@@ -7,6 +7,8 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingException;
 
 import java.util.List;
 
+//SH: This class is used to tranform the CFG
+
 
 public class CfgTransform {
     private SSACFG cfg;

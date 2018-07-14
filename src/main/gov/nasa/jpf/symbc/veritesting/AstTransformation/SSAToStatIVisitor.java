@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.AstTransformation;
 
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.EmptyVar;
+import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.Var;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.WalaInstruction;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.WalaVar;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Assignment;
@@ -10,7 +11,10 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Skip;
 import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeriStatment;
 
 
-//SH: translates SSAInstructions to Veritesting Statements.
+//SH: This class translates SSAInstructions to Veritesting Statements.
+// many of the assignment instructions have the left hand side as an "EmptyVar" because none
+// has been constructed at this point yet.
+
 public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public VeriStatment veriStatement;
     public boolean canVeritest = true;
@@ -98,9 +102,13 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitInvoke(SSAInvokeInstruction ssaInvokeInstruction) {
-        EmptyVar emptyVar = new EmptyVar();
+        Var var;
+        if(ssaInvokeInstruction.getNumberOfReturnValues() == 0)
+            var = new EmptyVar();
+        else
+            var = new WalaVar(ssaInvokeInstruction.getDef());
         WalaInstruction walaInstruction = new WalaInstruction(ssaInvokeInstruction);
-        veriStatement = new Assignment(emptyVar, walaInstruction);
+        veriStatement = new Assignment(var, walaInstruction);
     }
 
     @Override

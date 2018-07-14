@@ -1,5 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions;
 
+//SH: This class is a placeholder for a var that hasn't been created by WALA and might be
+// replace later with VeritestingVar
+
 public class EmptyVar implements Var{
     @Override
     public Var getVar() {

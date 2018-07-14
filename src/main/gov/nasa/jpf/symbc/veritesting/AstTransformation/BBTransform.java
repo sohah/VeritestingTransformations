@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+//SH: this class is used to transform a single basic block with all its internal instructions.
+// and becasue constructing next blocks requires a change to the inner most statement, a "continuation" is used to represent that.
+
 public class BBTransform {
     //this is the last composed statement where we might want to expand/compose with something else later in the transformation.
     VeriStatment continuation;
