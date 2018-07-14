@@ -29,6 +29,6 @@ public class FieldReference {
 
     @Override
     public String toString() {
-        return ref+","+field;
+        return ref+",  "+field;
     }
 }

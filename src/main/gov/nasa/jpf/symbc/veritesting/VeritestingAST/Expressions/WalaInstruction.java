@@ -6,6 +6,9 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions.VeritestingExpr
 public class WalaInstruction implements VeritestingExpression {
     private SSAInstruction instruction;
 
+    public WalaInstruction(SSAInstruction ssaInstruction){
+        this.instruction = ssaInstruction;
+    }
 
     public SSAInstruction getInstruction() {
         return instruction;
