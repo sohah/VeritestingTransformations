@@ -34,8 +34,8 @@ import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.StringStuff;
 import gov.nasa.jpf.symbc.VeritestingListener;
-import gov.nasa.jpf.symbc.veritesting.AstTransformation.CfgTransform;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeriStatment;
+import gov.nasa.jpf.symbc.veritesting.AstTransformation.CFGConversion.CreateStaticRegions;
+import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Stmt;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ReflectUtil;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -55,6 +55,8 @@ public class VeritestingMain {
     HashSet<String> methodSummaryClassNames, methodSummarySubClassNames;
     private boolean methodAnalysis = false;
     private String currentPackageName;
+
+    HashMap<String, Stmt> veritestingRegions;
 
     public int getObjectReference() {
         return objectReference;
@@ -79,6 +81,7 @@ public class VeritestingMain {
                     (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
             methodSummaryClassNames = new HashSet<String>();
+            veritestingRegions = new HashMap<>();
         } catch (WalaException | IOException e) {
             e.printStackTrace();
         }
@@ -271,12 +274,19 @@ public class VeritestingMain {
             HashSet<Integer> visited = new HashSet<>();
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             // Here is where the magic happens.
+            /*
             CfgTransform cfgTransform = new CfgTransform(cfg);
             List<ISSABasicBlock> entryBBList = (List<ISSABasicBlock>) cfg.getNormalSuccessors(cfg.entry());
             assert(entryBBList.size() > 0);
-            VeriStatment statement = cfgTransform.transform(entryBBList.get(0), cfg.exit());
-
+            Stmt statement = cfgTransform.transform(entryBBList.get(0), cfg.exit());
             System.out.println(statement);
+            */
+            CreateStaticRegions regionCreator = new CreateStaticRegions();
+            if (!methodAnalysis) {
+                regionCreator.createStructuredConditionalRegions(cfg, veritestingRegions);
+            } else {
+                regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
+            }
             /*
             if (!methodAnalysis) {
                 //doAnalysis(cfg.entry(), null);

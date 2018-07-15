@@ -2,9 +2,10 @@ package gov.nasa.jpf.symbc.veritesting.AstTransformation;
 
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAInstruction;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Composition;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Skip;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.VeriStatment;
+import gov.nasa.jpf.symbc.veritesting.AstTransformation.CFGConversion.SSAToStatIVisitor;
+import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.CompositionStmt;
+import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.SkipStmt;
+import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.Stmt;
 import gov.nasa.jpf.symbc.veritesting.VeritestingException;
 
 
@@ -17,21 +18,21 @@ import java.util.List;
 
 public class BBTransform {
     //this is the last composed statement where we might want to expand/compose with something else later in the transformation.
-    VeriStatment continuation;
+    Stmt continuation;
 
-    VeriStatment transformBasicBlock(ISSABasicBlock bb) {
+    Stmt transformBasicBlock(ISSABasicBlock bb) {
         Iterator<SSAInstruction> instructionIterator = bb.iterator();
         List<SSAInstruction> instList = new ArrayList<>();
         while(instructionIterator.hasNext())
             instList.add(instructionIterator.next());
         if(instList.size()  == 0)
-            return (new Skip());
+            return (SkipStmt.skip);
         else
             return transformInstList(instList);
     }
 
-    private VeriStatment transformInstList(List<SSAInstruction> instList) {
-        VeriStatment s1 = null;
+    private Stmt transformInstList(List<SSAInstruction> instList) {
+        Stmt s1 = null;
         try{
              s1 = transformInstruction(instList.get(0));
              if(instList.size()==1){
@@ -41,11 +42,11 @@ public class BBTransform {
         }catch (VeritestingException exception){
             System.out.println("Veritesting Exception is raised during first(AST) transformation.!!");
         }
-        VeriStatment s2 = transformInstList(instList.subList(1,instList.size()));
-        return new Composition(s1, s2);
+        Stmt s2 = transformInstList(instList.subList(1,instList.size()));
+        return new CompositionStmt(s1, s2);
     }
 
-    private VeriStatment transformInstruction(SSAInstruction instruction) throws VeritestingException {
+    private Stmt transformInstruction(SSAInstruction instruction) throws VeritestingException {
         SSAToStatIVisitor toStatVisitor = new SSAToStatIVisitor();
         instruction.visit(toStatVisitor);
         if (!toStatVisitor.canVeritest)

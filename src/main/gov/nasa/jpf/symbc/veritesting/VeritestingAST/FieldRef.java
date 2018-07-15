@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.VeritestingAST.Expressions;
+package gov.nasa.jpf.symbc.veritesting.VeritestingAST;
 
 public class FieldRef {
     private int ref;

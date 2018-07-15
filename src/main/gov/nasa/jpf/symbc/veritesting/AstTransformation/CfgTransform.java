@@ -9,7 +9,7 @@ import java.util.List;
 
 //SH: This class is used to tranform the CFG
 
-
+/*
 public class CfgTransform {
     private SSACFG cfg;
 
@@ -18,33 +18,33 @@ public class CfgTransform {
     }
 
 
-    public VeriStatment transform(ISSABasicBlock bbStart, ISSABasicBlock bbEnd) throws VeritestingException {
-        VeriStatment statement = null;
+    public Stmt transform(ISSABasicBlock bbStart, ISSABasicBlock bbEnd) throws VeritestingException {
+        Stmt statement = null;
         List<ISSABasicBlock> succList = (List<ISSABasicBlock>) cfg.getNormalSuccessors(bbStart);
         if(!bbStart.equals(bbEnd)) {
             BBTransform bbTransform = new BBTransform();
-            VeriStatment currBBStat = bbTransform.transformBasicBlock(bbStart);
-            VeriStatment continuation = bbTransform.continuation;
+            Stmt currBBStat = bbTransform.transformBasicBlock(bbStart);
+            Stmt continuation = bbTransform.continuation;
             switch (succList.size()) {
                 case 1:{
-                    VeriStatment nextStat = transform(succList.get(0),bbEnd);
-                    VeriStatment subAst  = new Composition(continuation, nextStat);
+                    Stmt nextStat = transform(succList.get(0),bbEnd);
+                    Stmt subAst  = new CompositionStmt(continuation, nextStat);
                     StatReplaceVisitor replaceVisitor = new StatReplaceVisitor(continuation, subAst);
-                    statement = (VeriStatment) currBBStat.visit(replaceVisitor);;
+                    statement = (Stmt) currBBStat.visit(replaceVisitor);;
                     break;
                 }
                 case 2: {
-                    assert (continuation instanceof IfThenElse);
+                    assert (continuation instanceof IfThenElseStmt);
                     ISSABasicBlock ipdm = cfg.getIPdom(bbStart.getNumber());
-                    VeriStatment nextStat1 = transform(succList.get(0), ipdm);
-                    VeriStatment nextStat2 = transform(succList.get(1), ipdm);
-                    ((IfThenElse) continuation).setS1(nextStat1);
-                    ((IfThenElse) continuation).setS2(nextStat2);
+                    Stmt nextStat1 = transform(succList.get(0), ipdm);
+                    Stmt nextStat2 = transform(succList.get(1), ipdm);
+                    ((IfThenElseStmt) continuation).setS1(nextStat1);
+                    ((IfThenElseStmt) continuation).setS2(nextStat2);
 
-                    VeriStatment ipdmStat = transform(ipdm, bbEnd);
-                    VeriStatment subAst = new Composition(continuation, ipdmStat);
+                    Stmt ipdmStat = transform(ipdm, bbEnd);
+                    Stmt subAst = new CompositionStmt(continuation, ipdmStat);
                     StatReplaceVisitor replaceVisitor = new StatReplaceVisitor(continuation, subAst);
-                    statement = (VeriStatment) currBBStat.visit(replaceVisitor);
+                    statement = (Stmt) currBBStat.visit(replaceVisitor);
                     break;
                 }
                 default:
@@ -52,8 +52,9 @@ public class CfgTransform {
             }
         }
         else{
-            return (new Skip());
+            return (new SkipStmt());
         }
         return statement;
     }
 }
+*/

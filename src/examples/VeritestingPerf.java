@@ -371,8 +371,8 @@ public class VeritestingPerf {
             return count;
         }
 
-        //testing inRangeArrayLoad for symbolic & concrete index
-        public int inRangeloadArrayTC(int index, int length) {
+        //testing inRangeArrayLoad for symbolic & concrete field
+        public int inRangeloadArrayTC(int field, int length) {
             int[] x = {300, 400};
             int temp = 1;
             try {
@@ -381,39 +381,39 @@ public class VeritestingPerf {
                     temp = 2;
                 } else {
                     // System.out.println("executing else branch");
-                    temp = x[index] + 2;
+                    temp = x[field] + 2;
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
                 temp = 3;
             }
             assert length <= 0 ? temp == 2 : true;
-            assert length > 0 && index == 0 ? temp == 302 : true;
-            assert length > 0 && index == 1 ? temp == 402 : true;
-            assert length > 0 && index != 0 && index != 1 ? temp == 3 : true;
+            assert length > 0 && field == 0 ? temp == 302 : true;
+            assert length > 0 && field == 1 ? temp == 402 : true;
+            assert length > 0 && field != 0 && field != 1 ? temp == 3 : true;
     //        Debug.printPC("vaibhav: pc = ");
     //        System.out.println("temp = " + temp);
             return temp;
         }
 
-        //testing outRangeArrayLoad for symbolic index
-        public int outRangeloadArrayTC(int index, int length) throws ArrayIndexOutOfBoundsException {
+        //testing outRangeArrayLoad for symbolic field
+        public int outRangeloadArrayTC(int field, int length) throws ArrayIndexOutOfBoundsException {
             int[] x = {300};
             int temp = 1;
             try {
                 if (length > 0) {
-                    temp = x[index];
+                    temp = x[field];
                 } else {
                     temp = 2;
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
-                System.out.println("catch array out of bound, length = " + length + ", index = " + index);
+                System.out.println("catch array out of bound, length = " + length + ", field = " + field);
                 temp = 3;
             }
             System.out.println("temp = " + temp);
 
             assert ((length <= 0) ? (temp == 2) : true);
-            assert (length > 0) && (index == 0)? (temp == 300 ) : true;
-            assert (length > 0) && (index != 0)? (temp == 3 ) : true;
+            assert (length > 0) && (field == 0)? (temp == 300 ) : true;
+            assert (length > 0) && (field != 0)? (temp == 3 ) : true;
     //        if (temp == 1)
     //            System.out.println("then branch");
     //        else
@@ -421,13 +421,13 @@ public class VeritestingPerf {
             return 0;
         }
 
-        public int catchOutRangeloadArrayTC(int index, int length) throws ArrayIndexOutOfBoundsException {
+        public int catchOutRangeloadArrayTC(int field, int length) throws ArrayIndexOutOfBoundsException {
             int[] x = {1, 2};
             int temp = 1;
             int y = 1;
             try {
                 if (length > 0) {
-                    temp = x[index];
+                    temp = x[field];
                 } else {
                     temp = 1;
                 }
@@ -438,13 +438,13 @@ public class VeritestingPerf {
         }
 
 
-        public int innerCatchOutRangeloadArrayTC(int index, int length) throws ArrayIndexOutOfBoundsException {
+        public int innerCatchOutRangeloadArrayTC(int field, int length) throws ArrayIndexOutOfBoundsException {
             int[] x = {300};
             int temp = 1;
             int y = 1;
             if (length > 0) {
                 try {
-                    temp = x[index];
+                    temp = x[field];
                 } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println("catch array is out of bound");
                 }
@@ -454,13 +454,13 @@ public class VeritestingPerf {
             return temp;
         }
 
-        public int boundedOutRangeloadArrayTC(int index, int length) throws ArrayIndexOutOfBoundsException {
+        public int boundedOutRangeloadArrayTC(int field, int length) throws ArrayIndexOutOfBoundsException {
             int[] x = {300};
             int temp = 0;
             int y = 2;
             if (length > 0) {
                 try {
-                    temp = x[index];
+                    temp = x[field];
                 } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println("catch array out of bound");
                 }
@@ -757,7 +757,7 @@ public class VeritestingPerf {
     }*/
 
 /*
-    public int arrayLoadTC1(int index, int length) {
+    public int arrayLoadTC1(int field, int length) {
         int[] x = {300, 400};
         int temp = 1;
         try {
@@ -772,16 +772,16 @@ public class VeritestingPerf {
             temp = 3;
         }
         assert length <= 0 ? temp == 2 : true;
-        assert length > 0 && index == 0 ? temp == 302 : true;
-        assert length > 0 && index == 1 ? temp == 402 : true;
-        assert length > 0 && index != 0 && index != 1 ? temp == 3 : true;
+        assert length > 0 && field == 0 ? temp == 302 : true;
+        assert length > 0 && field == 1 ? temp == 402 : true;
+        assert length > 0 && field != 0 && field != 1 ? temp == 3 : true;
 //        Debug.printPC("vaibhav: pc = ");
 //        System.out.println("temp = " + temp);
         return temp;
     }
 
 
-    public int arrayStoreTC1(int index, int length) { // should be treated as a new object creation
+    public int arrayStoreTC1(int field, int length) { // should be treated as a new object creation
         int[] x = {300, 400};
         int temp = 1;
         try {
@@ -790,28 +790,28 @@ public class VeritestingPerf {
                 temp = 2;
             } else {
                 // System.out.println("executing else branch");
-             //   x[index] = temp;
+             //   x[field] = temp;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             temp = 3;
         }
         *//*Debug.printPC("Soha: pc = ");
         assert (length <= 0 ? x[0] == 300 & x[1] == 400 : true);
-        assert (length > 0 && index == 0 ? x[0] == 1 && x[1] == 400 : true);
-        assert (length > 0 && index == 1 ? x[0] == 300 && x[1] == 1 : true);
+        assert (length > 0 && field == 0 ? x[0] == 1 && x[1] == 400 : true);
+        assert (length > 0 && field == 1 ? x[0] == 300 && x[1] == 1 : true);
         *//*
         return temp;
     }
 
 
-    public int arrayStoreTC2(int index, int length, int[] x) { //symbolic index - concrete operand
+    public int arrayStoreTC2(int field, int length, int[] x) { //symbolic field - concrete operand
         int temp = 1;
 
         try {
             if (length <= 0) {
                 temp = 2;
             } else {
-                x[index] = temp;
+                x[field] = temp;
             }
         }
         catch (ArrayIndexOutOfBoundsException e){
@@ -821,7 +821,7 @@ public class VeritestingPerf {
     }
 
 
-    public int arrayStoreTC3(int index, int length, int[] x) { //symbolic index - symbolic operand
+    public int arrayStoreTC3(int field, int length, int[] x) { //symbolic field - symbolic operand
         int temp = length;
         try {
             if (length <= 0) {
@@ -829,7 +829,7 @@ public class VeritestingPerf {
                 temp = 2;
             } else {
                 // System.out.println("executing else branch");
-                x[index] = temp;
+                x[field] = temp;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             temp = 3;
@@ -838,7 +838,7 @@ public class VeritestingPerf {
         return temp;
     }
 
-    public int arrayStoreTC4(int index, int length, int[] x) { //concrete index - concrete operand
+    public int arrayStoreTC4(int field, int length, int[] x) { //concrete field - concrete operand
         int temp = 1;
         try {
             if (length <= 0) {
@@ -856,7 +856,7 @@ public class VeritestingPerf {
     }
 
 
-    public int arrayStoreTC5(int index, int length, int[] x) { //concrete index - concrete operand
+    public int arrayStoreTC5(int field, int length, int[] x) { //concrete field - concrete operand
         int temp = 1;
         try {
             if (length <= 0) {
@@ -873,7 +873,7 @@ public class VeritestingPerf {
         return temp;
     }
 
-    public int arrayStoreTC6(int index, int length) { // should be treated as a new object creation
+    public int arrayStoreTC6(int field, int length) { // should be treated as a new object creation
         int[] x = {300, 400};
         int temp = 1;
         if (length <= 0) {
@@ -881,34 +881,34 @@ public class VeritestingPerf {
             temp = 2;
         } else {
             // System.out.println("executing else branch");
-            x[index] = temp;
+            x[field] = temp;
         }
 
         Debug.printPC("Soha: pc = ");
         assert (length <= 0 ? x[0] == 300 & x[1] == 400 : true);
-        assert (length > 0 && index == 0 ? x[0] == 1 && x[1] == 400 : true);
-        assert (length > 0 && index == 1 ? x[0] == 300 && x[1] == 1 : true);
+        assert (length > 0 && field == 0 ? x[0] == 1 && x[1] == 400 : true);
+        assert (length > 0 && field == 1 ? x[0] == 300 && x[1] == 1 : true);
         return temp;
     }
 
 
 
-    public int arrayStoreTC7(int index, int length) { // should be treated as a new object creation
+    public int arrayStoreTC7(int field, int length) { // should be treated as a new object creation
         int[] x = {300, 400};
         int temp = 1;
         if (length <= 0) {
             //     System.out.println("executing then branch");
-            x[index] = 2;
+            x[field] = 2;
         } else {
             // System.out.println("executing else branch");
-            x[index] = temp;
+            x[field] = temp;
         }
 
         Debug.printPC("Soha: pc = ");
-        assert (length <= 0 && index == 0 ? x[0] == 2 & x[1] == 400 : true);
-        assert (length <= 0 && index == 1 ? x[0] == 300 & x[1] == 2 : true);
-        assert (length > 0 && index == 0 ? x[0] == 1 && x[1] == 400 : true);
-        assert (length > 0 && index == 1 ? x[0] == 300 && x[1] == 1 : true);
+        assert (length <= 0 && field == 0 ? x[0] == 2 & x[1] == 400 : true);
+        assert (length <= 0 && field == 1 ? x[0] == 300 & x[1] == 2 : true);
+        assert (length > 0 && field == 0 ? x[0] == 1 && x[1] == 400 : true);
+        assert (length > 0 && field == 1 ? x[0] == 300 && x[1] == 1 : true);
         return temp;
     }
 
@@ -923,22 +923,22 @@ public class VeritestingPerf {
 
     }
 
-    public int arrayLoad0(int index, int length) {
+    public int arrayLoad0(int field, int length) {
         int[] x = {300, 400};
         int temp = 1;
         try {
             if (length <= 0) {
                 temp = 2;
             } else {
-                temp = x[index] + 2;
+                temp = x[field] + 2;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             temp = 3;
         }
         assert length <= 0 ? temp == 2 : true;
-        assert length > 0 && index == 0 ? temp == 302 : true;
-        assert length > 0 && index == 1 ? temp == 402 : true;
-        assert length > 0 && index != 0 && index != 1 ? temp == 3 : true;
+        assert length > 0 && field == 0 ? temp == 302 : true;
+        assert length > 0 && field == 1 ? temp == 402 : true;
+        assert length > 0 && field != 0 && field != 1 ? temp == 3 : true;
         return temp;
     }*/
 
@@ -984,13 +984,13 @@ public class VeritestingPerf {
 
 
 
-    /*public int segmantTest(int index, int length) throws ArrayIndexOutOfBoundsException {
+    /*public int segmantTest(int field, int length) throws ArrayIndexOutOfBoundsException {
         int[] x = {300};
         int temp = 1;
         int y = 1;
         if (length >= 0) {
             if (length < 20)
-                temp = x[index];
+                temp = x[field];
         } else {
             temp = 2;
         }
@@ -1016,11 +1016,11 @@ public class VeritestingPerf {
 
     ;
 
-    void testDynObject(boolean cond, int index) {
+    void testDynObject(boolean cond, int field) {
         Silly[] arrayOfSilly = {new Silly(), new Silly()};
         int l;
         if (cond) {
-            l = arrayOfSilly[index].f;
+            l = arrayOfSilly[field].f;
         }
     }
 */

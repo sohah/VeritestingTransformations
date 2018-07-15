@@ -26,9 +26,19 @@ import gov.nasa.jpf.symbc.Debug;
 public class TestPathsSimple {
 
   public static void main (String[] args){
-   // testMe(42, false);
+   //testMe(42, false);
   System.out.println("!!!!!!!!!!!!!!! Start Testing! ");
-  (new TestPathsSimple()).testMe3(0,0,0);
+  //(new TestPathsSimple()).testMe3(0,0,0);
+  }
+/*
+  public int testMe4(int x, int y, int z) {
+    if (x > y) {
+      return x;
+    }
+    else {
+      y = z;
+    }
+    return z;
   }
 
   public void testMe3 (int x, int y, int z) {
@@ -52,9 +62,9 @@ public class TestPathsSimple {
     else System.out.println("b != 1 && b != 1");
     System.out.println("-x-x-x-x-");
   }
-
+*/
   // how many tests do we need to cover all paths?
-  public static void testMe (int x, boolean b) {
+ public static int testMe (int x, boolean b) {
     System.out.println("x = " + x);
     int y=0;
     if (x <= 1200){
@@ -65,8 +75,141 @@ public class TestPathsSimple {
       //System.out.println("  >= 1200");
       y=1;
     }
+    return y;
   }
 
+  public static int mwwNestedIfBranch(int x, int y) {
+    if (x < y) {
+      if (y < 100) {
+        y = 100;
+      } else {
+        y = y * 2;
+      }
+    } else {
+      y = x;
+    }
+    return y;
+  }
+
+  public static int mwwNestedIfBranchTrailingStmt(int x, int y) {
+    if (x < y) {
+      if (y < 100) {
+        y = 100;
+      } else {
+        y = y * 2;
+      }
+      y += 4;
+    } else {
+      y = x;
+    }
+    return y;
+  }
+
+  public static int mwwNestedIfBranchEarlyReturn1(int x, int y) {
+    if (x < y) {
+      if (y < 100) {
+        return y;
+      } else {
+        y = y * 2;
+      }
+      y += 4;
+    } else {
+      y = x;
+    }
+    return y;
+  }
+
+  public static int mwwNestedIfBranchEarlyReturn2(int x, int y) {
+    if (x < y) {
+      if (y < 100) {
+        y = 100;
+      } else {
+        return y;
+      }
+      y += 4;
+    } else {
+      y = x;
+    }
+    return y;
+  }
+
+  public static int mwwNestedElseBranch(int x, int y) {
+    if (x < y) {
+      y = x;
+    } else {
+      if (y < 100) {
+        y = 100;
+      } else {
+        y = y * 2;
+      }
+    }
+    return y;
+  }
+
+  public static int mwwNestedElseBranchTrailingStmt(int x, int y) {
+    if (x < y) {
+      y = x;
+    } else {
+      if (y < 100) {
+        y = 100;
+      } else {
+        y = y * 2;
+      }
+      y += 2;
+    }
+    return y;
+  }
+
+  public static int mwwIfEarlyReturn(int x, int y) {
+    if (x < y) {
+      y += 2;
+      return y;
+    } else {
+      y *= 2;
+    }
+    return y;
+  }
+
+  public static int mwwElseEarlyReturn(int x, int y) {
+    if (x < y) {
+      y *= 2;
+    } else {
+      y += 2;
+      return y;
+    }
+    return y;
+  }
+
+  public static int mwwNestedElseBranchEarlyReturn1(int x, int y) {
+    if (x < y) {
+      y = x;
+    } else {
+      if (y < 100) {
+        return y;
+      } else {
+        y = y * 2;
+      }
+      y += 2;
+    }
+    return y;
+  }
+
+  public static int mwwNestedElseBranchEarlyReturn2(int x, int y) {
+    if (x < y) {
+      y = x;
+    } else {
+      if (y < 100) {
+        return y;
+      } else {
+        y = y * 2;
+      }
+      y += 2;
+    }
+    return y;
+  }
+
+
+  /*
   public void testMe2 (int x, boolean b) {
     System.out.println("!!!!!!!!!!!!!!! First step! ");
       //System.out.println("x = " + x);
@@ -79,5 +222,5 @@ public class TestPathsSimple {
           }
         } else System.out.println("  b is false");
   }
-
+*/
 }

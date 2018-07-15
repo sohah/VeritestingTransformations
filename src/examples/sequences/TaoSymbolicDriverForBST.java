@@ -76,7 +76,7 @@ public class TaoSymbolicDriverForBST  {
     * you may add to update the preconditions when you try to change the driver for various situations. See FAQ below.
 	*/
 
-  @Preconditions("m1>=0&&m1<=2&&m2>=0&&m2<=2&&s1>=0&&s1<=2&&s2>=0&&s2<=2")
+  @Preconditions("m1>=0&&m1<=2&&m2>=0&&m2<=2&&thenStmt>=0&&thenStmt<=2&&elseStmt>=0&&elseStmt<=2")
 
   public static void testDriver(int m1, int m2, int s1, int s2) {
 	//mi indicates the **ith** method being invoked in the sequence
@@ -91,7 +91,7 @@ public class TaoSymbolicDriverForBST  {
     //methodID[0], i.e., m1, indicates the method to be invoked as the first method in the sequence, ...
     //methodID[i], i.e., mi, indicates the method to be invoked as the ith method in the sequence
     int [] argValueID = {s1, s2};
-    //argValueID[0], i.e., s1, indicates the method argument to be invoked as the argument of the first method in the sequence, ...
+    //argValueID[0], i.e., thenStmt, indicates the method argument to be invoked as the argument of the first method in the sequence, ...
     //argValueID[i], i.e., si, indicates the method argument to be invoked as the argument of the ith method in the sequence
     //Here we assume that each method can have at most one method argument to be turned into symbolic.
     //For more method arguments of a method to be turned into symbolic, see FAQ below.

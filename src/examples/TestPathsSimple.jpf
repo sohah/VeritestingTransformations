@@ -12,6 +12,8 @@ symbolic.dp=z3bitvector
 #symbolic.dp=yices
 
 listener = .symbc.VeritestingListener
+veritestingMode = 3
+
 # listener = .symbc.SymbolicListener
 
 vm.storage.class=nil

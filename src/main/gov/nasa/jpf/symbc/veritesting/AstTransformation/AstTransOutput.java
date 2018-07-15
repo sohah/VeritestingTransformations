@@ -6,7 +6,7 @@ package gov.nasa.jpf.symbc.veritesting.AstTransformation;
 // translated statement that could change if there are more blocks in the graph that needs to
 // be nested.
 
-
+/*
 public class AstTransOutput {
     private Object statement;
     private Object continuation;
@@ -32,3 +32,4 @@ public class AstTransOutput {
         this.continuation = continuation;
     }
 }
+*/
