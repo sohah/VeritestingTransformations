@@ -8,8 +8,12 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 
 public class NewInstruction extends Instruction {
 
-    public NewInstruction(SSAInstruction ins) {
+    public NewInstruction(SSANewInstruction ins) {
         super(ins);
+    }
+
+    public SSANewInstruction getOriginal() {
+        return (SSANewInstruction)original;
     }
 
     @Override

@@ -15,9 +15,6 @@ public class InvokeInstruction extends Instruction {
         this.params = params;
     }
 
-    public SSAInvokeInstruction getOriginal() {
-        return (SSAInvokeInstruction)original;
-    }
     public InvokeInstruction(SSAInvokeInstruction ins)
     {
         super(ins);
@@ -30,6 +27,11 @@ public class InvokeInstruction extends Instruction {
             result[i] = new WalaVarExpr(ins.getUse(i));
         }
     }
+
+    public SSAInvokeInstruction getOriginal() {
+        return (SSAInvokeInstruction)original;
+    }
+
 
     @Override
     public <T> T accept(AstVisitor<T> visitor) {

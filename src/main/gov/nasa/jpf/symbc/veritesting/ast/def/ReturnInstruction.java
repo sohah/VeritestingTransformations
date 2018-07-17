@@ -18,6 +18,10 @@ public class ReturnInstruction extends Instruction {
         rhs = new WalaVarExpr(ins.getUse(0));
     }
 
+    public SSAReturnInstruction getOriginal() {
+        return (SSAReturnInstruction)original;
+    }
+
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);

@@ -13,12 +13,16 @@ public class ComparisonInstruction extends Instruction {
     public final IComparisonInstruction.Operator op;
     public final Expression rhs;
 
-    public ComparisonInstruction(SSAInstruction ins, VarExpr def, Expression lhs, IComparisonInstruction.Operator op, Expression rhs) {
+    public ComparisonInstruction(SSAComparisonInstruction ins, VarExpr def, Expression lhs, IComparisonInstruction.Operator op, Expression rhs) {
         super(ins);
         this.def = def;
         this.lhs = lhs;
         this.op = op;
         this.rhs = rhs;
+    }
+
+    public SSAComparisonInstruction getOriginal() {
+        return (SSAComparisonInstruction)original;
     }
 
     public ComparisonInstruction(SSAComparisonInstruction ins) {

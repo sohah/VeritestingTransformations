@@ -13,12 +13,16 @@ public class ArrayStoreInstruction extends Instruction {
     public final TypeReference elementType;
     public final Expression assignExpr;
 
-    public ArrayStoreInstruction(SSAInstruction ins, VarExpr arrayref, VarExpr index, TypeReference elementType, Expression assigned) {
+    public ArrayStoreInstruction(SSAArrayStoreInstruction ins, VarExpr arrayref, VarExpr index, TypeReference elementType, Expression assigned) {
         super(ins);
         this.arrayref = arrayref;
         this.index = index;
         this.elementType = elementType;
         this.assignExpr = assigned;
+    }
+
+    public SSAArrayStoreInstruction getOriginal() {
+        return (SSAArrayStoreInstruction)original;
     }
 
     public ArrayStoreInstruction(SSAArrayStoreInstruction ins) {

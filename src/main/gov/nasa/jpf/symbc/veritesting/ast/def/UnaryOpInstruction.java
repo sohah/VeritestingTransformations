@@ -12,7 +12,7 @@ public class UnaryOpInstruction extends Instruction {
     public final IUnaryOpInstruction.IOperator op;
     public final Expression rhs;
 
-    public UnaryOpInstruction(SSAInstruction ins, VarExpr def, IUnaryOpInstruction.IOperator op, Expression rhs) {
+    public UnaryOpInstruction(SSAUnaryOpInstruction ins, VarExpr def, IUnaryOpInstruction.IOperator op, Expression rhs) {
         super(ins);
         this.def = def;
         this.op = op;
@@ -24,6 +24,10 @@ public class UnaryOpInstruction extends Instruction {
         def = new WalaVarExpr(ins.getDef());
         op = ins.getOpcode();
         rhs = new WalaVarExpr(ins.getUse(0));
+    }
+
+    public SSAUnaryOpInstruction getOriginal() {
+        return (SSAUnaryOpInstruction)original;
     }
 
     @Override

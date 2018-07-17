@@ -25,6 +25,10 @@ public class InstanceOfInstruction extends Instruction {
         checkedType = ins.getCheckedType();
     }
 
+    public SSAInstanceofInstruction getOriginal() {
+        return (SSAInstanceofInstruction)original;
+    }
+
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);

@@ -14,6 +14,10 @@ public class ArrayLengthInstruction extends Instruction {
         this.def = def;
     }
 
+    public SSAArrayLengthInstruction getOriginal() {
+        return (SSAArrayLengthInstruction)original;
+    }
+
     public ArrayLengthInstruction(SSAArrayLengthInstruction ins) {
         super(ins);
         arrayref = new WalaVarExpr(ins.getArrayRef());

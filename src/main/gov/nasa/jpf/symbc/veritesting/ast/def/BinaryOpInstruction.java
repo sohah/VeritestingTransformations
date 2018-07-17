@@ -13,7 +13,7 @@ public class BinaryOpInstruction extends Instruction {
     public final IBinaryOpInstruction.IOperator op;
     public final Expression rhs;
 
-    public BinaryOpInstruction(SSAInstruction ins, VarExpr def, Expression lhs, IBinaryOpInstruction.IOperator op, Expression rhs) {
+    public BinaryOpInstruction(SSABinaryOpInstruction ins, VarExpr def, Expression lhs, IBinaryOpInstruction.IOperator op, Expression rhs) {
         super(ins);
         this.def = def;
         this.lhs = lhs;
@@ -27,6 +27,10 @@ public class BinaryOpInstruction extends Instruction {
         lhs = new WalaVarExpr(ins.getUse(0));
         op = ins.getOperator();
         rhs = new WalaVarExpr(ins.getUse(1));
+    }
+
+    public SSABinaryOpInstruction getOriginal() {
+        return (SSABinaryOpInstruction)original;
     }
 
     @Override

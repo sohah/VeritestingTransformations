@@ -24,6 +24,10 @@ public class PhiInstruction extends Instruction {
         }
     }
 
+    public SSAPhiInstruction getOriginal() {
+        return (SSAPhiInstruction)original;
+    }
+
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);

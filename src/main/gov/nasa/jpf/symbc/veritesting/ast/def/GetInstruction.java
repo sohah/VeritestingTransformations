@@ -11,7 +11,7 @@ public class GetInstruction extends Instruction {
     public final FieldReference field;
     public final VarExpr def;
 
-    public GetInstruction(SSAInstruction ins, VarExpr def, VarExpr ref, FieldReference field) {
+    public GetInstruction(SSAGetInstruction ins, VarExpr def, VarExpr ref, FieldReference field) {
         super(ins);
         this.ref = ref;
         this.field = field;
@@ -23,6 +23,10 @@ public class GetInstruction extends Instruction {
         ref = new WalaVarExpr(ins.getRef());
         field = ins.getDeclaredField();
         def = new WalaVarExpr(ins.getDef());
+    }
+
+    public SSAGetInstruction getOriginal() {
+        return (SSAGetInstruction)original;
     }
 
     @Override

@@ -25,6 +25,10 @@ public class CheckCastInstruction extends Instruction {
         declaredResultTypes = ins.getDeclaredResultTypes();
     }
 
+    public SSACheckCastInstruction getOriginal() {
+        return (SSACheckCastInstruction)original;
+    }
+
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);

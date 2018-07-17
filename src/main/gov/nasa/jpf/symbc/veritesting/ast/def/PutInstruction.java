@@ -12,7 +12,7 @@ public class PutInstruction extends Instruction {
     public final FieldReference field;
     public final Expression assignExpr;
 
-    public PutInstruction(SSAInstruction ins, VarExpr ref, FieldReference field, Expression assignExpr) {
+    public PutInstruction(SSAPutInstruction ins, VarExpr ref, FieldReference field, Expression assignExpr) {
         super(ins);
         this.def = ref;
         this.field = field;
@@ -24,6 +24,10 @@ public class PutInstruction extends Instruction {
         def = new WalaVarExpr(ins.getRef());
         field = ins.getDeclaredField();
         assignExpr = new WalaVarExpr(ins.isStatic() ? ins.getUse(0) : ins.getUse(1));
+    }
+
+    public SSAPutInstruction getOriginal() {
+        return (SSAPutInstruction)original;
     }
 
     @Override

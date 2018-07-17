@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import com.ibm.wala.ssa.SSAConversionInstruction;
+import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
@@ -26,6 +27,10 @@ public class ConversionInstruction extends Instruction {
         val = new WalaVarExpr(ins.getUse(0));
         fromType = ins.getFromType();
         toType = ins.getToType();
+    }
+
+    public SSAConversionInstruction getOriginal() {
+        return (SSAConversionInstruction)original;
     }
 
     @Override

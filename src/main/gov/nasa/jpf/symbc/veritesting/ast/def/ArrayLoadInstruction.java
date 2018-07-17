@@ -12,12 +12,16 @@ public class ArrayLoadInstruction extends Instruction {
     public final TypeReference elementType;
     public final VarExpr def;
 
-    public ArrayLoadInstruction(SSAInstruction ins, VarExpr arrayref, VarExpr index, TypeReference elementType, VarExpr def) {
+    public ArrayLoadInstruction(SSAArrayLoadInstruction ins, VarExpr arrayref, VarExpr index, TypeReference elementType, VarExpr def) {
         super(ins);
         this.arrayref = arrayref;
         this.index = index;
         this.elementType = elementType;
         this.def = def;
+    }
+
+    public SSAArrayLoadInstruction getOriginal() {
+        return (SSAArrayLoadInstruction)original;
     }
 
     public ArrayLoadInstruction(SSAArrayLoadInstruction ins) {

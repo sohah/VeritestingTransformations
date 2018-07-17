@@ -11,6 +11,10 @@ public class ThrowInstruction extends Instruction {
         super(ins);
     }
 
+    public SSAThrowInstruction getOriginal() {
+        return (SSAThrowInstruction)original;
+    }
+
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
