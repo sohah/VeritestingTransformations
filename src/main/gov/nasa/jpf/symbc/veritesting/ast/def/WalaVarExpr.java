@@ -11,10 +11,8 @@ public final class WalaVarExpr extends Variable implements VarExpr {
 
     public final int number;
 
-    public static String name(int var) { return "!w" + var; }
-
     public WalaVarExpr(int var) {
-        super(name(var));
+        super("!w" + var);
         this.number = var;
     }
 

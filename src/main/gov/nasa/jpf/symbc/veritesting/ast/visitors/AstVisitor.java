@@ -12,10 +12,6 @@ public interface AstVisitor<T>  {
 
     T visit(ArrayLoadInstruction c);
     T visit(ArrayStoreInstruction c);
-    T visit(BinaryOpInstruction c);
-    T visit(UnaryOpInstruction c);
-    T visit(ConversionInstruction c);
-    T visit(ComparisonInstruction c);
     T visit(SwitchInstruction c);
     T visit(ReturnInstruction c);
     T visit(GetInstruction c);

@@ -13,13 +13,9 @@ public final class FieldRefVarExpr extends Variable implements VarExpr {
     public final int subscript;
 
     public FieldRefVarExpr(FieldRef fieldRef, int subscript) {
-        super(name(fieldRef, subscript));
+        super("!r"+fieldRef.ref + "." + fieldRef.field + "#" + subscript);
         this.fieldRef = fieldRef;
         this.subscript = subscript;
-    }
-
-    public static String name(FieldRef fieldRef, int subscript) {
-        return "!r"+fieldRef.ref + "." + fieldRef.field + "#" + subscript;
     }
 
     @Override

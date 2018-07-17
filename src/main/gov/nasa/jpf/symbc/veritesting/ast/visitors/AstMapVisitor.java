@@ -57,42 +57,6 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
     }
 
     @Override
-    public Stmt visit(BinaryOpInstruction c) {
-        return new BinaryOpInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.def),
-                eva.accept(c.lhs),
-                c.op,
-                eva.accept(c.rhs));
-    }
-
-    @Override
-    public Stmt visit(UnaryOpInstruction c) {
-
-        return new UnaryOpInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.def),
-                c.op,
-                eva.accept(c.rhs));
-    }
-
-    @Override
-    public Stmt visit(ConversionInstruction c) {
-        return new ConversionInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.result),
-                eva.accept(c.val),
-                c.fromType,
-                c.toType);
-    }
-
-    @Override
-    public Stmt visit(ComparisonInstruction c) {
-        return new ComparisonInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.def),
-                eva.accept(c.lhs),
-                c.op,
-                eva.accept(c.rhs));
-    }
-
-    @Override
     public Stmt visit(SwitchInstruction c) {
         return c;
     }

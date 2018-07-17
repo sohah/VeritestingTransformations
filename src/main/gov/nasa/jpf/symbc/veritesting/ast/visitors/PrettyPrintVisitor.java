@@ -46,11 +46,11 @@ public class PrettyPrintVisitor implements AstVisitor<Void> {
     }
 
     void write(Expression e) {
-        sb.append(eva.accept(e));
+        eva.accept(e);
     }
 
     void write(VarExpr e) {
-        sb.append(e.accept(ppe));
+        e.accept(ppe);
     }
 
     @Override
@@ -111,33 +111,6 @@ public class PrettyPrintVisitor implements AstVisitor<Void> {
         return null;
     }
 
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.BinaryOpInstruction c) {
-        ind();
-        write(c.original.toString()); nl();
-        return null;
-    }
-
-    @Override
-    public Void visit(UnaryOpInstruction c) {
-        ind();
-        write(c.original.toString()); nl();
-        return null;
-    }
-
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.ConversionInstruction c) {
-        ind();
-        write(c.original.toString()); nl();
-        return null;
-    }
-
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.ComparisonInstruction c) {
-        ind();
-        write(c.original.toString()); nl();
-        return null;
-    }
 
     @Override
     public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.SwitchInstruction c) {

@@ -1,10 +1,17 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
+import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
+import com.ibm.wala.shrikeBT.IComparisonInstruction;
+import com.ibm.wala.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.ast.def.SkipStmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.UnaryOpInstruction;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
+import za.ac.sun.cs.green.expr.Operation;
+import za.ac.sun.cs.green.expr.Variable;
+
+import static com.ibm.wala.shrikeBT.IBinaryOpInstruction.Operator.*;
 
 
 //SH: This class translates SSAInstructions to Veritesting Statements.
@@ -31,28 +38,81 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ArrayStoreInstruction(ssaArrayStoreInstruction);
     }
 
-    @Override
-    public void visitBinaryOp(SSABinaryOpInstruction ssaBinaryOpInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.BinaryOpInstruction(ssaBinaryOpInstruction);
+    private Operation.Operator translateBinaryOp(IBinaryOpInstruction.Operator op) {
+        switch (op) {
+            case ADD: return Operation.Operator.ADD;
+            case SUB: return Operation.Operator.SUB;
+            case MUL: return Operation.Operator.MUL;
+            case DIV: return Operation.Operator.DIV;
+            case REM: return Operation.Operator.MOD;
+            case AND: return Operation.Operator.AND;
+            case OR: return Operation.Operator.OR;
+            case XOR: return Operation.Operator.NOTEQUALS;
+        }
+        throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
     }
 
     @Override
-    public void visitUnaryOp(SSAUnaryOpInstruction ssaUnaryOpInstruction) {
-        veriStatement = new UnaryOpInstruction(ssaUnaryOpInstruction);
+    public void visitBinaryOp(SSABinaryOpInstruction ssa) {
+        veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()),
+                new Operation(
+                        translateBinaryOp((IBinaryOpInstruction.Operator)ssa.getOperator()),
+                        new WalaVarExpr(ssa.getUse(0)),
+                        new WalaVarExpr(ssa.getUse(1))));
+    }
+
+    Operation.Operator translateUnaryOp(IUnaryOpInstruction.Operator op) {
+        switch(op) {
+            case NEG: return Operation.Operator.NEG;
+        }
+        throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateUnaryOp");
     }
 
     @Override
-    public void visitConversion(SSAConversionInstruction ssaConversionInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ConversionInstruction(ssaConversionInstruction);
+    public void visitUnaryOp(SSAUnaryOpInstruction ssa) {
+        veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()),
+                new Operation(
+                        translateUnaryOp((IUnaryOpInstruction.Operator)ssa.getOpcode()),
+                                new WalaVarExpr(ssa.getUse(0)))
+                );
+    }
+
+    /*
+        MWW: casts in SPF involve object creation, so are beyond what we can support currently in
+        Static regions.
+     */
+    @Override
+    public void visitConversion(SSAConversionInstruction ssa) {
+        canVeritest = false;
+        // veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ConversionInstruction(ssa);
+    }
+
+
+    @Override
+    public void visitComparison(SSAComparisonInstruction ssa) {
+        Expression expr;
+        Expression condlhs = new WalaVarExpr(ssa.getUse(0));
+        Expression condrhs = new WalaVarExpr(ssa.getUse(1));
+        Operation.Operator condOp =
+                (ssa.getOperator() == IComparisonInstruction.Operator.CMP ||
+                        ssa.getOperator() == IComparisonInstruction.Operator.CMPG) ?
+                        Operation.Operator.GT :
+                        Operation.Operator.LT ;
+        Expression rhs = new IfThenElseExpr(
+                new Operation(condOp, condlhs, condrhs),
+                Operation.ONE,
+                new IfThenElseExpr(
+                        new Operation(Operation.Operator.EQ, condlhs, condrhs),
+                        Operation.ZERO,
+                        new IntConstant(-1)));
+
+
+        veriStatement =
+                new AssignmentStmt(new WalaVarExpr(ssa.getDef()), rhs);
     }
 
     @Override
-    public void visitComparison(SSAComparisonInstruction ssaComparisonInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ComparisonInstruction(ssaComparisonInstruction);
-    }
-
-    @Override
-    public void visitConditionalBranch(SSAConditionalBranchInstruction ssaConditionalBranchInstruction) {
+    public void visitConditionalBranch(SSAConditionalBranchInstruction ssa) {
         throw new IllegalArgumentException("Reached conditional branch in SSAToStatIVisitor: why?");
     }
 
@@ -63,27 +123,27 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitReturn(SSAReturnInstruction ssaReturnInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ReturnInstruction(ssaReturnInstruction);
+        veriStatement = new ReturnInstruction(ssaReturnInstruction);
     }
 
     @Override
     public void visitGet(SSAGetInstruction ssaGetInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.GetInstruction(ssaGetInstruction);
+        veriStatement = new GetInstruction(ssaGetInstruction);
     }
 
     @Override
     public void visitPut(SSAPutInstruction ssaPutInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.PutInstruction(ssaPutInstruction);
+        veriStatement = new PutInstruction(ssaPutInstruction);
     }
 
     @Override
     public void visitInvoke(SSAInvokeInstruction ssaInvokeInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.InvokeInstruction(ssaInvokeInstruction);
+        veriStatement = new InvokeInstruction(ssaInvokeInstruction);
     }
 
     @Override
     public void visitNew(SSANewInstruction ssaNewInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.NewInstruction(ssaNewInstruction);
+        veriStatement = new NewInstruction(ssaNewInstruction);
     }
 
     @Override
@@ -93,7 +153,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitThrow(SSAThrowInstruction ssaThrowInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ThrowInstruction(ssaThrowInstruction);
+        veriStatement = new ThrowInstruction(ssaThrowInstruction);
     }
 
     @Override
@@ -103,12 +163,12 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitCheckCast(SSACheckCastInstruction ssaCheckCastInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.CheckCastInstruction(ssaCheckCastInstruction);
+        veriStatement = new CheckCastInstruction(ssaCheckCastInstruction);
     }
 
     @Override
     public void visitInstanceof(SSAInstanceofInstruction ssaInstanceofInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.InstanceOfInstruction(ssaInstanceofInstruction);
+        veriStatement = new InstanceOfInstruction(ssaInstanceofInstruction);
     }
 
     @Override

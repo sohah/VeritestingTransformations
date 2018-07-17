@@ -1,20 +1,17 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.Variable;
 import za.ac.sun.cs.green.expr.Visitor;
 import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
-public final class GammaVarExpr extends Variable implements VarExpr {
+public class IfThenElseExpr extends Expression {
     public final Expression condition;
-    public final VarExpr thenExpr;
-    public final VarExpr elseExpr;
+    public final Expression thenExpr;
+    public final Expression elseExpr;
 
-    public GammaVarExpr(Expression condition, VarExpr thenExpr, VarExpr elseExpr) {
-        super("(Gamma " + condition.toString() + " " + thenExpr.toString() + " " + elseExpr.toString() + ")");
+    public IfThenElseExpr(Expression condition, Expression thenExpr, Expression elseExpr) {
         this.condition = condition;
         this.thenExpr = thenExpr;
         this.elseExpr = elseExpr;
@@ -24,24 +21,20 @@ public final class GammaVarExpr extends Variable implements VarExpr {
     @Override
     public void accept(Visitor visitor) throws VisitorException {
         visitor.preVisit(this);
+        condition.accept(visitor);
+        thenExpr.accept(visitor);
+        elseExpr.accept(visitor);
         visitor.postVisit(this);
     }
 
     @Override
-    // I am making class final so that equality works correctly.
     public boolean equals(Object o) {
-        if (o != null && o instanceof GammaVarExpr) {
-            GammaVarExpr other = (GammaVarExpr)o;
-            return (this.condition.equals(other.condition) &&
-                    this.thenExpr.equals(other.thenExpr) &&
-                    this.elseExpr.equals(other.elseExpr));
-        }
         return false;
     }
 
     @Override
     public String toString() {
-        return getName();
+        return " if (" + this.condition + ") then (" + thenExpr.toString() + ") else (" + elseExpr.toString() + ")";
     }
 
     @Override
@@ -68,10 +61,4 @@ public final class GammaVarExpr extends Variable implements VarExpr {
     public List<String> getOperationVector() {
         return null;
     }
-
-    @Override
-    public <T> T accept(ExprVisitor<T> visitor) {
-        return visitor.visit(this);
-    }
-
 }
