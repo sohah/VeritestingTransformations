@@ -1,8 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 public class FieldRef {
-    private int ref;
-    private String field;
+    public final int ref;
+    public final String field;
 
 
     public FieldRef(int ref, String field) {
@@ -16,15 +16,6 @@ public class FieldRef {
 
     public int getRef() {
         return ref;
-    }
-
-
-    public void setField(String field) {
-        this.field = field;
-    }
-
-    public void setRef(int ref) {
-        this.ref = ref;
     }
 
     @Override

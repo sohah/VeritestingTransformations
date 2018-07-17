@@ -9,7 +9,7 @@ public class SkipStmt implements Stmt {
     private SkipStmt() {}
 
     @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
+    public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 

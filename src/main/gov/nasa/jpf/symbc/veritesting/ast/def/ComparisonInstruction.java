@@ -4,15 +4,16 @@ import com.ibm.wala.shrikeBT.IComparisonInstruction;
 import com.ibm.wala.ssa.SSAComparisonInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 public class ComparisonInstruction extends Instruction {
 
     public final VarExpr def;
-    public final Expr lhs;
+    public final Expression lhs;
     public final IComparisonInstruction.Operator op;
-    public final Expr rhs;
+    public final Expression rhs;
 
-    public ComparisonInstruction(SSAInstruction ins, VarExpr def, Expr lhs, IComparisonInstruction.Operator op, Expr rhs) {
+    public ComparisonInstruction(SSAInstruction ins, VarExpr def, Expression lhs, IComparisonInstruction.Operator op, Expression rhs) {
         super(ins);
         this.def = def;
         this.lhs = lhs;
@@ -29,7 +30,7 @@ public class ComparisonInstruction extends Instruction {
     }
 
     @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
+    public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

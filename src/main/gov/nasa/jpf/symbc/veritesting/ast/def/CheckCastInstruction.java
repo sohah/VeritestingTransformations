@@ -3,14 +3,15 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 import com.ibm.wala.ssa.SSACheckCastInstruction;
 import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 public class CheckCastInstruction extends Instruction {
 
     public final VarExpr result;
-    public final Expr val;
+    public final Expression val;
     public final TypeReference [] declaredResultTypes;
 
-    public CheckCastInstruction(SSACheckCastInstruction ins, VarExpr result, Expr val, TypeReference [] declaredResultTypes) {
+    public CheckCastInstruction(SSACheckCastInstruction ins, VarExpr result, Expression val, TypeReference [] declaredResultTypes) {
         super(ins);
         this.result = result;
         this.val = val;
@@ -25,7 +26,7 @@ public class CheckCastInstruction extends Instruction {
     }
 
     @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
+    public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

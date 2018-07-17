@@ -1,15 +1,13 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import com.ibm.wala.cfg.Util;
+import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Expr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaComparisonExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.SkipStmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
+import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,8 +19,7 @@ import java.util.HashSet;
     Important question: what is the scope of this class?  Is it supposed to be maintained
     throughout the creation process or is it constructed / destructed for each visited method?
 
-    In examining the debug output, it appears that the same classes and methods are visited
-    multiple times.
+    TODO: In examining the debug output, it appears that the same classes and methods are visited multiple times.  Why?
 
  */
 
@@ -98,8 +95,23 @@ public class CreateStaticRegions {
         return stmt;
     }
 
-    private Expr convertCondition(SSAConditionalBranchInstruction cond) {
-        return new WalaComparisonExpr(cond);
+    private Operation.Operator convertOperator(IConditionalBranchInstruction.Operator operator) {
+        switch (operator) {
+            case EQ: return Operation.Operator.EQ;
+            case NE: return Operation.Operator.NE;
+            case LT: return Operation.Operator.LT;
+            case GE: return Operation.Operator.GE;
+            case GT: return Operation.Operator.GT;
+            case LE: return Operation.Operator.LE;
+        }
+        throw new IllegalArgumentException("convertOperator does not understand operator: " + operator);
+    }
+
+    private Expression convertCondition(SSAConditionalBranchInstruction cond) {
+        return new Operation(
+                convertOperator((IConditionalBranchInstruction.Operator)cond.getOperator()),
+                new WalaVarExpr(cond.getUse(0)),
+                new WalaVarExpr(cond.getUse(1)));
     }
 
     // precondiion: terminus is the loop join.
@@ -110,7 +122,7 @@ public class CreateStaticRegions {
             throw new StaticRegionException("Expect conditional branch at end of 2-path attemptSubregion");
         }
         // Handle case where terminus is either 'if' or 'else' branch;
-        Expr condExpr = convertCondition((SSAConditionalBranchInstruction)ins);
+        Expression condExpr = convertCondition((SSAConditionalBranchInstruction)ins);
         ISSABasicBlock thenBlock = Util.getTakenSuccessor(cfg, currentBlock);
         Stmt thenStmt, elseStmt;
         if (thenBlock.getNumber() < terminus.getNumber()) {

@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
+import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSANewInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 
@@ -7,12 +8,12 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 
 public class NewInstruction extends Instruction {
 
-    public NewInstruction(SSANewInstruction ins) {
+    public NewInstruction(SSAInstruction ins) {
         super(ins);
     }
 
     @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
+    public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

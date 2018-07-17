@@ -2,12 +2,13 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import com.ibm.wala.ssa.SSAReturnInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 public class ReturnInstruction extends Instruction {
 
-    public final Expr rhs;
+    public final Expression rhs;
 
-    public ReturnInstruction(SSAReturnInstruction ins, Expr rhs) {
+    public ReturnInstruction(SSAReturnInstruction ins, Expression rhs) {
         super(ins);
         this.rhs = rhs;
     }
@@ -18,7 +19,7 @@ public class ReturnInstruction extends Instruction {
     }
 
     @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
+    public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

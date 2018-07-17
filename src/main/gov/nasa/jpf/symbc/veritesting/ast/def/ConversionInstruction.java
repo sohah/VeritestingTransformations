@@ -3,15 +3,16 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 import com.ibm.wala.ssa.SSAConversionInstruction;
 import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 public class ConversionInstruction extends Instruction {
 
     public final VarExpr result;
-    public final Expr val;
+    public final Expression val;
     public final TypeReference fromType;
     public final TypeReference toType;
 
-    public ConversionInstruction(SSAConversionInstruction ins, VarExpr result, Expr val, TypeReference fromType, TypeReference toType) {
+    public ConversionInstruction(SSAConversionInstruction ins, VarExpr result, Expression val, TypeReference fromType, TypeReference toType) {
         super(ins);
         this.result = result;
         this.val = val;
@@ -28,7 +29,7 @@ public class ConversionInstruction extends Instruction {
     }
 
     @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
+    public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

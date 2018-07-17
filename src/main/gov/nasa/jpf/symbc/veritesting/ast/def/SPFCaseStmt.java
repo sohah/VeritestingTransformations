@@ -1,24 +1,25 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 
 public class SPFCaseStmt implements Stmt {
 
-    public final Expr spfCondition;
+    public final Expression spfCondition;
     public final SPFReason reason;
 
     public enum SPFReason{
         OBJECT_CREATION, OUT_OF_BOUND_EXCEPTION;
     }
 
-    public SPFCaseStmt(Expr spfCondition, SPFReason reason) {
+    public SPFCaseStmt(Expression spfCondition, SPFReason reason) {
         this.spfCondition = spfCondition;
         this.reason = reason;
     }
 
     @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
+    public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 

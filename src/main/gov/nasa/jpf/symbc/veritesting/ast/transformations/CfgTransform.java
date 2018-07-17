@@ -2,7 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations;
 
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSACFG;
-import gov.nasa.jpf.symbc.veritesting.VeritestingAST.Statements.*;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingException;
 
 import java.util.List;
