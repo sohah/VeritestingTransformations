@@ -23,7 +23,7 @@ public class InvokeInstruction extends Instruction {
         }
         this.params = new Expr[ins.getNumberOfParameters()];
         for (int i = 0; i < ins.getNumberOfParameters(); i++) {
-            result[i] = new WalaVarExpr(ins.getUse(i));
+            params[i] = new WalaVarExpr(ins.getUse(i));
         }
     }
 

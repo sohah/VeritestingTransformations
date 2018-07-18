@@ -38,6 +38,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticR
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ReflectUtil;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
 import gov.nasa.jpf.vm.ThreadInfo;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
@@ -57,6 +58,9 @@ public class VeritestingMain {
     private String currentPackageName;
 
     HashMap<String, Stmt> veritestingRegions;
+
+    public static HashMap<String, Region> veriRegions = new HashMap<>();
+
 
     public int getObjectReference() {
         return objectReference;
@@ -274,25 +278,22 @@ public class VeritestingMain {
             HashSet<Integer> visited = new HashSet<>();
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             // Here is where the magic happens.
-            /*
-            CfgTransform cfgTransform = new CfgTransform(cfg);
-            List<ISSABasicBlock> entryBBList = (List<ISSABasicBlock>) cfg.getNormalSuccessors(cfg.entry());
-            assert(entryBBList.size() > 0);
-            Stmt statement = cfgTransform.transform(entryBBList.get(0), cfg.exit());
-            System.out.println(statement);
-            */
             CreateStaticRegions regionCreator = new CreateStaticRegions();
             if (!methodAnalysis) {
-                regionCreator.createStructuredConditionalRegions(cfg, veritestingRegions);
+                //regionCreator.createStructuredConditionalRegions(cfg, veritestingRegions);
+                regionCreator.createStructuredConditionalRegions(ir, veriRegions);
             } else {
-                regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
+                //regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
+                regionCreator.createStructuredMethodRegion(ir, veriRegions);
             }
-            /*
-            if (!methodAnalysis) {
-                //doAnalysis(cfg.entry(), null);
-            } else {
-                // doMethodAnalysis(cfg.entry(), cfg.exit());
-            }*/
+
+            Set<String> keys = veriRegions.keySet();
+            for (String key: keys) {
+                System.out.println("printing stack slot table information for: " + key);
+                veriRegions.get(key).printStackSlotMap();
+            }
+
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

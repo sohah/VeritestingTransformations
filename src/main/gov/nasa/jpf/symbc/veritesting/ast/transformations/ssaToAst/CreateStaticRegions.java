@@ -9,6 +9,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.SkipStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 
 import java.util.HashMap;
@@ -125,7 +126,7 @@ public class CreateStaticRegions {
             elseStmt = SkipStmt.skip;
         }
 
-        return new IfThenElseStmt(condExpr, thenStmt, elseStmt);
+        return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt);
     }
 
     /*
@@ -179,10 +180,11 @@ public class CreateStaticRegions {
         return stmt;
     }
 
-    private void createStructuredConditionalRegions(SSACFG cfg, ISSABasicBlock currentBlock,
+    private void createStructuredConditionalRegions(IR ir, ISSABasicBlock currentBlock,
                                                    ISSABasicBlock endingBlock,
-                                                   HashMap<String, Stmt> veritestingRegions) throws StaticRegionException {
+                                                   HashMap<String, Region> veritestingRegions) throws StaticRegionException {
 
+        SSACFG cfg = ir.getControlFlowGraph();
         // terminating conditions
         if (visitedBlocks.contains(currentBlock))
             return;
@@ -195,32 +197,33 @@ public class CreateStaticRegions {
                 FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
                 ISSABasicBlock terminus = finder.findMinConvergingNode();
                 Stmt s = attemptConditionalSubregion(cfg, currentBlock, terminus);
-                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(currentBlock), s);
-
+                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(currentBlock), new Region(s, ir));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
-                createStructuredConditionalRegions(cfg, terminus, endingBlock, veritestingRegions);
+                createStructuredConditionalRegions(ir, terminus, endingBlock, veritestingRegions);
                 return;
             } catch (StaticRegionException sre) {
                 System.out.println("Unable to create subregion");
             }
         }
         for (ISSABasicBlock nextBlock: cfg.getNormalSuccessors(currentBlock)) {
-            createStructuredConditionalRegions(cfg, nextBlock, endingBlock, veritestingRegions);
+            createStructuredConditionalRegions(ir, nextBlock, endingBlock, veritestingRegions);
         }
     }
 
 
-    public void createStructuredConditionalRegions(SSACFG cfg, HashMap<String, Stmt> veritestingRegions) throws StaticRegionException {
-        createStructuredConditionalRegions(cfg, cfg.entry(), cfg.exit(), veritestingRegions);
+    public void createStructuredConditionalRegions(IR ir, HashMap<String, Region> veritestingRegions) throws StaticRegionException {
+        SSACFG cfg = ir.getControlFlowGraph();
+        createStructuredConditionalRegions(ir, cfg.entry(), cfg.exit(), veritestingRegions);
     }
 
-    public void createStructuredMethodRegion(SSACFG cfg, HashMap<String, Stmt> veritestingRegions) throws StaticRegionException {
+    public void createStructuredMethodRegion(IR ir, HashMap<String, Region> veritestingRegions) throws StaticRegionException {
+        SSACFG cfg = ir.getControlFlowGraph();
         try {
             Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());
             System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
-            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), s);
+            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new Region(s, ir));
         } catch (StaticRegionException sre) {
             System.out.println("Unable to create a method summary subregion for: " + cfg.getMethod().getName().toString());
         }
