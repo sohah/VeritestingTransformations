@@ -28,10 +28,8 @@ import java.util.*;
 
 public class FindStructuredBlockEndNode {
 
-    HashSet<ISSABasicBlock> visited = null;
-    HashMap<ISSABasicBlock, Integer> refCount = null;
     PriorityQueue<ISSABasicBlock> remaining = null;
-    ISSABasicBlock maxConvergedNode = null;
+    ISSABasicBlock minConvergingNode = null;
     ISSABasicBlock maxLimit = null;
     ISSABasicBlock minLimit = null;
     SSACFG cfg;
@@ -40,8 +38,6 @@ public class FindStructuredBlockEndNode {
     public static StaticRegionException staticRegionException = new StaticRegionException("FindStructuredBlockEndNode: mal-formed region");
 
     public FindStructuredBlockEndNode(SSACFG cfg, ISSABasicBlock initial, ISSABasicBlock maxLimit) {
-        visited = new HashSet<>();
-        refCount = new HashMap<>();
         remaining = new PriorityQueue<>((ISSABasicBlock o1, ISSABasicBlock o2)->o1.getNumber()-o2.getNumber());
         // set maxLimit to the end of the function if it is not provided.
         this.maxLimit = (maxLimit != null) ? maxLimit : cfg.exit();
@@ -55,25 +51,9 @@ public class FindStructuredBlockEndNode {
             throw staticRegionException;
         }
 
-        // handle "max out of bounds" case
-        if (maxConvergedNode != null &&
-                maxConvergedNode.getNumber() > maxLimit.getNumber()) {
+        // handle "forward out of bounds" case
+        if (b.getNumber() > maxLimit.getNumber()) {
             throw staticRegionException;
-        }
-    }
-
-    void adjustMaxConvergedNode(ISSABasicBlock b) throws StaticRegionException {
-        if (maxConvergedNode == null ||
-            maxConvergedNode.getNumber() < b.getNumber()) {
-            maxConvergedNode = b;
-        }
-    }
-
-    void incrementRefcount(ISSABasicBlock b) {
-        if (!refCount.containsKey(b)) {
-            refCount.put(b, 1);
-        } else {
-            refCount.put(b, refCount.get(b)+1);
         }
     }
 
@@ -105,14 +85,14 @@ public class FindStructuredBlockEndNode {
             }
         }
 
-        maxConvergedNode = remaining.poll();
+        minConvergingNode = remaining.poll();
     }
 
     public ISSABasicBlock findMinConvergingNode() throws StaticRegionException {
 
         // we have already computed it.
-        if (maxConvergedNode != null) {
-           return maxConvergedNode;
+        if (minConvergingNode != null) {
+           return minConvergingNode;
         }
 
         List<ISSABasicBlock> succs = new ArrayList<>(cfg.getNormalSuccessors(minLimit));
@@ -124,7 +104,7 @@ public class FindStructuredBlockEndNode {
         }
         else {
             findCommonSuccessor(minLimit);
-            return maxConvergedNode;
+            return minConvergingNode;
         }
     }
 }

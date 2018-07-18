@@ -14,6 +14,10 @@ public class ArrayLengthInstruction extends Instruction {
         this.def = def;
     }
 
+    public SSAArrayLengthInstruction getOriginal() {
+        return (SSAArrayLengthInstruction)original;
+    }
+
     public ArrayLengthInstruction(SSAArrayLengthInstruction ins) {
         super(ins);
         arrayref = new WalaVarExpr(ins.getArrayRef());
@@ -21,7 +25,7 @@ public class ArrayLengthInstruction extends Instruction {
     }
 
     @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
+    public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

@@ -1,15 +1,21 @@
 package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.Ast;
-import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.UnaryOpInstruction;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import za.ac.sun.cs.green.expr.*;
 
-public class PrettyPrintVisitor implements AstVisitor<Void, Void> {
+public class PrettyPrintVisitor implements AstVisitor<Void> {
 
     int indent = 0;
     private StringBuilder sb = new StringBuilder();
     private String main;
+
+    PrettyPrintExpr ppe;
+    ExprVisitorAdapter<Void> eva ;
+
+    PrettyPrintVisitor() {
+        ppe = new PrettyPrintExpr();
+        eva = new ExprVisitorAdapter<Void>(ppe);
+    }
 
     void ind() {
         for (int i=0; i < indent; i++) {
@@ -30,18 +36,27 @@ public class PrettyPrintVisitor implements AstVisitor<Void, Void> {
         sb.append(System.lineSeparator());
     }
 
-    void write(Ast a) {
+    void write(Stmt a) {
         a.accept(this);
     }
+
 
     void write(String s) {
         sb.append(s);
     }
 
+    void write(Expression e) {
+        eva.accept(e);
+    }
+
+    void write(VarExpr e) {
+        e.accept(ppe);
+    }
+
     @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.AssignmentStmt a) {
+    public Void visit(AssignmentStmt a) {
         ind();
-        write((gov.nasa.jpf.symbc.veritesting.ast.def.Expr)a.lhs); write(" := "); write(a.rhs); write("; "); nl();
+        write(a.lhs); write(" := "); write(a.rhs); write("; "); nl();
         return null;
     }
 
@@ -96,33 +111,6 @@ public class PrettyPrintVisitor implements AstVisitor<Void, Void> {
         return null;
     }
 
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.BinaryOpInstruction c) {
-        ind();
-        write(c.original.toString()); nl();
-        return null;
-    }
-
-    @Override
-    public Void visit(UnaryOpInstruction c) {
-        ind();
-        write(c.original.toString()); nl();
-        return null;
-    }
-
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.ConversionInstruction c) {
-        ind();
-        write(c.original.toString()); nl();
-        return null;
-    }
-
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.ComparisonInstruction c) {
-        ind();
-        write(c.original.toString()); nl();
-        return null;
-    }
 
     @Override
     public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.SwitchInstruction c) {
@@ -201,43 +189,68 @@ public class PrettyPrintVisitor implements AstVisitor<Void, Void> {
         return null;
     }
 
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.GreenExpr expr) {
-        ind();
-        write(expr.toString());
-        return null;
-    }
 
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.WalaComparisonExpr expr) {
-        write(expr.lhs);
-        write(" " + expr.op.toString() + " ");
-        write(expr.rhs);
-        return null;
-    }
+    public class PrettyPrintExpr implements ExprVisitor<Void> {
+        @Override
+        public Void visit(WalaVarExpr expr) {
+            write(expr.toString());
+            return null;
+        }
 
-    @Override
-    public Void visit(WalaVarExpr expr) {
-        write("(wala_var " + expr.number + ")");
-        return null;
-    }
+        @Override
+        public Void visit(FieldRefVarExpr expr) {
+            write(expr.toString());
+            return null;
+        }
 
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr expr) {
-        write("(field_ref_var " + expr.fieldRef.toString() + " " + expr.subscript);
-        return null;
-    }
+        @Override
+        public Void visit(GammaVarExpr expr) {
+            write(expr.toString());
+            return null;
+        }
 
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.SPFSymbolicVarExpr expr) {
-        write("(spf_symbolic_var <unknown>!)");
-        return null;
-    }
 
-    @Override
-    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr expr) {
-        write(expr.toString());
-        return null;
+        @Override
+        public Void visit(IntConstant expr) {
+            write(expr.toString());
+            return null;
+        }
+
+        @Override
+        public Void visit(IntVariable expr) {
+            write(expr.toString());
+            return null;
+        }
+
+        @Override
+        public Void visit(Operation expr) {
+            write(expr.toString());
+            return null;
+        }
+
+        @Override
+        public Void visit(RealConstant expr) {
+            write(expr.toString());
+            return null;
+        }
+
+        @Override
+        public Void visit(RealVariable expr) {
+            write(expr.toString());
+            return null;
+        }
+
+        @Override
+        public Void visit(StringConstantGreen expr) {
+            write(expr.toString());
+            return null;
+        }
+
+        @Override
+        public Void visit(StringVariable expr) {
+            write(expr.toString());
+            return null;
+        }
     }
 
     public String toString() {
@@ -249,5 +262,4 @@ public class PrettyPrintVisitor implements AstVisitor<Void, Void> {
         s.accept(visitor);
         return visitor.toString();
     }
-
 }

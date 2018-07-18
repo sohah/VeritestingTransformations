@@ -2,12 +2,13 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 public class InvokeInstruction extends Instruction {
     public final VarExpr [] result;
-    public final Expr [] params;
+    public final Expression [] params;
 
-    public InvokeInstruction(SSAInvokeInstruction ins, VarExpr [] result, Expr [] params)
+    public InvokeInstruction(SSAInvokeInstruction ins, VarExpr [] result, Expression[] params)
     {
         super(ins);
         this.result = result;
@@ -21,14 +22,19 @@ public class InvokeInstruction extends Instruction {
         for (int i = 0; i < ins.getNumberOfReturnValues(); i++) {
             result[i] = new WalaVarExpr(ins.getReturnValue(i));
         }
-        this.params = new Expr[ins.getNumberOfParameters()];
+        this.params = new Expression[ins.getNumberOfParameters()];
         for (int i = 0; i < ins.getNumberOfParameters(); i++) {
             params[i] = new WalaVarExpr(ins.getUse(i));
         }
     }
 
+    public SSAInvokeInstruction getOriginal() {
+        return (SSAInvokeInstruction)original;
+    }
+
+
     @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
+    public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

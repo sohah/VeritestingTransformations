@@ -4,20 +4,25 @@ import com.ibm.wala.ssa.SSAArrayStoreInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 public class ArrayStoreInstruction extends Instruction {
 
     public final VarExpr arrayref;
     public final VarExpr index;
     public final TypeReference elementType;
-    public final Expr assignExpr;
+    public final Expression assignExpr;
 
-    public ArrayStoreInstruction(SSAInstruction ins, VarExpr arrayref, VarExpr index, TypeReference elementType, Expr assigned) {
+    public ArrayStoreInstruction(SSAArrayStoreInstruction ins, VarExpr arrayref, VarExpr index, TypeReference elementType, Expression assigned) {
         super(ins);
         this.arrayref = arrayref;
         this.index = index;
         this.elementType = elementType;
         this.assignExpr = assigned;
+    }
+
+    public SSAArrayStoreInstruction getOriginal() {
+        return (SSAArrayStoreInstruction)original;
     }
 
     public ArrayStoreInstruction(SSAArrayStoreInstruction ins) {
@@ -29,7 +34,7 @@ public class ArrayStoreInstruction extends Instruction {
     }
 
     @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
+    public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }
