@@ -7,11 +7,11 @@ import za.ac.sun.cs.green.expr.Expression;
 
 public class CheckCastInstruction extends Instruction {
 
-    public final VarExpr result;
+    public final Expression result;
     public final Expression val;
     public final TypeReference [] declaredResultTypes;
 
-    public CheckCastInstruction(SSACheckCastInstruction ins, VarExpr result, Expression val, TypeReference [] declaredResultTypes) {
+    public CheckCastInstruction(SSACheckCastInstruction ins, Expression result, Expression val, TypeReference [] declaredResultTypes) {
         super(ins);
         this.result = result;
         this.val = val;

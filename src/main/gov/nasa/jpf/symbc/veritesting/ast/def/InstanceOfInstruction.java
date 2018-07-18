@@ -7,11 +7,11 @@ import za.ac.sun.cs.green.expr.Expression;
 
 public class InstanceOfInstruction extends Instruction {
 
-    public final VarExpr result;
+    public final Expression result;
     public final Expression val;
     public final TypeReference checkedType;
 
-    public InstanceOfInstruction(SSAInstanceofInstruction ins, VarExpr result, Expression val, TypeReference checkedType) {
+    public InstanceOfInstruction(SSAInstanceofInstruction ins, Expression result, Expression val, TypeReference checkedType) {
         super(ins);
         this.result = result;
         this.val = val;

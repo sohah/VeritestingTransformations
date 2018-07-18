@@ -8,12 +8,12 @@ import za.ac.sun.cs.green.expr.Expression;
 
 public class ArrayStoreInstruction extends Instruction {
 
-    public final VarExpr arrayref;
-    public final VarExpr index;
+    public final Expression arrayref;
+    public final Expression index;
     public final TypeReference elementType;
     public final Expression assignExpr;
 
-    public ArrayStoreInstruction(SSAArrayStoreInstruction ins, VarExpr arrayref, VarExpr index, TypeReference elementType, Expression assigned) {
+    public ArrayStoreInstruction(SSAArrayStoreInstruction ins, Expression arrayref, Expression index, TypeReference elementType, Expression assigned) {
         super(ins);
         this.arrayref = arrayref;
         this.index = index;

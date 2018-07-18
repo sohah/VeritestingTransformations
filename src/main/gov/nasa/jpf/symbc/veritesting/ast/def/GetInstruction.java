@@ -4,14 +4,15 @@ import com.ibm.wala.ssa.SSAGetInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.FieldReference;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 public class GetInstruction extends Instruction {
 
-    public final VarExpr ref;
+    public final Expression ref;
     public final FieldReference field;
-    public final VarExpr def;
+    public final Expression def;
 
-    public GetInstruction(SSAGetInstruction ins, VarExpr def, VarExpr ref, FieldReference field) {
+    public GetInstruction(SSAGetInstruction ins, Expression def, Expression ref, FieldReference field) {
         super(ins);
         this.ref = ref;
         this.field = field;

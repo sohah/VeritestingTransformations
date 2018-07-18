@@ -5,10 +5,10 @@ import za.ac.sun.cs.green.expr.Expression;
 
 public class AssignmentStmt implements Stmt {
 
-    public final VarExpr lhs;
+    public final Expression lhs;
     public final Expression rhs;
 
-    public AssignmentStmt(VarExpr lhs, Expression rhs) {
+    public AssignmentStmt(Expression lhs, Expression rhs) {
         this.lhs = lhs;
         this.rhs = rhs;
     }

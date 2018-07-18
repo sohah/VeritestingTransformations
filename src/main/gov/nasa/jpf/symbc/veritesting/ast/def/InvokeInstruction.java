@@ -5,10 +5,10 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
 public class InvokeInstruction extends Instruction {
-    public final VarExpr [] result;
+    public final Expression [] result;
     public final Expression [] params;
 
-    public InvokeInstruction(SSAInvokeInstruction ins, VarExpr [] result, Expression[] params)
+    public InvokeInstruction(SSAInvokeInstruction ins, Expression [] result, Expression[] params)
     {
         super(ins);
         this.result = result;
@@ -18,7 +18,7 @@ public class InvokeInstruction extends Instruction {
     public InvokeInstruction(SSAInvokeInstruction ins)
     {
         super(ins);
-        result = new VarExpr [ins.getNumberOfReturnValues()];
+        result = new Expression [ins.getNumberOfReturnValues()];
         for (int i = 0; i < ins.getNumberOfReturnValues(); i++) {
             result[i] = new WalaVarExpr(ins.getReturnValue(i));
         }

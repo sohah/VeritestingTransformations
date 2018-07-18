@@ -209,6 +209,10 @@ public class PrettyPrintVisitor implements AstVisitor<Void> {
             return null;
         }
 
+        public Void visit(IfThenElseExpr expr) {
+            write(expr.toString());
+            return null;
+        }
 
         @Override
         public Void visit(IntConstant expr) {

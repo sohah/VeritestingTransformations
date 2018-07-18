@@ -8,12 +8,12 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
-public final class GammaVarExpr extends Variable implements VarExpr {
+public final class GammaVarExpr extends Variable {
     public final Expression condition;
-    public final VarExpr thenExpr;
-    public final VarExpr elseExpr;
+    public final Expression thenExpr;
+    public final Expression elseExpr;
 
-    public GammaVarExpr(Expression condition, VarExpr thenExpr, VarExpr elseExpr) {
+    public GammaVarExpr(Expression condition, Expression thenExpr, Expression elseExpr) {
         super("(Gamma " + condition.toString() + " " + thenExpr.toString() + " " + elseExpr.toString() + ")");
         this.condition = condition;
         this.thenExpr = thenExpr;
@@ -67,11 +67,6 @@ public final class GammaVarExpr extends Variable implements VarExpr {
     @Override
     public List<String> getOperationVector() {
         return null;
-    }
-
-    @Override
-    public <T> T accept(ExprVisitor<T> visitor) {
-        return visitor.visit(this);
     }
 
 }

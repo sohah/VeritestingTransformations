@@ -6,10 +6,10 @@ import za.ac.sun.cs.green.expr.Expression;
 
 public class PhiInstruction extends Instruction {
 
-    public final VarExpr def;
+    public final Expression def;
     public final Expression [] rhs;
 
-    public PhiInstruction(SSAPhiInstruction ins, VarExpr def, Expression [] rhs) {
+    public PhiInstruction(SSAPhiInstruction ins, Expression def, Expression [] rhs) {
         super(ins);
         this.def = def;
         this.rhs = rhs;
