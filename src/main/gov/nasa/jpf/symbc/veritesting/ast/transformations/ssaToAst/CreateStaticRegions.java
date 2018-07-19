@@ -1,7 +1,9 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import com.ibm.wala.cfg.Util;
+import com.ibm.wala.classLoader.IBytecodeMethod;
 import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
+import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
@@ -12,6 +14,8 @@ import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
 
 /*
     This class creates our structure IR from the WALA SSA form for further transformation.
@@ -26,30 +30,40 @@ import java.util.HashSet;
 
 public class CreateStaticRegions {
 
-    public CreateStaticRegions() {
+    private static IR ir;
+    public CreateStaticRegions(IR ir) {
         visitedBlocks = new HashSet<>();
+        this.ir = ir;
     }
 
 
-    public static String constructRegionIdentifier(String className, String methodName, String methodSignature, int offset) {
-        return className + "." + methodName + methodSignature + "#" + offset;
+    public static String constructRegionIdentifier(String methodSignature, int offset) {
+        return methodSignature + "#" + offset;
     }
 
     public static String constructRegionIdentifier(ISSABasicBlock blk) {
-        return constructRegionIdentifier(blk.getClass().getCanonicalName(),
-                blk.getMethod().getName().toString(),
-                blk.getMethod().getSignature(),
-                blk.getFirstInstructionIndex());
+        int offset = -100;
+        try {
+            offset = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(blk.getLastInstructionIndex());
+        } catch (InvalidClassFileException e) {
+            e.printStackTrace();
+        }
+        if(offset == -100)
+            try {
+                throw new StaticRegionException("Cannot find the index of the first instruction in the region.");
+            } catch (StaticRegionException e) {
+                e.printStackTrace();
+            }
+
+        return constructRegionIdentifier(blk.getMethod().getSignature(), offset);
     }
 
-    public static String constructMethodIdentifier(String className, String methodName, String methodSignature) {
-        return className + "." + methodName + methodSignature;
+    public static String constructMethodIdentifier(String methodSignature) {
+        return methodSignature;
     }
 
     public static String constructMethodIdentifier(ISSABasicBlock blk) {
-        return constructMethodIdentifier(blk.getClass().getCanonicalName(),
-                blk.getMethod().getName().toString(),
-                blk.getMethod().getSignature());
+        return constructMethodIdentifier(blk.getMethod().getSignature());
     }
 
     public boolean isBranch(SSACFG cfg, ISSABasicBlock block) {
@@ -224,12 +238,12 @@ public class CreateStaticRegions {
     }
 
 
-    public void createStructuredConditionalRegions(IR ir, HashMap<String, Region> veritestingRegions) throws StaticRegionException {
+    public void createStructuredConditionalRegions(HashMap<String, Region> veritestingRegions) throws StaticRegionException {
         SSACFG cfg = ir.getControlFlowGraph();
         createStructuredConditionalRegions(ir, cfg.entry(), cfg.exit(), veritestingRegions);
     }
 
-    public void createStructuredMethodRegion(IR ir, HashMap<String, Region> veritestingRegions) throws StaticRegionException {
+    public void createStructuredMethodRegion(HashMap<String, Region> veritestingRegions) throws StaticRegionException {
         SSACFG cfg = ir.getControlFlowGraph();
         try {
             Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());

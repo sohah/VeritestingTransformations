@@ -44,7 +44,9 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
                 (VarExpr)eva.accept(c.arrayref),
                 (VarExpr)eva.accept(c.index),
                 c.elementType,
-                (VarExpr)eva.accept(c.def));
+        //        (VarExpr)eva.accept(c.def)
+                c.def
+        );
     }
 
     @Override
@@ -70,7 +72,8 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
     @Override
     public Stmt visit(GetInstruction c) {
         return new GetInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.def),
+                //(VarExpr)eva.accept(c.def),
+                c.def,
                 (VarExpr)eva.accept(c.ref),
                 c.field);
     }
@@ -78,7 +81,8 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
     @Override
     public Stmt visit(PutInstruction c) {
         return new PutInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.def),
+               // (VarExpr)eva.accept(c.def),
+                c.def,
                 c.field,
                 eva.accept(c.assignExpr));
     }
@@ -105,7 +109,8 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
     public Stmt visit(ArrayLengthInstruction c) {
 
         return new ArrayLengthInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.def),
+                //(VarExpr)eva.accept(c.def),
+                c.def,
                 (VarExpr)eva.accept(c.arrayref));
     }
 
@@ -139,7 +144,8 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
         }
 
         return new PhiInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.def),
+//                (VarExpr)eva.accept(c.def),
+                c.def,
                 rhs);
     }
 

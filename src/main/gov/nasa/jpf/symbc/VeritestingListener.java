@@ -31,6 +31,9 @@ import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.veritesting.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DoSubstitution;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
 import gov.nasa.jpf.vm.*;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
@@ -84,186 +87,43 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+
         if (veritestingMode == 0) return;
-        if(firstTime) {
+        if (firstTime) {
             discoverRegions(ti); // static analysis to discover regions
             firstTime = false;
-        }
-        else
-            return;
-    }
+        } else {
+            MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+            String className = methodInfo.getClassName();
+            String methodName = methodInfo.getName();
+            String methodSignature = methodInfo.getSignature();
+            int offset = instructionToExecute.getPosition();
+            String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+            HashMap<String, Region> regionsMap = VeritestingMain.veriRegions;
 
+            Region region = regionsMap.get(key);
+            if(region != null){
+                region.getStackSlotTable().printStackSlotMap();
+                DoSubstitution doSubstitution = new DoSubstitution(ti, regionsMap.get(key));
+                System.out.println("\nprinting variables values symbol table after substitution for: " + key);
+                regionsMap.get(key).getValueSymbolTable().printSymbolTable();
+            }
+        }
+
+    }
 
     private void discoverRegions(ThreadInfo ti) {
         Config conf = ti.getVM().getConfig();
         String classPath = conf.getStringArray("classpath")[0] + "/";
         String className = conf.getString("target");
         // should be like VeritestingPerf.testMe4([II)V aka jvm internal format
-        VeritestingMain veritestingMain = new VeritestingMain(className + ".class");
+        VeritestingMain veritestingMain = new VeritestingMain(ti, className + ".class");
         long startTime = System.nanoTime();
-        veritestingMain.analyzeForVeritesting(ti, classPath, className);
+        veritestingMain.analyzeForVeritesting(classPath, className);
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / 1000000; //milliseconds
         staticAnalysisTime = (endTime - startTime);
         System.out.println("veritesting analysis took " + duration + " milliseconds");
     }
 
-    private String ASTToString(Expression expression) {
-        if (expression instanceof Operation) {
-            Operation operation = (Operation) expression;
-            String str = new String();
-            if (operation.getOperator().getArity() == 2)
-                str = "(" + ASTToString(operation.getOperand(0)) + " " + operation.getOperator().toString() + " " +
-                        ASTToString(operation.getOperand(1)) + ")";
-            else if (operation.getOperator().getArity() == 1)
-                str = "(" + operation.getOperator().toString() + ASTToString(operation.getOperand(0)) + ")";
-            return str;
-        } else
-            return expression.toString();
-    }
-
-
-    private gov.nasa.jpf.symbc.numeric.Expression GreenToSPFExpression(Expression greenExpression) {
-        GreenToSPFTranslator toSPFTranslator = new GreenToSPFTranslator();
-        return toSPFTranslator.translate(greenExpression);
-    }
-
-
-    private class InstructionInfo {
-        private int numOperands;
-        private Operation.Operator trueComparator, falseComparator;
-        private Expression condition, negCondition;
-
-        public Expression getCondition() {
-            return condition;
-        }
-
-        public Expression getNegCondition() {
-            return negCondition;
-        }
-
-        public int getNumOperands() {
-            return numOperands;
-        }
-
-        public Operation.Operator getTrueComparator() {
-            return trueComparator;
-        }
-
-        public Operation.Operator getFalseComparator() {
-            return falseComparator;
-        }
-
-        public InstructionInfo invoke(StackFrame stackFrame) {
-            String mnemonic = stackFrame.getPC().getMnemonic();
-            //System.out.println("mne = " + mnemonic);
-            switch (mnemonic) {
-                case "ifeq":
-                    numOperands = 1;
-                    trueComparator = Operation.Operator.EQ;
-                    falseComparator = Operation.Operator.NE;
-                    break;
-                case "ifne":
-                    trueComparator = Operation.Operator.NE;
-                    falseComparator = Operation.Operator.EQ;
-                    numOperands = 1;
-                    break;
-                case "iflt":
-                    trueComparator = Operation.Operator.LT;
-                    falseComparator = Operation.Operator.GE;
-                    numOperands = 1;
-                    break;
-                case "ifle":
-                    trueComparator = Operation.Operator.LE;
-                    falseComparator = Operation.Operator.GT;
-                    numOperands = 1;
-                    break;
-                case "ifgt":
-                    trueComparator = Operation.Operator.GT;
-                    falseComparator = Operation.Operator.LE;
-                    numOperands = 1;
-                    break;
-                case "ifge":
-                    trueComparator = Operation.Operator.GE;
-                    falseComparator = Operation.Operator.LT;
-                    numOperands = 1;
-                    break;
-                case "ifnull":
-                    trueComparator = Operation.Operator.EQ;
-                    falseComparator = Operation.Operator.NE;
-                    numOperands = 1;
-                    break;
-                case "ifnonnull":
-                    trueComparator = Operation.Operator.EQ;
-                    falseComparator = Operation.Operator.NE;
-                    numOperands = 1;
-                    break;
-                case "if_icmpeq":
-                    trueComparator = Operation.Operator.EQ;
-                    falseComparator = Operation.Operator.NE;
-                    numOperands = 2;
-                    break;
-                case "if_icmpne":
-                    trueComparator = Operation.Operator.NE;
-                    falseComparator = Operation.Operator.EQ;
-                    numOperands = 2;
-                    break;
-                case "if_icmpgt":
-                    trueComparator = Operation.Operator.GT;
-                    falseComparator = Operation.Operator.LE;
-                    numOperands = 2;
-                    break;
-                case "if_icmpge":
-                    trueComparator = Operation.Operator.GE;
-                    falseComparator = Operation.Operator.LT;
-                    numOperands = 2;
-                    break;
-                case "if_icmple":
-                    trueComparator = Operation.Operator.LE;
-                    falseComparator = Operation.Operator.GT;
-                    numOperands = 2;
-                    break;
-                case "if_icmplt":
-                    trueComparator = Operation.Operator.LT;
-                    falseComparator = Operation.Operator.GE;
-                    numOperands = 2;
-                    break;
-                default:
-                    return null;
-            }
-            assert (numOperands == 1 || numOperands == 2);
-            IntegerExpression operand1 = null, operand2 = null;
-            boolean isConcreteCondition = true;
-            if (numOperands == 1) {
-                gov.nasa.jpf.symbc.numeric.Expression operand1_expr = (gov.nasa.jpf.symbc.numeric.Expression)
-                        stackFrame.getOperandAttr();
-                operand1 = (IntegerExpression) operand1_expr;
-                if (operand1 == null) operand1 = new IntegerConstant(stackFrame.peek());
-                else isConcreteCondition = false;
-                operand2 = new IntegerConstant(0);
-            }
-            if (numOperands == 2) {
-                operand1 = (IntegerExpression) stackFrame.getOperandAttr(1);
-                if (operand1 == null) operand1 = new IntegerConstant(stackFrame.peek(1));
-                else isConcreteCondition = false;
-                operand2 = (IntegerExpression) stackFrame.getOperandAttr(0);
-                if (operand2 == null) operand2 = new IntegerConstant(stackFrame.peek(0));
-                else isConcreteCondition = false;
-            }
-            if (isConcreteCondition) {
-                return null;
-            } else {
-                condition = new Operation(trueComparator, SPFToGreenExpr(operand1), SPFToGreenExpr(operand2));
-                negCondition = new Operation(falseComparator, SPFToGreenExpr(operand1), SPFToGreenExpr(operand2));
-            }
-            return this;
-        }
-
-    }
-
-    Expression SPFToGreenExpr(gov.nasa.jpf.symbc.numeric.Expression spfExp) {
-        SolverTranslator.Translator toGreenTranslator = new SolverTranslator.Translator();
-        spfExp.accept(toGreenTranslator);
-        return toGreenTranslator.getExpression();
-    }
 }

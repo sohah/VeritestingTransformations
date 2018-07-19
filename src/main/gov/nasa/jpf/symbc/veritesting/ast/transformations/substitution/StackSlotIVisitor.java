@@ -8,9 +8,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAToStatIVis
 import java.util.HashMap;
 
 
-//SH: This visitor fills the stack slots for wala vars. It is responsible of two main steps: first to explore the
-// stack slot for the "use" vars (for they could be inputs) and second it defines the stack slot for the "def" var depending
-// on the "use" vars used
+//SH: This visitor fills the stack slots for wala vars.
 
 
 public class StackSlotIVisitor implements SSAInstruction.IVisitor {

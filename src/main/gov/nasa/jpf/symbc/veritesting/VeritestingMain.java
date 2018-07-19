@@ -35,10 +35,10 @@ import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.StringStuff;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ReflectUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DoSubstitution;
 import gov.nasa.jpf.vm.ThreadInfo;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
@@ -56,10 +56,10 @@ public class VeritestingMain {
     HashSet<String> methodSummaryClassNames, methodSummarySubClassNames;
     private boolean methodAnalysis = false;
     private String currentPackageName;
+    //HashMap<String, Stmt> veritestingRegions;
+    public static HashMap<String, Region> veriRegions;
+    private ThreadInfo ti;
 
-    HashMap<String, Stmt> veritestingRegions;
-
-    public static HashMap<String, Region> veriRegions = new HashMap<>();
 
 
     public int getObjectReference() {
@@ -78,20 +78,22 @@ public class VeritestingMain {
     HashSet<NatLoop> loops;
     IR ir;
 
-    public VeritestingMain(String appJar) {
+    public VeritestingMain(ThreadInfo ti, String appJar) {
         try {
             appJar = System.getenv("TARGET_CLASSPATH_WALA");// + appJar;
             AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
                     (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
             methodSummaryClassNames = new HashSet<String>();
-            veritestingRegions = new HashMap<>();
+            //veritestingRegions = new HashMap<>();
+            veriRegions = new HashMap<>();
+            this.ti = ti;
         } catch (WalaException | IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void analyzeForVeritesting(ThreadInfo ti, String classPath, String _className) {
+    public void analyzeForVeritesting(String classPath, String _className) {
         endingInsnsHash = new HashSet();
         findClasses(ti, cha, classPath, _className, methodSummaryClassNames);
         startingPointsHistory = new HashSet();
@@ -278,22 +280,15 @@ public class VeritestingMain {
             HashSet<Integer> visited = new HashSet<>();
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             // Here is where the magic happens.
-            CreateStaticRegions regionCreator = new CreateStaticRegions();
+            CreateStaticRegions regionCreator = new CreateStaticRegions(ir);
             if (!methodAnalysis) {
                 //regionCreator.createStructuredConditionalRegions(cfg, veritestingRegions);
-                regionCreator.createStructuredConditionalRegions(ir, veriRegions);
+                regionCreator.createStructuredConditionalRegions(veriRegions);
             } else {
                 //regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
-                regionCreator.createStructuredMethodRegion(ir, veriRegions);
+                regionCreator.createStructuredMethodRegion(veriRegions);
             }
-
             Set<String> keys = veriRegions.keySet();
-            for (String key: keys) {
-                System.out.println("printing stack slot table information for: " + key);
-                veriRegions.get(key).printStackSlotMap();
-            }
-
-
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
