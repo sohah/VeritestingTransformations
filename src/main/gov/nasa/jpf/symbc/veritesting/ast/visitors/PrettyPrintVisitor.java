@@ -49,10 +49,6 @@ public class PrettyPrintVisitor implements AstVisitor<Void> {
         eva.accept(e);
     }
 
-    void write(VarExpr e) {
-        e.accept(ppe);
-    }
-
     @Override
     public Void visit(AssignmentStmt a) {
         ind();

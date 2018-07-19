@@ -5,7 +5,7 @@ import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAPhiInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.VarExpr;
+import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,7 +17,7 @@ public class Region {
     public final Stmt stmt;
     private final IR ir;
     public HashMap<Integer, int[]> stackSlotMap;
-    public HashMap<VarExpr, Integer> valueMap;
+    public HashMap<Expression, Integer> valueMap;
 
     public Region(Stmt stmt, IR ir){
         this.stmt = stmt;
