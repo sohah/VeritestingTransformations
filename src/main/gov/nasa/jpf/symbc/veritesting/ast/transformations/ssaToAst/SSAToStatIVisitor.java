@@ -6,6 +6,7 @@ import com.ibm.wala.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
@@ -54,11 +55,18 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitBinaryOp(SSABinaryOpInstruction ssa) {
-        veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()),
+        Expression lhs = new WalaVarExpr(ssa.getDef());
+        Operation.Operator op = translateBinaryOp((IBinaryOpInstruction.Operator)ssa.getOperator());
+        Expression op1 = new WalaVarExpr(ssa.getUse(0));
+        Expression op2 = new WalaVarExpr(ssa.getUse(1));
+        Expression rhs = new Operation(op, op1, op2);
+        Stmt s = new AssignmentStmt(lhs, rhs);
+        veriStatement = s;
+        /*veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()),
                 new Operation(
                         translateBinaryOp((IBinaryOpInstruction.Operator)ssa.getOperator()),
                         new WalaVarExpr(ssa.getUse(0)),
-                        new WalaVarExpr(ssa.getUse(1))));
+                        new WalaVarExpr(ssa.getUse(1))));*/
     }
 
     Operation.Operator translateUnaryOp(IUnaryOpInstruction.Operator op) {

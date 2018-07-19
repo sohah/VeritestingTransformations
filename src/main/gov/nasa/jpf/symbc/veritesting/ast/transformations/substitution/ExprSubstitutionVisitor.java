@@ -14,17 +14,19 @@ import za.ac.sun.cs.green.expr.*;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 
-public class ExprSubstitutionVisitor extends ExprMapVisitor {
+public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 
     private ThreadInfo ti;
     private StackFrame sf;
     private Region region;
+    public ExprVisitorAdapter eva;
 
     public ExprSubstitutionVisitor(ThreadInfo ti, Region region) {
         super();
         this.ti = ti;
         this.sf = ti.getTopFrame();
         this.region = region;
+        eva = super.eva;
     }
 
     @Override
@@ -44,6 +46,7 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor {
         else
             return expr;
     }
+
 
     @Override
     public Expression visit(FieldRefVarExpr expr) {

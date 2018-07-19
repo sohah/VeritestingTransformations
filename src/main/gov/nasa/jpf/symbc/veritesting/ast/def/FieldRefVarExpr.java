@@ -8,7 +8,7 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
-public final class FieldRefVarExpr extends Variable implements VarExpr {
+public final class FieldRefVarExpr extends Variable {
     public final FieldRef fieldRef;
     public final int subscript;
 
@@ -66,11 +66,6 @@ public final class FieldRefVarExpr extends Variable implements VarExpr {
     @Override
     public List<String> getOperationVector() {
         return null;
-    }
-
-    @Override
-    public <T> T accept(ExprVisitor<T> visitor) {
-        return visitor.visit(this);
     }
 
 }

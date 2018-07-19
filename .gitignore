@@ -13,4 +13,6 @@ out/
 logs/
 logs/tcas.log
 logs/wbs.log
+src/examples/VeritestingPerf.java
+src/examples/VeritestingPerf.jpf
 

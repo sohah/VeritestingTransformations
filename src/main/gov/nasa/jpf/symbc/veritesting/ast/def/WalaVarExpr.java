@@ -7,7 +7,7 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
-public final class WalaVarExpr extends Variable implements VarExpr {
+public final class WalaVarExpr extends Variable {
 
     public final int number;
 
@@ -16,10 +16,6 @@ public final class WalaVarExpr extends Variable implements VarExpr {
         this.number = var;
     }
 
-    @Override
-    public <T> T accept(ExprVisitor<T> visitor) {
-        return visitor.visit(this);
-    }
 
     @Override
     public void accept(Visitor visitor) throws VisitorException {

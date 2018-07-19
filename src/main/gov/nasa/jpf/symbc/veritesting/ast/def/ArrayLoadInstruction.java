@@ -4,15 +4,16 @@ import com.ibm.wala.ssa.SSAArrayLoadInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 public class ArrayLoadInstruction extends Instruction {
 
-    public final VarExpr arrayref;
-    public final VarExpr index;
+    public final Expression arrayref;
+    public final Expression index;
     public final TypeReference elementType;
-    public final VarExpr def;
+    public final Expression def;
 
-    public ArrayLoadInstruction(SSAArrayLoadInstruction ins, VarExpr arrayref, VarExpr index, TypeReference elementType, VarExpr def) {
+    public ArrayLoadInstruction(SSAArrayLoadInstruction ins, Expression arrayref, Expression index, TypeReference elementType, Expression def) {
         super(ins);
         this.arrayref = arrayref;
         this.index = index;
@@ -35,5 +36,10 @@ public class ArrayLoadInstruction extends Instruction {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return "\n" + def + " = "+ arrayref + "[" + index+":"+elementType +"]";
     }
 }

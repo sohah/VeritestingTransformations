@@ -1,29 +1,14 @@
 package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.VarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 
 public class ExprVisitorAdapter<T>  {
 
     private ExprVisitor<T> theVisitor;
 
-    ExprVisitorAdapter(ExprVisitor<T> theVisitor) {
+    public ExprVisitorAdapter(ExprVisitor<T> theVisitor) {
         this.theVisitor = theVisitor;
-    }
-
-    public T accept(VarExpr e) {
-        if (e instanceof FieldRefVarExpr) {
-            return theVisitor.visit((FieldRefVarExpr) e);
-        } else if (e instanceof GammaVarExpr) {
-            return theVisitor.visit((GammaVarExpr) e);
-        } else if (e instanceof WalaVarExpr) {
-            return theVisitor.visit((WalaVarExpr) e);
-        } else {
-            throw new IllegalArgumentException("Unknown class in ExprVisitorAdapter!");
-        }
     }
 
     // doing a kind of gross thing since the visitor support I like is not
@@ -49,6 +34,8 @@ public class ExprVisitorAdapter<T>  {
             return theVisitor.visit((GammaVarExpr) e);
         } else if (e instanceof WalaVarExpr) {
             return theVisitor.visit((WalaVarExpr) e);
+        } else if (e instanceof IfThenElseExpr) {
+            return theVisitor.visit((IfThenElseExpr) e);
         } else {
             throw new IllegalArgumentException("Unknown class in ExprVisitorAdapter!");
         }

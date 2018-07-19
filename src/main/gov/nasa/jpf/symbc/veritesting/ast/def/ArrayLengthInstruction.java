@@ -2,13 +2,14 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import com.ibm.wala.ssa.SSAArrayLengthInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 public class ArrayLengthInstruction extends Instruction {
 
-    public final VarExpr arrayref;
-    public final VarExpr def;
+    public final Expression arrayref;
+    public final Expression def;
 
-    public ArrayLengthInstruction(SSAArrayLengthInstruction ins, VarExpr arrayref, VarExpr def) {
+    public ArrayLengthInstruction(SSAArrayLengthInstruction ins, Expression arrayref, Expression def) {
         super(ins);
         this.arrayref = arrayref;
         this.def = def;
@@ -27,5 +28,10 @@ public class ArrayLengthInstruction extends Instruction {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return "\n"+ def + " = arrayLength (" +arrayref +")";
     }
 }

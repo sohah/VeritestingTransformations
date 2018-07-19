@@ -8,11 +8,11 @@ import za.ac.sun.cs.green.expr.Expression;
 
 public class PutInstruction extends Instruction {
 
-    public final VarExpr def;
+    public final Expression def;
     public final FieldReference field;
     public final Expression assignExpr;
 
-    public PutInstruction(SSAPutInstruction ins, VarExpr ref, FieldReference field, Expression assignExpr) {
+    public PutInstruction(SSAPutInstruction ins, Expression ref, FieldReference field, Expression assignExpr) {
         super(ins);
         this.def = ref;
         this.field = field;
@@ -33,5 +33,10 @@ public class PutInstruction extends Instruction {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return "\n put("+ def +"."+field + ") = " + assignExpr;
     }
 }

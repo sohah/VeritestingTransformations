@@ -1,31 +1,27 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-import java.util.HashMap;
 import java.util.Set;
 
-public class VarSubstitution {
+public class DoSubstitution {
 
     private ThreadInfo ti;
-    private HashMap<String, Region> veriRegions;
+    Region region;
 
-    public VarSubstitution(ThreadInfo ti, HashMap<String, Region> veriRegions) {
+    public DoSubstitution(ThreadInfo ti, Region region) {
         this.ti = ti;
-        this.veriRegions = veriRegions;
+        this.region = region;
+        doSubstitution();
     }
 
     public void doSubstitution() {
-        Set<String> keys = veriRegions.keySet();
-        for (String key: keys) {
-            Region region = veriRegions.get(key);
-            ExprSubstitutionVisitor substitutionVisitor = new ExprSubstitutionVisitor(ti, region);
-            AstMapVisitor mapVisitor = new AstMapVisitor(substitutionVisitor);
-            region.stmt.accept(mapVisitor);
-            System.out.println("Printing regions after substitution:");
-            System.out.println(PrettyPrintVisitor.print(region.stmt));
-        }
+        UseOnlyVisitor mapVisitor = new UseOnlyVisitor(ti, region);
+        Stmt substitutedStmt = region.getStmt().accept(mapVisitor);
+        region.setStmt(substitutedStmt);
+        System.out.println("Printing regions after substitution:");
+        System.out.println(StmtPrintVisitor.print(region.getStmt()));
     }
 }

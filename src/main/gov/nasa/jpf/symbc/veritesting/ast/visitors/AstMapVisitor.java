@@ -1,20 +1,22 @@
 package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
+import com.ibm.wala.ssa.SSAPutInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 
 public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
 
-    ExprMapVisitor exprVisitor;
-    ExprVisitorAdapter<Expression> eva;
+    ExprVisitor<Expression> exprVisitor;
+    protected ExprVisitorAdapter<Expression> eva;
 
-    public AstMapVisitor(ExprMapVisitor exprVisitor) {
-        this.eva = exprVisitor.eva;
+    public AstMapVisitor(ExprVisitor<Expression> exprVisitor) {
+        this.eva = new ExprVisitorAdapter<Expression>(exprVisitor);
         this.exprVisitor = exprVisitor;
     }
+
     @Override
     public Stmt visit(AssignmentStmt a) {
-        return new AssignmentStmt((VarExpr)eva.accept(a.lhs), eva.accept(a.rhs));
+        return new AssignmentStmt(eva.accept(a.lhs), eva.accept(a.rhs));
     }
 
     @Override
@@ -41,19 +43,17 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
     @Override
     public Stmt visit(ArrayLoadInstruction c) {
         return new ArrayLoadInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.arrayref),
-                (VarExpr)eva.accept(c.index),
+                eva.accept(c.arrayref),
+                eva.accept(c.index),
                 c.elementType,
-        //        (VarExpr)eva.accept(c.def)
-                c.def
-        );
+                eva.accept(c.def));
     }
 
     @Override
     public Stmt visit(ArrayStoreInstruction c) {
         return new ArrayStoreInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.arrayref),
-                (VarExpr)eva.accept(c.index),
+                eva.accept(c.arrayref),
+                eva.accept(c.index),
                 c.elementType,
                 eva.accept(c.assignExpr));
     }
@@ -72,19 +72,18 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
     @Override
     public Stmt visit(GetInstruction c) {
         return new GetInstruction(c.getOriginal(),
-                //(VarExpr)eva.accept(c.def),
-                c.def,
-                (VarExpr)eva.accept(c.ref),
+                eva.accept(c.def),
+                eva.accept(c.ref),
                 c.field);
     }
 
     @Override
     public Stmt visit(PutInstruction c) {
-        return new PutInstruction(c.getOriginal(),
-               // (VarExpr)eva.accept(c.def),
-                c.def,
+        PutInstruction ins = new PutInstruction(c.getOriginal(),
+                eva.accept(c.def),
                 c.field,
                 eva.accept(c.assignExpr));
+        return ins;
     }
 
     @Override
@@ -94,9 +93,9 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(InvokeInstruction c) {
-        VarExpr [] results = new VarExpr [c.result.length];
+        Expression [] results = new Expression [c.result.length];
         for (int i=0; i < results.length; i++) {
-            results[i] = (VarExpr)eva.accept(c.result[i]);
+            results[i] = eva.accept(c.result[i]);
         }
         Expression [] params = new Expression [c.params.length];
         for (int i=0; i < params.length; i++) {
@@ -107,11 +106,9 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(ArrayLengthInstruction c) {
-
         return new ArrayLengthInstruction(c.getOriginal(),
-                //(VarExpr)eva.accept(c.def),
-                c.def,
-                (VarExpr)eva.accept(c.arrayref));
+                eva.accept(c.def),
+                eva.accept(c.arrayref));
     }
 
     @Override
@@ -122,7 +119,7 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
     @Override
     public Stmt visit(CheckCastInstruction c) {
         return new CheckCastInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.result),
+                eva.accept(c.result),
                 eva.accept(c.val),
                 c.declaredResultTypes);
     }
@@ -130,7 +127,7 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
     @Override
     public Stmt visit(InstanceOfInstruction c) {
         return new InstanceOfInstruction(c.getOriginal(),
-                (VarExpr)eva.accept(c.result),
+                eva.accept(c.result),
                 eva.accept(c.val),
                 c.checkedType);
     }
@@ -144,8 +141,7 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
         }
 
         return new PhiInstruction(c.getOriginal(),
-//                (VarExpr)eva.accept(c.def),
-                c.def,
+                eva.accept(c.def),
                 rhs);
     }
 

@@ -5,7 +5,7 @@ import za.ac.sun.cs.green.expr.*;
 
 public class ExprMapVisitor implements ExprVisitor<Expression> {
 
-    ExprVisitorAdapter<Expression> eva =
+    protected ExprVisitorAdapter<Expression> eva =
             new ExprVisitorAdapter<>(this);
 
     @Override
@@ -61,7 +61,14 @@ public class ExprMapVisitor implements ExprVisitor<Expression> {
     @Override
     public Expression visit(GammaVarExpr expr) {
         return new GammaVarExpr(eva.accept(expr.condition),
-                (VarExpr)eva.accept((Expression)expr.thenExpr),
-                (VarExpr)eva.accept((Expression)expr.elseExpr));
+                eva.accept(expr.thenExpr),
+                eva.accept(expr.elseExpr));
+    }
+
+    @Override
+    public Expression visit(IfThenElseExpr expr) {
+        return new IfThenElseExpr(eva.accept(expr.condition),
+                eva.accept(expr.thenExpr),
+                eva.accept(expr.elseExpr));
     }
 }
