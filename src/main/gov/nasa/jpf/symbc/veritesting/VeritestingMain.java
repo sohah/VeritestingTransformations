@@ -34,11 +34,11 @@ import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.StringStuff;
 import gov.nasa.jpf.symbc.VeritestingListener;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.phiToGamma.PhiToGammaSubstitution;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ReflectUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DoSubstitution;
 import gov.nasa.jpf.vm.ThreadInfo;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
@@ -289,6 +289,13 @@ public class VeritestingMain {
                 regionCreator.createStructuredMethodRegion(veriRegions);
             }
             Set<String> keys = veriRegions.keySet();
+            for (String key: keys) {
+                Region r = veriRegions.get(key);
+                PhiToGammaSubstitution sub = new PhiToGammaSubstitution(r);
+                sub.doSubstitution();
+            }
+
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

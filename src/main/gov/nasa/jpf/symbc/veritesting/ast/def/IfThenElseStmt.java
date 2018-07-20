@@ -9,11 +9,16 @@ public class IfThenElseStmt implements Stmt {
     public final Stmt thenStmt;
     public final Stmt elseStmt;
     public final SSAConditionalBranchInstruction original;
+    public final int takenIndex, notTakenIndex;
 
-    public IfThenElseStmt(SSAConditionalBranchInstruction original, Expression condition, Stmt thenStmt, Stmt elseStmt) {          this.original = original;
+    public IfThenElseStmt(SSAConditionalBranchInstruction original, Expression condition, Stmt thenStmt, Stmt elseStmt,
+                          int phiUseNumIndices[]) {
+        this.original = original;
         this.condition = condition;
         this.thenStmt = thenStmt;
         this.elseStmt = elseStmt;
+        this.takenIndex = phiUseNumIndices[0];
+        this.notTakenIndex = phiUseNumIndices[1];
     }
 
     @Override

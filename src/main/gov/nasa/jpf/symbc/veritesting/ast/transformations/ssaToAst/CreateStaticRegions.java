@@ -7,6 +7,7 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.phiToGamma.DerivePhiOrder;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
@@ -14,8 +15,6 @@ import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
 
 /*
     This class creates our structure IR from the WALA SSA form for further transformation.
@@ -130,7 +129,8 @@ public class CreateStaticRegions {
     }
 
     // precondiion: terminus is the loop join.
-    private Stmt conditionalBranch(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock terminus) throws StaticRegionException {
+    private Stmt conditionalBranch(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock terminus)
+            throws StaticRegionException {
 
         SSAInstruction ins = currentBlock.getLastInstruction();
         if (!(ins instanceof SSAConditionalBranchInstruction)) {
@@ -138,21 +138,29 @@ public class CreateStaticRegions {
         }
         // Handle case where terminus is either 'if' or 'else' branch;
         Expression condExpr = convertCondition((SSAConditionalBranchInstruction)ins);
+        int takenIndex = -1, notTakenIndex = -1;
         ISSABasicBlock thenBlock = Util.getTakenSuccessor(cfg, currentBlock);
+        ISSABasicBlock elseBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
+        if (terminus.iteratePhis().hasNext() && terminus.iteratePhis().next() instanceof SSAPhiInstruction) {
+            takenIndex = DerivePhiOrder.getPhiUseNumIndex(cfg, thenBlock, terminus);
+            notTakenIndex = DerivePhiOrder.getPhiUseNumIndex(cfg, elseBlock, terminus);
+        }
+
         Stmt thenStmt, elseStmt;
         if (thenBlock.getNumber() < terminus.getNumber()) {
             thenStmt = attemptSubregionRec(cfg, thenBlock, terminus);
         } else {
             thenStmt = SkipStmt.skip;
         }
-        ISSABasicBlock elseBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
+
         if (elseBlock.getNumber() < terminus.getNumber()) {
             elseStmt = attemptSubregionRec(cfg, elseBlock, terminus);
         } else {
             elseStmt = SkipStmt.skip;
         }
 
-        return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt);
+        return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt,
+                new int[] {takenIndex, notTakenIndex});
     }
 
     /*

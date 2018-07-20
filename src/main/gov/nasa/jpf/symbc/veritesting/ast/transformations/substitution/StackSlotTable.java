@@ -17,10 +17,10 @@ public class StackSlotTable {
 
     public StackSlotTable(IR ir) {
         this.ir = ir;
-        popluateWalaVars();
+        populateWalaVars();
     }
 
-    private void popluateWalaVars() {
+    private void populateWalaVars() {
         StackSlotIVisitor stackSlotIVisitor = new StackSlotIVisitor(ir);
         for (SSAInstruction ins : ir.getControlFlowGraph().getInstructions()) {
             if (ins != null)
