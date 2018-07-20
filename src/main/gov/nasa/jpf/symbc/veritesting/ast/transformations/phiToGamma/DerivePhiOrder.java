@@ -5,11 +5,8 @@ Vaibhav: This class' main purpose is, given a CFG, branching node, and a terminu
 instruction, put the Phi's uses in taken/not-taken order based on the branch.
 */
 
-import com.ibm.wala.cfg.Util;
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSACFG;
-import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

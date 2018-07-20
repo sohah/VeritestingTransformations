@@ -1,10 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import com.ibm.wala.ssa.*;
-import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAToStatIVisitor;
-
 import java.util.HashMap;
 
 

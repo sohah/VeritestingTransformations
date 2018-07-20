@@ -6,13 +6,10 @@ import com.ibm.wala.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
-import za.ac.sun.cs.green.expr.Variable;
 
-import static com.ibm.wala.shrikeBT.IBinaryOpInstruction.Operator.*;
 
 
 //SH: This class translates SSAInstructions to Veritesting Statements.

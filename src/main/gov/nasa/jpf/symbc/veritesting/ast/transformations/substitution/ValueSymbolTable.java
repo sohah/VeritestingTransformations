@@ -4,7 +4,6 @@ import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import za.ac.sun.cs.green.expr.Expression;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
 //SH: all values stored here should be in the form of a green expression

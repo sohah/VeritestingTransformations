@@ -1,7 +1,6 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
+package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.Ast;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 
 public class StmtPrintVisitor extends PrettyPrintVisitor{
 

@@ -1,6 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
-import com.ibm.wala.ssa.SSAPutInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 

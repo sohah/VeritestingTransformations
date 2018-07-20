@@ -2,7 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.phiToGamma;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.StmtPrintVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 
 /*
 Vaibhav: The purpose of this class is to visit all the statements in a statement list and replace any phis with gammas

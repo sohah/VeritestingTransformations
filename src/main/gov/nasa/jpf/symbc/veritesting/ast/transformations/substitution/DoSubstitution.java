@@ -1,10 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.ThreadInfo;
-
-import java.util.Set;
 
 public class DoSubstitution {
 

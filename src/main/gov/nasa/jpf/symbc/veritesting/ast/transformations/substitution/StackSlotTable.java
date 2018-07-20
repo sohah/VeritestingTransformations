@@ -42,6 +42,10 @@ public class StackSlotTable {
         return null;
     }
 
+    //This tries to infer the stack slots for phi "def" vars and phi "use" vars by either figuring out the stack slots
+    // of one "use" var and populate it to be for the phi "def" var, or the opposite,
+    // that is the stack slot of the phi "def" was known and so it is propagated to the "use" vars
+
     private void stackSlotPhiPropagation() {
         boolean changeDetected;
         do {
@@ -51,13 +55,13 @@ public class StackSlotTable {
                 SSAPhiInstruction phi = (SSAPhiInstruction) phiItr.next();
                 int result = phi.getDef();
                 int[] phiSlot = lookup(result);
-                if (phiSlot == null) {
+                if (phiSlot == null) { //stack slot of the phi "def" var is unkown
                     int[] slots = getOperandSlot(phi);
-                    if (slots != null) {
+                    if (slots != null) {//could figure out the stack slot of a "use"
                         stackSlotMap.put(phi.getDef(), slots);
                         changeDetected = true;
                     }
-                } else {
+                } else { ////stack slot of the phi "def" var is unkown, propagate it to the "use" vars
                     changeDetected = updatePhiUse(phi, phiSlot);
                 }
             }
