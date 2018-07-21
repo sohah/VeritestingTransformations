@@ -33,4 +33,9 @@ public class InstanceOfInstruction extends Instruction {
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "\n"+ result + " = "+ val + " instanceOf "+ checkedType + ")";
+    }
 }

@@ -5,6 +5,8 @@ import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+import java.util.Arrays;
+
 public class CheckCastInstruction extends Instruction {
 
     public final Expression result;
@@ -32,5 +34,10 @@ public class CheckCastInstruction extends Instruction {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return "\n"+ result + " = checkCast("+ val + "," + Arrays.toString(declaredResultTypes) + ")";
     }
 }

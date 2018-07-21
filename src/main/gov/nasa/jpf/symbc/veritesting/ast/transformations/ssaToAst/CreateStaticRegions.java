@@ -1,10 +1,13 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import com.ibm.wala.cfg.Util;
+import com.ibm.wala.classLoader.IBytecodeMethod;
 import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
+import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.phiToGamma.DerivePhiOrder;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
@@ -26,30 +29,40 @@ import java.util.HashSet;
 
 public class CreateStaticRegions {
 
-    public CreateStaticRegions() {
+    private static IR ir;
+    public CreateStaticRegions(IR ir) {
         visitedBlocks = new HashSet<>();
+        this.ir = ir;
     }
 
 
-    public static String constructRegionIdentifier(String className, String methodName, String methodSignature, int offset) {
-        return className + "." + methodName + methodSignature + "#" + offset;
+    public static String constructRegionIdentifier(String methodSignature, int offset) {
+        return methodSignature + "#" + offset;
     }
 
     public static String constructRegionIdentifier(ISSABasicBlock blk) {
-        return constructRegionIdentifier(blk.getClass().getCanonicalName(),
-                blk.getMethod().getName().toString(),
-                blk.getMethod().getSignature(),
-                blk.getFirstInstructionIndex());
+        int offset = -100;
+        try {
+            offset = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(blk.getLastInstructionIndex());
+        } catch (InvalidClassFileException e) {
+            e.printStackTrace();
+        }
+        if(offset == -100)
+            try {
+                throw new StaticRegionException("Cannot find the index of the first instruction in the region.");
+            } catch (StaticRegionException e) {
+                e.printStackTrace();
+            }
+
+        return constructRegionIdentifier(blk.getMethod().getSignature(), offset);
     }
 
-    public static String constructMethodIdentifier(String className, String methodName, String methodSignature) {
-        return className + "." + methodName + methodSignature;
+    public static String constructMethodIdentifier(String methodSignature) {
+        return methodSignature;
     }
 
     public static String constructMethodIdentifier(ISSABasicBlock blk) {
-        return constructMethodIdentifier(blk.getClass().getCanonicalName(),
-                blk.getMethod().getName().toString(),
-                blk.getMethod().getSignature());
+        return constructMethodIdentifier(blk.getMethod().getSignature());
     }
 
     public boolean isBranch(SSACFG cfg, ISSABasicBlock block) {
@@ -116,7 +129,8 @@ public class CreateStaticRegions {
     }
 
     // precondiion: terminus is the loop join.
-    private Stmt conditionalBranch(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock terminus) throws StaticRegionException {
+    private Stmt conditionalBranch(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock terminus)
+            throws StaticRegionException {
 
         SSAInstruction ins = currentBlock.getLastInstruction();
         if (!(ins instanceof SSAConditionalBranchInstruction)) {
@@ -124,21 +138,29 @@ public class CreateStaticRegions {
         }
         // Handle case where terminus is either 'if' or 'else' branch;
         Expression condExpr = convertCondition((SSAConditionalBranchInstruction)ins);
+        int takenIndex = -1, notTakenIndex = -1;
         ISSABasicBlock thenBlock = Util.getTakenSuccessor(cfg, currentBlock);
+        ISSABasicBlock elseBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
+        if (terminus.iteratePhis().hasNext() && terminus.iteratePhis().next() instanceof SSAPhiInstruction) {
+            takenIndex = DerivePhiOrder.getPhiUseNumIndex(cfg, thenBlock, terminus);
+            notTakenIndex = DerivePhiOrder.getPhiUseNumIndex(cfg, elseBlock, terminus);
+        }
+
         Stmt thenStmt, elseStmt;
         if (thenBlock.getNumber() < terminus.getNumber()) {
             thenStmt = attemptSubregionRec(cfg, thenBlock, terminus);
         } else {
             thenStmt = SkipStmt.skip;
         }
-        ISSABasicBlock elseBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
+
         if (elseBlock.getNumber() < terminus.getNumber()) {
             elseStmt = attemptSubregionRec(cfg, elseBlock, terminus);
         } else {
             elseStmt = SkipStmt.skip;
         }
 
-        return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt);
+        return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt,
+                new int[] {takenIndex, notTakenIndex});
     }
 
     /*
@@ -224,12 +246,12 @@ public class CreateStaticRegions {
     }
 
 
-    public void createStructuredConditionalRegions(IR ir, HashMap<String, Region> veritestingRegions) throws StaticRegionException {
+    public void createStructuredConditionalRegions(HashMap<String, Region> veritestingRegions) throws StaticRegionException {
         SSACFG cfg = ir.getControlFlowGraph();
         createStructuredConditionalRegions(ir, cfg.entry(), cfg.exit(), veritestingRegions);
     }
 
-    public void createStructuredMethodRegion(IR ir, HashMap<String, Region> veritestingRegions) throws StaticRegionException {
+    public void createStructuredMethodRegion(HashMap<String, Region> veritestingRegions) throws StaticRegionException {
         SSACFG cfg = ir.getControlFlowGraph();
         try {
             Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());

@@ -12,40 +12,40 @@ public class PrettyPrintVisitor implements AstVisitor<Void> {
     PrettyPrintExpr ppe;
     ExprVisitorAdapter<Void> eva ;
 
-    PrettyPrintVisitor() {
+    protected PrettyPrintVisitor() {
         ppe = new PrettyPrintExpr();
         eva = new ExprVisitorAdapter<Void>(ppe);
     }
 
-    void ind() {
+    protected void ind() {
         for (int i=0; i < indent; i++) {
             sb.append("   ");
         }
     }
 
-    void indent() {
+    protected void indent() {
         indent++;
     }
 
-    void unindent() {
+    protected void unindent() {
         if (indent > 0)
             indent--;
     }
 
-    void nl() {
+    protected void nl() {
         sb.append(System.lineSeparator());
     }
 
-    void write(Stmt a) {
+    protected void write(Stmt a) {
         a.accept(this);
     }
 
 
-    void write(String s) {
+    protected void write(String s) {
         sb.append(s);
     }
 
-    void write(Expression e) {
+    protected void write(Expression e) {
         eva.accept(e);
     }
 

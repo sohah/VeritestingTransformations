@@ -4,6 +4,8 @@ import com.ibm.wala.ssa.SSAPhiInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+import java.util.Arrays;
+
 public class PhiInstruction extends Instruction {
 
     public final Expression def;
@@ -31,5 +33,10 @@ public class PhiInstruction extends Instruction {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return "\n"+ def + " = phi("+ Arrays.toString(rhs) + ")";
     }
 }

@@ -1,6 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Variable;
 import za.ac.sun.cs.green.expr.Visitor;
 import za.ac.sun.cs.green.expr.VisitorException;

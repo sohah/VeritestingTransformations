@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;

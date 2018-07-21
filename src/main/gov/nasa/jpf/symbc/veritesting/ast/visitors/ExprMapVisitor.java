@@ -5,7 +5,7 @@ import za.ac.sun.cs.green.expr.*;
 
 public class ExprMapVisitor implements ExprVisitor<Expression> {
 
-    ExprVisitorAdapter<Expression> eva =
+    protected ExprVisitorAdapter<Expression> eva =
             new ExprVisitorAdapter<>(this);
 
     @Override

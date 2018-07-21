@@ -4,6 +4,8 @@ import com.ibm.wala.ssa.SSAInvokeInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+import java.util.Arrays;
+
 public class InvokeInstruction extends Instruction {
     public final Expression [] result;
     public final Expression [] params;
@@ -36,5 +38,11 @@ public class InvokeInstruction extends Instruction {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+
+    @Override
+    public String toString() {
+        return "\n invoke " + Arrays.toString(params) + "=" + Arrays.toString(result);
     }
 }

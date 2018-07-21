@@ -2,9 +2,6 @@ package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import za.ac.sun.cs.green.expr.*;
 
 public interface ExprVisitor<T> extends VVarExprVisitor<T> {

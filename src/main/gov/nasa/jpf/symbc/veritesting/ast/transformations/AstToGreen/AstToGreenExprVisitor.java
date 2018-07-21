@@ -4,7 +4,6 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.*;

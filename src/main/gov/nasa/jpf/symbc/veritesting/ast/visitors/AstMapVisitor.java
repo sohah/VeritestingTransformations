@@ -26,7 +26,8 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(IfThenElseStmt a) {
-        return new IfThenElseStmt(a.original, eva.accept(a.condition), a.thenStmt.accept(this), a.elseStmt.accept(this));
+        return new IfThenElseStmt(a.original, eva.accept(a.condition), a.thenStmt.accept(this),
+                a.elseStmt.accept(this), new int[]{a.takenIndex, a.notTakenIndex});
     }
 
     @Override
@@ -78,10 +79,11 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(PutInstruction c) {
-        return new PutInstruction(c.getOriginal(),
+        PutInstruction ins = new PutInstruction(c.getOriginal(),
                 eva.accept(c.def),
                 c.field,
                 eva.accept(c.assignExpr));
+        return ins;
     }
 
     @Override
@@ -104,7 +106,6 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(ArrayLengthInstruction c) {
-
         return new ArrayLengthInstruction(c.getOriginal(),
                 eva.accept(c.def),
                 eva.accept(c.arrayref));

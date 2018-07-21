@@ -30,4 +30,8 @@ public final class ArrayLengthInstruction extends Instruction {
         return visitor.visit(this);
     }
 
+    @Override
+    public String toString() {
+        return "\n"+ def + " = arrayLength (" +arrayref +")";
+    }
 }
