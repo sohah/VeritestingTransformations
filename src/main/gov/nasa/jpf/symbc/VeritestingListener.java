@@ -27,7 +27,7 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.DoSpfCases;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
@@ -100,13 +100,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if(staticRegion != null){
                 System.out.println("---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(staticRegion.getStaticStmt()));
                 staticRegion.getStackSlotTable().printStackSlotMap();
-                DoSpfCases doSpfCases = new DoSpfCases(regionsMap.get(key));
+                //staticRegion.printOutputVar();
+                System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
+                staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
+                System.out.println(StmtPrintVisitor.print(staticRegion.getStaticStmt()));
                 System.out.println("--------------- SUBSTITUTION TRANSFORMATION ---------------");
                 DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
                 System.out.println(StmtPrintVisitor.print(dynRegion.getDynStmt()));
-                System.out.println("\nVar-values table:");
                 dynRegion.getValueSymbolTable().printSymbolTable();
-
             }
         }
 
