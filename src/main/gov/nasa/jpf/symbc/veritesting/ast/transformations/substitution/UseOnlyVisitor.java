@@ -1,8 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
@@ -38,15 +38,7 @@ public class UseOnlyVisitor  extends AstMapVisitor{
                 eva.accept(c.ref),
                 c.field);
     }
-/*
-    @Override
-    public Stmt visit(PutInstruction c) {
-        return new PutInstruction(c.getOriginal(),
-                c.def,
-                c.field,
-                eva.accept(c.assignExpr));
-    }
-*/
+
     @Override
     public Stmt visit(InvokeInstruction c) {
         Expression [] params = new Expression [c.params.length];
