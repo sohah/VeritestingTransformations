@@ -29,8 +29,10 @@ import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.DoSpfCases;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DoSubstitution;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.Region;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.StmtPrintVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.vm.*;
 
@@ -92,16 +94,19 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             String methodSignature = methodInfo.getSignature();
             int offset = instructionToExecute.getPosition();
             String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
-            HashMap<String, Region> regionsMap = VeritestingMain.veriRegions;
+            HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
 
-            Region region = regionsMap.get(key);
-            if(region != null){
-                System.out.println("---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(region.getStmt()));
-                region.getStackSlotTable().printStackSlotMap();
-                DoSubstitution doSubstitution = new DoSubstitution(ti, regionsMap.get(key));
-                System.out.println("\nVar-values table:");
-                regionsMap.get(key).getValueSymbolTable().printSymbolTable();
+            StaticRegion staticRegion = regionsMap.get(key);
+            if(staticRegion != null){
+                System.out.println("---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(staticRegion.getStaticStmt()));
+                staticRegion.getStackSlotTable().printStackSlotMap();
                 DoSpfCases doSpfCases = new DoSpfCases(regionsMap.get(key));
+                System.out.println("--------------- SUBSTITUTION TRANSFORMATION ---------------");
+                DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
+                System.out.println(StmtPrintVisitor.print(dynRegion.getDynStmt()));
+                System.out.println("\nVar-values table:");
+                dynRegion.getValueSymbolTable().printSymbolTable();
+
             }
         }
 

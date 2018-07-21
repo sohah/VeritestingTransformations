@@ -37,7 +37,7 @@ import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ReflectUtil;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.Region;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.vm.ThreadInfo;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
@@ -56,7 +56,7 @@ public class VeritestingMain {
     private boolean methodAnalysis = false;
     private String currentPackageName;
     //HashMap<String, Stmt> veritestingRegions;
-    public static HashMap<String, Region> veriRegions;
+    public static HashMap<String, StaticRegion> veriRegions;
     private ThreadInfo ti;
 
 

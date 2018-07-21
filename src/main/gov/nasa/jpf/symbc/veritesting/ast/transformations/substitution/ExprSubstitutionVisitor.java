@@ -2,7 +2,6 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
@@ -17,20 +16,20 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
 
     private ThreadInfo ti;
     private StackFrame sf;
-    private Region region;
+    private DynamicRegion dynRegion;
     public ExprVisitorAdapter eva;
 
-    public ExprSubstitutionVisitor(ThreadInfo ti, Region region) {
+    public ExprSubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
         super();
         this.ti = ti;
         this.sf = ti.getTopFrame();
-        this.region = region;
+        this.dynRegion = dynRegion;
         eva = super.eva;
     }
 
     @Override
     public Expression visit(WalaVarExpr expr) {
-        StackSlotTable stackSlotTable = region.getStackSlotTable();
+        StackSlotTable stackSlotTable = dynRegion.getStackSlotTable();
         int[] stackSlots = stackSlotTable.lookup(expr.number);
         if (stackSlots != null) {
             assert(stackSlots.length>0);
@@ -39,7 +38,7 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
             if (varValue == null)
                 varValue = new IntegerConstant(sf.getLocalVariable(stackSlots[0]));
             Expression greenValue = SPFToGreenExpr(varValue);
-            region.getValueSymbolTable().add(expr.number, greenValue);
+            dynRegion.getValueSymbolTable().add(expr.number, greenValue);
             return greenValue;
         }
         else
