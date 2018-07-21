@@ -4,7 +4,7 @@ import com.ibm.wala.ssa.SSAArrayLengthInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
-public class ArrayLengthInstruction extends Instruction {
+public final class ArrayLengthInstruction extends Instruction {
 
     public final Expression arrayref;
     public final Expression def;
@@ -29,4 +29,5 @@ public class ArrayLengthInstruction extends Instruction {
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
 }

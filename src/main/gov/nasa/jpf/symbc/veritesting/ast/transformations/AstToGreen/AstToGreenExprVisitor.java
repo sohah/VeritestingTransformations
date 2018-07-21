@@ -46,7 +46,6 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
         Expression assign = new Operation(Operation.Operator.EQ, toAssign, e);
         if (currentCondition.equals(Operation.TRUE)) {
             return assign;
-
         } else {
             return new Operation(Operation.Operator.IMPLIES, currentCondition, assign);
         }
