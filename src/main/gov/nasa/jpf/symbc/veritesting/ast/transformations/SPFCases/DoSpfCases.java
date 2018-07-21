@@ -16,7 +16,7 @@ public class DoSpfCases {
         SpfCasesVisitor spfCasesVisitor = new SpfCasesVisitor();
         Stmt substitutedStmt = region.getStmt().accept(spfCasesVisitor);
         region.setStmt(substitutedStmt);
-        System.out.println("--------------- SUBSTITUTION TRANSFORMATION ---------------");
+        System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
         System.out.println(StmtPrintVisitor.print(region.getStmt()));
     }
 }

@@ -96,7 +96,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
             Region region = regionsMap.get(key);
             if(region != null){
-                System.out.println("---------- STARTING Transformations for region: \n"+ PrettyPrintVisitor.print(region.getStmt()));
+                System.out.println("---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(region.getStmt()));
                 region.getStackSlotTable().printStackSlotMap();
                 DoSubstitution doSubstitution = new DoSubstitution(ti, regionsMap.get(key));
                 System.out.println("\nVar-values table:");

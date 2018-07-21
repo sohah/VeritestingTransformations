@@ -43,15 +43,14 @@ public class SpfCasesVisitor implements AstVisitor<Stmt> {
         if ((thenStmt instanceof SPFCaseStmt) && (elseStmt instanceof SPFCaseStmt)) //attempting to collapse unncessary nodes
             s = new SPFCaseStmt(oldSPFCondition, SPFCaseStmt.SPFReason.MULTIPLE);
         else if ((thenStmt instanceof SPFCaseStmt) && (elseStmt.equals(SkipStmt.skip)))
-            s = thenStmt;
+            s = new SPFCaseStmt(oldSPFCondition, ((SPFCaseStmt) thenStmt).reason);
         else if ((elseStmt instanceof SPFCaseStmt) && (thenStmt.equals(SkipStmt.skip)))
-            s = elseStmt;
+            s = new SPFCaseStmt(oldSPFCondition, ((SPFCaseStmt) elseStmt).reason);
         else
             s = new IfThenElseStmt(a.original, a.condition, thenStmt, elseStmt);
         spfCondition=oldSPFCondition;
         return s;
     }
-
 
 
 
