@@ -27,7 +27,7 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
     @Override
     public Stmt visit(IfThenElseStmt a) {
         return new IfThenElseStmt(a.original, eva.accept(a.condition), a.thenStmt.accept(this),
-                a.elseStmt.accept(this), new int[]{a.takenIndex, a.notTakenIndex});
+                a.elseStmt.accept(this));
     }
 
     @Override

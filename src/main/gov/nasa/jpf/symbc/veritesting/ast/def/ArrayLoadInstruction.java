@@ -13,7 +13,8 @@ public class ArrayLoadInstruction extends Instruction {
     public final TypeReference elementType;
     public final Expression def;
 
-    public ArrayLoadInstruction(SSAArrayLoadInstruction ins, Expression arrayref, Expression index, TypeReference elementType, Expression def) {
+    public ArrayLoadInstruction(SSAArrayLoadInstruction ins, Expression arrayref, Expression index,
+                                TypeReference elementType, Expression def) {
         super(ins);
         this.arrayref = arrayref;
         this.index = index;
