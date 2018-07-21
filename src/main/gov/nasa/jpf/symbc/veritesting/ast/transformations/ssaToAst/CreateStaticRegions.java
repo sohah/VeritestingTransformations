@@ -7,7 +7,6 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.phiToGamma.DerivePhiOrder;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
@@ -138,13 +137,8 @@ public class CreateStaticRegions {
         }
         // Handle case where terminus is either 'if' or 'else' branch;
         Expression condExpr = convertCondition((SSAConditionalBranchInstruction)ins);
-        int takenIndex = -1, notTakenIndex = -1;
         ISSABasicBlock thenBlock = Util.getTakenSuccessor(cfg, currentBlock);
         ISSABasicBlock elseBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
-        if (terminus.iteratePhis().hasNext() && terminus.iteratePhis().next() instanceof SSAPhiInstruction) {
-            takenIndex = DerivePhiOrder.getPhiUseNumIndex(cfg, thenBlock, terminus);
-            notTakenIndex = DerivePhiOrder.getPhiUseNumIndex(cfg, elseBlock, terminus);
-        }
 
         Stmt thenStmt, elseStmt;
         if (thenBlock.getNumber() < terminus.getNumber()) {
@@ -159,8 +153,7 @@ public class CreateStaticRegions {
             elseStmt = SkipStmt.skip;
         }
 
-        return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt,
-                new int[] {takenIndex, notTakenIndex});
+        return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt);
     }
 
     /*

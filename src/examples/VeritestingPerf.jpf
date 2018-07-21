@@ -67,6 +67,9 @@ symbolic.method=VeritestingPerf.irTest6(sym)
 #symbolic.method=VeritestingPerf.fieldTest1(sym)
 #symbolic.method=VeritestingPerf.fieldTest00(sym)
 
+######## testing simple regions  ######
+symbolic.method=VeritestingPerf.foo7(sym)
+
 ######## testing complexRegions  ######
 #symbolic.method=VeritestingPerf.foo(sym)
 #symbolic.method=VeritestingPerf.assertRegions(sym#sym)

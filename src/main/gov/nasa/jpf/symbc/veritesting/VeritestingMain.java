@@ -273,7 +273,8 @@ public class VeritestingMain {
             currentClassName = className;
             currentMethodName = m.getName().toString();
             this.methodSig = methodSig.substring(methodSig.indexOf('('));
-            System.out.println("Starting " + (methodAnalysis ? "method " : "region ") + "analysis for " + currentMethodName + "(" + currentClassName + "." + methodSig + ")");
+            System.out.println("Starting " + (methodAnalysis ? "method " : "region ") + "analysis for " +
+                    currentMethodName + "(" + currentClassName + "." + methodSig + ")");
             NumberedDominators<ISSABasicBlock> uninverteddom =
                     (NumberedDominators<ISSABasicBlock>) Dominators.make(cfg, cfg.entry());
             loops = new HashSet<>();
@@ -290,9 +291,11 @@ public class VeritestingMain {
             }
             Set<String> keys = veriRegions.keySet();
             for (String key: keys) {
-                Region r = veriRegions.get(key);
-                PhiToGammaSubstitution sub = new PhiToGammaSubstitution(r);
-                sub.doSubstitution();
+                Region region = veriRegions.get(key);
+                if (key.contains("foo7")) {
+                    PhiToGammaSubstitution sub = new PhiToGammaSubstitution(region);
+                    sub.doSubstitution();
+                }
             }
 
 

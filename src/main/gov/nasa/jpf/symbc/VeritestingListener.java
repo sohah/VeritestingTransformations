@@ -31,6 +31,7 @@ import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.veritesting.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.phiToGamma.PhiToGammaSubstitution;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DoSubstitution;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
