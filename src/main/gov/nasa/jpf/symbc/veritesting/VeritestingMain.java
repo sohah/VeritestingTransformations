@@ -38,7 +38,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.phiToGamma.PhiToGammaS
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ReflectUtil;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.vm.ThreadInfo;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
@@ -57,7 +57,7 @@ public class VeritestingMain {
     private boolean methodAnalysis = false;
     private String currentPackageName;
     //HashMap<String, Stmt> veritestingRegions;
-    public static HashMap<String, Region> veriRegions;
+    public static HashMap<String, StaticRegion> veriRegions;
     private ThreadInfo ti;
 
 
@@ -290,7 +290,7 @@ public class VeritestingMain {
             }
             Set<String> keys = veriRegions.keySet();
             for (String key: keys) {
-                Region r = veriRegions.get(key);
+                StaticRegion r = veriRegions.get(key);
                 PhiToGammaSubstitution sub = new PhiToGammaSubstitution(r);
                 sub.doSubstitution();
             }

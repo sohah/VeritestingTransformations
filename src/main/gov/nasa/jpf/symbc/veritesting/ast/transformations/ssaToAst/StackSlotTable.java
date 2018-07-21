@@ -1,10 +1,11 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAPhiInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotIVisitor;
 
 import java.util.Arrays;
 import java.util.HashMap;

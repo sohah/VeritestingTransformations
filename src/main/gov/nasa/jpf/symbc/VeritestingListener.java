@@ -20,27 +20,22 @@
 package gov.nasa.jpf.symbc;
 
 
-import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
-import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.report.ConsolePublisher;
-import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
-import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.veritesting.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.DoSpfCases;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DoSubstitution;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.IntConstant;
-import za.ac.sun.cs.green.expr.IntVariable;
-import za.ac.sun.cs.green.expr.Operation;
 
-import java.io.PrintWriter;
 import java.util.*;
 
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
@@ -99,14 +94,19 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             String methodSignature = methodInfo.getSignature();
             int offset = instructionToExecute.getPosition();
             String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
-            HashMap<String, Region> regionsMap = VeritestingMain.veriRegions;
+            HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
 
-            Region region = regionsMap.get(key);
-            if(region != null){
-                region.getStackSlotTable().printStackSlotMap();
-                DoSubstitution doSubstitution = new DoSubstitution(ti, regionsMap.get(key));
-                System.out.println("\nprinting variables values symbol table after substitution for: " + key);
-                regionsMap.get(key).getValueSymbolTable().printSymbolTable();
+            StaticRegion staticRegion = regionsMap.get(key);
+            if(staticRegion != null){
+                System.out.println("---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(staticRegion.getStaticStmt()));
+                staticRegion.getStackSlotTable().printStackSlotMap();
+                DoSpfCases doSpfCases = new DoSpfCases(regionsMap.get(key));
+                System.out.println("--------------- SUBSTITUTION TRANSFORMATION ---------------");
+                DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
+                System.out.println(StmtPrintVisitor.print(dynRegion.getDynStmt()));
+                System.out.println("\nVar-values table:");
+                dynRegion.getValueSymbolTable().printSymbolTable();
+
             }
         }
 
