@@ -16,7 +16,8 @@ public class StaticRegion {
         this.staticStmt = staticStmt;
         this.ir  = ir;
         stackSlotTable = new StackSlotTable(ir);
-        outputVars = computeOutputVars();
+        outputVars = new ArrayList<>();
+    //    outputVars = computeOutputVars();
 
     }
 

@@ -8,6 +8,7 @@ public class DynamicRegion extends StaticRegion {
 
     private ValueSymbolTable valueSymbolTable;
     private Stmt dynStmt;
+    private static int uniqueCounter;
 
     public DynamicRegion(StaticRegion staticRegion) {
         super(staticRegion.getStaticStmt(), staticRegion.ir);

@@ -100,7 +100,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if(staticRegion != null){
                 System.out.println("---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(staticRegion.getStaticStmt()));
                 staticRegion.getStackSlotTable().printStackSlotMap();
-                //staticRegion.printOutputVar();
+                staticRegion.printOutputVar();
                 System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
                 staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
                 System.out.println(StmtPrintVisitor.print(staticRegion.getStaticStmt()));
