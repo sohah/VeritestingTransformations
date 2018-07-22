@@ -54,16 +54,22 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
     }
 
     private gov.nasa.jpf.symbc.numeric.Expression createConstantForType(int variableSlot) throws StaticRegionException {
-        switch (sf.getLocalVariableType(variableSlot)) {
-            case "double":
-            case "float":
-            case "long":
-                return new gov.nasa.jpf.symbc.numeric.RealConstant(sf.getLocalVariable(variableSlot));
-            case "int":
-            case "short":
-            case "boolean":
-            default: //considered here an object reference
-                return new IntegerConstant(sf.getLocalVariable(variableSlot));
+        String varType = sf.getLocalVariableType(variableSlot);
+        if (varType != null) { //SH: sometimes SPF does not give the type! we assume its an int
+            switch (varType) {
+                case "double":
+                case "float":
+                case "long":
+                    return new gov.nasa.jpf.symbc.numeric.RealConstant(sf.getLocalVariable(variableSlot));
+                case "int":
+                case "short":
+                case "boolean":
+                default: //considered here an object reference
+                    return new IntegerConstant(sf.getLocalVariable(variableSlot));
+            }
+        } else{
+            System.out.println("SPF does not know the type, type is assumed int.");
+            return new IntegerConstant(sf.getLocalVariable(variableSlot));
         }
     }
 
