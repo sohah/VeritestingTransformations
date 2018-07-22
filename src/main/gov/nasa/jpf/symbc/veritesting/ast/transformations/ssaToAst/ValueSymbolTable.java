@@ -36,7 +36,7 @@ public class ValueSymbolTable {
     }
 
     public void printSymbolTable() {
-        System.out.println("\nprinting value symbol table");
+        System.out.println("\nprinting value symbol table (var -> expresion");
         symbolTable.forEach((var, expr) -> System.out.println(var + " --------- " + expr));
     }
 }

@@ -66,9 +66,9 @@ public class StackSlotTable {
     }
 
     //SH: returns all vars that have the same stack slot entered in the parameter.
-    public HashSet getVarsOfSlot(int slot){
+    public Set getVarsOfSlot(int slot){
         HashSet<Integer> stackSlotVars = new HashSet();
-        HashSet<Integer> vars = (HashSet<Integer>) stackSlotMap.keySet();
+        Set<Integer> vars = stackSlotMap.keySet();
         Iterator<Integer> varIter = vars.iterator();
         HashSet<Integer> varSlotSet = new HashSet();
 
@@ -141,7 +141,7 @@ public class StackSlotTable {
     }
 
     public void printStackSlotMap() {
-        System.out.println("\nRegion Stack Slot Map");
+        System.out.println("\nRegion Stack Slot Map (var -> stack slot)");
         stackSlotMap.forEach((var, stackSlots) -> System.out.println(var + " --------- " + Arrays.toString(stackSlots)));
     }
 }
