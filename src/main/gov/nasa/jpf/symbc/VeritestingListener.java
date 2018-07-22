@@ -108,6 +108,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
                 System.out.println(StmtPrintVisitor.print(dynRegion.getDynStmt()));
                 dynRegion.getValueSymbolTable().printSymbolTable();
+                dynRegion.getVarTypeTable().print();
             }
         }
 
