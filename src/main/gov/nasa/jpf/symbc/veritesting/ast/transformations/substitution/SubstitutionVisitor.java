@@ -1,17 +1,20 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 
 
-public class UseOnlyVisitor  extends AstMapVisitor{
+public class SubstitutionVisitor extends AstMapVisitor{
     ExprVisitorAdapter<Expression> eva;
+    private DynamicRegion dynRegion;
 
-    public UseOnlyVisitor(ThreadInfo ti, Region region) {
-        super(new ExprSubstitutionVisitor(ti, region));
+
+    private SubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
+        super(new ExprSubstitutionVisitor(ti, dynRegion));
         eva = super.eva;
     }
 
@@ -37,15 +40,7 @@ public class UseOnlyVisitor  extends AstMapVisitor{
                 eva.accept(c.ref),
                 c.field);
     }
-/*
-    @Override
-    public Stmt visit(PutInstruction c) {
-        return new PutInstruction(c.getOriginal(),
-                c.def,
-                c.field,
-                eva.accept(c.assignExpr));
-    }
-*/
+
     @Override
     public Stmt visit(InvokeInstruction c) {
         Expression [] params = new Expression [c.params.length];
@@ -75,5 +70,11 @@ public class UseOnlyVisitor  extends AstMapVisitor{
                 rhs);
     }
 
-
+    public static DynamicRegion doSubstitution(ThreadInfo ti, StaticRegion staticRegion)  {
+        DynamicRegion dynRegion = new DynamicRegion(staticRegion);
+        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, dynRegion);
+        Stmt dynStmt = dynRegion.getStaticStmt().accept(visitor);
+        dynRegion.setDynStmt(dynStmt);
+        return dynRegion;
+    }
 }

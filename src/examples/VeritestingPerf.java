@@ -60,7 +60,8 @@ public class VeritestingPerf {
         //(new VeritestingPerf()).irTest3(1);
         //(new VeritestingPerf()).irTest4(1);
         //(new VeritestingPerf()).irTest5(1);
-        (new VeritestingPerf()).irTest6(1);
+//        (new VeritestingPerf()).irTest6(1);
+        (new VeritestingPerf()).foo7(1);
 
 
 
@@ -1456,6 +1457,16 @@ public class VeritestingPerf {
         ref.f = local;
 
         return ref.f;
+    }
+
+    public int foo7(int x) {
+        int ret;
+        if (x > 0) {
+            ret = x-1;
+        } else {
+            ret = x+1;
+        }
+        return ret;
     }
 
 

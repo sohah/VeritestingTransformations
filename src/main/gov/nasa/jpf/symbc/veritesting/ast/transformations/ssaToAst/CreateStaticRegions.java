@@ -7,8 +7,6 @@ import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.phiToGamma.DerivePhiOrder;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.*;
 
@@ -152,13 +150,8 @@ public class CreateStaticRegions {
         }
         // Handle case where terminus is either 'if' or 'else' branch;
         Expression condExpr = convertCondition((SSAConditionalBranchInstruction)ins);
-        int takenIndex = -1, notTakenIndex = -1;
         ISSABasicBlock thenBlock = Util.getTakenSuccessor(cfg, currentBlock);
         ISSABasicBlock elseBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
-        if (terminus.iteratePhis().hasNext() && terminus.iteratePhis().next() instanceof SSAPhiInstruction) {
-            takenIndex = DerivePhiOrder.getPhiUseNumIndex(cfg, thenBlock, terminus);
-            notTakenIndex = DerivePhiOrder.getPhiUseNumIndex(cfg, elseBlock, terminus);
-        }
 
         Stmt thenStmt, elseStmt;
         if (thenBlock.getNumber() < terminus.getNumber()) {
@@ -178,8 +171,7 @@ public class CreateStaticRegions {
             elseStmt = SkipStmt.skip;
         }
 
-        return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt,
-                new int[] {takenIndex, notTakenIndex});
+        return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt);
     }
 
     /*
@@ -239,7 +231,7 @@ public class CreateStaticRegions {
      */
     private void createStructuredConditionalRegions(IR ir, ISSABasicBlock currentBlock,
                                                    ISSABasicBlock endingBlock,
-                                                   HashMap<String, Region> veritestingRegions) throws StaticRegionException {
+                                                   HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
 
         SSACFG cfg = ir.getControlFlowGraph();
         // terminating conditions
@@ -257,7 +249,7 @@ public class CreateStaticRegions {
                 FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
                 ISSABasicBlock terminus = finder.findMinConvergingNode();
                 Stmt s = attemptConditionalSubregion(cfg, currentBlock, terminus);
-                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new Region(s, ir));
+                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
                 createStructuredConditionalRegions(ir, terminus, endingBlock, veritestingRegions);
@@ -272,20 +264,21 @@ public class CreateStaticRegions {
     }
 
 
-    public void createStructuredConditionalRegions(HashMap<String, Region> veritestingRegions) throws StaticRegionException {
+    public void createStructuredConditionalRegions(HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
         SSACFG cfg = ir.getControlFlowGraph();
         createStructuredConditionalRegions(ir, cfg.entry(), cfg.exit(), veritestingRegions);
     }
 
-    public void createStructuredMethodRegion(HashMap<String, Region> veritestingRegions) throws StaticRegionException {
-        reset();
 
+    public void createStructuredMethodRegion(HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
+
+        reset();
         SSACFG cfg = ir.getControlFlowGraph();
         try {
             Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());
             System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
-            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new Region(s, ir));
+            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir));
         } catch (StaticRegionException sre) {
             System.out.println("Unable to create a method summary subregion for: " + cfg.getMethod().getName().toString());
         }

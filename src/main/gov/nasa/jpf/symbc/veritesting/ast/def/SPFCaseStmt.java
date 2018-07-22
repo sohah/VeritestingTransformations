@@ -10,7 +10,8 @@ public class SPFCaseStmt implements Stmt {
     public final SPFReason reason;
 
     public enum SPFReason{
-        OBJECT_CREATION, OUT_OF_BOUND_EXCEPTION;
+        OBJECT_CREATION, OUT_OF_BOUND_EXCEPTION, THROW,
+        MULTIPLE; //used when the two sides of the ifStmt have SPFCases
     }
 
     public SPFCaseStmt(Expression spfCondition, SPFReason reason) {

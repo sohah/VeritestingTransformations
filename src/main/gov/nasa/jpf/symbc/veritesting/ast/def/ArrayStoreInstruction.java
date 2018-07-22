@@ -13,7 +13,8 @@ public class ArrayStoreInstruction extends Instruction {
     public final TypeReference elementType;
     public final Expression assignExpr;
 
-    public ArrayStoreInstruction(SSAArrayStoreInstruction ins, Expression arrayref, Expression index, TypeReference elementType, Expression assigned) {
+    public ArrayStoreInstruction(SSAArrayStoreInstruction ins, Expression arrayref, Expression index,
+                                 TypeReference elementType, Expression assigned) {
         super(ins);
         this.arrayref = arrayref;
         this.index = index;

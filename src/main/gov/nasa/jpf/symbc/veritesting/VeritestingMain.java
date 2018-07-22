@@ -34,11 +34,10 @@ import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import com.ibm.wala.util.io.FileProvider;
 import com.ibm.wala.util.strings.StringStuff;
 import gov.nasa.jpf.symbc.VeritestingListener;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.phiToGamma.PhiToGammaSubstitution;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ReflectUtil;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Region;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.vm.ThreadInfo;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
@@ -57,7 +56,7 @@ public class VeritestingMain {
     private boolean methodAnalysis = false;
     private String currentPackageName;
     //HashMap<String, Stmt> veritestingRegions;
-    public static HashMap<String, Region> veriRegions;
+    public static HashMap<String, StaticRegion> veriRegions;
     private ThreadInfo ti;
 
 
@@ -273,7 +272,8 @@ public class VeritestingMain {
             currentClassName = className;
             currentMethodName = m.getName().toString();
             this.methodSig = methodSig.substring(methodSig.indexOf('('));
-            System.out.println("Starting " + (methodAnalysis ? "method " : "region ") + "analysis for " + currentMethodName + "(" + currentClassName + "." + methodSig + ")");
+            System.out.println("Starting " + (methodAnalysis ? "method " : "region ") + "analysis for " +
+                    currentMethodName + "(" + currentClassName + "." + methodSig + ")");
             NumberedDominators<ISSABasicBlock> uninverteddom =
                     (NumberedDominators<ISSABasicBlock>) Dominators.make(cfg, cfg.entry());
             loops = new HashSet<>();
@@ -288,13 +288,13 @@ public class VeritestingMain {
                 //regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
                 regionCreator.createStructuredMethodRegion(veriRegions);
             }
+            /* // Placeholder for testing and visualizing static-time transformations
             Set<String> keys = veriRegions.keySet();
             for (String key: keys) {
-                Region r = veriRegions.get(key);
+                StaticRegion r = veriRegions.get(key);
                 PhiToGammaSubstitution sub = new PhiToGammaSubstitution(r);
                 sub.doSubstitution();
-            }
-
+            } */
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
