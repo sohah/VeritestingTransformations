@@ -70,9 +70,9 @@ public class StackSlotTable {
         HashSet<Integer> stackSlotVars = new HashSet();
         Set<Integer> vars = stackSlotMap.keySet();
         Iterator<Integer> varIter = vars.iterator();
-        HashSet<Integer> varSlotSet = new HashSet();
 
         while (varIter.hasNext()) {
+            HashSet<Integer> varSlotSet = new HashSet();
             Integer var = varIter.next();
             int[] varStackSlots = stackSlotMap.get(var);
             for (int i = 0; i < varStackSlots.length; i++) { //silly, converts an array to HashSet, there should be better ways in Java 8.
@@ -81,7 +81,7 @@ public class StackSlotTable {
             if(varSlotSet.contains(slot))
                 stackSlotVars.add(var);
         }
-        return vars;
+        return stackSlotVars;
     }
 
     //This tries to infer the stack slots for phi "def" vars and phi "use" vars by either figuring out the stack slots

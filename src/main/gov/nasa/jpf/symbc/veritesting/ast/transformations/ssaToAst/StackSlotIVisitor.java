@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import com.ibm.wala.ssa.*;
+
 import java.util.HashMap;
 
 
@@ -11,7 +12,9 @@ public class StackSlotIVisitor implements SSAInstruction.IVisitor {
     public final HashMap<Integer, int[]> stackSlotMap = new HashMap<>();
     private IR ir;
 
-    public StackSlotIVisitor(IR ir) { this.ir = ir; }
+    public StackSlotIVisitor(IR ir) {
+        this.ir = ir;
+    }
 
     @Override
     public void visitGoto(SSAGotoInstruction ssaGotoInstruction) {
@@ -101,7 +104,8 @@ public class StackSlotIVisitor implements SSAInstruction.IVisitor {
 
         for (int i = 0; i < ins.getNumberOfReturnValues(); i++) {
             populateVars(ins, ins.getReturnValue(i));
-        }    }
+        }
+    }
 
     @Override
     public void visitNew(SSANewInstruction ssaNewInstruction) {
@@ -156,15 +160,15 @@ public class StackSlotIVisitor implements SSAInstruction.IVisitor {
     }
 
 // SH: Used only to get the stack slot of "use" vars, which are either already defined in a previous "def" and so it will
-// be in the stackSlotMap otherwise look into wala, because this can be inputs.
+// be in the stackSlotMap. This is done also for phiInstruction, but phi requires a fix point computation and propagation of vars to stack slot discovery. This happens during the construction of the stack slot table object.
 
     public void populateVars(SSAInstruction ins, int var) {
         int iindex = ins.iindex;
-        if (!(ins instanceof  SSAPhiInstruction) && ((stackSlotMap.get(var) == null)|| (stackSlotMap.get(var)[0] == -1))) {
+        if (!(ins instanceof  SSAPhiInstruction) && (stackSlotMap.get(var) == null)) {
             int[] localNumbers = ir.findLocalsForValueNumber(iindex, var);
             if (localNumbers != null)
                 stackSlotMap.put(var, localNumbers);
-            }
+        }
     }
 }
 

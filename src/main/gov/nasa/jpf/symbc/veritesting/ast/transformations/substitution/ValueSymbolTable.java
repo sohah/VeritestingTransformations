@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
@@ -36,7 +36,7 @@ public class ValueSymbolTable {
     }
 
     public void printSymbolTable() {
-        System.out.println("\nprinting value symbol table (var -> expresion");
+        System.out.println("\nprinting value symbol table (var -> expresion)");
         symbolTable.forEach((var, expr) -> System.out.println(var + " --------- " + expr));
     }
 }
