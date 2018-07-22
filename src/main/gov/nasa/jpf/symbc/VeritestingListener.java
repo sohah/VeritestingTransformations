@@ -111,7 +111,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 dynRegion.getVarTypeTable().print();
             }
         }
-
     }
 
     private void discoverRegions(ThreadInfo ti) {

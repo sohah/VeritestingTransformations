@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="tools">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/tools/RunAnt.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tools/RunJPF.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tools/RunTest.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -6,9 +6,9 @@
     <option name="PROGRAM_PARAMETERS" value="$PROJECT_DIR$/src/examples/VeritestingPerf.jpf" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/lib" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-    <option name="ALTERNATIVE_JRE_PATH" value="1.8.0_144" />
+    <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
     <envs>
-      <env name="TARGET_CLASSPATH_WALA" value="/Users/vaibhav/git_repos/jpf-symbc-veritesting/build/examples/" />
+      <env name="TARGET_CLASSPATH_WALA" value="/Users/sohanabel/git/VeriTransformations/jpf-symbc-veritesting/build/examples/" />
     </envs>
     <method />
   </configuration>
