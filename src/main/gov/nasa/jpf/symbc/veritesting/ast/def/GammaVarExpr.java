@@ -8,6 +8,13 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
+/*
+    MWW TODO: This class might be better represented as a list of <condition, assign> pairs
+        TODO: as this is a more accurate representation of what is in the SSA form, and it
+        TODO: would allow opportunities for subsequent optimization.  However, for now I
+        TODO: am leaving it as it is.
+ */
+
 public final class GammaVarExpr extends Variable {
     public final Expression condition;
     public final Expression thenExpr;
