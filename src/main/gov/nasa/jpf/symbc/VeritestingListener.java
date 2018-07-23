@@ -28,6 +28,7 @@ import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
@@ -104,6 +105,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 System.out.println(StmtPrintVisitor.print(staticRegion.getStaticStmt()));
                 System.out.println("--------------- SUBSTITUTION TRANSFORMATION ---------------");
                 DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
+                System.out.println(StmtPrintVisitor.print(dynRegion.getDynStmt()));
+                staticRegion.getStackSlotTable().print();
+                dynRegion.getValueSymbolTable().print();
+                dynRegion.getVarTypeTable().print();
+                staticRegion.getOutputTable().print();
+
+                System.out.println("--------------- UNIQUNESS TRANSFORMATION ---------------");
+                UniqueRegion.doUniqueness(dynRegion);
                 System.out.println(StmtPrintVisitor.print(dynRegion.getDynStmt()));
                 staticRegion.getStackSlotTable().print();
                 dynRegion.getValueSymbolTable().print();

@@ -5,7 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 
 public class DynamicRegion extends StaticRegion {
 
-    public static int uniqueCounter;
+    public static int uniqueCounter = 0;
     private Stmt dynStmt;
     private VarTypeTable varTypeTable;
     private ValueSymbolTable valueSymbolTable;

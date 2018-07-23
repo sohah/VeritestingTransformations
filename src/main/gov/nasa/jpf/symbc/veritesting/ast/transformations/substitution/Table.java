@@ -6,11 +6,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+//SH: base class for all environment tables.
+
 public class Table<T> {
     protected HashMap<Integer, T> table;
-    protected String tableName;
-    protected String label1;
-    protected String label2;
+    private String tableName;
+    private String label1;
+    private String label2;
 
     public Table(String tableName, String label1, String label2){
         this.table = new HashMap<>();
@@ -40,16 +42,14 @@ public class Table<T> {
         System.out.println("\nprinting " + tableName+" ("+ label1 + "->" + label2 +")");
         table.forEach((v1, v2) -> System.out.println(v1 + " --------- " + v2));
     }
-    
+
     public void updateKeys(Integer oldKey, Integer newKey){
-        Set<Integer> keys = table.keySet();
-        Iterator<Integer> iter = keys.iterator();
-        while(iter.hasNext()){
-            Integer key = iter.next();
-            T value = table.get(key);
-            if(key == oldKey){
-                table.remove(key);
+        Object[] keys = table.keySet().toArray();
+        for(int i=0; i < keys.length; i++){
+            T value = table.get(keys[i]);
+            if(keys[i] == oldKey){
                 table.put(newKey, value);
+                table.remove(oldKey);
             }
         }
     }
