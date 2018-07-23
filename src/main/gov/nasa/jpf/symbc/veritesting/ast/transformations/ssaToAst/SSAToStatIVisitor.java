@@ -9,8 +9,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
-
-import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAToStatIVisitor.sre;
+import java.util.stream.Collectors;
 
 
 //SH: This class translates SSAInstructions to Veritesting Statements.
@@ -23,15 +22,15 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public boolean canVeritest = true;
 
     private IR ir;
-    private HashMap<ISSABasicBlock, List<Expression>> blockConditionMap;
-    private Deque<Expression> currentCondition;
+    private HashMap<PhiEdge, List<PhiCondition>> blockConditionMap;
+    private Deque<PhiCondition> currentCondition;
     private ISSABasicBlock currentBlock;
     private StaticRegionException pending = null;
 
     public SSAToStatIVisitor(IR ir,
                              ISSABasicBlock currentBlock,
-                             HashMap<ISSABasicBlock, List<Expression>> blockConditionMap,
-                             Deque<Expression> currentCondition) {
+                             HashMap<PhiEdge, List<PhiCondition>> blockConditionMap,
+                             Deque<PhiCondition> currentCondition) {
         this.ir = ir;
         this.currentBlock = currentBlock;
         this.blockConditionMap = blockConditionMap;
@@ -43,8 +42,11 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     Beginning of methods for translating Phi instructions...
  */
 
-    private Expression convertWalaVar(int ssaVar) throws StaticRegionException {
-        SymbolTable symtab = ir.getSymbolTable();
+/*
+        If we want to convert constants to values eagerly, we can add this code back in.
+        However, I don't think it is necessary.
+
+       SymbolTable symtab = ir.getSymbolTable();
 
         if (symtab.isConstant(ssaVar)) {
             Object val = symtab.getConstantValue(ssaVar);
@@ -60,29 +62,12 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
                 throw new StaticRegionException("translateTruncatedFinalBlock: unsupported constant type");
             }
         } else {
-            return new WalaVarExpr(ssaVar);
-        }
+*/
+
+    private Expression convertWalaVar(int ssaVar) throws StaticRegionException {
+        return new WalaVarExpr(ssaVar);
     }
 
-    private List<List<Expression>> simplifyConditions(List<List<Expression>> conds) {
-        assert (conds != null);
-
-        // check whether there are shared conditions across all incoming branches
-        // This can happen on an inner \phi
-        Expression sharedCondElem = conds.get(0).get(0);
-        for (List<Expression> cond: conds) {
-            if (cond.get(0) != sharedCondElem) { return conds; }
-        }
-        // All conditions match on first element - remove it, then try again.
-        List<List<Expression>> newConds = new ArrayList<List<Expression>>();
-        for (List<Expression> cond: conds) {
-            List<Expression> newCond = new ArrayList<>(cond.size() - 1);
-            for (int i = 1; i < cond.size(); i++) {
-                newCond.add(cond.get(i));
-            }
-        }
-        return simplifyConditions(newConds);
-    }
 
     private Expression conjunct(List<Expression> le) {
         if (le.size() == 0) {
@@ -95,11 +80,69 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         return result;
     }
 
-    private Expression createGamma(List<List<Expression>> conds, List<Expression> values, int index) {
-        if (index == conds.size() - 1) {
-            return values.get(index);
-        } else {
-            return new GammaVarExpr(conjunct(conds.get(index)), values.get(index), createGamma(conds, values, index+1));
+    /* How do we organize the Gamma conditions?
+        Do a partition based on the first element of the list.
+
+        Do a partition based on the first element.
+        {c1 -> {c2 -> {c
+
+     */
+
+    private Expression getAndCheckCondition(List<LinkedList<PhiCondition>> conds) {
+        Expression cond = conds.get(0).getFirst().condition;
+        for (int i = 1; i < conds.size(); i++) {
+            if (conds.get(i).getFirst().condition != cond) {
+                throw new IllegalArgumentException("Error in getAndCheckCondition: conditions did not match!!!");
+            }
+        }
+        return cond;
+    }
+
+    private Expression createGamma(List<LinkedList<PhiCondition>> conds, List<Expression> values) {
+
+        assert(!conds.isEmpty());
+
+        // Handle leaf-level assignment
+        if (conds.get(0).isEmpty()) {
+            assert (conds.size() == 1);
+            return values.get(0);
+        }
+
+        // Handle if/then:
+        // Separate 'then' and 'else' branches.
+        List<LinkedList<PhiCondition>> thenConds = new ArrayList<>();
+        List<LinkedList<PhiCondition>> elseConds = new ArrayList<>();
+        List<Expression> thenValues = new ArrayList<>();
+        List<Expression> elseValues = new ArrayList<>();
+
+        Expression cond = getAndCheckCondition(conds);
+
+        // NB: this code modifies the linked list as it runs.
+        for (int i = 0; i < conds.size(); i++) {
+            LinkedList<PhiCondition> phiConditions = conds.get(i);
+            PhiCondition first = phiConditions.removeFirst();
+            if (first.branch == PhiCondition.Branch.Then) {
+                thenConds.add(phiConditions);
+                thenValues.add(values.get(i));
+            } else {
+                elseConds.add(phiConditions);
+                elseValues.add(values.get(i));
+            }
+        }
+
+        return new GammaVarExpr(cond,
+                createGamma(thenConds, thenValues),
+                createGamma(elseConds, elseValues));
+    }
+
+    // If this phi is for a nested if/then/else, ignore the "out of scope"
+    // conditions corresponding to ancestor branches.
+    public void adjustForDepth(List<LinkedList<PhiCondition>> conds) {
+        int depth = this.currentCondition.size();
+        for (LinkedList<PhiCondition> cond : conds) {
+            for (int j=0; j < depth; j++) {
+                cond.removeFirst();
+            }
         }
     }
 
@@ -112,27 +155,27 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         }
         else {
             Iterator<ISSABasicBlock> it = preds.iterator();
-            List<List<Expression>> conds = new ArrayList<List<Expression>>();
-            List<Expression> values = new ArrayList<Expression>();
+            List<LinkedList<PhiCondition>> conds = new ArrayList<LinkedList<PhiCondition>>();
+            List<Expression> values = new ArrayList<>();
 
             for (int i = 0; i < ssaphi.getNumberOfUses(); i++) {
                 int ssaVar = ssaphi.getUse(i);
                 ISSABasicBlock preBlock = it.next();
 
-                List<Expression> cond = blockConditionMap.get(preBlock);
+                List<PhiCondition> cond = blockConditionMap.get(new PhiEdge(preBlock, currentBlock));
                 if (cond == null) {
                     // MWW TODO: this may be o.k. - we have an unstructured jump into our region.
                     //     TODO: But it is a little weird, so I don't want to incorrectly handle something.
                     throw new StaticRegionException("translateTruncatedFinalBlock: normal predecessor not found in blockConditionMap!");
                 }
                 else {
-                    conds.add(cond);
+                    conds.add(new LinkedList<PhiCondition>(cond));
                     values.add(convertWalaVar(ssaVar));
                 }
             }
             // create Gamma statement
-            conds = simplifyConditions(conds);
-            return new AssignmentStmt(new WalaVarExpr(ssaphi.getDef()), createGamma(conds, values, 0));
+            adjustForDepth(conds);
+            return new AssignmentStmt(new WalaVarExpr(ssaphi.getDef()), createGamma(conds, values));
         }
     }
 

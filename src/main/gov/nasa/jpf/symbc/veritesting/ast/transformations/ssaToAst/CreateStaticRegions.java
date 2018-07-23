@@ -54,22 +54,23 @@ public class CreateStaticRegions {
         return constructMethodIdentifier(blk.getMethod().getSignature());
     }
 
-    // for memoization.
-    private HashSet<ISSABasicBlock> visitedBlocks;
-    private HashMap<ISSABasicBlock, List<Expression>> blockConditionMap;
-    private Deque<Expression> currentCondition;
+    /*
+        For Phi instructions!
+     */
+
+
+    private HashMap<PhiEdge, List<PhiCondition>> blockConditionMap;
+    private Deque<PhiCondition> currentCondition;
     private IR ir;
 
 
     public CreateStaticRegions(IR ir) {
-        visitedBlocks = new HashSet<>();
         blockConditionMap = new HashMap<>();
         currentCondition = new LinkedList<>();
         this.ir = ir;
     }
 
     private void reset() {
-        visitedBlocks = new HashSet<>();
         blockConditionMap = new HashMap<>();
         currentCondition = new LinkedList<>();
     }
@@ -154,22 +155,23 @@ public class CreateStaticRegions {
         ISSABasicBlock elseBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
 
         Stmt thenStmt, elseStmt;
+        currentCondition.addLast(new PhiCondition(PhiCondition.Branch.Then, condExpr));
+        this.blockConditionMap.put(new PhiEdge(currentBlock, thenBlock), new ArrayList(currentCondition));
         if (thenBlock.getNumber() < terminus.getNumber()) {
-            currentCondition.addLast(condExpr);
             thenStmt = attemptSubregionRec(cfg, thenBlock, terminus);
-            currentCondition.removeLast();
         } else {
             thenStmt = SkipStmt.skip;
         }
+        currentCondition.removeLast();
 
+        currentCondition.addLast(new PhiCondition(PhiCondition.Branch.Else, condExpr));
+        this.blockConditionMap.put(new PhiEdge(currentBlock, elseBlock), new ArrayList(currentCondition));
         if (elseBlock.getNumber() < terminus.getNumber()) {
-            Expression negation = new Operation(Operation.Operator.NOT, condExpr);
-            currentCondition.addLast(negation);
             elseStmt = attemptSubregionRec(cfg, elseBlock, terminus);
-            currentCondition.removeLast();
         } else {
             elseStmt = SkipStmt.skip;
         }
+        currentCondition.removeLast();
 
         return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt);
     }
@@ -190,7 +192,6 @@ public class CreateStaticRegions {
             return SkipStmt.skip;
         }
 
-        this.blockConditionMap.put(currentBlock, new ArrayList(this.currentCondition));
         Stmt stmt = translateInternalBlock(currentBlock);
 
         if (cfg.getNormalSuccessors(currentBlock).size() == 2) {
@@ -200,10 +201,9 @@ public class CreateStaticRegions {
             stmt = conjoin(stmt, attemptSubregionRec(cfg, terminus, endingBlock));
         }
         else if (cfg.getNormalSuccessors(currentBlock).size() == 1){
-            SSAInstruction last = (currentBlock.iterator().hasNext()) ? currentBlock.getLastInstruction() : null;
-
-            // gets rid of a few extra 'skips'
             ISSABasicBlock nextBlock = cfg.getNormalSuccessors(currentBlock).iterator().next();
+            this.blockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
+
             if (nextBlock.getNumber() < endingBlock.getNumber()) {
                 stmt = conjoin(stmt, attemptSubregionRec(cfg, nextBlock, endingBlock));
             }
@@ -235,17 +235,13 @@ public class CreateStaticRegions {
 
         SSACFG cfg = ir.getControlFlowGraph();
         // terminating conditions
-        if (visitedBlocks.contains(currentBlock))
-            return;
         if (currentBlock == endingBlock) { return; }
 
-        visitedBlocks.add(currentBlock);
+        //visitedBlocks.add(currentBlock);
 
         if (isBranch(cfg, currentBlock)) {
             try {
                 reset();
-                blockConditionMap.put(currentBlock, new ArrayList(currentCondition));
-
                 FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
                 ISSABasicBlock terminus = finder.findMinConvergingNode();
                 Stmt s = attemptConditionalSubregion(cfg, currentBlock, terminus);
