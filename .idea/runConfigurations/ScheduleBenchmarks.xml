@@ -1,5 +1,16 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="ScheduleBenchmarks" type="CompoundRunConfigurationType" factoryName="Compound Run Configuration">
+<<<<<<< HEAD
+=======
+    <toRun type="JarApplication" name="Schedule2_3S" />
+    <toRun type="JarApplication" name="Schedule2_3V" />
+    <toRun type="JarApplication" name="Schedule2_6S" />
+    <toRun type="JarApplication" name="Schedule2_6V" />
+    <toRun type="JarApplication" name="Schedule_3S" />
+    <toRun type="JarApplication" name="Schedule_3V" />
+    <toRun type="JarApplication" name="Schedule_6S" />
+    <toRun type="JarApplication" name="Schedule_6V" />
+>>>>>>> cf05d88c806fa0d8605634cf4138fc1e4fb8d0e7
     <method />
   </configuration>
 </component>

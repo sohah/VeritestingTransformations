@@ -7,9 +7,13 @@
     <option name="PROGRAM_PARAMETERS" value="$PROJECT_DIR$/src/examples/VeritestingPerf.jpf" />
     <option name="WORKING_DIRECTORY" value="lib" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-    <option name="ALTERNATIVE_JRE_PATH" value="1.8.0_144" />
+    <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
     <envs>
+<<<<<<< HEAD
       <env name="TARGET_CLASSPATH_WALA" value="../build/examples/" />
+=======
+      <env name="TARGET_CLASSPATH_WALA" value="/Users/sohanabel/git/VeriTransformations/jpf-symbc-veritesting/build/examples/" />
+>>>>>>> cf05d88c806fa0d8605634cf4138fc1e4fb8d0e7
     </envs>
     <method>
       <option name="AntTarget" enabled="true" antfile="file://$PROJECT_DIR$/build.xml" target="build" />

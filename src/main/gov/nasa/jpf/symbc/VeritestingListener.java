@@ -99,18 +99,19 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             StaticRegion staticRegion = regionsMap.get(key);
             if(staticRegion != null){
                 System.out.println("---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(staticRegion.getStaticStmt()));
-                staticRegion.getStackSlotTable().printStackSlotMap();
-                staticRegion.printOutputVar();
                 System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
                 staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
                 System.out.println(StmtPrintVisitor.print(staticRegion.getStaticStmt()));
                 System.out.println("--------------- SUBSTITUTION TRANSFORMATION ---------------");
                 DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
                 System.out.println(StmtPrintVisitor.print(dynRegion.getDynStmt()));
-                dynRegion.getValueSymbolTable().printSymbolTable();
+                staticRegion.getStackSlotTable().print();
+                dynRegion.getValueSymbolTable().print();
+                dynRegion.getVarTypeTable().print();
+                staticRegion.getOutputTable().print();
+
             }
         }
-
     }
 
     private void discoverRegions(ThreadInfo ti) {
