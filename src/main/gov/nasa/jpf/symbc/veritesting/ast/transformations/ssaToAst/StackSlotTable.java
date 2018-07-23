@@ -6,6 +6,7 @@ import com.ibm.wala.ssa.SSAPhiInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotIVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Table;
 
 import java.util.*;
 
@@ -13,49 +14,35 @@ import java.util.*;
 // can map to, because a var can map to multiple locations.
 
 
-public class StackSlotTable {
-
-    private HashMap<Integer, int[]> stackSlotMap;
+public class StackSlotTable extends Table<int[]>{
     public IR ir;
 
     public StackSlotTable(IR ir) {
+        super("stack-slot table", "var", "stack slot");
         this.ir = ir;
         populateWalaVars();
     }
 
     private void populateWalaVars() {
-        StackSlotIVisitor stackSlotIVisitor = new StackSlotIVisitor(ir);
+        StackSlotIVisitor stackSlotIVisitor = new StackSlotIVisitor(ir, this);
         for (SSAInstruction ins : ir.getControlFlowGraph().getInstructions()) {
             if (ins != null)
                 ins.visit(stackSlotIVisitor);
         }
-        stackSlotMap = stackSlotIVisitor.stackSlotMap;
         stackSlotPhiPropagation();
-    }
-
-    public int[] lookup(Integer var) {
-        if (var != null)
-            return stackSlotMap.get(var);
-        else
-            try {
-                throw new StaticRegionException("Cannot lookup the stack slot for a null var.");
-            } catch (StaticRegionException e) {
-                System.out.println(e.getMessage());
-            }
-        return null;
     }
 
     //SH: returns all unique slots in the stackSlotMap. It attempts to do that by flattening out stackSlots of a single
     //var, which can map to multiple locations.
     public HashSet getSlots(){
         HashSet<Integer> allSlots = new HashSet();
-        Set<Integer> vars = stackSlotMap.keySet();
+        Set<Integer> vars = table.keySet();
         Iterator<Integer> varItr = vars.iterator();
         HashSet<Integer> VarSlotSet = new HashSet();
 
         while (varItr.hasNext()){
             Integer var = varItr.next();
-            int[] varStackSlots = stackSlotMap.get(var);
+            int[] varStackSlots = table.get(var);
             for(int i=0; i<varStackSlots.length; i++){ //silly, converts an array to HashSet, there should be better ways in Java 8.
                 VarSlotSet.add(varStackSlots[i]);
             }
@@ -68,13 +55,13 @@ public class StackSlotTable {
     //SH: returns all vars that have the same stack slot entered in the parameter.
     public Set getVarsOfSlot(int slot){
         HashSet<Integer> stackSlotVars = new HashSet();
-        Set<Integer> vars = stackSlotMap.keySet();
+        Set<Integer> vars = table.keySet();
         Iterator<Integer> varIter = vars.iterator();
 
         while (varIter.hasNext()) {
             HashSet<Integer> varSlotSet = new HashSet();
             Integer var = varIter.next();
-            int[] varStackSlots = stackSlotMap.get(var);
+            int[] varStackSlots = table.get(var);
             for (int i = 0; i < varStackSlots.length; i++) { //silly, converts an array to HashSet, there should be better ways in Java 8.
                 varSlotSet.add(varStackSlots[i]);
             }
@@ -100,7 +87,7 @@ public class StackSlotTable {
                 if (phiSlot == null) { //stack slot of the phi "def" var is unkown
                     int[] slots = getOperandSlot(phi);
                     if (slots != null) {//could figure out the stack slot of a "use"
-                        stackSlotMap.put(phi.getDef(), slots);
+                        table.put(phi.getDef(), slots);
                         changeDetected = true;
                     }
                 } else { //stack slot of the phi "def" var is unkown, propagate it to the "use" vars
@@ -116,7 +103,7 @@ public class StackSlotTable {
             if (!isConstant(phi.getUse(i))) {
                 int[] useSckSlot = lookup(phi.getUse(i));
                 if (useSckSlot == null) {
-                    stackSlotMap.put(phi.getUse(i), slots);
+                    table.put(phi.getUse(i), slots);
                     changeDetected = true;
                 }
             }
@@ -140,8 +127,9 @@ public class StackSlotTable {
                 table.isNullConstant(operand1);
     }
 
-    public void printStackSlotMap() {
+    @Override
+    public void print() {
         System.out.println("\nRegion Stack Slot Map (var -> stack slot)");
-        stackSlotMap.forEach((var, stackSlots) -> System.out.println(var + " --------- " + Arrays.toString(stackSlots)));
+        table.forEach((var, stackSlots) -> System.out.println(var + " --------- " + Arrays.toString(stackSlots)));
     }
 }

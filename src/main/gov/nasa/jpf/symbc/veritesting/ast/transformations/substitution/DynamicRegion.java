@@ -5,15 +5,15 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 
 public class DynamicRegion extends StaticRegion {
 
-    private ValueSymbolTable valueSymbolTable;
+    public static int uniqueCounter;
     private Stmt dynStmt;
-    private static int uniqueCounter;
-    private Table<String> varTypeTable;
+    private VarTypeTable varTypeTable;
+    private ValueSymbolTable valueSymbolTable;
 
     public DynamicRegion(StaticRegion staticRegion) {
         super(staticRegion.getStaticStmt(), staticRegion.ir);
         valueSymbolTable = new ValueSymbolTable(ir);
-        varTypeTable = new Table<>("var-type table","var", "type");
+        varTypeTable = new VarTypeTable();
         dynStmt = null;
     }
 

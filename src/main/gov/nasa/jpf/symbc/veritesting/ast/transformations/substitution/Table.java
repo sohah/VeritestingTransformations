@@ -3,12 +3,14 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 public class Table<T> {
-    private HashMap<Integer, T> table;
-    String tableName;
-    String label1;
-    String label2;
+    protected HashMap<Integer, T> table;
+    protected String tableName;
+    protected String label1;
+    protected String label2;
 
     public Table(String tableName, String label1, String label2){
         this.table = new HashMap<>();
@@ -37,5 +39,18 @@ public class Table<T> {
     public void print() {
         System.out.println("\nprinting " + tableName+" ("+ label1 + "->" + label2 +")");
         table.forEach((v1, v2) -> System.out.println(v1 + " --------- " + v2));
+    }
+    
+    public void updateKeys(Integer oldKey, Integer newKey){
+        Set<Integer> keys = table.keySet();
+        Iterator<Integer> iter = keys.iterator();
+        while(iter.hasNext()){
+            Integer key = iter.next();
+            T value = table.get(key);
+            if(key == oldKey){
+                table.remove(key);
+                table.put(newKey, value);
+            }
+        }
     }
 }

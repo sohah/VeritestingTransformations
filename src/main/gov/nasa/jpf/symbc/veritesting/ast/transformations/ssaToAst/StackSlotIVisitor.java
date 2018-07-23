@@ -9,11 +9,12 @@ import java.util.HashMap;
 
 
 public class StackSlotIVisitor implements SSAInstruction.IVisitor {
-    public final HashMap<Integer, int[]> stackSlotMap = new HashMap<>();
+    public final StackSlotTable stackSlotTable;
     private IR ir;
 
-    public StackSlotIVisitor(IR ir) {
+    public StackSlotIVisitor(IR ir, StackSlotTable stackSlotTable) {
         this.ir = ir;
+        this.stackSlotTable = stackSlotTable;
     }
 
     @Override
@@ -164,10 +165,10 @@ public class StackSlotIVisitor implements SSAInstruction.IVisitor {
 
     public void populateVars(SSAInstruction ins, int var) {
         int iindex = ins.iindex;
-        if (!(ins instanceof  SSAPhiInstruction) && (stackSlotMap.get(var) == null)) {
+        if (!(ins instanceof  SSAPhiInstruction) && (stackSlotTable.lookup(var) == null)) {
             int[] localNumbers = ir.findLocalsForValueNumber(iindex, var);
             if (localNumbers != null)
-                stackSlotMap.put(var, localNumbers);
+                stackSlotTable.add(var, localNumbers);
         }
     }
 }

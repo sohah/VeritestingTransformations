@@ -10,28 +10,14 @@ public class StaticRegion {
     private Stmt staticStmt;
     public final IR ir;
     protected StackSlotTable stackSlotTable;
-    public final HashMap<Integer, Integer> outputVars; //slot -> var
+    public OutputTable outputTable; //slot -> var
 
     public StaticRegion(Stmt staticStmt, IR ir){
         this.staticStmt = staticStmt;
         this.ir  = ir;
         stackSlotTable = new StackSlotTable(ir);
-        outputVars = computeOutputVars();
+        outputTable = new OutputTable(stackSlotTable);
 }
-
-    //SH: outputVars are computed by finding the maximum wala var for each
-    //stackSlot.
-    private HashMap<Integer, Integer> computeOutputVars() {
-        HashMap<Integer, Integer> outputVars = new HashMap<>();
-        HashSet<Integer> allSlots = stackSlotTable.getSlots();
-        Iterator<Integer> slotsIter = allSlots.iterator();
-        while(slotsIter.hasNext()){
-            int slot = slotsIter.next();
-            Set<Integer> varsForSlot = stackSlotTable.getVarsOfSlot(slot);
-            outputVars.put(slot, Collections.max(varsForSlot));
-        }
-        return outputVars;
-    }
 
 
     public StackSlotTable getStackSlotTable() {
@@ -47,8 +33,7 @@ public class StaticRegion {
         this.staticStmt = staticStmt;
     }
 
-    public void printOutputVar() {
-        System.out.println("\nRegion Output Vars (slot -> var):");
-        outputVars.forEach((stackSlot, var) -> System.out.println(stackSlot + " --------- " + var));
+    public OutputTable getOutputTable() {
+        return outputTable;
     }
 }
