@@ -37,6 +37,10 @@ public class PhiInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return "\n"+ def + " = phi("+ Arrays.toString(rhs) + ")";
+        String rhsStr = new String(rhs[0].toString());
+        for(int i=1; i < rhs.length; i++){
+            rhsStr += ","+ rhs[i].toString();
+        }
+        return "\n"+ def + " = phi("+ rhsStr + ")";
     }
 }

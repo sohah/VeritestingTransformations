@@ -1,6 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 
 public class DynamicRegion extends StaticRegion {
@@ -9,6 +11,9 @@ public class DynamicRegion extends StaticRegion {
     private Stmt dynStmt;
     private VarTypeTable varTypeTable;
     private ValueSymbolTable valueSymbolTable;
+    private StackSlotTable stackSlotTb;
+    private OutputTable outputTb;
+
 
     public DynamicRegion(StaticRegion staticRegion) {
         super(staticRegion.getStaticStmt(), staticRegion.ir);
@@ -34,5 +39,14 @@ public class DynamicRegion extends StaticRegion {
         return dynStmt;
     }
 
+    @Override
+    public StackSlotTable getStackSlotTable(){
+        return stackSlotTb;
+    }
+
+    @Override
+    public OutputTable getOutputTable(){
+        return outputTb;
+    }
 
 }
