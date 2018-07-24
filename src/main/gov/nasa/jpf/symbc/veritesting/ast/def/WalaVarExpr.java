@@ -11,7 +11,7 @@ public final class WalaVarExpr extends Variable {
     public final int number;
 
     public WalaVarExpr(int var) {
-        super("!w" + var);
+        super("@w" + var);
         this.number = var;
     }
 

@@ -5,8 +5,8 @@ import za.ac.sun.cs.green.expr.*;
 
 public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
 
-    ExprVisitor<Expression> exprVisitor;
-    protected ExprVisitorAdapter<Expression> eva;
+    protected final ExprVisitor<Expression> exprVisitor;
+    protected final ExprVisitorAdapter<Expression> eva;
 
     public AstMapVisitor(ExprVisitor<Expression> exprVisitor) {
         this.eva = new ExprVisitorAdapter<Expression>(exprVisitor);
@@ -143,55 +143,5 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
         return new PhiInstruction(c.getOriginal(),
                 eva.accept(c.def),
                 rhs);
-    }
-
-    @Override
-    public Expression visit(IntConstant expr) {
-        return null;
-    }
-
-    @Override
-    public Expression visit(IntVariable expr) {
-        return null;
-    }
-
-    @Override
-    public Expression visit(Operation expr) {
-        return null;
-    }
-
-    @Override
-    public Expression visit(RealConstant expr) {
-        return eva.accept(expr);
-    }
-
-    @Override
-    public Expression visit(RealVariable expr) {
-        return eva.accept(expr);
-    }
-
-    @Override
-    public Expression visit(StringConstantGreen expr) {
-        return eva.accept(expr);
-    }
-
-    @Override
-    public Expression visit(StringVariable expr) {
-        return eva.accept(expr);
-    }
-
-    @Override
-    public Expression visit(WalaVarExpr expr) {
-        return eva.accept((Expression)expr);
-    }
-
-    @Override
-    public Expression visit(FieldRefVarExpr expr) {
-        return eva.accept((Expression)expr);
-    }
-
-    @Override
-    public Expression visit(GammaVarExpr expr) {
-        return eva.accept((Expression)expr);
     }
 }

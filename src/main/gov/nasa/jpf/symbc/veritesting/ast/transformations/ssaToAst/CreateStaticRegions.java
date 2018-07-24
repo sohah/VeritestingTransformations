@@ -8,11 +8,9 @@ import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.Operation;
+import za.ac.sun.cs.green.expr.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 /*
     This class creates our structure IR from the WALA SSA form for further transformation.
@@ -22,23 +20,16 @@ import java.util.HashSet;
     throughout the creation process or is it constructed / destructed for each visited method?
 
     TODO: In examining the debug output, it appears that the same classes and methods are visited multiple times.  Why?
-
+    TODO:
  */
 
 public class CreateStaticRegions {
-
-    private static IR ir;
-    public CreateStaticRegions(IR ir) {
-        visitedBlocks = new HashSet<>();
-        this.ir = ir;
-    }
-
 
     public static String constructRegionIdentifier(String methodSignature, int offset) {
         return methodSignature + "#" + offset;
     }
 
-    public static String constructRegionIdentifier(ISSABasicBlock blk) {
+    public static String constructRegionIdentifier(IR ir, ISSABasicBlock blk) {
         int offset = -100;
         try {
             offset = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(blk.getLastInstructionIndex());
@@ -63,12 +54,30 @@ public class CreateStaticRegions {
         return constructMethodIdentifier(blk.getMethod().getSignature());
     }
 
+    /*
+        For Phi instructions!
+     */
+
+
+    private HashMap<PhiEdge, List<PhiCondition>> blockConditionMap;
+    private Deque<PhiCondition> currentCondition;
+    private IR ir;
+
+
+    public CreateStaticRegions(IR ir) {
+        blockConditionMap = new HashMap<>();
+        currentCondition = new LinkedList<>();
+        this.ir = ir;
+    }
+
+    private void reset() {
+        blockConditionMap = new HashMap<>();
+        currentCondition = new LinkedList<>();
+    }
+
     public boolean isBranch(SSACFG cfg, ISSABasicBlock block) {
         return cfg.getNormalSuccessors(block).size() == 2;
     }
-
-    // for memoization.
-    HashSet<ISSABasicBlock> visitedBlocks;
 
 
     public Stmt conjoin(Stmt stmt1, Stmt stmt2) {
@@ -81,19 +90,25 @@ public class CreateStaticRegions {
         }
     }
 
+
     private Stmt translateTruncatedFinalBlock(ISSABasicBlock currentBlock) throws StaticRegionException {
+        SSAToStatIVisitor visitor =
+                new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
         Stmt stmt = SkipStmt.skip;
         for (SSAInstruction ins: currentBlock) {
             if (!(ins instanceof SSAPhiInstruction))
                 return stmt;
             else {
-                stmt = conjoin(stmt, SSAToStatIVisitor.convert(ins));
+                Stmt gamma = visitor.convert(ins);
+                stmt = conjoin(stmt, gamma);
             }
         }
         return stmt;
     }
 
     private Stmt translateInternalBlock(ISSABasicBlock currentBlock) throws StaticRegionException {
+        SSAToStatIVisitor visitor =
+                new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
         Stmt stmt = SkipStmt.skip;
         for (SSAInstruction ins: currentBlock) {
             if ((ins instanceof SSAConditionalBranchInstruction) ||
@@ -101,7 +116,7 @@ public class CreateStaticRegions {
                 // properly formed blocks will only have branches and gotos as the last instruction.
                 // We will handle branches in attemptSubregion.
             } else {
-                stmt = conjoin(stmt, SSAToStatIVisitor.convert(ins));
+                stmt = conjoin(stmt, visitor.convert(ins));
             }
         }
         return stmt;
@@ -140,17 +155,23 @@ public class CreateStaticRegions {
         ISSABasicBlock elseBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
 
         Stmt thenStmt, elseStmt;
+        currentCondition.addLast(new PhiCondition(PhiCondition.Branch.Then, condExpr));
+        this.blockConditionMap.put(new PhiEdge(currentBlock, thenBlock), new ArrayList(currentCondition));
         if (thenBlock.getNumber() < terminus.getNumber()) {
             thenStmt = attemptSubregionRec(cfg, thenBlock, terminus);
         } else {
             thenStmt = SkipStmt.skip;
         }
+        currentCondition.removeLast();
 
+        currentCondition.addLast(new PhiCondition(PhiCondition.Branch.Else, condExpr));
+        this.blockConditionMap.put(new PhiEdge(currentBlock, elseBlock), new ArrayList(currentCondition));
         if (elseBlock.getNumber() < terminus.getNumber()) {
             elseStmt = attemptSubregionRec(cfg, elseBlock, terminus);
         } else {
             elseStmt = SkipStmt.skip;
         }
+        currentCondition.removeLast();
 
         return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt);
     }
@@ -180,10 +201,9 @@ public class CreateStaticRegions {
             stmt = conjoin(stmt, attemptSubregionRec(cfg, terminus, endingBlock));
         }
         else if (cfg.getNormalSuccessors(currentBlock).size() == 1){
-            SSAInstruction last = (currentBlock.iterator().hasNext()) ? currentBlock.getLastInstruction() : null;
-
-            // gets rid of a few extra 'skips'
             ISSABasicBlock nextBlock = cfg.getNormalSuccessors(currentBlock).iterator().next();
+            this.blockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
+
             if (nextBlock.getNumber() < endingBlock.getNumber()) {
                 stmt = conjoin(stmt, attemptSubregionRec(cfg, nextBlock, endingBlock));
             }
@@ -206,24 +226,26 @@ public class CreateStaticRegions {
         return stmt;
     }
 
+    /*
+        walk through method, attempting to find conditional veritesting regions
+     */
     private void createStructuredConditionalRegions(IR ir, ISSABasicBlock currentBlock,
                                                    ISSABasicBlock endingBlock,
                                                    HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
 
         SSACFG cfg = ir.getControlFlowGraph();
         // terminating conditions
-        if (visitedBlocks.contains(currentBlock))
-            return;
         if (currentBlock == endingBlock) { return; }
 
-        visitedBlocks.add(currentBlock);
+        //visitedBlocks.add(currentBlock);
 
         if (isBranch(cfg, currentBlock)) {
             try {
+                reset();
                 FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
                 ISSABasicBlock terminus = finder.findMinConvergingNode();
                 Stmt s = attemptConditionalSubregion(cfg, currentBlock, terminus);
-                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(currentBlock), new StaticRegion(s, ir));
+                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
                 createStructuredConditionalRegions(ir, terminus, endingBlock, veritestingRegions);
@@ -243,7 +265,10 @@ public class CreateStaticRegions {
         createStructuredConditionalRegions(ir, cfg.entry(), cfg.exit(), veritestingRegions);
     }
 
+
     public void createStructuredMethodRegion(HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
+
+        reset();
         SSACFG cfg = ir.getControlFlowGraph();
         try {
             Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());

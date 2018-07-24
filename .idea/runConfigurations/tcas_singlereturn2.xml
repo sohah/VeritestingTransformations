@@ -5,11 +5,11 @@
     <option name="JAR_PATH" value="$PROJECT_DIR$/../jpf-core-veritesting/build/RunJPF.jar" />
     <option name="VM_PARAMETERS" value="-Djava.library.path=&quot;$PROJECT_DIR$/lib/&quot; -Xmx1024m -ea " />
     <option name="PROGRAM_PARAMETERS" value="$PROJECT_DIR$/src/examples/tcas_singlereturn2.jpf" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/lib" />
+    <option name="WORKING_DIRECTORY" value="lib" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="ALTERNATIVE_JRE_PATH" value="1.8.0_144" />
     <envs>
-      <env name="TARGET_CLASSPATH_WALA" value="/Users/vaibhav/git_repos/jpf-symbc-veritesting/build/examples/" />
+      <env name="TARGET_CLASSPATH_WALA" value="../build/examples/" />
     </envs>
     <method />
   </configuration>

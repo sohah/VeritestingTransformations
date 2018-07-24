@@ -6,10 +6,10 @@ import com.ibm.wala.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.IntConstant;
-import za.ac.sun.cs.green.expr.Operation;
+import za.ac.sun.cs.green.expr.*;
 
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 //SH: This class translates SSAInstructions to Veritesting Statements.
@@ -21,9 +21,171 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public Stmt veriStatement;
     public boolean canVeritest = true;
 
+    private IR ir;
+    private HashMap<PhiEdge, List<PhiCondition>> blockConditionMap;
+    private Deque<PhiCondition> currentCondition;
+    private ISSABasicBlock currentBlock;
+    private StaticRegionException pending = null;
+
+    public SSAToStatIVisitor(IR ir,
+                             ISSABasicBlock currentBlock,
+                             HashMap<PhiEdge, List<PhiCondition>> blockConditionMap,
+                             Deque<PhiCondition> currentCondition) {
+        this.ir = ir;
+        this.currentBlock = currentBlock;
+        this.blockConditionMap = blockConditionMap;
+        this.currentCondition = currentCondition;
+
+    }
+
+/*
+    Beginning of methods for translating Phi instructions...
+ */
+
+/*
+        If we want to convert constants to values eagerly, we can add this code back in.
+        However, I don't think it is necessary.
+
+       SymbolTable symtab = ir.getSymbolTable();
+
+        if (symtab.isConstant(ssaVar)) {
+            Object val = symtab.getConstantValue(ssaVar);
+            if (val instanceof Boolean) {
+                return new IntConstant(val.equals(Boolean.TRUE) ? 1 : 0);
+            } else if (val instanceof Integer) {
+                return new IntConstant((Integer)val);
+            } else if (val instanceof Double) {
+                return new RealConstant((Double)val);
+            } else if (val instanceof String) {
+                return new StringConstantGreen((String)val);
+            } else {
+                throw new StaticRegionException("translateTruncatedFinalBlock: unsupported constant type");
+            }
+        } else {
+*/
+
+    private Expression convertWalaVar(int ssaVar) throws StaticRegionException {
+        return new WalaVarExpr(ssaVar);
+    }
+
+
+    private Expression conjunct(List<Expression> le) {
+        if (le.size() == 0) {
+            return Operation.TRUE;
+        }
+        Expression result = le.get(0);
+        for (int i = 1; i < le.size(); i++) {
+            result = new Operation(Operation.Operator.AND, result, le.get(i));
+        }
+        return result;
+    }
+
+    /* How do we organize the Gamma conditions?
+        Do a partition based on the first element of the list.
+
+        Do a partition based on the first element.
+        {c1 -> {c2 -> {c
+
+     */
+
+    private Expression getAndCheckCondition(List<LinkedList<PhiCondition>> conds) {
+        Expression cond = conds.get(0).getFirst().condition;
+        for (int i = 1; i < conds.size(); i++) {
+            if (conds.get(i).getFirst().condition != cond) {
+                throw new IllegalArgumentException("Error in getAndCheckCondition: conditions did not match!!!");
+            }
+        }
+        return cond;
+    }
+
+    private Expression createGamma(List<LinkedList<PhiCondition>> conds, List<Expression> values) {
+
+        assert(!conds.isEmpty());
+
+        // Handle leaf-level assignment
+        if (conds.get(0).isEmpty()) {
+            assert (conds.size() == 1);
+            return values.get(0);
+        }
+
+        // Handle if/then:
+        // Separate 'then' and 'else' branches.
+        List<LinkedList<PhiCondition>> thenConds = new ArrayList<>();
+        List<LinkedList<PhiCondition>> elseConds = new ArrayList<>();
+        List<Expression> thenValues = new ArrayList<>();
+        List<Expression> elseValues = new ArrayList<>();
+
+        Expression cond = getAndCheckCondition(conds);
+
+        // NB: this code modifies the linked list as it runs.
+        for (int i = 0; i < conds.size(); i++) {
+            LinkedList<PhiCondition> phiConditions = conds.get(i);
+            PhiCondition first = phiConditions.removeFirst();
+            if (first.branch == PhiCondition.Branch.Then) {
+                thenConds.add(phiConditions);
+                thenValues.add(values.get(i));
+            } else {
+                elseConds.add(phiConditions);
+                elseValues.add(values.get(i));
+            }
+        }
+
+        return new GammaVarExpr(cond,
+                createGamma(thenConds, thenValues),
+                createGamma(elseConds, elseValues));
+    }
+
+    // If this phi is for a nested if/then/else, ignore the "out of scope"
+    // conditions corresponding to ancestor branches.
+    public void adjustForDepth(List<LinkedList<PhiCondition>> conds) {
+        int depth = this.currentCondition.size();
+        for (LinkedList<PhiCondition> cond : conds) {
+            for (int j=0; j < depth; j++) {
+                cond.removeFirst();
+            }
+        }
+    }
+
+    public Stmt translatePhi(SSAPhiInstruction ssaphi) throws StaticRegionException {
+        SSACFG cfg = ir.getControlFlowGraph();
+        SymbolTable symtab = ir.getSymbolTable();
+        Collection<ISSABasicBlock> preds = cfg.getNormalPredecessors(currentBlock);
+        if (ssaphi.getNumberOfUses() != preds.size()) {
+            throw new StaticRegionException("translateTruncatedFinalBlock: normal predecessors size does not match number of phi branches");
+        }
+        else {
+            Iterator<ISSABasicBlock> it = preds.iterator();
+            List<LinkedList<PhiCondition>> conds = new ArrayList<LinkedList<PhiCondition>>();
+            List<Expression> values = new ArrayList<>();
+
+            for (int i = 0; i < ssaphi.getNumberOfUses(); i++) {
+                int ssaVar = ssaphi.getUse(i);
+                ISSABasicBlock preBlock = it.next();
+
+                List<PhiCondition> cond = blockConditionMap.get(new PhiEdge(preBlock, currentBlock));
+                if (cond == null) {
+                    // MWW TODO: this may be o.k. - we have an unstructured jump into our region.
+                    //     TODO: But it is a little weird, so I don't want to incorrectly handle something.
+                    throw new StaticRegionException("translateTruncatedFinalBlock: normal predecessor not found in blockConditionMap!");
+                }
+                else {
+                    conds.add(new LinkedList<PhiCondition>(cond));
+                    values.add(convertWalaVar(ssaVar));
+                }
+            }
+            // create Gamma statement
+            adjustForDepth(conds);
+            return new AssignmentStmt(new WalaVarExpr(ssaphi.getDef()), createGamma(conds, values));
+        }
+    }
+
+    /*
+        End of Phi translating methods.
+     */
+
     @Override
     public void visitGoto(SSAGotoInstruction ssaGotoInstruction) {
-        throw new IllegalArgumentException("Goto seen in SSAToStatIVisitor.  This is a mistake!");
+        throw new IllegalArgumentException("Goto seen in SSAToStatIVisitor.  This should not occur.");
     }
 
     @Override
@@ -178,7 +340,12 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitPhi(SSAPhiInstruction ssaPhiInstruction) {
-        veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.PhiInstruction(ssaPhiInstruction);
+        try {
+            veriStatement = translatePhi(ssaPhiInstruction);
+        } catch (StaticRegionException sre) {
+            pending = sre;
+            canVeritest = false;
+        }
     }
 
     @Override
@@ -198,11 +365,22 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     public static StaticRegionException sre = new StaticRegionException("Untranslatable instruction in SSAToStatIVisitor");
 
+    public Stmt convert(SSAInstruction ssa) throws StaticRegionException {
+        ssa.visit(this);
+        if (!this.canVeritest) {
+            if (pending != null) throw pending;
+            throw sre;
+        }
+        else return this.veriStatement;
+    }
+
+    /*
     public static Stmt convert(SSAInstruction ssa) throws StaticRegionException {
         SSAToStatIVisitor visitor = new SSAToStatIVisitor();
         ssa.visit(visitor);
         if (!visitor.canVeritest) { throw sre; }
         else return visitor.veriStatement;
     }
+    */
 }
 
