@@ -1,52 +1,38 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
+import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 
-public class DynamicRegion extends StaticRegion {
+public class DynamicRegion {
 
     public static int uniqueCounter = 0;
-    private Stmt dynStmt;
-    private VarTypeTable varTypeTable;
-    private ValueSymbolTable valueSymbolTable;
-    private StackSlotTable stackSlotTb;
-    private OutputTable outputTb;
+    public final Stmt dynStmt;
+    public final VarTypeTable varTypeTable;
+    public final ValueSymbolTable valueSymbolTable;
+    public final StackSlotTable stackSlotTable;
+    public final OutputTable outputTable;
+    public final StaticRegion staticRegion;
 
 
-    public DynamicRegion(StaticRegion staticRegion) {
-        super(staticRegion.getStaticStmt(), staticRegion.ir);
-        valueSymbolTable = new ValueSymbolTable(ir);
-        varTypeTable = new VarTypeTable();
-        dynStmt = null;
-    }
+    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, VarTypeTable varTypeTable, ValueSymbolTable valueSymbolTable) {
 
-
-    public void setDynStmt(Stmt dynStmt) {
+        this.staticRegion = staticRegion;
         this.dynStmt = dynStmt;
+        this.valueSymbolTable = valueSymbolTable;
+        this.varTypeTable = varTypeTable;
+        this.stackSlotTable = staticRegion.stackSlotTable.clone();
+        this.outputTable = staticRegion.outputTable.clone();
     }
 
-    public ValueSymbolTable getValueSymbolTable() {
-        return valueSymbolTable;
+    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, VarTypeTable varTypeTable, ValueSymbolTable valueSymbolTable, StackSlotTable stackSlotTable, OutputTable outputTable) {
+        this.dynStmt = dynStmt;
+        this.staticRegion = staticRegion;
+        this.varTypeTable = varTypeTable;
+        this.valueSymbolTable = valueSymbolTable;
+        this.stackSlotTable = stackSlotTable;
+        this.outputTable = outputTable;
     }
-
-    public Table<String> getVarTypeTable() {
-        return varTypeTable;
-    }
-
-    public Stmt getDynStmt() {
-        return dynStmt;
-    }
-
-    @Override
-    public StackSlotTable getStackSlotTable(){
-        return stackSlotTb;
-    }
-
-    @Override
-    public OutputTable getOutputTable(){
-        return outputTb;
-    }
-
 }

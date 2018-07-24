@@ -99,25 +99,29 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
             StaticRegion staticRegion = regionsMap.get(key);
             if(staticRegion != null){
-                System.out.println("---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(staticRegion.getStaticStmt()));
-                System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
+                System.out.println("\n---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(staticRegion.staticStmt)+"\n");
+
+                staticRegion.stackSlotTable.print();
+                staticRegion.outputTable.print();
+                /*System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
                 staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
-                System.out.println(StmtPrintVisitor.print(staticRegion.getStaticStmt()));
-                System.out.println("--------------- SUBSTITUTION TRANSFORMATION ---------------");
+                System.out.println(StmtPrintVisitor.print(staticRegion.staticStmt));*/
+                System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
                 DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
-                System.out.println(StmtPrintVisitor.print(dynRegion.getDynStmt()));
-                staticRegion.getStackSlotTable().print();
-                dynRegion.getValueSymbolTable().print();
-                dynRegion.getVarTypeTable().print();
-                staticRegion.getOutputTable().print();
+                System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+                dynRegion.stackSlotTable.print();
+                dynRegion.outputTable.print();
+                dynRegion.valueSymbolTable.print();
+                dynRegion.varTypeTable.print();
+
 
                 System.out.println("--------------- UNIQUNESS TRANSFORMATION ---------------");
-                UniqueRegion.doUniqueness(dynRegion);
-                System.out.println(StmtPrintVisitor.print(dynRegion.getDynStmt()));
-                staticRegion.getStackSlotTable().print();
-                dynRegion.getValueSymbolTable().print();
-                dynRegion.getVarTypeTable().print();
-                staticRegion.getOutputTable().print();
+                dynRegion = UniqueRegion.doUniqueness(dynRegion);
+                System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+                dynRegion.stackSlotTable.print();
+                dynRegion.valueSymbolTable.print();
+                dynRegion.varTypeTable.print();
+                dynRegion.outputTable.print();
 
             }
         }

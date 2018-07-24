@@ -10,11 +10,13 @@ import za.ac.sun.cs.green.expr.Expression;
 
 public class SubstitutionVisitor extends AstMapVisitor{
     ExprVisitorAdapter<Expression> eva;
-    private DynamicRegion dynRegion;
+    private ValueSymbolTable valueSymbolTable;
+    private VarTypeTable varTypeTable;
 
-
-    private SubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
-        super(new ExprSubstitutionVisitor(ti, dynRegion));
+    private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, VarTypeTable varTypeTable, ValueSymbolTable valueSymbolTable) {
+        super(new ExprSubstitutionVisitor(ti, staticRegion, varTypeTable, valueSymbolTable));
+        this.varTypeTable = varTypeTable;
+        this.valueSymbolTable = valueSymbolTable;
         eva = super.eva;
     }
 
@@ -64,6 +66,8 @@ public class SubstitutionVisitor extends AstMapVisitor{
         for (int i=0; i < rhs.length; i++) {
             rhs[i] = eva.accept(c.rhs[i]);
         }
+        //hack here to populate the type of the def, not sure if we need that.
+        eva.accept(c.def);
 
         return new PhiInstruction(c.getOriginal(),
                 c.def,
@@ -71,10 +75,9 @@ public class SubstitutionVisitor extends AstMapVisitor{
     }
 
     public static DynamicRegion doSubstitution(ThreadInfo ti, StaticRegion staticRegion)  {
-        DynamicRegion dynRegion = new DynamicRegion(staticRegion);
-        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, dynRegion);
-        Stmt dynStmt = dynRegion.getStaticStmt().accept(visitor);
-        dynRegion.setDynStmt(dynStmt);
-        return dynRegion;
+
+        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, new VarTypeTable(), new ValueSymbolTable());
+        Stmt dynStmt = staticRegion.staticStmt.accept(visitor);
+        return new DynamicRegion(staticRegion, dynStmt, visitor.varTypeTable, visitor.valueSymbolTable);
     }
 }

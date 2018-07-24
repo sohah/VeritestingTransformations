@@ -17,11 +17,17 @@ import java.util.*;
 public class StackSlotTable extends Table<int[]>{
     public IR ir;
 
+
     public StackSlotTable(IR ir) {
         super("stack-slot table", "var", "stack slot");
         this.ir = ir;
         populateWalaVars();
     }
+
+    private StackSlotTable(){
+        super();
+    }
+
 
     private void populateWalaVars() {
         StackSlotIVisitor stackSlotIVisitor = new StackSlotIVisitor(ir, this);
@@ -130,6 +136,22 @@ public class StackSlotTable extends Table<int[]>{
     @Override
     public void print() {
         System.out.println("\nRegion Stack Slot Map (var -> stack slot)");
-        table.forEach((var, stackSlots) -> System.out.println(var + " --------- " + Arrays.toString(stackSlots)));
+        table.forEach((var, stackSlots) -> System.out.println("!w"+var + " --------- " + Arrays.toString(stackSlots)));
+    }
+
+    public StackSlotTable clone(){
+        StackSlotTable newStackSlotTable = new StackSlotTable();
+        newStackSlotTable.ir = this.ir;
+        newStackSlotTable.tableName = this.tableName;
+        newStackSlotTable.label1 = this.label1;
+        newStackSlotTable.label2 = this.label2;
+        Set<Integer> keys = this.table.keySet();
+        Iterator<Integer> iter = keys.iterator();
+        while(iter.hasNext()){
+            Integer key = iter.next();
+            int[] values = this.lookup(key);
+            newStackSlotTable.add(new Integer(key.intValue()),values);
+        }
+        return newStackSlotTable;
     }
 }

@@ -9,10 +9,14 @@ import java.util.Set;
 //SH: base class for all environment tables.
 
 public class Table<T> {
-    protected HashMap<Integer, T> table;
-    private String tableName;
-    private String label1;
-    private String label2;
+    protected final HashMap<Integer, T> table;
+    protected String tableName;
+    protected String label1;
+    protected String label2;
+
+    protected Table(){
+        this.table = new HashMap<>();
+    }
 
     public Table(String tableName, String label1, String label2){
         this.table = new HashMap<>();
@@ -40,7 +44,7 @@ public class Table<T> {
 
     public void print() {
         System.out.println("\nprinting " + tableName+" ("+ label1 + "->" + label2 +")");
-        table.forEach((v1, v2) -> System.out.println(v1 + " --------- " + v2));
+        table.forEach((v1, v2) -> System.out.println("!w"+v1 + " --------- " + v2));
     }
 
     public void updateKeys(Integer oldKey, Integer newKey){
@@ -51,6 +55,17 @@ public class Table<T> {
                 table.put(newKey, value);
                 table.remove(oldKey);
             }
+        }
+    }
+
+
+    public void makeUniqueKey(int unique){
+        Object[] keys = table.keySet().toArray();
+        for(int i=0; i < keys.length; i++){
+            String varId = Integer.toString((Integer) keys[i]);
+            varId = varId.concat(Integer.toString(unique));
+            table.put(Integer.valueOf(varId), table.get(keys[i]));
+            table.remove(keys[i]);
         }
     }
 }

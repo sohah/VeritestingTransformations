@@ -162,8 +162,8 @@ public Stmt visit(PhiInstruction c){
 
     public static StaticRegion doSpfCases(StaticRegion staticRegion)  {
         SpfCasesVisitor visitor = new SpfCasesVisitor();
-        Stmt substitutedStmt = staticRegion.getStaticStmt().accept(visitor);
-        staticRegion.setStaticStmt(substitutedStmt);
+        Stmt substitutedStmt = staticRegion.staticStmt.accept(visitor);
+        //staticRegion.setStaticStmt(substitutedStmt); I need to create a new instance
         return staticRegion;
     }
         }
