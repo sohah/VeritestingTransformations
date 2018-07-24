@@ -1,12 +1,13 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import com.ibm.wala.ssa.IR;
+import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 
-public class DynamicRegion {
+public class DynamicRegion implements Region {
 
     public static int uniqueCounter = 0;
     public final Stmt dynStmt;

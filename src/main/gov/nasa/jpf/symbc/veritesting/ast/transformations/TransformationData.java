@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,11 +12,11 @@ import java.util.Set;
  */
 
 public class TransformationData {
-    public final Region region;
+    public final DynamicRegion region;
     public final Set<Invariant> invariants;
     public final boolean runInvariants;
 
-    public TransformationData(Region region, Set<Invariant> invariants, boolean runInvariants) {
+    public TransformationData(DynamicRegion region, Set<Invariant> invariants, boolean runInvariants) {
         this.region = region;
         this.invariants = invariants;
         this.runInvariants = runInvariants;
