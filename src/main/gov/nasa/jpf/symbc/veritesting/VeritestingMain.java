@@ -1,12 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting;
 
-
-/*
-  Command used to copy WALA jar files to jpf-symbc/lib
-  for file in `ls -l ~/git_repos/MyWALA/ | grep ^d | tr -s ' ' | cut -d ' ' -f 9 | grep -v jars | grep -v target`; do
-    cp ~/git_repos/MyWALA/$file/target/*.jar ~/IdeaProjects/jpf-symbc/lib/;
-  done
-*/
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;

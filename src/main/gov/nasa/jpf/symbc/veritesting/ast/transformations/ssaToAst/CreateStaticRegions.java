@@ -287,12 +287,16 @@ public class CreateStaticRegions {
                 FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
                 ISSABasicBlock terminus = finder.findMinConvergingNode();
                 Stmt s = attemptConditionalSubregion(cfg, currentBlock, terminus);
-                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir));
+                int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
+                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, endIns));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
                 createStructuredConditionalRegions(ir, terminus, endingBlock, veritestingRegions);
                 return;
-            } catch (StaticRegionException sre) {
+            } catch (StaticRegionException sre ) {
+                System.out.println("Unable to create subregion");
+            }
+            catch (InvalidClassFileException exception){
                 System.out.println("Unable to create subregion");
             }
         }
@@ -315,10 +319,13 @@ public class CreateStaticRegions {
         try {
             Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());
             System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
-
-            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir));
+            SSAInstruction[] insns = ir.getInstructions();
+            int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
+            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, endIns));
         } catch (StaticRegionException sre) {
             System.out.println("Unable to create a method summary subregion for: " + cfg.getMethod().getName().toString());
+        } catch (InvalidClassFileException e) {
+            e.printStackTrace();
         }
     }
 }

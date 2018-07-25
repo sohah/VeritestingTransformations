@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
+import gov.nasa.jpf.symbc.numeric.GreenToSPFTranslator;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
@@ -25,5 +26,10 @@ public class ExprUtil {
             return str;
         } else
             return expression.toString();
+    }
+
+    public static gov.nasa.jpf.symbc.numeric.Expression greenToSPFExpression(Expression greenExpression) {
+        GreenToSPFTranslator toSPFTranslator = new GreenToSPFTranslator();
+        return toSPFTranslator.translate(greenExpression);
     }
 }

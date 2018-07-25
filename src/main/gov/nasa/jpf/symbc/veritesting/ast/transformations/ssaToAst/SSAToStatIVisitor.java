@@ -141,12 +141,12 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public Stmt translatePhi(SSAPhiInstruction ssaphi) throws StaticRegionException {
         SSACFG cfg = ir.getControlFlowGraph();
         SymbolTable symtab = ir.getSymbolTable();
-        Collection<ISSABasicBlock> preds = cfg.getNormalPredecessors(currentBlock);
-        if (ssaphi.getNumberOfUses() != preds.size()) {
+        Iterator<ISSABasicBlock> it = cfg.getPredNodes(currentBlock);
+        int predNodesCount = cfg.getPredNodeCount(currentBlock);
+        if (ssaphi.getNumberOfUses() != predNodesCount) {
             throw new StaticRegionException("translateTruncatedFinalBlock: normal predecessors size does not match number of phi branches");
         }
         else {
-            Iterator<ISSABasicBlock> it = preds.iterator();
             List<LinkedList<PhiCondition>> conds = new ArrayList<LinkedList<PhiCondition>>();
             List<Expression> values = new ArrayList<>();
 

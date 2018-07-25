@@ -23,20 +23,31 @@ package gov.nasa.jpf.symbc;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
+import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenExprVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
+import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
+import za.ac.sun.cs.green.expr.IntVariable;
 
 import java.util.*;
+
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
 
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
 
@@ -98,21 +109,73 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
             StaticRegion staticRegion = regionsMap.get(key);
             if(staticRegion != null){
-                System.out.println("---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(staticRegion.getStaticStmt()));
-                System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
-                staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
-                System.out.println(StmtPrintVisitor.print(staticRegion.getStaticStmt()));
-                System.out.println("--------------- SUBSTITUTION TRANSFORMATION ---------------");
-                DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
-                System.out.println(StmtPrintVisitor.print(dynRegion.getDynStmt()));
-                staticRegion.getStackSlotTable().print();
-                dynRegion.getValueSymbolTable().print();
-                dynRegion.getVarTypeTable().print();
-                staticRegion.getOutputTable().print();
+                System.out.println("\n---------- STARTING Transformations for region: " + key +"\n" + PrettyPrintVisitor.print(staticRegion.staticStmt)+"\n");
 
+                staticRegion.stackSlotTable.print();
+                staticRegion.outputTable.print();
+                staticRegion.inputTable.print();
+
+                /*System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
+                staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
+                System.out.println(StmtPrintVisitor.print(staticRegion.staticStmt));*/
+                System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
+                DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
+                System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+                dynRegion.stackSlotTable.print();
+                dynRegion.outputTable.print();
+                dynRegion.valueSymbolTable.print();
+                dynRegion.varTypeTable.print();
+
+
+                System.out.println("--------------- UNIQUNESS TRANSFORMATION ---------------");
+                dynRegion = UniqueRegion.doUniqueness(dynRegion);
+                System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+                dynRegion.stackSlotTable.print();
+                dynRegion.valueSymbolTable.print();
+                dynRegion.varTypeTable.print();
+                dynRegion.outputTable.print();
+
+
+                System.out.println("--------------- LINEARIZATION TRANSFORMATION ---------------");
+                LinearizationTransformation linearTrans = new LinearizationTransformation();
+                dynRegion = linearTrans.execute(dynRegion);
+                System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+      //          populateSPF();
             }
         }
     }
+
+    private void PopulateSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion) {
+        Expression regionSummary; //= dynRegion.dynStmt.accept((new AstToGreenVisitor()));
+        StackFrame sf = ti.getTopFrame();
+        populateSlots(sf, dynRegion);
+        advanceSpf(ti, ins, dynRegion);
+    }
+
+    private void populateSlots(StackFrame sf, DynamicRegion dynRegion) {
+        OutputTable outputTable = dynRegion.outputTable;
+        Set<Integer> keys = outputTable.getKeys();
+
+        Iterator itr = keys.iterator();
+        Integer var;
+
+        while(itr.hasNext()){
+            Integer slot = (Integer) itr.next();
+             var = outputTable.lookup(slot);
+        //    sf.setSlotAttr(slot, greenToSPFExpression(new IntVariable()));
+        }
+    }
+
+    private void advanceSpf(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion) {
+        int endIns = dynRegion.endIns;
+        while (ins.getPosition() != endIns) {
+            if (ins instanceof GOTO && (((GOTO) ins).getTarget().getPosition() <= endIns))
+                ins = ((GOTO) ins).getTarget();
+            else ins = ins.getNext();
+        }
+        ti.setNextPC(ins);
+    }
+
 
     private void discoverRegions(ThreadInfo ti) {
         Config conf = ti.getVM().getConfig();
