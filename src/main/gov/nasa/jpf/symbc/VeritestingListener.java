@@ -27,8 +27,10 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
@@ -125,6 +127,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 dynRegion.valueSymbolTable.print();
                 dynRegion.varTypeTable.print();
                 dynRegion.outputTable.print();
+
+
+                System.out.println("--------------- LINEARIZATION TRANSFORMATION ---------------");
+                LinearizationTransformation linearTrans = new LinearizationTransformation();
+                dynRegion = linearTrans.execute(dynRegion);
+                System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+      //          populateSPF(dynRegion.dynStmt.accept(new AstToGreenExprVisitor()));
             }
         }
     }
