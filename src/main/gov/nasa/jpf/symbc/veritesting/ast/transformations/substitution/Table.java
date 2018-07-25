@@ -62,6 +62,10 @@ public class Table<T> {
         }
     }
 
+    public Set<Integer> getKeys(){
+        return  table.keySet();
+    }
+
 
     public void makeUniqueKey(int unique){
         Object[] keys = table.keySet().toArray();

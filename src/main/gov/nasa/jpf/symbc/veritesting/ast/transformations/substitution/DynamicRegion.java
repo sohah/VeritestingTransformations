@@ -16,6 +16,7 @@ public class DynamicRegion implements Region {
     public final StackSlotTable stackSlotTable;
     public final OutputTable outputTable;
     public final StaticRegion staticRegion;
+    public final int endIns;
 
 
     public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, VarTypeTable varTypeTable, ValueSymbolTable valueSymbolTable) {
@@ -26,6 +27,7 @@ public class DynamicRegion implements Region {
         this.varTypeTable = varTypeTable;
         this.stackSlotTable = staticRegion.stackSlotTable.clone();
         this.outputTable = staticRegion.outputTable.clone();
+        this.endIns = staticRegion.endIns;
     }
 
     public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, VarTypeTable varTypeTable, ValueSymbolTable valueSymbolTable, StackSlotTable stackSlotTable, OutputTable outputTable) {
@@ -35,5 +37,6 @@ public class DynamicRegion implements Region {
         this.valueSymbolTable = valueSymbolTable;
         this.stackSlotTable = stackSlotTable;
         this.outputTable = outputTable;
+        this.endIns = staticRegion.endIns;
     }
 }
