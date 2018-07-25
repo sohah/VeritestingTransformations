@@ -36,6 +36,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Substitut
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
+import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
@@ -103,6 +104,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
                 staticRegion.stackSlotTable.print();
                 staticRegion.outputTable.print();
+                staticRegion.inputTable.print();
+
                 /*System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
                 staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
                 System.out.println(StmtPrintVisitor.print(staticRegion.staticStmt));*/
@@ -122,9 +125,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 dynRegion.valueSymbolTable.print();
                 dynRegion.varTypeTable.print();
                 dynRegion.outputTable.print();
-
             }
         }
+    }
+
+    private void PopulateSPF(StackFrame sf, Expression expr) {
+        //sf.setSlotAttr(holeExpression.getLocalStackSlot(), ExpressionUtil.GreenToSPFExpression(value));
+
     }
 
     private void discoverRegions(ThreadInfo ti) {

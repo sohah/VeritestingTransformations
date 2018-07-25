@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.string.StringConstant;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.InputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
@@ -38,20 +39,19 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
     //SH: An invariant here is that all stackSlots that a var can map to, must all have the same value
     @Override
     public Expression visit(WalaVarExpr expr) {
-        StackSlotTable stackSlotTable = staticRegion.stackSlotTable;
-        int[] stackSlots = stackSlotTable.lookup(expr.number);
-        if (stackSlots != null) {
-            assert (stackSlots.length > 0);
+        InputTable inputTable = staticRegion.inputTable;
+        Integer slot = inputTable.lookup(expr.number);
+        if (slot != null) {
             gov.nasa.jpf.symbc.numeric.Expression varValue;
-            varValue = (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(stackSlots[0]);
+            varValue = (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
             if (varValue == null)
                 try {
-                    varValue = createConstantForType(stackSlots[0]);
+                    varValue = createConstantForType(slot);
                 } catch (StaticRegionException e) {
                     System.out.println(e.getMessage());
                 }
             Expression greenValue = SPFToGreenExpr(varValue);
-            String type = sf.getLocalVariableType(stackSlots[0]);
+            String type = sf.getLocalVariableType(slot);
             valueSymbolTable.add(expr.number, greenValue);
             varTypeTable.add(expr.number, type);
             return greenValue;

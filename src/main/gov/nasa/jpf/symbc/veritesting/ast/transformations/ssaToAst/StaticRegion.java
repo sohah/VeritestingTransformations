@@ -12,13 +12,19 @@ public class StaticRegion implements Region{
     public final IR ir;
     public final StackSlotTable stackSlotTable;
     public final OutputTable outputTable; //slot -> var
+
+    //SH: this is the last instruction where SPF needs to start from after the region
     public final int endIns;
+
+    //SH: this is the region input. slot -> var
+    public final InputTable inputTable;
 
     public StaticRegion(Stmt staticStmt, IR ir, int endIns){
         this.staticStmt = staticStmt;
         this.ir  = ir;
         stackSlotTable = new StackSlotTable(ir);
         outputTable = new OutputTable(stackSlotTable);
+        inputTable = new InputTable(stackSlotTable, staticStmt);
         this.endIns = endIns;
 
     }
