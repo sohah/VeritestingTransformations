@@ -1,15 +1,11 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import com.ibm.wala.ssa.IR;
-import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAPhiInstruction;
 import com.ibm.wala.ssa.SymbolTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.StackSlotIVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 
 //SH: stackSlotMap contains the stack slot of every var and for undiscovered stack slots their corresponding var' stack slot will map to -1.
 
