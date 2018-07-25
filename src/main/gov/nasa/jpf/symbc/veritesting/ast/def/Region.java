@@ -1,15 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
-import com.ibm.wala.ssa.IR;
-import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAPhiInstruction;
-import com.ibm.wala.ssa.SymbolTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotIVisitor;
-import za.ac.sun.cs.green.expr.Expression;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 
 // MWW: TODO Soha & Vaibhav: add functions to retrieve SPF information from Region -
 //      TODO This is something we will want to do repeatedly.
