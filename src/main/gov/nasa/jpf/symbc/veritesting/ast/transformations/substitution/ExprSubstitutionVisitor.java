@@ -66,9 +66,6 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
         }
     }
 
-    public Expression visit(GammaVarExpr expr) {
-        return new GammaVarExpr(expr.condition, expr.thenExpr, expr.elseExpr);
-    }
 
     private Expression makeConstantFromWala(int walaId) {
         SymbolTable symbolTable = staticRegion.ir.getSymbolTable();
