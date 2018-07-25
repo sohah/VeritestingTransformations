@@ -18,9 +18,51 @@ import java.util.*;
 
     Important question: what is the scope of this class?  Is it supposed to be maintained
     throughout the creation process or is it constructed / destructed for each visited method?
+        Each method - the cfg changes.
 
     TODO: In examining the debug output, it appears that the same classes and methods are visited multiple times.  Why?
-    TODO:
+
+    The tricky bit involves translating \phi instructions to \gammas.
+    Here’s how it works:
+
+    I keep track of the current "conditional path" at the point of the code I am translating.  This is a stack of
+    (Expression x enum {Then, Else}) pairs.  For each edge between blocks in the block structure,
+    I record the associated "conditional path".  So the type of this map (the blockConditionMap) is:
+        (ISSABasicBlock x ISSABasicBlock) --> List of (Expression x enum {Then, Else})
+
+    From here it is easy: I get the predecessor blocks of the block containing the \phi.  Then I look
+    up the edges in the blockConditionMap.  From here, I know the condition stack leading to that
+    branch.  I gather these together and make an if/then/else.
+
+    If I see something like this:
+    \phi(w2, w8, w16)
+
+    ==> I look up predecessor blocks:
+      (1, 5, 8)
+
+    ==> I look up associated conditions from predecessor edges:
+      (((c1, Then)),
+       ((c1, Else), (c2, Then)),
+       ((c1, Else), (c2, Else)))
+
+    then construct an if/then/else from the result.
+
+    Two things that make it slightly more interesting:
+    1.) What about \phis for the merge of inner (nested) branches?  Since I record a stack of
+        conditions from the beginning of the static region, I don't really want the conditions
+        from branches that are out of scope of the inner branch.  At the meet block, I check the
+        conditionStack depth, and remove that depth of elements from the front of each condition list.
+
+    2.) How does one arrange subconditions in the if/then/else to minimize the size of conditions?
+        This is why I keep track of whether the condition corresponds to the 'then' or 'else' branch.
+        I do a split based on 'then' or 'else' and recursively organize the Gamma.  For example,
+        the Gamma for the example above would be:
+        Gamma(c1, w2, Gamma(c2, w8, w16)))
+
+        I could do this with just the expressions, but it would be much more work to reconstruct
+        the then and else branches (in fact I started with this and then wasted substantial time
+        trying to rebuild the minimal ITE structure.  Shame on me.
+
  */
 
 public class CreateStaticRegions {
