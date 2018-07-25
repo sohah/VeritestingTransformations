@@ -8,7 +8,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-//SH: all values stored here should be in the form of a green expression
+//SH: This table contains the values for the region input and the constant wala variables.
+// Region input is defined as the first use of every stack slot, if the first time a var is associated
+// to a stack slot happens to be  a def then this is not an input to the region, nor any of its subsequent vars.
+// all values stored here should be in the form of a green expression
 
 public class ValueSymbolTable extends Table<Expression> {
 

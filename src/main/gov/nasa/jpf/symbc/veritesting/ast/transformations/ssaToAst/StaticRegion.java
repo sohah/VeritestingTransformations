@@ -12,12 +12,14 @@ public class StaticRegion implements Region{
     public final IR ir;
     public final StackSlotTable stackSlotTable;
     public final OutputTable outputTable; //slot -> var
+    public final int endIns;
 
-    public StaticRegion(Stmt staticStmt, IR ir){
+    public StaticRegion(Stmt staticStmt, IR ir, int endIns){
         this.staticStmt = staticStmt;
         this.ir  = ir;
         stackSlotTable = new StackSlotTable(ir);
         outputTable = new OutputTable(stackSlotTable);
+        this.endIns = endIns;
 
     }
 
