@@ -80,14 +80,6 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         return result;
     }
 
-    /* How do we organize the Gamma conditions?
-        Do a partition based on the first element of the list.
-
-        Do a partition based on the first element.
-        {c1 -> {c2 -> {c
-
-     */
-
     private Expression getAndCheckCondition(List<LinkedList<PhiCondition>> conds) {
         Expression cond = conds.get(0).getFirst().condition;
         for (int i = 1; i < conds.size(); i++) {

@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
@@ -20,7 +21,7 @@ import za.ac.sun.cs.green.expr.Operation;
 
      */
 
-public class AstToGreenVisitor {
+public class AstToGreenVisitor implements AstVisitor<Expression> {
 
     ExprVisitorAdapter<Expression> eva;
     AstToGreenExprVisitor exprVisitor;
@@ -57,4 +58,23 @@ public class AstToGreenVisitor {
             return bad(stmt);
         }
     }
+    @Override public Expression visit(SkipStmt a) { return Operation.TRUE; }
+
+    @Override public Expression visit(AssignmentStmt a) { return bad(a); }
+    @Override public Expression visit(CompositionStmt a) { return bad(a); }
+    @Override public Expression visit(IfThenElseStmt a) { return bad(a); }
+    @Override public Expression visit(SPFCaseStmt c) { return bad(c); }
+    @Override public Expression visit(ArrayLoadInstruction c) { return bad(c); }
+    @Override public Expression visit(ArrayStoreInstruction c) { return bad(c); }
+    @Override public Expression visit(SwitchInstruction c) { return bad(c); }
+    @Override public Expression visit(ReturnInstruction c) { return bad(c); }
+    @Override public Expression visit(GetInstruction c) { return bad(c); }
+    @Override public Expression visit(PutInstruction c) { return bad(c); }
+    @Override public Expression visit(NewInstruction c) { return bad(c); }
+    @Override public Expression visit(InvokeInstruction c) { return bad(c); }
+    @Override public Expression visit(ArrayLengthInstruction c) { return bad(c); }
+    @Override public Expression visit(ThrowInstruction c) { return bad(c); }
+    @Override public Expression visit(CheckCastInstruction c) { return bad(c); }
+    @Override public Expression visit(InstanceOfInstruction c) { return bad(c); }
+    @Override public Expression visit(PhiInstruction c) { return bad(c); }
 }
