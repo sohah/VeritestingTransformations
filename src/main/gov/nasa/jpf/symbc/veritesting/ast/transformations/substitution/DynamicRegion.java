@@ -1,6 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
-import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
@@ -11,7 +10,7 @@ public class DynamicRegion implements Region {
 
     public static int uniqueCounter = 0;
     public final Stmt dynStmt;
-    public final VarTypeTable varTypeTable;
+    public final SlotTypeTable slotTypeTable;
     public final ValueSymbolTable valueSymbolTable;
     public final StackSlotTable stackSlotTable;
     public final OutputTable outputTable;
@@ -19,21 +18,21 @@ public class DynamicRegion implements Region {
     public final int endIns;
 
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, VarTypeTable varTypeTable, ValueSymbolTable valueSymbolTable) {
+    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable) {
 
         this.staticRegion = staticRegion;
         this.dynStmt = dynStmt;
         this.valueSymbolTable = valueSymbolTable;
-        this.varTypeTable = varTypeTable;
+        this.slotTypeTable = slotTypeTable;
         this.stackSlotTable = staticRegion.stackSlotTable.clone();
         this.outputTable = staticRegion.outputTable.clone();
         this.endIns = staticRegion.endIns;
     }
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, VarTypeTable varTypeTable, ValueSymbolTable valueSymbolTable, StackSlotTable stackSlotTable, OutputTable outputTable) {
+    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable, StackSlotTable stackSlotTable, OutputTable outputTable) {
         this.dynStmt = dynStmt;
         this.staticRegion = staticRegion;
-        this.varTypeTable = varTypeTable;
+        this.slotTypeTable = slotTypeTable;
         this.valueSymbolTable = valueSymbolTable;
         this.stackSlotTable = stackSlotTable;
         this.outputTable = outputTable;

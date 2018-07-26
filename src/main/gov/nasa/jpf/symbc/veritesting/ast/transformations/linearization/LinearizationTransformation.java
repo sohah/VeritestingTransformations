@@ -1,6 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.DefaultTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
@@ -13,7 +12,7 @@ public class LinearizationTransformation extends DefaultTransformation {
         Stmt stmt = region.dynStmt.accept(v);
         return new DynamicRegion(region.staticRegion,
                 stmt,
-                region.varTypeTable,
+                region.slotTypeTable,
                 region.valueSymbolTable,
                 region.stackSlotTable,
                 region.outputTable);

@@ -2,11 +2,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import com.ibm.wala.ssa.SymbolTable;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
-import gov.nasa.jpf.symbc.string.StringConstant;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.InputTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
@@ -23,17 +21,17 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
     private StackFrame sf;
     public ExprVisitorAdapter eva;
     private StaticRegion staticRegion;
-    private VarTypeTable varTypeTable;
+    private SlotTypeTable slotTypeTable;
     private ValueSymbolTable valueSymbolTable;
 
-    public ExprSubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, VarTypeTable varTypeTable, ValueSymbolTable valueSymbolTable) {
+    public ExprSubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable) {
         super();
         this.ti = ti;
         this.sf = ti.getTopFrame();
         eva = super.eva;
         this.staticRegion = staticRegion;
         this.valueSymbolTable = valueSymbolTable;
-        this.varTypeTable = varTypeTable;
+        this.slotTypeTable = slotTypeTable;
     }
 
     //SH: An invariant here is that all stackSlots that a var can map to, must all have the same value
@@ -53,31 +51,31 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
             Expression greenValue = SPFToGreenExpr(varValue);
             String type = sf.getLocalVariableType(slot);
             valueSymbolTable.add(expr.number, greenValue);
-            varTypeTable.add(expr.number, type);
+            slotTypeTable.add(expr.number, type);
             return greenValue;
-        } else { //not a stack slot var, try to check if it is a constant.
+        } else { //not a stack slot var, try to check if it is a constant from wala
             SymbolTable symbolTable = staticRegion.ir.getSymbolTable();
             if (symbolTable.isConstant(expr.number)) {
                 Expression greenValue = makeConstantFromWala(expr.number);
                 valueSymbolTable.add(expr.number, greenValue);
                 return greenValue;
-            } else
+            } else{ // it is an intermediate variable
                 return expr;
+            }
         }
     }
 
 
     private Expression makeConstantFromWala(int walaId) {
         SymbolTable symbolTable = staticRegion.ir.getSymbolTable();
-        if (symbolTable.isBooleanConstant(walaId) ||
-                symbolTable.isIntegerConstant(walaId))
-            return SPFToGreenExpr(new IntegerConstant((Integer)symbolTable.getConstantValue(walaId)));
+        if (symbolTable.isBooleanConstant(walaId) || symbolTable.isIntegerConstant(walaId))
+            return new IntConstant((Integer)symbolTable.getConstantValue(walaId));
         else if (symbolTable.isFloatConstant(walaId) || symbolTable.isDoubleConstant(walaId))
-            return SPFToGreenExpr(new gov.nasa.jpf.symbc.numeric.RealConstant((Integer)symbolTable.getConstantValue(walaId)));
+            return new RealConstant((Integer)symbolTable.getConstantValue(walaId));
         else if (symbolTable.isTrue(walaId))
-            return SPFToGreenExpr(new gov.nasa.jpf.symbc.numeric.IntegerConstant(1));
+            return new IntConstant(1);
         else if (symbolTable.isFalse(walaId))
-            return SPFToGreenExpr(new gov.nasa.jpf.symbc.numeric.IntegerConstant(0));
+            return new IntConstant(0);
         else
             try {
                 throw sre;
@@ -90,7 +88,7 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
 
     private gov.nasa.jpf.symbc.numeric.Expression createConstantForType(int variableSlot) throws StaticRegionException {
         String varType = sf.getLocalVariableType(variableSlot);
-        if (varType != null) { //SH: sometimes SPF does not give the type! we assume it is int
+        if (varType != null) {
             switch (varType) {
                 case "double":
                 case "float":

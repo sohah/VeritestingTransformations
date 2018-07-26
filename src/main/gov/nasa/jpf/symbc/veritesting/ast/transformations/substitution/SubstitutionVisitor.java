@@ -11,11 +11,11 @@ import za.ac.sun.cs.green.expr.Expression;
 public class SubstitutionVisitor extends AstMapVisitor{
     ExprVisitorAdapter<Expression> eva;
     private ValueSymbolTable valueSymbolTable;
-    private VarTypeTable varTypeTable;
+    private SlotTypeTable slotTypeTable;
 
-    private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, VarTypeTable varTypeTable, ValueSymbolTable valueSymbolTable) {
-        super(new ExprSubstitutionVisitor(ti, staticRegion, varTypeTable, valueSymbolTable));
-        this.varTypeTable = varTypeTable;
+    private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable) {
+        super(new ExprSubstitutionVisitor(ti, staticRegion, slotTypeTable, valueSymbolTable));
+        this.slotTypeTable = slotTypeTable;
         this.valueSymbolTable = valueSymbolTable;
         eva = super.eva;
     }
@@ -76,8 +76,8 @@ public class SubstitutionVisitor extends AstMapVisitor{
 
     public static DynamicRegion doSubstitution(ThreadInfo ti, StaticRegion staticRegion)  {
 
-        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, new VarTypeTable(), new ValueSymbolTable());
+        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, new SlotTypeTable(ti, staticRegion), new ValueSymbolTable());
         Stmt dynStmt = staticRegion.staticStmt.accept(visitor);
-        return new DynamicRegion(staticRegion, dynStmt, visitor.varTypeTable, visitor.valueSymbolTable);
+        return new DynamicRegion(staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable);
     }
 }

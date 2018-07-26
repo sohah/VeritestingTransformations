@@ -60,8 +60,8 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
     }
     @Override public Expression visit(SkipStmt a) { return Operation.TRUE; }
 
-    @Override public Expression visit(AssignmentStmt a) { return bad(a); }
-    @Override public Expression visit(CompositionStmt a) { return bad(a); }
+    @Override public Expression visit(AssignmentStmt a) { return assignStmt(a); }
+    @Override public Expression visit(CompositionStmt a) { return compositionStmt(a); }
     @Override public Expression visit(IfThenElseStmt a) { return bad(a); }
     @Override public Expression visit(SPFCaseStmt c) { return bad(c); }
     @Override public Expression visit(ArrayLoadInstruction c) { return bad(c); }

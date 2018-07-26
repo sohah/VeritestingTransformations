@@ -28,9 +28,7 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
@@ -42,12 +40,11 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
 import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.IntConstant;
-import za.ac.sun.cs.green.expr.IntVariable;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
 
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
@@ -119,13 +116,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 /*System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
                 staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
                 System.out.println(StmtPrintVisitor.print(staticRegion.staticStmt));*/
+
                 System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
                 DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
                 System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                 dynRegion.stackSlotTable.print();
                 dynRegion.outputTable.print();
                 dynRegion.valueSymbolTable.print();
-                dynRegion.varTypeTable.print();
+                dynRegion.slotTypeTable.print();
 
 
                 System.out.println("--------------- UNIQUNESS TRANSFORMATION ---------------");
@@ -133,7 +131,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                 dynRegion.stackSlotTable.print();
                 dynRegion.valueSymbolTable.print();
-                dynRegion.varTypeTable.print();
+                dynRegion.slotTypeTable.print();
                 dynRegion.outputTable.print();
 
 
@@ -144,12 +142,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
                 System.out.println("--------------- TO GREEN TRANSFORMATION ---------------");
-                // populateSPF();
+                Expression regionSummary =  dynRegion.dynStmt.accept((new AstToGreenVisitor()));
+
+                populateSPF(ti, instructionToExecute, dynRegion, regionSummary);
             }
         }
     }
 
-    private void PopulateSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion, Expression regionSummary) {
+    private void populateSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion, Expression regionSummary) {
         populateSlots(ti, dynRegion);
         updatePathCondition(ti, regionSummary);
         advanceSpf(ti, ins, dynRegion);
@@ -170,22 +170,21 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     private void populateSlots(ThreadInfo ti, DynamicRegion dynRegion) {
         StackFrame sf = ti.getTopFrame();
-        
+
         OutputTable outputTable = dynRegion.outputTable;
-        Set<Integer> keys = outputTable.getKeys();
+        Set<Integer> slots = outputTable.getKeys();
 
-        Iterator itr = keys.iterator();
-        Integer var;
+        Iterator slotItr = slots.iterator();
 
-        while(itr.hasNext()){
-            Integer slot = (Integer) itr.next();
-             var = outputTable.lookup(slot);
-        //    sf.setSlotAttr(slot, greenToSPFExpression(new IntVariable()));
+        while(slotItr.hasNext()){
+            Integer slot = (Integer) slotItr.next();
+            String varId = "w" + Integer.toString(outputTable.lookup(slot));
+            Expression symVar = createGreenVar(dynRegion.slotTypeTable.lookup(slot),varId);
+            sf.setSlotAttr(slot, greenToSPFExpression(symVar));
         }
     }
 
     private void advanceSpf(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion) {
-        Expression regionSummary; //= dynRegion.dynStmt.accept((new AstToGreenVisitor()));
         int endIns = dynRegion.endIns;
         while (ins.getPosition() != endIns) {
             if (ins instanceof GOTO && (((GOTO) ins).getTarget().getPosition() <= endIns))

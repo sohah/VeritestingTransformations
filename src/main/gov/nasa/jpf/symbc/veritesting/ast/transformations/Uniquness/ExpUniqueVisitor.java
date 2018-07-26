@@ -5,21 +5,28 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRe
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
+import za.ac.sun.cs.green.expr.IntVariable;
+import za.ac.sun.cs.green.expr.RealVariable;
+
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 
 public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expression>{
 
     int uniqueNum;
+    DynamicRegion dynRegion;
 
-    ExpUniqueVisitor(int uniqueNum){
+    ExpUniqueVisitor(DynamicRegion dynRegion, int uniqueNum){
         super();
         this.uniqueNum = uniqueNum;
+        this.dynRegion = dynRegion;
     }
 
     @Override
     public Expression visit(WalaVarExpr expr){
-        String varId = Integer.toString(expr.number);
+        String varId = "w" + Integer.toString(expr.number);
         varId = varId.concat(Integer.toString(uniqueNum));
-        int newNumber = Integer.valueOf(varId);
-        return new WalaVarExpr(newNumber);
+        int slot = dynRegion.stackSlotTable.lookup(expr.number)[0];
+        return createGreenVar(dynRegion.slotTypeTable.lookup(slot), varId);
     }
 }

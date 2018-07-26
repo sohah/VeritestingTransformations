@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
+import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Table;
 
@@ -11,8 +12,10 @@ import java.util.Set;
 //SH: this class populates the input variables for the region. it does so by computing the first var use for slots.
 
 public class InputTable extends Table<Integer>{
-    public InputTable(StackSlotTable stackSlotTable, Stmt stmt) {
+    IR ir;
+    public InputTable(IR ir, StackSlotTable stackSlotTable, Stmt stmt) {
         super("Region Input Table", "var", "slot");
+        this.ir = ir;
         computeInputVars(stackSlotTable);
         removeDefInputs(stmt);
     }
