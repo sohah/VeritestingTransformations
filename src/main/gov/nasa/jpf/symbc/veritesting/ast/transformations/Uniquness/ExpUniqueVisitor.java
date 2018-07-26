@@ -26,7 +26,11 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
     public Expression visit(WalaVarExpr expr){
         String varId = "w" + Integer.toString(expr.number);
         varId = varId.concat(Integer.toString(uniqueNum));
-        int slot = dynRegion.stackSlotTable.lookup(expr.number)[0];
-        return createGreenVar(dynRegion.slotTypeTable.lookup(slot), varId);
+        if(dynRegion.stackSlotTable.lookup(expr.number) != null ){
+            int slot = dynRegion.stackSlotTable.lookup(expr.number)[0];
+            return createGreenVar(dynRegion.slotTypeTable.lookup(slot), varId);
+        }
+        else
+            return expr;
     }
 }

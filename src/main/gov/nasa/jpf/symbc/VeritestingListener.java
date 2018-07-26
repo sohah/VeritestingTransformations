@@ -143,7 +143,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
                 System.out.println("--------------- TO GREEN TRANSFORMATION ---------------");
                 Expression regionSummary =  dynRegion.dynStmt.accept((new AstToGreenVisitor()));
-
+                
                 populateSPF(ti, instructionToExecute, dynRegion, regionSummary);
             }
         }

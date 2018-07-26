@@ -55,7 +55,7 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
             return greenValue;
         } else { //not a stack slot var, try to check if it is a constant from wala
             SymbolTable symbolTable = staticRegion.ir.getSymbolTable();
-            if (symbolTable.isConstant(expr.number)) {
+            if ((expr.number > -1) && (symbolTable.isConstant(expr.number))) {
                 Expression greenValue = makeConstantFromWala(expr.number);
                 valueSymbolTable.add(expr.number, greenValue);
                 return greenValue;
