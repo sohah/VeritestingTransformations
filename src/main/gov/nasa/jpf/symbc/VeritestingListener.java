@@ -44,6 +44,7 @@ import gov.nasa.jpf.vm.*;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.IntVariable;
+import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.*;
 
@@ -140,19 +141,36 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 LinearizationTransformation linearTrans = new LinearizationTransformation();
                 dynRegion = linearTrans.execute(dynRegion);
                 System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-      //          populateSPF();
+
+
+                System.out.println("--------------- TO GREEN TRANSFORMATION ---------------");
+                // populateSPF();
             }
         }
     }
 
-    private void PopulateSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion) {
-        Expression regionSummary; //= dynRegion.dynStmt.accept((new AstToGreenVisitor()));
-        StackFrame sf = ti.getTopFrame();
-        populateSlots(sf, dynRegion);
+    private void PopulateSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion, Expression regionSummary) {
+        populateSlots(ti, dynRegion);
+        updatePathCondition(ti, regionSummary);
         advanceSpf(ti, ins, dynRegion);
     }
 
-    private void populateSlots(StackFrame sf, DynamicRegion dynRegion) {
+    private void updatePathCondition(ThreadInfo ti, Expression regionSummary) {
+
+        PathCondition pc;
+
+        if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
+            pc = ((PCChoiceGenerator)(ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
+        else{
+            pc = new PathCondition();
+            pc._addDet(new GreenConstraint(Operation.TRUE));
+        }
+        pc._addDet(new GreenConstraint(regionSummary));
+    }
+
+    private void populateSlots(ThreadInfo ti, DynamicRegion dynRegion) {
+        StackFrame sf = ti.getTopFrame();
+        
         OutputTable outputTable = dynRegion.outputTable;
         Set<Integer> keys = outputTable.getKeys();
 
@@ -167,6 +185,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     private void advanceSpf(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion) {
+        Expression regionSummary; //= dynRegion.dynStmt.accept((new AstToGreenVisitor()));
         int endIns = dynRegion.endIns;
         while (ins.getPosition() != endIns) {
             if (ins instanceof GOTO && (((GOTO) ins).getTarget().getPosition() <= endIns))
