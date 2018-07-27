@@ -56,17 +56,19 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
         } else { //not a stack slot var, try to check if it is a constant from wala
             SymbolTable symbolTable = staticRegion.ir.getSymbolTable();
             if ((expr.number > -1) && (symbolTable.isConstant(expr.number))) {
-                Expression greenValue = makeConstantFromWala(expr.number);
+                Expression greenValue = makeConstantFromWala(expr);
                 valueSymbolTable.add(expr.number, greenValue);
                 return greenValue;
-            } else{ // it is an intermediate variable
+            } else{ // it is an intermediate variable, just return it back.
+                System.out.println("couldn't infer the type or the value for " + expr.toString());
                 return expr;
             }
         }
     }
 
 
-    private Expression makeConstantFromWala(int walaId) {
+    private Expression makeConstantFromWala(WalaVarExpr expr) {
+        int walaId = expr.number;
         SymbolTable symbolTable = staticRegion.ir.getSymbolTable();
         if (symbolTable.isBooleanConstant(walaId) || symbolTable.isIntegerConstant(walaId))
             return new IntConstant((Integer)symbolTable.getConstantValue(walaId));
@@ -76,14 +78,10 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
             return new IntConstant(1);
         else if (symbolTable.isFalse(walaId))
             return new IntConstant(0);
-        else
-            try {
-                throw sre;
-            } catch (StaticRegionException e) {
-                System.out.println("Constant type not supported for Veritesting.");
-                System.out.println(e.getMessage());
-            }
-        return null;
+        else // is a constant that we don't support, then just return it back.
+        {  System.out.println("constant type not supported for " + expr.toString());
+            return expr;}
+
     }
 
     private gov.nasa.jpf.symbc.numeric.Expression createConstantForType(int variableSlot) throws StaticRegionException {
