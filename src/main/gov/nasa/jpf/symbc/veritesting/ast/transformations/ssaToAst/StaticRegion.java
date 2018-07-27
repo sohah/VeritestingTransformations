@@ -23,8 +23,8 @@ public class StaticRegion implements Region{
         this.staticStmt = staticStmt;
         this.ir  = ir;
         stackSlotTable = new StackSlotTable(ir);
-        outputTable = new OutputTable(stackSlotTable);
         inputTable = new InputTable(ir, stackSlotTable, staticStmt);
+        outputTable = new OutputTable(ir, stackSlotTable, inputTable);
         this.endIns = endIns;
 
     }

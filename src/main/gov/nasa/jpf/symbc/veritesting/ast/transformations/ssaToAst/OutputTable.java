@@ -1,27 +1,31 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
+import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Table;
 
 import java.util.*;
 
 public class OutputTable extends Table<Integer>{
-    public OutputTable(StackSlotTable stackSlotTable) {
+    public OutputTable(IR ir, StackSlotTable stackSlotTable, InputTable inputTable) {
         super("Region Output Table", "slot", "var");
-        computeOutputVars(stackSlotTable);
+        computeOutputVars(ir, stackSlotTable, inputTable);
     }
 
     private OutputTable(){
         super();
     }
+
     //SH: outputVars are computed by finding the maximum wala var for each
-    //stackSlot.
-    private void computeOutputVars(StackSlotTable stackSlotTable) {
+    //stackSlot and those that are not input or constants.
+    private void computeOutputVars(IR ir, StackSlotTable stackSlotTable, InputTable inputTable) {
         HashSet<Integer> allSlots = stackSlotTable.getSlots();
         Iterator<Integer> slotsIter = allSlots.iterator();
         while(slotsIter.hasNext()){
             int slot = slotsIter.next();
             Set<Integer> varsForSlot = stackSlotTable.getVarsOfSlot(slot);
-            this.add(slot, Collections.max(varsForSlot));
+            Integer slotOutput = Collections.max(varsForSlot);
+            if ((inputTable.lookup(slotOutput) == null) && !(ir.getSymbolTable().isConstant(slotOutput)))
+                this.add(slot, Collections.max(varsForSlot));
         }
     }
 

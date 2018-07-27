@@ -28,6 +28,7 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
@@ -44,6 +45,7 @@ import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
 
@@ -97,65 +99,71 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             discoverRegions(ti); // static analysis to discover regions
             firstTime = false;
         } else {
-            try {
 
-                MethodInfo methodInfo = instructionToExecute.getMethodInfo();
-                String className = methodInfo.getClassName();
-                String methodName = methodInfo.getName();
-                String methodSignature = methodInfo.getSignature();
-                int offset = instructionToExecute.getPosition();
-                String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
-                HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
+                try {
 
-                StaticRegion staticRegion = regionsMap.get(key);
-                if (staticRegion != null) {
-                    System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
+                    MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+                    String className = methodInfo.getClassName();
+                    String methodName = methodInfo.getName();
+                    String methodSignature = methodInfo.getSignature();
+                    int offset = instructionToExecute.getPosition();
+                    String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+                    HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
 
-                    staticRegion.stackSlotTable.print();
-                    staticRegion.outputTable.print();
-                    staticRegion.inputTable.print();
+                    StaticRegion staticRegion = regionsMap.get(key);
+                    if (staticRegion != null)
+                        if (SpfUtil.isConcerteCond(ti.getTopFrame())) {
+                        System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
+
+                        staticRegion.stackSlotTable.print();
+                        staticRegion.outputTable.print();
+                        staticRegion.inputTable.print();
 
                 /*System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
                 staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
                 System.out.println(StmtPrintVisitor.print(staticRegion.staticStmt));*/
 
-                    System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
-                    DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
-                    System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-                    dynRegion.stackSlotTable.print();
-                    dynRegion.outputTable.print();
-                    dynRegion.valueSymbolTable.print();
-                    dynRegion.slotTypeTable.print();
+                        System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
+                        DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
+                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+                        dynRegion.stackSlotTable.print();
+                        dynRegion.outputTable.print();
+                        dynRegion.valueSymbolTable.print();
+                        dynRegion.slotTypeTable.print();
 
 
-                    System.out.println("--------------- UNIQUNESS TRANSFORMATION ---------------");
-                    dynRegion = UniqueRegion.doUniqueness(dynRegion);
-                    System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-                    dynRegion.stackSlotTable.print();
-                    dynRegion.valueSymbolTable.print();
-                    dynRegion.slotTypeTable.print();
-                    dynRegion.outputTable.print();
+                        System.out.println("--------------- UNIQUNESS TRANSFORMATION ---------------");
+                        dynRegion = UniqueRegion.doUniqueness(dynRegion);
+                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+                        dynRegion.stackSlotTable.print();
+                        dynRegion.valueSymbolTable.print();
+                        dynRegion.slotTypeTable.print();
+                        dynRegion.outputTable.print();
 
 
-                    System.out.println("--------------- LINEARIZATION TRANSFORMATION ---------------");
-                    LinearizationTransformation linearTrans = new LinearizationTransformation();
-                    dynRegion = linearTrans.execute(dynRegion);
-                    System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+                        System.out.println("--------------- LINEARIZATION TRANSFORMATION ---------------");
+                        LinearizationTransformation linearTrans = new LinearizationTransformation();
+                        dynRegion = linearTrans.execute(dynRegion);
+                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 
-
-                    System.out.println("--------------- TO GREEN TRANSFORMATION ---------------");
-                    Expression regionSummary = dynRegion.dynStmt.accept((new AstToGreenVisitor()));
-                    populateSPF(ti, instructionToExecute, dynRegion, regionSummary);
+                        System.out.println("--------------- TO GREEN TRANSFORMATION ---------------");
+                        Expression regionSummary = dynRegion.dynStmt.accept((new AstToGreenVisitor()));
+                        populateSPF(ti, instructionToExecute, dynRegion, regionSummary);
+                    }
+                } catch (IllegalArgumentException e) {
+                    System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+                    return;
                 }
-            } catch (IllegalArgumentException e) {
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! "+"\n" + e.getMessage() +"\n");
-                return;
-            }
+                catch (StaticRegionException sre){
+                    System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
+                    return;
+                }
+
         }
     }
 
 
-    private void populateSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion, Expression regionSummary) {
+    private void populateSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion, Expression regionSummary) throws StaticRegionException {
         PathCondition pc;
 
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
@@ -168,9 +176,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if(pc.simplify()){
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             populateSlots(ti, dynRegion);
+            clearStack(ti.getModifiableTopFrame(), ins);
             advanceSpf(ti, ins, dynRegion);
         }
         return;
+    }
+
+    private void clearStack(StackFrame sf, Instruction ins) throws StaticRegionException {
+        int numOperands = SpfUtil.operandNumber(ins.getMnemonic());
+        while (numOperands > 0) {
+            sf.pop();
+            numOperands--;
+        }
     }
 
     private void populateSlots(ThreadInfo ti, DynamicRegion dynRegion) {
