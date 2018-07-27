@@ -51,30 +51,103 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
 
     public Expression transform(Stmt stmt) {
         if (stmt instanceof AssignmentStmt) {
-            return assignStmt((AssignmentStmt)stmt);
+            return assignStmt((AssignmentStmt) stmt);
         } else if (stmt instanceof CompositionStmt) {
-            return compositionStmt((CompositionStmt)stmt);
+            return compositionStmt((CompositionStmt) stmt);
+        } else if (stmt instanceof SkipStmt) {
+            return Operation.TRUE;
         } else {
             return bad(stmt);
         }
     }
-    @Override public Expression visit(SkipStmt a) { return Operation.TRUE; }
 
-    @Override public Expression visit(AssignmentStmt a) { return assignStmt(a); }
-    @Override public Expression visit(CompositionStmt a) { return compositionStmt(a); }
-    @Override public Expression visit(IfThenElseStmt a) { return bad(a); }
-    @Override public Expression visit(SPFCaseStmt c) { return bad(c); }
-    @Override public Expression visit(ArrayLoadInstruction c) { return bad(c); }
-    @Override public Expression visit(ArrayStoreInstruction c) { return bad(c); }
-    @Override public Expression visit(SwitchInstruction c) { return bad(c); }
-    @Override public Expression visit(ReturnInstruction c) { return bad(c); }
-    @Override public Expression visit(GetInstruction c) { return bad(c); }
-    @Override public Expression visit(PutInstruction c) { return bad(c); }
-    @Override public Expression visit(NewInstruction c) { return bad(c); }
-    @Override public Expression visit(InvokeInstruction c) { return bad(c); }
-    @Override public Expression visit(ArrayLengthInstruction c) { return bad(c); }
-    @Override public Expression visit(ThrowInstruction c) { return bad(c); }
-    @Override public Expression visit(CheckCastInstruction c) { return bad(c); }
-    @Override public Expression visit(InstanceOfInstruction c) { return bad(c); }
-    @Override public Expression visit(PhiInstruction c) { return bad(c); }
+    @Override
+    public Expression visit(SkipStmt a) {
+        return Operation.TRUE;
+    }
+
+    @Override
+    public Expression visit(AssignmentStmt a) {
+        return assignStmt(a);
+    }
+
+    @Override
+    public Expression visit(CompositionStmt a) {
+        return compositionStmt(a);
+    }
+
+    @Override
+    public Expression visit(IfThenElseStmt a) {
+        return bad(a);
+    }
+
+    @Override
+    public Expression visit(SPFCaseStmt c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(ArrayLoadInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(ArrayStoreInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(SwitchInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(ReturnInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(GetInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(PutInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(NewInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(InvokeInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(ArrayLengthInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(ThrowInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(CheckCastInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(InstanceOfInstruction c) {
+        return bad(c);
+    }
+
+    @Override
+    public Expression visit(PhiInstruction c) {
+        return bad(c);
+    }
 }
