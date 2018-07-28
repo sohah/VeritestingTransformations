@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 
 
 //SH: This class translates SSAInstructions to Veritesting Statements.
-// many of the assignment instructions have the left hand side as an "EmptyVar" because none
-// has been constructed at this point yet.
 
 
 public class SSAToStatIVisitor implements SSAInstruction.IVisitor {

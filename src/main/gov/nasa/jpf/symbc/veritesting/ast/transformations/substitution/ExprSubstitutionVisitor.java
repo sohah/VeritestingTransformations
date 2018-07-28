@@ -51,7 +51,7 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
             Expression greenValue = SPFToGreenExpr(varValue);
             String type = sf.getLocalVariableType(slot);
             valueSymbolTable.add(expr.number, greenValue);
-            slotTypeTable.add(expr.number, type);
+            slotTypeTable.add(slot, type);
             return greenValue;
         } else { //not a stack slot var, try to check if it is a constant from wala
             SymbolTable symbolTable = staticRegion.ir.getSymbolTable();

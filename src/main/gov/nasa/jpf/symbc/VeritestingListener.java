@@ -28,6 +28,7 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
@@ -45,7 +46,6 @@ import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.*;
 
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
 
@@ -100,19 +100,19 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             firstTime = false;
         } else {
 
-                try {
+            try {
 
-                    MethodInfo methodInfo = instructionToExecute.getMethodInfo();
-                    String className = methodInfo.getClassName();
-                    String methodName = methodInfo.getName();
-                    String methodSignature = methodInfo.getSignature();
-                    int offset = instructionToExecute.getPosition();
-                    String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
-                    HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
+                MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+                String className = methodInfo.getClassName();
+                String methodName = methodInfo.getName();
+                String methodSignature = methodInfo.getSignature();
+                int offset = instructionToExecute.getPosition();
+                String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+                HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
 
-                    StaticRegion staticRegion = regionsMap.get(key);
-                    if (staticRegion != null)
-                        if (SpfUtil.isConcerteCond(ti.getTopFrame())) {
+                StaticRegion staticRegion = regionsMap.get(key);
+                if (staticRegion != null)
+                    if (SpfUtil.isSymCond(ti.getTopFrame(), instructionToExecute)) {
                         System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
 
                         staticRegion.stackSlotTable.print();
@@ -148,22 +148,29 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
                         System.out.println("--------------- TO GREEN TRANSFORMATION ---------------");
                         Expression regionSummary = dynRegion.dynStmt.accept((new AstToGreenVisitor()));
+                        System.out.println(ExprUtil.AstToString(regionSummary));
                         populateSPF(ti, instructionToExecute, dynRegion, regionSummary);
                     }
-                } catch (IllegalArgumentException e) {
-                    System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                    return;
-                }
-                catch (StaticRegionException sre){
-                    System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
-                    return;
-                }
-
+            } catch (IllegalArgumentException e) {
+                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+                return;
+            } catch (StaticRegionException sre) {
+                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
+                return;
+            }
         }
     }
 
 
     private void populateSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion, Expression regionSummary) throws StaticRegionException {
+        if (canSetPC(ti, regionSummary)) {
+            populateSlots(ti, dynRegion);
+            clearStack(ti.getModifiableTopFrame(), ins);
+            advanceSpf(ti, ins, dynRegion);
+        }
+    }
+
+    private boolean canSetPC(ThreadInfo ti, Expression regionSummary) throws StaticRegionException {
         PathCondition pc;
 
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
@@ -173,17 +180,16 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
         pc._addDet(new GreenConstraint(regionSummary));
-        if(pc.simplify()){
+        if (pc.simplify()) {
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
-            populateSlots(ti, dynRegion);
-            clearStack(ti.getModifiableTopFrame(), ins);
-            advanceSpf(ti, ins, dynRegion);
+            return true;
+        } else {
+            throw new StaticRegionException("Path condition is unsat, no region is created.");
         }
-        return;
     }
 
     private void clearStack(StackFrame sf, Instruction ins) throws StaticRegionException {
-        int numOperands = SpfUtil.operandNumber(ins.getMnemonic());
+        int numOperands = SpfUtil.getOperandNumber(ins.getMnemonic());
         while (numOperands > 0) {
             sf.pop();
             numOperands--;

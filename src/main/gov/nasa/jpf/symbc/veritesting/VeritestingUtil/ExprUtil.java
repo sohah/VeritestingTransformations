@@ -18,15 +18,15 @@ public class ExprUtil {
     }
 
 
-    private static String ASTToString(Expression expression) {
+    public static String AstToString(Expression expression) {
         if (expression instanceof Operation) {
             Operation operation = (Operation) expression;
             String str = "";
             if (operation.getOperator().getArity() == 2)
-                str = "(" + ASTToString(operation.getOperand(0)) + " " + operation.getOperator().toString() + " " +
-                        ASTToString(operation.getOperand(1)) + ")";
+                str = "(" + AstToString(operation.getOperand(0)) + " " + operation.getOperator().toString() + " " +
+                        AstToString(operation.getOperand(1)) + ")";
             else if (operation.getOperator().getArity() == 1)
-                str = "(" + operation.getOperator().toString() + ASTToString(operation.getOperand(0)) + ")";
+                str = "(" + operation.getOperator().toString() + AstToString(operation.getOperand(0)) + ")";
             return str;
         } else
             return expression.toString();

@@ -3,13 +3,14 @@ package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 
 public class SpfUtil {
 
     private static int operandNum;
 
-    public static Integer operandNumber(String instruction) throws StaticRegionException {
+    public static Integer getOperandNumber(String instruction) throws StaticRegionException {
         switch (instruction) {
             case "ifeq":
             case "ifne":
@@ -36,22 +37,23 @@ public class SpfUtil {
 
     }
 
-    public static boolean isConcerteCond(StackFrame sf) {
-        boolean isConcreteCondition = true;
+    public static boolean isSymCond(StackFrame sf, Instruction ins) throws StaticRegionException {
+        boolean isSymCondition = false;
+        SpfUtil.getOperandNumber(ins.getMnemonic());
         if (operandNum == 1) {
             gov.nasa.jpf.symbc.numeric.Expression operand1 = (gov.nasa.jpf.symbc.numeric.Expression)
                     sf.getOperandAttr();
             if (operand1 != null)
-                isConcreteCondition = false;
+                isSymCondition = true;
         }
         if (operandNum == 2) {
             IntegerExpression operand1 = (IntegerExpression) sf.getOperandAttr(1);
             if (operand1 != null)
-                isConcreteCondition = false;
+                isSymCondition = true;
             IntegerExpression operand2 = (IntegerExpression) sf.getOperandAttr(0);
             if (operand2 != null)
-                isConcreteCondition = false;
+                isSymCondition = true;
         }
-        return isConcreteCondition;
+        return isSymCondition;
     }
 }

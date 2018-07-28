@@ -45,7 +45,7 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
         Expression assign = new Operation(Operation.Operator.EQ, toAssign, e);
         if (currentCondition.equals(Operation.TRUE)) {
             return assign;
-        } else { //SH: implications is not yet translated from green to SPF, so using the equivelant disjunction
+        } else { //SH: implications is not yet translated from green to SPF, so I am using the equivalent disjunction
             return new Operation(Operation.Operator.OR, new Operation(Operation.Operator.NOT, currentCondition), assign);
         }
     }
