@@ -9,10 +9,9 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
 
-//SH: This is the SPFCases visitor that turns some statements, like object creation and throw instructions into
-// SPFCases, upon doing so, unncessary compsoed statements with SPFCases are eliminated.
+//SH: Unncessary compsoed statements with SPFCases are eliminated.
 
-public class SpfCasesVisitor implements AstVisitor<Stmt> {
+public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
     Expression spfCondition = Operation.TRUE;
 
 
@@ -160,8 +159,8 @@ public Stmt visit(PhiInstruction c){
         c.rhs);
         }
 
-    public static StaticRegion doSpfCases(StaticRegion staticRegion)  {
-        SpfCasesVisitor visitor = new SpfCasesVisitor();
+    public static StaticRegion execute(StaticRegion staticRegion)  {
+        SpfCasesPass2Visitor visitor = new SpfCasesPass2Visitor();
         Stmt substitutedStmt = staticRegion.staticStmt.accept(visitor);
         //staticRegion.setStaticStmt(substitutedStmt); I need to create a new instance
         return staticRegion;

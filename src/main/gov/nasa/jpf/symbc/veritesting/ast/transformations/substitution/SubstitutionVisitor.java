@@ -66,7 +66,7 @@ public class SubstitutionVisitor extends AstMapVisitor{
         for (int i=0; i < rhs.length; i++) {
             rhs[i] = eva.accept(c.rhs[i]);
         }
-        //hack here to populate the type of the def, not sure if we need that.
+        //hack here to populate the type of the def
         eva.accept(c.def);
 
         return new PhiInstruction(c.getOriginal(),
@@ -74,7 +74,7 @@ public class SubstitutionVisitor extends AstMapVisitor{
                 rhs);
     }
 
-    public static DynamicRegion doSubstitution(ThreadInfo ti, StaticRegion staticRegion)  {
+    public static DynamicRegion execute(ThreadInfo ti, StaticRegion staticRegion)  {
 
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, new SlotTypeTable(ti, staticRegion), new ValueSymbolTable());
         Stmt dynStmt = staticRegion.staticStmt.accept(visitor);

@@ -1,10 +1,13 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
+import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
+
+import java.util.HashSet;
 
 public class DynamicRegion implements Region {
 
@@ -16,7 +19,7 @@ public class DynamicRegion implements Region {
     public final OutputTable outputTable;
     public final StaticRegion staticRegion;
     public final int endIns;
-
+    //public final HashSet<SPFCaseStmt> SpfCasesSet;
 
     public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable) {
 

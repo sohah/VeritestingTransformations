@@ -10,7 +10,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 
 public class UniqueRegion {
 
-    public static DynamicRegion doUniqueness(DynamicRegion dynRegion){
+    public static DynamicRegion execute(DynamicRegion dynRegion){
 
         if((++DynamicRegion.uniqueCounter)% 10 == 0){
             ++DynamicRegion.uniqueCounter; //just to skip numbers with zero on the right handside

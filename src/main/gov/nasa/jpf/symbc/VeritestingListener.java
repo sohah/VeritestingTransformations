@@ -124,7 +124,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 System.out.println(StmtPrintVisitor.print(staticRegion.staticStmt));*/
 
                         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
-                        DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
+                        DynamicRegion dynRegion = SubstitutionVisitor.execute(ti, staticRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                         dynRegion.stackSlotTable.print();
                         dynRegion.outputTable.print();
@@ -133,7 +133,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
                         System.out.println("--------------- UNIQUNESS TRANSFORMATION ---------------");
-                        dynRegion = UniqueRegion.doUniqueness(dynRegion);
+                        dynRegion = UniqueRegion.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                         dynRegion.stackSlotTable.print();
                         dynRegion.valueSymbolTable.print();
