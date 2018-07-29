@@ -18,12 +18,10 @@ import za.ac.sun.cs.green.expr.Operation;
 
 public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
     private Expression spfCondition = Operation.TRUE;
-    private DynamicRegion dynRegion;
     private ThreadInfo ti;
 
-    public SpfCasesPass1Visitor(ThreadInfo ti, DynamicRegion dynamicRegion){
+    public SpfCasesPass1Visitor(ThreadInfo ti){
         this.ti = ti;
-        this.dynRegion = dynamicRegion;
     }
 
 
@@ -203,10 +201,9 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
                 c.rhs);
     }
 
-    public static StaticRegion execute(StaticRegion staticRegion) {
-        SpfCasesPass1Visitor visitor = new SpfCasesPass1Visitor();
-        Stmt substitutedStmt = staticRegion.staticStmt.accept(visitor);
-        //staticRegion.setStaticStmt(substitutedStmt); I need to create a new instance
-        return staticRegion;
+    public static Stmt execute(ThreadInfo ti, DynamicRegion dynRegion) {
+        SpfCasesPass1Visitor visitor = new SpfCasesPass1Visitor(ti);
+        Stmt stmt = dynRegion.dynStmt.accept(visitor);
+        return stmt;
     }
 }

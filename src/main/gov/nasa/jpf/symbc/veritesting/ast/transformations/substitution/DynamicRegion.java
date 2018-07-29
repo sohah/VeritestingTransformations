@@ -19,9 +19,9 @@ public class DynamicRegion implements Region {
     public final OutputTable outputTable;
     public final StaticRegion staticRegion;
     public final int endIns;
-    public final HashSet<SPFCaseStmt> SpfCasesSet;
+    public final HashSet<SPFCaseStmt> SpfCaseSet;
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable) {
+    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable, HashSet<SPFCaseStmt> SpfCaseSet) {
 
         this.staticRegion = staticRegion;
         this.dynStmt = dynStmt;
@@ -30,7 +30,7 @@ public class DynamicRegion implements Region {
         this.stackSlotTable = staticRegion.stackSlotTable.clone();
         this.outputTable = staticRegion.outputTable.clone();
         this.endIns = staticRegion.endIns;
-        this.SpfCasesSet = new HashSet<>();
+        this.SpfCaseSet = SpfCaseSet;
     }
 
     public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable, StackSlotTable stackSlotTable, OutputTable outputTable) {
@@ -41,6 +41,6 @@ public class DynamicRegion implements Region {
         this.stackSlotTable = stackSlotTable;
         this.outputTable = outputTable;
         this.endIns = staticRegion.endIns;
-        this.SpfCasesSet = new HashSet<>();
+        this.SpfCaseSet = new HashSet<>();
     }
 }
