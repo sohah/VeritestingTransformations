@@ -62,6 +62,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static long cleanupTime = 0;
     public static int solverCount = 0;
     public static int pathLabelCount = 1;
+    public static int unsatSPFCaseCount = 0;
     private long staticAnalysisTime = 0;
     public static final int maxStaticExplorationDepth = 2;
     public static boolean firstTime = true;

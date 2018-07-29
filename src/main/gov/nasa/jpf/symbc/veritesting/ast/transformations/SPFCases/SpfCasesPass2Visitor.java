@@ -46,6 +46,10 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
             s = new SPFCaseStmt(oldSPFCondition, ((SPFCaseStmt) thenStmt).reason);
         else if ((elseStmt instanceof SPFCaseStmt) && (thenStmt.equals(SkipStmt.skip)))
             s = new SPFCaseStmt(oldSPFCondition, ((SPFCaseStmt) elseStmt).reason);
+        else if(thenStmt instanceof SPFCaseStmt)
+            s = elseStmt;
+        else if(elseStmt instanceof SPFCaseStmt)
+            s = thenStmt;
         else
             s = new IfThenElseStmt(a.original, a.condition, thenStmt, elseStmt);
         spfCondition=oldSPFCondition;
@@ -66,20 +70,12 @@ public Stmt visit(SPFCaseStmt c){
 
 @Override
 public Stmt visit(ArrayLoadInstruction c){
-        return new ArrayLoadInstruction((SSAArrayLoadInstruction)c.original,
-        c.arrayref,
-        c.index,
-        c.elementType,
-        c.def);
+        return c;
         }
 
 @Override
 public Stmt visit(ArrayStoreInstruction c){
-        return new ArrayStoreInstruction((SSAArrayStoreInstruction)c.original,
-        c.arrayref,
-        c.index,
-        c.elementType,
-        c.assignExpr);
+        return c;
         }
 
 @Override
@@ -111,8 +107,7 @@ public Stmt visit(PutInstruction c){
 
 @Override
 public Stmt visit(NewInstruction c){
-        return new SPFCaseStmt(spfCondition,
-        SPFCaseStmt.SPFReason.OBJECT_CREATION);
+        return c;
         }
 
 @Override
@@ -131,8 +126,7 @@ public Stmt visit(ArrayLengthInstruction c){
 
 @Override
 public Stmt visit(ThrowInstruction c){
-        return new SPFCaseStmt(spfCondition,
-        SPFCaseStmt.SPFReason.THROW);
+        return c;
         }
 
 @Override
