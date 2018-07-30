@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases;
 
+import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
@@ -12,6 +13,8 @@ import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
+
+import java.util.HashSet;
 
 
 //SH: This is the first pass of SPFCases that creates SPFCases nodes. It assumes substitution has run.
@@ -81,7 +84,9 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
             Stmt elseStmt = new SPFCaseStmt(Operation.TRUE, SPFCaseStmt.SPFReason.OUT_OF_BOUND_EXCEPTION);
 
-            return new IfThenElseStmt(c.original, arrayCcondition, thenStmt, elseStmt);
+            SSAConditionalBranchInstruction dummy = new SSAConditionalBranchInstruction(-2, null, null, -2, -2, -2);
+
+            return new IfThenElseStmt(dummy, arrayCcondition, thenStmt, elseStmt);
         }
         else{ //arrayRef was not substitutetd - something is wrong
             return new ArrayLoadInstruction((SSAArrayLoadInstruction) c.original,
@@ -113,7 +118,9 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
             Stmt elseStmt = new SPFCaseStmt(Operation.TRUE, SPFCaseStmt.SPFReason.OUT_OF_BOUND_EXCEPTION);
 
-            return new IfThenElseStmt(c.original, arrayCcondition, thenStmt, elseStmt);
+            SSAConditionalBranchInstruction dummy = new SSAConditionalBranchInstruction(-2, null, null, -2, -2, -2);
+
+            return new IfThenElseStmt(dummy, arrayCcondition, thenStmt, elseStmt);
         }
         else{ //arrayRef was not substitutetd - something is wrong
             return new ArrayStoreInstruction((SSAArrayStoreInstruction) c.original,
@@ -201,9 +208,15 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
                 c.rhs);
     }
 
-    public static Stmt execute(ThreadInfo ti, DynamicRegion dynRegion) {
+    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
         SpfCasesPass1Visitor visitor = new SpfCasesPass1Visitor(ti);
-        Stmt stmt = dynRegion.dynStmt.accept(visitor);
-        return stmt;
+        Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
+        return new DynamicRegion(dynRegion.staticRegion,
+                dynStmt,
+                dynRegion.slotTypeTable,
+                dynRegion.valueSymbolTable,
+                dynRegion.stackSlotTable,
+                dynRegion.outputTable,
+                new HashSet<>());
     }
 }

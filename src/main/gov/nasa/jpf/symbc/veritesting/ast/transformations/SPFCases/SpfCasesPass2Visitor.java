@@ -15,11 +15,11 @@ import java.util.HashSet;
 //SH: Unncessary compsoed statements with SPFCases are eliminated.
 
 public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
-    Expression spfCondition = Operation.TRUE;
-    public final HashSet<SPFCaseStmt> spfCaseSet;
+    private Expression spfCondition = Operation.TRUE;
+    private static final HashSet<SPFCaseStmt> spfCaseSet = new HashSet<>();
 
     public SpfCasesPass2Visitor() {
-        this.spfCaseSet = new HashSet<>();
+        spfCaseSet.clear();
     }
 
 
@@ -172,9 +172,16 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
     }
 
 
-    public static Stmt execute(DynamicRegion dynRegion) {
+    public static DynamicRegion execute(DynamicRegion dynRegion) {
         SpfCasesPass2Visitor visitor = new SpfCasesPass2Visitor();
-        Stmt stmt = dynRegion.dynStmt.accept(visitor);
-        return stmt;
+        Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
+
+        return new DynamicRegion(dynRegion.staticRegion,
+                dynStmt,
+                dynRegion.slotTypeTable,
+                dynRegion.valueSymbolTable,
+                dynRegion.stackSlotTable,
+                dynRegion.outputTable,
+                spfCaseSet);
     }
 }

@@ -7,11 +7,13 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 
+import java.util.HashSet;
+
 
 public class SubstitutionVisitor extends AstMapVisitor{
     ExprVisitorAdapter<Expression> eva;
-    private ValueSymbolTable valueSymbolTable;
-    private SlotTypeTable slotTypeTable;
+    public final ValueSymbolTable valueSymbolTable;
+    public final SlotTypeTable slotTypeTable;
 
     private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable) {
         super(new ExprSubstitutionVisitor(ti, staticRegion, slotTypeTable, valueSymbolTable));
@@ -78,6 +80,6 @@ public class SubstitutionVisitor extends AstMapVisitor{
 
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, new SlotTypeTable(ti, staticRegion), new ValueSymbolTable());
         Stmt dynStmt = staticRegion.staticStmt.accept(visitor);
-        return new DynamicRegion(staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable);
+        return new DynamicRegion(staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable, new HashSet<>());
     }
 }

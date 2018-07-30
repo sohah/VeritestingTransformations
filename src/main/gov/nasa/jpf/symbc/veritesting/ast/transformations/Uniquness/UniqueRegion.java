@@ -32,6 +32,6 @@ public class UniqueRegion {
 
 
 
-        return new DynamicRegion(dynRegion.staticRegion, uniqStmt, slotTypeTable, valueSymbolTable, stackSlotTable, outputTable);
+        return new DynamicRegion(dynRegion.staticRegion, uniqStmt, slotTypeTable, valueSymbolTable, stackSlotTable, outputTable, dynRegion.spfCaseSet);
     }
 }

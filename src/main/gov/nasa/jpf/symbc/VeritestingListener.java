@@ -31,6 +31,8 @@ import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
@@ -53,7 +55,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
     //TODO: make these into configuration options
-    public static boolean boostPerf = true;
     public static int veritestingMode = 0;
 
     public static long totalSolverTime = 0, z3Time = 0;
@@ -61,11 +62,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static long solverAllocTime = 0;
     public static long cleanupTime = 0;
     public static int solverCount = 0;
-    public static int pathLabelCount = 1;
     public static int unsatSPFCaseCount = 0;
-    private long staticAnalysisTime = 0;
     public static final int maxStaticExplorationDepth = 2;
     public static boolean firstTime = true;
+    private static long staticAnalysisTime;
 
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -115,14 +115,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 if (staticRegion != null)
                     if (SpfUtil.isSymCond(ti.getTopFrame(), instructionToExecute)) {
                         System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
-
                         staticRegion.stackSlotTable.print();
                         staticRegion.outputTable.print();
                         staticRegion.inputTable.print();
-
-                /*System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
-                staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
-                System.out.println(StmtPrintVisitor.print(staticRegion.staticStmt));*/
 
                         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
                         DynamicRegion dynRegion = SubstitutionVisitor.execute(ti, staticRegion);
@@ -141,6 +136,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion.slotTypeTable.print();
                         dynRegion.outputTable.print();
 
+
+                        System.out.println("--------------- SPFCases TRANSFORMATION 1ST PASS ---------------");
+                        dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion);
+                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+
+                        System.out.println("--------------- SPFCases TRANSFORMATION 2ND PASS ---------------");
+                        dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
+                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 
                         System.out.println("--------------- LINEARIZATION TRANSFORMATION ---------------");
                         LinearizationTransformation linearTrans = new LinearizationTransformation();

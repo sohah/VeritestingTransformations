@@ -15,6 +15,7 @@ public class LinearizationTransformation extends DefaultTransformation {
                 region.slotTypeTable,
                 region.valueSymbolTable,
                 region.stackSlotTable,
-                region.outputTable);
+                region.outputTable,
+                region.spfCaseSet);
     }
 }

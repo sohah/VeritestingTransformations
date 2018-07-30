@@ -19,9 +19,15 @@ public class DynamicRegion implements Region {
     public final OutputTable outputTable;
     public final StaticRegion staticRegion;
     public final int endIns;
-    public final HashSet<SPFCaseStmt> SpfCaseSet;
+    public final HashSet<SPFCaseStmt> spfCaseSet;
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable, HashSet<SPFCaseStmt> SpfCaseSet) {
+
+    //SH: used for the first construction of the DynamicRegion out of a StaticRegion.
+    public DynamicRegion(StaticRegion staticRegion,
+                         Stmt dynStmt,
+                         SlotTypeTable slotTypeTable,
+                         ValueSymbolTable valueSymbolTable,
+                         HashSet<SPFCaseStmt> spfCaseSet) {
 
         this.staticRegion = staticRegion;
         this.dynStmt = dynStmt;
@@ -30,10 +36,16 @@ public class DynamicRegion implements Region {
         this.stackSlotTable = staticRegion.stackSlotTable.clone();
         this.outputTable = staticRegion.outputTable.clone();
         this.endIns = staticRegion.endIns;
-        this.SpfCaseSet = SpfCaseSet;
+        this.spfCaseSet = spfCaseSet;
     }
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable, StackSlotTable stackSlotTable, OutputTable outputTable) {
+    //SH: used multiple times by different transformations other than the substitution.
+    public DynamicRegion(StaticRegion staticRegion,
+                         Stmt dynStmt,
+                         SlotTypeTable slotTypeTable,
+                         ValueSymbolTable valueSymbolTable,
+                         StackSlotTable stackSlotTable,
+                         OutputTable outputTable, HashSet<SPFCaseStmt> spfCaseSet) {
         this.dynStmt = dynStmt;
         this.staticRegion = staticRegion;
         this.slotTypeTable = slotTypeTable;
@@ -41,6 +53,6 @@ public class DynamicRegion implements Region {
         this.stackSlotTable = stackSlotTable;
         this.outputTable = outputTable;
         this.endIns = staticRegion.endIns;
-        this.SpfCaseSet = new HashSet<>();
+        this.spfCaseSet = spfCaseSet;
     }
 }
