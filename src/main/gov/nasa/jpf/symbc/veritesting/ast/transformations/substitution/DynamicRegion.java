@@ -1,11 +1,14 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
+import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.WalaNumTypesTable;
+
+import java.util.HashSet;
 
 public class DynamicRegion implements Region {
 
@@ -18,9 +21,15 @@ public class DynamicRegion implements Region {
     public final StaticRegion staticRegion;
     public final WalaNumTypesTable walaNumTypesTable;
     public final int endIns;
+    public final HashSet<SPFCaseStmt> spfCaseSet;
 
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable) {
+    //SH: used for the first construction of the DynamicRegion out of a StaticRegion.
+    public DynamicRegion(StaticRegion staticRegion,
+                         Stmt dynStmt,
+                         SlotTypeTable slotTypeTable,
+                         ValueSymbolTable valueSymbolTable,
+                         HashSet<SPFCaseStmt> spfCaseSet) {
 
         this.staticRegion = staticRegion;
         this.dynStmt = dynStmt;
@@ -30,9 +39,17 @@ public class DynamicRegion implements Region {
         this.outputTable = staticRegion.outputTable.clone();
         this.endIns = staticRegion.endIns;
         this.walaNumTypesTable = new WalaNumTypesTable();
+        this.spfCaseSet = spfCaseSet;
     }
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable, StackSlotTable stackSlotTable, OutputTable outputTable) {
+    //SH: used multiple times by different transformations other than the substitution.
+    public DynamicRegion(StaticRegion staticRegion,
+                         Stmt dynStmt,
+                         SlotTypeTable slotTypeTable,
+                         WalaNumTypesTable walaNumTypesTable,
+                         ValueSymbolTable valueSymbolTable,
+                         StackSlotTable stackSlotTable,
+                         OutputTable outputTable, HashSet<SPFCaseStmt> spfCaseSet) {
         this.dynStmt = dynStmt;
         this.staticRegion = staticRegion;
         this.slotTypeTable = slotTypeTable;
@@ -40,10 +57,11 @@ public class DynamicRegion implements Region {
         this.stackSlotTable = stackSlotTable;
         this.outputTable = outputTable;
         this.endIns = staticRegion.endIns;
-        this.walaNumTypesTable = new WalaNumTypesTable();
+        this.walaNumTypesTable = walaNumTypesTable;
+        this.spfCaseSet = spfCaseSet;
     }
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable, WalaNumTypesTable walaNumTypesTable) {
+    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable, WalaNumTypesTable walaNumTypesTable, HashSet<SPFCaseStmt> spfCaseSet) {
         this.staticRegion = staticRegion;
         this.dynStmt = dynStmt;
         this.valueSymbolTable = valueSymbolTable;
@@ -52,5 +70,6 @@ public class DynamicRegion implements Region {
         this.outputTable = staticRegion.outputTable.clone();
         this.endIns = staticRegion.endIns;
         this.walaNumTypesTable = walaNumTypesTable;
+        this.spfCaseSet = spfCaseSet;
     }
 }

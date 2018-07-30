@@ -31,6 +31,8 @@ import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.GetSubstitutionVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
@@ -40,7 +42,6 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePropagationVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.WalaNumTypesTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
@@ -56,7 +57,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
     //TODO: make these into configuration options
-    public static boolean boostPerf = true;
     public static int veritestingMode = 0;
 
     public static long totalSolverTime = 0, z3Time = 0;
@@ -64,10 +64,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static long solverAllocTime = 0;
     public static long cleanupTime = 0;
     public static int solverCount = 0;
-    public static int pathLabelCount = 1;
-    private long staticAnalysisTime = 0;
+    public static int unsatSPFCaseCount = 0;
     public static final int maxStaticExplorationDepth = 2;
     public static boolean firstTime = true;
+    private static long staticAnalysisTime;
 
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -117,17 +117,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 if (staticRegion != null)
                     if (SpfUtil.isSymCond(ti.getTopFrame(), instructionToExecute)) {
                         System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
-
                         staticRegion.stackSlotTable.print();
                         staticRegion.outputTable.print();
                         staticRegion.inputTable.print();
 
-                /*System.out.println("--------------- SPFCases TRANSFORMATION ---------------");
-                staticRegion = SpfCasesVisitor.doSpfCases(staticRegion);
-                System.out.println(StmtPrintVisitor.print(staticRegion.staticStmt));*/
-
                         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
-                        DynamicRegion dynRegion = SubstitutionVisitor.doSubstitution(ti, staticRegion);
+                        DynamicRegion dynRegion = SubstitutionVisitor.execute(ti, staticRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                         dynRegion.stackSlotTable.print();
                         dynRegion.outputTable.print();
@@ -135,23 +130,31 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion.slotTypeTable.print();
 
                         // 1. Perform substitution on field references
-                        // 1.5 Propagate type information across operations
                         // 2. Replace GetInstruction, PutInstruction by AssignmentStmt with a FieldAccessTriple on rhs or lhs resp.
                         // 3. Populate the PSM for every statement in the region
                         // 4. Create gamma expressions for field access
+                        // 5 Propagate type information across operations
                         System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
                         dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
                         TypePropagationVisitor.propagateTypes(dynRegion);
 
-
                         System.out.println("--------------- UNIQUENESS TRANSFORMATION ---------------");
-                        dynRegion = UniqueRegion.doUniqueness(dynRegion);
+                        dynRegion = UniqueRegion.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                         dynRegion.stackSlotTable.print();
                         dynRegion.valueSymbolTable.print();
                         dynRegion.slotTypeTable.print();
+                        dynRegion.walaNumTypesTable.print();
                         dynRegion.outputTable.print();
 
+
+                        System.out.println("--------------- SPFCases TRANSFORMATION 1ST PASS ---------------");
+                        dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion);
+                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+
+                        System.out.println("--------------- SPFCases TRANSFORMATION 2ND PASS ---------------");
+                        dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
+                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 
                         System.out.println("--------------- LINEARIZATION TRANSFORMATION ---------------");
                         LinearizationTransformation linearTrans = new LinearizationTransformation();

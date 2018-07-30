@@ -18,6 +18,8 @@ import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.RealConstant;
 
 
+import java.util.HashSet;
+
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 
 public class GetSubstitutionVisitor extends AstMapVisitor {
@@ -40,7 +42,7 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
         GetSubstitutionVisitor visitor = new GetSubstitutionVisitor(ti,
                 dynRegion.valueSymbolTable, dynRegion.stackSlotTable, dynRegion.slotTypeTable, dynRegion.walaNumTypesTable);
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
-        return new DynamicRegion(dynRegion.staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable, visitor.walaNumTypesTable);
+        return new DynamicRegion(dynRegion.staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable, visitor.walaNumTypesTable, new HashSet<>());
     }
 
     @Override

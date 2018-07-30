@@ -7,11 +7,13 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 
+import java.util.HashSet;
+
 
 public class SubstitutionVisitor extends AstMapVisitor{
     ExprVisitorAdapter<Expression> eva;
-    private ValueSymbolTable valueSymbolTable;
-    private SlotTypeTable slotTypeTable;
+    public final ValueSymbolTable valueSymbolTable;
+    public final SlotTypeTable slotTypeTable;
 
     private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable,
                                 ValueSymbolTable valueSymbolTable) {
@@ -67,7 +69,7 @@ public class SubstitutionVisitor extends AstMapVisitor{
         for (int i=0; i < rhs.length; i++) {
             rhs[i] = eva.accept(c.rhs[i]);
         }
-        //hack here to populate the type of the def, not sure if we need that.
+        //hack here to populate the type of the def
         eva.accept(c.def);
 
         return new PhiInstruction(c.getOriginal(),
@@ -75,11 +77,11 @@ public class SubstitutionVisitor extends AstMapVisitor{
                 rhs);
     }
 
-    public static DynamicRegion doSubstitution(ThreadInfo ti, StaticRegion staticRegion)  {
+    public static DynamicRegion execute(ThreadInfo ti, StaticRegion staticRegion)  {
 
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, new SlotTypeTable(ti, staticRegion),
                 new ValueSymbolTable());
         Stmt dynStmt = staticRegion.staticStmt.accept(visitor);
-        return new DynamicRegion(staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable);
+        return new DynamicRegion(staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable, new HashSet<>());
     }
 }
