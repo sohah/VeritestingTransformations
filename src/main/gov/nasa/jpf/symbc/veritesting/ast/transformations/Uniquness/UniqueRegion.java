@@ -6,6 +6,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SlotParamTabl
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.ValueSymbolTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SlotTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.WalaNumTypesTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 
 public class UniqueRegion {
@@ -23,15 +24,17 @@ public class UniqueRegion {
 
         SlotParamTable slotParamTable = dynRegion.slotParamTable.clone();
         SlotTypeTable slotTypeTable = dynRegion.slotTypeTable;
+        WalaNumTypesTable walaNumTypesTable = dynRegion.walaNumTypesTable.clone();
         ValueSymbolTable valueSymbolTable = dynRegion.valueSymbolTable.clone();
         OutputTable outputTable = dynRegion.outputTable.clone();
 
         slotParamTable.makeUniqueKey(uniqueNum);
         valueSymbolTable.makeUniqueKey(uniqueNum);
         outputTable.makeUniqueKey(uniqueNum);
+        walaNumTypesTable.makeUniqueKey(uniqueNum);
 
 
-
-        return new DynamicRegion(dynRegion.staticRegion, uniqStmt, slotTypeTable, valueSymbolTable, slotParamTable, outputTable, dynRegion.spfCaseSet);
+        return new DynamicRegion(dynRegion.staticRegion, uniqStmt, slotTypeTable, walaNumTypesTable, valueSymbolTable,
+                slotParamTable, outputTable, dynRegion.spfCaseSet);
     }
 }

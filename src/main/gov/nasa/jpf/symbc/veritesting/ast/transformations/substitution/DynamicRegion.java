@@ -6,6 +6,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.WalaNumTypesTable;
 
 import java.util.HashSet;
 
@@ -18,6 +19,7 @@ public class DynamicRegion implements Region {
     public final SlotParamTable slotParamTable;
     public final OutputTable outputTable;
     public final StaticRegion staticRegion;
+    public final WalaNumTypesTable walaNumTypesTable;
     public final int endIns;
     public final HashSet<SPFCaseStmt> spfCaseSet;
 
@@ -36,6 +38,7 @@ public class DynamicRegion implements Region {
         this.slotParamTable = staticRegion.slotParamTable.clone();
         this.outputTable = staticRegion.outputTable.clone();
         this.endIns = staticRegion.endIns;
+        this.walaNumTypesTable = new WalaNumTypesTable();
         this.spfCaseSet = spfCaseSet;
     }
 
@@ -43,6 +46,7 @@ public class DynamicRegion implements Region {
     public DynamicRegion(StaticRegion staticRegion,
                          Stmt dynStmt,
                          SlotTypeTable slotTypeTable,
+                         WalaNumTypesTable walaNumTypesTable,
                          ValueSymbolTable valueSymbolTable,
                          SlotParamTable slotParamTable,
                          OutputTable outputTable, HashSet<SPFCaseStmt> spfCaseSet) {
@@ -53,6 +57,19 @@ public class DynamicRegion implements Region {
         this.slotParamTable = slotParamTable;
         this.outputTable = outputTable;
         this.endIns = staticRegion.endIns;
+        this.walaNumTypesTable = walaNumTypesTable;
+        this.spfCaseSet = spfCaseSet;
+    }
+
+    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable, WalaNumTypesTable walaNumTypesTable, HashSet<SPFCaseStmt> spfCaseSet) {
+        this.staticRegion = staticRegion;
+        this.dynStmt = dynStmt;
+        this.valueSymbolTable = valueSymbolTable;
+        this.slotTypeTable = slotTypeTable;
+        this.stackSlotTable = staticRegion.stackSlotTable.clone();
+        this.outputTable = staticRegion.outputTable.clone();
+        this.endIns = staticRegion.endIns;
+        this.walaNumTypesTable = walaNumTypesTable;
         this.spfCaseSet = spfCaseSet;
     }
 }

@@ -13,6 +13,7 @@ public class LinearizationTransformation extends DefaultTransformation {
         return new DynamicRegion(region.staticRegion,
                 stmt,
                 region.slotTypeTable,
+                region.walaNumTypesTable,
                 region.valueSymbolTable,
                 region.slotParamTable,
                 region.outputTable,
