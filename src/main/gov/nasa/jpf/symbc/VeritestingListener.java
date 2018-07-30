@@ -32,6 +32,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.GetSubstitutionVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
@@ -131,8 +132,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion.valueSymbolTable.print();
                         dynRegion.slotTypeTable.print();
 
+                        // 1. Perform substitution on field references
+                        // 2. Replace GetInstruction, PutInstruction by AssignmentStmt with a FieldAccessTriple on rhs or lhs resp.
+                        // 3. Populate the PSM for every statement in the region
+                        // 4. Create gamma expressions for field access
+                        System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
+                        dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
 
-                        System.out.println("--------------- UNIQUNESS TRANSFORMATION ---------------");
+
+                        System.out.println("--------------- UNIQUENESS TRANSFORMATION ---------------");
                         dynRegion = UniqueRegion.doUniqueness(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                         dynRegion.stackSlotTable.print();
