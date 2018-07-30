@@ -9,11 +9,11 @@ import java.util.Iterator;
 
 //SH: this class populates the type of the stackslots. It should be called dynamically so that we can inquire SPF for the types of the stack slots.
 
-public class VarTypeTable extends Table<String> {
+public class SlotTypeTable extends Table<String> {
     StaticRegion staticRegion;
     gov.nasa.jpf.vm.ThreadInfo ti;
 
-    public VarTypeTable(gov.nasa.jpf.vm.ThreadInfo ti, StaticRegion staticRegion) {
+    public SlotTypeTable(gov.nasa.jpf.vm.ThreadInfo ti, StaticRegion staticRegion) {
         super("slot-type table","slot", "type");
         this.staticRegion = staticRegion;
         this.ti = ti;

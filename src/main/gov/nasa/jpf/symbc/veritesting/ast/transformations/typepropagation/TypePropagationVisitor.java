@@ -3,7 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation;
 import gov.nasa.jpf.symbc.veritesting.ast.def.AssignmentStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SlotTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
@@ -16,13 +16,13 @@ public class TypePropagationVisitor extends AstMapVisitor {
     private WalaNumTypesTable walaNumTypesTable;
     private ExprVisitorAdapter<Expression> eva;
 
-    public TypePropagationVisitor(StackSlotTable stackSlotTable, SlotTypeTable slotTypeTable,
+    public TypePropagationVisitor(SlotParamTable slotParamTable, SlotTypeTable slotTypeTable,
                                   WalaNumTypesTable walaNumTypesTable) {
         super(new ExprTypeVisitor(walaNumTypesTable));
 
         this.walaNumTypesTable = walaNumTypesTable;
         slotTypeTable.getKeys().forEach((slot) -> {
-            Set<Integer> vars = stackSlotTable.getVarsOfSlot(slot);
+            Set<Integer> vars = slotParamTable.getVarsOfSlot(slot);
             vars.forEach((valueNum) -> {
                 walaNumTypesTable.add(valueNum, slotTypeTable.lookup(slot));
             });
@@ -41,7 +41,7 @@ public class TypePropagationVisitor extends AstMapVisitor {
     }
 
     public static WalaNumTypesTable propagateTypes(DynamicRegion dynRegion) {
-        TypePropagationVisitor visitor = new TypePropagationVisitor(dynRegion.stackSlotTable, dynRegion.slotTypeTable,
+        TypePropagationVisitor visitor = new TypePropagationVisitor(dynRegion.slotParamTable, dynRegion.slotTypeTable,
                 dynRegion.walaNumTypesTable);
         dynRegion.dynStmt.accept(visitor);
         return visitor.walaNumTypesTable;
