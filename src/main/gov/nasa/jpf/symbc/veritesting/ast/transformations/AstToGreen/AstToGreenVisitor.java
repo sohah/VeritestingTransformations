@@ -34,7 +34,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
     public Expression bad(Object obj) {
         String name = obj.getClass().getCanonicalName();
         throw new IllegalArgumentException("Unsupported class: " + name +
-                " value: " + obj.toString() + " seen in AstToGreenExprVisitor");
+                " value: " + obj.toString() + " seen in AstToGreenVisitor");
     }
 
 

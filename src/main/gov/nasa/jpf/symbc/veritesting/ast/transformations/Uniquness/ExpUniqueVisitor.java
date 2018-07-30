@@ -28,7 +28,12 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
         varId = varId.concat(Integer.toString(uniqueNum));
         if(dynRegion.stackSlotTable.lookup(expr.number) != null ){
             int slot = dynRegion.stackSlotTable.lookup(expr.number)[0];
-            return createGreenVar(dynRegion.slotTypeTable.lookup(slot), varId);
+            String type = dynRegion.slotTypeTable.lookup(slot);
+            if (type == null) {
+                type = dynRegion.walaNumTypesTable.lookup(expr.number);
+            }
+            if (type == null) throw new IllegalArgumentException("Couldn't figure out type for " + expr);
+            return createGreenVar(type, varId);
         }
         else
             return expr;

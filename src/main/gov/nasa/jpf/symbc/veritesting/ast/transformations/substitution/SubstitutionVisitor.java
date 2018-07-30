@@ -13,7 +13,8 @@ public class SubstitutionVisitor extends AstMapVisitor{
     private ValueSymbolTable valueSymbolTable;
     private SlotTypeTable slotTypeTable;
 
-    private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable) {
+    private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable,
+                                ValueSymbolTable valueSymbolTable) {
         super(new ExprSubstitutionVisitor(ti, staticRegion, slotTypeTable, valueSymbolTable));
         this.slotTypeTable = slotTypeTable;
         this.valueSymbolTable = valueSymbolTable;
@@ -76,7 +77,8 @@ public class SubstitutionVisitor extends AstMapVisitor{
 
     public static DynamicRegion doSubstitution(ThreadInfo ti, StaticRegion staticRegion)  {
 
-        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, new SlotTypeTable(ti, staticRegion), new ValueSymbolTable());
+        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, new SlotTypeTable(ti, staticRegion),
+                new ValueSymbolTable());
         Stmt dynStmt = staticRegion.staticStmt.accept(visitor);
         return new DynamicRegion(staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable);
     }

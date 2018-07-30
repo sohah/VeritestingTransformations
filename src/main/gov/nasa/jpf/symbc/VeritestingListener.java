@@ -39,6 +39,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePropagationVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.WalaNumTypesTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
@@ -133,11 +135,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion.slotTypeTable.print();
 
                         // 1. Perform substitution on field references
+                        // 1.5 Propagate type information across operations
                         // 2. Replace GetInstruction, PutInstruction by AssignmentStmt with a FieldAccessTriple on rhs or lhs resp.
                         // 3. Populate the PSM for every statement in the region
                         // 4. Create gamma expressions for field access
                         System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
                         dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
+                        TypePropagationVisitor.propagateTypes(dynRegion);
 
 
                         System.out.println("--------------- UNIQUENESS TRANSFORMATION ---------------");
