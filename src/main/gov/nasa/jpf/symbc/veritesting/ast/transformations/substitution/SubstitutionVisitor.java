@@ -1,5 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.SlotTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.ValueSymbolTable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;

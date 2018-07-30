@@ -1,8 +1,6 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment;
 
-import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.ssa.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Table;
 
 import java.util.*;
 

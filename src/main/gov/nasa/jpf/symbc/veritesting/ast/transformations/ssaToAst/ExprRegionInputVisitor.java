@@ -1,13 +1,12 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.InputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.ArrayList;
-
-enum DefUseVisit {DEF, USE};
 
 public class ExprRegionInputVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 

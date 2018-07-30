@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment;
 
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrikeBT.IComparisonInstruction;
@@ -6,10 +6,11 @@ import com.ibm.wala.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.PhiCondition;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.PhiEdge;
 import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 //SH: This class translates SSAInstructions to Veritesting Statements.

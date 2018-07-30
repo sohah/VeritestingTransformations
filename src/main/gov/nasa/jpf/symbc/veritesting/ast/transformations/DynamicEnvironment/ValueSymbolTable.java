@@ -1,10 +1,8 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment;
 
-import com.ibm.wala.ssa.IR;
-import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.Table;
 import za.ac.sun.cs.green.expr.Expression;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 

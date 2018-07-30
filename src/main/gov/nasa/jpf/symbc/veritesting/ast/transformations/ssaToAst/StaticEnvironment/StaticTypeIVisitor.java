@@ -1,18 +1,19 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment;
 
+import com.ibm.wala.analysis.typeInference.TypeInference;
 import com.ibm.wala.ssa.*;
 
 
-//SH: This visitor fills the stack slots for wala vars.
+//SH: This visitor fills types for wala vars.
 
 
-public class StackSlotIVisitor implements SSAInstruction.IVisitor {
-    public final SlotParamTable slotParamTable;
+public class StaticTypeIVisitor implements SSAInstruction.IVisitor {
+    public final VarTypeTable varTypeTable;
     private IR ir;
 
-    public StackSlotIVisitor(IR ir, SlotParamTable slotParamTable) {
+    public StaticTypeIVisitor(IR ir, VarTypeTable varTypeTable) {
         this.ir = ir;
-        this.slotParamTable = slotParamTable;
+        this.varTypeTable = varTypeTable;
     }
 
     @Override
@@ -158,16 +159,10 @@ public class StackSlotIVisitor implements SSAInstruction.IVisitor {
 
     }
 
-// SH: Used only to get the stack slot of "use" vars, which are either already defined in a previous "def" and so it will
-// be in the stackSlotMap. This is done also for phiInstruction, but phi requires a fix point computation and propagation of vars to stack slot discovery. This happens during the construction of the stack slot table object.
+// SH: Used only to populate types using wala inference.
 
     public void populateVars(SSAInstruction ins, int var) {
-        int iindex = ins.iindex;
-        if (!(ins instanceof  SSAPhiInstruction) && (slotParamTable.lookup(var) == null)) {
-            int[] localNumbers = ir.findLocalsForValueNumber(iindex, var);
-            if (localNumbers != null)
-                slotParamTable.add(var, localNumbers);
-        }
+       varTypeTable.add(var, (TypeInference.make(ir, true)).getType(var).toString());
     }
 }
 

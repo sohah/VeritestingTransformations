@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 

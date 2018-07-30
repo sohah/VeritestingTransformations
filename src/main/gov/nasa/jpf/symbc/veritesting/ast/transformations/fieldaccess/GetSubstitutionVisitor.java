@@ -5,11 +5,11 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GetInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SlotTypeTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.ValueSymbolTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.WalaNumTypesTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.SlotParamTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.SlotTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.ValueSymbolTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.vm.*;
@@ -25,24 +25,24 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreen
 public class GetSubstitutionVisitor extends AstMapVisitor {
     private ValueSymbolTable valueSymbolTable;
     private ThreadInfo ti;
-    private final StackSlotTable stackSlotTable;
+    private final SlotParamTable slotParamTable;
     private SlotTypeTable slotTypeTable;
-    private WalaNumTypesTable walaNumTypesTable;
-    public GetSubstitutionVisitor(ThreadInfo ti, ValueSymbolTable valueSymbolTable, StackSlotTable stackSlotTable,
-                                  SlotTypeTable slotTypeTable, WalaNumTypesTable walaNumTypesTable) {
+    private VarTypeTable varTypeTable;
+    public GetSubstitutionVisitor(ThreadInfo ti, ValueSymbolTable valueSymbolTable, SlotParamTable slotParamTable,
+                                  SlotTypeTable slotTypeTable, VarTypeTable varTypeTable) {
         super(new ExprMapVisitor());
         this.ti = ti;
         this.valueSymbolTable = valueSymbolTable;
-        this.stackSlotTable = stackSlotTable;
+        this.slotParamTable = slotParamTable;
         this.slotTypeTable = slotTypeTable;
-        this.walaNumTypesTable = walaNumTypesTable;
+        this.varTypeTable = varTypeTable;
     }
 
     public static DynamicRegion doSubstitution(ThreadInfo ti, DynamicRegion dynRegion) {
         GetSubstitutionVisitor visitor = new GetSubstitutionVisitor(ti,
-                dynRegion.valueSymbolTable, dynRegion.stackSlotTable, dynRegion.slotTypeTable, dynRegion.walaNumTypesTable);
+                dynRegion.valueSymbolTable, dynRegion.slotParamTable, dynRegion.slotTypeTable, dynRegion.varTypeTable);
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
-        return new DynamicRegion(dynRegion.staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable, visitor.walaNumTypesTable, new HashSet<>());
+        return new DynamicRegion(dynRegion.staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable, visitor.varTypeTable, new HashSet<>());
     }
 
     @Override
@@ -142,10 +142,10 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
         // only one of def and exceptionalMessage should be non-null
         assert (def == null) ^ (exceptionalMessage == null);
         valueSymbolTable.add(defNumber, def);
-        if (stackSlotTable.lookup(defNumber) != null) {
+        if (slotParamTable.lookup(defNumber) != null) {
             slotTypeTable.add(defNumber, type);
         }
-        walaNumTypesTable.add(defNumber, type);
+        varTypeTable.add(defNumber, type);
 
         if (exceptionalMessage != null) throw new StaticRegionException(exceptionalMessage);
         if (def != null) return def;

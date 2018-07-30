@@ -1,7 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
@@ -30,7 +30,7 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
             type = dynRegion.slotTypeTable.lookup(slot);
         }
         if (type == null) {
-            type = dynRegion.walaNumTypesTable.lookup(expr.number);
+            type = dynRegion.varTypeTable.lookup(expr.number);
         }
         if (type == null) return expr;
         else return createGreenVar(type, varId);

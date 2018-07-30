@@ -2,7 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases;
 
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
@@ -177,7 +177,7 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
         return new DynamicRegion(dynRegion.staticRegion,
                 dynStmt,
                 dynRegion.slotTypeTable,
-                dynRegion.walaNumTypesTable,
+                dynRegion.varTypeTable,
                 dynRegion.valueSymbolTable,
                 dynRegion.slotParamTable,
                 dynRegion.outputTable,

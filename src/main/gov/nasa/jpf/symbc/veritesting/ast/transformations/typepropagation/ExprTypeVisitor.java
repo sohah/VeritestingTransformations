@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
@@ -10,12 +11,12 @@ import za.ac.sun.cs.green.expr.Operation;
 import za.ac.sun.cs.green.expr.RealConstant;
 
 public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
-    private WalaNumTypesTable walaNumTypesTable;
+    private VarTypeTable varTypeTable;
 
     public String latestType = null;
 
-    public WalaNumTypesTable getWalaNumTypesTable() {
-        return walaNumTypesTable;
+    public VarTypeTable getVarTypeTable() {
+        return varTypeTable;
     }
 
     @Override
@@ -38,10 +39,10 @@ public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expre
             }
             if (src != null && dst != null) {
                 if (isConstant(src)) srcType = getConstantType(src);
-                else srcType = walaNumTypesTable.lookup(((WalaVarExpr) src).number);
+                else srcType = varTypeTable.lookup(((WalaVarExpr) src).number);
                 dstNum = ((WalaVarExpr) dst).number;
                 if (srcType != null && dstNum != -1) {
-                    walaNumTypesTable.add(dstNum, srcType);
+                    varTypeTable.add(dstNum, srcType);
                     latestType = srcType;
                 }
             }
@@ -53,12 +54,12 @@ public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expre
     public Expression visit(GammaVarExpr expr) {
         if (isConstant(expr.thenExpr)) latestType = getConstantType(expr.thenExpr);
         if (expr.thenExpr instanceof WalaVarExpr &&
-                walaNumTypesTable.lookup(((WalaVarExpr) expr.thenExpr).number) != null)
-            latestType = walaNumTypesTable.lookup(((WalaVarExpr) expr.thenExpr).number);
+                varTypeTable.lookup(((WalaVarExpr) expr.thenExpr).number) != null)
+            latestType = varTypeTable.lookup(((WalaVarExpr) expr.thenExpr).number);
         if (isConstant(expr.elseExpr)) latestType = getConstantType(expr.elseExpr);
         if (expr.elseExpr instanceof WalaVarExpr &&
-                walaNumTypesTable.lookup(((WalaVarExpr) expr.elseExpr).number) != null)
-            latestType = walaNumTypesTable.lookup(((WalaVarExpr) expr.elseExpr).number);
+                varTypeTable.lookup(((WalaVarExpr) expr.elseExpr).number) != null)
+            latestType = varTypeTable.lookup(((WalaVarExpr) expr.elseExpr).number);
         return super.visit(expr);
     }
 
@@ -72,11 +73,11 @@ public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expre
         }
         if (srcOp instanceof WalaVarExpr) {
             int srcNum = ((WalaVarExpr) srcOp).number;
-            if (walaNumTypesTable.lookup(srcNum) != null) {
+            if (varTypeTable.lookup(srcNum) != null) {
                 if (dstOp instanceof WalaVarExpr) {
                     int dstNum = ((WalaVarExpr) dstOp).number;
-                    if (walaNumTypesTable.lookup(dstNum) == null) return true;
-                    else if (walaNumTypesTable.lookup(srcNum) != walaNumTypesTable.lookup(dstNum))
+                    if (varTypeTable.lookup(dstNum) == null) return true;
+                    else if (varTypeTable.lookup(srcNum) != varTypeTable.lookup(dstNum))
                         throw new IllegalArgumentException("unequal types set for Wala vars used in a binop");
                 }
             }
@@ -91,7 +92,7 @@ public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expre
         throw new IllegalArgumentException("trying to getConstantType for non-constant op, op = " + op1);
     }
 
-    public ExprTypeVisitor(WalaNumTypesTable walaNumTypesTable) {
-        this.walaNumTypesTable = walaNumTypesTable;
+    public ExprTypeVisitor(VarTypeTable varTypeTable) {
+        this.varTypeTable = varTypeTable;
     }
 }

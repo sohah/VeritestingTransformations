@@ -2,9 +2,11 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import com.ibm.wala.ssa.SymbolTable;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.SlotTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.ValueSymbolTable;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.InputTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.InputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;

@@ -1,10 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.DynamicRegion;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /* Data class defining interface for transformations.

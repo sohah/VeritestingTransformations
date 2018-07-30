@@ -1,8 +1,7 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment;
 
 import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Table;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -12,7 +11,7 @@ import java.util.Set;
 //SH: this class populates the input variables for the region. it does so by computing the first var use for slots.
 
 public class InputTable extends Table<Integer> {
-    IR ir;
+    public final IR ir;
 
     public InputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, Stmt stmt) {
         super("Region Input Table", "var", isMethodRegion ? "param" : "slot");

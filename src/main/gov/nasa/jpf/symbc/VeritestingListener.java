@@ -37,9 +37,9 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.GetSubstitutionVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.OutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePropagationVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
@@ -117,7 +117,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 if (staticRegion != null)
                     if (SpfUtil.isSymCond(ti.getTopFrame(), instructionToExecute)) {
                         System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
-                        staticRegion.stackSlotTable.print();
+                        staticRegion.slotParamTable.print();
                         staticRegion.outputTable.print();
                         staticRegion.inputTable.print();
 
@@ -144,7 +144,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion.slotParamTable.print();
                         dynRegion.valueSymbolTable.print();
                         dynRegion.slotTypeTable.print();
-                        dynRegion.walaNumTypesTable.print();
+                        dynRegion.varTypeTable.print();
                         dynRegion.outputTable.print();
 
 

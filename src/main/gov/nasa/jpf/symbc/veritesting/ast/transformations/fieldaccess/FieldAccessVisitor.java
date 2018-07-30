@@ -3,7 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GetInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.def.PutInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.vm.ThreadInfo;

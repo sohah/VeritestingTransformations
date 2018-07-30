@@ -1,12 +1,12 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SlotParamTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.ValueSymbolTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SlotTypeTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.WalaNumTypesTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.OutputTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.SlotParamTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.ValueSymbolTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.SlotTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 
 public class UniqueRegion {
@@ -24,17 +24,17 @@ public class UniqueRegion {
 
         SlotParamTable slotParamTable = dynRegion.slotParamTable.clone();
         SlotTypeTable slotTypeTable = dynRegion.slotTypeTable;
-        WalaNumTypesTable walaNumTypesTable = dynRegion.walaNumTypesTable.clone();
+        VarTypeTable varTypeTable = dynRegion.varTypeTable.clone();
         ValueSymbolTable valueSymbolTable = dynRegion.valueSymbolTable.clone();
         OutputTable outputTable = dynRegion.outputTable.clone();
 
         slotParamTable.makeUniqueKey(uniqueNum);
         valueSymbolTable.makeUniqueKey(uniqueNum);
         outputTable.makeUniqueKey(uniqueNum);
-        walaNumTypesTable.makeUniqueKey(uniqueNum);
+        varTypeTable.makeUniqueKey(uniqueNum);
 
 
-        return new DynamicRegion(dynRegion.staticRegion, uniqStmt, slotTypeTable, walaNumTypesTable, valueSymbolTable,
+        return new DynamicRegion(dynRegion.staticRegion, uniqStmt, slotTypeTable, varTypeTable, valueSymbolTable,
                 slotParamTable, outputTable, dynRegion.spfCaseSet);
     }
 }

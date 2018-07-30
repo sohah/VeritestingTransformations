@@ -1,8 +1,9 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment;
 
 //SH: this visitor visits all statments and in turn all expressions to remove walaId from the inputTable that their first occurance is a def rather than a use
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprRegionInputVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
