@@ -24,7 +24,8 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
     private SlotTypeTable slotTypeTable;
     private ValueSymbolTable valueSymbolTable;
 
-    public ExprSubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable, ValueSymbolTable valueSymbolTable) {
+    public ExprSubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable,
+                                   ValueSymbolTable valueSymbolTable) {
         super();
         this.ti = ti;
         this.sf = ti.getTopFrame();
@@ -73,7 +74,7 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
         if (symbolTable.isBooleanConstant(walaId) || symbolTable.isIntegerConstant(walaId))
             return new IntConstant((Integer)symbolTable.getConstantValue(walaId));
         else if (symbolTable.isFloatConstant(walaId) || symbolTable.isDoubleConstant(walaId))
-            return new RealConstant((Integer)symbolTable.getConstantValue(walaId));
+            return new RealConstant((Double) symbolTable.getConstantValue(walaId));
         else if (symbolTable.isTrue(walaId))
             return new IntConstant(1);
         else if (symbolTable.isFalse(walaId))
