@@ -2,8 +2,6 @@ package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
 import gov.nasa.jpf.symbc.numeric.GreenToSPFTranslator;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntVariable;
 import za.ac.sun.cs.green.expr.Operation;

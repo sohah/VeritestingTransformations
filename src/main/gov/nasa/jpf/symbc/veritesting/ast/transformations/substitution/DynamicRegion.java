@@ -4,7 +4,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.OutputTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 
 import java.util.HashSet;
@@ -15,7 +15,7 @@ public class DynamicRegion implements Region {
     public final Stmt dynStmt;
     public final SlotTypeTable slotTypeTable;
     public final ValueSymbolTable valueSymbolTable;
-    public final StackSlotTable stackSlotTable;
+    public final SlotParamTable slotParamTable;
     public final OutputTable outputTable;
     public final StaticRegion staticRegion;
     public final int endIns;
@@ -33,7 +33,7 @@ public class DynamicRegion implements Region {
         this.dynStmt = dynStmt;
         this.valueSymbolTable = valueSymbolTable;
         this.slotTypeTable = slotTypeTable;
-        this.stackSlotTable = staticRegion.stackSlotTable.clone();
+        this.slotParamTable = staticRegion.slotParamTable.clone();
         this.outputTable = staticRegion.outputTable.clone();
         this.endIns = staticRegion.endIns;
         this.spfCaseSet = spfCaseSet;
@@ -44,13 +44,13 @@ public class DynamicRegion implements Region {
                          Stmt dynStmt,
                          SlotTypeTable slotTypeTable,
                          ValueSymbolTable valueSymbolTable,
-                         StackSlotTable stackSlotTable,
+                         SlotParamTable slotParamTable,
                          OutputTable outputTable, HashSet<SPFCaseStmt> spfCaseSet) {
         this.dynStmt = dynStmt;
         this.staticRegion = staticRegion;
         this.slotTypeTable = slotTypeTable;
         this.valueSymbolTable = valueSymbolTable;
-        this.stackSlotTable = stackSlotTable;
+        this.slotParamTable = slotParamTable;
         this.outputTable = outputTable;
         this.endIns = staticRegion.endIns;
         this.spfCaseSet = spfCaseSet;

@@ -1,15 +1,12 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases;
 
-import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.vm.ArrayFields;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
-import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
@@ -215,7 +212,7 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
                 dynStmt,
                 dynRegion.slotTypeTable,
                 dynRegion.valueSymbolTable,
-                dynRegion.stackSlotTable,
+                dynRegion.slotParamTable,
                 dynRegion.outputTable,
                 new HashSet<>());
     }

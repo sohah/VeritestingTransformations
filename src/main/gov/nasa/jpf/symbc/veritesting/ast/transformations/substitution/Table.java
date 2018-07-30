@@ -9,7 +9,7 @@ import java.util.Set;
 //SH: base class for all environment tables.
 
 public class Table<T> {
-    protected final HashMap<Integer, T> table;
+    public final HashMap<Integer, T> table;
     protected String tableName;
     protected String label1;
     protected String label2;

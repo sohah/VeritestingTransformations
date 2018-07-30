@@ -2,19 +2,17 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import com.ibm.wala.ssa.*;
 
-import java.util.HashMap;
-
 
 //SH: This visitor fills the stack slots for wala vars.
 
 
 public class StackSlotIVisitor implements SSAInstruction.IVisitor {
-    public final StackSlotTable stackSlotTable;
+    public final SlotParamTable slotParamTable;
     private IR ir;
 
-    public StackSlotIVisitor(IR ir, StackSlotTable stackSlotTable) {
+    public StackSlotIVisitor(IR ir, SlotParamTable slotParamTable) {
         this.ir = ir;
-        this.stackSlotTable = stackSlotTable;
+        this.slotParamTable = slotParamTable;
     }
 
     @Override
@@ -165,10 +163,10 @@ public class StackSlotIVisitor implements SSAInstruction.IVisitor {
 
     public void populateVars(SSAInstruction ins, int var) {
         int iindex = ins.iindex;
-        if (!(ins instanceof  SSAPhiInstruction) && (stackSlotTable.lookup(var) == null)) {
+        if (!(ins instanceof  SSAPhiInstruction) && (slotParamTable.lookup(var) == null)) {
             int[] localNumbers = ir.findLocalsForValueNumber(iindex, var);
             if (localNumbers != null)
-                stackSlotTable.add(var, localNumbers);
+                slotParamTable.add(var, localNumbers);
         }
     }
 }

@@ -1,7 +1,6 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SlotParamTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Table;
 import gov.nasa.jpf.vm.StackFrame;
 
 import java.util.HashSet;
@@ -10,11 +9,11 @@ import java.util.Iterator;
 
 //SH: this class populates the type of the stackslots. It should be called dynamically so that we can inquire SPF for the types of the stack slots.
 
-public class SlotTypeTable extends Table<String> {
+public class VarTypeTable extends Table<String> {
     StaticRegion staticRegion;
     gov.nasa.jpf.vm.ThreadInfo ti;
 
-    public SlotTypeTable(gov.nasa.jpf.vm.ThreadInfo ti, StaticRegion staticRegion) {
+    public VarTypeTable(gov.nasa.jpf.vm.ThreadInfo ti, StaticRegion staticRegion) {
         super("slot-type table","slot", "type");
         this.staticRegion = staticRegion;
         this.ti = ti;
