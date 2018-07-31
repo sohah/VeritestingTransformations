@@ -33,6 +33,7 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
         this.slotParamTable = slotParamTable;
         this.slotTypeTable = slotTypeTable;
         this.varTypeTable = varTypeTable;
+        this.valueSymbolTable = new ValueSymbolTable();
     }
 
     public static DynamicRegion doSubstitution(ThreadInfo ti, DynamicRegion dynRegion) {

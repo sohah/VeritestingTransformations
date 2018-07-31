@@ -34,12 +34,14 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenV
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.GetSubstitutionVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.OutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePropagationVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
@@ -132,8 +134,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         // 4. Create gamma expressions for field access
                         // 5 Propagate type information across operations
                         System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
-                        //dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
-                        //TypePropagationVisitor.propagateTypes(dynRegion);
+                        dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
+                        TypePropagationVisitor.propagateTypes(dynRegion);
 
                         System.out.println("--------------- UNIQUENESS TRANSFORMATION ---------------");
                         dynRegion = UniqueRegion.execute(dynRegion);
