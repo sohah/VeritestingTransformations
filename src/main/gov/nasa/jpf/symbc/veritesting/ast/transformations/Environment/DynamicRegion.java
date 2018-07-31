@@ -1,12 +1,9 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.OutputTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.VarTypeTable;
 
 import java.util.HashSet;
 
@@ -15,11 +12,10 @@ public class DynamicRegion implements Region {
     public static int uniqueCounter = 0;
     public final Stmt dynStmt;
     public final SlotTypeTable slotTypeTable;
-    public final ValueSymbolTable valueSymbolTable;
     public final SlotParamTable slotParamTable;
     public final OutputTable outputTable;
     public final StaticRegion staticRegion;
-    public final VarTypeTable varTypeTable;
+    public final Table.VarTypeTable varTypeTable;
     public final int endIns;
     public final boolean isMethodRegion;
     public final HashSet<SPFCaseStmt> spfCaseSet;
@@ -29,12 +25,10 @@ public class DynamicRegion implements Region {
     public DynamicRegion(StaticRegion staticRegion,
                          Stmt dynStmt,
                          SlotTypeTable slotTypeTable,
-                         ValueSymbolTable valueSymbolTable,
                          HashSet<SPFCaseStmt> spfCaseSet) {
 
         this.staticRegion = staticRegion;
         this.dynStmt = dynStmt;
-        this.valueSymbolTable = valueSymbolTable;
         this.slotTypeTable = slotTypeTable;
         this.slotParamTable = staticRegion.slotParamTable.clone();
         this.outputTable = staticRegion.outputTable.clone();
@@ -48,8 +42,7 @@ public class DynamicRegion implements Region {
     public DynamicRegion(StaticRegion staticRegion,
                          Stmt dynStmt,
                          SlotTypeTable slotTypeTable,
-                         VarTypeTable varTypeTable,
-                         ValueSymbolTable valueSymbolTable,
+                         Table.VarTypeTable varTypeTable,
                          SlotParamTable slotParamTable,
                          OutputTable outputTable,
                          boolean isMethodRegion,
@@ -58,7 +51,6 @@ public class DynamicRegion implements Region {
         this.dynStmt = dynStmt;
         this.staticRegion = staticRegion;
         this.slotTypeTable = slotTypeTable;
-        this.valueSymbolTable = valueSymbolTable;
         this.slotParamTable = slotParamTable;
         this.outputTable = outputTable;
         this.endIns = staticRegion.endIns;

@@ -3,10 +3,10 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.InputTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.OutputTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.SlotParamTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.VarTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.InputTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.OutputTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.Table;
 
 
 public class StaticRegion implements Region {
@@ -21,7 +21,7 @@ public class StaticRegion implements Region {
 
     //SH: this is the region input. slot/param -> var
     public final InputTable inputTable;
-    public final VarTypeTable varTypeTable;
+    public final Table.VarTypeTable varTypeTable;
 
     public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns) {
         this.staticStmt = staticStmt;
@@ -30,7 +30,7 @@ public class StaticRegion implements Region {
         slotParamTable = new SlotParamTable(ir, isMethodRegion);
         inputTable = new InputTable(ir, isMethodRegion, slotParamTable, staticStmt);
         outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable);
-        varTypeTable = new VarTypeTable(ir);
+        varTypeTable = new Table.VarTypeTable(ir);
         this.endIns = endIns;
     }
 

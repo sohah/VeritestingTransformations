@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.*;
 
@@ -7,7 +7,7 @@ import java.util.*;
 public class OutputTable extends Table<Integer> {
     public OutputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, InputTable inputTable) {
         super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
-        if (!isMethodRegion)
+        if (isMethodRegion)
             computeMethodOutput(ir);
         else
             computeOutputVars(ir, slotParamTable, inputTable);

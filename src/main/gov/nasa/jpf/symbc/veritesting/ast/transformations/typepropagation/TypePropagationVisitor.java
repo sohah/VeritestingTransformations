@@ -3,10 +3,10 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation;
 import gov.nasa.jpf.symbc.veritesting.ast.def.AssignmentStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.SlotParamTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.VarTypeTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.SlotTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.Table;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.Expression;
@@ -14,11 +14,11 @@ import za.ac.sun.cs.green.expr.Expression;
 import java.util.Set;
 
 public class TypePropagationVisitor extends AstMapVisitor {
-    private VarTypeTable varTypeTable;
+    private Table.VarTypeTable varTypeTable;
     private ExprVisitorAdapter<Expression> eva;
 
     public TypePropagationVisitor(SlotParamTable slotParamTable, SlotTypeTable slotTypeTable,
-                                  VarTypeTable varTypeTable) {
+                                  Table.VarTypeTable varTypeTable) {
         super(new ExprTypeVisitor(varTypeTable));
 
         this.varTypeTable = varTypeTable;
@@ -41,7 +41,7 @@ public class TypePropagationVisitor extends AstMapVisitor {
         return a;
     }
 
-    public static VarTypeTable propagateTypes(DynamicRegion dynRegion) {
+    public static Table.VarTypeTable propagateTypes(DynamicRegion dynRegion) {
         TypePropagationVisitor visitor = new TypePropagationVisitor(dynRegion.slotParamTable, dynRegion.slotTypeTable,
                 dynRegion.varTypeTable);
         dynRegion.dynStmt.accept(visitor);

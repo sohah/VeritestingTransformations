@@ -5,11 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GetInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.SlotParamTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.SlotTypeTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment.ValueSymbolTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.VarTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.vm.*;
@@ -27,12 +23,13 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
     private ThreadInfo ti;
     private final SlotParamTable slotParamTable;
     private SlotTypeTable slotTypeTable;
-    private VarTypeTable varTypeTable;
-    public GetSubstitutionVisitor(ThreadInfo ti, ValueSymbolTable valueSymbolTable, SlotParamTable slotParamTable,
-                                  SlotTypeTable slotTypeTable, VarTypeTable varTypeTable) {
+    private Table.VarTypeTable varTypeTable;
+    public GetSubstitutionVisitor(ThreadInfo ti,
+                                  SlotParamTable slotParamTable,
+                                  SlotTypeTable slotTypeTable,
+                                  Table.VarTypeTable varTypeTable) {
         super(new ExprMapVisitor());
         this.ti = ti;
-        this.valueSymbolTable = valueSymbolTable;
         this.slotParamTable = slotParamTable;
         this.slotTypeTable = slotTypeTable;
         this.varTypeTable = varTypeTable;
@@ -40,9 +37,20 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
 
     public static DynamicRegion doSubstitution(ThreadInfo ti, DynamicRegion dynRegion) {
         GetSubstitutionVisitor visitor = new GetSubstitutionVisitor(ti,
-                dynRegion.valueSymbolTable, dynRegion.slotParamTable, dynRegion.slotTypeTable, dynRegion.varTypeTable);
+                dynRegion.slotParamTable,
+                dynRegion.slotTypeTable,
+                dynRegion.varTypeTable);
+
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
-        return new DynamicRegion(dynRegion.staticRegion, dynStmt, visitor.slotTypeTable, visitor.valueSymbolTable, visitor.varTypeTable, new HashSet<>());
+
+        return new DynamicRegion(dynRegion.staticRegion,
+                dynStmt,
+                visitor.slotTypeTable,
+                visitor.varTypeTable,
+                visitor.slotParamTable,
+                dynRegion.outputTable,
+                dynRegion.isMethodRegion,
+                new HashSet<>());
     }
 
     @Override

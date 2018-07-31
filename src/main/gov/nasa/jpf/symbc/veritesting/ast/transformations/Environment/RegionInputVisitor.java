@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 //SH: this visitor visits all statments and in turn all expressions to remove walaId from the inputTable that their first occurance is a def rather than a use
 

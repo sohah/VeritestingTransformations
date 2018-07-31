@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAInstruction;
@@ -33,7 +33,6 @@ public class SlotParamTable extends Table<int[]> {
         for(int i = 0; i < ir.getNumberOfParameters(); i++){
             this.add(ir.getParameter(i), new int [i]);
         }
-
     }
 
     private SlotParamTable() {

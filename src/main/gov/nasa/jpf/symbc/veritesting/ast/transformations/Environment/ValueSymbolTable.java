@@ -1,6 +1,5 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.DynamicEnvironment;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.Table;
 import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.Iterator;

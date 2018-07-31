@@ -2,7 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticEnvironment.VarTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.Table;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
@@ -11,11 +11,11 @@ import za.ac.sun.cs.green.expr.Operation;
 import za.ac.sun.cs.green.expr.RealConstant;
 
 public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
-    private VarTypeTable varTypeTable;
+    private Table.VarTypeTable varTypeTable;
 
     public String latestType = null;
 
-    public VarTypeTable getVarTypeTable() {
+    public Table.VarTypeTable getVarTypeTable() {
         return varTypeTable;
     }
 
@@ -92,7 +92,7 @@ public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expre
         throw new IllegalArgumentException("trying to getConstantType for non-constant op, op = " + op1);
     }
 
-    public ExprTypeVisitor(VarTypeTable varTypeTable) {
+    public ExprTypeVisitor(Table.VarTypeTable varTypeTable) {
         this.varTypeTable = varTypeTable;
     }
 }
