@@ -19,7 +19,6 @@ import java.util.HashSet;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 
 public class GetSubstitutionVisitor extends AstMapVisitor {
-    private ValueSymbolTable valueSymbolTable;
     private ThreadInfo ti;
     private final SlotParamTable slotParamTable;
     private SlotTypeTable slotTypeTable;
@@ -33,7 +32,6 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
         this.slotParamTable = slotParamTable;
         this.slotTypeTable = slotTypeTable;
         this.varTypeTable = varTypeTable;
-        this.valueSymbolTable = new ValueSymbolTable();
     }
 
     public static DynamicRegion doSubstitution(ThreadInfo ti, DynamicRegion dynRegion) {
@@ -63,9 +61,7 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
         if ((c.ref instanceof IntConstant || ((SSAGetInstruction)c.original).isStatic())) {
             if (c.def instanceof WalaVarExpr) {
                 try {
-                    int number = ((WalaVarExpr) c.def).number;
                     def = substituteGet(c);
-                    valueSymbolTable.add(number, def);
                 } catch (StaticRegionException e) {
                     exceptionalMessage = e.getMessage();
                 }
@@ -150,7 +146,6 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
         assert def == null || type != null;
         // only one of def and exceptionalMessage should be non-null
         assert (def == null) ^ (exceptionalMessage == null);
-        valueSymbolTable.add(defNumber, def);
         if (slotParamTable.lookup(defNumber) != null) {
             slotTypeTable.add(defNumber, type);
         }
