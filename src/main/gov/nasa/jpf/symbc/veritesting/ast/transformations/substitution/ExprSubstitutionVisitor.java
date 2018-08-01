@@ -62,10 +62,8 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
                 Expression greenValue = makeConstantFromWala(expr);
                 valueSymbolTable.add(expr.number, greenValue);
                 return greenValue;
-            } else{ // it is an intermediate variable, just return it back.
-                System.out.println("couldn't infer the type or the value for " + expr.toString());
+            } else
                 return expr;
-            }
         }
     }
 
@@ -74,7 +72,7 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
         int walaId = expr.number;
         SymbolTable symbolTable = staticRegion.ir.getSymbolTable();
         if (symbolTable.isBooleanConstant(walaId) || symbolTable.isIntegerConstant(walaId))
-            return new IntConstant((Integer)symbolTable.getConstantValue(walaId));
+            return new IntConstant((Integer) symbolTable.getConstantValue(walaId));
         else if (symbolTable.isFloatConstant(walaId) || symbolTable.isDoubleConstant(walaId))
             return new RealConstant((Double) symbolTable.getConstantValue(walaId));
         else if (symbolTable.isTrue(walaId))
@@ -82,8 +80,10 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
         else if (symbolTable.isFalse(walaId))
             return new IntConstant(0);
         else // is a constant that we don't support, then just return it back.
-        {  System.out.println("constant type not supported for " + expr.toString());
-            return expr;}
+        {
+            System.out.println("constant type not supported for " + expr.toString());
+            return expr;
+        }
 
     }
 

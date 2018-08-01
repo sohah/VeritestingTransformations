@@ -88,4 +88,13 @@ public class OutputTable extends Table<Integer> {
             table.put((Integer) keys[i], Integer.valueOf(varId));
         }
     }
+
+    public void makeUniqueVal(int unique) {
+        Object[] keys = table.keySet().toArray();
+        for (int i = 0; i < keys.length; i++) {
+            String varId = Integer.toString(table.get(keys[i]));
+            varId = varId.concat(Integer.toString(unique));
+            table.put((Integer) keys[i], Integer.valueOf(varId));
+        }
+    }
 }

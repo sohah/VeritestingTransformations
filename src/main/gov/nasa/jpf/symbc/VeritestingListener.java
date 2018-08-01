@@ -219,7 +219,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         while (slotItr.hasNext()) {
             Integer slot = (Integer) slotItr.next();
             String varId = "w" + Integer.toString(outputTable.lookup(slot));
-            Expression symVar = createGreenVar(dynRegion.slotTypeTable.lookup(slot), varId);
+            Expression symVar = createGreenVar(dynRegion.varTypeTable.lookup(outputTable.lookup(slot)), varId);
             sf.setSlotAttr(slot, greenToSPFExpression(symVar));
         }
     }
