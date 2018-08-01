@@ -89,9 +89,11 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         return cond;
     }
 
-    private Expression createGamma(List<LinkedList<PhiCondition>> conds, List<Expression> values) {
+    private Expression createGamma(List<LinkedList<PhiCondition>> conds, List<Expression> values) throws StaticRegionException {
 
-        assert(!conds.isEmpty());
+        //assert(!conds.isEmpty());
+        if(conds.isEmpty())
+            throw sre;
 
         // Handle leaf-level assignment
         if (conds.get(0).isEmpty()) {

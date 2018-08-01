@@ -281,29 +281,32 @@ public class CreateStaticRegions {
         if (currentBlock == endingBlock) { return; }
 
         //visitedBlocks.add(currentBlock);
+        ISSABasicBlock terminus = null;
 
         if (isBranch(cfg, currentBlock)) {
             try {
                 reset();
                 FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
-                ISSABasicBlock terminus = finder.findMinConvergingNode();
+                terminus = finder.findMinConvergingNode();
                 Stmt s = attemptConditionalSubregion(cfg, currentBlock, terminus);
                 int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
                 veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
-
-                createStructuredConditionalRegions(ir, terminus, endingBlock, veritestingRegions);
-                return;
-            } catch (StaticRegionException sre ) {
+            } catch (StaticRegionException sre) {
+                System.out.println("Unable to create conditional region for Basic Block " + currentBlock.getNumber());
+            } catch (InvalidClassFileException exception) {
                 System.out.println("Unable to create subregion");
             }
-            catch (InvalidClassFileException exception){
-                System.out.println("Unable to create subregion");
+            if (terminus != null) //SH: this needs to exist even if there was an exception above, because we still want to attempt the rest of the blocks going down.
+                try {
+                    createStructuredConditionalRegions(ir, terminus, endingBlock, veritestingRegions);
+                } catch (StaticRegionException sre2) {
+                    System.out.println("Unable to create terminus to end region");
+                }
+        } else //SH: "else" is added because if an exception is thrown in the upper part and it was caught, then we'd attempt to execut the for for conditions
+            for (ISSABasicBlock nextBlock : cfg.getNormalSuccessors(currentBlock)) {
+                createStructuredConditionalRegions(ir, nextBlock, endingBlock, veritestingRegions);
             }
-        }
-        for (ISSABasicBlock nextBlock: cfg.getNormalSuccessors(currentBlock)) {
-            createStructuredConditionalRegions(ir, nextBlock, endingBlock, veritestingRegions);
-        }
     }
 
 
