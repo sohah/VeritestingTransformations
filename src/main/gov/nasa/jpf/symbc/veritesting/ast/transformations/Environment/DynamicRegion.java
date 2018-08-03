@@ -15,7 +15,7 @@ public class DynamicRegion implements Region {
     public final SlotParamTable slotParamTable;
     public final OutputTable outputTable;
     public final StaticRegion staticRegion;
-    public final Table.VarTypeTable varTypeTable;
+    public final VarTypeTable varTypeTable;
     public final int endIns;
     public final boolean isMethodRegion;
     public final HashSet<SPFCaseStmt> spfCaseSet;
@@ -42,7 +42,7 @@ public class DynamicRegion implements Region {
     public DynamicRegion(StaticRegion staticRegion,
                          Stmt dynStmt,
                          SlotTypeTable slotTypeTable,
-                         Table.VarTypeTable varTypeTable,
+                         VarTypeTable varTypeTable,
                          SlotParamTable slotParamTable,
                          OutputTable outputTable,
                          boolean isMethodRegion,

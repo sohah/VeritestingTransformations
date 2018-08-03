@@ -48,7 +48,7 @@ public final class WalaVarExpr extends Variable {
 
     @Override
     public int numVar() {
-        return 0;
+        return number;
     }
 
     @Override

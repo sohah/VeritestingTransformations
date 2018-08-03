@@ -8,10 +8,10 @@ import com.ibm.wala.ssa.*;
 
 
 public class StaticTypeIVisitor implements SSAInstruction.IVisitor {
-    public final Table.VarTypeTable varTypeTable;
+    public final VarTypeTable varTypeTable;
     private IR ir;
 
-    public StaticTypeIVisitor(IR ir, Table.VarTypeTable varTypeTable) {
+    public StaticTypeIVisitor(IR ir, VarTypeTable varTypeTable) {
         this.ir = ir;
         this.varTypeTable = varTypeTable;
     }

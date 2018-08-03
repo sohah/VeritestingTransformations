@@ -19,7 +19,7 @@ public class SlotParamTable extends Table<int[]> {
 
 
     public SlotParamTable(IR ir, Boolean isMethodRegion) { // var -> param/slot
-        super("stack-slot table", "var", isMethodRegion? "param" : "slot");
+        super("stack-slot table", "var", isMethodRegion ? "param" : "slot");
         this.ir = ir;
         this.isMethodRegion = isMethodRegion;
         if (isMethodRegion)
@@ -30,8 +30,8 @@ public class SlotParamTable extends Table<int[]> {
 
 
     private void populateParam() {
-        for(int i = 0; i < ir.getNumberOfParameters(); i++){
-            this.add(ir.getParameter(i), new int [i]);
+        for (int i = 0; i < ir.getNumberOfParameters(); i++) {
+            this.add(ir.getParameter(i), new int[i]);
         }
     }
 
@@ -69,8 +69,8 @@ public class SlotParamTable extends Table<int[]> {
         return allSlots;
     }
 
-    //SH: returns all vars that have the same stack slot entered in the parameter.
-    public Set getVarsOfSlot(int slot) {
+    //SH: returns all vars that have the same stack slot entered in the parameter, between bounderies if entered.
+    public Set getVarsOfSlot(int slot, Integer firstVarId, Integer lastVarId) {
         HashSet<Integer> stackSlotVars = new HashSet();
         Set<Integer> vars = table.keySet();
         Iterator<Integer> varIter = vars.iterator();
@@ -78,12 +78,12 @@ public class SlotParamTable extends Table<int[]> {
         while (varIter.hasNext()) {
             HashSet<Integer> varSlotSet = new HashSet();
             Integer var = varIter.next();
-            int[] varStackSlots = table.get(var);
-            for (int i = 0; i < varStackSlots.length; i++) { //silly, converts an array to HashSet, there should be better ways in Java 8.
-                varSlotSet.add(varStackSlots[i]);
-            }
-            if (varSlotSet.contains(slot))
-                stackSlotVars.add(var);
+                int[] varStackSlots = table.get(var);
+                for (int i = 0; i < varStackSlots.length; i++) { //silly, converts an array to HashSet, there should be better ways in Java 8.
+                    varSlotSet.add(varStackSlots[i]);
+                }
+                if (((lastVarId == null ) || (( var <= lastVarId) && (var >= firstVarId))) && (varSlotSet.contains(slot)))
+                    stackSlotVars.add(var);
         }
         return stackSlotVars;
     }
@@ -146,7 +146,7 @@ public class SlotParamTable extends Table<int[]> {
 
     @Override
     public void print() {
-        System.out.println("\nRegion Stack Slot Map (var -> " + (isMethodRegion? "param" : "slot") +")");
+        System.out.println("\nRegion Stack Slot Map (var -> " + (isMethodRegion ? "param" : "slot") + ")");
         table.forEach((var, stackSlots) -> System.out.println("!w" + var + " --------- " + Arrays.toString(stackSlots)));
     }
 

@@ -35,7 +35,7 @@ public class InputTable extends Table<Integer> {
         Iterator<Integer> slotsIter = allSlots.iterator();
         while (slotsIter.hasNext()) {
             int slot = slotsIter.next();
-            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot);
+            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot, null, null);
             this.add(Collections.min(varsForSlot), slot);
         }
     }

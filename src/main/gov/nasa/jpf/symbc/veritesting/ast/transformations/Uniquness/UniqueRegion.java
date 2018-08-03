@@ -19,7 +19,7 @@ public class UniqueRegion {
 
         SlotParamTable slotParamTable = dynRegion.slotParamTable.clone();
         SlotTypeTable slotTypeTable = dynRegion.slotTypeTable;
-        Table.VarTypeTable varTypeTable = dynRegion.varTypeTable.clone();
+        VarTypeTable varTypeTable = dynRegion.varTypeTable.clone();
         OutputTable outputTable = dynRegion.outputTable.clone();
 
         slotParamTable.makeUniqueKey(uniqueNum);

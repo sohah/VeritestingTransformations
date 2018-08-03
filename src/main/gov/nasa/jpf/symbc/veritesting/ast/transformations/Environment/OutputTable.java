@@ -1,16 +1,19 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.*;
+import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import javafx.util.Pair;
 
 import java.util.*;
 
 public class OutputTable extends Table<Integer> {
-    public OutputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, InputTable inputTable) {
+    public OutputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt) {
         super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
         if (isMethodRegion)
             computeMethodOutput(ir);
         else
-            computeOutputVars(ir, slotParamTable, inputTable);
+            computeOutputVars(ir, slotParamTable, inputTable, stmt);
     }
 
     //SH: all normal predecessors of an exit node must have a return as the last instruction.
@@ -18,13 +21,12 @@ public class OutputTable extends Table<Integer> {
     private void computeMethodOutput(IR ir) {
         List<SSAReturnInstruction> returnInsList = findAllReturns(ir);
         int resultNum = 0;
-        for(SSAReturnInstruction returnIns: returnInsList){
-            if(returnIns.getNumberOfUses() == 0){
+        for (SSAReturnInstruction returnIns : returnInsList) {
+            if (returnIns.getNumberOfUses() == 0) {
                 return; // a void method, it does not have an output
-            }
-            else{
-            this.add(resultNum, returnIns.getUse(0));
-            ++resultNum;
+            } else {
+                this.add(resultNum, returnIns.getUse(0));
+                ++resultNum;
             }
         }
     }
@@ -33,8 +35,8 @@ public class OutputTable extends Table<Integer> {
         List<SSAReturnInstruction> returnInsList = new ArrayList<>();
         ISSABasicBlock exitBB = ir.getExitBlock();
         List<ISSABasicBlock> retunBBList = (List<ISSABasicBlock>) ir.getControlFlowGraph().getNormalPredecessors(exitBB);
-        for(ISSABasicBlock returnBB: retunBBList){
-            assert(returnBB.getLastInstruction() instanceof SSAReturnInstruction);
+        for (ISSABasicBlock returnBB : retunBBList) {
+            assert (returnBB.getLastInstruction() instanceof SSAReturnInstruction);
             returnInsList.add((SSAReturnInstruction) returnBB.getLastInstruction());
         }
         return returnInsList;
@@ -46,16 +48,26 @@ public class OutputTable extends Table<Integer> {
 
     //SH: outputVars are computed by finding the maximum wala var for each
     //stackSlot and those that are not input or constants.
-    private void computeOutputVars(IR ir, SlotParamTable slotParamTable, InputTable inputTable) {
+    private void computeOutputVars(IR ir, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt) {
         HashSet<Integer> allSlots = slotParamTable.getSlots();
         Iterator<Integer> slotsIter = allSlots.iterator();
+        Pair<Integer, Integer> firstAndLastVar = getFirstLastVar(stmt);
         while (slotsIter.hasNext()) {
             int slot = slotsIter.next();
-            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot);
-            Integer slotOutput = Collections.max(varsForSlot);
-            if ((inputTable.lookup(slotOutput) == null) && !(ir.getSymbolTable().isConstant(slotOutput)))
-                this.add(slot, Collections.max(varsForSlot));
+            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot, firstAndLastVar.getKey(), firstAndLastVar.getValue());
+            if (!varsForSlot.isEmpty()) {
+                Integer slotOutput = Collections.max(varsForSlot);
+                if ((inputTable.lookup(slotOutput) == null) && !(ir.getSymbolTable().isConstant(slotOutput)))
+                    this.add(slot, Collections.max(varsForSlot));
+            }
         }
+    }
+
+    //SH: returning the last def in the region
+    private Pair<Integer, Integer> getFirstLastVar(Stmt stmt) {
+        RegionOutputVisitor regionOutputVisitor = new RegionOutputVisitor();
+        stmt.accept(regionOutputVisitor);
+        return new Pair<>(regionOutputVisitor.getFirstDef(), regionOutputVisitor.getLastVar());
     }
 
     @Override
