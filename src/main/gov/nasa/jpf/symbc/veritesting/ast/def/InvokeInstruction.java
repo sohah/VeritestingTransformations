@@ -14,19 +14,6 @@ public class InvokeInstruction extends Instruction {
     {
         super(ins);
         this.result = result;
-
-        //SH: this part is mainly to create params in InovkeInstructions that contains non null params, since wala's instruction can have null
-        // paramaters.
-        /*int nonNullCount = 0;
-        for(int i = 0; i < params.length; i++)
-            if(params[i] != null)
-                ++nonNullCount;
-
-        this.params = new Expression [nonNullCount];
-
-        for(int i = 0; i < nonNullCount; i++)
-            if(params[i] != null)
-                this.params[i] = params[i];*/
         this.params = params;
     }
 

@@ -19,8 +19,8 @@ public class InputTable extends Table<Integer> {
         if (isMethodRegion) // all parameters are input
             computeMethodInputVars(slotParamTable);
         else {//only first instances of vars to slots execluding defs.
-            computeRegionInputVars(slotParamTable);
-            removeDefInputs(stmt);
+            //computeRegionInputVars(slotParamTable);
+            removeDefInputs(slotParamTable, stmt);
         }
     }
 
@@ -29,7 +29,7 @@ public class InputTable extends Table<Integer> {
             this.add(var, slotParamTable.lookup(var)[0]);
         }
     }
-
+/*
     private void computeRegionInputVars(SlotParamTable slotParamTable) {
         HashSet<Integer> allSlots = slotParamTable.getSlots();
         Iterator<Integer> slotsIter = allSlots.iterator();
@@ -38,10 +38,10 @@ public class InputTable extends Table<Integer> {
             Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot, null, null);
             this.add(Collections.min(varsForSlot), slot);
         }
-    }
+    }*/
 
-    private void removeDefInputs(Stmt stmt) {
-        RegionInputVisitor regionInputVisitor = new RegionInputVisitor(this);
+    private void removeDefInputs(SlotParamTable slotParamTable, Stmt stmt) {
+        RegionInputVisitor regionInputVisitor = new RegionInputVisitor(this, slotParamTable);
         stmt.accept(regionInputVisitor);
     }
 

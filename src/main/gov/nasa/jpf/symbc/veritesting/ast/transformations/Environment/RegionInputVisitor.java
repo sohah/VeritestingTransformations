@@ -1,6 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
-//SH: this visitor visits all statments and in turn all expressions to remove walaId from the inputTable that their first occurance is a def rather than a use
+//SH: this visitor visits all statements to find the first use of every stack slot.
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprRegionInputVisitor;
@@ -12,16 +12,12 @@ import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUse
 
 public class RegionInputVisitor extends AstMapVisitor{
 
-    public RegionInputVisitor(InputTable inputTable) {
-        super(new ExprRegionInputVisitor(inputTable));
+    public RegionInputVisitor(InputTable inputTable, SlotParamTable slotParamTable) {
+        super(new ExprRegionInputVisitor(inputTable, slotParamTable));
     }
     @Override
     public Stmt visit(AssignmentStmt a) {
-        ExprRegionInputVisitor.defUseVisit = DEF;
-        Expression lhsExpr = eva.accept(a.lhs);
-        ExprRegionInputVisitor.defUseVisit = USE;
-        Expression rhsExpr = eva.accept(a.rhs);
-        return new AssignmentStmt(lhsExpr, eva.accept(a.rhs));
+        return new AssignmentStmt(a.lhs, eva.accept(a.rhs));
     }
 
     @Override
@@ -48,19 +44,15 @@ public class RegionInputVisitor extends AstMapVisitor{
 
     @Override
     public Stmt visit(ArrayLoadInstruction c) {
-        ExprRegionInputVisitor.defUseVisit = DEF;
-        Expression lhsExpr = eva.accept(c.def);
-        ExprRegionInputVisitor.defUseVisit = USE;
         return new ArrayLoadInstruction(c.getOriginal(),
                 eva.accept(c.arrayref),
                 eva.accept(c.index),
                 c.elementType,
-                lhsExpr);
+                c.def);
     }
 
     @Override
     public Stmt visit(ArrayStoreInstruction c) {
-        ExprRegionInputVisitor.defUseVisit = USE;
         return new ArrayStoreInstruction(c.getOriginal(),
                 eva.accept(c.arrayref),
                 eva.accept(c.index),
@@ -75,25 +67,19 @@ public class RegionInputVisitor extends AstMapVisitor{
 
     @Override
     public Stmt visit(ReturnInstruction c) {
-        ExprRegionInputVisitor.defUseVisit = USE;
         return new ReturnInstruction(c.getOriginal(), eva.accept(c.rhs));
     }
 
     @Override
     public Stmt visit(GetInstruction c) {
-        ExprRegionInputVisitor.defUseVisit = DEF;
-        Expression lhsExpr = eva.accept(c.def);
-
-        ExprRegionInputVisitor.defUseVisit = USE;
         return new GetInstruction(c.getOriginal(),
-                lhsExpr,
+                c.def,
                 eva.accept(c.ref),
                 c.field);
     }
 
     @Override
     public Stmt visit(PutInstruction c) {
-        ExprRegionInputVisitor.defUseVisit = USE;
         PutInstruction ins = new PutInstruction(c.getOriginal(),
                 eva.accept(c.def),
                 c.field,
@@ -108,26 +94,17 @@ public class RegionInputVisitor extends AstMapVisitor{
 
     @Override
     public Stmt visit(InvokeInstruction c) {
-        ExprRegionInputVisitor.defUseVisit = USE;
-        Expression [] results = new Expression [c.result.length];
-        for (int i=0; i < results.length; i++) {
-            results[i] = eva.accept(c.result[i]);
-        }
         Expression [] params = new Expression [c.params.length];
         for (int i=0; i < params.length; i++) {
             params[i] = eva.accept(c.params[i]);
         }
-        return new InvokeInstruction(c.getOriginal(), results, params);
+        return new InvokeInstruction(c.getOriginal(), c.result, params);
     }
 
     @Override
     public Stmt visit(ArrayLengthInstruction c) {
-        ExprRegionInputVisitor.defUseVisit = DEF;
-        Expression lhsExpr = eva.accept(c.def);
-
-        ExprRegionInputVisitor.defUseVisit = USE;
         return new ArrayLengthInstruction(c.getOriginal(),
-                lhsExpr,
+                c.def,
                 eva.accept(c.arrayref));
     }
 
@@ -138,24 +115,16 @@ public class RegionInputVisitor extends AstMapVisitor{
 
     @Override
     public Stmt visit(CheckCastInstruction c) {
-        ExprRegionInputVisitor.defUseVisit = DEF;
-        Expression lhsExpr = eva.accept(c.result);
-
-        ExprRegionInputVisitor.defUseVisit = USE;
         return new CheckCastInstruction(c.getOriginal(),
-                lhsExpr,
+                c.result,
                 eva.accept(c.val),
                 c.declaredResultTypes);
     }
 
     @Override
     public Stmt visit(InstanceOfInstruction c) {
-        ExprRegionInputVisitor.defUseVisit = DEF;
-        Expression lhsExpr = eva.accept(c.result);
-
-        ExprRegionInputVisitor.defUseVisit = USE;
         return new InstanceOfInstruction(c.getOriginal(),
-                lhsExpr,
+                c.result,
                 eva.accept(c.val),
                 c.checkedType);
     }
@@ -163,13 +132,11 @@ public class RegionInputVisitor extends AstMapVisitor{
     @Override
     public Stmt visit(PhiInstruction c) {
 
-        ExprRegionInputVisitor.defUseVisit = USE;
         Expression [] rhs = new Expression[c.rhs.length];
         for (int i=0; i < rhs.length; i++) {
             rhs[i] = eva.accept(c.rhs[i]);
         }
 
-        ExprRegionInputVisitor.defUseVisit = DEF;
         return new PhiInstruction(c.getOriginal(),
                 eva.accept(c.def),
                 rhs);

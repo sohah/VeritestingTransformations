@@ -25,9 +25,9 @@ public class RegionOutputVisitor implements AstVisitor {
 
     @Override
     public Object visit(AssignmentStmt a) {
-        lastVar = a.lhs.numVar();
+        lastVar = ((WalaVarExpr)a.lhs).number;
         if (!firstDefFound) {
-            firstDef = a.lhs.numVar();
+            firstDef = ((WalaVarExpr)a.lhs).number;
             firstDefFound = true;
         }
         return null;
@@ -59,9 +59,9 @@ public class RegionOutputVisitor implements AstVisitor {
 
     @Override
     public Object visit(ArrayLoadInstruction c) {
-        lastVar = c.def.numVar();
+        lastVar = ((WalaVarExpr)c.def).number;
         if (!firstDefFound) {
-            firstDef = c.def.numVar();
+            firstDef = ((WalaVarExpr)c.def).number;
             firstDefFound = true;
         }
         return null;
@@ -91,9 +91,9 @@ public class RegionOutputVisitor implements AstVisitor {
 
     @Override
     public Object visit(GetInstruction c) {
-        lastVar = c.def.numVar();
+        lastVar = ((WalaVarExpr)c.def).number;
         if(!firstDefFound){
-            firstDef = c.def.numVar();
+            firstDef = ((WalaVarExpr)c.def).number;
             firstDefFound = true;
         }
         return null;
@@ -123,9 +123,9 @@ public class RegionOutputVisitor implements AstVisitor {
 
     @Override
     public Object visit(ArrayLengthInstruction c) {
-        lastVar = c.def.numVar();
+        lastVar = ((WalaVarExpr)c.def).number;
         if(!firstDefFound){
-            firstDef = c.def.numVar();
+            firstDef = ((WalaVarExpr)c.def).number;
             firstDefFound = true;
         }        return null;
     }
@@ -147,9 +147,9 @@ public class RegionOutputVisitor implements AstVisitor {
 
     @Override
     public Object visit(InstanceOfInstruction c) {
-        lastVar = c.result.numVar();
+        lastVar = ((WalaVarExpr)c.result).number;
         if(!firstDefFound){
-            firstDef = c.result.numVar();
+            firstDef = ((WalaVarExpr)c.result).number;
             firstDefFound = true;
         }
         return null;
@@ -157,9 +157,9 @@ public class RegionOutputVisitor implements AstVisitor {
 
     @Override
     public Object visit(PhiInstruction c) {
-        lastVar = c.def.numVar();
+        lastVar = ((WalaVarExpr)c.def).number;
         if(!firstDefFound){
-            firstDef = c.def.numVar();
+            firstDef = ((WalaVarExpr)c.def).number;
             firstDefFound = true;
         }
         return null;
