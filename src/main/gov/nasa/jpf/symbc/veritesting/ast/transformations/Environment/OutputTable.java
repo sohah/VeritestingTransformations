@@ -1,9 +1,9 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.*;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import javafx.util.Pair;
 
 import java.util.*;
 
@@ -54,7 +54,7 @@ public class OutputTable extends Table<Integer> {
         Pair<Integer, Integer> firstAndLastVar = getFirstLastVar(stmt);
         while (slotsIter.hasNext()) {
             int slot = slotsIter.next();
-            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot, firstAndLastVar.getKey(), firstAndLastVar.getValue());
+            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot, firstAndLastVar.getFirst(), firstAndLastVar.getSecond());
             if (!varsForSlot.isEmpty()) {
                 Integer slotOutput = Collections.max(varsForSlot);
                 if ((inputTable.lookup(slotOutput) == null) && !(ir.getSymbolTable().isConstant(slotOutput)))

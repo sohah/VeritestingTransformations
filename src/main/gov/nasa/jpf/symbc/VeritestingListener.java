@@ -134,8 +134,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         // 4. Create gamma expressions for field access
                         // 5 Propagate type information across operations
                         System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
-                        dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
-                        TypePropagationVisitor.propagateTypes(dynRegion);
+                        //dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
+                        //TypePropagationVisitor.propagateTypes(dynRegion);
 
                         System.out.println("--------------- UNIQUENESS TRANSFORMATION ---------------");
                         dynRegion = UniqueRegion.execute(dynRegion);
