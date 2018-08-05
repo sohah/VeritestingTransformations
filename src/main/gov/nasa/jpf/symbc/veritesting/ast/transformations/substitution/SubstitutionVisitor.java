@@ -16,12 +16,10 @@ import java.util.HashSet;
 public class SubstitutionVisitor extends AstMapVisitor{
     ExprVisitorAdapter<Expression> eva;
     public final ValueSymbolTable valueSymbolTable;
-    public final SlotTypeTable slotTypeTable;
 
     private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable,
                                 ValueSymbolTable valueSymbolTable) {
-        super(new ExprSubstitutionVisitor(ti, staticRegion, slotTypeTable, valueSymbolTable));
-        this.slotTypeTable = slotTypeTable;
+        super(new ExprSubstitutionVisitor(ti, staticRegion, valueSymbolTable));
         this.valueSymbolTable = valueSymbolTable;
         eva = super.eva;
     }
@@ -85,6 +83,6 @@ public class SubstitutionVisitor extends AstMapVisitor{
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, new SlotTypeTable(ti, staticRegion),
                 new ValueSymbolTable());
         Stmt dynStmt = staticRegion.staticStmt.accept(visitor);
-        return new DynamicRegion(staticRegion, dynStmt, visitor.slotTypeTable, new HashSet<>());
+        return new DynamicRegion(staticRegion, dynStmt, new HashSet<>());
     }
 }

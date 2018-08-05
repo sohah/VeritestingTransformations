@@ -41,7 +41,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.OutputTabl
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePropagationVisitor;
+
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
@@ -126,7 +126,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                         dynRegion.slotParamTable.print();
                         dynRegion.outputTable.print();
-                        dynRegion.slotTypeTable.print();
 
                         // 1. Perform substitution on field references
                         // 2. Replace GetInstruction, PutInstruction by AssignmentStmt with a FieldAccessTriple on rhs or lhs resp.
@@ -141,7 +140,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion = UniqueRegion.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                         dynRegion.slotParamTable.print();
-                        dynRegion.slotTypeTable.print();
                         dynRegion.varTypeTable.print();
                         dynRegion.outputTable.print();
 

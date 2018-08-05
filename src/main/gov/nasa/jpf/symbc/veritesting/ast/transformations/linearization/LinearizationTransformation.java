@@ -12,7 +12,6 @@ public class LinearizationTransformation extends DefaultTransformation {
         Stmt stmt = region.dynStmt.accept(v);
         return new DynamicRegion(region.staticRegion,
                 stmt,
-                region.slotTypeTable,
                 region.varTypeTable,
                 region.slotParamTable,
                 region.outputTable,

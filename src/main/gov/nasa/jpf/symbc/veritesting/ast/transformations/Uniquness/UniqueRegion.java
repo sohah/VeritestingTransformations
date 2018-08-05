@@ -18,7 +18,6 @@ public class UniqueRegion {
 
 
         SlotParamTable slotParamTable = dynRegion.slotParamTable.clone();
-        SlotTypeTable slotTypeTable = dynRegion.slotTypeTable;
         VarTypeTable varTypeTable = dynRegion.varTypeTable.clone();
         OutputTable outputTable = dynRegion.outputTable.clone();
 
@@ -29,7 +28,6 @@ public class UniqueRegion {
 
         return new DynamicRegion(dynRegion.staticRegion,
                 dynStmt,
-                slotTypeTable,
                 varTypeTable,
                 slotParamTable,
                 outputTable,

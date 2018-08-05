@@ -27,7 +27,7 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
         String type = null;
         if(dynRegion.slotParamTable.lookup(expr.number) != null ) {
             int slot = dynRegion.slotParamTable.lookup(expr.number)[0];
-            type = dynRegion.slotTypeTable.lookup(slot);
+            type = dynRegion.varTypeTable.lookup(slot);
         }
         if (type == null) {
             type = dynRegion.varTypeTable.lookup(expr.number);

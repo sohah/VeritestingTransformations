@@ -23,10 +23,9 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
     private StackFrame sf;
     public ExprVisitorAdapter eva;
     private StaticRegion staticRegion;
-    private SlotTypeTable slotTypeTable;
     private ValueSymbolTable valueSymbolTable;
 
-    public ExprSubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable,
+    public ExprSubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion,
                                    ValueSymbolTable valueSymbolTable) {
         super();
         this.ti = ti;
@@ -34,7 +33,6 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
         eva = super.eva;
         this.staticRegion = staticRegion;
         this.valueSymbolTable = valueSymbolTable;
-        this.slotTypeTable = slotTypeTable;
     }
 
     //SH: An invariant here is that all stackSlots that a var can map to, must all have the same value
@@ -54,7 +52,6 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
             Expression greenValue = SPFToGreenExpr(varValue);
             String type = sf.getLocalVariableType(slot);
             valueSymbolTable.add(expr.number, greenValue);
-            slotTypeTable.add(slot, type);
             return greenValue;
         } else { //not a stack slot var, try to check if it is a constant from wala
             SymbolTable symbolTable = staticRegion.ir.getSymbolTable();

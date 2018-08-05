@@ -9,7 +9,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.Set;
-
+/*
 public class TypePropagationVisitor extends AstMapVisitor {
     private VarTypeTable varTypeTable;
     private ExprVisitorAdapter<Expression> eva;
@@ -44,4 +44,4 @@ public class TypePropagationVisitor extends AstMapVisitor {
         dynRegion.dynStmt.accept(visitor);
         return visitor.varTypeTable;
     }
-}
+} */

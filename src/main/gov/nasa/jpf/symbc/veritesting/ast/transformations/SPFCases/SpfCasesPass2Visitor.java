@@ -176,7 +176,6 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
 
         return new DynamicRegion(dynRegion.staticRegion,
                 dynStmt,
-                dynRegion.slotTypeTable,
                 dynRegion.varTypeTable,
                 dynRegion.slotParamTable,
                 dynRegion.outputTable,
