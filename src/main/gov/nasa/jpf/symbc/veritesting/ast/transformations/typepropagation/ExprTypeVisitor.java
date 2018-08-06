@@ -89,7 +89,7 @@ public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expre
 
     private String getConstantType(Expression op1) {
         if (op1 instanceof IntConstant) return "int";
-        else if (op1 instanceof RealConstant) return "float";
+        else if (op1 instanceof RealConstant) return "double";
         throw new IllegalArgumentException("trying to getConstantType for non-constant op, op = " + op1);
     }
 

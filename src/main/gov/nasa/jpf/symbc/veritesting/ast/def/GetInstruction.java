@@ -1,8 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import com.ibm.wala.ssa.SSAGetInstruction;
-import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.types.FieldReference;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
@@ -11,6 +11,7 @@ public class GetInstruction extends Instruction {
     public final Expression ref;
     public final FieldReference field;
     public final Expression def;
+    public FieldSubscriptMap psm = null;
 
     public GetInstruction(SSAGetInstruction ins, Expression def, Expression ref, FieldReference field) {
         super(ins);

@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.IntVariable;
 import za.ac.sun.cs.green.expr.Variable;
@@ -10,9 +11,9 @@ import java.util.List;
 
 public final class FieldRefVarExpr extends Variable {
     public final FieldRef fieldRef;
-    public final int subscript;
+    public final SubscriptPair subscript;
 
-    public FieldRefVarExpr(FieldRef fieldRef, int subscript) {
+    public FieldRefVarExpr(FieldRef fieldRef, SubscriptPair subscript) {
         super("@r"+fieldRef.ref + "." + fieldRef.field + "#" + subscript);
         this.fieldRef = fieldRef;
         this.subscript = subscript;

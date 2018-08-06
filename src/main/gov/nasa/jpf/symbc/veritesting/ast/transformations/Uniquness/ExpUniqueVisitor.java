@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
+import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
@@ -32,6 +33,17 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
         if (type == null) {
             type = dynRegion.varTypeTable.lookup(expr.number);
         }
+        if (type == null) return expr;
+        else return createGreenVar(type, varId);
+    }
+
+    @Override
+    public Expression visit(FieldRefVarExpr expr) {
+        String varId = "@r"+expr.fieldRef.ref + "." + expr.fieldRef.field +
+                ".p" + Integer.toString(expr.subscript.pathSubscript) +
+                ".g" + Integer.toString(expr.subscript.globalSubscript);
+        varId = varId.concat(Integer.toString(uniqueNum));
+        String type = dynRegion.varTypeTable.lookup(expr.getName());
         if (type == null) return expr;
         else return createGreenVar(type, varId);
     }

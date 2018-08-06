@@ -34,7 +34,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenV
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.GetSubstitutionVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.OutputTable;
@@ -42,6 +42,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
 
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePropagationVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
@@ -116,7 +117,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 StaticRegion staticRegion = regionsMap.get(key);
                 if (staticRegion != null)
                     if (SpfUtil.isSymCond(ti.getTopFrame(), instructionToExecute)) {
-                        System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
+                        System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" +
+                                PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
                         staticRegion.slotParamTable.print();
                         staticRegion.outputTable.print();
                         staticRegion.inputTable.print();
@@ -127,12 +129,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion.slotParamTable.print();
                         dynRegion.outputTable.print();
 
-                        // 1. Perform substitution on field references
-                        // 2. Replace GetInstruction, PutInstruction by AssignmentStmt with a FieldAccessTriple on rhs or lhs resp.
+                        // 1. Replace GetInstruction, PutInstruction by AssignmentStmt with a FieldAccessTriple on rhs or lhs resp.
+                        // 2. Perform substitution on field references
                         // 3. Populate the PSM for every statement in the region
                         // 4. Create gamma expressions for field access
                         // 5 Propagate type information across operations
                         System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
+                        dynRegion = FieldSSAVisitor.execute(ti, dynRegion);
+//                        dynRegion = GetSubstitutionVisitor.execute(ti, dynRegion);
+                        TypePropagationVisitor.propagateTypes(dynRegion);
                         //dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
                         //TypePropagationVisitor.propagateTypes(dynRegion);
 
