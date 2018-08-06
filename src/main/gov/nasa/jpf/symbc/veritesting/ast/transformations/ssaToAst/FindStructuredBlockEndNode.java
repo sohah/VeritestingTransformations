@@ -38,7 +38,7 @@ public class FindStructuredBlockEndNode {
     public static StaticRegionException staticRegionException = new StaticRegionException("FindStructuredBlockEndNode: mal-formed region");
 
     public FindStructuredBlockEndNode(SSACFG cfg, ISSABasicBlock initial, ISSABasicBlock maxLimit) {
-        remaining = new PriorityQueue<>((ISSABasicBlock o1, ISSABasicBlock o2)->o1.getNumber()-o2.getNumber());
+        remaining = SSAUtil.constructSortedBlockPQ();
         // set maxLimit to the end of the function if it is not provided.
         this.maxLimit = (maxLimit != null) ? maxLimit : cfg.exit();
         this.minLimit = initial;
@@ -57,31 +57,20 @@ public class FindStructuredBlockEndNode {
         }
     }
 
-    // idea: add element
-    void enqueue(ISSABasicBlock elem) {
-        if (!remaining.contains(elem)) {
-            remaining.add(elem);
-        }
-    }
 
     void findCommonSuccessor(ISSABasicBlock b) throws StaticRegionException {
 
         for (ISSABasicBlock succ: cfg.getNormalSuccessors(b)) {
             checkRanges(b, succ);
-            enqueue(succ);
+            SSAUtil.enqueue(remaining, succ);
         }
 
         // Size of the queue is the number of open paths in the model.
         while (remaining.size() > 1) {
             ISSABasicBlock current = remaining.poll();
-            SSAInstruction last = current.getLastInstruction();
-            // We do not want to continue to explore successors of blocks ending with
-            // returns or exceptions.
-            if (!(last instanceof SSAReturnInstruction) && !(last instanceof SSAThrowInstruction)) {
-                for (ISSABasicBlock succ : cfg.getNormalSuccessors(current)) {
-                    checkRanges(current, succ);
-                    enqueue(succ);
-                }
+            for (ISSABasicBlock succ : SSAUtil.getNonReturnSuccessors(cfg, current)) {
+                checkRanges(current, succ);
+                SSAUtil.enqueue(remaining, succ);
             }
         }
 

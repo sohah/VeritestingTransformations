@@ -2,9 +2,11 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import com.ibm.wala.cfg.Util;
 import com.ibm.wala.classLoader.IBytecodeMethod;
-import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.*;
+import com.ibm.wala.util.graph.Graph;
+import com.ibm.wala.util.graph.dominators.Dominators;
+import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
@@ -14,16 +16,43 @@ import java.util.*;
 
 /*
     This class creates our structure IR from the WALA SSA form for further transformation.
-    Right now it emits a string because the IR is not yet finished.
-
-    Important question: what is the scope of this class?  Is it supposed to be maintained
-    throughout the creation process or is it constructed / destructed for each visited method?
-        Each method - the cfg changes.
 
     TODO: In examining the debug output, it appears that the same classes and methods are visited multiple times.  Why?
 
-    The tricky bit involves translating \phi instructions to \gammas.
-    Here’s how it works:
+    Here we are essentially decompiling DAGs within a Java program.  The goals
+    are two-fold:
+        1. It should be accurate.  Any semantics violating decompilation steps
+            will obviously cause SPF to misbehave
+        2. It should be lightweight.  Any fixpoint algorithms may cost a lot
+            in preprocessing.
+
+    It does *not* need to be complete.  It is o.k. if 'continue's and 'break's
+    cause the generation algorithm to fail; we will skip those regions.  As
+    long as we aren't analyzing malware, this won't happen too often.
+
+    * One tricky bit involves figuring out the boundaries of complex 'if' conditions.
+
+    It is not too bad; you look for "immediate self-contained subgraphs", that is,
+    subgraphs where the initial node is immediately pre-dominated by the initial node
+    and for the static region and whose successor nodes (up to the region terminus) are
+    dominated (not necessarily immediately) by the initial node.
+
+    For the things we want to analyze, there should be one (for if-no-else) or
+    two (for if-else) of these regions.
+
+    For if-no-else regions, it is clear what to use as the 'then' condition, but
+    with if-else regions, it is not so clear.  We use the initial condition
+    'then' branch to choose, but this is pretty arbitrary, and in fact WALA seems
+    to reverse the if/else branches from the source code.  This is probably because
+    the jump conditions are 'jump zero'.
+
+    We create a successor map that jumps directly to these 'then' and 'else'
+    elements, and generate the condition for the 'then' branch.  Thereafter, we
+    can view the problem as one of nested self-contained subgraphs, which
+    simplifies the rest of the region processing.
+
+
+    * Another tricky bit involves translating \phi instructions to \gammas.
 
     I keep track of the current "conditional path" at the point of the code I am translating.  This is a stack of
     (Expression x enum {Then, Else}) pairs.  For each edge between blocks in the block structure,
@@ -96,20 +125,39 @@ public class CreateStaticRegions {
         return constructMethodIdentifier(blk.getMethod().getSignature());
     }
 
-    /*
-        For Phi instructions!
-     */
-
-
-    private HashMap<PhiEdge, List<PhiCondition>> blockConditionMap;
-    private Deque<PhiCondition> currentCondition;
     private IR ir;
+    private Graph<ISSABasicBlock> domTree;
 
+    // For Phi instructions.  See comment at top of file
+    private Map<PhiEdge, List<PhiCondition>> blockConditionMap;
+    private Deque<PhiCondition> currentCondition;
+
+    // for complex conditions, we want to record the then condition and successors.
+    // See the comment at the top of the file for more information.
+    private Map<ISSABasicBlock, Expression> thenCondition;
+    private Map<ISSABasicBlock, ISSABasicBlock> thenSuccessor;
+    private Map<ISSABasicBlock, ISSABasicBlock> elseSuccessor;
+
+    // For memoization, so we don't visit the same blocks over and over.
+    private Set<ISSABasicBlock> visitedBlocks;
+    // TODO: an optimization to be explored for future is to subclass the HashMap type
+    // TODO: so we store *unsuccessful* regions.  This would allow us to do region
+    // TODO: construction "on the fly" without revisiting unsuccessful regions multiple times.
 
     public CreateStaticRegions(IR ir) {
         blockConditionMap = new HashMap<>();
         currentCondition = new LinkedList<>();
+        thenCondition = new HashMap<>();
+        thenSuccessor = new HashMap<>();
+        elseSuccessor = new HashMap<>();
+        visitedBlocks = new HashSet<>();
+
         this.ir = ir;
+
+        /* MWW: added to determine complex conditions */
+        SSACFG cfg = ir.getControlFlowGraph();
+        NumberedDominators<ISSABasicBlock> dom = (NumberedDominators) Dominators.make(cfg, cfg.entry());
+        this.domTree = dom.dominatorTree();
     }
 
     private void reset() {
@@ -131,7 +179,6 @@ public class CreateStaticRegions {
             return new CompositionStmt(stmt1, stmt2);
         }
     }
-
 
     private Stmt translateTruncatedFinalBlock(ISSABasicBlock currentBlock) throws StaticRegionException {
         SSAToStatIVisitor visitor =
@@ -164,37 +211,183 @@ public class CreateStaticRegions {
         return stmt;
     }
 
-    private Operation.Operator convertOperator(IConditionalBranchInstruction.Operator operator) {
-        switch (operator) {
-            case EQ: return Operation.Operator.EQ;
-            case NE: return Operation.Operator.NE;
-            case LT: return Operation.Operator.LT;
-            case GE: return Operation.Operator.GE;
-            case GT: return Operation.Operator.GT;
-            case LE: return Operation.Operator.LE;
+
+    private ISSABasicBlock getIDom(ISSABasicBlock elem) {
+        assert(this.domTree.getPredNodeCount(elem) == 1);
+        return (ISSABasicBlock)this.domTree.getPredNodes(elem).next();
+    }
+
+
+    // This method checks to see whether each node in a subgraph up to a
+    // terminus (see comment at top of file)
+    private boolean isSelfContainedSubgraph(ISSABasicBlock entry, ISSABasicBlock terminus) throws StaticRegionException {
+        // trivial case.
+        if (entry == terminus) { return false; }
+
+        SSACFG cfg = ir.getControlFlowGraph();
+        PriorityQueue<ISSABasicBlock> toVisit = SSAUtil.constructSortedBlockPQ();
+        Set<ISSABasicBlock> visited = new HashSet<>();
+
+        visited.add(entry);
+        toVisit.addAll(SSAUtil.getNonReturnSuccessors(cfg, entry));
+
+        while (!toVisit.isEmpty()) {
+            ISSABasicBlock current = toVisit.remove();
+            if (!visited.contains(current)) {
+                visited.add(current);
+                ISSABasicBlock immediatePreDom = getIDom(current);
+                if (current == terminus) {
+                    // because of priority queue, a non-empty queue means we have
+                    // successor nodes beyond the terminus node, so error out.
+                    if (!toVisit.isEmpty()) {
+                        throw new StaticRegionException("isSelfContainedSubgraph: non-empty queue at return");
+                    }
+                    return true;
+                } else if (!visited.contains(immediatePreDom)) {
+                    // not self contained!
+                    return false;
+                } else {
+                    SSAUtil.getNonReturnSuccessors(cfg, current).forEach(
+                            succ -> SSAUtil.enqueue(toVisit, succ));
+                }
+            }
         }
-        throw new IllegalArgumentException("convertOperator does not understand operator: " + operator);
+        // This condition occurs when we have a region terminated by a 'return'
+        // We treat these as self-contained.
+        return true;
     }
 
-    private Expression convertCondition(SSAConditionalBranchInstruction cond) {
-        return new Operation(
-                convertOperator((IConditionalBranchInstruction.Operator)cond.getOperator()),
-                new WalaVarExpr(cond.getUse(0)),
-                new WalaVarExpr(cond.getUse(1)));
+    private void findSelfContainedSubgraphs(ISSABasicBlock entry,
+                                   ISSABasicBlock current,
+                                   ISSABasicBlock terminus,
+                                   Set<ISSABasicBlock> subgraphs) throws StaticRegionException {
+
+        if (subgraphs.contains(current) || current == terminus) {  return; }
+
+        if (isSelfContainedSubgraph(current, terminus)) {
+            subgraphs.add(current);
+        } else {
+            // in 'else' because we want only the earliest self-contained subgraphs
+            for (ISSABasicBlock succ : ir.getControlFlowGraph().getNormalSuccessors(current)) {
+                findSelfContainedSubgraphs(entry, succ, terminus, subgraphs);
+            }
+        }
     }
 
-    // precondiion: terminus is the loop join.
+    /*
+        Re-constructs a complex condition for an if/then/else condition.
+
+        MWW: I make several assumptions here about the structure of the nodes between
+            currentBlock and entry; if they are violated then I have misunderstood something
+            about the structure of the region, so I throw a 'severe' exception.
+
+        If there are stateful operations in the if/then/else, then the internal
+        conditions will have >1 statement.  For now we will abort with a SRE, but
+        we could hoist them out in some cases.
+
+        MWW TODO: Do we wish to allow stateful conditions in ITEs?
+           TODO: We would have to hoist operations; a little bit
+           TODO: tricky, so I am not going to bother with it now.
+     */
+
+    private Expression createComplexIfCondition(ISSABasicBlock child,
+                                                ISSABasicBlock entry) throws StaticRegionException {
+        assert(child.getNumber() > entry.getNumber());
+        SSACFG cfg = ir.getControlFlowGraph();
+        Expression returnExpr = null;
+
+        for (ISSABasicBlock parent: cfg.getNormalPredecessors(child)) {
+            if (!SSAUtil.isConditionalBranch(parent)) {
+                throw new StaticRegionException("createComplexIfCondition: unconditional branch (continue or break)");
+            }
+            else if (parent != entry && SSAUtil.statefulBlock(parent)) {
+                throw new StaticRegionException("createComplexIfCondition: stateful condition");
+            }
+
+            assert(child == Util.getTakenSuccessor(cfg, parent) ||
+                   child == Util.getNotTakenSuccessor(cfg, parent));
+
+            Expression branchExpr;
+            Expression condExpr = SSAUtil.convertCondition(ir, SSAUtil.getLastBranchInstruction(parent));
+            if (child == Util.getNotTakenSuccessor(cfg, parent)) {
+                condExpr = new Operation(Operation.Operator.NOT, condExpr);
+            }
+
+            if (parent == entry) {
+                branchExpr = condExpr;
+            }
+            else {
+                Expression parentExpr = createComplexIfCondition(parent, entry);
+                branchExpr = new Operation(Operation.Operator.AND, parentExpr, condExpr);
+            }
+
+            if (returnExpr == null) {
+                returnExpr = branchExpr;
+            } else {
+                returnExpr = new Operation(Operation.Operator.OR, returnExpr, branchExpr);
+            }
+        }
+        assert(returnExpr != null);
+        return returnExpr;
+    }
+
+    /*
+        // MWW: debugging
+        System.out.println("For entry: " + entry);
+        for (ISSABasicBlock starter: subgraphs) {
+            System.out.println("   Subgraph: " + starter);
+        }
+        // MWW: end of debugging.
+     */
+    private void findConditionalSuccessors(ISSABasicBlock entry,
+                                           ISSABasicBlock terminus) throws StaticRegionException {
+
+        Set<ISSABasicBlock> subgraphs = new HashSet<>();
+        SSACFG cfg = ir.getControlFlowGraph();
+        ISSABasicBlock initialThenBlock = Util.getTakenSuccessor(cfg, entry);
+        ISSABasicBlock initialElseBlock = Util.getNotTakenSuccessor(cfg, entry);
+        ISSABasicBlock thenBlock, elseBlock;
+
+        findSelfContainedSubgraphs(entry, initialThenBlock, terminus, subgraphs);
+        findSelfContainedSubgraphs(entry, initialElseBlock, terminus, subgraphs);
+
+        // if (no-else) region
+        if (subgraphs.size() == 1) {
+            thenBlock = subgraphs.iterator().next();
+            elseBlock = terminus;
+        }
+        // if/else region; choice of 'thenBlock' is arbitrary.
+        else if (subgraphs.size() == 2) {
+            Iterator<ISSABasicBlock> it = subgraphs.iterator();
+            thenBlock = it.next();
+            elseBlock = it.next();
+        }
+        else {
+            // MWW: I don't anticipate this condition ever occurring, but it might;
+            // esp. for JVM programs not compiled by Java compiler.
+            String errorText = "Unexpected number (" + subgraphs.size() +
+                    ") of self-contained regions in findConditionalSuccessors";
+            System.out.println(errorText);
+            throw new StaticRegionException(errorText);
+        }
+        this.thenSuccessor.put(entry, thenBlock);
+        this.elseSuccessor.put(entry, elseBlock);
+        Expression cond = createComplexIfCondition(thenBlock, entry);
+        this.thenCondition.put(entry, cond);
+    }
+
+    // precondition: terminus is the loop join.
     private Stmt conditionalBranch(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock terminus)
             throws StaticRegionException {
 
-        SSAInstruction ins = currentBlock.getLastInstruction();
-        if (!(ins instanceof SSAConditionalBranchInstruction)) {
-            throw new StaticRegionException("Expect conditional branch at end of 2-path attemptSubregion");
+        if (!SSAUtil.isConditionalBranch(currentBlock)) {
+            throw new StaticRegionException("conditionalBranch: no conditional branch!");
         }
-        // Handle case where terminus is either 'if' or 'else' branch;
-        Expression condExpr = convertCondition((SSAConditionalBranchInstruction)ins);
-        ISSABasicBlock thenBlock = Util.getTakenSuccessor(cfg, currentBlock);
-        ISSABasicBlock elseBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
+
+        findConditionalSuccessors(currentBlock, terminus);
+        Expression condExpr = thenCondition.get(currentBlock);
+        ISSABasicBlock thenBlock = thenSuccessor.get(currentBlock);
+        ISSABasicBlock elseBlock = elseSuccessor.get(currentBlock);
 
         Stmt thenStmt, elseStmt;
         currentCondition.addLast(new PhiCondition(PhiCondition.Branch.Then, condExpr));
@@ -215,7 +408,7 @@ public class CreateStaticRegions {
         }
         currentCondition.removeLast();
 
-        return new IfThenElseStmt((SSAConditionalBranchInstruction) ins, condExpr, thenStmt, elseStmt);
+        return new IfThenElseStmt(SSAUtil.getLastBranchInstruction(currentBlock), condExpr, thenStmt, elseStmt);
     }
 
     /*
@@ -226,6 +419,7 @@ public class CreateStaticRegions {
         remaining code within the method, while for conditional blocks we only want to grab the subsequent \phi
         functions.
 
+        NB: same block may be visited multiple times!
      */
 
     public Stmt attemptSubregionRec(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
@@ -271,15 +465,17 @@ public class CreateStaticRegions {
     /*
         walk through method, attempting to find conditional veritesting regions
      */
-    private void createStructuredConditionalRegions(IR ir, ISSABasicBlock currentBlock,
+    private void createStructuredConditionalRegions(ISSABasicBlock currentBlock,
                                                    ISSABasicBlock endingBlock,
                                                    HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
+
+        if (visitedBlocks.contains(currentBlock)) { return; }
+        visitedBlocks.add(currentBlock);
 
         SSACFG cfg = ir.getControlFlowGraph();
         // terminating conditions
         if (currentBlock == endingBlock) { return; }
 
-        //visitedBlocks.add(currentBlock);
 
         if (isBranch(cfg, currentBlock)) {
             try {
@@ -291,24 +487,28 @@ public class CreateStaticRegions {
                 veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, endIns));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
-                createStructuredConditionalRegions(ir, terminus, endingBlock, veritestingRegions);
+                createStructuredConditionalRegions(terminus, endingBlock, veritestingRegions);
                 return;
-            } catch (StaticRegionException sre ) {
-                System.out.println("Unable to create subregion");
-            }
-            catch (InvalidClassFileException exception){
-                System.out.println("Unable to create subregion");
+            } catch (StaticRegionException e ) {
+                //SSAUtil.printBlocksUpTo(cfg, endingBlock.getNumber());
+                System.out.println("Unable to create subregion.  Reason: " + e.toString());
+            } catch (InvalidClassFileException e){
+                System.out.println("Unable to create subregion.  Reason: " + e.toString());
+            } catch (IllegalArgumentException e) {
+                System.out.println("Unable to create subregion.  Serious error. Reason: " + e.toString());
+                throw e;
             }
         }
         for (ISSABasicBlock nextBlock: cfg.getNormalSuccessors(currentBlock)) {
-            createStructuredConditionalRegions(ir, nextBlock, endingBlock, veritestingRegions);
+            createStructuredConditionalRegions(nextBlock, endingBlock, veritestingRegions);
         }
     }
 
 
     public void createStructuredConditionalRegions(HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
         SSACFG cfg = ir.getControlFlowGraph();
-        createStructuredConditionalRegions(ir, cfg.entry(), cfg.exit(), veritestingRegions);
+        // SSAUtil.printBlocksUpTo(cfg, cfg.exit().getNumber());
+        createStructuredConditionalRegions(cfg.entry(), cfg.exit(), veritestingRegions);
     }
 
 
