@@ -1,9 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.DefaultTransformation;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 
 public class LinearizationTransformation extends DefaultTransformation {
 
@@ -14,8 +13,9 @@ public class LinearizationTransformation extends DefaultTransformation {
         return new DynamicRegion(region.staticRegion,
                 stmt,
                 region.varTypeTable,
-                region.valueSymbolTable,
-                region.stackSlotTable,
-                region.outputTable);
+                region.slotParamTable,
+                region.outputTable,
+                region.isMethodRegion,
+                region.spfCaseSet);
     }
 }

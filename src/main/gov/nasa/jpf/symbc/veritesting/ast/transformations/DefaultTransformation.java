@@ -1,8 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 
 import java.util.Set;
 

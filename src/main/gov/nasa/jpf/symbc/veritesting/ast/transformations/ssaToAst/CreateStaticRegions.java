@@ -9,6 +9,7 @@ import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SSAToStatIVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.*;
 
@@ -484,7 +485,7 @@ public class CreateStaticRegions {
                 ISSABasicBlock terminus = finder.findMinConvergingNode();
                 Stmt s = attemptConditionalSubregion(cfg, currentBlock, terminus);
                 int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
-                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, endIns));
+                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
                 createStructuredConditionalRegions(terminus, endingBlock, veritestingRegions);
@@ -521,7 +522,7 @@ public class CreateStaticRegions {
             System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
             SSAInstruction[] insns = ir.getInstructions();
             int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
-            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, endIns));
+            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, endIns));
         } catch (StaticRegionException sre) {
             System.out.println("Unable to create a method summary subregion for: " + cfg.getMethod().getName().toString());
         } catch (InvalidClassFileException e) {

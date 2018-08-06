@@ -1,15 +1,17 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
+import com.ibm.wala.ssa.IR;
+import com.ibm.wala.ssa.SSAInstruction;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
+
+import static com.ibm.wala.shrike.bench.Slots.i;
 
 //SH: base class for all environment tables.
 
 public class Table<T> {
-    protected final HashMap<Integer, T> table;
+    public final HashMap<Integer, T> table;
     protected String tableName;
     protected String label1;
     protected String label2;
@@ -68,12 +70,16 @@ public class Table<T> {
 
 
     public void makeUniqueKey(int unique){
-        Object[] keys = table.keySet().toArray();
-        for(int i=0; i < keys.length; i++){
-            String varId = Integer.toString((Integer) keys[i]);
+        List keys = new ArrayList(table.keySet());
+        Collections.sort(keys);
+        Collections.reverse(keys);
+        Iterator itr = keys.iterator();
+        while(itr.hasNext()){
+            Integer key = (Integer) itr.next();
+            String varId = Integer.toString(key);
             varId = varId.concat(Integer.toString(unique));
-            table.put(Integer.valueOf(varId), table.get(keys[i]));
-            table.remove(keys[i]);
+            table.put(Integer.valueOf(varId), table.get(key));
+            table.remove(key);
         }
     }
 }

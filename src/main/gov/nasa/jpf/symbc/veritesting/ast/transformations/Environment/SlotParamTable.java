@@ -1,35 +1,46 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAPhiInstruction;
 import com.ibm.wala.ssa.SymbolTable;
-import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StackSlotIVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.Table;
 
 import java.util.*;
 
-//SH: This holds the wala vars to stackSlot mapping. The map holds for every var all the stackSlots that the var
-// can map to, because a var can map to multiple locations.
+//SH: This is the basic table, on which the input and output of the region are defined.
+// The table holds the wala vars -> stackSlot mapping if it is not a method region, if it is a method region, then wala vars -> parameters to the method are instead populated in this table.
+// In case of a non method region, the map holds for every var all the stackSlots that the var
+// can map to, because a var can map to multiple locations. Also non-input an non-output vars mapping for non method regions can appear in this table if we were able to infer their stack slot.
 
 
-public class StackSlotTable extends Table<int[]>{
-    public IR ir;
+public class SlotParamTable extends Table<int[]> {
+    private IR ir;
+    private boolean isMethodRegion;
 
 
-    public StackSlotTable(IR ir) {
-        super("stack-slot table", "var", "stack slot");
+    public SlotParamTable(IR ir, Boolean isMethodRegion) { // var -> param/slot
+        super("stack-slot table", "var", isMethodRegion ? "param" : "slot");
         this.ir = ir;
-        populateWalaVars();
+        this.isMethodRegion = isMethodRegion;
+        if (isMethodRegion)
+            populateParam();
+        else
+            populateSlotsForVars();
     }
 
-    private StackSlotTable(){
+
+    private void populateParam() {
+        for (int i = 0; i < ir.getNumberOfParameters(); i++) {
+            this.add(ir.getParameter(i), new int[i]);
+        }
+    }
+
+    private SlotParamTable() {
         super();
     }
 
 
-    private void populateWalaVars() {
+    private void populateSlotsForVars() {
         StackSlotIVisitor stackSlotIVisitor = new StackSlotIVisitor(ir, this);
         for (SSAInstruction ins : ir.getControlFlowGraph().getInstructions()) {
             if (ins != null)
@@ -40,16 +51,16 @@ public class StackSlotTable extends Table<int[]>{
 
     //SH: returns all unique slots in the stackSlotMap. It attempts to do that by flattening out stackSlots of a single
     //var, which can map to multiple locations.
-    public HashSet getSlots(){
+    public HashSet getSlots() {
         HashSet<Integer> allSlots = new HashSet();
         Set<Integer> vars = table.keySet();
         Iterator<Integer> varItr = vars.iterator();
         HashSet<Integer> VarSlotSet = new HashSet();
 
-        while (varItr.hasNext()){
+        while (varItr.hasNext()) {
             Integer var = varItr.next();
             int[] varStackSlots = table.get(var);
-            for(int i=0; i<varStackSlots.length; i++){ //silly, converts an array to HashSet, there should be better ways in Java 8.
+            for (int i = 0; i < varStackSlots.length; i++) { //silly, converts an array to HashSet, there should be better ways in Java 8.
                 VarSlotSet.add(varStackSlots[i]);
             }
             allSlots.addAll(VarSlotSet);
@@ -58,8 +69,8 @@ public class StackSlotTable extends Table<int[]>{
         return allSlots;
     }
 
-    //SH: returns all vars that have the same stack slot entered in the parameter.
-    public Set getVarsOfSlot(int slot){
+    //SH: returns all vars that have the same stack slot entered in the parameter, between bounderies if entered.
+    public Set getVarsOfSlot(int slot, Integer firstVarId, Integer lastVarId) {
         HashSet<Integer> stackSlotVars = new HashSet();
         Set<Integer> vars = table.keySet();
         Iterator<Integer> varIter = vars.iterator();
@@ -67,12 +78,12 @@ public class StackSlotTable extends Table<int[]>{
         while (varIter.hasNext()) {
             HashSet<Integer> varSlotSet = new HashSet();
             Integer var = varIter.next();
-            int[] varStackSlots = table.get(var);
-            for (int i = 0; i < varStackSlots.length; i++) { //silly, converts an array to HashSet, there should be better ways in Java 8.
-                varSlotSet.add(varStackSlots[i]);
-            }
-            if(varSlotSet.contains(slot))
-                stackSlotVars.add(var);
+                int[] varStackSlots = table.get(var);
+                for (int i = 0; i < varStackSlots.length; i++) { //silly, converts an array to HashSet, there should be better ways in Java 8.
+                    varSlotSet.add(varStackSlots[i]);
+                }
+                if (((lastVarId == null ) || (( var <= lastVarId) && (var >= firstVarId))) && (varSlotSet.contains(slot)))
+                    stackSlotVars.add(var);
         }
         return stackSlotVars;
     }
@@ -135,23 +146,23 @@ public class StackSlotTable extends Table<int[]>{
 
     @Override
     public void print() {
-        System.out.println("\nRegion Stack Slot Map (var -> stack slot)");
-        table.forEach((var, stackSlots) -> System.out.println("!w"+var + " --------- " + Arrays.toString(stackSlots)));
+        System.out.println("\nRegion Stack Slot Map (var -> " + (isMethodRegion ? "param" : "slot") + ")");
+        table.forEach((var, stackSlots) -> System.out.println("!w" + var + " --------- " + Arrays.toString(stackSlots)));
     }
 
-    public StackSlotTable clone(){
-        StackSlotTable newStackSlotTable = new StackSlotTable();
-        newStackSlotTable.ir = this.ir;
-        newStackSlotTable.tableName = this.tableName;
-        newStackSlotTable.label1 = this.label1;
-        newStackSlotTable.label2 = this.label2;
+    public SlotParamTable clone() {
+        SlotParamTable newSlotParamTable = new SlotParamTable();
+        newSlotParamTable.ir = this.ir;
+        newSlotParamTable.tableName = this.tableName;
+        newSlotParamTable.label1 = this.label1;
+        newSlotParamTable.label2 = this.label2;
         Set<Integer> keys = this.table.keySet();
         Iterator<Integer> iter = keys.iterator();
-        while(iter.hasNext()){
+        while (iter.hasNext()) {
             Integer key = iter.next();
             int[] values = this.lookup(key);
-            newStackSlotTable.add(new Integer(key.intValue()),values);
+            newSlotParamTable.add(new Integer(key.intValue()), values);
         }
-        return newStackSlotTable;
+        return newSlotParamTable;
     }
 }

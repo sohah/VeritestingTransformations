@@ -1,0 +1,14 @@
+target=ManyBsRetInt
+classpath=${jpf-symbc}/build/examples
+sourcepath=${jpf-symbc}/src/examples
+symbolic.method = ManyBsRetInt.test_countBs100()
+symbolic.minint=32
+symbolic.maxint=126
+vm.storage.class=nil
+
+veritestingMode = 3
+listener = .symbc.VeritestingListener
+#,gov.nasa.jpf.listener.CoverageAnalyzer
+#listener = .symbc.SymbolicListener
+#listener = .listener.ChoiceTracker
+symbolic.dp=z3bitvector
