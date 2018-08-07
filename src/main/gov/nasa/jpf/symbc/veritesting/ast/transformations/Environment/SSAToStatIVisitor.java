@@ -8,6 +8,7 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.PhiCondition;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.PhiEdge;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil;
 import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
@@ -21,14 +22,14 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public boolean canVeritest = true;
 
     private IR ir;
-    private HashMap<PhiEdge, List<PhiCondition>> blockConditionMap;
+    private Map<PhiEdge, List<PhiCondition>> blockConditionMap;
     private Deque<PhiCondition> currentCondition;
     private ISSABasicBlock currentBlock;
     private StaticRegionException pending = null;
 
     public SSAToStatIVisitor(IR ir,
                              ISSABasicBlock currentBlock,
-                             HashMap<PhiEdge, List<PhiCondition>> blockConditionMap,
+                             Map<PhiEdge, List<PhiCondition>> blockConditionMap,
                              Deque<PhiCondition> currentCondition) {
         this.ir = ir;
         this.currentBlock = currentBlock;
@@ -63,8 +64,24 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         } else {
 */
 
-    private Expression convertWalaVar(int ssaVar) throws StaticRegionException {
-        return new WalaVarExpr(ssaVar);
+    private Expression convertWalaVar(int ssaVar) {
+        SymbolTable symtab = ir.getSymbolTable();
+        if (symtab.isConstant(ssaVar)) {
+            Object val = symtab.getConstantValue(ssaVar);
+            if (val instanceof Boolean) {
+                return new IntConstant(val.equals(Boolean.TRUE) ? 1 : 0);
+            } else if (val instanceof Integer) {
+                return new IntConstant((Integer)val);
+            } else if (val instanceof Double) {
+                return new RealConstant((Double)val);
+            } else if (val instanceof String) {
+                return new StringConstantGreen((String)val);
+            } else {
+                throw new IllegalArgumentException("translateTruncatedFinalBlock: unsupported constant type");
+            }
+        } else {
+            return new WalaVarExpr(ssaVar);
+        }
     }
 
 
@@ -142,9 +159,9 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public Stmt translatePhi(SSAPhiInstruction ssaphi) throws StaticRegionException {
         SSACFG cfg = ir.getControlFlowGraph();
         SymbolTable symtab = ir.getSymbolTable();
-        Iterator<ISSABasicBlock> it = cfg.getPredNodes(currentBlock);
-        int predNodesCount = cfg.getPredNodeCount(currentBlock);
-        if (ssaphi.getNumberOfUses() != predNodesCount) {
+        Collection<ISSABasicBlock> preds = cfg.getNormalPredecessors(currentBlock);
+        Iterator<ISSABasicBlock> it = preds.iterator();
+        if (ssaphi.getNumberOfUses() != preds.size()) {
             throw new StaticRegionException("translateTruncatedFinalBlock: normal predecessors size does not match number of phi branches");
         }
         else {
@@ -157,9 +174,12 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
                 List<PhiCondition> cond = blockConditionMap.get(new PhiEdge(preBlock, currentBlock));
                 if (cond == null) {
-                    // MWW TODO: this may be o.k. - we have an unstructured jump into our region.
-                    //     TODO: But it is a little weird, so I don't want to incorrectly handle something.
-                    throw new StaticRegionException("translateTruncatedFinalBlock: normal predecessor not found in blockConditionMap!");
+                    System.out.println("Unable to find condition.");
+                    SSAUtil.printBlocksUpTo(cfg, currentBlock.getNumber());
+                    // MWW: null case.  Do not add to the gamma.
+                    // MWW: This case occurs due to jumps from complex 'if' conditions.
+                    // MWW: the top one of them will be in the blockConditionMap, but subsequent ones
+                    // MWW: will not be placed in the map.
                 }
                 else {
                     conds.add(new LinkedList<PhiCondition>(cond));
@@ -209,8 +229,8 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public void visitBinaryOp(SSABinaryOpInstruction ssa) {
         Expression lhs = new WalaVarExpr(ssa.getDef());
         Operation.Operator op = translateBinaryOp((IBinaryOpInstruction.Operator)ssa.getOperator());
-        Expression op1 = new WalaVarExpr(ssa.getUse(0));
-        Expression op2 = new WalaVarExpr(ssa.getUse(1));
+        Expression op1 = convertWalaVar(ssa.getUse(0));
+        Expression op2 = convertWalaVar(ssa.getUse(1));
         Expression rhs = new Operation(op, op1, op2);
         Stmt s = new AssignmentStmt(lhs, rhs);
         veriStatement = s;
@@ -233,7 +253,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()),
                 new Operation(
                         translateUnaryOp((IUnaryOpInstruction.Operator)ssa.getOpcode()),
-                                new WalaVarExpr(ssa.getUse(0)))
+                                convertWalaVar(ssa.getUse(0)))
                 );
     }
 
@@ -251,8 +271,8 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     @Override
     public void visitComparison(SSAComparisonInstruction ssa) {
         Expression expr;
-        Expression condlhs = new WalaVarExpr(ssa.getUse(0));
-        Expression condrhs = new WalaVarExpr(ssa.getUse(1));
+        Expression condlhs = convertWalaVar(ssa.getUse(0));
+        Expression condrhs = convertWalaVar(ssa.getUse(1));
         Operation.Operator condOp =
                 (ssa.getOperator() == IComparisonInstruction.Operator.CMP ||
                         ssa.getOperator() == IComparisonInstruction.Operator.CMPG) ?
