@@ -13,9 +13,10 @@ public class ExprRegionInputVisitor extends ExprMapVisitor implements ExprVisito
 
 //SH: visiting all use vars to collect a possible first use for every stack slot.
 
-    ArrayList seenSlots;
-    InputTable inputTable;
-    SlotParamTable slotParamTable;
+    private ArrayList seenSlots;
+    private InputTable inputTable;
+    private SlotParamTable slotParamTable;
+    public DefUseVisit defUseVisit;
 
     public ExprRegionInputVisitor(InputTable inputTable, SlotParamTable slotParamTable) {
         this.inputTable = inputTable;

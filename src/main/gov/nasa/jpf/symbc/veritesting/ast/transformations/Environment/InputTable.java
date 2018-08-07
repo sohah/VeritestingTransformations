@@ -2,11 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprRegionInputVisitor;
 
 //SH: this class populates the input variables for the region. it does so by computing the first var use for slots.
 
@@ -19,8 +15,7 @@ public class InputTable extends Table<Integer> {
         if (isMethodRegion) // all parameters are input
             computeMethodInputVars(slotParamTable);
         else {//only first instances of vars to slots execluding defs.
-            //computeRegionInputVars(slotParamTable);
-            removeDefInputs(slotParamTable, stmt);
+            computeRegionInput(slotParamTable, stmt);
         }
     }
 
@@ -29,19 +24,10 @@ public class InputTable extends Table<Integer> {
             this.add(var, slotParamTable.lookup(var)[0]);
         }
     }
-/*
-    private void computeRegionInputVars(SlotParamTable slotParamTable) {
-        HashSet<Integer> allSlots = slotParamTable.getSlots();
-        Iterator<Integer> slotsIter = allSlots.iterator();
-        while (slotsIter.hasNext()) {
-            int slot = slotsIter.next();
-            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot, null, null);
-            this.add(Collections.min(varsForSlot), slot);
-        }
-    }*/
 
-    private void removeDefInputs(SlotParamTable slotParamTable, Stmt stmt) {
-        RegionInputVisitor regionInputVisitor = new RegionInputVisitor(this, slotParamTable);
+    private void computeRegionInput(SlotParamTable slotParamTable, Stmt stmt) {
+        ExprRegionInputVisitor exprRegionInputVisitor = new ExprRegionInputVisitor(this, slotParamTable);
+        RegionInputVisitor regionInputVisitor = new RegionInputVisitor(exprRegionInputVisitor);
         stmt.accept(regionInputVisitor);
     }
 

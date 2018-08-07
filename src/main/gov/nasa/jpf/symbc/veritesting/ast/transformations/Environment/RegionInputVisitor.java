@@ -12,133 +12,157 @@ import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUse
 
 public class RegionInputVisitor extends AstMapVisitor{
 
-    public RegionInputVisitor(InputTable inputTable, SlotParamTable slotParamTable) {
-        super(new ExprRegionInputVisitor(inputTable, slotParamTable));
+    ExprRegionInputVisitor exprRegionInputVisitor;
+    public RegionInputVisitor(ExprRegionInputVisitor exprRegionInputVisitor) {
+        super(exprRegionInputVisitor);
+        this.exprRegionInputVisitor = exprRegionInputVisitor;
     }
+
     @Override
     public Stmt visit(AssignmentStmt a) {
-        return new AssignmentStmt(a.lhs, eva.accept(a.rhs));
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(a.lhs);
+        exprRegionInputVisitor.defUseVisit = USE;
+        eva.accept(a.rhs);
+        return null;
     }
 
     @Override
     public Stmt visit(CompositionStmt a) {
-        return new CompositionStmt(a.s1.accept(this), a.s2.accept(this));
+        return null;
 
     }
 
     @Override
     public Stmt visit(IfThenElseStmt a) {
-        return new IfThenElseStmt(a.original, eva.accept(a.condition), a.thenStmt.accept(this),
-                a.elseStmt.accept(this));
+        exprRegionInputVisitor.defUseVisit = USE;
+        eva.accept(a.condition);
+        a.thenStmt.accept(this);
+        a.elseStmt.accept(this);
+        return null;
     }
 
     @Override
     public Stmt visit(SkipStmt a) {
-        return a;
+        return null;
     }
 
     @Override
     public Stmt visit(SPFCaseStmt c) {
-        return new SPFCaseStmt(eva.accept(c.spfCondition), c.reason);
+        return null;
     }
 
     @Override
     public Stmt visit(ArrayLoadInstruction c) {
-        return new ArrayLoadInstruction(c.getOriginal(),
-                eva.accept(c.arrayref),
-                eva.accept(c.index),
-                c.elementType,
-                c.def);
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.def);
+        exprRegionInputVisitor.defUseVisit = USE;
+        eva.accept(c.arrayref);
+        eva.accept(c.index);
+        return null;
     }
 
     @Override
     public Stmt visit(ArrayStoreInstruction c) {
-        return new ArrayStoreInstruction(c.getOriginal(),
-                eva.accept(c.arrayref),
-                eva.accept(c.index),
-                c.elementType,
-                eva.accept(c.assignExpr));
+        exprRegionInputVisitor.defUseVisit = USE;
+        eva.accept(c.arrayref);
+        eva.accept(c.index);
+        eva.accept(c.assignExpr);
+        return null;
     }
 
     @Override
     public Stmt visit(SwitchInstruction c) {
-        return c;
+        return null;
     }
 
     @Override
     public Stmt visit(ReturnInstruction c) {
-        return new ReturnInstruction(c.getOriginal(), eva.accept(c.rhs));
+        exprRegionInputVisitor.defUseVisit = USE;
+        eva.accept(c.rhs);
+        return null;
     }
 
     @Override
     public Stmt visit(GetInstruction c) {
-        return new GetInstruction(c.getOriginal(),
-                c.def,
-                eva.accept(c.ref),
-                c.field);
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.def);
+        exprRegionInputVisitor.defUseVisit = USE;
+        eva.accept(c.ref);
+        return null;
     }
 
     @Override
     public Stmt visit(PutInstruction c) {
-        PutInstruction ins = new PutInstruction(c.getOriginal(),
-                eva.accept(c.def),
-                c.field,
-                eva.accept(c.assignExpr));
-        return ins;
+        exprRegionInputVisitor.defUseVisit = USE;
+        eva.accept(c.def);
+        eva.accept(c.assignExpr);
+        return null;
     }
 
     @Override
     public Stmt visit(NewInstruction c) {
-        return c;
+        return null;
     }
 
     @Override
     public Stmt visit(InvokeInstruction c) {
+        exprRegionInputVisitor.defUseVisit = DEF;
+        Expression [] result = new Expression [c.result.length];
+        for (int i=0; i < result.length; i++) {
+            result[i] = eva.accept(c.result[i]);
+        }
+
+        exprRegionInputVisitor.defUseVisit = USE;
         Expression [] params = new Expression [c.params.length];
         for (int i=0; i < params.length; i++) {
             params[i] = eva.accept(c.params[i]);
         }
-        return new InvokeInstruction(c.getOriginal(), c.result, params);
+        return null;
     }
 
     @Override
     public Stmt visit(ArrayLengthInstruction c) {
-        return new ArrayLengthInstruction(c.getOriginal(),
-                c.def,
-                eva.accept(c.arrayref));
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.def);
+        exprRegionInputVisitor.defUseVisit = USE;
+        eva.accept(c.arrayref);
+        return null;
     }
 
     @Override
     public Stmt visit(ThrowInstruction c) {
-        return new ThrowInstruction(c.getOriginal());
+        return null;
     }
 
     @Override
     public Stmt visit(CheckCastInstruction c) {
-        return new CheckCastInstruction(c.getOriginal(),
-                c.result,
-                eva.accept(c.val),
-                c.declaredResultTypes);
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.result);
+        exprRegionInputVisitor.defUseVisit = USE;
+        eva.accept(c.val);
+        return null;
     }
 
     @Override
     public Stmt visit(InstanceOfInstruction c) {
-        return new InstanceOfInstruction(c.getOriginal(),
-                c.result,
-                eva.accept(c.val),
-                c.checkedType);
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.result);
+        exprRegionInputVisitor.defUseVisit = USE;
+        eva.accept(c.val);
+        return null;
     }
 
     @Override
     public Stmt visit(PhiInstruction c) {
-
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.def);
+        exprRegionInputVisitor.defUseVisit = USE;
         Expression [] rhs = new Expression[c.rhs.length];
         for (int i=0; i < rhs.length; i++) {
             rhs[i] = eva.accept(c.rhs[i]);
         }
 
-        return new PhiInstruction(c.getOriginal(),
-                eva.accept(c.def),
-                rhs);
+        return null;
     }
 }

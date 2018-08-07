@@ -19,6 +19,7 @@ import java.util.HashSet;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 
 public class GetSubstitutionVisitor extends AstMapVisitor {
+
     private ThreadInfo ti;
     private final SlotParamTable slotParamTable;
     private SlotTypeTable slotTypeTable;
@@ -35,7 +36,7 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
     }
 
     public static DynamicRegion doSubstitution(ThreadInfo ti, DynamicRegion dynRegion) {
-        GetSubstitutionVisitor visitor = new GetSubstitutionVisitor(ti,
+       /* GetSubstitutionVisitor visitor = new GetSubstitutionVisitor(ti,
                 dynRegion.slotParamTable,
                 dynRegion.slotTypeTable,
                 dynRegion.varTypeTable);
@@ -50,8 +51,10 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
                 dynRegion.outputTable,
                 dynRegion.isMethodRegion,
                 new HashSet<>());
+                */
+       return null;
     }
-
+/*
     @Override
     public Stmt visit(GetInstruction c) {
         String exceptionalMessage = null;
@@ -155,5 +158,5 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
         if (def != null) return def;
         return null;
     }
-
+*/
 }
