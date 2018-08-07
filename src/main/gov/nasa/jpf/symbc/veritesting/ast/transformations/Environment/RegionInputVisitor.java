@@ -29,6 +29,8 @@ public class RegionInputVisitor extends AstMapVisitor{
 
     @Override
     public Stmt visit(CompositionStmt a) {
+        a.s1.accept(this);
+        a.s2.accept(this);
         return null;
 
     }

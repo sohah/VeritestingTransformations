@@ -1,65 +1,76 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
-//SH: this visitor visits all statments to obtain the last def var.
+//SH: this visitor explores the boundaries of the region by identifying: first def, last def and first use vars
 
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprRegionInputVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprBoundaryVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
-import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUseVisit.DEF;
-import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUseVisit.USE;
-
-public class RegionOutputVisitor implements AstVisitor {
-    private int lastVar;
+public class RegionBoundaryVisitor extends AstMapVisitor {
+    private int lastDef;
     private boolean firstDefFound = false;
-
     private int firstDef;
 
-    public int getLastVar() {
-        return lastVar;
+
+    public RegionBoundaryVisitor(ExprBoundaryVisitor exprBoundaryVisitor) {
+        super(exprBoundaryVisitor);
+    }
+
+    public int getLastDef() {
+        return lastDef;
+    }
+
+    public int getFirstDef() {
+        return firstDef;
+    }
+
+    public int getFirstUse() {
+        return ((ExprBoundaryVisitor)exprVisitor).getFirstUse();
     }
 
     @Override
-    public Object visit(AssignmentStmt a) {
-        lastVar = ((WalaVarExpr)a.lhs).number;
+    public Stmt visit(AssignmentStmt a) {
+        lastDef = ((WalaVarExpr)a.lhs).number;
         if (!firstDefFound) {
             firstDef = ((WalaVarExpr)a.lhs).number;
             firstDefFound = true;
         }
+        eva.accept(a.rhs);
         return null;
     }
 
     @Override
-    public Object visit(CompositionStmt a) {
+    public Stmt visit(CompositionStmt a) {
         a.s1.accept(this);
         a.s2.accept(this);
         return null;
     }
 
     @Override
-    public Object visit(IfThenElseStmt a) {
+    public Stmt visit(IfThenElseStmt a) {
+        eva.accept(a.condition);
         a.thenStmt.accept(this);
         a.elseStmt.accept(this);
         return null;
     }
 
     @Override
-    public Object visit(SkipStmt a) {
+    public Stmt visit(SkipStmt a) {
         return null;
     }
 
     @Override
-    public Object visit(SPFCaseStmt c) {
+    public Stmt visit(SPFCaseStmt c) {
         return null;
     }
 
     @Override
-    public Object visit(ArrayLoadInstruction c) {
-        lastVar = ((WalaVarExpr)c.def).number;
+    public Stmt visit(ArrayLoadInstruction c) {
+        lastDef = ((WalaVarExpr)c.def).number;
         if (!firstDefFound) {
             firstDef = ((WalaVarExpr)c.def).number;
             firstDefFound = true;
@@ -68,104 +79,122 @@ public class RegionOutputVisitor implements AstVisitor {
     }
 
     @Override
-    public Object visit(ArrayStoreInstruction c) {
+    public Stmt visit(ArrayStoreInstruction c) {
+        eva.accept(c.arrayref);
+        eva.accept(c.index);
+        eva.accept(c.assignExpr);
         return null;
     }
 
     @Override
-    public Object visit(SwitchInstruction c) {
+    public Stmt visit(SwitchInstruction c) {
         return null;
     }
 
     @Override
-    public Object visit(ReturnInstruction c) {
+    public Stmt visit(ReturnInstruction c) {
         if (c.original.hasDef()) {
-            lastVar = c.getOriginal().getDef();
+            lastDef = c.getOriginal().getDef();
             if (!firstDefFound) {
                 firstDef = c.original.getDef();
                 firstDefFound = true;
             }
         }
+        eva.accept(c.rhs);
         return null;
     }
 
     @Override
-    public Object visit(GetInstruction c) {
-        lastVar = ((WalaVarExpr)c.def).number;
+    public Stmt visit(GetInstruction c) {
+        lastDef = ((WalaVarExpr)c.def).number;
         if(!firstDefFound){
             firstDef = ((WalaVarExpr)c.def).number;
             firstDefFound = true;
         }
+
+        eva.accept(c.ref);
         return null;
     }
 
     @Override
-    public Object visit(PutInstruction c) {
+    public Stmt visit(PutInstruction c) {
+        eva.accept(c.def);
+        eva.accept(c.assignExpr);
         return null;
     }
 
     @Override
-    public Object visit(NewInstruction c) {
+    public Stmt visit(NewInstruction c) {
         return null;
     }
 
     @Override
-    public Object visit(InvokeInstruction c) {
+    public Stmt visit(InvokeInstruction c) {
         if(((SSAInvokeInstruction) c.original).getNumberOfReturnValues() != 0){
-        lastVar = c.original.getDef();
+        lastDef = c.original.getDef();
             if(!firstDefFound){
                 firstDef = c.original.getDef();
                 firstDefFound = true;
             }
         }
+        for(int i = 0; i < c.params.length; i++){
+            eva.accept(c.params[i]);
+        }
         return null;
     }
 
     @Override
-    public Object visit(ArrayLengthInstruction c) {
-        lastVar = ((WalaVarExpr)c.def).number;
+    public Stmt visit(ArrayLengthInstruction c) {
+        lastDef = ((WalaVarExpr)c.def).number;
         if(!firstDefFound){
             firstDef = ((WalaVarExpr)c.def).number;
             firstDefFound = true;
-        }        return null;
-    }
-
-    @Override
-    public Object visit(ThrowInstruction c) {
+        }
+        eva.accept(c.arrayref);
         return null;
     }
 
     @Override
-    public Object visit(CheckCastInstruction c) {
-        lastVar = c.original.getDef();
+    public Stmt visit(ThrowInstruction c) {
+        return null;
+    }
+
+    @Override
+    public Stmt visit(CheckCastInstruction c) {
+        lastDef = c.original.getDef();
         if(!firstDefFound){
             firstDef = c.original.getDef();
             firstDefFound = true;
         }
+        eva.accept(c.val);
         return null;
     }
 
     @Override
-    public Object visit(InstanceOfInstruction c) {
-        lastVar = ((WalaVarExpr)c.result).number;
+    public Stmt visit(InstanceOfInstruction c) {
+        lastDef = ((WalaVarExpr)c.result).number;
         if(!firstDefFound){
             firstDef = ((WalaVarExpr)c.result).number;
             firstDefFound = true;
         }
+        eva.accept(c.val);
+
         return null;
     }
 
     @Override
-    public Object visit(PhiInstruction c) {
-        lastVar = ((WalaVarExpr)c.def).number;
+    public Stmt visit(PhiInstruction c) {
+        lastDef = ((WalaVarExpr)c.def).number;
         if(!firstDefFound){
             firstDef = ((WalaVarExpr)c.def).number;
             firstDefFound = true;
         }
+        for(int i = 0; i < c.rhs.length; i++){
+            eva.accept(c.rhs[i]);
+        }
+
         return null;
     }
 
-    public int getFirstDef() {
-        return firstDef;
-    }
+
 }

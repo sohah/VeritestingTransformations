@@ -2,8 +2,8 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
-import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprBoundaryVisitor;
 
 import java.util.*;
 
@@ -65,9 +65,11 @@ public class OutputTable extends Table<Integer> {
 
     //SH: returning the last def in the region
     private Pair<Integer, Integer> getFirstLastVar(Stmt stmt) {
-        RegionOutputVisitor regionOutputVisitor = new RegionOutputVisitor();
-        stmt.accept(regionOutputVisitor);
-        return new Pair<>(regionOutputVisitor.getFirstDef(), regionOutputVisitor.getLastVar());
+        ExprBoundaryVisitor exprBoundaryVisitor = new ExprBoundaryVisitor();
+
+        RegionBoundaryVisitor regionBoundaryVisitor = new RegionBoundaryVisitor(exprBoundaryVisitor);
+        stmt.accept(regionBoundaryVisitor);
+        return new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef());
     }
 
     @Override

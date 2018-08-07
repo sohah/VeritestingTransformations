@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.analysis.typeInference.TypeInference;
 import com.ibm.wala.ssa.*;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 
 
 //SH: This visitor fills types for wala vars.
@@ -10,10 +11,14 @@ import com.ibm.wala.ssa.*;
 public class StaticTypeIVisitor implements SSAInstruction.IVisitor {
     public final VarTypeTable varTypeTable;
     private IR ir;
+    private Integer firstUse;
+    private Integer lastDef;
 
-    public StaticTypeIVisitor(IR ir, VarTypeTable varTypeTable) {
+    public StaticTypeIVisitor(IR ir, VarTypeTable varTypeTable, Pair<Integer, Integer> firstUseLastDef) {
         this.ir = ir;
         this.varTypeTable = varTypeTable;
+        this.firstUse = firstUseLastDef.getFirst();
+        this.lastDef = firstUseLastDef.getSecond();
     }
 
     @Override
@@ -163,7 +168,10 @@ public class StaticTypeIVisitor implements SSAInstruction.IVisitor {
 // SH: Used only to populate types using wala inference.
 
     public void populateVars(SSAInstruction ins, int var) {
-        if ((varTypeTable.lookup(var) == null) && (var != -1))
+        if ((varTypeTable.lookup(var) == null)
+                && (var != -1)
+                && (((var >= firstUse) && (var <= lastDef))
+                    || ((firstUse == -100) && (lastDef == -100))))
        varTypeTable.add(var, (TypeInference.make(ir, true)).getType(var).toString());
     }
 }

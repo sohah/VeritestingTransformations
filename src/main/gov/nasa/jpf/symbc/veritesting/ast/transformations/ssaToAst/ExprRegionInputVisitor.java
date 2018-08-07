@@ -28,13 +28,14 @@ public class ExprRegionInputVisitor extends ExprMapVisitor implements ExprVisito
     public Expression visit(WalaVarExpr expr) {
         int[] varSlots = slotParamTable.lookup(expr.number);
         if (varSlots != null) {
-            for (int i = 0; i < varSlots.length; i++) {
+            for (int i = 0; i < varSlots.length; i++)
                 if (!seenSlots.contains(varSlots[i])) {
-                    inputTable.add(expr.number, varSlots[i]);
+                    if (defUseVisit == DefUseVisit.USE)
+                        inputTable.add(expr.number, varSlots[i]);
                     seenSlots.add(varSlots[i]);
                 }
-            }
         }
         return expr;
     }
+
 }

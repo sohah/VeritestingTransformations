@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAInstruction;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -9,7 +10,18 @@ import java.util.Set;
     public class VarTypeTable extends Table<String> {
         public VarTypeTable(IR ir) {
             super("WalaVarTypeTable", " var ", "type");
-            StaticTypeIVisitor staticTypeIVisitor = new StaticTypeIVisitor(ir, this);
+            StaticTypeIVisitor staticTypeIVisitor = new StaticTypeIVisitor(ir, this, new Pair(-100,-100));
+
+            for (SSAInstruction ins : ir.getControlFlowGraph().getInstructions()) {
+                if (ins != null)
+                    ins.visit(staticTypeIVisitor);
+            }
+        }
+
+
+        public VarTypeTable(IR ir, Pair<Integer, Integer> firstUseLastDef) {
+            super("WalaVarTypeTable", " var ", "type");
+            StaticTypeIVisitor staticTypeIVisitor = new StaticTypeIVisitor(ir, this, firstUseLastDef);
             for (SSAInstruction ins : ir.getControlFlowGraph().getInstructions()) {
                 if (ins != null)
                     ins.visit(staticTypeIVisitor);
