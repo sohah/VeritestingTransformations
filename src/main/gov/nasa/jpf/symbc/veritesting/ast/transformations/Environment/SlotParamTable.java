@@ -87,7 +87,6 @@ public class SlotParamTable extends Table<int[]> {
             }
             allSlots.addAll(VarSlotSet);
         }
-
         return allSlots;
     }
 

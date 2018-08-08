@@ -1,7 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.ValueSymbolTable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
@@ -17,7 +16,7 @@ public class SubstitutionVisitor extends AstMapVisitor{
     ExprVisitorAdapter<Expression> eva;
     public final ValueSymbolTable valueSymbolTable;
 
-    private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion, SlotTypeTable slotTypeTable,
+    private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion,
                                 ValueSymbolTable valueSymbolTable) {
         super(new ExprSubstitutionVisitor(ti, staticRegion, valueSymbolTable));
         this.valueSymbolTable = valueSymbolTable;
@@ -80,7 +79,7 @@ public class SubstitutionVisitor extends AstMapVisitor{
 
     public static DynamicRegion execute(ThreadInfo ti, StaticRegion staticRegion)  {
 
-        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, new SlotTypeTable(ti, staticRegion),
+        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion,
                 new ValueSymbolTable());
         Stmt dynStmt = staticRegion.staticStmt.accept(visitor);
         return new DynamicRegion(staticRegion, dynStmt, new HashSet<>());

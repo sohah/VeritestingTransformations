@@ -22,16 +22,16 @@ public class GetSubstitutionVisitor extends AstMapVisitor {
 
     private ThreadInfo ti;
     private final SlotParamTable slotParamTable;
-    private SlotTypeTable slotTypeTable;
+    //private SlotTypeTable slotTypeTable;
     private VarTypeTable varTypeTable;
     public GetSubstitutionVisitor(ThreadInfo ti,
                                   SlotParamTable slotParamTable,
-                                  SlotTypeTable slotTypeTable,
+                                  //SlotTypeTable slotTypeTable,
                                   VarTypeTable varTypeTable) {
         super(new ExprMapVisitor());
         this.ti = ti;
         this.slotParamTable = slotParamTable;
-        this.slotTypeTable = slotTypeTable;
+      //  this.slotTypeTable = slotTypeTable;
         this.varTypeTable = varTypeTable;
     }
 

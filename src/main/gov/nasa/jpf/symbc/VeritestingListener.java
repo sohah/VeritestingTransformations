@@ -133,7 +133,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         // 3. Populate the PSM for every statement in the region
                         // 4. Create gamma expressions for field access
                         // 5 Propagate type information across operations
-                        System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
+                        //System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
                         //dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
                         //TypePropagationVisitor.propagateTypes(dynRegion);
 
