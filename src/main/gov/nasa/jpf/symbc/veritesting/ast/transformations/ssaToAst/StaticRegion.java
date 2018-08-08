@@ -38,12 +38,15 @@ public class StaticRegion implements Region {
         } else {
             Pair<Integer, Pair<Integer, Integer>> regionBoundary = computeRegionBoundary(staticStmt);
             // first use var that hasn't been defined in the region, an invariant that this must be the first use in the if condition
+
             firstUse = regionBoundary.getFirst();
             firstDef = regionBoundary.getSecond().getFirst();
             lastDef = regionBoundary.getSecond().getSecond();
+
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(firstUse, lastDef));
             varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastDef));
         }
+
         inputTable = new InputTable(ir, isMethodRegion, slotParamTable, staticStmt);
 
 
@@ -54,9 +57,11 @@ public class StaticRegion implements Region {
         this.endIns = endIns;
     }
 
+
     public boolean isVoidMethod() {
         return this.outputTable.table.size() == 0;
     }
+
 
     private Pair<Integer, Pair<Integer,Integer>> computeRegionBoundary(Stmt stmt) {
         ExprBoundaryVisitor exprBoundaryVisitor = new ExprBoundaryVisitor();

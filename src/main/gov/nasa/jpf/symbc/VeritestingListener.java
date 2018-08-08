@@ -115,7 +115,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
                 StaticRegion staticRegion = regionsMap.get(key);
                 if (staticRegion != null)
-                    if (SpfUtil.isSymCond(ti.getTopFrame(), instructionToExecute)) {
+                    //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
+                    if (SpfUtil.isSymCond(ti.getTopFrame(), staticRegion.slotParamTable, staticRegion.staticStmt)) {
                         System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
                         staticRegion.slotParamTable.print();
                         staticRegion.outputTable.print();
@@ -143,7 +144,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion.varTypeTable.print();
                         dynRegion.outputTable.print();
 
-
+/*
                         System.out.println("--------------- SPFCases TRANSFORMATION 1ST PASS ---------------");
                         dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
@@ -151,7 +152,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         System.out.println("--------------- SPFCases TRANSFORMATION 2ND PASS ---------------");
                         dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-
+*/
                         System.out.println("--------------- LINEARIZATION TRANSFORMATION ---------------");
                         LinearizationTransformation linearTrans = new LinearizationTransformation();
                         dynRegion = linearTrans.execute(dynRegion);

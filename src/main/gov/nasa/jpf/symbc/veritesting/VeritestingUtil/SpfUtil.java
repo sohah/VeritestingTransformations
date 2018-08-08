@@ -3,6 +3,12 @@ package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 
@@ -55,5 +61,20 @@ public class SpfUtil {
                 isSymCondition = true;
         }
         return isSymCondition;
+    }
+
+
+    public static boolean isSymCond(StackFrame sf, SlotParamTable slotParamTable, Stmt stmt) throws StaticRegionException {
+
+        SymbCondVisitor symbCondVisitor = new SymbCondVisitor(sf, slotParamTable);
+        ExprVisitorAdapter eva = symbCondVisitor.eva;
+        if(stmt instanceof CompositionStmt){
+            eva.accept(((IfThenElseStmt)((CompositionStmt) stmt).s1).condition);
+        }
+        else if(stmt instanceof IfThenElseStmt)
+            eva.accept(((IfThenElseStmt) stmt).condition);
+        else
+            throw new StaticRegionException("Cant veritesting a region that does not start with if condition");
+        return symbCondVisitor.isSymCondition();
     }
 }
