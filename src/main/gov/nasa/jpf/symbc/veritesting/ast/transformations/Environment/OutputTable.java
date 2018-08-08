@@ -10,14 +10,25 @@ import java.util.*;
 public class OutputTable extends Table<Integer> {
     public OutputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt) {
         super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
-        if (isMethodRegion)
-            computeMethodOutput(ir);
-        else
-            computeOutputVars(ir, slotParamTable, inputTable, stmt);
+        assert (isMethodRegion);
+        computeMethodOutput(ir);
     }
 
+
+    public OutputTable(IR ir,
+                       boolean isMethodRegion,
+                       SlotParamTable slotParamTable,
+                       InputTable inputTable,
+                       Stmt stmt,
+                       Pair<Integer, Integer> firstDefLastDef) {
+        super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
+        assert (!isMethodRegion);
+        computeOutputVars(ir, slotParamTable, inputTable, stmt, firstDefLastDef);
+    }
+
+
     //SH: all normal predecessors of an exit node must have a return as the last instruction.
-    // if the first return has no use then the method is void.
+// if the first return has no use then the method is void.
     private void computeMethodOutput(IR ir) {
         List<SSAReturnInstruction> returnInsList = findAllReturns(ir);
         int resultNum = 0;
@@ -47,29 +58,19 @@ public class OutputTable extends Table<Integer> {
     }
 
     //SH: outputVars are computed by finding the maximum wala var for each
-    //stackSlot and those that are not input or constants.
-    private void computeOutputVars(IR ir, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt) {
+//stackSlot and those that are not input or constants.
+    private void computeOutputVars(IR ir, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt, Pair<Integer, Integer> firstDefLastDef) {
         HashSet<Integer> allSlots = slotParamTable.getSlots();
         Iterator<Integer> slotsIter = allSlots.iterator();
-        Pair<Integer, Integer> firstAndLastVar = getFirstLastVar(stmt);
         while (slotsIter.hasNext()) {
             int slot = slotsIter.next();
-            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot, firstAndLastVar.getFirst(), firstAndLastVar.getSecond());
+            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot, firstDefLastDef.getFirst(), firstDefLastDef.getSecond());
             if (!varsForSlot.isEmpty()) {
                 Integer slotOutput = Collections.max(varsForSlot);
                 if ((inputTable.lookup(slotOutput) == null) && !(ir.getSymbolTable().isConstant(slotOutput)))
                     this.add(slot, Collections.max(varsForSlot));
             }
         }
-    }
-
-    //SH: returning the last def in the region
-    private Pair<Integer, Integer> getFirstLastVar(Stmt stmt) {
-        ExprBoundaryVisitor exprBoundaryVisitor = new ExprBoundaryVisitor();
-
-        RegionBoundaryVisitor regionBoundaryVisitor = new RegionBoundaryVisitor(exprBoundaryVisitor);
-        stmt.accept(regionBoundaryVisitor);
-        return new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef());
     }
 
     @Override

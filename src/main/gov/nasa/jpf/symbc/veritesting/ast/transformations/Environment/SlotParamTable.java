@@ -21,7 +21,6 @@ public class SlotParamTable extends Table<int[]> {
     private boolean isMethodRegion;
     private Stmt stmt;
 
-
     public SlotParamTable(IR ir, Boolean isMethodRegion, Stmt stmt) { // var -> param/slot
         super("stack-slot table", "var", isMethodRegion ? "param" : "slot");
         assert(isMethodRegion);

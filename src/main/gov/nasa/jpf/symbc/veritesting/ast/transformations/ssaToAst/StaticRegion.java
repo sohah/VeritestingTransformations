@@ -26,32 +26,43 @@ public class StaticRegion implements Region {
         this.ir = ir;
         this.isMethodRegion = isMethodRegion;
 
-        Pair<Integer, Integer> regionBoundaries = computeRegionBoundaries(staticStmt);
-        Integer firstUse = regionBoundaries.getFirst(); // first use var that hasn't been defined in the region
-        Integer lastDef = regionBoundaries.getSecond();
+        //Auxiliary vars to determine boundaries of different tables.
+        Integer firstUse;
+        Integer firstDef = null;
+        Integer lastDef = null;
 
-        if(isMethodRegion){
+
+        if (isMethodRegion) {
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt);
             varTypeTable = new VarTypeTable(ir);
-        }
-        else{
+        } else {
+            Pair<Integer, Pair<Integer, Integer>> regionBoundary = computeRegionBoundary(staticStmt);
+            // first use var that hasn't been defined in the region, an invariant that this must be the first use in the if condition
+            firstUse = regionBoundary.getFirst();
+            firstDef = regionBoundary.getSecond().getFirst();
+            lastDef = regionBoundary.getSecond().getSecond();
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(firstUse, lastDef));
             varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastDef));
         }
         inputTable = new InputTable(ir, isMethodRegion, slotParamTable, staticStmt);
-        outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt);
+
+
+        if (isMethodRegion)
+            outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt);
+        else
+            outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt, new Pair<>(firstDef, lastDef));
         this.endIns = endIns;
     }
 
-    public boolean isVoidMethod(){
+    public boolean isVoidMethod() {
         return this.outputTable.table.size() == 0;
     }
 
-    private Pair<Integer, Integer> computeRegionBoundaries(Stmt stmt) {
+    private Pair<Integer, Pair<Integer,Integer>> computeRegionBoundary(Stmt stmt) {
         ExprBoundaryVisitor exprBoundaryVisitor = new ExprBoundaryVisitor();
 
         RegionBoundaryVisitor regionBoundaryVisitor = new RegionBoundaryVisitor(exprBoundaryVisitor);
         stmt.accept(regionBoundaryVisitor);
-        return new Pair<>(regionBoundaryVisitor.getFirstUse(), regionBoundaryVisitor.getLastDef());
+        return new Pair<>(regionBoundaryVisitor.getFirstUse(), new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef()));
     }
 }
