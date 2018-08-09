@@ -76,7 +76,7 @@ public class OutputTable extends Table<Integer> {
     @Override
     public void print() {
         System.out.println("\nprinting " + tableName + " (" + label1 + "->" + label2 + ")");
-        table.forEach((v1, v2) -> System.out.println(v1 + " --------- !w" + v2));
+        table.forEach((v1, v2) -> System.out.println(v1 + " --------- @w" + v2));
     }
 
     public OutputTable clone() {

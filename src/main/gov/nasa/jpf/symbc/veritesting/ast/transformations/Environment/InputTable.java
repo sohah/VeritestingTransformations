@@ -35,6 +35,6 @@ public class InputTable extends Table<Integer> {
     @Override
     public void print() {
         System.out.println("\nprinting " + tableName + " (" + label1 + "->" + label2 + ")");
-        table.forEach((v1, v2) -> System.out.println("!w" + v1 + " --------- " + v2));
+        table.forEach((v1, v2) -> System.out.println("@w" + v1 + " --------- " + v2));
     }
 }

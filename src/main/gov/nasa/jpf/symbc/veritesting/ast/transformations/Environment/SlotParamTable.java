@@ -168,7 +168,7 @@ public class SlotParamTable extends Table<int[]> {
     @Override
     public void print() {
         System.out.println("\nRegion Stack Slot Map (var -> " + (isMethodRegion ? "param" : "slot") + ")");
-        table.forEach((var, stackSlots) -> System.out.println("!w" + var + " --------- " + Arrays.toString(stackSlots)));
+        table.forEach((var, stackSlots) -> System.out.println("@w" + var + " --------- " + Arrays.toString(stackSlots)));
     }
 
     public SlotParamTable clone() {
