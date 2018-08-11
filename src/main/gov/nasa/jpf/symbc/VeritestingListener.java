@@ -137,7 +137,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         //dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
                         //TypePropagationVisitor.propagateTypes(dynRegion);
 
-                        System.out.println("--------------- UNIQUENESS TRANSFORMATION ---------------");
+                        System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
                         dynRegion = UniqueRegion.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                         dynRegion.slotParamTable.print();
@@ -153,13 +153,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 */
-                        System.out.println("--------------- LINEARIZATION TRANSFORMATION ---------------");
+                        System.out.println("\n--------------- LINEARIZATION TRANSFORMATION ---------------");
                         LinearizationTransformation linearTrans = new LinearizationTransformation();
                         dynRegion = linearTrans.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 
-                        System.out.println("--------------- TO GREEN TRANSFORMATION ---------------");
-                        Expression regionSummary = dynRegion.dynStmt.accept((new AstToGreenVisitor()));
+                        System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
+                        Expression regionSummary = AstToGreenVisitor.execut(dynRegion);
                         System.out.println(ExprUtil.AstToString(regionSummary));
                         populateSPF(ti, instructionToExecute, dynRegion, regionSummary);
                     }

@@ -93,10 +93,10 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(ReturnInstruction c) {
-        if (c.original.hasDef()) {
+        if (c.getOriginal().hasDef()) {
             lastDef = c.getOriginal().getDef();
             if (!firstDefFound) {
-                firstDef = c.original.getDef();
+                firstDef = c.getOriginal().getDef();
                 firstDefFound = true;
             }
         }
@@ -130,10 +130,10 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(InvokeInstruction c) {
-        if(((SSAInvokeInstruction) c.original).getNumberOfReturnValues() != 0){
-        lastDef = c.original.getDef();
+        if((c.getOriginal()).getNumberOfReturnValues() != 0){
+        lastDef = c.getOriginal().getDef();
             if(!firstDefFound){
-                firstDef = c.original.getDef();
+                firstDef = c.getOriginal().getDef();
                 firstDefFound = true;
             }
         }
@@ -161,9 +161,9 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(CheckCastInstruction c) {
-        lastDef = c.original.getDef();
+        lastDef = c.getOriginal().getDef();
         if(!firstDefFound){
-            firstDef = c.original.getDef();
+            firstDef = c.getOriginal().getDef();
             firstDefFound = true;
         }
         eva.accept(c.val);

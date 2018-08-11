@@ -4,9 +4,13 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUseVisit;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.*;
+
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 
 /*
     The central difficulty here is determining the condition under which to
@@ -24,6 +28,7 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
     Expression toAssign;
     Expression currentCondition;
     ExprVisitorAdapter<Expression> eva;
+    public DefUseVisit defUseVisit;
 
     public AstToGreenExprVisitor() {
         this.toAssign = toAssign;
@@ -63,20 +68,58 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
         return finalExpr;
     }
 
-    @Override public Expression visit(GammaVarExpr expr) {
-        return ite(expr.condition, (Expression)expr.thenExpr, (Expression)expr.elseExpr);
+    @Override
+    public Expression visit(GammaVarExpr expr) {
+        return ite(expr.condition, (Expression) expr.thenExpr, (Expression) expr.elseExpr);
     }
-    @Override public Expression visit(IfThenElseExpr expr) {
+
+    @Override
+    public Expression visit(IfThenElseExpr expr) {
         return ite(expr.condition, expr.thenExpr, expr.elseExpr);
     }
 
-    @Override public Expression visit(WalaVarExpr expr) { return bad(expr);  }
-    @Override public Expression visit(FieldRefVarExpr expr) { return bad(expr); }
-    @Override public Expression visit(IntConstant expr) { return assign(expr); }
-    @Override public Expression visit(IntVariable expr) { return assign(expr); }
-    @Override public Expression visit(Operation expr) { return assign(expr); }
-    @Override public Expression visit(RealConstant expr) { return assign(expr); }
-    @Override public Expression visit(RealVariable expr) { return assign(expr); }
-    @Override public Expression visit(StringConstantGreen expr) { return assign(expr); }
-    @Override public Expression visit(StringVariable expr) { return assign(expr); }
+    @Override
+    public Expression visit(WalaVarExpr expr) {
+        return bad(expr);
+    }
+
+    @Override
+    public Expression visit(FieldRefVarExpr expr) {
+        return bad(expr);
+    }
+
+    @Override
+    public Expression visit(IntConstant expr) {
+        return assign(expr);
+    }
+
+    @Override
+    public Expression visit(IntVariable expr) {
+        return assign(expr);
+    }
+
+    @Override
+    public Expression visit(Operation expr) {
+        return assign(expr);
+    }
+
+    @Override
+    public Expression visit(RealConstant expr) {
+        return assign(expr);
+    }
+
+    @Override
+    public Expression visit(RealVariable expr) {
+        return assign(expr);
+    }
+
+    @Override
+    public Expression visit(StringConstantGreen expr) {
+        return assign(expr);
+    }
+
+    @Override
+    public Expression visit(StringVariable expr) {
+        return assign(expr);
+    }
 }

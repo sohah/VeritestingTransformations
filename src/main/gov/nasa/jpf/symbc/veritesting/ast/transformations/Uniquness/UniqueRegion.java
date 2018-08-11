@@ -1,8 +1,10 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
+import za.ac.sun.cs.green.expr.Expression;
 
 public class UniqueRegion {
 
@@ -12,7 +14,7 @@ public class UniqueRegion {
             ++DynamicRegion.uniqueCounter; //just to skip numbers with zero on the right handside
         }
         int uniqueNum = DynamicRegion.uniqueCounter;
-        ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(dynRegion, uniqueNum);
+        ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum);
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
         Stmt dynStmt = dynRegion.dynStmt.accept(stmtVisitor);
 
@@ -34,4 +36,31 @@ public class UniqueRegion {
                 dynRegion.isMethodRegion,
                 dynRegion.spfCaseSet);
     }
+
+    /**
+     * Used to ensure uniquness of high Order region.
+     * @param hgOrdStmtRetTypePair this is a triple of Stmt, method return Expression and VarTypeTable of the region method.
+     * @return this is the same triple passed to the method, only now unique by appending the a unique prefix.
+     */
+    public Pair<Stmt, VarTypeTable> executeMethodRegion(Pair<Stmt, VarTypeTable> hgOrdStmtRetTypePair){
+
+        if((++DynamicRegion.uniqueCounter)% 10 == 0){
+            ++DynamicRegion.uniqueCounter; //just to skip numbers with zero on the right handside
+        }
+        int uniqueNum = DynamicRegion.uniqueCounter;
+
+        Stmt dynStmt = hgOrdStmtRetTypePair.getFirst();
+        VarTypeTable varTypeTable = hgOrdStmtRetTypePair.getSecond();
+
+        ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum);
+        AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
+        Stmt uniqueDynStmt = dynStmt.accept(stmtVisitor);
+
+        VarTypeTable uniqueVarTypeTable = varTypeTable.clone();
+        uniqueVarTypeTable.makeUniqueKey(uniqueNum);
+
+
+        return new Pair(uniqueDynStmt, uniqueVarTypeTable);
+    }
+
 }

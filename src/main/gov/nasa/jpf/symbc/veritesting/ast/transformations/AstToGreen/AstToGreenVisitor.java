@@ -1,6 +1,10 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUseVisit;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.Expression;
@@ -25,6 +29,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
 
     ExprVisitorAdapter<Expression> eva;
     AstToGreenExprVisitor exprVisitor;
+
 
     public AstToGreenVisitor() {
         exprVisitor = new AstToGreenExprVisitor();
@@ -149,5 +154,15 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
     @Override
     public Expression visit(PhiInstruction c) {
         return bad(c);
+    }
+
+    public static Expression execut(DynamicRegion dynamicRegion){
+        WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynamicRegion.varTypeTable);
+        AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
+        Stmt noWalaVarStmt = dynamicRegion.dynStmt.accept(astMapVisitor);
+
+        AstToGreenVisitor toGreenVisitor = new AstToGreenVisitor();
+        return noWalaVarStmt.accept(toGreenVisitor);
+
     }
 }

@@ -18,6 +18,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticR
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
@@ -81,6 +82,12 @@ public class SubstitutionVisitor extends AstMapVisitor {
     }
 
     @Override
+    public Stmt visit(ReturnInstruction c) {
+        return new ReturnInstruction(c.getOriginal(), eva.accept(c.rhs));
+    }
+
+
+    @Override
     public Stmt visit(PhiInstruction c) {
 
         Expression[] rhs = new Expression[c.rhs.length];
@@ -110,22 +117,26 @@ public class SubstitutionVisitor extends AstMapVisitor {
         Expression[] params = new Expression[c.params.length];
         for (int i = 0; i < params.length; i++) {
             params[i] = eva.accept(c.params[i]);
-            hgOrdValueSymbolTable.add(c.original.getUse(i), params[i]);
+            hgOrdValueSymbolTable.add(c.getOriginal().getUse(i), params[i]);
         }
-        SSAInvokeInstruction instruction = (SSAInvokeInstruction) c.original;
+        SSAInvokeInstruction instruction = c.getOriginal();
         IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
         if (invokeCode == IInvokeInstruction.Dispatch.STATIC) {
-            StaticRegion hgOrdStaticRegion = findMethodStaticRegion(c);
-
+            Pair<String, StaticRegion> keyRegionPair = findMethodStaticRegion(c);
+            StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
             if (hgOrdStaticRegion != null) {
                 Pair<Stmt, VarTypeTable> hgOrdPair = attemptHighOrderRegion(c, hgOrdStaticRegion, hgOrdValueSymbolTable);
                 Pair<Stmt, VarTypeTable> hgOrdUniqueStmtType = makeUnique(hgOrdPair);
 
                 Stmt hgOrdStmt = hgOrdUniqueStmtType.getFirst();
                 VarTypeTable hgOrdTypeTable = hgOrdUniqueStmtType.getSecond();
-                hgOrdTypeTable.print();
-                staticRegion.varTypeTable.mergeTable(hgOrdTypeTable);
 
+                System.out.println("\n********** High Order Region Discovered for region: " + keyRegionPair.getFirst() + "\n");
+                System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStmt) + "\n");
+
+                hgOrdTypeTable.print();System.out.println();
+
+                staticRegion.varTypeTable.mergeTable(hgOrdTypeTable);
                 Stmt returnStmt;
                 if (c.result.length == 1) {
                     Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
@@ -134,7 +145,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
                 } else
                     return hgOrdStmt;
             } else
-                return new InvokeInstruction((SSAInvokeInstruction) c.original, c.result, params);
+                return new InvokeInstruction(c.getOriginal(), c.result, params);
         } else {
             return new InvokeInstruction(c.getOriginal(), c.result, params);
         }
@@ -158,11 +169,10 @@ public class SubstitutionVisitor extends AstMapVisitor {
      * @return A pair of Statement and retrun Statment.
      */
     private Pair<Stmt, Expression> getStmtRetExp(Stmt stmt) {
-        if (stmt instanceof CompositionStmt){
+        if (stmt instanceof CompositionStmt) {
             Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(((CompositionStmt) stmt).s2);
             return new Pair(new CompositionStmt(((CompositionStmt) stmt).s1, stmtRetPair.getFirst()), stmtRetPair.getSecond());
-        }
-        else {
+        } else {
             if (stmt instanceof ReturnInstruction)
                 return new Pair<Stmt, Expression>(SkipStmt.skip, (((ReturnInstruction) stmt).rhs));
             else
@@ -181,9 +191,9 @@ public class SubstitutionVisitor extends AstMapVisitor {
         return uniqueRegion.executeMethodRegion(hgOrdStmtTypeTablePair);
     }
 
-    private StaticRegion findMethodStaticRegion(InvokeInstruction c) {
+    private Pair<String, StaticRegion> findMethodStaticRegion(InvokeInstruction c) {
 
-        SSAInvokeInstruction instruction = (SSAInvokeInstruction) c.original;
+        SSAInvokeInstruction instruction = c.getOriginal();
         MethodReference methodReference = instruction.getDeclaredTarget();
         CallSiteReference site = instruction.getCallSite();
 
@@ -193,7 +203,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
         String methodSignature = methodReference.getSignature();
         methodSignature = methodSignature.substring(methodSignature.indexOf('('));
         String key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
-        return VeritestingMain.veriRegions.get(key);
+        return new Pair<String, StaticRegion>(key, VeritestingMain.veriRegions.get(key));
     }
 
 
@@ -207,7 +217,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
         for (Integer var : regionVarSet) {
             Integer slot = staticRegion.inputTable.lookup(var);
             if (slot != null) {
-            String varType = sf.getLocalVariableType(slot);
+                String varType = sf.getLocalVariableType(slot);
                 gov.nasa.jpf.symbc.numeric.Expression varValueExp;
                 varValueExp = (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
                 if (varValueExp == null)
