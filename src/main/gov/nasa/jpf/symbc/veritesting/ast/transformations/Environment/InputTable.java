@@ -20,6 +20,10 @@ public class InputTable extends Table<Integer> {
         }
     }
 
+    /**
+     * This populates the InputTable for a methodRegion using the SlotParamTable since the InputTable for methodRegions is contains the same elements of the SlotParamTable.
+     * @param slotParamTable Parameter table for a methodRegion.
+     */
     private void computeMethodInputVars(SlotParamTable slotParamTable) {
         for (Integer var : slotParamTable.getKeys()) {
             this.add(var, slotParamTable.lookup(var)[0]);

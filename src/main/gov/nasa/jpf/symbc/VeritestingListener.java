@@ -114,7 +114,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
 
                 StaticRegion staticRegion = regionsMap.get(key);
-                if (staticRegion != null)
+                if ((staticRegion != null) && !(staticRegion.isMethodRegion))
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                     if (SpfUtil.isSymCond(ti.getTopFrame(), staticRegion.slotParamTable, staticRegion.staticStmt)) {
                         System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");

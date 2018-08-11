@@ -77,4 +77,24 @@ public class SpfUtil {
             throw new StaticRegionException("Cant veritesting a region that does not start with if condition");
         return symbCondVisitor.isSymCondition();
     }
+
+
+    public static gov.nasa.jpf.symbc.numeric.Expression createSPFVariableForType(StackFrame sf, int variable, String varType) throws StaticRegionException {
+        if (varType != null) {
+            switch (varType) {
+                case "double":
+                case "float":
+                case "long":
+                    return new gov.nasa.jpf.symbc.numeric.RealConstant(variable);
+                case "int":
+                case "short":
+                case "boolean":
+                default: //considered here an object reference
+                    return new IntegerConstant(variable);
+            }
+        } else {
+            System.out.println("SPF does not know the type, type is assumed int.");
+            return new IntegerConstant(variable);
+        }
+    }
 }

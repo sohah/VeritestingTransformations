@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
 
+import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
 import za.ac.sun.cs.green.expr.*;
 

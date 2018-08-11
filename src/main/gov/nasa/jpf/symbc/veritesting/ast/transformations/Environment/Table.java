@@ -82,4 +82,8 @@ public class Table<T> {
             table.remove(key);
         }
     }
+
+    public void mergeTable(Table<T> t){
+        this.table.putAll(t.table);
+    }
 }

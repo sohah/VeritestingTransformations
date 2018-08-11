@@ -43,6 +43,6 @@ public class InvokeInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return "\n invoke " + Arrays.toString(params) + "=" + Arrays.toString(result);
+        return "\n" + Arrays.toString(result) + " = invoke " + Arrays.toString(params);
     }
 }

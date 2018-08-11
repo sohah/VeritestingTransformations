@@ -42,7 +42,7 @@ public class SlotParamTable extends Table<int[]> {
 
     private void populateParam() {
         for (int i = 0; i < ir.getNumberOfParameters(); i++) {
-            this.add(ir.getParameter(i), new int[i]);
+            this.add(ir.getParameter(i), new int[]{i});
         }
     }
 

@@ -46,7 +46,7 @@ public class VeritestingMain {
     public HashSet endingInsnsHash;
     ClassHierarchy cha;
     HashSet<String> methodSummaryClassNames, methodSummarySubClassNames;
-    private boolean methodAnalysis = false;
+    private boolean methodAnalysis = true;
     private String currentPackageName;
     //HashMap<String, Stmt> veritestingRegions;
     public static HashMap<String, StaticRegion> veriRegions;
@@ -279,6 +279,7 @@ public class VeritestingMain {
                 regionCreator.createStructuredConditionalRegions(veriRegions);
             } else {
                 //regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
+                regionCreator.createStructuredConditionalRegions(veriRegions);
                 regionCreator.createStructuredMethodRegion(veriRegions);
             }
             /* // Placeholder for testing and visualizing static-time transformations

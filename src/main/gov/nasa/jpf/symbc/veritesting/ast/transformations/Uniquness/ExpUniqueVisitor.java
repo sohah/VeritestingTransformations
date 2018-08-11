@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
@@ -11,12 +12,12 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGree
 public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expression>{
 
     int uniqueNum;
-    DynamicRegion dynRegion;
+    VarTypeTable varTypeTable;
 
-    ExpUniqueVisitor(DynamicRegion dynRegion, int uniqueNum){
+    ExpUniqueVisitor(VarTypeTable varTypeTable, int uniqueNum){
         super();
+        this.varTypeTable = varTypeTable;
         this.uniqueNum = uniqueNum;
-        this.dynRegion = dynRegion;
     }
 
     @Override
@@ -24,7 +25,7 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
         String varId = "w" + Integer.toString(expr.number);
         varId = varId.concat(Integer.toString(uniqueNum));
 
-        String type = dynRegion.varTypeTable.lookup(expr.number);
+        String type = varTypeTable.lookup(expr.number);
 
         if (type == null) return expr;
         else return createGreenVar(type, varId);
