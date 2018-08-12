@@ -4,6 +4,10 @@ import com.ibm.wala.ssa.SSAReturnInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+/**
+ * This is ReturnInstruction in RangerIR that matches the corresponding ReturnInstruction in Wala and subsequently the instruction in Java Bytecode.
+ */
+
 public class ReturnInstruction extends Instruction {
 
     public final Expression rhs;

@@ -26,6 +26,9 @@ import java.util.Iterator;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ReflectUtil.getSignature;
 
+/**
+ * A utility class used during discovering of static regions.
+ */
 public class ClassUtils {
     public static void addSubClassNames(ThreadInfo ti, ClassHierarchy cha,
                                         HashSet<String> methodSummarySubClassNames, String methodSummaryClassName) {

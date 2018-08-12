@@ -11,7 +11,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 //      TODO SPF context to grab it?
 //
 
-
+/**
+ * An interface that represents a region. Regions are later defined as a "StaticRegion" and "DynamicRegion"
+ */
 public interface Region {
 
 }

@@ -6,8 +6,17 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+/**
+ * Unique region creator, of both conditional regions and method regions.
+ */
+
 public class UniqueRegion {
 
+    /**
+     * Used to create a unique conditional region.
+     * @param dynRegion Dynamic region that needs to be unquie.
+     * @return A new dynamic region that is unique.
+     */
     public static DynamicRegion execute(DynamicRegion dynRegion){
 
         if((++DynamicRegion.uniqueCounter)% 10 == 0){

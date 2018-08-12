@@ -6,6 +6,9 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
+/**
+ * This is IfThenElse expression in Ranger IR
+ */
 public class IfThenElseExpr extends Expression {
     public final Expression condition;
     public final Expression thenExpr;

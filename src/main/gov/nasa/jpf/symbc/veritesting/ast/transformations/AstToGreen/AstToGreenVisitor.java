@@ -25,6 +25,10 @@ import za.ac.sun.cs.green.expr.Operation;
 
      */
 
+/**
+ * Main visitor that visits all statements and translate them to the appropriate green expression. At the point the expected statements are, assignments, composition and skip.
+ */
+
 public class AstToGreenVisitor implements AstVisitor<Expression> {
 
     ExprVisitorAdapter<Expression> eva;
@@ -48,6 +52,11 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         return eva.accept(stmt.rhs);
     }
 
+    /**
+     * Transform a composition statement into a conjunction in green.
+     * @param stmt The composition statement to be translated.
+     * @return A green expression that represents the compsition statement.
+     */
     public Expression compositionStmt(CompositionStmt stmt) {
         Expression lhs = transform(stmt.s1);
         Expression rhs = transform(stmt.s2);

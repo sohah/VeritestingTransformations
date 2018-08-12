@@ -5,7 +5,9 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprRegionInputVisitor;
 
-//SH: this class populates the input variables for the region. it does so by computing the first var use for slots.
+/**
+ * This class populates the input variables for the region, it does so by computing the first var use for every slot in case of non-method region, or computing the parameters of a method as the input table in case of a method region.
+ */
 
 public class InputTable extends Table<Integer> {
     public final IR ir;
@@ -30,6 +32,11 @@ public class InputTable extends Table<Integer> {
         }
     }
 
+    /**
+     * Computes inputs by visiting statement of the region and figuring out the first use of every stack slot that has no def as its first use.
+     * @param slotParamTable Table of vars to stack slots.
+     * @param stmt Statement of the region.
+     */
     private void computeRegionInput(SlotParamTable slotParamTable, Stmt stmt) {
         ExprRegionInputVisitor exprRegionInputVisitor = new ExprRegionInputVisitor(this, slotParamTable);
         RegionInputVisitor regionInputVisitor = new RegionInputVisitor(exprRegionInputVisitor);

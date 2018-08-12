@@ -11,6 +11,10 @@ import za.ac.sun.cs.green.expr.*;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 
+/**
+ * A visitor that visits all WalaVarExp and generate the appropriate SPF symbolic variable depending on its type.
+ */
+
 public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
 
     private final VarTypeTable varTypeTable;

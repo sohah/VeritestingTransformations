@@ -6,9 +6,15 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.RealConstant;
 
+/**
+ * This class provides some utility methods for Wala.
+ */
 public class WalaUtil {
 
-
+    /**
+     * This method is used to return a Green expression for a wala var name, based on the type of the constant.
+     *
+     */
     public static Expression makeConstantFromWala(SymbolTable symbolTable, int walaId) {
 
         if (symbolTable.isBooleanConstant(walaId) || symbolTable.isIntegerConstant(walaId))

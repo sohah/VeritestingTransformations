@@ -15,6 +15,10 @@ import java.util.function.BinaryOperator;
         Also, combine should be commutative and associative.
  */
 
+/**
+ * Visits all expressions and applies the checking "combine" and returns the result of the checking.
+ * @param <T>
+ */
 public class ExprIterVisitor<T> implements ExprVisitor<T> {
 
     protected final BinaryOperator<T> combine;

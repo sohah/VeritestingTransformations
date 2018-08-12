@@ -6,6 +6,10 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.Arrays;
 
+
+/**
+ * This is PhiInstruction in Ranger IR that matches the corresponding PhiInstruction in Wala.
+ */
 public class PhiInstruction extends Instruction {
 
     public final Expression def;

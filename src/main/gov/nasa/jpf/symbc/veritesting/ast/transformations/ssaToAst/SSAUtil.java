@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.PriorityQueue;
 
+/**
+ * Some utility methods used during construction of the StaticRegion.
+ */
 public class SSAUtil {
 
     public static Collection<ISSABasicBlock> getNonReturnSuccessors(SSACFG cfg, ISSABasicBlock current) {

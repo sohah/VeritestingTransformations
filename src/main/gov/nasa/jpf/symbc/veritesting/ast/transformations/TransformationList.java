@@ -4,6 +4,9 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 
 import java.util.List;
 
+/**
+ * Used to iterate over all transformations, executes them and check their invariants after transformations.
+ */
 public class TransformationList implements Transformation {
 
     public final List<Transformation> transformations;

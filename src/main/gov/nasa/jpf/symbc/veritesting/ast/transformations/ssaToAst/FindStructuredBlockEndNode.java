@@ -25,7 +25,9 @@ import java.util.*;
         many cases, so I think it simplifies the code to use them.
      */
 
-
+/**
+ * Attempts to discover end node of a region, by walking successors of presumably a block that ends with a conditional instruction.
+ */
 public class FindStructuredBlockEndNode {
 
     PriorityQueue<ISSABasicBlock> remaining = null;
@@ -57,7 +59,11 @@ public class FindStructuredBlockEndNode {
         }
     }
 
-
+    /**
+     * This attempts to walk all successors of a block to try to find the end block node.
+     * @param b The block which we need to find the common successor for all its successors.
+     * @throws StaticRegionException An exception that indicates that something has went wrong during computation.
+     */
     void findCommonSuccessor(ISSABasicBlock b) throws StaticRegionException {
 
         for (ISSABasicBlock succ: cfg.getNormalSuccessors(b)) {
@@ -77,6 +83,11 @@ public class FindStructuredBlockEndNode {
         minConvergingNode = remaining.poll();
     }
 
+    /**
+     * Finds the end block of a region.
+     * @return End block of a region.
+     * @throws StaticRegionException An exception that indicates that something has went wrong during computation.
+     */
     public ISSABasicBlock findMinConvergingNode() throws StaticRegionException {
 
         // we have already computed it.

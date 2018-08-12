@@ -10,10 +10,13 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprBoundaryV
 
 import java.util.*;
 
-//SH: This is the basic table, on which the input and output of the region are defined.
-// The table holds the wala vars -> stackSlot mapping if it is not a method region, if it is a method region, then wala vars -> parameters to the method are instead populated in this table.
-// In case of a non method region, the map holds for every var all the stackSlots that the var
-// can map to, because a var can map to multiple locations. Also non-input an non-output vars mapping for non method regions can appear in this table if we were able to infer their stack slot.
+/**
+ * This is the basic table, on which the input and output of the region are defined.
+  The table holds the wala vars -> stackSlot mapping if it is not a method region, if it is a method region, then wala vars to parameters to the method are instead populated in this table.
+  In case of a non method region, the map holds for every var all the stackSlots that the var
+  can map to, because a var can map to multiple locations. Also non-input an non-output vars mapping for non method regions can appear in this table if we were able to infer their stack slot.
+ */
+
 
 
 public class SlotParamTable extends Table<int[]> {
@@ -71,8 +74,12 @@ public class SlotParamTable extends Table<int[]> {
         }
     }
 
-    //SH: returns all unique slots in the stackSlotMap. It attempts to do that by flattening out stackSlots of a single
-    //var, which can map to multiple locations.
+    /**
+     * Finds all unique slots in the stackSlotMap. It attempts to do that by flattening out stackSlots of a single
+     var, which can map to multiple locations.
+     * @return
+     */
+
     public HashSet getSlots() {
         HashSet<Integer> allSlots = new HashSet();
         Set<Integer> vars = table.keySet();
@@ -90,7 +97,14 @@ public class SlotParamTable extends Table<int[]> {
         return allSlots;
     }
 
-    //SH: returns all vars that have the same stack slot entered in the parameter, between bounderies if entered.
+    /**
+     * Returns all vars that have the same stack slot entered, between boundaries.
+     * @param slot A slot number that we wish to discover all vars attaching to it.
+     * @param firstVarId A lower bound on the var number to be discovered by this method.
+     * @param lastVarId An upper bound on the var numbers to be discovered by this method.
+     * @return All vars that have the same stack slot.
+     */
+
     public Set getVarsOfSlot(int slot, Integer firstVarId, Integer lastVarId) {
         HashSet<Integer> stackSlotVars = new HashSet();
         Set<Integer> vars = table.keySet();
@@ -109,10 +123,12 @@ public class SlotParamTable extends Table<int[]> {
         return stackSlotVars;
     }
 
-    //This tries to infer the stack slots for phi "def" vars and phi "use" vars by either figuring out the stack slots
-    // of one "use" var and populate it to be for the phi "def" var, or the opposite,
-    // that is the stack slot of the phi "def" was known and so it is propagated to the "use" vars
-//Author: Vaibahav, refactored by SH
+    /**
+     * This tries to infer the stack slots for phi "def" vars and phi "use" vars by either figuring out the stack slots
+      of one "use" var and populate it to be for the phi "def" var, or the opposite,
+      that is the stack slot of the phi "def" was known and so it is propagated to the "use" vars
+     */
+
     private void stackSlotPhiPropagation() {
         boolean changeDetected;
         do {
@@ -158,6 +174,10 @@ public class SlotParamTable extends Table<int[]> {
         return null;
     }
 
+    /**
+     * Determines if a wala var is constant.
+     *
+     */
     public boolean isConstant(int operand1) {
         SymbolTable table = ir.getSymbolTable();
         return table.isNumberConstant(operand1) ||
@@ -171,6 +191,10 @@ public class SlotParamTable extends Table<int[]> {
         table.forEach((var, stackSlots) -> System.out.println("@w" + var + " --------- " + Arrays.toString(stackSlots)));
     }
 
+    /**
+     * Basic clone method for Slot Param table that generates a new copy of the var.
+     *
+     */
     public SlotParamTable clone() {
         SlotParamTable newSlotParamTable = new SlotParamTable();
         newSlotParamTable.ir = this.ir;

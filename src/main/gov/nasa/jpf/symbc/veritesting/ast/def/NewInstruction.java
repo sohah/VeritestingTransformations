@@ -6,6 +6,10 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 
 // TODO: placeholder class: I don't think we need to adequately translate this.
 
+
+/**
+ * This is NewInstruction in Ranger IR that matches the corresponding CheckCastInstruction in Wala and subsequently in Java Bytecode. This is populated through the translation from the CFG to AST and later it will disappear by creating SPFCases.
+ */
 public class NewInstruction extends Instruction {
 
     public NewInstruction(SSANewInstruction ins) {

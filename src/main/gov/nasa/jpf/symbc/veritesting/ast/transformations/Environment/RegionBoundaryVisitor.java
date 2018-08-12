@@ -1,14 +1,14 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
-//SH: this visitor explores the boundaries of the region by identifying: first def, last def and first use vars
 
-import com.ibm.wala.ssa.SSAInvokeInstruction;
+
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprBoundaryVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
-import za.ac.sun.cs.green.expr.Expression;
+
+/**
+ * The visitor explores the boundaries of the region by identifying: first def, last def and first use vars. This information is later used to identify beginning and ending of vars for which the tables should be populated.
+ */
 
 public class RegionBoundaryVisitor extends AstMapVisitor {
     private int lastDef;

@@ -6,8 +6,13 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
+/**
+ * This is the class of Wala Variables in RangerIR.
+ */
 public final class WalaVarExpr extends Variable {
-
+    /**
+     * This number matches the number defined for a specific Wala Variable.
+     */
     public final int number;
 
     public WalaVarExpr(int var) {

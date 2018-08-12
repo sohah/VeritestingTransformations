@@ -7,6 +7,9 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprBoundaryV
 
 import java.util.*;
 
+/**
+ * An Environment table that holds all slots that needs to be populated after successful symmetrization of the region. Vars associated with the slot are the last instance discovered for the slots.
+ */
 public class OutputTable extends Table<Integer> {
     public OutputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt) {
         super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
@@ -26,9 +29,11 @@ public class OutputTable extends Table<Integer> {
         computeOutputVars(ir, slotParamTable, inputTable, stmt, firstDefLastDef);
     }
 
+    /**
+     * All normal predecessors of an exit node must have a return as the last instruction. If the first return has no use then the method is void.
+     * @param ir
+     */
 
-    //SH: all normal predecessors of an exit node must have a return as the last instruction.
-// if the first return has no use then the method is void.
     private void computeMethodOutput(IR ir) {
         List<SSAReturnInstruction> returnInsList = findAllReturns(ir);
         int resultNum = 0;
@@ -57,8 +62,10 @@ public class OutputTable extends Table<Integer> {
         super();
     }
 
-    //SH: outputVars are computed by finding the maximum wala var for each
-//stackSlot and those that are not input or constants.
+    /**
+     * outputVars are computed by finding the maximum wala var for each stackSlot and those that are not input or constants.
+     *
+     */
     private void computeOutputVars(IR ir, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt, Pair<Integer, Integer> firstDefLastDef) {
         HashSet<Integer> allSlots = slotParamTable.getSlots();
         Iterator<Integer> slotsIter = allSlots.iterator();
@@ -79,6 +86,10 @@ public class OutputTable extends Table<Integer> {
         table.forEach((v1, v2) -> System.out.println(v1 + " --------- @w" + v2));
     }
 
+    /**
+     * Clones the OutputTable to a new VarTypeTable, by creating new entries for the keys.
+     * @return A new OutputTable that has a new copy for the keys.
+     */
     public OutputTable clone() {
         OutputTable outputTable = new OutputTable();
         outputTable.tableName = this.tableName;
@@ -94,7 +105,10 @@ public class OutputTable extends Table<Integer> {
         return outputTable;
     }
 
-
+    /**
+     * Appends to the key a unique postfix.
+     * @param unique A unquie postfix.
+     */
     public void makeUniqueKey(int unique) {
         Object[] keys = table.keySet().toArray();
         for (int i = 0; i < keys.length; i++) {
@@ -104,6 +118,10 @@ public class OutputTable extends Table<Integer> {
         }
     }
 
+    /**
+     * Appends to the value/element of the table a unique postfix.
+     * @param unique Unique postfix.
+     */
     public void makeUniqueVal(int unique) {
         Object[] keys = table.keySet().toArray();
         for (int i = 0; i < keys.length; i++) {

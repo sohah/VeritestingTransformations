@@ -1,6 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
-//SH: this visitor visits all statements to find the first use of every stack slot.
+/**
+ * This visitor visits all statements to find the first use of every stack slot.
+ */
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprRegionInputVisitor;

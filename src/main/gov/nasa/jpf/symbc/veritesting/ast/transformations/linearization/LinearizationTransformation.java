@@ -4,6 +4,9 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.DefaultTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 
+/**
+ * Basic class that invokes Linearization transformation, by removing any if statement, and leaving only its "then" and "else" statements. It returns a new region that has been linearized.
+ */
 public class LinearizationTransformation extends DefaultTransformation {
 
     @Override

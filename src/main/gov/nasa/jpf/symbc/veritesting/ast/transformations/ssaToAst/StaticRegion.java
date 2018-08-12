@@ -6,19 +6,48 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 
-
+/**
+ * A class that represents a Static Region. That is a region that has been statically analyzed but has not been instantiated yet.
+ */
 public class StaticRegion implements Region {
+    /**
+     * Statement of the region.
+     */
     public final Stmt staticStmt;
+
+    /**
+     * IR of the method that the StaticRegion belongs to.
+     */
     public final IR ir;
+
+    /**
+     * An Environment table that holds a mapping from vars to either their stack slot position, in case of conditional regions, or to their parameter number in case of a MethodRegion.
+     */
     public final SlotParamTable slotParamTable;
+
+    /**
+     * An Environment table that holds the output of the region that needs to be popluated later to SPF upon successful veritesting. The output is computed as the last Phi for every stack slot.
+     */
     public final OutputTable outputTable;
 
-    //SH: this is the last instruction where SPF needs to start from after the region
+    /**
+     * this is the last instruction where SPF needs to start from after the region
+     */
     public final int endIns;
+
+    /**
+     * A boolean that indicates whether this is a conditional region,i.e, a region that begins with an if instruction, or a method region, i.e., a region that is summarizing the whole method.
+     */
     public final boolean isMethodRegion;
 
-    //SH: this is the region input. slot/param -> var
+    /**
+     * An environment table that defines the input vars to the region. it defines the mapping from slot/param to var
+     */
     public final InputTable inputTable;
+
+    /**
+     * An environment table that holds the types of all vars defined inside the region.
+     */
     public final VarTypeTable varTypeTable;
 
     public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns) {
@@ -57,12 +86,11 @@ public class StaticRegion implements Region {
         this.endIns = endIns;
     }
 
-
-    public boolean isVoidMethod() {
-        return this.outputTable.table.size() == 0;
-    }
-
-
+    /**
+     * This computes the region boundary in case of conditional region, to determine the first use and the first and last def variables inside the region.
+     * @param stmt Statement of the region.
+     * @return A triple of first-use, first-def and last-def variables in the region.
+     */
     private Pair<Integer, Pair<Integer,Integer>> computeRegionBoundary(Stmt stmt) {
         ExprBoundaryVisitor exprBoundaryVisitor = new ExprBoundaryVisitor();
 

@@ -3,6 +3,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 
+/**
+ * RangerIR expression visitor that creates a new instance of the same expression.
+ */
 public class ExprMapVisitor implements ExprVisitor<Expression> {
 
     protected ExprVisitorAdapter<Expression> eva =

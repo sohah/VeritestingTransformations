@@ -14,7 +14,10 @@ import za.ac.sun.cs.green.expr.Operation;
 import java.util.HashSet;
 
 
-//SH: This is the first pass of SPFCases that creates SPFCases nodes. It assumes substitution has run.
+/**
+ *This is the first pass of SPFCases that creates SPFCases nodes. It assumes substitution has run. The purpose of this transformation is to provide a place holder specific instructions to become SPFCase Statements in RangerIR.
+  */
+
 
 public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
     private Expression spfCondition = Operation.TRUE;
@@ -38,6 +41,10 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
         return new CompositionStmt(s1, s2);
     }
 
+    /**
+     * Used to collect the predicate under which an SPFCase needs to occur.
+     *
+     */
     @Override
     public Stmt visit(IfThenElseStmt a) {
         Stmt s;
@@ -61,6 +68,10 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
         return c;
     }
 
+    /**
+     * An arrayLoad instruction creates an SPFCase for the OutOfBound case. Therefore the RangerIR at this point is translated to an "if" statement that hs the "arrayCondition" and non-exceptional case on the "then" side and the exceptional case on the "else" side.
+     *
+     */
     @Override
     public Stmt visit(ArrayLoadInstruction c) {
 
@@ -94,6 +105,10 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
         }
     }
 
+    /**
+     * An ArrayStore instruction creates an SPFCase for the OutOfBound case. Therefore the RangerIR at this point is translated to an "if" statement that hs the "arrayCondition" and non-exceptional case on the "then" side and the exceptional case on the "else" side.
+     *
+     */
 
     @Override
     public Stmt visit(ArrayStoreInstruction c) {

@@ -3,6 +3,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 
+/**
+ * Pretty print of all statements and expressions in RangerIR.
+ */
 public class PrettyPrintVisitor implements AstVisitor<Void> {
 
     int indent = 0;

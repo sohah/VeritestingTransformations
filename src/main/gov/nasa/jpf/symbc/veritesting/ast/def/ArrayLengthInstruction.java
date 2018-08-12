@@ -4,6 +4,10 @@ import com.ibm.wala.ssa.SSAArrayLengthInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+/**
+ * This is ArrayLengthInstruction in RangerIR that matches the corresponding ArrayLengthInstruction in Wala and subsequently the instruction in Java Bytecode.
+ */
+
 public final class ArrayLengthInstruction extends Instruction {
 
     public final Expression arrayref;

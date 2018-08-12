@@ -5,6 +5,9 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicReg
 
 import java.util.Set;
 
+/**
+ * Abstract class that defines transformation execution and then checking its invariants.
+ */
 public abstract class DefaultTransformation implements Transformation {
 
     @Override

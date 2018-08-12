@@ -10,7 +10,10 @@ import za.ac.sun.cs.green.expr.Operation;
 import java.util.HashSet;
 
 
-//SH: Unncessary compsoed statements with SPFCases are eliminated.
+/**
+ * This is the second pass of the SPFCases where the SPFCases nodes are eliminated and instead the dynamic region is populated with the predicates for the SPFCases.
+ * Some optimization are done here to maintain a minimal RangerIR for the dynamic Region.
+ */
 
 public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
     private Expression spfCondition = Operation.TRUE;

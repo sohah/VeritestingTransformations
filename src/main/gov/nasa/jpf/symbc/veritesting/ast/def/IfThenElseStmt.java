@@ -4,6 +4,9 @@ import com.ibm.wala.ssa.SSAConditionalBranchInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+/**
+ * This is the IfThenElseStmt in RangerIR that carries a condition instruction and on the "then" and the "else" side the statements extracted from the cfg that represents the two sides of the branch.
+ */
 public class IfThenElseStmt implements Stmt {
     public final Expression condition;
     public final Stmt thenStmt;

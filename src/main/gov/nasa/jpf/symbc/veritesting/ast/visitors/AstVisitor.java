@@ -2,6 +2,10 @@ package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 
+/**
+ * An interface for visiting all Statements in RangerIR.
+ *
+ */
 public interface AstVisitor<T>  {
 
     T visit(AssignmentStmt a);

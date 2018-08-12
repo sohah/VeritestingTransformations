@@ -15,85 +15,78 @@ import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
 
-/*
-    This class creates our structure IR from the WALA SSA form for further transformation.
+//    TODO: In examining the debug output, it appears that the same classes and methods are visited multiple times.  Why?
 
-    TODO: In examining the debug output, it appears that the same classes and methods are visited multiple times.  Why?
-
-    Here we are essentially decompiling DAGs within a Java program.  The goals
-    are two-fold:
-        1. It should be accurate.  Any semantics violating decompilation steps
-            will obviously cause SPF to misbehave
-        2. It should be lightweight.  Any fixpoint algorithms may cost a lot
-            in preprocessing.
-
-    It does *not* need to be complete.  It is o.k. if 'continue's and 'break's
-    cause the generation algorithm to fail; we will skip those regions.  As
-    long as we aren't analyzing malware, this won't happen too often.
-
-    * One tricky bit involves figuring out the boundaries of complex 'if' conditions.
-
-    It is not too bad; you look for "immediate self-contained subgraphs", that is,
-    subgraphs where the initial node is immediately pre-dominated by the initial node
-    and for the static region and whose successor nodes (up to the region terminus) are
-    dominated (not necessarily immediately) by the initial node.
-
-    For the things we want to analyze, there should be one (for if-no-else) or
-    two (for if-else) of these regions.
-
-    For if-no-else regions, it is clear what to use as the 'then' condition, but
-    with if-else regions, it is not so clear.  We use the initial condition
-    'then' branch to choose, but this is pretty arbitrary, and in fact WALA seems
-    to reverse the if/else branches from the source code.  This is probably because
-    the jump conditions are 'jump zero'.
-
-    We create a successor map that jumps directly to these 'then' and 'else'
-    elements, and generate the condition for the 'then' branch.  Thereafter, we
-    can view the problem as one of nested self-contained subgraphs, which
-    simplifies the rest of the region processing.
-
-
-    * Another tricky bit involves translating \phi instructions to \gammas.
-
-    I keep track of the current "conditional path" at the point of the code I am translating.  This is a stack of
-    (Expression x enum {Then, Else}) pairs.  For each edge between blocks in the block structure,
-    I record the associated "conditional path".  So the type of this map (the blockConditionMap) is:
-        (ISSABasicBlock x ISSABasicBlock) --> List of (Expression x enum {Then, Else})
-
-    From here it is easy: I get the predecessor blocks of the block containing the \phi.  Then I look
-    up the edges in the blockConditionMap.  From here, I know the condition stack leading to that
-    branch.  I gather these together and make an if/then/else.
-
-    If I see something like this:
-    \phi(w2, w8, w16)
-
-    ==> I look up predecessor blocks:
-      (1, 5, 8)
-
-    ==> I look up associated conditions from predecessor edges:
-      (((c1, Then)),
-       ((c1, Else), (c2, Then)),
-       ((c1, Else), (c2, Else)))
-
-    then construct an if/then/else from the result.
-
-    Two things that make it slightly more interesting:
-    1.) What about \phis for the merge of inner (nested) branches?  Since I record a stack of
-        conditions from the beginning of the static region, I don't really want the conditions
-        from branches that are out of scope of the inner branch.  At the meet block, I check the
-        conditionStack depth, and remove that depth of elements from the front of each condition list.
-
-    2.) How does one arrange subconditions in the if/then/else to minimize the size of conditions?
-        This is why I keep track of whether the condition corresponds to the 'then' or 'else' branch.
-        I do a split based on 'then' or 'else' and recursively organize the Gamma.  For example,
-        the Gamma for the example above would be:
-        Gamma(c1, w2, Gamma(c2, w8, w16)))
-
-        I could do this with just the expressions, but it would be much more work to reconstruct
-        the then and else branches (in fact I started with this and then wasted substantial time
-        trying to rebuild the minimal ITE structure.  Shame on me.
-
+/**
+ * This class creates our structure IR from the WALA SSA form, this is basically done by decompiling DAGs within a Java program.
+ *
  */
+/*
+Here we are essentially decompiling DAGs within a Java program.  The goals
+        are two-fold:
+        1. It should be accurate.  Any semantics violating decompilation steps
+        will obviously cause SPF to misbehave
+        2. It should be lightweight.  Any fixpoint algorithms may cost a lot
+        in preprocessing.
+
+         It does *not* need to be complete.  It is o.k. if 'continue's and 'break's
+         cause the generation algorithm to fail; we will skip those regions.  As
+         long as we aren't analyzing malware, this won't happen too often.
+
+         One tricky bit involves figuring out the boundaries of complex 'if' conditions.
+
+         It is not too bad; you look for "immediate self-contained subgraphs", that is,
+         subgraphs where the initial node is immediately pre-dominated by the initial node
+         and for the static region and whose successor nodes (up to the region terminus) are
+         dominated (not necessarily immediately) by the initial node.
+
+         For the things we want to analyze, there should be one (for if-no-else) or
+         two (for if-else) of these regions.
+
+         For if-no-else regions, it is clear what to use as the 'then' condition, but
+         with if-else regions, it is not so clear.  We use the initial condition
+         'then' branch to choose, but this is pretty arbitrary, and in fact WALA seems
+         to reverse the if/else branches from the source code.  This is probably because
+         the jump conditions are 'jump zero'.
+
+         We create a successor map that jumps directly to these 'then' and 'else'
+         elements, and generate the condition for the 'then' branch.  Thereafter, we
+         can view the problem as one of nested self-contained subgraphs, which
+         simplifies the rest of the region processing.
+
+         Another tricky bit involves translating \phi instructions to \gammas.
+
+         I keep track of the current "conditional path" at the point of the code I am translating.  This is a stack of
+         (Expression x enum {Then, Else}) pairs.  For each edge between blocks in the block structure,
+         I record the associated "conditional path".  So the type of this map (the blockConditionMap) is:
+         (ISSABasicBlock x ISSABasicBlock) --> List of (Expression x enum {Then, Else})
+
+         From here it is easy: I get the predecessor blocks of the block containing the \phi.  Then I look
+         up the edges in the blockConditionMap.  From here, I know the condition stack leading to that
+         branch.  I gather these together and make an if/then/else.
+
+         If I see something like this:
+         \phi(w2, w8, w16)
+
+         ==> I look up predecessor blocks:
+         (1, 5, 8)
+
+         ==> I look up associated conditions from predecessor edges:
+         (((c1, Then)),
+         ((c1, Else), (c2, Then)),
+         ((c1, Else), (c2, Else)))
+
+         then construct an if/then/else from the result.
+
+         Two things that make it slightly more interesting:
+         1.) What about \phis for the merge of inner (nested) branches?  Since I record a stack of conditions from the beginning of the static region, I don't really want the conditions from branches that are out of scope of the inner branch.  At the meet block, I check the conditionStack depth, and remove that depth of elements from the front of each condition list.
+
+         2.) How does one arrange subconditions in the if/then/else to minimize the size of conditions?
+          This is why I keep track of whether the condition corresponds to the 'then' or 'else' branch. I do a split based on 'then' or 'else' and recursively organize the Gamma.  For example, the Gamma for the example above would be: Gamma(c1, w2, Gamma(c2, w8, w16)))
+
+         I could do this with just the expressions, but it would be much more work to reconstruct the then and else branches (in fact I started with this and then wasted substantial time trying to rebuild the minimal ITE structure.
+*/
+
 
 public class CreateStaticRegions {
 
@@ -101,6 +94,12 @@ public class CreateStaticRegions {
         return methodSignature + "#" + offset;
     }
 
+    /**
+     * Create the key of a conditional region, by using the name as well as the bytecode offset of the last instruction in the first block that starts the region.
+     * @param ir IR of the staticRegion.
+     * @param blk The first block that identifies the begining of the region.
+     * @return A string that is used as a key for the region.
+     */
     public static String constructRegionIdentifier(IR ir, ISSABasicBlock blk) {
         int offset = -100;
         try {
@@ -118,6 +117,11 @@ public class CreateStaticRegions {
         return constructRegionIdentifier(blk.getMethod().getSignature(), offset);
     }
 
+    /**
+     * Create the key of a Method region.
+     * @param methodSignature Signature of a method.
+     * @return A string that is used as a key for the region.
+     */
     public static String constructMethodIdentifier(String methodSignature) {
         return methodSignature;
     }
@@ -129,17 +133,26 @@ public class CreateStaticRegions {
     private IR ir;
     private Graph<ISSABasicBlock> domTree;
 
-    // For Phi instructions.  See comment at top of file
+    /**
+     *This is used for Phi instructions, where each edge in the graph is mapped to a list of conditions that represents the path up till that edge.
+     */
     private Map<PhiEdge, List<PhiCondition>> blockConditionMap;
+
+    /**
+     * Keeps track of the current conditions/depth while visiting nodes in the graph.
+     */
     private Deque<PhiCondition> currentCondition;
 
-    // for complex conditions, we want to record the then condition and successors.
-    // See the comment at the top of the file for more information.
+    /**
+     * for complex conditions, we want to record the then condition and successors.
+     */
     private Map<ISSABasicBlock, Expression> thenCondition;
     private Map<ISSABasicBlock, ISSABasicBlock> thenSuccessor;
     private Map<ISSABasicBlock, ISSABasicBlock> elseSuccessor;
 
-    // For memoization, so we don't visit the same blocks over and over.
+    /**
+     * For memoization, so we don't visit the same blocks over and over.
+     */
     private Set<ISSABasicBlock> visitedBlocks;
     // TODO: an optimization to be explored for future is to subclass the HashMap type
     // TODO: so we store *unsuccessful* regions.  This would allow us to do region
@@ -170,7 +183,12 @@ public class CreateStaticRegions {
         return cfg.getNormalSuccessors(block).size() == 2;
     }
 
-
+    /**
+     * This creates a composition statement between two statements
+     * @param stmt1 First statement to be used in a composition.
+     * @param stmt2 Second statement to be used in a composition.
+     * @return A composition statement in RangerIR.
+     */
     public Stmt conjoin(Stmt stmt1, Stmt stmt2) {
         if (stmt1 instanceof SkipStmt) {
             return stmt2;
@@ -181,6 +199,12 @@ public class CreateStaticRegions {
         }
     }
 
+    /**
+     * This translate the last block in an identified region by visiting all its instructions and creating a Gamma if a Phi instruction was found.
+     * @param currentBlock The last block in the region.
+     * @return A statement in RangerIR that represents the last block in the region.
+     * @throws StaticRegionException
+     */
     private Stmt translateTruncatedFinalBlock(ISSABasicBlock currentBlock) throws StaticRegionException {
         SSAToStatIVisitor visitor =
                 new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
@@ -196,6 +220,12 @@ public class CreateStaticRegions {
         return stmt;
     }
 
+    /**
+     * This translates "internal" blocks inside the region, these are blocks that are not the begining or the end of the region.
+     * @param currentBlock Current block that needs to be translated.
+     * @return A statement in RangerIR that represents the translated statement.
+     * @throws StaticRegionException An exception that indicates a problem in the translation.
+     */
     private Stmt translateInternalBlock(ISSABasicBlock currentBlock) throws StaticRegionException {
         SSAToStatIVisitor visitor =
                 new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
@@ -212,15 +242,24 @@ public class CreateStaticRegions {
         return stmt;
     }
 
-
+    /**
+     * Gets the immediate detonators of a block.
+     * @param elem Block for which we want to find it immediate denominator.
+     * @return Immediate denominator of a block.
+     */
     private ISSABasicBlock getIDom(ISSABasicBlock elem) {
         assert(this.domTree.getPredNodeCount(elem) == 1);
         return (ISSABasicBlock)this.domTree.getPredNodes(elem).next();
     }
 
 
-    // This method checks to see whether each node in a subgraph up to a
-    // terminus (see comment at top of file)
+        /**
+     * This method checks to see whether each node in a subgraph up to a terminus has a subgraph.
+     * @param entry Entry block, from which a search/check starts.
+     * @param terminus End block, where search/check should terminates.
+     * @return True if the entry to the terminus is a self contained subregion.
+     * @throws StaticRegionException Exception that indicates something went wrong during computation.
+     */
     private boolean isSelfContainedSubgraph(ISSABasicBlock entry, ISSABasicBlock terminus) throws StaticRegionException {
         // trivial case.
         if (entry == terminus) { return false; }
@@ -258,6 +297,10 @@ public class CreateStaticRegions {
         return true;
     }
 
+    /**
+     * This searches a self contained subgraph inside the region.
+     *
+     */
     private void findSelfContainedSubgraphs(ISSABasicBlock entry,
                                    ISSABasicBlock current,
                                    ISSABasicBlock terminus,
@@ -291,6 +334,10 @@ public class CreateStaticRegions {
            TODO: tricky, so I am not going to bother with it now.
      */
 
+    /**
+     * Re-constructs a complex condition for an if/then/else condition.
+     *
+     */
     private Expression createComplexIfCondition(ISSABasicBlock child,
                                                 ISSABasicBlock entry) throws StaticRegionException {
         assert(child.getNumber() > entry.getNumber());
@@ -340,6 +387,13 @@ public class CreateStaticRegions {
         }
         // MWW: end of debugging.
      */
+
+    /**
+     * Attempts to discover conditional successors on the then or the else side of a conditional block.
+     * @param entry Entry block.
+     * @param terminus End blcok where search needs to stop
+     * @throws StaticRegionException An Exception that indicates that something went wrong during computation.
+     */
     private void findConditionalSuccessors(ISSABasicBlock entry,
                                            ISSABasicBlock terminus) throws StaticRegionException {
 
@@ -378,6 +432,15 @@ public class CreateStaticRegions {
     }
 
     // precondition: terminus is the loop join.
+
+    /**
+     * Attempts to translate a conditional part of the cfg to IfThenElse statement in RangerIR.
+     * @param cfg Current control flow graph.
+     * @param currentBlock current block
+     * @param terminus End block.
+     * @return A RangerIR IfThenElse statement.
+     * @throws StaticRegionException
+     */
     private Stmt conditionalBranch(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock terminus)
             throws StaticRegionException {
 
@@ -412,17 +475,23 @@ public class CreateStaticRegions {
         return new IfThenElseStmt(SSAUtil.getLastBranchInstruction(currentBlock), condExpr, thenStmt, elseStmt);
     }
 
-    /*
-        This method translates from currentBlock up to but not including endingBlock.
-        Doing it this way makes it much simpler to deal with nested if/then/elses that land in the same spot.
 
-        It also makes it simpler to tailor the end of the translation: for methods, we want to grab the
-        remaining code within the method, while for conditional blocks we only want to grab the subsequent \phi
-        functions.
+/*
+    This method translates from currentBlock up to but not including endingBlock.
+     * Doing it this way makes it much simpler to deal with nested if/then/elses that land in the same spot.
+     *
+             * It also makes it simpler to tailor the end of the translation: for methods, we want to grab the remaining code within the method, while for conditional blocks we only want to grab the subsequent \phi functions.
+            *
+            * NB: same block may be visited multiple times!*/
 
-        NB: same block may be visited multiple times!
+    /**
+     * Translates from current block but does not include the ending block.
+     * @param cfg Control flow graph.
+     * @param currentBlock Current block
+     * @param endingBlock End block, this is not included in this translation.
+     * @return a statement that represents this part of cfg in RangerIR.
+     * @throws StaticRegionException
      */
-
     public Stmt attemptSubregionRec(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
 
         if (currentBlock == endingBlock) {
@@ -449,6 +518,15 @@ public class CreateStaticRegions {
     }
 
     // precondition: endingBlock is the terminus of the loop
+
+    /**
+     *  Attempts to translate conditional region and translates it to RangerIR statement
+     * @param cfg Control flow graph
+     * @param startingBlock Starting block that is a branch instruction.
+     * @param terminus End of the region.
+     * @return Translated statement in RangerIR that has decompiled the CFG.
+     * @throws StaticRegionException
+     */
     private Stmt attemptConditionalSubregion(SSACFG cfg, ISSABasicBlock startingBlock, ISSABasicBlock terminus) throws StaticRegionException {
 
         assert(isBranch(cfg, startingBlock));
@@ -457,14 +535,26 @@ public class CreateStaticRegions {
         return stmt;
     }
 
+    /**
+     * Attempts to translate a method region to a RangerIR statement.
+     * @param cfg
+     * @param startingBlock
+     * @param endingBlock
+     * @return
+     * @throws StaticRegionException
+     */
     private Stmt attemptMethodSubregion(SSACFG cfg, ISSABasicBlock startingBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
         Stmt stmt = attemptSubregionRec(cfg, startingBlock, endingBlock);
         stmt = conjoin(stmt, translateInternalBlock(endingBlock));
         return stmt;
     }
 
-    /*
-        walk through method, attempting to find conditional veritesting regions
+    /**
+     * This class walks through method, attempting to find conditional veritesting regions
+     * @param currentBlock
+     * @param endingBlock
+     * @param veritestingRegions
+     * @throws StaticRegionException
      */
     private void createStructuredConditionalRegions(ISSABasicBlock currentBlock,
                                                    ISSABasicBlock endingBlock,
@@ -512,7 +602,9 @@ public class CreateStaticRegions {
         createStructuredConditionalRegions(cfg.entry(), cfg.exit(), veritestingRegions);
     }
 
-
+/**
+ * This class walks through method, attempting to find method regions veritesting regions
+ */
     public void createStructuredMethodRegion(HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
 
         reset();

@@ -9,9 +9,13 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.ArrayList;
 
+
+/**
+ * Conditional region input visitor that visits all use vars to collect a possible first use for every stack slot.
+ */
 public class ExprRegionInputVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 
-//SH: visiting all use vars to collect a possible first use for every stack slot.
+//SH:
 
     private ArrayList seenSlots;
     private InputTable inputTable;

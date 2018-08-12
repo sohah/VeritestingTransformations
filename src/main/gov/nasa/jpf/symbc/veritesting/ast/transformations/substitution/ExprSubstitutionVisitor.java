@@ -11,6 +11,9 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.*;
 
+/**
+ * This is the expression visitor class used during substitution that either returns the value of a variable from a symbol table to returns the expression back if it doesn't make to any entry.
+ */
 public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 
     private ThreadInfo ti;

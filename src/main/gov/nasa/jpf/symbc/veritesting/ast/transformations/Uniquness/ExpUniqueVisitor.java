@@ -9,6 +9,9 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 
+/**
+ * Unique Expression Visitor that ensures the uniquness vars used inside the region.
+ */
 public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expression>{
 
     int uniqueNum;

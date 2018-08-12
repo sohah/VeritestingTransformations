@@ -8,12 +8,9 @@ import za.ac.sun.cs.green.expr.Expression;
 import java.util.Deque;
 import java.util.LinkedList;
 
-/*
-    We need to know the return type (it is not present in the SR itself)
-
-    We need to add support for
+/**
+ * This class removes early return statements.
  */
-
 public class RemoveEarlyReturns extends AstMapVisitor {
 
     // Don't transform expressions

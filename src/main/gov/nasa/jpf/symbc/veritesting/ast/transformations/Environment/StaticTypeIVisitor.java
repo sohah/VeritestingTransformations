@@ -4,10 +4,9 @@ import com.ibm.wala.analysis.typeInference.TypeInference;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 
-
-//SH: This visitor fills types for wala vars.
-
-
+/**
+ * This visitor fills types for wala vars, by using Wala Type inference.
+ */
 public class StaticTypeIVisitor implements SSAInstruction.IVisitor {
     public final VarTypeTable varTypeTable;
     private IR ir;

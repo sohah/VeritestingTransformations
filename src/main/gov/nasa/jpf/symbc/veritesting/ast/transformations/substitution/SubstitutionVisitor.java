@@ -151,6 +151,13 @@ public class SubstitutionVisitor extends AstMapVisitor {
         }
     }
 
+    /**
+     * Attempts to substitute in a high order region.
+     * @param c Current invoke instruction
+     * @param methodRegion MethodRegion where the substitution is going to be attempted.
+     * @param hgOrdValueSymbolTabl Value symbol table for te MethodRegion, usually populated with the parameters.
+     * @return A pair of substituted statement for the high order region as well as its VarTypeTable.
+     */
     private Pair<Stmt, VarTypeTable> attemptHighOrderRegion(InvokeInstruction c, StaticRegion methodRegion, ValueSymbolTable hgOrdValueSymbolTabl) {
 
         assert (methodRegion.isMethodRegion);
@@ -191,6 +198,11 @@ public class SubstitutionVisitor extends AstMapVisitor {
         return uniqueRegion.executeMethodRegion(hgOrdStmtTypeTablePair);
     }
 
+    /**
+     * Attempts to find a mapping MethodRegion.
+     * @param c Current invoke instruction.
+     * @return A pair of the key and the methodRegion if a matching could be found.
+     */
     private Pair<String, StaticRegion> findMethodStaticRegion(InvokeInstruction c) {
 
         SSAInvokeInstruction instruction = c.getOriginal();
@@ -207,6 +219,12 @@ public class SubstitutionVisitor extends AstMapVisitor {
     }
 
 
+    /**
+     * Fills out the values of all vars that could be discovered in the region.
+     * @param ti Current executing thread.
+     * @param staticRegion StaticRegion for which the ValueSymbolTable is going to be created.
+     * @return Populated ValueSymbolTable for variables in the static region.
+     */
     private static ValueSymbolTable fillValueSymbolTable(ThreadInfo ti, StaticRegion staticRegion) {
 
         StackFrame sf = ti.getTopFrame();

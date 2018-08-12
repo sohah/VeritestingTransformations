@@ -5,14 +5,13 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 
 import java.util.LinkedList;
 
+/**
+ *This class flattens statement lists like ((s1; s2); (s3; s4)) into a "flat" list like: (s1; (s2; (s3; s4)))).
+
+ It is accessed through a static method called flattenStmt.
+
+ */
 public class FlattenStmtListVisitor implements AstVisitor<Void> {
-
-    /*
-        This class flattens statement lists like ((s1; s2); (s3; s4))
-        into a "flat" list like: (s1; (s2; (s3; s4))))
-
-        It is accessed through a static method called flattenStmt
-     */
 
     public LinkedList<Stmt> stmtList = new LinkedList<Stmt>();
 

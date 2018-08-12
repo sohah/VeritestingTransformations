@@ -6,6 +6,9 @@ import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+/**
+ * This is ArrayLoadInstruction in RangerIR that matches the corresponding ArrayLoadInstruction in Wala and subsequently the instruction in Java Bytecode.
+ */
 public class ArrayLoadInstruction extends Instruction {
 
     public final Expression arrayref;

@@ -25,7 +25,9 @@ import java.util.Set;
     writers can choose to ignore the invariant check parts.
  */
 
-
+/**
+ * A Transformation describes a transformation and the set of invariants that are expected to hold prior to and after its occurrence.
+ */
 public interface Transformation {
     public TransformationData execute(TransformationData data) throws StaticRegionException;
     public String getName();

@@ -12,6 +12,9 @@ import gov.nasa.jpf.vm.StackFrame;
 import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.*;
 
+/**
+ * Visits expression in a conditional statement to check if any of its arguments are indeed symbolic.
+ */
 public class SymbCondVisitor implements ExprVisitor<Expression> {
     private boolean isSymCondition = false;
     private SlotParamTable slotParamTable;

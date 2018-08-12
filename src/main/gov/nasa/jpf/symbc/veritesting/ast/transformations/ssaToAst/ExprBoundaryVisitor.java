@@ -9,9 +9,10 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.ArrayList;
 
+/**
+ * An Expression Boundary Visitor that attempts to discover first "use" var inside a region.
+ */
 public class ExprBoundaryVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
-
-//SH: gets the first use var.
 
     private boolean seenFirstUse = false;
     private int firstUse;

@@ -23,6 +23,10 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGree
     quite nice.  Oh well.
  */
 
+/**
+ * This is a visitor class that Translate expression in RangerIR to te appropriate Green expression.
+ */
+
 public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
 
     Expression toAssign;
@@ -50,11 +54,18 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
         Expression assign = new Operation(Operation.Operator.EQ, toAssign, e);
         if (currentCondition.equals(Operation.TRUE)) {
             return assign;
-        } else { //SH: implications is not yet translated from green to SPF, so I am using the equivalent disjunction
+        } else { //SH: implications is not yet translated from Green to SPF, so I am using the equivalent disjunction
             return new Operation(Operation.Operator.OR, new Operation(Operation.Operator.NOT, currentCondition), assign);
         }
     }
 
+    /**
+     * Translates conditional expression to a corresponding Green expression.
+     * @param cond Condition inside the expression.
+     * @param thenExpr Expression in the then side.
+     * @param elseExpr Expression in the else side.
+     * @return Green expression that represents the the IfThenElseExpression.
+     */
     public Expression ite(Expression cond, Expression thenExpr, Expression elseExpr) {
         Expression prevCond = currentCondition;
         Expression thenCond = new Operation(Operation.Operator.AND, currentCondition, cond);
@@ -68,11 +79,21 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
         return finalExpr;
     }
 
+    /**
+     * Translating a GammaExpression into an IfThenElseExpression
+     * @param expr A Gamma expression to be translated.
+     * @return A IfThenElseExpr that needs to be later translated to a Green Expression.
+     */
     @Override
     public Expression visit(GammaVarExpr expr) {
         return ite(expr.condition, (Expression) expr.thenExpr, (Expression) expr.elseExpr);
     }
 
+    /**
+     * Translating a TfThenElseExpr into an IfThenElseExpression
+     * @param expr A Gamma expression to be translated.
+     * @return A IfThenElseExpr that needs to be later translated to a Green Expression.
+     */
     @Override
     public Expression visit(IfThenElseExpr expr) {
         return ite(expr.condition, expr.thenExpr, expr.elseExpr);

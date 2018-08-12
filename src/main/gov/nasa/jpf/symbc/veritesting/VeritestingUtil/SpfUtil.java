@@ -12,10 +12,19 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 
+/**
+ * This class provides some utility methods for SPF.
+ */
 public class SpfUtil {
 
     private static int operandNum;
 
+    /**
+     * Returns number of operands depending on the if-bytecode instruction.
+     * @param instruction"if" bytecode instruction
+     * @return Number of operands.
+     * @throws StaticRegionException
+     */
     public static Integer getOperandNumber(String instruction) throws StaticRegionException {
         switch (instruction) {
             case "ifeq":
@@ -43,6 +52,13 @@ public class SpfUtil {
 
     }
 
+    /**
+     * Checks if the "if" condition is symbolic based on the the operands of the "if" bytecode instruction.
+     * @param sf Current stackfram.
+     * @param ins Current "if" bytecode instruction.
+     * @return True if the operand(s) of "if" condition is symbolic and false if it was concerete.
+     * @throws StaticRegionException
+     */
     public static boolean isSymCond(StackFrame sf, Instruction ins) throws StaticRegionException {
         boolean isSymCondition = false;
         SpfUtil.getOperandNumber(ins.getMnemonic());
@@ -63,7 +79,14 @@ public class SpfUtil {
         return isSymCondition;
     }
 
-
+    /**
+     * Checks if the "if" condition is symbolic by visiting the condition expression of the statement of the staticRegion
+     * @param sf Current stack frame.
+     * @param slotParamTable Environment table that is holding var to slot mapping.
+     * @param stmt Statement of the static region.
+     * @return True if the operand(s) of "if" condition is symbolic and false if it was concerete.
+     * @throws StaticRegionException
+     */
     public static boolean isSymCond(StackFrame sf, SlotParamTable slotParamTable, Stmt stmt) throws StaticRegionException {
 
         SymbCondVisitor symbCondVisitor = new SymbCondVisitor(sf, slotParamTable);
@@ -78,7 +101,14 @@ public class SpfUtil {
         return symbCondVisitor.isSymCondition();
     }
 
-
+    /**
+     * This creates SPF constants depending on the type of the variable.
+     * @param sf Current Stack Frame
+     * @param variable Variable number for which we want to create the constant.
+     * @param varType The type of which the constant should be created in SPF.
+     * @return SPF constant expression..
+     * @throws StaticRegionException
+     */
     public static gov.nasa.jpf.symbc.numeric.Expression createSPFVariableForType(StackFrame sf, int variable, String varType) throws StaticRegionException {
         if (varType != null) {
             switch (varType) {
