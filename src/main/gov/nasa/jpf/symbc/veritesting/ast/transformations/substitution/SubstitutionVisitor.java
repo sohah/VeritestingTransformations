@@ -49,6 +49,9 @@ public class SubstitutionVisitor extends AstMapVisitor {
         this.staticRegion = staticRegion;
         this.valueSymbolTable = valueSymbolTable;
         eva = super.eva;
+        if(staticRegion.isMethodRegion){
+
+        }
     }
 
 
@@ -117,7 +120,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
         Expression[] params = new Expression[c.params.length];
         for (int i = 0; i < params.length; i++) {
             params[i] = eva.accept(c.params[i]);
-            hgOrdValueSymbolTable.add(c.getOriginal().getUse(i), params[i]);
+            hgOrdValueSymbolTable.add((i+1), params[i]);
         }
         SSAInvokeInstruction instruction = c.getOriginal();
         IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
@@ -162,7 +165,8 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
         assert (methodRegion.isMethodRegion);
 
-        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, methodRegion, valueSymbolTable);
+        hgOrdValueSymbolTabl.mergeTable(fillValueSymbolTable(ti, methodRegion));
+        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, methodRegion, hgOrdValueSymbolTabl);
         return new Pair<Stmt, VarTypeTable>((Stmt) methodRegion.staticStmt.accept(visitor), methodRegion.varTypeTable);
     }
 
@@ -234,7 +238,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
         for (Integer var : regionVarSet) {
             Integer slot = staticRegion.inputTable.lookup(var);
-            if (slot != null) {
+            if ((slot != null) && (!staticRegion.isMethodRegion)) {
                 String varType = sf.getLocalVariableType(slot);
                 gov.nasa.jpf.symbc.numeric.Expression varValueExp;
                 varValueExp = (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
