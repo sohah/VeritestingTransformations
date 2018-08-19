@@ -6,6 +6,9 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubsc
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+/**
+ * This is GetInstruction in Ranger IR that matches the corresponding GetInstruction in Wala and subsequently the instruction in Java Bytecode.
+ */
 public class GetInstruction extends Instruction {
 
     public final Expression ref;

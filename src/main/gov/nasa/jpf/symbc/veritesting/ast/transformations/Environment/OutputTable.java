@@ -2,22 +2,38 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
-import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprBoundaryVisitor;
 
 import java.util.*;
 
+/**
+ * An Environment table that holds all slots that needs to be populated after successful symmetrization of the region. Vars associated with the slot are the last instance discovered for the slots.
+ */
 public class OutputTable extends Table<Integer> {
     public OutputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt) {
         super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
-        if (isMethodRegion)
-            computeMethodOutput(ir);
-        else
-            computeOutputVars(ir, slotParamTable, inputTable, stmt);
+        assert (isMethodRegion);
+        computeMethodOutput(ir);
     }
 
-    //SH: all normal predecessors of an exit node must have a return as the last instruction.
-    // if the first return has no use then the method is void.
+
+    public OutputTable(IR ir,
+                       boolean isMethodRegion,
+                       SlotParamTable slotParamTable,
+                       InputTable inputTable,
+                       Stmt stmt,
+                       Pair<Integer, Integer> firstDefLastDef) {
+        super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
+        assert (!isMethodRegion);
+        computeOutputVars(ir, slotParamTable, inputTable, stmt, firstDefLastDef);
+    }
+
+    /**
+     * All normal predecessors of an exit node must have a return as the last instruction. If the first return has no use then the method is void.
+     * @param ir
+     */
+
     private void computeMethodOutput(IR ir) {
         List<SSAReturnInstruction> returnInsList = findAllReturns(ir);
         int resultNum = 0;
@@ -46,15 +62,16 @@ public class OutputTable extends Table<Integer> {
         super();
     }
 
-    //SH: outputVars are computed by finding the maximum wala var for each
-    //stackSlot and those that are not input or constants.
-    private void computeOutputVars(IR ir, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt) {
+    /**
+     * outputVars are computed by finding the maximum wala var for each stackSlot and those that are not input or constants.
+     *
+     */
+    private void computeOutputVars(IR ir, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt, Pair<Integer, Integer> firstDefLastDef) {
         HashSet<Integer> allSlots = slotParamTable.getSlots();
         Iterator<Integer> slotsIter = allSlots.iterator();
-        Pair<Integer, Integer> firstAndLastVar = getFirstLastVar(stmt);
         while (slotsIter.hasNext()) {
             int slot = slotsIter.next();
-            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot, firstAndLastVar.getFirst(), firstAndLastVar.getSecond());
+            Set<Integer> varsForSlot = slotParamTable.getVarsOfSlot(slot, firstDefLastDef.getFirst(), firstDefLastDef.getSecond());
             if (!varsForSlot.isEmpty()) {
                 Integer slotOutput = Collections.max(varsForSlot);
                 if ((inputTable.lookup(slotOutput) == null) && !(ir.getSymbolTable().isConstant(slotOutput)))
@@ -63,19 +80,16 @@ public class OutputTable extends Table<Integer> {
         }
     }
 
-    //SH: returning the last def in the region
-    private Pair<Integer, Integer> getFirstLastVar(Stmt stmt) {
-        RegionOutputVisitor regionOutputVisitor = new RegionOutputVisitor();
-        stmt.accept(regionOutputVisitor);
-        return new Pair<>(regionOutputVisitor.getFirstDef(), regionOutputVisitor.getLastVar());
-    }
-
     @Override
     public void print() {
         System.out.println("\nprinting " + tableName + " (" + label1 + "->" + label2 + ")");
-        table.forEach((v1, v2) -> System.out.println(v1 + " --------- !w" + v2));
+        table.forEach((v1, v2) -> System.out.println(v1 + " --------- @w" + v2));
     }
 
+    /**
+     * Clones the OutputTable to a new VarTypeTable, by creating new entries for the keys.
+     * @return A new OutputTable that has a new copy for the keys.
+     */
     public OutputTable clone() {
         OutputTable outputTable = new OutputTable();
         outputTable.tableName = this.tableName;
@@ -91,7 +105,10 @@ public class OutputTable extends Table<Integer> {
         return outputTable;
     }
 
-
+    /**
+     * Appends to the key a unique postfix.
+     * @param unique A unquie postfix.
+     */
     public void makeUniqueKey(int unique) {
         Object[] keys = table.keySet().toArray();
         for (int i = 0; i < keys.length; i++) {
@@ -101,6 +118,10 @@ public class OutputTable extends Table<Integer> {
         }
     }
 
+    /**
+     * Appends to the value/element of the table a unique postfix.
+     * @param unique Unique postfix.
+     */
     public void makeUniqueVal(int unique) {
         Object[] keys = table.keySet().toArray();
         for (int i = 0; i < keys.length; i++) {

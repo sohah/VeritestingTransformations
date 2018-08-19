@@ -3,6 +3,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+/**
+ * Assignment Statement in RangerIR.
+ */
 public class AssignmentStmt implements Stmt {
 
     public final Expression lhs;

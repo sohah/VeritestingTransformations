@@ -8,7 +8,10 @@ import java.util.*;
 
 import static com.ibm.wala.shrike.bench.Slots.i;
 
-//SH: base class for all environment tables.
+/**
+ * Base class for all environment tables.
+  */
+
 
 public class Table<T> {
     public final HashMap<Integer, T> table;
@@ -27,6 +30,9 @@ public class Table<T> {
         this.label2 = label2;
     }
 
+    /**
+     * Basic lookup inside the table.
+     * */
     public T lookup(Integer v) {
         if (v != null)
             return table.get(v);
@@ -39,19 +45,35 @@ public class Table<T> {
         return null;
     }
 
+    /**
+     * Basic add row inside the table.
+     * */
+
     public void add(Integer v1, T v2) {
         if ((v1 != null) && (v2 != null))
             table.put(v1, v2);
     }
 
+    /**
+     * Basic remove element/row inside the table.
+     * */
+
     public void remove(Integer v1) {
          table.remove(v1);
     }
 
+    /**
+     * Basic print of the table. inside the table.
+     * */
+
     public void print() {
         System.out.println("\nprinting " + tableName+" ("+ label1 + "->" + label2 +")");
-        table.forEach((v1, v2) -> System.out.println("!w"+v1 + " --------- " + v2));
+        table.forEach((v1, v2) -> System.out.println("@w"+v1 + " --------- " + v2));
     }
+
+    /**
+     * Updates a key of the table for a specific entry.
+     * */
 
     public void updateKeys(Integer oldKey, Integer newKey){
         Object[] keys = table.keySet().toArray();
@@ -64,10 +86,18 @@ public class Table<T> {
         }
     }
 
+    /**
+     * Returns all keys of the table.
+     * */
+
     public Set<Integer> getKeys(){
         return  table.keySet();
     }
 
+    /**
+     * Appends a postfix to each key in the table.
+     * @param unique A unique postfix.
+     */
 
     public void makeUniqueKey(int unique){
         List keys = new ArrayList(table.keySet());
@@ -82,4 +112,14 @@ public class Table<T> {
             table.remove(key);
         }
     }
+
+    /**
+     * Merge the table with the entries of another table.
+     * */
+
+    public void mergeTable(Table<T> t){
+        this.table.putAll(t.table);
+    }
+
+
 }

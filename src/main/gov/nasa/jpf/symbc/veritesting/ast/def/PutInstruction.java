@@ -6,6 +6,10 @@ import com.ibm.wala.types.FieldReference;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+/**
+ * This is PutInstruction in RangerIR that matches the corresponding PutInstruction in Wala and subsequently the corresponding instructions in Java Bytecode.
+ */
+
 public class PutInstruction extends Instruction {
 
     public final Expression def;

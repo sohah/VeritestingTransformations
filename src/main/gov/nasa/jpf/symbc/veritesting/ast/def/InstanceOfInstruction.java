@@ -5,6 +5,10 @@ import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+/**
+ * This is InstanceOfInstruction in RangerIR that matches the corresponding InstanceOfInstruction in Wala and subsequently the instruction in Java Bytecode.
+ */
+
 public class InstanceOfInstruction extends Instruction {
 
     public final Expression result;

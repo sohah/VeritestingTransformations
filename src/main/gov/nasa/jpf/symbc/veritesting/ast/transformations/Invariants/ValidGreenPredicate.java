@@ -11,6 +11,10 @@ import java.util.Map;
 /* MWW: Not strictly speaking an AST Invariant because it operates over an
     expression rather than a statement.
  */
+
+/**
+ * This class is used to check the invariant that after AstToGreen translation, that the result is a valid Green expression that does not have IfThenElseExpr, WalaVarExpr, FieldRefVarExpr or GammaVarExpr.
+ */
 public class ValidGreenPredicate extends ForallExprVisitor {
 
     Map<Class, Integer> failures;

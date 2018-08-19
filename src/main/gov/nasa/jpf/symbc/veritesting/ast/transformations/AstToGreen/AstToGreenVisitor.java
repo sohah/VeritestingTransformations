@@ -1,6 +1,10 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUseVisit;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.Expression;
@@ -21,10 +25,15 @@ import za.ac.sun.cs.green.expr.Operation;
 
      */
 
+/**
+ * Main visitor that visits all statements and translate them to the appropriate green expression. At the point the expected statements are, assignments, composition and skip.
+ */
+
 public class AstToGreenVisitor implements AstVisitor<Expression> {
 
     ExprVisitorAdapter<Expression> eva;
     AstToGreenExprVisitor exprVisitor;
+
 
     public AstToGreenVisitor() {
         exprVisitor = new AstToGreenExprVisitor();
@@ -43,6 +52,11 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         return eva.accept(stmt.rhs);
     }
 
+    /**
+     * Transform a composition statement into a conjunction in green.
+     * @param stmt The composition statement to be translated.
+     * @return A green expression that represents the compsition statement.
+     */
     public Expression compositionStmt(CompositionStmt stmt) {
         Expression lhs = transform(stmt.s1);
         Expression rhs = transform(stmt.s2);
@@ -149,5 +163,18 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
     @Override
     public Expression visit(PhiInstruction c) {
         return bad(c);
+    }
+
+    public static Expression execut(DynamicRegion dynamicRegion){
+        WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynamicRegion.varTypeTable);
+        AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
+        Stmt noWalaVarStmt = dynamicRegion.dynStmt.accept(astMapVisitor);
+        FieldRefVarToSPFVarVisitor fieldRefVisitor = new FieldRefVarToSPFVarVisitor(dynamicRegion.fieldRefTypeTable);
+        astMapVisitor = new AstMapVisitor(fieldRefVisitor);
+        Stmt noRangerVarStmt = noWalaVarStmt.accept(astMapVisitor);
+
+        AstToGreenVisitor toGreenVisitor = new AstToGreenVisitor();
+        return noRangerVarStmt.accept(toGreenVisitor);
+
     }
 }

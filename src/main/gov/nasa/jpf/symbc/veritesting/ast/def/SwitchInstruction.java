@@ -5,6 +5,10 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 
 // TODO: MWW: THIS IS JUST A PLACEHOLDER!  I DID NOT WANT TO DEAL WITH SWITCH TODAY.
 
+/**
+ * This is SwitchInstruction in RangerIR that matches the corresponding SwitchInstruction in Wala and subsequently the corresponding instruction in Java Bytecode.
+ */
+
 public class SwitchInstruction extends Instruction {
 
 

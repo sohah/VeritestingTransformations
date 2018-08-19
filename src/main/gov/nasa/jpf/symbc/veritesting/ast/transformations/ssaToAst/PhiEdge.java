@@ -2,6 +2,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import com.ibm.wala.ssa.ISSABasicBlock;
 
+/**
+ * This is used to represent an edge from one block to another in the CFG.
+ */
 public class PhiEdge {
     public final ISSABasicBlock from;
     public final ISSABasicBlock to;

@@ -15,6 +15,10 @@ import java.util.List;
         TODO: am leaving it as it is.
  */
 
+
+/**
+ * This class provides the representation of Gamma in RangerIR which is extends a Phi to include the condition under which the choice is taken.
+ */
 public final class GammaVarExpr extends Variable {
     public final Expression condition;
     public final Expression thenExpr;

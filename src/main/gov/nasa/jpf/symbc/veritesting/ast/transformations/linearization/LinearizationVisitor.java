@@ -6,10 +6,12 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 
-// MWW: Trivial with good visitors :)
-
-// Assumptions: there are no more \phi functions, and every join
-// point for variable definitions is represented by a \Gamma function
+/**
+ * Linearalize region statement by removing "If" Statements and embedding statements on the "then" and the "else" side, to become one stream of composition statements.
+ *Assumptions: there are no more \phi functions, and every join
+ // point for variable definitions is represented by a \Gamma function
+ *
+ */
 
 public class LinearizationVisitor extends AstMapVisitor {
 

@@ -1,8 +1,10 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
-import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.IntConstant;
+/**
+ * This class is used to represent field-reference pair that is used in RangerIR to provide SSA for fields.
+ */
 
 public class FieldRef {
     public final int ref;
@@ -60,5 +62,10 @@ public class FieldRef {
             return ref == f.ref && field.equals(f.field);
         }
         else return false;
+    }
+
+    @Override
+    protected FieldRef clone() {
+        return new FieldRef(ref, className, field, isStatic);
     }
 }

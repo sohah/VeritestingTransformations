@@ -7,6 +7,10 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.Arrays;
 
+/**
+ * This is CheckCastInstruction in RangerIR that matches the corresponding CheckCastInstruction in Wala and subsequently the instruction in Java Bytecode.
+ */
+
 public class CheckCastInstruction extends Instruction {
 
     public final Expression result;

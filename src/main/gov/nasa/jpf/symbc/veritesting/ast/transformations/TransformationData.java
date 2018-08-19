@@ -5,8 +5,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicReg
 
 import java.util.Set;
 
-/* Data class defining interface for transformations.
-
+/**
+ *  Data class defining interface for invariants.
  */
 
 public class TransformationData {

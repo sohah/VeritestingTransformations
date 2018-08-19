@@ -25,7 +25,9 @@ import java.util.*;
         many cases, so I think it simplifies the code to use them.
      */
 
-
+/**
+ * Attempts to discover end node of a region, by walking successors of presumably a block that ends with a conditional instruction.
+ */
 public class FindStructuredBlockEndNode {
 
     PriorityQueue<ISSABasicBlock> remaining = null;
@@ -38,7 +40,7 @@ public class FindStructuredBlockEndNode {
     public static StaticRegionException staticRegionException = new StaticRegionException("FindStructuredBlockEndNode: mal-formed region");
 
     public FindStructuredBlockEndNode(SSACFG cfg, ISSABasicBlock initial, ISSABasicBlock maxLimit) {
-        remaining = new PriorityQueue<>((ISSABasicBlock o1, ISSABasicBlock o2)->o1.getNumber()-o2.getNumber());
+        remaining = SSAUtil.constructSortedBlockPQ();
         // set maxLimit to the end of the function if it is not provided.
         this.maxLimit = (maxLimit != null) ? maxLimit : cfg.exit();
         this.minLimit = initial;
@@ -57,37 +59,35 @@ public class FindStructuredBlockEndNode {
         }
     }
 
-    // idea: add element
-    void enqueue(ISSABasicBlock elem) {
-        if (!remaining.contains(elem)) {
-            remaining.add(elem);
-        }
-    }
-
+    /**
+     * This attempts to walk all successors of a block to try to find the end block node.
+     * @param b The block which we need to find the common successor for all its successors.
+     * @throws StaticRegionException An exception that indicates that something has went wrong during computation.
+     */
     void findCommonSuccessor(ISSABasicBlock b) throws StaticRegionException {
 
         for (ISSABasicBlock succ: cfg.getNormalSuccessors(b)) {
             checkRanges(b, succ);
-            enqueue(succ);
+            SSAUtil.enqueue(remaining, succ);
         }
 
         // Size of the queue is the number of open paths in the model.
         while (remaining.size() > 1) {
             ISSABasicBlock current = remaining.poll();
-            SSAInstruction last = current.getLastInstruction();
-            // We do not want to continue to explore successors of blocks ending with
-            // returns or exceptions.
-            if (!(last instanceof SSAReturnInstruction) && !(last instanceof SSAThrowInstruction)) {
-                for (ISSABasicBlock succ : cfg.getNormalSuccessors(current)) {
-                    checkRanges(current, succ);
-                    enqueue(succ);
-                }
+            for (ISSABasicBlock succ : SSAUtil.getNonReturnSuccessors(cfg, current)) {
+                checkRanges(current, succ);
+                SSAUtil.enqueue(remaining, succ);
             }
         }
 
         minConvergingNode = remaining.poll();
     }
 
+    /**
+     * Finds the end block of a region.
+     * @return End block of a region.
+     * @throws StaticRegionException An exception that indicates that something has went wrong during computation.
+     */
     public ISSABasicBlock findMinConvergingNode() throws StaticRegionException {
 
         // we have already computed it.

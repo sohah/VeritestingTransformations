@@ -31,8 +31,6 @@ import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
@@ -96,6 +94,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         return new SymbolicInteger(name, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
+    /**
+     * Listener's main method that checks every instruction for being a potential veritesting region.
+     * @param vm Virtual Machine.
+     * @param ti Current running Thread.
+     * @param instructionToExecute instruction to be executed.
+     */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
 
         if (veritestingMode == 0) return;
@@ -115,10 +119,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
 
                 StaticRegion staticRegion = regionsMap.get(key);
-                if (staticRegion != null)
-                    if (SpfUtil.isSymCond(ti.getTopFrame(), instructionToExecute)) {
-                        System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" +
-                                PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
+                if ((staticRegion != null) && !(staticRegion.isMethodRegion))
+                    //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
+                    if (SpfUtil.isSymCond(ti.getTopFrame(), staticRegion.slotParamTable, staticRegion.staticStmt)) {
+                        System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
                         staticRegion.slotParamTable.print();
                         staticRegion.outputTable.print();
                         staticRegion.inputTable.print();
@@ -138,17 +142,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion = FieldSSAVisitor.execute(ti, dynRegion);
 //                        dynRegion = GetSubstitutionVisitor.execute(ti, dynRegion);
                         TypePropagationVisitor.propagateTypes(dynRegion);
-                        //dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
-                        //TypePropagationVisitor.propagateTypes(dynRegion);
 
-                        System.out.println("--------------- UNIQUENESS TRANSFORMATION ---------------");
+                        System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
                         dynRegion = UniqueRegion.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
                         dynRegion.slotParamTable.print();
                         dynRegion.varTypeTable.print();
                         dynRegion.outputTable.print();
 
-
+/*
                         System.out.println("--------------- SPFCases TRANSFORMATION 1ST PASS ---------------");
                         dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
@@ -156,16 +158,16 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         System.out.println("--------------- SPFCases TRANSFORMATION 2ND PASS ---------------");
                         dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-
-                        System.out.println("--------------- LINEARIZATION TRANSFORMATION ---------------");
+*/
+                        System.out.println("\n--------------- LINEARIZATION TRANSFORMATION ---------------");
                         LinearizationTransformation linearTrans = new LinearizationTransformation();
                         dynRegion = linearTrans.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 
-                        System.out.println("--------------- TO GREEN TRANSFORMATION ---------------");
-                        Expression regionSummary = dynRegion.dynStmt.accept((new AstToGreenVisitor()));
+                        System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
+                        Expression regionSummary = AstToGreenVisitor.execut(dynRegion);
                         System.out.println(ExprUtil.AstToString(regionSummary));
-                        populateSPF(ti, instructionToExecute, dynRegion, regionSummary);
+                        setupSPF(ti, instructionToExecute, dynRegion, regionSummary);
                     }
             } catch (IllegalArgumentException e) {
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
@@ -177,8 +179,16 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
     }
 
+    /**
+     * This populates the Output of the summarized region to SPF.
+     * @param ti Currently running thread.
+     * @param ins Branch instruction that indicates beginning of the region.
+     * @param dynRegion Dynamic region that has been summarized.
+     * @param regionSummary Final summary of the region, after all transformations has been successfully completed.
+     * @throws StaticRegionException Exception to indicate a problem while setting SPF.
+     */
 
-    private void populateSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion, Expression regionSummary) throws StaticRegionException {
+    private void setupSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion, Expression regionSummary) throws StaticRegionException {
         if (canSetPC(ti, regionSummary)) {
             populateSlots(ti, dynRegion);
             clearStack(ti.getModifiableTopFrame(), ins);
@@ -186,6 +196,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
     }
 
+    /**
+     * This method checks that the current PathCondition and after appending the summarized region is satisfiable.
+     * @param ti Currently running thread.
+     * @param regionSummary Finaly summary of the region, after all transformations has been successfully completed.
+     * @return PathCondition is still satisfiable or not.
+     * @throws StaticRegionException Exception to indicate a problem while checking SAT of the updated PathCondition.
+     */
     private boolean canSetPC(ThreadInfo ti, Expression regionSummary) throws StaticRegionException {
         PathCondition pc;
 
@@ -204,6 +221,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
     }
 
+    /**
+     * This pop up operands of the if instruction that begins the region.
+     * @param sf Current StackFrame.
+     * @param ins Current executing instruction
+     * @throws StaticRegionException Exception to indicate a problem while clearning the stack.
+     */
     private void clearStack(StackFrame sf, Instruction ins) throws StaticRegionException {
         int numOperands = SpfUtil.getOperandNumber(ins.getMnemonic());
         while (numOperands > 0) {
@@ -212,6 +235,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
     }
 
+    /**
+     * Populates SPF stack slot with the output of the veritesting region.
+     * @param ti Current executing thread.
+     * @param dynRegion Dynamic region that has been successfully transformed and summarized.
+     */
     private void populateSlots(ThreadInfo ti, DynamicRegion dynRegion) {
         StackFrame sf = ti.getTopFrame();
         OutputTable outputTable = dynRegion.outputTable;
@@ -227,6 +255,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
     }
 
+    /**
+     * Steps SPF to the end of the region.
+     * @param ti Current running thread.
+     * @param ins Insturction to be executed.
+     * @param dynRegion Dynamic region that has been successfully transformed and summarized.
+     */
     private void advanceSpf(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion) {
         int endIns = dynRegion.endIns;
         while (ins.getPosition() != endIns) {
@@ -237,7 +271,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         ti.setNextPC(ins);
     }
 
-
+    /**
+     * This is tries to discover statically all potential regions that could be used as veritesting regions.
+     * @param ti Current running thread.
+     */
     private void discoverRegions(ThreadInfo ti) {
         Config conf = ti.getVM().getConfig();
         String classPath = conf.getStringArray("classpath")[0] + "/";

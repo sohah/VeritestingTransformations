@@ -2,6 +2,10 @@ package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.Ast;
 
+/**
+ * Prints out Statement in RangerIR.
+ */
+
 public class StmtPrintVisitor extends PrettyPrintVisitor{
 
     StmtPrintVisitor() {

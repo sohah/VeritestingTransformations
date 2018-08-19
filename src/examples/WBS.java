@@ -17,6 +17,7 @@
  */
 
 
+import gov.nasa.jpf.symbc.Debug;
 import gov.nasa.jpf.vm.Verify;
 
 
@@ -86,18 +87,24 @@ public class WBS {
 				   }
 			   }
 		   }
-	   
-	   if ((AutoBrake && 
+		Debug.printPC("PC @fter(PadalPos == 0) [Region 1] = ");
+
+
+		if ((AutoBrake &&
 		         WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator)) {
 		      WBS_Node_WBS_BSCU_Command_Switch = 1; 
 		   }  else { 
 		      WBS_Node_WBS_BSCU_Command_Switch = 0;
 		   }
-	   
+		Debug.printPC("PC @fter(AutoBrake && WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator) [Region 2] = ");
+
+
 	   WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6 = ((((!(WBS_Node_WBS_BSCU_Unit_Delay1 == 0)) && 
 	         (WBS_Node_WBS_Unit_Delay2 <= 0)) && 
 	         WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator) || 
-	         (!WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator)); 
+	         (!WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator));
+
+	//	Debug.printPC("PC @fter(WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6 = ((((!(WBS_Node_WBS_BSCU_Unit_Delay1 == 0)) &&) = ");
 
 	   if (WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) {
 	      if (Skid) 
@@ -107,20 +114,27 @@ public class WBS {
 	   }
 	   else { 
 	      WBS_Node_WBS_BSCU_Switch3 = 4;
-	    } 
+	    }
+
+	//	Debug.printPC("PC @fter((WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6)) = ");
+
 
 	   if (WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) {
 	      WBS_Node_WBS_Green_Pump_IsolationValve_Switch = 0; 
 	   }  else { 
 	      WBS_Node_WBS_Green_Pump_IsolationValve_Switch = 5; 
-	    } 
+	    }
 
-	   if ((WBS_Node_WBS_Green_Pump_IsolationValve_Switch >= 1)) { 
+	//	Debug.printPC("PC @fter(WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) = ");
+
+	   if ((WBS_Node_WBS_Green_Pump_IsolationValve_Switch >= 1)) {
 	      WBS_Node_WBS_SelectorValve_Switch1 = 0; 
 	   }
 	   else { 
 	      WBS_Node_WBS_SelectorValve_Switch1 = 5; 
 	   }
+
+	//	Debug.printPC("PC @fter(WBS_Node_WBS_Green_Pump_IsolationValve_Switch >= 1) = ");
 
 	   if ((!WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6)) {
 	      WBS_Node_WBS_AccumulatorValve_Switch = 0; 
@@ -133,7 +147,10 @@ public class WBS {
 		   }
 	   }
 
-	   if ((WBS_Node_WBS_BSCU_Switch3 == 0)) {
+	//	Debug.printPC("PC @fter(!WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) = ");
+
+
+		if ((WBS_Node_WBS_BSCU_Switch3 == 0)) {
 	      WBS_Node_WBS_AS_MeterValve_Switch = 0;
 	   }  else { 
 		   if ((WBS_Node_WBS_BSCU_Switch3 == 1))  {
@@ -153,21 +170,28 @@ public class WBS {
 				   }
 			   }
 		   }
-	   }	   
+	   }
+	//	Debug.printPC("PC @fter(WBS_Node_WBS_BSCU_Switch3 == 0) = ");
+
+
 
 	   if (Skid) {
 	      WBS_Node_WBS_BSCU_Command_AntiSkidCommand_Normal_Switch = 0;
 	   }  else { 
 	      WBS_Node_WBS_BSCU_Command_AntiSkidCommand_Normal_Switch = (WBS_Node_WBS_BSCU_Command_Switch+WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1);
 	   }
+		Debug.printPC("PC @fter(Skid) [Region 3] = ");
+
 
 	   if (WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) {
 	      Sys_Mode = 1; 
 	   }  else { 
 	      Sys_Mode = 0;
 	   }
+	//	Debug.printPC("PC @fter(WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) = ");
 
-	   if (WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) {
+
+		if (WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) {
 	      WBS_Node_WBS_BSCU_Switch2 = 0; 
 	   }  else { 
 		   if (((WBS_Node_WBS_BSCU_Command_AntiSkidCommand_Normal_Switch >= 0) && 
@@ -192,12 +216,18 @@ public class WBS {
 			   }
 		   }
 	   }
+		//Debug.printPC("PC @fter(WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) = ");
 
-	   if ((WBS_Node_WBS_Green_Pump_IsolationValve_Switch >= 1))  {
+
+
+		if ((WBS_Node_WBS_Green_Pump_IsolationValve_Switch >= 1))  {
 	      WBS_Node_WBS_SelectorValve_Switch = WBS_Node_WBS_Green_Pump_IsolationValve_Switch;
 	   }  else { 
 	      WBS_Node_WBS_SelectorValve_Switch = 0;
 	   }
+	//	Debug.printPC("PC @fter(WBS_Node_WBS_Green_Pump_IsolationValve_Switch >= 1) = ");
+
+
 
 	   if ((WBS_Node_WBS_BSCU_Switch2 == 0)) {
 	      Nor_Pressure = 0; 
@@ -221,6 +251,8 @@ public class WBS {
 		   }
 	   }
 
+		Debug.printPC("PC before(WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1 == 0) [region 4] = ");
+
 	   if ((WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1 == 0)) {
 	      Alt_Pressure = 0; 
 	   }  else {
@@ -242,6 +274,8 @@ public class WBS {
 			   }
 		   }
 	   }
+		Debug.printPC("PC @fter(WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1 == 0) [Region 4] = ");
+
 
 	   WBS_Node_WBS_rlt_PRE2 = Nor_Pressure; 
 
@@ -260,25 +294,26 @@ public class WBS {
 		//assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
 		// This assertion should fail:
-		// assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0) : true);
+		 //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0) : true);
 
 		// This assertion may fail (depending on encoding):
-		// assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
+		//Debug.printPC("PC before assertion ((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true) = ");
+
+		assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
 
 		// This assertion should fail:
-		// assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+		 //assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
 		// This assertion should also fail:
-		// assert((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
-
-
+		//assert((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 	}
-	
+
+
 	public static void launch(int pedal1, boolean auto1, boolean skid1, int pedal2, boolean auto2, boolean skid2, int pedal3, boolean auto3, boolean skid3) {
 		WBS wbs = new WBS();
 		wbs.update(pedal1, auto1, skid1);
-		wbs.update(pedal2, auto2, skid2);
-		wbs.update(pedal3, auto3, skid3);
+		//wbs.update(pedal2, auto2, skid2);
+		//wbs.update(pedal3, auto3, skid3);
 	}
 	
 	public static void main(String[] args) {

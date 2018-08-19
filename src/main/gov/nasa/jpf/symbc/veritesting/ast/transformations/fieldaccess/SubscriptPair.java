@@ -11,9 +11,15 @@ public class SubscriptPair {
 
     @Override
     public String toString() {
-        return "(" +
-                "pS=" + pathSubscript +
-                ", gS=" + globalSubscript +
-                ')';
+        return pathSubscript.toString() + "." + globalSubscript.toString();
+    }
+
+    public String getSymName() {
+        return pathSubscript.toString() + "." + globalSubscript.toString();
+    }
+
+    @Override
+    public SubscriptPair clone() {
+        return new SubscriptPair(pathSubscript, globalSubscript);
     }
 }

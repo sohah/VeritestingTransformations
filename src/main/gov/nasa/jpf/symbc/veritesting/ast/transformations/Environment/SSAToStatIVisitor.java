@@ -8,27 +8,55 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.PhiCondition;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.PhiEdge;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil;
 import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
 
-
-//SH: This class translates SSAInstructions to Veritesting Statements.
+/**
+ * This visitor translates specific Wala SSAInstructions to RangerIR.
+ */
 
 
 public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
+    /**
+     * A translated RangerIR statement.
+     */
     public Stmt veriStatement;
+
+    /**
+     * Used to indicate instructions that cannot be veritested.
+     */
     public boolean canVeritest = true;
 
+    /**
+     * IR of the region currently being translated to RangerIR Statement.
+     */
     private IR ir;
-    private HashMap<PhiEdge, List<PhiCondition>> blockConditionMap;
+
+    /**
+     * A map that maps a PhiEdge with a list of all conditions that describe the path needs to be taken in the cfg to get to that edge of the phi.
+     */
+    private Map<PhiEdge, List<PhiCondition>> blockConditionMap;
+
+    /**
+     * Corresponds to the current condition during walking the CFG.
+     */
     private Deque<PhiCondition> currentCondition;
+
+    /**
+     * current block where the instruction lies.
+     */
     private ISSABasicBlock currentBlock;
+
+    /**
+     * Used to throw Static Region Exception.
+     */
     private StaticRegionException pending = null;
 
     public SSAToStatIVisitor(IR ir,
                              ISSABasicBlock currentBlock,
-                             HashMap<PhiEdge, List<PhiCondition>> blockConditionMap,
+                             Map<PhiEdge, List<PhiCondition>> blockConditionMap,
                              Deque<PhiCondition> currentCondition) {
         this.ir = ir;
         this.currentBlock = currentBlock;
@@ -63,8 +91,28 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         } else {
 */
 
-    private Expression convertWalaVar(int ssaVar) throws StaticRegionException {
-        return new WalaVarExpr(ssaVar);
+    /**
+     * Converts a Wala Constant Variable to the appropriate Green expression.
+     *
+     */
+    private Expression convertWalaVar(int ssaVar) {
+        SymbolTable symtab = ir.getSymbolTable();
+        if (symtab.isConstant(ssaVar)) {
+            Object val = symtab.getConstantValue(ssaVar);
+            if (val instanceof Boolean) {
+                return new IntConstant(val.equals(Boolean.TRUE) ? 1 : 0);
+            } else if (val instanceof Integer) {
+                return new IntConstant((Integer)val);
+            } else if (val instanceof Double) {
+                return new RealConstant((Double)val);
+            } else if (val instanceof String) {
+                return new StringConstantGreen((String)val);
+            } else {
+                throw new IllegalArgumentException("translateTruncatedFinalBlock: unsupported constant type");
+            }
+        } else {
+            return new WalaVarExpr(ssaVar);
+        }
     }
 
 
@@ -89,6 +137,10 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         return cond;
     }
 
+    /**
+     * Creates Gamma Expression by visiting corresponding Phi
+     *
+     */
     private Expression createGamma(List<LinkedList<PhiCondition>> conds, List<Expression> values) throws StaticRegionException {
 
         //assert(!conds.isEmpty());
@@ -128,8 +180,12 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
                 createGamma(elseConds, elseValues));
     }
 
-    // If this phi is for a nested if/then/else, ignore the "out of scope"
-    // conditions corresponding to ancestor branches.
+
+
+    /**
+     * Used to ignore the "out of scope" conditions corresponding to ancestor branches, if this is a phi is for a nested if/then/else,
+     * @param conds Current out of scope conditions.
+     */
     public void adjustForDepth(List<LinkedList<PhiCondition>> conds) {
         int depth = this.currentCondition.size();
         for (LinkedList<PhiCondition> cond : conds) {
@@ -139,12 +195,18 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         }
     }
 
+    /**
+     * Translates a phi to RangerIR assignment statement of a Gamma expression.
+     * @param ssaphi Current PhiInstruction to be translated.
+     * @return A RangerIR assignment statement to a Gamma expression
+     * @throws StaticRegionException An exception that indicates that something went wrong during translation.
+     */
     public Stmt translatePhi(SSAPhiInstruction ssaphi) throws StaticRegionException {
         SSACFG cfg = ir.getControlFlowGraph();
         SymbolTable symtab = ir.getSymbolTable();
-        Iterator<ISSABasicBlock> it = cfg.getPredNodes(currentBlock);
-        int predNodesCount = cfg.getPredNodeCount(currentBlock);
-        if (ssaphi.getNumberOfUses() != predNodesCount) {
+        Collection<ISSABasicBlock> preds = cfg.getNormalPredecessors(currentBlock);
+        Iterator<ISSABasicBlock> it = preds.iterator();
+        if (ssaphi.getNumberOfUses() != preds.size()) {
             throw new StaticRegionException("translateTruncatedFinalBlock: normal predecessors size does not match number of phi branches");
         }
         else {
@@ -157,9 +219,12 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
                 List<PhiCondition> cond = blockConditionMap.get(new PhiEdge(preBlock, currentBlock));
                 if (cond == null) {
-                    // MWW TODO: this may be o.k. - we have an unstructured jump into our region.
-                    //     TODO: But it is a little weird, so I don't want to incorrectly handle something.
-                    throw new StaticRegionException("translateTruncatedFinalBlock: normal predecessor not found in blockConditionMap!");
+                    System.out.println("Unable to find condition.");
+                    SSAUtil.printBlocksUpTo(cfg, currentBlock.getNumber());
+                    // MWW: null case.  Do not add to the gamma.
+                    // MWW: This case occurs due to jumps from complex 'if' conditions.
+                    // MWW: the top one of them will be in the blockConditionMap, but subsequent ones
+                    // MWW: will not be placed in the map.
                 }
                 else {
                     conds.add(new LinkedList<PhiCondition>(cond));
@@ -176,21 +241,38 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         End of Phi translating methods.
      */
 
+    /**
+     * Goto instructions are not translated to RangerIR and therefore should not be visited by this visitor.
+     * @param ssaGotoInstruction
+     */
     @Override
     public void visitGoto(SSAGotoInstruction ssaGotoInstruction) {
         throw new IllegalArgumentException("Goto seen in SSAToStatIVisitor.  This should not occur.");
     }
 
+    /**
+     * Create an ArrayLoad Instruction in RangerIR.
+     * @param ssaArrayLoadInstruction Wala SSA instruction for ArrayLoad
+     */
     @Override
     public void visitArrayLoad(SSAArrayLoadInstruction ssaArrayLoadInstruction) {
         veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ArrayLoadInstruction(ssaArrayLoadInstruction);
     }
 
+    /**
+     * Create an ArrayStore Instruction in RangerIR.
+     * @param ssaArrayStoreInstruction Wala SSA instruction for ArrayStore
+     */
     @Override
     public void visitArrayStore(SSAArrayStoreInstruction ssaArrayStoreInstruction) {
         veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ArrayStoreInstruction(ssaArrayStoreInstruction);
     }
 
+    /**
+     * Translate a binary operation to the appropriate Green operator.
+     * @param op Wala operation
+     * @return Equivalent Green operator
+     */
     private Operation.Operator translateBinaryOp(IBinaryOpInstruction.Operator op) {
         switch (op) {
             case ADD: return Operation.Operator.ADD;
@@ -205,12 +287,16 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
     }
 
+    /**
+     * Create an Assignment Statement in RangerIR for binary operations in Wala.
+     * @param ssa Wala SSA binary instruction.
+     */
     @Override
     public void visitBinaryOp(SSABinaryOpInstruction ssa) {
         Expression lhs = new WalaVarExpr(ssa.getDef());
         Operation.Operator op = translateBinaryOp((IBinaryOpInstruction.Operator)ssa.getOperator());
-        Expression op1 = new WalaVarExpr(ssa.getUse(0));
-        Expression op2 = new WalaVarExpr(ssa.getUse(1));
+        Expression op1 = convertWalaVar(ssa.getUse(0));
+        Expression op2 = convertWalaVar(ssa.getUse(1));
         Expression rhs = new Operation(op, op1, op2);
         Stmt s = new AssignmentStmt(lhs, rhs);
         veriStatement = s;
@@ -221,6 +307,10 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
                         new WalaVarExpr(ssa.getUse(1))));*/
     }
 
+    /**
+     * Translates a unary operation in Wala to its corresponding Green operator.
+     *
+     */
     Operation.Operator translateUnaryOp(IUnaryOpInstruction.Operator op) {
         switch(op) {
             case NEG: return Operation.Operator.NEG;
@@ -228,12 +318,16 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateUnaryOp");
     }
 
+    /**
+     * Translates a unary instruction in Wala SSA to RangerIR assignment statement.
+     * @param ssa SSA unary instruction.
+     */
     @Override
     public void visitUnaryOp(SSAUnaryOpInstruction ssa) {
         veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()),
                 new Operation(
                         translateUnaryOp((IUnaryOpInstruction.Operator)ssa.getOpcode()),
-                                new WalaVarExpr(ssa.getUse(0)))
+                                convertWalaVar(ssa.getUse(0)))
                 );
     }
 
@@ -241,18 +335,22 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         MWW: casts in SPF involve object creation, so are beyond what we can support currently in
         Static regions.
      */
+
     @Override
     public void visitConversion(SSAConversionInstruction ssa) {
         canVeritest = false;
         // veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ConversionInstruction(ssa);
     }
 
-
+    /**
+     * Translates a comparision instruction in Wala SSA to RangerIR assignment statement.
+     * @param ssa SSA comparision instruction.
+     */
     @Override
     public void visitComparison(SSAComparisonInstruction ssa) {
         Expression expr;
-        Expression condlhs = new WalaVarExpr(ssa.getUse(0));
-        Expression condrhs = new WalaVarExpr(ssa.getUse(1));
+        Expression condlhs = convertWalaVar(ssa.getUse(0));
+        Expression condrhs = convertWalaVar(ssa.getUse(1));
         Operation.Operator condOp =
                 (ssa.getOperator() == IComparisonInstruction.Operator.CMP ||
                         ssa.getOperator() == IComparisonInstruction.Operator.CMPG) ?
@@ -276,61 +374,109 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         throw new IllegalArgumentException("Reached conditional branch in SSAToStatIVisitor: why?");
     }
 
+    /**
+     * RangerIR currently does not support Switch instruction.
+     * @param ssaSwitchInstruction
+     */
     @Override
     public void visitSwitch(SSASwitchInstruction ssaSwitchInstruction) {
         canVeritest = false;
     }
 
+    /**
+     * Creates RangerIR return instruction out of SSA return instruction.
+     * @param ssaReturnInstruction
+     */
     @Override
     public void visitReturn(SSAReturnInstruction ssaReturnInstruction) {
         veriStatement = new ReturnInstruction(ssaReturnInstruction);
     }
 
+    /**
+     * Creates RangerIR get instruction out of SSA get instruction.
+     * @param ssaGetInstruction
+     */
     @Override
     public void visitGet(SSAGetInstruction ssaGetInstruction) {
         veriStatement = new GetInstruction(ssaGetInstruction);
     }
 
+    /**
+     * Creates RangerIR put instruction out of SSA put instruction.
+     * @param ssaPutInstruction
+     */
     @Override
     public void visitPut(SSAPutInstruction ssaPutInstruction) {
         veriStatement = new PutInstruction(ssaPutInstruction);
     }
 
+    /**
+     * Creates RangerIR invoke instruction out of SSA invoke instruction.
+     * @param ssaInvokeInstruction
+     */
     @Override
     public void visitInvoke(SSAInvokeInstruction ssaInvokeInstruction) {
         veriStatement = new InvokeInstruction(ssaInvokeInstruction);
     }
 
+    /**
+     * Creates RangerIR new instruction out of SSA new instruction.
+     * @param ssaNewInstruction
+     */
     @Override
     public void visitNew(SSANewInstruction ssaNewInstruction) {
         veriStatement = new NewInstruction(ssaNewInstruction);
     }
 
+    /**
+     * Creates RangerIR array length instruction out of SSA array length instruction.
+     * @param ssaArrayLengthInstruction
+     */
     @Override
     public void visitArrayLength(SSAArrayLengthInstruction ssaArrayLengthInstruction) {
         veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ArrayLengthInstruction(ssaArrayLengthInstruction);
     }
 
+    /**
+     * Creates RangerIR throw instruction out of SSA throw instruction.
+     * @param ssaThrowInstruction
+     */
     @Override
     public void visitThrow(SSAThrowInstruction ssaThrowInstruction) {
         veriStatement = new ThrowInstruction(ssaThrowInstruction);
     }
 
+    /**
+     * RangerIR currently does not support SSAMonitor instructions.
+     * @param ssaMonitorInstruction
+     */
     @Override
     public void visitMonitor(SSAMonitorInstruction ssaMonitorInstruction) {
         canVeritest = false;
     }
 
+    /**
+     * Creates RangerIR check cast instruction out of SSA check cast instruction.
+     * @param ssaCheckCastInstruction
+     */
     @Override
     public void visitCheckCast(SSACheckCastInstruction ssaCheckCastInstruction) {
         veriStatement = new CheckCastInstruction(ssaCheckCastInstruction);
     }
 
+    /**
+     * Creates RangerIR instance of instruction out of SSA instance of instruction.
+     * @param ssaInstanceofInstruction
+     */
     @Override
     public void visitInstanceof(SSAInstanceofInstruction ssaInstanceofInstruction) {
         veriStatement = new InstanceOfInstruction(ssaInstanceofInstruction);
     }
 
+    /**
+     * Creates RangerIR phi instruction out of Wala's phi instruction.
+     * @param ssaPhiInstruction
+     */
     @Override
     public void visitPhi(SSAPhiInstruction ssaPhiInstruction) {
         try {
@@ -341,22 +487,36 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         }
     }
 
+    /**
+     * Ranger IR does not need to support Wala's Pi instruction.
+     * @param ssaPiInstruction
+     */
     @Override
     public void visitPi(SSAPiInstruction ssaPiInstruction) {
         veriStatement = SkipStmt.skip;
     }
 
+    /**
+     * RangerIR does not support getCaughtException.
+     * @param ssaGetCaughtExceptionInstruction
+     */
     @Override
     public void visitGetCaughtException(SSAGetCaughtExceptionInstruction ssaGetCaughtExceptionInstruction) {
         canVeritest = false;
     }
 
+    /**
+     * RangerIR does not support SSALoadMeta data instruction.
+     * @param ssaLoadMetadataInstruction
+     */
     @Override
     public void visitLoadMetadata(SSALoadMetadataInstruction ssaLoadMetadataInstruction) {
         canVeritest = false;
     }
 
+
     public static StaticRegionException sre = new StaticRegionException("Untranslatable instruction in SSAToStatIVisitor");
+
 
     public Stmt convert(SSAInstruction ssa) throws StaticRegionException {
         ssa.visit(this);

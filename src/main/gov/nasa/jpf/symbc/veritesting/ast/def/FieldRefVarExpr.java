@@ -9,14 +9,19 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
+/**
+ * A class that carries a fieldReference with a specific SSA subscript.
+ */
+
 public final class FieldRefVarExpr extends Variable {
     public final FieldRef fieldRef;
     public final SubscriptPair subscript;
+    public String varId;
 
     public FieldRefVarExpr(FieldRef fieldRef, SubscriptPair subscript) {
-        super("@r"+fieldRef.ref + "." + fieldRef.field + "#" + subscript);
-        this.fieldRef = fieldRef;
-        this.subscript = subscript;
+        super("@r"+fieldRef.ref + "." + fieldRef.field + "." + subscript);
+        this.fieldRef = fieldRef.clone();
+        this.subscript = subscript.clone();
     }
 
     @Override
@@ -31,7 +36,7 @@ public final class FieldRefVarExpr extends Variable {
 
     // I am making class final so that equality works correctly.
     public boolean equals(Object o) {
-        if (o != null && o instanceof FieldRefVarExpr) {
+        if (o instanceof FieldRefVarExpr) {
             FieldRefVarExpr other = (FieldRefVarExpr)o;
             return (this.fieldRef.equals(other.fieldRef) &&
                     this.subscript == other.subscript);
@@ -69,4 +74,7 @@ public final class FieldRefVarExpr extends Variable {
         return null;
     }
 
+    public String getSymName() {
+        return "r"+fieldRef.ref + "." + fieldRef.field + "." + subscript.getSymName();
+    }
 }

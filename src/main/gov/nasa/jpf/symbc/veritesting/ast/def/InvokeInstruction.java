@@ -6,6 +6,10 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.Arrays;
 
+/**
+ * This is InvokeInstruction in RangerIR that matches the corresponding InvokeInstruction in Wala and subsequently the corresponding instructions in Java Bytecode.
+ */
+
 public class InvokeInstruction extends Instruction {
     public final Expression [] result;
     public final Expression [] params;
@@ -43,6 +47,6 @@ public class InvokeInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return "\n invoke " + Arrays.toString(params) + "=" + Arrays.toString(result);
+        return "\n" + Arrays.toString(result) + " = invoke " + Arrays.toString(params);
     }
 }

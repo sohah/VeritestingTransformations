@@ -6,8 +6,13 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
+/**
+ * This is the class of Wala Variables in RangerIR.
+ */
 public final class WalaVarExpr extends Variable {
-
+    /**
+     * This number matches the number defined for a specific Wala Variable.
+     */
     public final int number;
 
     public WalaVarExpr(int var) {
@@ -30,6 +35,17 @@ public final class WalaVarExpr extends Variable {
         }
         return false;
     }
+
+
+    /**
+     * Gets the symbolic name to be used for vars in SPF.
+     * @return retrunds symbolic name, which is the name of the WalaVarExpr, without the @ sign
+     */
+    public String getSymName(){
+        return "w"+ Integer.toString(number);
+    }
+
+
 
     @Override
     public String toString() {

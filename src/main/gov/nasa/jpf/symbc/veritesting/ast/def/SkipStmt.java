@@ -2,6 +2,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 
+/**
+ * A Skip statement in RangerIR.
+ */
 public class SkipStmt implements Stmt {
 
     public static SkipStmt skip = new SkipStmt();

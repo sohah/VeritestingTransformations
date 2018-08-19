@@ -3,12 +3,18 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+/**
+ * This is SPFCases in RangerIR. These are basically a place holder for places in RangerIR where SPF needs to explore.
+ */
 
 public class SPFCaseStmt implements Stmt {
 
     public final Expression spfCondition;
     public final SPFReason reason;
 
+    /**
+     * These are the different reasons that requires SPF exploration.
+     */
     public enum SPFReason{
         OBJECT_CREATION, OUT_OF_BOUND_EXCEPTION, THROW,
         MULTIPLE; //used when the two sides of the ifStmt have SPFCases

@@ -3,6 +3,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 
+/**
+ * Pretty print of all statements and expressions in RangerIR.
+ */
 public class PrettyPrintVisitor implements AstVisitor<Void> {
 
     int indent = 0;
@@ -224,7 +227,15 @@ public class PrettyPrintVisitor implements AstVisitor<Void> {
 
         @Override
         public Void visit(Operation expr) {
-            write(expr.toString());
+            write("(");
+            write(expr.getOperator().toString());
+            write(" ");
+            for (Expression e: expr.getOperands()) {
+                eva.accept(e);
+                write(" ");
+            }
+            // write(expr.toString());
+            write(")");
             return null;
         }
 
@@ -260,6 +271,12 @@ public class PrettyPrintVisitor implements AstVisitor<Void> {
     public static String print(Ast s) {
         PrettyPrintVisitor visitor = new PrettyPrintVisitor();
         s.accept(visitor);
+        return visitor.toString();
+    }
+
+    public static String print(Expression s) {
+        PrettyPrintVisitor visitor = new PrettyPrintVisitor();
+        visitor.eva.accept(s);
         return visitor.toString();
     }
 }

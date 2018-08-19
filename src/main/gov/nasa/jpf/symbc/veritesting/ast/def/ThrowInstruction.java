@@ -3,7 +3,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 import com.ibm.wala.ssa.SSAThrowInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 
-// TODO: placeholder class: I don't think we need to adequately translate this.
+/**
+ * This is ThrowInstruction in Ranger IR that matches the corresponding ThrowInstruction in Wala and subsequently the instruction in Java Bytecode. This is populated during the transformation of the AST from the CFG, it later disappears upon generating the appropriate SPFCase predicate.
+ */
 
 public class ThrowInstruction extends Instruction {
 

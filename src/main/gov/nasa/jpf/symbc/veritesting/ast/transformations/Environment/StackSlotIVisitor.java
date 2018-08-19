@@ -3,7 +3,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 import com.ibm.wala.ssa.*;
 
 
-//SH: This visitor fills the stack slots for wala vars.
+/**
+ * This visitor fills the stack slots for wala vars.
+ */
 
 
 public class StackSlotIVisitor implements SSAInstruction.IVisitor {
@@ -158,8 +160,11 @@ public class StackSlotIVisitor implements SSAInstruction.IVisitor {
 
     }
 
-// SH: Used only to get the stack slot of "use" vars, which are either already defined in a previous "def" and so it will
-// be in the stackSlotMap. This is done also for phiInstruction, but phi requires a fix point computation and propagation of vars to stack slot discovery. This happens during the construction of the stack slot table object.
+    /**
+     * This method is used only to get the stack slot of "use" vars, which are either already defined in a previous "def" and so it will be in the stackSlotMap. This is done also for phiInstruction, but phi requires a fix point computation and propagation of vars to stack slot discovery. This happens during the construction of the stack slot table object.
+     * @param ins Instruction currently being explored for slots.
+     * @param var Variable that we try to find its stack slot.
+     */
 
     public void populateVars(SSAInstruction ins, int var) {
         int iindex = ins.iindex;

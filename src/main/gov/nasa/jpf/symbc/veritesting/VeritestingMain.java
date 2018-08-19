@@ -40,30 +40,21 @@ import static org.apache.bcel.generic.Type.getSignature;
 
 import za.ac.sun.cs.green.expr.Operation;
 
-
+/**
+ * Main class file for veritesting static analysis exploration.
+ */
 public class VeritestingMain {
 
     public HashSet endingInsnsHash;
     ClassHierarchy cha;
     HashSet<String> methodSummaryClassNames, methodSummarySubClassNames;
-    private boolean methodAnalysis = false;
+    private boolean methodAnalysis = true;
     private String currentPackageName;
-    //HashMap<String, Stmt> veritestingRegions;
     public static HashMap<String, StaticRegion> veriRegions;
     private ThreadInfo ti;
 
 
 
-    public int getObjectReference() {
-        return objectReference;
-    }
-    public void setObjectReference(int objectReference) {
-        this.objectReference = objectReference;
-    }
-    // Relevant only if this region is a method summary
-    // Used to point to the object on which the method will be called
-    // Useful to get fields of the object in this method summary
-    int objectReference = -1;
     SSACFG cfg;
     HashSet startingPointsHistory;
     String currentClassName, currentMethodName, methodSig;
@@ -279,6 +270,7 @@ public class VeritestingMain {
                 regionCreator.createStructuredConditionalRegions(veriRegions);
             } else {
                 //regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
+                regionCreator.createStructuredConditionalRegions(veriRegions);
                 regionCreator.createStructuredMethodRegion(veriRegions);
             }
             /* // Placeholder for testing and visualizing static-time transformations

@@ -3,6 +3,10 @@ package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 
+/**
+ * An adaptor that pushes the visitor to the right visit for a Green expression.
+ * @param <T>
+ */
 public class ExprVisitorAdapter<T>  {
 
     private ExprVisitor<T> theVisitor;

@@ -7,15 +7,27 @@ import za.ac.sun.cs.green.expr.IntVariable;
 import za.ac.sun.cs.green.expr.Operation;
 import za.ac.sun.cs.green.expr.RealVariable;
 
+/**
+ * A utility class that provides some methods from SPF to Green and vise versa.
+ */
 public class ExprUtil {
 
+    /**
+     * Translates an SPF expression to a Green Expression.
+     * @param spfExp SPF Expression
+     * @return Green Expression.
+     */
     public static Expression SPFToGreenExpr(gov.nasa.jpf.symbc.numeric.Expression spfExp) {
         SolverTranslator.Translator toGreenTranslator = new SolverTranslator.Translator();
         spfExp.accept(toGreenTranslator);
         return toGreenTranslator.getExpression();
     }
 
-
+    /**
+     * Pretty print method to print Green expression.
+     * @param expression Green expression.
+     * @return String of Green Expression.
+     */
     public static String AstToString(Expression expression) {
         if (expression instanceof Operation) {
             Operation operation = (Operation) expression;
@@ -30,12 +42,22 @@ public class ExprUtil {
             return expression.toString();
     }
 
+    /**
+     * Translates Green Expession to SPF.
+     * @param greenExpression A Green expression to be translated to SPF.
+     * @return SPF expression.
+     */
     public static gov.nasa.jpf.symbc.numeric.Expression greenToSPFExpression(Expression greenExpression) {
         GreenToSPFTranslator toSPFTranslator = new GreenToSPFTranslator();
         return toSPFTranslator.translate(greenExpression);
     }
 
-
+    /**
+     * Creates a Green variable depending on its type.
+     * @param type Type of the variable.
+     * @param varId Name of the variable.
+     * @return A Green variable.
+     */
     public static Expression createGreenVar(String type, String varId) {
             switch (type) {
                 case "double":

@@ -2,6 +2,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 
+/**
+ * RangerIR composition statement.
+ */
 public class CompositionStmt implements Stmt {
     public final Stmt s1;
     public final Stmt s2;

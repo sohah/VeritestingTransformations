@@ -55,6 +55,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
         return new DynamicRegion(dynRegion.staticRegion,
                 stmt,
                 dynRegion.varTypeTable,
+                dynRegion.fieldRefTypeTable,
                 dynRegion.slotParamTable,
                 dynRegion.outputTable,
                 dynRegion.isMethodRegion,
@@ -68,11 +69,14 @@ public class FieldSSAVisitor extends AstMapVisitor {
             throw new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor");
         else {
             FieldRef fieldRef = FieldRef.makePutFieldRef(ti, putIns);
-            FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
-            if (dynRegion.varTypeTable.lookup(putIns.assignExpr) != null) {
-                dynRegion.varTypeTable.add(fieldRefVarExpr.getName(), dynRegion.varTypeTable.lookup(putIns.assignExpr));
-            }
-            return new AssignmentStmt(fieldRefVarExpr, putIns.assignExpr);
+            if (WalaVarExpr.class.isInstance(putIns.assignExpr)) {
+                FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
+                if (dynRegion.varTypeTable.lookup(((WalaVarExpr)putIns.assignExpr).number) != null) {
+                    dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.getName(),
+                            dynRegion.varTypeTable.lookup(((WalaVarExpr)putIns.assignExpr).number));
+                }
+                return new AssignmentStmt(fieldRefVarExpr, putIns.assignExpr);
+            } else throw new IllegalArgumentException("Cannot handle PutInstruction with non-WalaVarExpr rhs");
         }
     }
 
@@ -150,7 +154,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
         if (output.exceptionalMessage != null) throw new IllegalArgumentException(output.exceptionalMessage);
         FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
         if (output.type != null) {
-            dynRegion.varTypeTable.add(fieldRefVarExpr.getName(), output.type);
+            dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.getName(), output.type);
         }
         Expression thenExpr = thenSubscript.pathSubscript != FIELD_SUBSCRIPT_BASE ?
                 new FieldRefVarExpr(fieldRef, thenSubscript) : output.def;
@@ -176,39 +180,37 @@ public class FieldSSAVisitor extends AstMapVisitor {
             FieldRef fieldRef = FieldRef.makeGetFieldRef(ti, c);
             if (psm.lookup(fieldRef) != null) {
                 rhs = new FieldRefVarExpr(fieldRef, psm.lookup(fieldRef));
-                if ((dynRegion.varTypeTable.lookup(((FieldRefVarExpr) rhs).getName())) != null)
-                    type = (dynRegion.varTypeTable.lookup(((FieldRefVarExpr) rhs).getName()));
+                if ((dynRegion.fieldRefTypeTable.lookup(((FieldRefVarExpr) rhs).getName())) != null)
+                    type = (dynRegion.fieldRefTypeTable.lookup(((FieldRefVarExpr) rhs).getName()));
             }
-            else if (c.def instanceof WalaVarExpr) {
+            else {
                 try {
-                    rhs = substituteGet(c);
-                    type = dynRegion.varTypeTable.lookup(rhs);
+                    SubstituteGetOutput output = substituteGet(c);
+                    type = output.type;
                 } catch (StaticRegionException e) {
                     exceptionalMessage = e.getMessage();
                 }
 
-            } else exceptionalMessage = "rhs not instance of WalaVarExpr in GetInstruction: " + c;
+            }
         } else exceptionalMessage = "encountered obj-ref in GetInstruction that is not a constant";
         // only one of rhs and exceptionalMessage should be non-null
         assert (rhs == null) ^ (exceptionalMessage == null);
-        if (type != null) dynRegion.varTypeTable.add(c.def, type);
+        if (c.def instanceof WalaVarExpr)
+            if (type != null) dynRegion.varTypeTable.add(((WalaVarExpr) c.def).number, type);
+        else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
         if (exceptionalMessage != null) throw new IllegalArgumentException(exceptionalMessage);
         else return new AssignmentStmt(c.def, rhs);
     }
 
-    private Expression substituteGet(GetInstruction getIns)
+    private SubstituteGetOutput substituteGet(GetInstruction getIns)
             throws StaticRegionException {
-        int defNumber = ((WalaVarExpr)getIns.def).number;
         SubstituteGetOutput substituteGetOutput = new SubstituteGetOutput(FieldRef.makeGetFieldRef(ti, getIns)).invoke();
         String exceptionalMessage = substituteGetOutput.getExceptionalMessage();
         Expression def = substituteGetOutput.getDef();
-        String type = substituteGetOutput.getType();
         // only one of def and exceptionalMessage should be non-null
         assert (def == null) ^ (exceptionalMessage == null);
-        dynRegion.varTypeTable.add(defNumber, type);
-
         if (exceptionalMessage != null) throw new StaticRegionException(exceptionalMessage);
-        return def;
+        return substituteGetOutput;
     }
 
     private class SubstituteGetOutput {
