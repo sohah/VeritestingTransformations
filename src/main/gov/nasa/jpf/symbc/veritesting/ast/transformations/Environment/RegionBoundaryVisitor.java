@@ -11,25 +11,29 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
  */
 
 public class RegionBoundaryVisitor extends AstMapVisitor {
-    private int lastDef;
+    private Integer lastDef;
     private boolean firstDefFound = false;
-    private int firstDef;
+    private Integer firstDef;
 
 
     public RegionBoundaryVisitor(ExprBoundaryVisitor exprBoundaryVisitor) {
         super(exprBoundaryVisitor);
     }
 
-    public int getLastDef() {
+    public Integer getLastDef() {
         return lastDef;
     }
 
-    public int getFirstDef() {
+    public Integer getFirstDef() {
         return firstDef;
     }
 
-    public int getFirstUse() {
+    public Integer getFirstUse() {
         return ((ExprBoundaryVisitor)exprVisitor).getFirstUse();
+    }
+
+    public Integer getLastUse() {
+        return ((ExprBoundaryVisitor)exprVisitor).getLastUse();
     }
 
     @Override

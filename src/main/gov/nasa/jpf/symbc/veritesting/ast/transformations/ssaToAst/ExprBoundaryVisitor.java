@@ -15,7 +15,8 @@ import java.util.ArrayList;
 public class ExprBoundaryVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 
     private boolean seenFirstUse = false;
-    private int firstUse;
+    private Integer firstUse;
+    private Integer lastUse;
 
     public ExprBoundaryVisitor() { }
 
@@ -28,12 +29,20 @@ public class ExprBoundaryVisitor extends ExprMapVisitor implements ExprVisitor<E
         }
         else{
             firstUse = expr.number;
+            lastUse = expr.number;
             seenFirstUse = true;
         }
+        if(expr.number > lastUse)
+            lastUse = expr.number;
         return expr;
     }
 
-    public int getFirstUse() {
+    public Integer getFirstUse() {
         return firstUse;
     }
+
+    public Integer getLastUse() {
+        return lastUse;
+    }
+
 }
