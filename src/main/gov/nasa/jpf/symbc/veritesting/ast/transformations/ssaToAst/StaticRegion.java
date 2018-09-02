@@ -75,7 +75,6 @@ public class StaticRegion implements Region {
             firstDef = regionBoundary.getSecond().getFirst();
             lastDef = regionBoundary.getSecond().getSecond();
 
-
             lastVar = (firstDef == null) ? lastUse : lastDef;
 
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(firstUse, lastVar));
@@ -89,7 +88,7 @@ public class StaticRegion implements Region {
             outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt);
         else {
             if (firstDef == null) //region has no def, so no output can be defined
-                outputTable = new OutputTable();
+                outputTable = new OutputTable(isMethodRegion);
             else
                 outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt, new Pair<>(firstDef, lastDef));
         }
