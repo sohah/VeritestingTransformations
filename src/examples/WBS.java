@@ -87,7 +87,7 @@ public class WBS {
 				   }
 			   }
 		   }
-		Debug.printPC("PC @fter(PadalPos == 0) [Region 1] = ");
+		//Debug.printPC("PC @fter(PadalPos == 0) [Region 1] = ");
 
 
 		if ((AutoBrake &&
@@ -96,7 +96,7 @@ public class WBS {
 		   }  else { 
 		      WBS_Node_WBS_BSCU_Command_Switch = 0;
 		   }
-		Debug.printPC("PC @fter(AutoBrake && WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator) [Region 2] = ");
+		//Debug.printPC("PC @fter(AutoBrake && WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator) [Region 2] = ");
 
 
 	   WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6 = ((((!(WBS_Node_WBS_BSCU_Unit_Delay1 == 0)) && 
@@ -180,7 +180,7 @@ public class WBS {
 	   }  else { 
 	      WBS_Node_WBS_BSCU_Command_AntiSkidCommand_Normal_Switch = (WBS_Node_WBS_BSCU_Command_Switch+WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1);
 	   }
-		Debug.printPC("PC @fter(Skid) [Region 3] = ");
+		//Debug.printPC("PC @fter(Skid) [Region 3] = ");
 
 
 	   if (WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) {
@@ -251,7 +251,7 @@ public class WBS {
 		   }
 	   }
 
-		Debug.printPC("PC before(WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1 == 0) [region 4] = ");
+	//	Debug.printPC("PC before(WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1 == 0) [region 4] = ");
 
 	   if ((WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1 == 0)) {
 	      Alt_Pressure = 0; 
@@ -274,7 +274,7 @@ public class WBS {
 			   }
 		   }
 	   }
-		Debug.printPC("PC @fter(WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1 == 0) [Region 4] = ");
+	//	Debug.printPC("PC @fter(WBS_Node_WBS_BSCU_Command_PedalCommand_Switch1 == 0) [Region 4] = ");
 
 
 	   WBS_Node_WBS_rlt_PRE2 = Nor_Pressure; 
@@ -299,7 +299,7 @@ public class WBS {
 		// This assertion may fail (depending on encoding):
 		//Debug.printPC("PC before assertion ((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true) = ");
 
-		assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
+		// assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
 
 		// This assertion should fail:
 		 //assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
@@ -312,7 +312,7 @@ public class WBS {
 	public static void launch(int pedal1, boolean auto1, boolean skid1, int pedal2, boolean auto2, boolean skid2, int pedal3, boolean auto3, boolean skid3) {
 		WBS wbs = new WBS();
 		wbs.update(pedal1, auto1, skid1);
-		//wbs.update(pedal2, auto2, skid2);
+		wbs.update(pedal2, auto2, skid2);
 		//wbs.update(pedal3, auto3, skid3);
 	}
 	

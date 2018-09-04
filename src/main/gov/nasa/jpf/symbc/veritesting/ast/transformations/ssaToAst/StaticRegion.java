@@ -57,23 +57,29 @@ public class StaticRegion implements Region {
 
         //Auxiliary vars to determine boundaries of different tables.
         Integer firstUse;
+        Integer lastUse;
         Integer firstDef = null;
         Integer lastDef = null;
+        Integer lastVar;
 
 
         if (isMethodRegion) {
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt);
             varTypeTable = new VarTypeTable(ir);
         } else {
-            Pair<Integer, Pair<Integer, Integer>> regionBoundary = computeRegionBoundary(staticStmt);
+            Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> regionBoundary = computeRegionBoundary(staticStmt);
             // first use var that hasn't been defined in the region, an invariant that this must be the first use in the if condition
 
-            firstUse = regionBoundary.getFirst();
+            firstUse = regionBoundary.getFirst().getFirst();
+            lastUse = regionBoundary.getFirst().getSecond();
             firstDef = regionBoundary.getSecond().getFirst();
             lastDef = regionBoundary.getSecond().getSecond();
 
-            slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(firstUse, lastDef));
-            varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastDef));
+
+            lastVar = (firstDef == null) ? lastUse : lastDef;
+
+            slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(firstUse, lastVar));
+            varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastVar));
         }
 
         inputTable = new InputTable(ir, isMethodRegion, slotParamTable, staticStmt);
@@ -81,21 +87,26 @@ public class StaticRegion implements Region {
 
         if (isMethodRegion)
             outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt);
-        else
-            outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt, new Pair<>(firstDef, lastDef));
+        else {
+            if (firstDef == null) //region has no def, so no output can be defined
+                outputTable = new OutputTable();
+            else
+                outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt, new Pair<>(firstDef, lastDef));
+        }
         this.endIns = endIns;
     }
 
     /**
      * This computes the region boundary in case of conditional region, to determine the first use and the first and last def variables inside the region.
+     *
      * @param stmt Statement of the region.
      * @return A triple of first-use, first-def and last-def variables in the region.
      */
-    private Pair<Integer, Pair<Integer,Integer>> computeRegionBoundary(Stmt stmt) {
+    private Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> computeRegionBoundary(Stmt stmt) {
         ExprBoundaryVisitor exprBoundaryVisitor = new ExprBoundaryVisitor();
 
         RegionBoundaryVisitor regionBoundaryVisitor = new RegionBoundaryVisitor(exprBoundaryVisitor);
         stmt.accept(regionBoundaryVisitor);
-        return new Pair<>(regionBoundaryVisitor.getFirstUse(), new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef()));
+        return new Pair<>(new Pair<>(regionBoundaryVisitor.getFirstUse(), regionBoundaryVisitor.getLastUse()), new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef()));
     }
 }

@@ -25,10 +25,10 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.report.ConsolePublisher;
+import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
-import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
@@ -47,7 +47,9 @@ import gov.nasa.jpf.vm.*;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
+import java.io.PrintWriter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
@@ -66,7 +68,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int unsatSPFCaseCount = 0;
     public static final int maxStaticExplorationDepth = 2;
     public static boolean firstTime = true;
-    private static long staticAnalysisTime;
+    private static long staticAnalysisDur;
+    private  final long runStartTime = System.nanoTime();
 
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -96,8 +99,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     /**
      * Listener's main method that checks every instruction for being a potential veritesting region.
-     * @param vm Virtual Machine.
-     * @param ti Current running Thread.
+     *
+     * @param vm                   Virtual Machine.
+     * @param ti                   Current running Thread.
      * @param instructionToExecute instruction to be executed.
      */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
@@ -107,7 +111,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             discoverRegions(ti); // static analysis to discover regions
             firstTime = false;
         } else {
-
             try {
 
                 MethodInfo methodInfo = instructionToExecute.getMethodInfo();
@@ -166,7 +169,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
                         System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
                         Expression regionSummary = AstToGreenVisitor.execut(dynRegion);
-                        System.out.println(ExprUtil.AstToString(regionSummary));
+                        /*System.out.println(ExprUtil.AstToString(regionSummary));*/
                         setupSPF(ti, instructionToExecute, dynRegion, regionSummary);
                     }
             } catch (IllegalArgumentException e) {
@@ -181,9 +184,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     /**
      * This populates the Output of the summarized region to SPF.
-     * @param ti Currently running thread.
-     * @param ins Branch instruction that indicates beginning of the region.
-     * @param dynRegion Dynamic region that has been summarized.
+     *
+     * @param ti            Currently running thread.
+     * @param ins           Branch instruction that indicates beginning of the region.
+     * @param dynRegion     Dynamic region that has been summarized.
      * @param regionSummary Final summary of the region, after all transformations has been successfully completed.
      * @throws StaticRegionException Exception to indicate a problem while setting SPF.
      */
@@ -198,7 +202,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     /**
      * This method checks that the current PathCondition and after appending the summarized region is satisfiable.
-     * @param ti Currently running thread.
+     *
+     * @param ti            Currently running thread.
      * @param regionSummary Finaly summary of the region, after all transformations has been successfully completed.
      * @return PathCondition is still satisfiable or not.
      * @throws StaticRegionException Exception to indicate a problem while checking SAT of the updated PathCondition.
@@ -223,7 +228,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     /**
      * This pop up operands of the if instruction that begins the region.
-     * @param sf Current StackFrame.
+     *
+     * @param sf  Current StackFrame.
      * @param ins Current executing instruction
      * @throws StaticRegionException Exception to indicate a problem while clearning the stack.
      */
@@ -237,7 +243,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     /**
      * Populates SPF stack slot with the output of the veritesting region.
-     * @param ti Current executing thread.
+     *
+     * @param ti        Current executing thread.
      * @param dynRegion Dynamic region that has been successfully transformed and summarized.
      */
     private void populateSlots(ThreadInfo ti, DynamicRegion dynRegion) {
@@ -257,8 +264,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     /**
      * Steps SPF to the end of the region.
-     * @param ti Current running thread.
-     * @param ins Insturction to be executed.
+     *
+     * @param ti        Current running thread.
+     * @param ins       Insturction to be executed.
      * @param dynRegion Dynamic region that has been successfully transformed and summarized.
      */
     private void advanceSpf(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion) {
@@ -273,20 +281,28 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     /**
      * This is tries to discover statically all potential regions that could be used as veritesting regions.
+     *
      * @param ti Current running thread.
      */
     private void discoverRegions(ThreadInfo ti) {
         Config conf = ti.getVM().getConfig();
         String classPath = conf.getStringArray("classpath")[0] + "/";
         String className = conf.getString("target");
-        // should be like VeritestingPerf.testMe4([II)V aka jvm internal format
         VeritestingMain veritestingMain = new VeritestingMain(ti, className + ".class");
         long startTime = System.nanoTime();
         veritestingMain.analyzeForVeritesting(classPath, className);
         long endTime = System.nanoTime();
-        long duration = (endTime - startTime) / 1000000; //milliseconds
-        staticAnalysisTime = (endTime - startTime);
-        System.out.println("veritesting analysis took " + duration + " milliseconds");
+        staticAnalysisDur = endTime - startTime;
     }
 
+
+    public void publishFinished(Publisher publisher) {
+        PrintWriter pw = publisher.getOut();
+        publisher.publishTopicStart("VeritestingListener report:");
+        pw.println("static analysis time = " + TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + " msec");
+        pw.println("# regions = " + VeritestingMain.veriRegions.size());
+        long runEndTime = System.nanoTime();
+        long dynRunTime = (runEndTime - runStartTime) - staticAnalysisDur;
+        pw.print("Veritesting Dyn Time = " + TimeUnit.NANOSECONDS.toMillis(dynRunTime) + " msec");
+    }
 }

@@ -26,14 +26,13 @@ public class OutputTable extends Table<Integer> {
                        Pair<Integer, Integer> firstDefLastDef) {
         super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
         assert (!isMethodRegion);
-        computeOutputVars(ir, slotParamTable, inputTable, stmt, firstDefLastDef);
+        computeOutputVars(ir, slotParamTable, inputTable, firstDefLastDef);
     }
 
     /**
      * All normal predecessors of an exit node must have a return as the last instruction. If the first return has no use then the method is void.
      * @param ir
      */
-
     private void computeMethodOutput(IR ir) {
         List<SSAReturnInstruction> returnInsList = findAllReturns(ir);
         int resultNum = 0;
@@ -58,7 +57,7 @@ public class OutputTable extends Table<Integer> {
         return returnInsList;
     }
 
-    private OutputTable() {
+    public OutputTable() {
         super();
     }
 
@@ -66,7 +65,7 @@ public class OutputTable extends Table<Integer> {
      * outputVars are computed by finding the maximum wala var for each stackSlot and those that are not input or constants.
      *
      */
-    private void computeOutputVars(IR ir, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt, Pair<Integer, Integer> firstDefLastDef) {
+    private void computeOutputVars(IR ir, SlotParamTable slotParamTable, InputTable inputTable, Pair<Integer, Integer> firstDefLastDef) {
         HashSet<Integer> allSlots = slotParamTable.getSlots();
         Iterator<Integer> slotsIter = allSlots.iterator();
         while (slotsIter.hasNext()) {
