@@ -5,21 +5,32 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprRegionInputVisitor;
 
+import java.util.Iterator;
+import java.util.Set;
+
 /**
  * This class populates the input variables for the region, it does so by computing the first var use for every slot in case of non-method region, or computing the parameters of a method as the input table in case of a method region.
  */
 
 public class InputTable extends Table<Integer> {
     public final IR ir;
+    private boolean isMethodRegion;
 
     public InputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, Stmt stmt) {
         super("Region Input Table", "var", isMethodRegion ? "param" : "slot");
         this.ir = ir;
+        this.isMethodRegion = isMethodRegion;
         if (isMethodRegion) // all parameters are input
             computeMethodInputVars(slotParamTable);
         else {//only first instances of vars to slots execluding defs.
             computeRegionInput(slotParamTable, stmt);
         }
+    }
+
+    private InputTable(boolean isMethodRegion, IR ir){
+        super("Region Input Table", "var", isMethodRegion ? "param" : "slot");
+        this.isMethodRegion = isMethodRegion;
+        this.ir = ir;
     }
 
     /**
@@ -47,5 +58,22 @@ public class InputTable extends Table<Integer> {
     public void print() {
         System.out.println("\nprinting " + tableName + " (" + label1 + "->" + label2 + ")");
         table.forEach((v1, v2) -> System.out.println("@w" + v1 + " --------- " + v2));
+    }
+
+
+    /**
+     * Basic clone method for Slot Param table that generates a new copy of the var.
+     *
+     */
+    public InputTable clone() {
+        InputTable inputTable = new InputTable(this.isMethodRegion, this.ir);
+        Set<Integer> keys = this.table.keySet();
+        Iterator<Integer> iter = keys.iterator();
+        while (iter.hasNext()) {
+            Integer key = iter.next();
+            int value = this.lookup(key);
+            inputTable.add(new Integer(key.intValue()), value);
+        }
+        return inputTable;
     }
 }

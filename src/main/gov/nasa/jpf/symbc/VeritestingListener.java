@@ -29,6 +29,7 @@ import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
@@ -123,16 +124,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 if ((staticRegion != null) && !(staticRegion.isMethodRegion))
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                     if (SpfUtil.isSymCond(ti.getTopFrame(), staticRegion.slotParamTable, staticRegion.staticStmt)) {
-                        System.out.println("\n---------- STARTING Transformations for region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
+                        System.out.println("\n---------- STARTING Transformations for conditional region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
                         staticRegion.slotParamTable.print();
-                        staticRegion.outputTable.print();
                         staticRegion.inputTable.print();
+                        staticRegion.outputTable.print();
+                        staticRegion.varTypeTable.print();
 
-                        System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
+
+                        /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
+                        staticRegion = UniqueRegion.execute(staticRegion);
+
+                        /*--------------- SUBSTITUTION TRANSFORMATION ---------------*/
                         DynamicRegion dynRegion = SubstitutionVisitor.execute(ti, staticRegion);
-                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-                        dynRegion.slotParamTable.print();
-                        dynRegion.outputTable.print();
 
                         // 1. Perform substitution on field references
                         // 2. Replace GetInstruction, PutInstruction by AssignmentStmt with a FieldAccessTriple on rhs or lhs resp.
@@ -142,13 +145,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         //System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
                         //dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
                         //TypePropagationVisitor.propagateTypes(dynRegion);
-
-                        System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
-                        dynRegion = UniqueRegion.execute(dynRegion);
-                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-                        dynRegion.slotParamTable.print();
-                        dynRegion.varTypeTable.print();
-                        dynRegion.outputTable.print();
 
 /*
                         System.out.println("--------------- SPFCases TRANSFORMATION 1ST PASS ---------------");
@@ -165,8 +161,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 
                         System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
-                        Expression regionSummary = AstToGreenVisitor.execut(dynRegion);
-                        /*System.out.println(ExprUtil.AstToString(regionSummary));*/
+                        Expression regionSummary = AstToGreenVisitor.execute(dynRegion);
+                        System.out.println(ExprUtil.AstToString(regionSummary));
                         setupSPF(ti, instructionToExecute, dynRegion, regionSummary);
                     }
             } catch (IllegalArgumentException e) {

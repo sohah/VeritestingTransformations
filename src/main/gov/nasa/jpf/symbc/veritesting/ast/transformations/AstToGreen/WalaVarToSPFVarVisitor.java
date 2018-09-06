@@ -7,6 +7,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
+import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.*;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
@@ -38,8 +39,11 @@ public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
 
     @Override
     public Expression visit(Operation expr) {
-        return expr;
-    }
+        Expression[] exps = new Expression[expr.getArity()];
+        for(int i = 0; i < expr.getArity(); i++){
+            exps[i] = eva.accept(expr.getOperand(i));
+        }
+        return new Operation(expr.getOperator(), exps);    }
 
     @Override
     public Expression visit(RealConstant expr) {
@@ -86,5 +90,4 @@ public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
                 eva.accept(expr.thenExpr),
                 eva.accept(expr.elseExpr));
     }
-
 }

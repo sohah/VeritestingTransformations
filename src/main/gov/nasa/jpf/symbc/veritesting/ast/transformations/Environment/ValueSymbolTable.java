@@ -2,7 +2,9 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import za.ac.sun.cs.green.expr.Expression;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,4 +41,5 @@ public class ValueSymbolTable extends Table<Expression> {
         }
         return valueSymbolTable;
     }
+
 }

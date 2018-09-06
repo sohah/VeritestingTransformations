@@ -49,8 +49,9 @@ public class SlotParamTable extends Table<int[]> {
         }
     }
 
-    private SlotParamTable() {
-        super();
+    private SlotParamTable(boolean isMethodRegion) {
+
+        super("stack-slot table", "var", isMethodRegion ? "param" : "slot");
     }
 
 
@@ -196,11 +197,8 @@ public class SlotParamTable extends Table<int[]> {
      *
      */
     public SlotParamTable clone() {
-        SlotParamTable newSlotParamTable = new SlotParamTable();
+        SlotParamTable newSlotParamTable = new SlotParamTable(this.isMethodRegion);
         newSlotParamTable.ir = this.ir;
-        newSlotParamTable.tableName = this.tableName;
-        newSlotParamTable.label1 = this.label1;
-        newSlotParamTable.label2 = this.label2;
         Set<Integer> keys = this.table.keySet();
         Iterator<Integer> iter = keys.iterator();
         while (iter.hasNext()) {
