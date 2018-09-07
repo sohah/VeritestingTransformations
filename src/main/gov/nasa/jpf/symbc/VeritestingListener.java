@@ -129,13 +129,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     if (SpfUtil.isSymCond(ti.getTopFrame(), staticRegion.slotParamTable, staticRegion.staticStmt)) {
 
                         statisticManager.updateHitStatForRegion(key);
-
+/*
                         System.out.println("\n---------- STARTING Transformations for conditional region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
                         staticRegion.slotParamTable.print();
                         staticRegion.inputTable.print();
                         staticRegion.outputTable.print();
                         staticRegion.varTypeTable.print();
-
+*/
 
                         /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
                         staticRegion = UniqueRegion.execute(staticRegion);
@@ -161,14 +161,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
                         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 */
-                        System.out.println("\n--------------- LINEARIZATION TRANSFORMATION ---------------");
+                        /*System.out.println("\n--------------- LINEARIZATION TRANSFORMATION ---------------");*/
                         LinearizationTransformation linearTrans = new LinearizationTransformation();
                         dynRegion = linearTrans.execute(dynRegion);
-                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+                        /*System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));*/
 
-                        System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
+//                        System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
                         Expression regionSummary = AstToGreenVisitor.execute(dynRegion);
-                        System.out.println(ExprUtil.AstToString(regionSummary));
+                        /*System.out.println(ExprUtil.AstToString(regionSummary));*/
+
                         setupSPF(ti, instructionToExecute, dynRegion, regionSummary);
                         ++veritestRegionCount;
                         statisticManager.updateSuccStatForRegion(key);
@@ -309,18 +310,20 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         long dynRunTime = (runEndTime - runStartTime) - staticAnalysisDur;
 
         pw.println(statisticManager.printAllRegionStatistics());
+
+        pw.println("\n/************************ Printing Time Decomposition Statistics *****************");
         pw.println("static analysis time = " + TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + " msec");
-        pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
-        pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
+        pw.println("Veritesting Dyn Time = " + TimeUnit.NANOSECONDS.toMillis(dynRunTime) + " msec");
 
         pw.println("\n/************************ Printing Solver Statistics *****************");
-        pw.println("Veritesting Dyn Time = " + TimeUnit.NANOSECONDS.toMillis(dynRunTime) + " msec");
-        pw.println("Total Solver Count = " + solverCount);
+        pw.println("Total Solver Queries Count = " + solverCount);
         pw.println("Total Solver Time = " + TimeUnit.NANOSECONDS.toMillis(totalSolverTime) + " msec");
         pw.println("Total Solver Parse Time = " + TimeUnit.NANOSECONDS.toMillis(parseTime) + " msec");
         pw.println("Total Solver Clean up Time = " + TimeUnit.NANOSECONDS.toMillis(cleanupTime) + " msec");
 
         pw.println(statisticManager.printAccumulativeStatistics());
+        pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
+        pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
 
     }
 }

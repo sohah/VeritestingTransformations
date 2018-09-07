@@ -53,13 +53,13 @@ public class UniqueRegion {
                 varTypeTable,
                 staticRegion.endIns,
                 staticRegion.isMethodRegion);
-
+/*
         System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
         System.out.println(StmtPrintVisitor.print(uniqueStaticRegion.staticStmt));
         uniqueStaticRegion.slotParamTable.print();
         uniqueStaticRegion.inputTable.print();
         uniqueStaticRegion.varTypeTable.print();
-        uniqueStaticRegion.outputTable.print();
+        uniqueStaticRegion.outputTable.print();*/
 
         return uniqueStaticRegion;
     }

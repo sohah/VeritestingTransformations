@@ -276,11 +276,13 @@ public class SubstitutionVisitor extends AstMapVisitor {
         Stmt dynStmt = staticRegion.staticStmt.accept(visitor);
         DynamicRegion dynRegion = new DynamicRegion(staticRegion, dynStmt, new HashSet<>());
 
+/*
         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
         dynRegion.slotParamTable.print();
         dynRegion.outputTable.print();
         dynRegion.varTypeTable.print();
+*/
 
         return dynRegion;
     }
