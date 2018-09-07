@@ -6,6 +6,7 @@ import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.strings.Atom;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -127,7 +128,11 @@ public class SubstitutionVisitor extends AstMapVisitor {
             Pair<String, StaticRegion> keyRegionPair = findMethodStaticRegion(c);
             StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
             if (hgOrdStaticRegion != null) {
-                System.out.println("\n********** High Order Region Discovered for region: " + keyRegionPair.getFirst() + "\n");
+                String key = keyRegionPair.getFirst();
+
+                VeritestingListener.statisticManager.updateHitStatForRegion(key);
+
+                System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
                 System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
                 StaticRegion uniqueHgOrdStaticRegion = UniqueRegion.execute(hgOrdStaticRegion);
                 hgOrdValueSymbolTable.makeUniqueKey(DynamicRegion.uniqueCounter);

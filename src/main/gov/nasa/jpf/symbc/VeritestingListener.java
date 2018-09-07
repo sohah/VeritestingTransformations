@@ -31,6 +31,7 @@ import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
@@ -67,8 +68,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int unsatSPFCaseCount = 0;
     public static final int maxStaticExplorationDepth = 2;
     public static boolean firstTime = true;
+    private static int veritestRegionCount = 0;
     private static long staticAnalysisDur;
     private  final long runStartTime = System.nanoTime();
+    public static StatisticManager statisticManager = new StatisticManager();
 
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -105,25 +108,28 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
 
-        if (veritestingMode == 0) return;
+        MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+        String className = methodInfo.getClassName();
+        String methodName = methodInfo.getName();
+        String methodSignature = methodInfo.getSignature();
+        int offset = instructionToExecute.getPosition();
+        String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+
         if (firstTime) {
             discoverRegions(ti); // static analysis to discover regions
             firstTime = false;
         } else {
             try {
 
-                MethodInfo methodInfo = instructionToExecute.getMethodInfo();
-                String className = methodInfo.getClassName();
-                String methodName = methodInfo.getName();
-                String methodSignature = methodInfo.getSignature();
-                int offset = instructionToExecute.getPosition();
-                String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
                 HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
 
                 StaticRegion staticRegion = regionsMap.get(key);
                 if ((staticRegion != null) && !(staticRegion.isMethodRegion))
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                     if (SpfUtil.isSymCond(ti.getTopFrame(), staticRegion.slotParamTable, staticRegion.staticStmt)) {
+
+                        statisticManager.updateHitStatForRegion(key);
+
                         System.out.println("\n---------- STARTING Transformations for conditional region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
                         staticRegion.slotParamTable.print();
                         staticRegion.inputTable.print();
@@ -164,11 +170,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         Expression regionSummary = AstToGreenVisitor.execute(dynRegion);
                         System.out.println(ExprUtil.AstToString(regionSummary));
                         setupSPF(ti, instructionToExecute, dynRegion, regionSummary);
+                        ++veritestRegionCount;
+                        statisticManager.updateSuccStatForRegion(key);
+                    }
+                    else{
+                        statisticManager.updateConcreteHitStatForRegion(key);
                     }
             } catch (IllegalArgumentException e) {
+                statisticManager.updateFailStatForRegion(key, e.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
                 return;
             } catch (StaticRegionException sre) {
+                statisticManager.updateFailStatForRegion(key, sre.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
                 return;
             }
@@ -292,10 +305,22 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public void publishFinished(Publisher publisher) {
         PrintWriter pw = publisher.getOut();
         publisher.publishTopicStart("VeritestingListener report:");
-        pw.println("static analysis time = " + TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + " msec");
-        pw.println("# regions = " + VeritestingMain.veriRegions.size());
         long runEndTime = System.nanoTime();
         long dynRunTime = (runEndTime - runStartTime) - staticAnalysisDur;
-        pw.print("Veritesting Dyn Time = " + TimeUnit.NANOSECONDS.toMillis(dynRunTime) + " msec");
+
+        pw.println(statisticManager.printAllRegionStatistics());
+        pw.println("static analysis time = " + TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + " msec");
+        pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
+        pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
+
+        pw.println("\n/************************ Printing Solver Statistics *****************");
+        pw.println("Veritesting Dyn Time = " + TimeUnit.NANOSECONDS.toMillis(dynRunTime) + " msec");
+        pw.println("Total Solver Count = " + solverCount);
+        pw.println("Total Solver Time = " + TimeUnit.NANOSECONDS.toMillis(totalSolverTime) + " msec");
+        pw.println("Total Solver Parse Time = " + TimeUnit.NANOSECONDS.toMillis(parseTime) + " msec");
+        pw.println("Total Solver Clean up Time = " + TimeUnit.NANOSECONDS.toMillis(cleanupTime) + " msec");
+
+        pw.println(statisticManager.printAccumulativeStatistics());
+
     }
 }
