@@ -1,10 +1,10 @@
-# Veritesting for Symbolic PathFinder
+# JavaRanger for Symbolic PathFinder
 
-Veritesting collapses paths of regions of code that could be summarized statically. This allows for less path exploration by dynamic symbolic execution, thus allowing dynamic symbolic execution to be used over larger programs.
+JavaRanger collapses paths of regions of code that could be summarized statically. This allows for less path exploration by dynamic symbolic execution, thus allowing dynamic symbolic execution to be used over larger programs.
 
-## Veritesting Design:
+## JavaRanger Design:
 
-This implementation of Veritesting has a unique architecture and design, that is it has the following features:
+This implementation of JavaRanger has a unique architecture and design, that is it has the following features:
 1. Supproting an intermediate language: "RangerIR", which decompiles a CFG into an AST for later mainpulation by veritesting.
 2. Allow different transformations over a veritesting region, which ensures transperency and enables reasoning about correctness and/or equivelance to the original program.
 3. Enables high order regions, by de-referencing and inlining methods invocations.
@@ -12,9 +12,9 @@ This implementation of Veritesting has a unique architecture and design, that is
 5. Supports SSA for fields that allows the summarization of nested fields. 
 
 
-### Veritesting Transformations
+### JavaRanger Transformations
 
-This veritesting project uses WALA as the static analysis engine to summarize regions of code. Summarization is done through different transformations applied on the initial Control Flow Graph, CFG, obtained by WALA. These transformations are:
+This JavaRanger project uses WALA as the static analysis engine to summarize regions of code. Summarization is done through different transformations applied on the initial Control Flow Graph, CFG, obtained by WALA. These transformations are:
 1. CFG to AST Transformation: this is done by walking the CFG and creating a corresponding statement in RangerIR, at the end of this transformation a StaticRegion along with all its environment tables, input table, output table, var to slot table and variable type table.
 2. Gamma Creation Transformation: this should be considered as a subtransformation of the previous tranformation where at the end of this transformation, phi instructions, are replaced by a Gamma instruction that captures the condition under which assignments of values are taken.
 3. Substitution Transformation: in this transformation, constants and inputs are populated into the region, at the end of this transformation a DynamicRegion is generated that represents an instance 
@@ -26,9 +26,9 @@ This veritesting project uses WALA as the static analysis engine to summarize re
 9. To Green Expression Transformation: in this transformation, statements in the dynamic region are translated to Green expression and they should be ready to populate SPF accordingly.
 
 This design that have the following benefits:
-1. Ensures transperancy of different Veritesting steps/transformations. 
+1. Ensures transperancy of different JavaRanger steps/transformations. 
 2. Allows for checking invariants after each transformation.
-3. Increases the oppurtunties over regions where veritesting could be applied.
+3. Increases the oppurtunties over regions where JavaRanger could be applied.
 
-### Veritesting Documentation
+### JavaRanger Documentation
 For information about Java Documentation of the project please refer to https://sohah.github.io/VeritestingTransformations/. 
