@@ -578,8 +578,9 @@ public class CreateStaticRegions {
                 veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
-                createStructuredConditionalRegions(terminus, endingBlock, veritestingRegions);
-                return;
+                // MWW: removing - even if successful we want to create additional regions.
+                // createStructuredConditionalRegions(terminus, endingBlock, veritestingRegions);
+                // return;
             } catch (StaticRegionException e ) {
                 //SSAUtil.printBlocksUpTo(cfg, endingBlock.getNumber());
                 System.out.println("Unable to create subregion.  Reason: " + e.toString());
