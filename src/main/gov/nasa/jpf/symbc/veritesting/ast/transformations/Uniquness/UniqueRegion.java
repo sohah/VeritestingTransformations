@@ -1,10 +1,10 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
-import za.ac.sun.cs.green.expr.Expression;
 
 /**
  * Unique region creator, of both conditional regions and method regions.
@@ -17,7 +17,7 @@ public class UniqueRegion {
      * @param dynRegion Dynamic region that needs to be unquie.
      * @return A new dynamic region that is unique.
      */
-    public static DynamicRegion execute(DynamicRegion dynRegion){
+    public static DynamicRegion execute(DynamicRegion dynRegion) throws CloneNotSupportedException, StaticRegionException {
 
         if((++DynamicRegion.uniqueCounter)% 10 == 0){
             ++DynamicRegion.uniqueCounter; //just to skip numbers with zero on the right handside
@@ -26,6 +26,7 @@ public class UniqueRegion {
         ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum);
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
         Stmt dynStmt = dynRegion.dynStmt.accept(stmtVisitor);
+        if (expUniqueVisitor.sre != null) throw expUniqueVisitor.sre;
 
 
         SlotParamTable slotParamTable = dynRegion.slotParamTable.clone();
@@ -50,7 +51,7 @@ public class UniqueRegion {
     }
 
     /**
-     * Used to ensure uniquness of high Order region.
+     * Used to ensure uniqueness of high Order region.
      * @param hgOrdStmtRetTypePair this is a triple of Stmt, method return Expression and VarTypeTable of the region method.
      * @return this is the same triple passed to the method, only now unique by appending the a unique prefix.
      */

@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.IntVariable;
@@ -13,10 +14,11 @@ import java.util.List;
  * A class that carries a fieldReference with a specific SSA subscript.
  */
 
-public final class FieldRefVarExpr extends Variable {
+public final class FieldRefVarExpr extends CloneableVariable {
     public final FieldRef fieldRef;
     public final SubscriptPair subscript;
     public String varId;
+    public int uniqueNum = -1;
 
     public FieldRefVarExpr(FieldRef fieldRef, SubscriptPair subscript) {
         super("@r"+fieldRef.ref + "." + fieldRef.field + "." + subscript);
@@ -24,12 +26,18 @@ public final class FieldRefVarExpr extends Variable {
         this.subscript = subscript.clone();
     }
 
+    public FieldRefVarExpr(FieldRef fieldRef, SubscriptPair subscript, int uniqueNum) {
+        super("@r"+fieldRef.ref + "." + fieldRef.field + "." + subscript);
+        this.fieldRef = fieldRef.clone();
+        this.subscript = subscript.clone();
+        this.uniqueNum = uniqueNum;
+    }
+
     @Override
     public void accept(Visitor visitor) throws VisitorException {
         // will call the Variable entry.
         visitor.preVisit(this);
         visitor.postVisit(this);
-        IntVariable v;
     }
 
     @Override
@@ -39,14 +47,14 @@ public final class FieldRefVarExpr extends Variable {
         if (o instanceof FieldRefVarExpr) {
             FieldRefVarExpr other = (FieldRefVarExpr)o;
             return (this.fieldRef.equals(other.fieldRef) &&
-                    this.subscript == other.subscript);
+                    this.subscript.equals(other.subscript) && this.uniqueNum == other.uniqueNum);
         }
         return false;
     }
 
     @Override
     public String toString() {
-        return getName();
+        return getSymName();
     }
 
     @Override
@@ -75,6 +83,27 @@ public final class FieldRefVarExpr extends Variable {
     }
 
     public String getSymName() {
-        return "r"+fieldRef.ref + "." + fieldRef.field + "." + subscript.getSymName();
+        String ret = "r" + fieldRef.ref + "." + fieldRef.field + "." + subscript.getSymName();
+        if (uniqueNum != -1) ret = ret +  "." + uniqueNum;
+        return ret;
+    }
+
+    @Override
+    public FieldRefVarExpr clone() {
+        FieldRefVarExpr ret = null;
+        if (uniqueNum != -1) ret = new FieldRefVarExpr(fieldRef.clone(), subscript.clone(), uniqueNum);
+        else ret = new FieldRefVarExpr(fieldRef.clone(), subscript.clone());
+        return ret;
+    }
+
+    @Override
+    public void makeUnique(int unique) throws StaticRegionException {
+        if (uniqueNum != -1) throw new StaticRegionException("Attempting to make a already-unique FieldRefVarExpr unique");
+        uniqueNum = unique;
+    }
+
+    @Override
+    public int hashCode() {
+        return getSymName().hashCode();
     }
 }

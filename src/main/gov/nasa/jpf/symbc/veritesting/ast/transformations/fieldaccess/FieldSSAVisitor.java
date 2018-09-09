@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.getConstantType;
 
 /*
 A Path Subscript Map needs to be passed on from one statement to the other. Each statement updates or uses its PSM.
@@ -69,12 +71,16 @@ public class FieldSSAVisitor extends AstMapVisitor {
             throw new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor");
         else {
             FieldRef fieldRef = FieldRef.makePutFieldRef(ti, putIns);
+            FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
             if (WalaVarExpr.class.isInstance(putIns.assignExpr)) {
-                FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
                 if (dynRegion.varTypeTable.lookup(((WalaVarExpr)putIns.assignExpr).number) != null) {
-                    dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.getName(),
+                    dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(),
                             dynRegion.varTypeTable.lookup(((WalaVarExpr)putIns.assignExpr).number));
                 }
+                return new AssignmentStmt(fieldRefVarExpr, putIns.assignExpr);
+            } else if (isConstant(putIns.assignExpr)) {
+                dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(),
+                        getConstantType(putIns.assignExpr));
                 return new AssignmentStmt(fieldRefVarExpr, putIns.assignExpr);
             } else throw new IllegalArgumentException("Cannot handle PutInstruction with non-WalaVarExpr rhs");
         }
@@ -154,7 +160,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
         if (output.exceptionalMessage != null) throw new IllegalArgumentException(output.exceptionalMessage);
         FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
         if (output.type != null) {
-            dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.getName(), output.type);
+            dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(), output.type);
         }
         Expression thenExpr = thenSubscript.pathSubscript != FIELD_SUBSCRIPT_BASE ?
                 new FieldRefVarExpr(fieldRef, thenSubscript) : output.def;
@@ -180,8 +186,8 @@ public class FieldSSAVisitor extends AstMapVisitor {
             FieldRef fieldRef = FieldRef.makeGetFieldRef(ti, c);
             if (psm.lookup(fieldRef) != null) {
                 rhs = new FieldRefVarExpr(fieldRef, psm.lookup(fieldRef));
-                if ((dynRegion.fieldRefTypeTable.lookup(((FieldRefVarExpr) rhs).getName())) != null)
-                    type = (dynRegion.fieldRefTypeTable.lookup(((FieldRefVarExpr) rhs).getName()));
+                if (dynRegion.fieldRefTypeTable.lookup(rhs) != null)
+                    type = dynRegion.fieldRefTypeTable.lookup(rhs);
             }
             else {
                 try {

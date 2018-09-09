@@ -145,6 +145,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         dynRegion = FieldSSAVisitor.execute(ti, dynRegion);
 //                        dynRegion = GetSubstitutionVisitor.execute(ti, dynRegion);
                         TypePropagationVisitor.propagateTypes(dynRegion);
+                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+                        dynRegion.fieldRefTypeTable.print();
 
                         System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
                         dynRegion = UniqueRegion.execute(dynRegion);
@@ -177,6 +179,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 return;
             } catch (StaticRegionException sre) {
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
+                return;
+            } catch (CloneNotSupportedException e) {
+                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+                e.printStackTrace();
                 return;
             }
         }

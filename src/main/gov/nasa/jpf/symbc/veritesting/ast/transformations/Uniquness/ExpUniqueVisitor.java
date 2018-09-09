@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -16,6 +17,7 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGree
 public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 
     int uniqueNum;
+    public StaticRegionException sre = null;
 
     ExpUniqueVisitor(int uniqueNum) {
         super();
@@ -31,9 +33,11 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
 
     @Override
     public Expression visit(FieldRefVarExpr expr) {
-        String varId = Integer.toString(expr.subscript.globalSubscript);
-        varId = varId.concat(Integer.toString(uniqueNum));
-        expr.subscript.globalSubscript = Integer.valueOf(varId);
-        return new FieldRefVarExpr(expr.fieldRef, expr.subscript);
+        try {
+            expr.makeUnique(uniqueNum);
+        } catch (StaticRegionException e) {
+            sre = e;
+        }
+        return expr.clone();
     }
 }

@@ -10,6 +10,15 @@ public class SubscriptPair {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof SubscriptPair) {
+            SubscriptPair p = (SubscriptPair) obj;
+            return pathSubscript.equals(p.pathSubscript) && globalSubscript.equals(p.globalSubscript);
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         return pathSubscript.toString() + "." + globalSubscript.toString();
     }

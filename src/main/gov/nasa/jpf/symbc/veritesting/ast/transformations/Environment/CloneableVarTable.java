@@ -1,26 +1,28 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
+import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
 
 /**
- * Base class for all environment tables that use a String object as the key.
+ * Base class for all environment tables that use a Expression object as the key.
  */
 
 
-public class StringTable<T> {
-    public final HashMap<String, T> table;
+public class CloneableVarTable<T> {
+    public final HashMap<CloneableVariable, T> table;
     protected String tableName;
     protected String label1;
     protected String label2;
 
-    protected StringTable(){
+    protected CloneableVarTable(){
         this.table = new HashMap<>();
     }
 
-    public StringTable(String tableName, String label1, String label2){
+    public CloneableVarTable(String tableName, String label1, String label2){
         this.table = new HashMap<>();
         this.tableName = tableName;
         this.label1 = label1;
@@ -30,7 +32,7 @@ public class StringTable<T> {
     /**
      * Basic lookup inside the table.
      * */
-    public T lookup(String v) {
+    public T lookup(CloneableVariable v) {
         if (v != null)
             return table.get(v);
         else
@@ -46,7 +48,7 @@ public class StringTable<T> {
      * Basic add row inside the table.
      * */
 
-    public void add(String v1, T v2) {
+    public void add(CloneableVariable v1, T v2) {
         if ((v1 != null) && (v2 != null))
             table.put(v1, v2);
     }
@@ -55,7 +57,7 @@ public class StringTable<T> {
      * Basic remove element/row inside the table.
      * */
 
-    public void remove(String v1) {
+    public void remove(CloneableVariable v1) {
         table.remove(v1);
     }
 
@@ -72,7 +74,7 @@ public class StringTable<T> {
      * Updates a key of the table for a specific entry.
      * */
 
-    public void updateKeys(String oldKey, String newKey){
+    public void updateKeys(CloneableVariable oldKey, CloneableVariable newKey){
         Object[] keys = table.keySet().toArray();
         for (Object key : keys) {
             T value = table.get(key);
@@ -87,7 +89,7 @@ public class StringTable<T> {
      * Returns all keys of the table.
      * */
 
-    public Set<String> getKeys(){
+    public Set<CloneableVariable> getKeys(){
         return table.keySet();
     }
 
@@ -96,16 +98,17 @@ public class StringTable<T> {
      * @param unique A unique postfix.
      */
 
-    public void makeUniqueKey(int unique){
+    public void makeUniqueKey(int unique) throws CloneNotSupportedException, StaticRegionException {
         List keys = new ArrayList(table.keySet());
         Collections.sort(keys);
         Collections.reverse(keys);
         Iterator itr = keys.iterator();
         while(itr.hasNext()){
-            String key = (String) itr.next();
-            String varId = key + Integer.toString(unique);
-            table.put(varId, table.get(key));
-            table.remove(key);
+            CloneableVariable oldKey = (CloneableVariable) itr.next();
+            CloneableVariable newKey = oldKey.clone();
+            newKey.makeUnique(unique);
+            table.put(newKey, table.get(oldKey));
+            table.remove(oldKey);
         }
     }
 
@@ -113,9 +116,8 @@ public class StringTable<T> {
      * Merge the table with the entries of another table.
      * */
 
-    public void mergeStringTable(StringTable<T> t){
+    public void mergeExpressionTable(CloneableVarTable<T> t){
         this.table.putAll(t.table);
     }
-
 
 }
