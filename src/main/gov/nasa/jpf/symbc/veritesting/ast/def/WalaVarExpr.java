@@ -76,4 +76,8 @@ public final class WalaVarExpr extends Variable {
     public List<String> getOperationVector() {
         return null;
     }
+
+    public WalaVarExpr clone(){
+        return new WalaVarExpr(number);
+    }
 }

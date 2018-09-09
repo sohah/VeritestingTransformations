@@ -576,10 +576,11 @@ public class CreateStaticRegions {
                 Stmt s = attemptConditionalSubregion(cfg, currentBlock, terminus);
                 int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
                 veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns));
-                //System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
+                System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
-                createStructuredConditionalRegions(terminus, endingBlock, veritestingRegions);
-                return;
+                // MWW: removing - even if successful we want to create additional regions.
+                // createStructuredConditionalRegions(terminus, endingBlock, veritestingRegions);
+                // return;
             } catch (StaticRegionException e ) {
                 //SSAUtil.printBlocksUpTo(cfg, endingBlock.getNumber());
                 System.out.println("Unable to create subregion.  Reason: " + e.toString());
@@ -611,7 +612,7 @@ public class CreateStaticRegions {
         SSACFG cfg = ir.getControlFlowGraph();
         try {
             Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());
-           // System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
+            System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
             SSAInstruction[] insns = ir.getInstructions();
             //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
             veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0));

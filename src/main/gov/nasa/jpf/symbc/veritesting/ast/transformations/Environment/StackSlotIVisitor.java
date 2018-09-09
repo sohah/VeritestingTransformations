@@ -2,6 +2,8 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.*;
 
+import java.util.Arrays;
+
 
 /**
  * This visitor fills the stack slots for wala vars.
@@ -162,16 +164,18 @@ public class StackSlotIVisitor implements SSAInstruction.IVisitor {
 
     /**
      * This method is used only to get the stack slot of "use" vars, which are either already defined in a previous "def" and so it will be in the stackSlotMap. This is done also for phiInstruction, but phi requires a fix point computation and propagation of vars to stack slot discovery. This happens during the construction of the stack slot table object.
+     *
      * @param ins Instruction currently being explored for slots.
      * @param var Variable that we try to find its stack slot.
      */
 
     public void populateVars(SSAInstruction ins, int var) {
         int iindex = ins.iindex;
-        if (!(ins instanceof  SSAPhiInstruction) && (slotParamTable.lookup(var) == null)) {
+        if (!(ins instanceof SSAPhiInstruction) && (slotParamTable.lookup(var) == null)) {
             int[] localNumbers = ir.findLocalsForValueNumber(iindex, var);
-            if((localNumbers != null) && !(ir.getSymbolTable().isConstant(var)))
-                slotParamTable.add(var, localNumbers);
+             //last condition is used to checks that the stack slot is not mapping to the class stack slot, used to ignore stack slots for fields which are attached to the class slot.
+                if ((localNumbers != null) && !(ir.getSymbolTable().isConstant(var)))// && (Arrays.binarySearch(localNumbers, 0) == -1))
+                    slotParamTable.add(var, localNumbers);
         }
     }
 }

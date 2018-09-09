@@ -9,12 +9,17 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+import java.util.ArrayList;
+
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 
 /**
  * Unique Expression Visitor that ensures the uniqueness of vars used inside the region.
  */
 public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
+
+
+    ArrayList<WalaVarExpr> uniqueSafeList;
 
     int uniqueNum;
     public StaticRegionException sre = null;
@@ -29,6 +34,7 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
         String varId = Integer.toString(expr.number);
         varId = varId.concat(Integer.toString(uniqueNum));
         return new WalaVarExpr(Integer.valueOf(varId));
+
     }
 
     @Override

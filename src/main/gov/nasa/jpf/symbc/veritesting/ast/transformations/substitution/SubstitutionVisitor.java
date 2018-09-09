@@ -6,6 +6,7 @@ import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.strings.Atom;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -49,9 +50,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
         this.staticRegion = staticRegion;
         this.valueSymbolTable = valueSymbolTable;
         eva = super.eva;
-        if(staticRegion.isMethodRegion){
 
-        }
     }
 
 
@@ -116,28 +115,39 @@ public class SubstitutionVisitor extends AstMapVisitor {
     public Stmt visit(InvokeInstruction c) {
 
         ValueSymbolTable hgOrdValueSymbolTable = new ValueSymbolTable();
-
         Expression[] params = new Expression[c.params.length];
         for (int i = 0; i < params.length; i++) {
             params[i] = eva.accept(c.params[i]);
-            hgOrdValueSymbolTable.add((i+1), params[i]);
+            hgOrdValueSymbolTable.add((i+1), params[i]); // in case of non static, the first parameter needs to be
+            // de-referenced because it will refer to an object class.
         }
+
         SSAInvokeInstruction instruction = c.getOriginal();
         IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
         if (invokeCode == IInvokeInstruction.Dispatch.STATIC) {
             Pair<String, StaticRegion> keyRegionPair = findMethodStaticRegion(c);
             StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
             if (hgOrdStaticRegion != null) {
-                Pair<Stmt, VarTypeTable> hgOrdPair = attemptHighOrderRegion(c, hgOrdStaticRegion, hgOrdValueSymbolTable);
-                Pair<Stmt, VarTypeTable> hgOrdUniqueStmtType = makeUnique(hgOrdPair);
+                String key = keyRegionPair.getFirst();
+
+                VeritestingListener.statisticManager.updateHitStatForRegion(key);
+
+                System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
+                System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" +
+                        StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
+                StaticRegion uniqueHgOrdStaticRegion = null;
+                try {
+                    uniqueHgOrdStaticRegion = UniqueRegion.execute(hgOrdStaticRegion);
+                } catch (StaticRegionException | CloneNotSupportedException e) {
+                    throw new IllegalArgumentException(e.getMessage());
+                }
+                hgOrdValueSymbolTable.makeUniqueKey(DynamicRegion.uniqueCounter);
+
+                Pair<Stmt, VarTypeTable> hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdStaticRegion,
+                        hgOrdValueSymbolTable);
 
                 Stmt hgOrdStmt = hgOrdUniqueStmtType.getFirst();
                 VarTypeTable hgOrdTypeTable = hgOrdUniqueStmtType.getSecond();
-
-                System.out.println("\n********** High Order Region Discovered for region: " + keyRegionPair.getFirst() + "\n");
-                System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStmt) + "\n");
-
-                hgOrdTypeTable.print();System.out.println();
 
                 staticRegion.varTypeTable.mergeTable(hgOrdTypeTable);
                 Stmt returnStmt;
@@ -158,15 +168,17 @@ public class SubstitutionVisitor extends AstMapVisitor {
      * Attempts to substitute in a high order region.
      * @param c Current invoke instruction
      * @param methodRegion MethodRegion where the substitution is going to be attempted.
-     * @param hgOrdValueSymbolTabl Value symbol table for te MethodRegion, usually populated with the parameters.
+     * @param hgOrdValueSymbolTable Value symbol table for te MethodRegion, usually populated with the parameters.
      * @return A pair of substituted statement for the high order region as well as its VarTypeTable.
      */
-    private Pair<Stmt, VarTypeTable> attemptHighOrderRegion(InvokeInstruction c, StaticRegion methodRegion, ValueSymbolTable hgOrdValueSymbolTabl) {
+    private Pair<Stmt, VarTypeTable> attemptHighOrderRegion(InvokeInstruction c,
+                                                            StaticRegion methodRegion,
+                                                            ValueSymbolTable hgOrdValueSymbolTable) {
 
         assert (methodRegion.isMethodRegion);
 
-        hgOrdValueSymbolTabl.mergeTable(fillValueSymbolTable(ti, methodRegion));
-        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, methodRegion, hgOrdValueSymbolTabl);
+        hgOrdValueSymbolTable.mergeTable(fillValueSymbolTable(ti, methodRegion));
+        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, methodRegion, hgOrdValueSymbolTable);
         return new Pair<Stmt, VarTypeTable>((Stmt) methodRegion.staticStmt.accept(visitor), methodRegion.varTypeTable);
     }
 
@@ -189,17 +201,6 @@ public class SubstitutionVisitor extends AstMapVisitor {
             else
                 return null;
         }
-    }
-
-    /**
-     * Ensures uniquness of variables of the high order region.
-     *
-     * @param hgOrdStmtTypeTablePair Pair of Stmt and a VarTypeTable of the region to become unique.
-     * @return A pair of unique Stmt and VarTypeTable.
-     */
-    private Pair<Stmt, VarTypeTable> makeUnique(Pair<Stmt, VarTypeTable> hgOrdStmtTypeTablePair) {
-        UniqueRegion uniqueRegion = new UniqueRegion();
-        return uniqueRegion.executeMethodRegion(hgOrdStmtTypeTablePair);
     }
 
     /**
@@ -280,7 +281,17 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, valueSymbolTable);
         Stmt dynStmt = staticRegion.staticStmt.accept(visitor);
-        return new DynamicRegion(staticRegion, dynStmt, new HashSet<>());
+        DynamicRegion dynRegion = new DynamicRegion(staticRegion, dynStmt, new HashSet<>());
+
+/*
+        System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
+        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+        dynRegion.slotParamTable.print();
+        dynRegion.outputTable.print();
+        dynRegion.varTypeTable.print();
+*/
+
+        return dynRegion;
     }
 
 }

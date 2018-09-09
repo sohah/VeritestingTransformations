@@ -3,8 +3,14 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
+import za.ac.sun.cs.green.expr.Expression;
+
+import java.util.ArrayList;
 
 /**
  * Unique region creator, of both conditional regions and method regions.
@@ -14,10 +20,10 @@ public class UniqueRegion {
 
     /**
      * Used to create a unique conditional region.
-     * @param dynRegion Dynamic region that needs to be unquie.
-     * @return A new dynamic region that is unique.
+     * @param staticRegion Dynamic region that needs to be unique.
+     * @return A new static region that is unique.
      */
-    public static DynamicRegion execute(DynamicRegion dynRegion) throws CloneNotSupportedException, StaticRegionException {
+    public static StaticRegion execute(StaticRegion staticRegion) throws StaticRegionException, CloneNotSupportedException {
 
         if((++DynamicRegion.uniqueCounter)% 10 == 0){
             ++DynamicRegion.uniqueCounter; //just to skip numbers with zero on the right handside
@@ -25,55 +31,34 @@ public class UniqueRegion {
         int uniqueNum = DynamicRegion.uniqueCounter;
         ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum);
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
-        Stmt dynStmt = dynRegion.dynStmt.accept(stmtVisitor);
-        if (expUniqueVisitor.sre != null) throw expUniqueVisitor.sre;
-
-
-        SlotParamTable slotParamTable = dynRegion.slotParamTable.clone();
-        VarTypeTable varTypeTable = dynRegion.varTypeTable.clone();
-        FieldRefTypeTable fieldRefTypeTable = dynRegion.fieldRefTypeTable.clone();
-        OutputTable outputTable = dynRegion.outputTable.clone();
+        Stmt staticStmt = staticRegion.staticStmt.accept(stmtVisitor);
+        SlotParamTable slotParamTable = staticRegion.slotParamTable.clone();
+        VarTypeTable varTypeTable = staticRegion.varTypeTable.clone();
+        OutputTable outputTable = staticRegion.outputTable.clone();
+        InputTable inputTable = staticRegion.inputTable.clone();
 
         slotParamTable.makeUniqueKey(uniqueNum);
-        outputTable.makeUniqueKey(uniqueNum);
+        outputTable.makeUniqueVal(uniqueNum);
         varTypeTable.makeUniqueKey(uniqueNum);
-        fieldRefTypeTable.makeUniqueKey(uniqueNum);
+        inputTable.makeUniqueKey(uniqueNum);
 
-
-        return new DynamicRegion(dynRegion.staticRegion,
-                dynStmt,
-                varTypeTable,
-                fieldRefTypeTable,
+        StaticRegion uniqueStaticRegion = new StaticRegion(staticRegion.ir,
+                staticStmt,
                 slotParamTable,
                 outputTable,
-                dynRegion.isMethodRegion,
-                dynRegion.spfCaseSet);
-    }
+                inputTable,
+                varTypeTable,
+                staticRegion.endIns,
+                staticRegion.isMethodRegion);
+/*
+        System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
+        System.out.println(StmtPrintVisitor.print(uniqueStaticRegion.staticStmt));
+        uniqueStaticRegion.slotParamTable.print();
+        uniqueStaticRegion.inputTable.print();
+        uniqueStaticRegion.varTypeTable.print();
+        uniqueStaticRegion.outputTable.print();*/
 
-    /**
-     * Used to ensure uniqueness of high Order region.
-     * @param hgOrdStmtRetTypePair this is a triple of Stmt, method return Expression and VarTypeTable of the region method.
-     * @return this is the same triple passed to the method, only now unique by appending the a unique prefix.
-     */
-    public Pair<Stmt, VarTypeTable> executeMethodRegion(Pair<Stmt, VarTypeTable> hgOrdStmtRetTypePair){
-
-        if((++DynamicRegion.uniqueCounter)% 10 == 0){
-            ++DynamicRegion.uniqueCounter; //just to skip numbers with zero on the right handside
-        }
-        int uniqueNum = DynamicRegion.uniqueCounter;
-
-        Stmt dynStmt = hgOrdStmtRetTypePair.getFirst();
-        VarTypeTable varTypeTable = hgOrdStmtRetTypePair.getSecond();
-
-        ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum);
-        AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
-        Stmt uniqueDynStmt = dynStmt.accept(stmtVisitor);
-
-        VarTypeTable uniqueVarTypeTable = varTypeTable.clone();
-        uniqueVarTypeTable.makeUniqueKey(uniqueNum);
-
-
-        return new Pair(uniqueDynStmt, uniqueVarTypeTable);
+        return uniqueStaticRegion;
     }
 
 }

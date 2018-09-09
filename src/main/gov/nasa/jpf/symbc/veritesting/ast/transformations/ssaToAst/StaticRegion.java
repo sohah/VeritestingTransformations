@@ -46,7 +46,7 @@ public class StaticRegion implements Region {
     public final InputTable inputTable;
 
     /**
-     * An environment table that holds the types of all vars defined inside the region.
+     * An environment table that holds the types of local variables defined inside the region.
      */
     public final VarTypeTable varTypeTable;
 
@@ -75,7 +75,6 @@ public class StaticRegion implements Region {
             firstDef = regionBoundary.getSecond().getFirst();
             lastDef = regionBoundary.getSecond().getSecond();
 
-
             lastVar = (firstDef == null) ? lastUse : lastDef;
 
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(firstUse, lastVar));
@@ -85,11 +84,12 @@ public class StaticRegion implements Region {
         inputTable = new InputTable(ir, isMethodRegion, slotParamTable, staticStmt);
 
 
-        if (isMethodRegion)
-            outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt);
+        if (isMethodRegion) //no output in terms of slots can be defined for the method region, last statement is always a return and is used to conjunct it with the outer region.
+            //outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt);
+            outputTable = new OutputTable(isMethodRegion);
         else {
             if (firstDef == null) //region has no def, so no output can be defined
-                outputTable = new OutputTable();
+                outputTable = new OutputTable(isMethodRegion);
             else
                 outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt, new Pair<>(firstDef, lastDef));
         }
@@ -108,5 +108,26 @@ public class StaticRegion implements Region {
         RegionBoundaryVisitor regionBoundaryVisitor = new RegionBoundaryVisitor(exprBoundaryVisitor);
         stmt.accept(regionBoundaryVisitor);
         return new Pair<>(new Pair<>(regionBoundaryVisitor.getFirstUse(), regionBoundaryVisitor.getLastUse()), new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef()));
+    }
+
+
+    public StaticRegion(IR ir,
+                        Stmt staticStmt,
+                        SlotParamTable slotParamTable,
+                        OutputTable outputTable,
+                        InputTable inputTable,
+                        VarTypeTable varTypeTable,
+                        int endIns,
+                        boolean isMethodRegion){
+
+
+        this.ir = ir;
+        this.staticStmt = staticStmt;
+        this.slotParamTable = slotParamTable;
+        this.outputTable = outputTable;
+        this.inputTable = inputTable;
+        this.varTypeTable = varTypeTable;
+        this.endIns = endIns;
+        this.isMethodRegion = isMethodRegion;
     }
 }

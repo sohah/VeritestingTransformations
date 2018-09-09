@@ -11,9 +11,12 @@ import java.util.*;
  * An Environment table that holds all slots that needs to be populated after successful symmetrization of the region. Vars associated with the slot are the last instance discovered for the slots.
  */
 public class OutputTable extends Table<Integer> {
+    private boolean isMethodRegion;
+
     public OutputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt) {
         super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
         assert (isMethodRegion);
+        isMethodRegion = true;
         computeMethodOutput(ir);
     }
 
@@ -26,6 +29,7 @@ public class OutputTable extends Table<Integer> {
                        Pair<Integer, Integer> firstDefLastDef) {
         super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
         assert (!isMethodRegion);
+        isMethodRegion = false;
         computeOutputVars(ir, slotParamTable, inputTable, firstDefLastDef);
     }
 
@@ -57,8 +61,8 @@ public class OutputTable extends Table<Integer> {
         return returnInsList;
     }
 
-    public OutputTable() {
-        super();
+    public OutputTable(boolean isMethodRegion) {
+        super("Region Output Table", isMethodRegion ? "return" : "slot", "var");
     }
 
     /**
@@ -90,7 +94,7 @@ public class OutputTable extends Table<Integer> {
      * @return A new OutputTable that has a new copy for the keys.
      */
     public OutputTable clone() {
-        OutputTable outputTable = new OutputTable();
+        OutputTable outputTable = new OutputTable(this.isMethodRegion);
         outputTable.tableName = this.tableName;
         outputTable.label1 = this.label1;
         outputTable.label2 = this.label2;

@@ -165,7 +165,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         return bad(c);
     }
 
-    public static Expression execut(DynamicRegion dynamicRegion){
+    public static Expression execute(DynamicRegion dynamicRegion){
         WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynamicRegion.varTypeTable);
         AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
         Stmt noWalaVarStmt = dynamicRegion.dynStmt.accept(astMapVisitor);
