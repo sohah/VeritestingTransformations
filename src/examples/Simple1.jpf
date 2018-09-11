@@ -1,4 +1,4 @@
-target=TestVeritesting
+target=Simple1
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil

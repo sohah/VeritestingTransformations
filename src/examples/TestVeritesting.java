@@ -8,15 +8,21 @@ public class TestVeritesting {
     }
 
     private void checkEquality(TestRegionBaseClass v, int outSPF, int outJR) {
-//        if (outSPF == outJR) System.out.println("Match");
-//        else System.out.println("Mismatch");
-        assert(outSPF == outJR);
+        if (outSPF == outJR) System.out.println("Match");
+        else {
+            System.out.println("Mismatch");
+            assert(false);
+        }
+//        assert(outSPF == outJR);
     }
 
     private int SPFWrapper(TestRegionBaseClass v, int in0) {
         return NoVeritest(v, in0);
     }
 
+    // This is a special method. Call this method to prevent SPF from veritesting any regions that appear in any
+    // function or method call higher up in the stack. In the future, this call to SPFWrapperInner can be changed to
+    // be a generic method call if other no-veritesting methods need to be invoked.
     private int NoVeritest(TestRegionBaseClass v, int in0){ return SPFWrapperInner(v, in0); }
 
     private int SPFWrapperInner(TestRegionBaseClass v, int in0) {
@@ -26,13 +32,7 @@ public class TestVeritesting {
 
     private int JRWrapper(TestRegionBaseClass v, int in0) { return v.testFunction(in0); }
 
-    public void runTests() {
-        testHarness(new Simple1(), 1);
+    public void runTest(TestRegionBaseClass t) {
+        testHarness(t, 1);
     }
-
-    public static void main(String[] args) {
-        TestVeritesting t = new TestVeritesting();
-        t.runTests();
-    }
-
 };

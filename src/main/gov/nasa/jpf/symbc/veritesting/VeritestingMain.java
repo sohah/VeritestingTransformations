@@ -35,9 +35,6 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
 
-
-import static org.apache.bcel.generic.Type.getSignature;
-
 import za.ac.sun.cs.green.expr.Operation;
 
 /**
