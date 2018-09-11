@@ -8,23 +8,23 @@ public class TestVeritesting {
     }
 
     class VeritestingPerf {
-        void BeginNoVeritest(){};
-        void EndNoVeritest(){};
-        int testFunction(int x){return 0;};
+        int testFunction(int x){return 0;}
     }
 
     private void checkEquality(VeritestingPerf v, int outSPF, int outJR) {
-        v.BeginNoVeritest();
         if (outSPF == outJR) System.out.println("Match");
         else System.out.println("Mismatch");
 //        assert(outSPF == outJR);
-        v.EndNoVeritest();
     }
 
     private int SPFWrapper(VeritestingPerf v, int in0) {
-        v.BeginNoVeritest();
+        return NoVeritest(v, in0);
+    }
+
+    int NoVeritest(VeritestingPerf v, int in0){ return SPFWrapperInner(v, in0); }
+
+    private int SPFWrapperInner(VeritestingPerf v, int in0) {
         int ret = v.testFunction(in0);
-        v.EndNoVeritest();
         return ret;
     }
 

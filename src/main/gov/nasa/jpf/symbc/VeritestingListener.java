@@ -23,6 +23,7 @@ package gov.nasa.jpf.symbc;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
+import gov.nasa.jpf.jvm.JVMDirectCallStackFrame;
 import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
@@ -72,7 +73,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static long staticAnalysisDur;
     private final long runStartTime = System.nanoTime();
     public static StatisticManager statisticManager = new StatisticManager();
-    public static boolean noVeritestingFlag = false;
 
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -108,15 +108,22 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      * @param instructionToExecute instruction to be executed.
      */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+        boolean noVeritestingFlag = false;
+        StackFrame curr = ti.getTopFrame();
+        while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
+            if (curr.getMethodInfo().getName().equals("NoVeritest")) {
+                noVeritestingFlag = true;
+                break;
+            } else curr = curr.getPrevious();
+        }
+        if (noVeritestingFlag)
+            return;
 
         MethodInfo methodInfo = instructionToExecute.getMethodInfo();
         String className = methodInfo.getClassName();
         String methodName = methodInfo.getName();
         String methodSignature = methodInfo.getSignature();
         int offset = instructionToExecute.getPosition();
-        if (methodName.startsWith("BeginNoVeritest")) noVeritestingFlag = true;
-        if (methodName.startsWith("EndNoVeritest")) noVeritestingFlag = false;
-        if (noVeritestingFlag) return;
         String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
 
         if (firstTime) {

@@ -269,9 +269,11 @@ public class VeritestingMain {
                 //regionCreator.createStructuredConditionalRegions(cfg, veritestingRegions);
                 regionCreator.createStructuredConditionalRegions(veriRegions);
             } else {
-                //regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
-                regionCreator.createStructuredConditionalRegions(veriRegions);
-                regionCreator.createStructuredMethodRegion(veriRegions);
+                if (!currentMethodName.equals("NoVeritest")) {
+                    //regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
+                    regionCreator.createStructuredConditionalRegions(veriRegions);
+                    regionCreator.createStructuredMethodRegion(veriRegions);
+                }
             }
             /* // Placeholder for testing and visualizing static-time transformations
             Set<String> keys = veriRegions.keySet();
