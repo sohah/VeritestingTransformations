@@ -70,8 +70,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static boolean firstTime = true;
     private static int veritestRegionCount = 0;
     private static long staticAnalysisDur;
-    private  final long runStartTime = System.nanoTime();
+    private final long runStartTime = System.nanoTime();
     public static StatisticManager statisticManager = new StatisticManager();
+    public static boolean noVeritestingFlag = false;
 
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -113,6 +114,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         String methodName = methodInfo.getName();
         String methodSignature = methodInfo.getSignature();
         int offset = instructionToExecute.getPosition();
+        if (methodName.startsWith("BeginNoVeritest")) noVeritestingFlag = true;
+        if (methodName.startsWith("EndNoVeritest")) noVeritestingFlag = false;
+        if (noVeritestingFlag) return;
         String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
 
         if (firstTime) {
