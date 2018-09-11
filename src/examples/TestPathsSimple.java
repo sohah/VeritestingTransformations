@@ -64,6 +64,7 @@ public class TestPathsSimple {
   }
 */
   // how many tests do we need to cover all paths?
+/*
  public static int testMe (int x, boolean b) {
     System.out.println("x = " + x);
     int y=0;
@@ -77,6 +78,95 @@ public class TestPathsSimple {
     }
     return y;
   }
+
+    public static int mwwTestAndIte(boolean x, boolean y, int a) {
+        if (x && y) {
+            a = a + 1;
+        } else {
+            a = a - 1;
+        }
+        return a;
+    }
+
+    public static int mwwTestOrIte(boolean x, boolean y, int a) {
+        if (x || y) {
+            a = a + 1;
+        } else {
+            a = a - 1;
+        }
+        return a;
+    }
+
+    public static int mwwTestComplexCondition1(boolean w, boolean x, boolean y, boolean z, int a) {
+        if ((w && x) || (y && z)) {
+            a = a + 1;
+        } else {
+            a = a * 2;
+        }
+        return a;
+    }
+
+    public static int mwwTestShouldWorkDoesNot(boolean x, boolean y, int a) {
+        while (x) {
+            if (y) {
+                a = a+1;
+            }
+        }
+        return a;
+    }
+
+    public static int mwwTestdoWhile(boolean x, boolean y, int a) {
+        do {
+            if (y) {
+                a = a+1;
+            }
+        } while (x);
+        return a;
+    }
+
+    public static int mwwTestEarly1(boolean x, boolean y, boolean z, int a) {
+        for (int i=0; i < 10; i++) {
+            if (y) {
+                if (x) {
+                    return a;
+                } else {
+                    a = a + 1;
+                    throw new IllegalArgumentException("boo!");
+                }
+                //a = a + 2;
+            } else {
+                a = a + 2;
+            }
+            a = a * 2;
+        }
+        return a;
+    }
+
+    public static int countBs100(char[] ary) {
+        int count = 0;
+        for (int i = 0; i < 100; i++) {
+            if (ary[i] == 'B')
+                count++;
+        }
+        return count;
+    }
+
+    public static int mwwTestEarly100(boolean x, boolean y, boolean z, int a) {
+        for (int i=0; i < 10; i++) {
+            if (x && z || y) {
+                if (y) {
+                    a = a + 1;
+                } else {
+                    a = a - 1;
+                }
+            } else {
+                a = a + 2;
+                continue;
+            }
+            // a = a * 2;
+        }
+        return a;
+    }
 
   public static int mwwNestedIfBranch(int x, int y) {
     if (x < y) {
@@ -118,7 +208,25 @@ public class TestPathsSimple {
     }
     return y;
   }
+*/
+/*
+    public static int arrayTest(int index, int length) {
+        int[] x = {300, 400};
+        int temp = 1;
+        assert (length > 0 && index == 0 ? true : x[0] == 1 && x[1] == 400);
+        return temp;
+    }
+*/
 
+    public static int mwwTernaryOpConditionTest(int x, int y, int z) {
+     if (x > 1 && y == 0 ? z > 3 : z > 2) {
+        return x*y;
+     } else {
+         return x + y;
+     }
+    }
+
+    /*
   public static int mwwNestedIfBranchEarlyReturn2(int x, int y) {
     if (x < y) {
       if (y < 100) {
@@ -208,7 +316,7 @@ public class TestPathsSimple {
     return y;
   }
 
-
+*/
   /*
   public void testMe2 (int x, boolean b) {
     System.out.println("!!!!!!!!!!!!!!! First step! ");
