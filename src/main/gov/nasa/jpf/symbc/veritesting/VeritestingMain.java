@@ -65,7 +65,8 @@ public class VeritestingMain {
         try {
             appJar = System.getenv("TARGET_CLASSPATH_WALA");// + appJar;
             AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
-                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
+                    (new FileProvider()).getFile("../MyJava60RegressionExclusions.txt"));
+//                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
             methodSummaryClassNames = new HashSet<String>();
             //veritestingRegions = new HashMap<>();
@@ -115,7 +116,7 @@ public class VeritestingMain {
                     continue;
                 }
                 for (Method m : allMethodsAdditional) {
-                    String signature = getSignature(m);
+                    String signature = ReflectUtil.getSignature(m);
                     startAnalysis(getPackageName(methodSummaryClassName), methodSummaryClassName, signature);
                 }
             }
@@ -138,7 +139,7 @@ public class VeritestingMain {
                     continue;
                 }
                 for (Method m : allMethodsAdditional) {
-                    String signature = getSignature(m);
+                    String signature = ReflectUtil.getSignature(m);
                     startAnalysis(getPackageName(methodSummaryClassName), methodSummaryClassName, signature);
                 }
             }
@@ -188,7 +189,7 @@ public class VeritestingMain {
                     continue;
                 }
                 for (Method method : allMethods) {
-                    String signature = getSignature(method);
+                    String signature = ReflectUtil.getSignature(method);
                     MethodReference mr = StringStuff.makeMethodReference(className + "." + signature);
                     IMethod iMethod = cha.resolveMethod(mr);
                     if(iMethod == null)
