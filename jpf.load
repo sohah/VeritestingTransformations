@@ -1,3 +1,3 @@
-export JPF=/Users/Vaibhav/IdeaProjects/jpf-core
+export JPF=/Users/Vaibhav/git-repos/jpf-core
 export PATH=${JPF}/bin:$PATH
 

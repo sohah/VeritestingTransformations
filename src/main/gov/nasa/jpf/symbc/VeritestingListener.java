@@ -74,7 +74,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private final long runStartTime = System.nanoTime();
     public static StatisticManager statisticManager = new StatisticManager();
     private static int veritestRegionExpectedCount = -1;
-    public static final String vtRegionExpectedCountPrefix = "veritestRegionExpectedCount = ";
 
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -94,6 +93,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             System.out.println("* Warning: resetting veritestingMode to 0 (aka use vanilla SPF)");
             veritestingMode = 0;
         }
+        if (conf.hasValue("veritestRegionExpectedCount"))
+            veritestRegionExpectedCount = conf.getInt("veritestRegionExpectedCount");
         jpf.addPublisherExtension(ConsolePublisher.class, this);
     }
 
@@ -121,17 +122,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
         if (noVeritestingFlag)
             return;
-        if (ti.getTopFrame().getMethodInfo().getName().equals("println")) {
-            NativeStackFrame nsf = (NativeStackFrame) ti.getTopFrame();
-            Object[] args = nsf.getArguments();
-            if (args.length == 3) {
-                String toBePrinted = ti.getMJIEnv().getStringObject((Integer)args[2]);
-//                System.out.println("About to print: " + toBePrinted);
-                if (toBePrinted.startsWith(vtRegionExpectedCountPrefix)) {
-                    veritestRegionExpectedCount = Integer.valueOf(toBePrinted.substring(vtRegionExpectedCountPrefix.length()));
-                }
-            }
-        }
         // End equivalence checking code
 
         MethodInfo methodInfo = instructionToExecute.getMethodInfo();
