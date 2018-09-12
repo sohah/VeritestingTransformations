@@ -69,10 +69,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int unsatSPFCaseCount = 0;
     public static final int maxStaticExplorationDepth = 2;
     public static boolean firstTime = true;
-    private static int veritestRegionCount = 0;
+    public static int veritestRegionCount = 0;
     private static long staticAnalysisDur;
     private final long runStartTime = System.nanoTime();
     public static StatisticManager statisticManager = new StatisticManager();
+    private static int veritestRegionExpectedCount = -1;
+    public static final String vtRegionExpectedCountPrefix = "veritestRegionExpectedCount = ";
 
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -110,6 +112,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
         boolean noVeritestingFlag = false;
         StackFrame curr = ti.getTopFrame();
+        // Begin equivalence checking code
         while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
             if (curr.getMethodInfo().getName().equals("NoVeritest")) {
                 noVeritestingFlag = true;
@@ -118,6 +121,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
         if (noVeritestingFlag)
             return;
+        if (ti.getTopFrame().getMethodInfo().getName().equals("println")) {
+            NativeStackFrame nsf = (NativeStackFrame) ti.getTopFrame();
+            Object[] args = nsf.getArguments();
+            if (args.length == 3) {
+                String toBePrinted = ti.getMJIEnv().getStringObject((Integer)args[2]);
+//                System.out.println("About to print: " + toBePrinted);
+                if (toBePrinted.startsWith(vtRegionExpectedCountPrefix)) {
+                    veritestRegionExpectedCount = Integer.valueOf(toBePrinted.substring(vtRegionExpectedCountPrefix.length()));
+                }
+            }
+        }
+        // End equivalence checking code
 
         MethodInfo methodInfo = instructionToExecute.getMethodInfo();
         String className = methodInfo.getClassName();
@@ -335,6 +350,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println(statisticManager.printAccumulativeStatistics());
         pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
         pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
+        /* Begin added for equivalence checking */
+        if (veritestRegionExpectedCount != -1) {
+            pw.println("Expected Number of Veritested Regions Instances = " + veritestRegionExpectedCount);
+            assert (veritestRegionCount == veritestRegionExpectedCount);
+        }
+        /* End added for equivalence checking */
 
     }
 }

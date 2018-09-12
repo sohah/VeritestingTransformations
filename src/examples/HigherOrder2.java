@@ -1,5 +1,4 @@
-
-public class HigherOrder1 extends TestRegionBaseClass {
+public class HigherOrder2 extends TestRegionBaseClass {
     // Classes that wish to test a veritesting region can populate the expected value of
     // VeritestingListener.veritestRegionCount in this variable. TestVeritesting will assert
     // VeritestingListener.veritestRegionCount to be equal to veritestRegionExpectedCount
@@ -30,16 +29,18 @@ public class HigherOrder1 extends TestRegionBaseClass {
         return myCount;
     }
 
-    public static int simpleRegion(int y) {
-        int methodCount = 0;
-        if (y != 100)
-            methodCount = staticMethod1(y);
-        return methodCount;
+
+
+    public int simpleRegion(int x) {
+        int val = -1;
+        if (x != 0)
+            val = staticMethod1(x );
+        return val;
     }
 
     public static void main(String[] args) {
         TestVeritesting t = new TestVeritesting();
-        HigherOrder1 h = new HigherOrder1();
+        HigherOrder2 h = new HigherOrder2();
         t.runTest(h);
         // The string prefix in the following println needs to be "veritestRegionExpectedCount = ". This is the string
         // that SPF will be looking for in this program's output to find out this tests's expected value of number of
