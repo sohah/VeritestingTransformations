@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
+import choco.Var;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
@@ -11,6 +12,7 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.ValueSymbolTable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
@@ -22,11 +24,11 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
+import stp.Expr;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.Variable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.createSPFVariableForType;
@@ -39,16 +41,16 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.WalaUtil.makeConsta
  */
 public class SubstitutionVisitor extends AstMapVisitor {
     ExprVisitorAdapter<Expression> eva;
-    public final ValueSymbolTable valueSymbolTable;
-    public final StaticRegion staticRegion;
+    public final DynamicTable valueSymbolTable;
+    public final DynamicRegion dynRegion;
     public final ThreadInfo ti;
 
-    private SubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion,
-                                ValueSymbolTable valueSymbolTable) {
+    private SubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
+                                DynamicTable valueSymbolTable) {
 
-        super(new ExprSubstitutionVisitor(ti, staticRegion, valueSymbolTable));
+        super(new ExprSubstitutionVisitor(ti, dynRegion, valueSymbolTable));
         this.ti = ti;
-        this.staticRegion = staticRegion;
+        this.dynRegion = dynRegion;
         this.valueSymbolTable = valueSymbolTable;
         eva = super.eva;
 
@@ -115,11 +117,11 @@ public class SubstitutionVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(InvokeInstruction c) {
 
-        ValueSymbolTable hgOrdValueSymbolTable = new ValueSymbolTable();
+        ArrayList<Expression> values = new ArrayList<Expression>();
         Expression[] params = new Expression[c.params.length];
         for (int i = 0; i < params.length; i++) {
             params[i] = eva.accept(c.params[i]);
-            hgOrdValueSymbolTable.add((i+1), params[i]); // in case of non static, the first parameter needs to be de-referenced because it will refer to an object class.
+            values.add(params[i]); // in case of non static, the first parameter needs to be de-referenced because it will refer to an object class.
         }
 
         SSAInvokeInstruction instruction = c.getOriginal();
@@ -134,15 +136,20 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
                 System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
                 System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
-                StaticRegion uniqueHgOrdStaticRegion = UniqueRegion.execute(hgOrdStaticRegion);
-                hgOrdValueSymbolTable.makeUniqueKey(DynamicRegion.uniqueCounter);
+                DynamicRegion uniqueHgOrdStaticRegion = UniqueRegion.execute(hgOrdStaticRegion);
 
-                Pair<Stmt, VarTypeTable> hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdStaticRegion, hgOrdValueSymbolTable);
+                DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
+                        "var",
+                        "value",
+                        uniqueHgOrdStaticRegion.slotParamTable.getKeys(),
+                        values);
+
+                Pair<Stmt, DynamicTable> hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdStaticRegion, hgOrdValueSymbolTable);
 
                 Stmt hgOrdStmt = hgOrdUniqueStmtType.getFirst();
-                VarTypeTable hgOrdTypeTable = hgOrdUniqueStmtType.getSecond();
+                DynamicTable hgOrdTypeTable = hgOrdUniqueStmtType.getSecond();
 
-                staticRegion.varTypeTable.mergeTable(hgOrdTypeTable);
+                dynRegion.varTypeTable.mergeTable(hgOrdTypeTable);
                 Stmt returnStmt;
                 if (c.result.length == 1) {
                     Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
@@ -164,15 +171,14 @@ public class SubstitutionVisitor extends AstMapVisitor {
      * @param hgOrdValueSymbolTable Value symbol table for te MethodRegion, usually populated with the parameters.
      * @return A pair of substituted statement for the high order region as well as its VarTypeTable.
      */
-    private Pair<Stmt, VarTypeTable> attemptHighOrderRegion(InvokeInstruction c,
-                                                            StaticRegion methodRegion,
-                                                            ValueSymbolTable hgOrdValueSymbolTable) {
+    private Pair<Stmt, DynamicTable> attemptHighOrderRegion(InvokeInstruction c,
+                                                            DynamicRegion methodRegion,
+                                                            DynamicTable hgOrdValueSymbolTable) {
 
         assert (methodRegion.isMethodRegion);
-
         hgOrdValueSymbolTable.mergeTable(fillValueSymbolTable(ti, methodRegion));
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, methodRegion, hgOrdValueSymbolTable);
-        return new Pair<Stmt, VarTypeTable>((Stmt) methodRegion.staticStmt.accept(visitor), methodRegion.varTypeTable);
+        return new Pair<Stmt, DynamicTable>((Stmt) methodRegion.dynStmt.accept(visitor), methodRegion.varTypeTable);
     }
 
 
@@ -220,19 +226,19 @@ public class SubstitutionVisitor extends AstMapVisitor {
     /**
      * Fills out the values of all vars that could be discovered in the region.
      * @param ti Current executing thread.
-     * @param staticRegion StaticRegion for which the ValueSymbolTable is going to be created.
+     * @param dynRegion DynamicRegion for which the ValueSymbolTable is going to be created.
      * @return Populated ValueSymbolTable for variables in the static region.
      */
-    private static ValueSymbolTable fillValueSymbolTable(ThreadInfo ti, StaticRegion staticRegion) {
+    private static DynamicTable fillValueSymbolTable(ThreadInfo ti, DynamicRegion dynRegion) {
 
         StackFrame sf = ti.getTopFrame();
 
-        ValueSymbolTable valueSymbolTable = new ValueSymbolTable();
-        Set<Integer> regionVarSet = staticRegion.varTypeTable.getKeys();
+        DynamicTable valueSymbolTable = new DynamicTable("var-value table", "var", "value");
+        List<WalaVarExpr> regionVarSet = dynRegion.varTypeTable.getKeys();
 
-        for (Integer var : regionVarSet) {
-            Integer slot = staticRegion.inputTable.lookup(var);
-            if ((slot != null) && (!staticRegion.isMethodRegion)) {
+        for (WalaVarExpr var : regionVarSet) {
+            Integer slot = (Integer) dynRegion.inputTable.lookup(var);
+            if ((slot != null) && (!dynRegion.isMethodRegion)) {
                 String varType = sf.getLocalVariableType(slot);
                 gov.nasa.jpf.symbc.numeric.Expression varValueExp;
                 varValueExp = (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
@@ -247,9 +253,9 @@ public class SubstitutionVisitor extends AstMapVisitor {
                 valueSymbolTable.add(var, greenValue);
 
             } else { //not a stack slot var, try to check if it is a constant from wala
-                SymbolTable symbolTable = staticRegion.ir.getSymbolTable();
-                if ((var > -1) && (symbolTable.isConstant(var))) {
-                    Expression greenValue = makeConstantFromWala(staticRegion.ir.getSymbolTable(), var);
+                SymbolTable symbolTable = dynRegion.ir.getSymbolTable();
+                if ((var.number > -1) && (symbolTable.isConstant(var.number))) {
+                    Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), var.number);
                     valueSymbolTable.add(var, greenValue);
                 }
             }
@@ -261,30 +267,31 @@ public class SubstitutionVisitor extends AstMapVisitor {
      * Executes substitution over a non-method region.
      *
      * @param ti           Thread Information currently running by JPF.
-     * @param staticRegion A non-method region that was statically summarized.
+     * @param dynRegion A non-method region that was statically summarized.
      * @return A Dynamic Region that has been substituted by symbolic or concerete values for inputs as well as constants being substituted.
      */
 
-    public static DynamicRegion execute(ThreadInfo ti, StaticRegion staticRegion) {
+    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
 
-        ValueSymbolTable valueSymbolTable;
+        DynamicTable valueSymbolTable;
 
-        assert (!staticRegion.isMethodRegion);
-        valueSymbolTable = fillValueSymbolTable(ti, staticRegion);
+        assert (!dynRegion.isMethodRegion);
+        valueSymbolTable = fillValueSymbolTable(ti, dynRegion);
 
-        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, staticRegion, valueSymbolTable);
-        Stmt dynStmt = staticRegion.staticStmt.accept(visitor);
-        DynamicRegion dynRegion = new DynamicRegion(staticRegion, dynStmt, new HashSet<>());
+        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
+        Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
+        DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new HashSet<SPFCaseStmt>());
 
-/*
+
         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
         dynRegion.slotParamTable.print();
         dynRegion.outputTable.print();
         dynRegion.varTypeTable.print();
-*/
 
-        return dynRegion;
+        System.out.println("\n--------------- AFTER SUBSTITUTION TRANSFORMATION ---------------\n");
+        System.out.println(StmtPrintVisitor.print(instantiatedDynRegion.dynStmt));
+        return instantiatedDynRegion;
     }
 
 }

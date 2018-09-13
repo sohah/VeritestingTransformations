@@ -4,6 +4,7 @@ import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.ArrayFields;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -15,7 +16,7 @@ import java.util.HashSet;
 
 
 /**
- *This is the first pass of SPFCases that creates SPFCases nodes. It assumes substitution has run. The purpose of this transformation is to provide a place holder specific instructions to become SPFCase Statements in RangerIR.
+ *This is the first pass of SPFCases that creates SPFCases nodes. It assumes substitution has run. The purpose of this transformation is to provide a place holder for specific instructions to become SPFCase Statements in RangerIR.
   */
 
 
@@ -222,12 +223,12 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
     public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
         SpfCasesPass1Visitor visitor = new SpfCasesPass1Visitor(ti);
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
-        return new DynamicRegion(dynRegion.staticRegion,
+
+        System.out.println("--------------- SPFCases TRANSFORMATION 1ST PASS ---------------");
+        System.out.println(StmtPrintVisitor.print(dynStmt));
+
+        return new DynamicRegion(dynRegion,
                 dynStmt,
-                dynRegion.varTypeTable,
-                dynRegion.slotParamTable,
-                dynRegion.outputTable,
-                dynRegion.isMethodRegion,
                 new HashSet<>());
     }
 }

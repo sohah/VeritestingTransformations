@@ -173,9 +173,8 @@ public class StackSlotIVisitor implements SSAInstruction.IVisitor {
         int iindex = ins.iindex;
         if (!(ins instanceof SSAPhiInstruction) && (slotParamTable.lookup(var) == null)) {
             int[] localNumbers = ir.findLocalsForValueNumber(iindex, var);
-             //last condition is used to checks that the stack slot is not mapping to the class stack slot, used to ignore stack slots for fields which are attached to the class slot.
-                if ((localNumbers != null) && !(ir.getSymbolTable().isConstant(var)) && (Arrays.binarySearch(localNumbers, 0) == -1))
-                    slotParamTable.add(var, localNumbers);
+            if ((localNumbers != null) && !(ir.getSymbolTable().isConstant(var)))
+                slotParamTable.add(var, localNumbers);
         }
     }
 }

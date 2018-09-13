@@ -15,7 +15,7 @@ import java.util.Set;
  */
 
 
-public class ValueSymbolTable extends Table<Expression> {
+public class ValueSymbolTable extends StaticTable<Expression> {
 
 
     public ValueSymbolTable() {
