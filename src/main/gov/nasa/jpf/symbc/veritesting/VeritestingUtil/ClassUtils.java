@@ -60,7 +60,7 @@ public class ClassUtils {
         if(allMethodsAdditional.length == 0) return;
         //Only need to add subclass once for all the methods in the class
         Method m = allMethodsAdditional[0];
-        String signature = getSignature(m);
+        String signature = ReflectUtil.getSignature(m);
         MethodReference mr = StringStuff.makeMethodReference(methodSummaryClassName + "." + signature);
         IMethod iMethod = cha.resolveMethod(mr);
         if (iMethod == null) {
@@ -113,7 +113,7 @@ public class ClassUtils {
                     continue;
                 }
                 for (Method method : allMethods) {
-                    String signature = getSignature(method);
+                    String signature = ReflectUtil.getSignature(method);
                     MethodReference mr = StringStuff.makeMethodReference(className + "." + signature);
                     IMethod iMethod = cha.resolveMethod(mr);
                     if(iMethod == null)

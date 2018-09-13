@@ -337,6 +337,13 @@ public class CreateStaticRegions {
     /**
      * Re-constructs a complex condition for an if/then/else condition.
      *
+     * MWW: 9/10/2018.  The assertion: (child.getNumber() > entry.getNumber()) at
+     * the top of this function is too restrictive.  The issue is that we assume
+     * all parents are within the path between entry and child.  This is true
+     * for "top-level" Java if/then/else expressions, but if we wish to
+     * construct regions from within complex conditions, it no longer holds.
+     *
+     * There are two ways to examine this case: we can
      */
     private Expression createComplexIfCondition(ISSABasicBlock child,
                                                 ISSABasicBlock entry) throws StaticRegionException {
@@ -345,6 +352,17 @@ public class CreateStaticRegions {
         Expression returnExpr = null;
 
         for (ISSABasicBlock parent: cfg.getNormalPredecessors(child)) {
+
+            // 9/10/2018 MWW: missing condition: if entry is "inside" a complex
+            // if condition, then it should be possible to construct a region that
+            // corresponds only to those branches within the subgraph.  However,
+            // my intuition *may* be wrong here; it will be a great comfort when
+            // Vaibhav finishes his equivalence checker.
+            if (parent.getNumber() < entry.getNumber()) {
+                continue;
+                // throw new StaticRegionException("createComplexIfCondition: funky non-self-contained region");
+            }
+
             if (!SSAUtil.isConditionalBranch(parent)) {
                 throw new StaticRegionException("createComplexIfCondition: unconditional branch (continue or break)");
             }
