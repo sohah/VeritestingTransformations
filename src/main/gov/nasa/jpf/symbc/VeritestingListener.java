@@ -348,7 +348,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         /* Begin added for equivalence checking */
         if (veritestRegionExpectedCount != -1) {
             pw.println("Expected Number of Veritested Regions Instances = " + veritestRegionExpectedCount);
-            assert (veritestRegionCount == veritestRegionExpectedCount);
+            //Soha: we need to talk about what each number mean, I don't think this is valid check at the moment.
+           // assert (veritestRegionCount == veritestRegionExpectedCount);
         }
         /* End added for equivalence checking */
 

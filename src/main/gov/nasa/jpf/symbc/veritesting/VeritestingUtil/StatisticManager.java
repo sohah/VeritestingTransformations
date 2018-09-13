@@ -121,7 +121,6 @@ public class StatisticManager {
     public void updateConcreteHitStatForRegion(String key) {
         if (regionsStatisticsMap.get(key) != null) {
             RegionStatistics regionStatistics = regionsStatisticsMap.get(key);
-            assert (regionStatistics.failReason == FailReason.CONCRETE);
             regionStatistics.hitNumber++;
         } else {
             RegionStatistics regionStatistics = new RegionStatistics(key, false, FailReason.CONCRETE, 1);

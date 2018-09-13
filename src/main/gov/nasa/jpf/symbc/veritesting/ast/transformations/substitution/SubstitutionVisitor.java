@@ -136,15 +136,15 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
                 System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
                 System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
-                DynamicRegion uniqueHgOrdStaticRegion = UniqueRegion.execute(hgOrdStaticRegion);
+                DynamicRegion uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
 
                 DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
                         "var",
                         "value",
-                        uniqueHgOrdStaticRegion.slotParamTable.getKeys(),
+                        uniqueHgOrdDynRegion.slotParamTable.getKeys(),
                         values);
 
-                Pair<Stmt, DynamicTable> hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdStaticRegion, hgOrdValueSymbolTable);
+                Pair<Stmt, DynamicTable> hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdDynRegion, hgOrdValueSymbolTable);
 
                 Stmt hgOrdStmt = hgOrdUniqueStmtType.getFirst();
                 DynamicTable hgOrdTypeTable = hgOrdUniqueStmtType.getSecond();
