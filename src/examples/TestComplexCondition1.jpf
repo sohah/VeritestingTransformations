@@ -1,13 +1,13 @@
-target=HigherOrder2
-veritestRegionExpectedCount = 8
+target=TestComplexCondition1
+veritestRegionExpectedCount = 2
 # Classes that wish to test a veritesting region can populate the expected value of
 # VeritestingListener.veritestRegionCount in this variable. TestVeritesting will assert
 # VeritestingListener.veritestRegionCount to be equal to veritestRegionExpectedCount
 # Since on every execution path, we expect a region to be instantiated, this variable should correspond to the
 # total number of execution paths we expect during equivalence-checking.
-# With 3 branches in simpleRegion(), I (vaibhav) expect the region inside simpleRegion() to be instantiated 8 times,
+# With 1 branch in simpleRegion(), I (vaibhav) expect the region inside simpleRegion() to be instantiated 2 times,
 # once on every execution path through the simpleRegion().
-    
+
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil

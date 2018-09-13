@@ -1,23 +1,23 @@
-
-class Simple1 extends TestRegionBaseClass {
+public class TestOrIte extends TestRegionBaseClass {
 
     int testFunction(int in0, int in1, int in2, int in3, int in4, int in5,
                      boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5) {
-        return simpleRegion(in0);
+        return mwwTestOrIte(b0, b1, in0);
     }
-    int simpleRegion(int x) {
-        int count;
-        if (x != 0) {
-            count = 3;
+
+    public static int mwwTestOrIte(boolean x, boolean y, int a) {
+        if (x || y) {
+            a = a + 1;
         } else {
-            count = 4;
+            a = a - 1;
         }
-        return count;
+        return a;
     }
 
     public static void main(String[] args) {
         TestVeritesting t = new TestVeritesting();
-        Simple1 s = new Simple1();
+        TestOrIte s = new TestOrIte();
         t.runTest(s);
     }
 }
+
