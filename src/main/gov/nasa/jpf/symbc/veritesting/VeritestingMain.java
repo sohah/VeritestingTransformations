@@ -93,7 +93,12 @@ public class VeritestingMain {
                 return;
             }
             for (Method m : allMethods) {
-                String signature = ReflectUtil.getSignature(m);
+                String signature = null;
+                try {
+                    signature = ReflectUtil.getSignature(m);
+                } catch (StaticRegionException e) {
+                    continue;
+                }
                 startAnalysis(getPackageName(_className), _className, signature);
             }
             if (VeritestingListener.veritestingMode <= 2) return;
@@ -113,7 +118,12 @@ public class VeritestingMain {
                     continue;
                 }
                 for (Method m : allMethodsAdditional) {
-                    String signature = ReflectUtil.getSignature(m);
+                    String signature = null;
+                    try {
+                        signature = ReflectUtil.getSignature(m);
+                    } catch (StaticRegionException e) {
+                        continue;
+                    }
                     startAnalysis(getPackageName(methodSummaryClassName), methodSummaryClassName, signature);
                 }
             }
@@ -136,7 +146,12 @@ public class VeritestingMain {
                     continue;
                 }
                 for (Method m : allMethodsAdditional) {
-                    String signature = ReflectUtil.getSignature(m);
+                    String signature = null;
+                    try {
+                        signature = ReflectUtil.getSignature(m);
+                    } catch (StaticRegionException e) {
+                        continue;
+                    }
                     startAnalysis(getPackageName(methodSummaryClassName), methodSummaryClassName, signature);
                 }
             }
@@ -186,7 +201,12 @@ public class VeritestingMain {
                     continue;
                 }
                 for (Method method : allMethods) {
-                    String signature = ReflectUtil.getSignature(method);
+                    String signature;
+                    try {
+                        signature = ReflectUtil.getSignature(method);
+                    } catch (StaticRegionException e) {
+                        continue;
+                    }
                     MethodReference mr = StringStuff.makeMethodReference(className + "." + signature);
                     IMethod iMethod = cha.resolveMethod(mr);
                     if(iMethod == null)
