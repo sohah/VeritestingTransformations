@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Eq-checks" type="CompoundRunConfigurationType" factoryName="Compound Run Configuration">
+    <toRun type="JarApplication" name="Simple1" />
+    <toRun type="JarApplication" name="TestAndIte" />
+    <toRun type="JarApplication" name="TestComplexCondition1" />
+    <toRun type="JarApplication" name="TestNestedIfBranch" />
+    <toRun type="JarApplication" name="TestOrIte" />
+    <method v="2" />
+  </configuration>
+</component>
