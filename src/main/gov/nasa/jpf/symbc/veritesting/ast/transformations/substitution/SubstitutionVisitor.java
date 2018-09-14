@@ -280,7 +280,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
-        DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new HashSet<SPFCaseStmt>());
+        DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new HashSet<SPFCaseStmt>(), null);
 
 
         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");

@@ -183,6 +183,6 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
 
         return new DynamicRegion(dynRegion,
                 dynStmt,
-                spfCaseSet);
+                spfCaseSet, null);
     }
 }

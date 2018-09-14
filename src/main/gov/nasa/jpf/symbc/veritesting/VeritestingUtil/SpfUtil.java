@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
+import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
@@ -142,4 +143,61 @@ public class SpfUtil {
             }
         }
     }
+
+
+
+    public static Comparator getComparator(Instruction instruction) {
+        switch (instruction.getMnemonic()) {
+            case "ifeq":
+            case "if_icmpeq":
+                return Comparator.EQ;
+            case "ifge":
+            case "if_icmpge":
+                return Comparator.GE;
+            case "ifle":
+            case "if_icmple":
+                return Comparator.LE;
+            case "ifgt":
+            case "if_icmpgt":
+                return Comparator.GT;
+            case "iflt":
+            case "if_icmplt":
+                return Comparator.LT;
+            case "ifne":
+            case "if_icmpne":
+                return Comparator.NE;
+            default:
+                System.out.println("Unknown comparator: " + instruction.getMnemonic());
+                assert(false);
+                return null;
+        }
+    }
+
+    public static Comparator getNegComparator(Instruction instruction) {
+        switch (instruction.getMnemonic()) {
+            case "ifeq":
+            case "if_icmpeq":
+                return Comparator.NE;
+            case "ifge":
+            case "if_icmpge":
+                return Comparator.LT;
+            case "ifle":
+            case "if_icmple":
+                return Comparator.GT;
+            case "ifgt":
+            case "if_icmpgt":
+                return Comparator.LE;
+            case "iflt":
+            case "if_icmplt":
+                return Comparator.GE;
+            case "ifne":
+            case "if_icmpne":
+                return Comparator.EQ;
+            default:
+                System.out.println("Unknown comparator: " + instruction.getMnemonic());
+                assert(false);
+                return null;
+        }
+    }
+
 }

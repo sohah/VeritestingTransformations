@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
+import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.HashMap;
@@ -66,6 +67,8 @@ public class DynamicRegion implements Region {
      */
     public final HashSet<SPFCaseStmt> spfCaseSet;
 
+    public final Expression regionSummary;
+
 /*
 
 */
@@ -96,7 +99,8 @@ public class DynamicRegion implements Region {
 
     public DynamicRegion(DynamicRegion oldDynRegion,
                          Stmt dynStmt,
-                         HashSet<SPFCaseStmt> spfCaseSet) {
+                         HashSet<SPFCaseStmt> spfCaseSet,
+                         Expression regionSummary) {
         this.ir = oldDynRegion.ir;
         this.dynStmt = dynStmt;
         this.inputTable = new DynamicTable(
@@ -109,6 +113,7 @@ public class DynamicRegion implements Region {
         this.varTypeTable = oldDynRegion.varTypeTable;
         this.slotParamTable = oldDynRegion.slotParamTable;
         this.spfCaseSet = spfCaseSet;
+        this.regionSummary = regionSummary;
     }
 
 
@@ -126,6 +131,7 @@ public class DynamicRegion implements Region {
         this.endIns = staticRegion.endIns;
         this.isMethodRegion = staticRegion.isMethodRegion;
         this.spfCaseSet = new HashSet<>();
+        this.regionSummary = null;
 
         this.slotParamTable = new DynamicTable(
                 (StaticTable) staticRegion.slotParamTable,

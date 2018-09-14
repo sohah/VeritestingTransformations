@@ -190,8 +190,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
                         /*--------------- TO GREEN TRANSFORMATION ---------------*/
-                        Expression regionSummary = AstToGreenVisitor.execute(dynRegion);
-
+                         dynRegion = AstToGreenVisitor.execute(dynRegion);
+                        Expression regionSummary = dynRegion.regionSummary;
 
                         setupSPF(ti, instructionToExecute, dynRegion, regionSummary);
                         ++veritestRegionCount;

@@ -166,17 +166,22 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         return bad(c);
     }
 
-    public static Expression execute(DynamicRegion dynamicRegion){
+    public static DynamicRegion execute(DynamicRegion dynRegion){
 
         System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
-        WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynamicRegion.varTypeTable);
+        WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynRegion.varTypeTable);
         AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
-        Stmt noWalaVarStmt = dynamicRegion.dynStmt.accept(astMapVisitor);
+        Stmt noWalaVarStmt = dynRegion.dynStmt.accept(astMapVisitor);
 
         AstToGreenVisitor toGreenVisitor = new AstToGreenVisitor();
         Expression regionSummary = noWalaVarStmt.accept(toGreenVisitor);
 
         System.out.println(ExprUtil.AstToString(regionSummary));
-        return regionSummary;
+        DynamicRegion greenDynRegion = new DynamicRegion(dynRegion,
+                dynRegion.dynStmt,
+                dynRegion.spfCaseSet,
+                regionSummary);
+
+        return greenDynRegion;
     }
 }

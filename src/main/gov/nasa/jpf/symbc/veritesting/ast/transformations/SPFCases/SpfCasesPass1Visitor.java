@@ -229,6 +229,6 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
         return new DynamicRegion(dynRegion,
                 dynStmt,
-                new HashSet<>());
+                new HashSet<>(), null);
     }
 }
