@@ -75,7 +75,7 @@ public class StaticRegion implements Region {
             firstDef = regionBoundary.getSecond().getFirst();
             lastDef = regionBoundary.getSecond().getSecond();
 
-            lastVar = (firstDef == null) ? lastUse : lastDef;
+            lastVar = ((lastDef != null) && (lastDef > lastUse)) ? lastDef: lastUse;
 
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(firstUse, lastVar));
             varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastVar));
