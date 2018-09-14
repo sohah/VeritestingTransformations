@@ -37,6 +37,7 @@
 
 package gov.nasa.jpf.symbc.numeric.solvers;
 
+import java.io.*;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +46,8 @@ import com.microsoft.z3.*;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.VeritestingListener;
-import gov.nasa.jpf.symbc.string.translate.BVExpr;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 
 public class ProblemZ3BitVector extends ProblemGeneral {
 
@@ -166,10 +168,45 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     
     @Override
     public Boolean solve() {
+
         try {
         	boolean result = false;
         	if(SymbolicInstructionFactory.debugMode == true){
-        		System.out.println("\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        	    /****** SH: logging to files *******************/
+                String folderName;
+                if(StatisticManager.veritestingRunning)
+                    folderName = "../SolverQueriesVeritesting";
+                else
+                    folderName = "../SolverQueriesSPF";
+                File dir = new File(folderName);
+                boolean success;
+
+                if(!dir.exists())
+                    success = dir.mkdir();
+                else{
+                    if(StatisticManager.inializeQueriesFile){
+                        SpfUtil.emptyFolder(dir);
+                        StatisticManager.inializeQueriesFile = false;
+                    }
+                    success = true;
+                }
+
+                if(success){
+                    String fileName = folderName + "/" + StatisticManager.instructionToExec+"$" + StatisticManager.solverQueriesUnique + ".txt";
+                    ++StatisticManager.solverQueriesUnique;
+                    try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                            new FileOutputStream(fileName), "utf-8"))) {
+                        writer.write(solver.toString());
+                    }
+                }
+                else
+                    System.out.println("Encountered a problem while creating Solver Queries directory.");
+
+
+                /*********** SH: end logging *******************/
+
+
+        	    System.out.println("\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         		System.out.println(solver.toString());
         		long z3time = 0;
                 long t1 = System.nanoTime();

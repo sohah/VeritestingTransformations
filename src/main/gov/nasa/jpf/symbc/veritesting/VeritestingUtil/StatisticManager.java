@@ -6,6 +6,11 @@ import java.util.Set;
 
 public class StatisticManager {
     public static HashMap<String, RegionStatistics> regionsStatisticsMap = new HashMap<>();
+    public static String instructionToExec;
+    public static boolean veritestingRunning = false;
+    public static int solverQueriesUnique = 0;
+    public static boolean inializeQueriesFile = true;
+
 
     public void updateHitStatForRegion(String key) {
         if (regionsStatisticsMap.get(key) != null) {

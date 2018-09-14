@@ -100,6 +100,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
         if (conf.hasValue("veritestRegionExpectedCount"))
             veritestRegionExpectedCount = conf.getInt("veritestRegionExpectedCount");
+
+        StatisticManager.veritestingRunning = true;
         jpf.addPublisherExtension(ConsolePublisher.class, this);
     }
 
@@ -135,6 +137,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         String methodSignature = methodInfo.getSignature();
         int offset = instructionToExecute.getPosition();
         String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+
+        StatisticManager.instructionToExec = key;
 
         if (firstTime) {
             discoverRegions(ti); // static analysis to discover regions

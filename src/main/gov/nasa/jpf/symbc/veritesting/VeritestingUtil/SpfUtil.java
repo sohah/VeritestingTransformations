@@ -7,10 +7,11 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
+
+import java.io.File;
 
 /**
  * This class provides some utility methods for SPF.
@@ -125,6 +126,20 @@ public class SpfUtil {
         } else {
             System.out.println("SPF does not know the type, type is assumed int.");
             return new IntegerConstant(variable);
+        }
+    }
+
+
+    public static void emptyFolder(File folder) {
+        File[] files = folder.listFiles();
+        if(files!=null) { //some JVMs return null for empty dirs
+            for(File f: files) {
+                if(f.isDirectory()) {
+                    emptyFolder(f);
+                } else {
+                    f.delete();
+                }
+            }
         }
     }
 }
