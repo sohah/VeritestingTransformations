@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 
 import java.util.function.BinaryOperator;
@@ -61,6 +58,9 @@ public class ExprIterVisitor<T> implements ExprVisitor<T> {
         return defaultVal;
     }
     @Override public T visit(WalaVarExpr expr) {
+        return defaultVal;
+    }
+    @Override public T visit(AstVarExpr expr) {
         return defaultVal;
     }
     @Override public T visit(FieldRefVarExpr expr) {

@@ -208,6 +208,12 @@ public class PrettyPrintVisitor implements AstVisitor<Void> {
             return null;
         }
 
+        @Override
+        public Void visit(AstVarExpr expr) {
+            write(expr.toString());
+            return null;
+        }
+
         public Void visit(IfThenElseExpr expr) {
             write(expr.toString());
             return null;

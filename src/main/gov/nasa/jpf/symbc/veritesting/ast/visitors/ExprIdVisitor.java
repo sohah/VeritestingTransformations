@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 
 
@@ -28,6 +25,9 @@ public class ExprIdVisitor implements ExprVisitor<Expression> {
         return expr;
     }
     @Override public Expression visit(WalaVarExpr expr) {
+        return expr;
+    }
+    @Override public Expression visit(AstVarExpr expr) {
         return expr;
     }
     @Override public Expression visit(FieldRefVarExpr expr) {
