@@ -17,26 +17,27 @@ limitations under the License.
 */
 //package org.jwatter.util;
 //http://www.java2s.com/Code/Java/Reflection/Methodsignature.htm
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import org.apache.bcel.classfile.Utility;
 
 import java.lang.reflect.Method;
 
 public class ReflectUtil
 {
-    public static String getSignature ( Method method )
-    {
+    public static String getSignature ( Method method ) throws StaticRegionException {
         return method.getName() + "("
                 + parametersAsString(method) + ")"
                 + Utility.getSignature(method.getReturnType().getSimpleName());
     }
-    public static String parametersAsString ( Method method )
-    {
+    public static String parametersAsString ( Method method ) throws StaticRegionException {
         Class<?>[] parameterTypes = method.getParameterTypes();
         if ( parameterTypes.length == 0 ) return "";
         StringBuilder paramString = new StringBuilder();
 
         for ( int i = 0 ; i < parameterTypes.length ; i++ )
         {
+            if (parameterTypes[i].getCanonicalName() == null)
+                throw new StaticRegionException("failed to construct method signature for " + method.getName());
             paramString.append(Utility.getSignature(parameterTypes[i].getCanonicalName()));
             /*String correct = Utility.getSignature(parameterTypes[i].getCanonicalName());
             String y = Utility.getSignature(parameterTypes[i].getSimpleName());
