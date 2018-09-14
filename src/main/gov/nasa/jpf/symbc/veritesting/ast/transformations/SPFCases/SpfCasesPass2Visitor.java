@@ -4,6 +4,7 @@ import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
@@ -177,13 +178,11 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
         SpfCasesPass2Visitor visitor = new SpfCasesPass2Visitor();
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
 
-        return new DynamicRegion(dynRegion.staticRegion,
+        System.out.println("--------------- SPFCases TRANSFORMATION 2ND PASS ---------------");
+        System.out.println(StmtPrintVisitor.print(dynStmt));
+
+        return new DynamicRegion(dynRegion,
                 dynStmt,
-                dynRegion.varTypeTable,
-                dynRegion.fieldRefTypeTable,
-                dynRegion.slotParamTable,
-                dynRegion.outputTable,
-                dynRegion.isMethodRegion,
                 spfCaseSet);
     }
 }

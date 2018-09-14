@@ -3,15 +3,13 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.ArrayList;
-
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
+import java.util.HashMap;
 
 /**
  * Unique Expression Visitor that ensures the uniqueness of vars used inside the region.
@@ -22,28 +20,32 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
     ArrayList<WalaVarExpr> uniqueSafeList;
 
     int uniqueNum;
-    public StaticRegionException sre = null;
 
-    ExpUniqueVisitor(int uniqueNum) {
+    private HashMap<Integer, Variable> varToNumUniqueMap;
+
+    ExpUniqueVisitor(int uniqueNum, HashMap<Integer, Variable> varToNumUniqueMap) {
         super();
         this.uniqueNum = uniqueNum;
+        this.varToNumUniqueMap = varToNumUniqueMap;
     }
 
+    /**
+     * A visit to all WalaVariables to create a new-unique object for the same var number.
+     *
+     * @param expr WalaVariable that is visited
+     * @return either a new unique wala var object or already an existing unique wala var object.
+     */
     @Override
     public Expression visit(WalaVarExpr expr) {
-        String varId = Integer.toString(expr.number);
-        varId = varId.concat(Integer.toString(uniqueNum));
-        return new WalaVarExpr(Integer.valueOf(varId));
-
-    }
-
-    @Override
-    public Expression visit(FieldRefVarExpr expr) {
-        try {
-            expr.makeUnique(uniqueNum);
-        } catch (StaticRegionException e) {
-            sre = e;
+        if (varToNumUniqueMap.containsKey(expr.number))
+            return varToNumUniqueMap.get(expr.number);
+        else {
+            String varId = Integer.toString(expr.number);
+            varId = varId.concat("$");
+            varId = varId.concat(Integer.toString(uniqueNum));
+            WalaVarExpr walaVar = new WalaVarExpr(expr.number, varId);
+            varToNumUniqueMap.put(expr.number, walaVar);
+            return walaVar;
         }
-        return expr.clone();
     }
 }

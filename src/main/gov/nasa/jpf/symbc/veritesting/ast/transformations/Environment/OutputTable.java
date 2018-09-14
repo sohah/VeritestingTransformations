@@ -10,7 +10,7 @@ import java.util.*;
 /**
  * An Environment table that holds all slots that needs to be populated after successful symmetrization of the region. Vars associated with the slot are the last instance discovered for the slots.
  */
-public class OutputTable extends Table<Integer> {
+public class OutputTable extends StaticTable<Integer> {
     private boolean isMethodRegion;
 
     public OutputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt) {
@@ -89,10 +89,12 @@ public class OutputTable extends Table<Integer> {
         table.forEach((v1, v2) -> System.out.println(v1 + " --------- @w" + v2));
     }
 
-    /**
+    //TODO:Soha Remove all below
+/*
+    *//**
      * Clones the OutputTable to a new VarTypeTable, by creating new entries for the keys.
      * @return A new OutputTable that has a new copy for the keys.
-     */
+     *//*
     public OutputTable clone() {
         OutputTable outputTable = new OutputTable(this.isMethodRegion);
         outputTable.tableName = this.tableName;
@@ -108,10 +110,10 @@ public class OutputTable extends Table<Integer> {
         return outputTable;
     }
 
-    /**
+    *//**
      * Appends to the key a unique postfix.
      * @param unique A unquie postfix.
-     */
+     *//*
     public void makeUniqueKey(int unique) {
         Object[] keys = table.keySet().toArray();
         for (int i = 0; i < keys.length; i++) {
@@ -121,10 +123,10 @@ public class OutputTable extends Table<Integer> {
         }
     }
 
-    /**
+    *//**
      * Appends to the value/element of the table a unique postfix.
      * @param unique Unique postfix.
-     */
+     *//*
     public void makeUniqueVal(int unique) {
         Object[] keys = table.keySet().toArray();
         for (int i = 0; i < keys.length; i++) {
@@ -132,5 +134,5 @@ public class OutputTable extends Table<Integer> {
             varId = varId.concat(Integer.toString(unique));
             table.put((Integer) keys[i], Integer.valueOf(varId));
         }
-    }
+    }*/
 }

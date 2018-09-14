@@ -1,5 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.ValueSymbolTable;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
@@ -9,6 +11,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
+import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.*;
 
 /**
@@ -19,24 +22,23 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
     private ThreadInfo ti;
     private StackFrame sf;
     public ExprVisitorAdapter eva;
-    private StaticRegion staticRegion;
-    private ValueSymbolTable valueSymbolTable;
+    private DynamicRegion dynRegion;
+    private DynamicTable valueSymbolTable;
 
-    public ExprSubstitutionVisitor(ThreadInfo ti, StaticRegion staticRegion,
-                                   ValueSymbolTable valueSymbolTable) {
+    public ExprSubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
+                                   DynamicTable valueSymbolTable) {
         super();
         this.ti = ti;
         this.sf = ti.getTopFrame();
         eva = super.eva;
-        this.staticRegion = staticRegion;
+        this.dynRegion = dynRegion;
         this.valueSymbolTable = valueSymbolTable;
     }
 
 
     @Override
     public Expression visit(WalaVarExpr expr) {
-
-        Expression varValue = valueSymbolTable.lookup(expr.number);
+        Expression varValue = (Expression) valueSymbolTable.lookup(expr);
         if (varValue != null)
             return varValue;
         else

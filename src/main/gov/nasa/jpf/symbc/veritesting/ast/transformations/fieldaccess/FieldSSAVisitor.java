@@ -4,6 +4,8 @@ import com.ibm.wala.ssa.SSAGetInstruction;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.vm.*;
@@ -11,6 +13,7 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.RealConstant;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 
@@ -54,14 +57,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
     public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
         FieldSSAVisitor visitor = new FieldSSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
-        return new DynamicRegion(dynRegion.staticRegion,
-                stmt,
-                dynRegion.varTypeTable,
-                dynRegion.fieldRefTypeTable,
-                dynRegion.slotParamTable,
-                dynRegion.outputTable,
-                dynRegion.isMethodRegion,
-                dynRegion.spfCaseSet);
+        return new DynamicRegion(dynRegion, stmt, new HashSet<>());
     }
 
 
@@ -72,10 +68,11 @@ public class FieldSSAVisitor extends AstMapVisitor {
         else {
             FieldRef fieldRef = FieldRef.makePutFieldRef(ti, putIns);
             FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
+            DynamicTable varTypeTable = dynRegion.varTypeTable;
             if (WalaVarExpr.class.isInstance(putIns.assignExpr)) {
-                if (dynRegion.varTypeTable.lookup(((WalaVarExpr)putIns.assignExpr).number) != null) {
+                if (dynRegion.varTypeTable.lookup(putIns.assignExpr) != null) {
                     dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(),
-                            dynRegion.varTypeTable.lookup(((WalaVarExpr)putIns.assignExpr).number));
+                            (String)dynRegion.varTypeTable.lookup(putIns.assignExpr));
                 }
                 return new AssignmentStmt(fieldRefVarExpr, putIns.assignExpr);
             } else if (isConstant(putIns.assignExpr)) {

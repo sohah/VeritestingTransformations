@@ -23,12 +23,12 @@ public class StaticRegion implements Region {
     /**
      * An Environment table that holds a mapping from vars to either their stack slot position, in case of conditional regions, or to their parameter number in case of a MethodRegion.
      */
-    public final SlotParamTable slotParamTable;
+    public final Table slotParamTable;
 
     /**
      * An Environment table that holds the output of the region that needs to be popluated later to SPF upon successful veritesting. The output is computed as the last Phi for every stack slot.
      */
-    public final OutputTable outputTable;
+    public final Table outputTable;
 
     /**
      * this is the last instruction where SPF needs to start from after the region
@@ -43,7 +43,7 @@ public class StaticRegion implements Region {
     /**
      * An environment table that defines the input vars to the region. it defines the mapping from slot/param to var
      */
-    public final InputTable inputTable;
+    public final Table inputTable;
 
     /**
      * An environment table that holds the types of local variables defined inside the region.
@@ -75,13 +75,13 @@ public class StaticRegion implements Region {
             firstDef = regionBoundary.getSecond().getFirst();
             lastDef = regionBoundary.getSecond().getSecond();
 
-            lastVar = (firstDef == null) ? lastUse : lastDef;
+            lastVar = ((lastDef != null) && (lastDef > lastUse)) ? lastDef: lastUse;
 
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(firstUse, lastVar));
             varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastVar));
         }
 
-        inputTable = new InputTable(ir, isMethodRegion, slotParamTable, staticStmt);
+        inputTable = new InputTable(ir, isMethodRegion, (SlotParamTable) slotParamTable, staticStmt);
 
 
         if (isMethodRegion) //no output in terms of slots can be defined for the method region, last statement is always a return and is used to conjunct it with the outer region.
@@ -91,7 +91,7 @@ public class StaticRegion implements Region {
             if (firstDef == null) //region has no def, so no output can be defined
                 outputTable = new OutputTable(isMethodRegion);
             else
-                outputTable = new OutputTable(ir, isMethodRegion, slotParamTable, inputTable, staticStmt, new Pair<>(firstDef, lastDef));
+                outputTable = new OutputTable(ir, isMethodRegion, (SlotParamTable) slotParamTable, (InputTable) inputTable, staticStmt, new Pair<>(firstDef, lastDef));
         }
         this.endIns = endIns;
     }
@@ -108,26 +108,5 @@ public class StaticRegion implements Region {
         RegionBoundaryVisitor regionBoundaryVisitor = new RegionBoundaryVisitor(exprBoundaryVisitor);
         stmt.accept(regionBoundaryVisitor);
         return new Pair<>(new Pair<>(regionBoundaryVisitor.getFirstUse(), regionBoundaryVisitor.getLastUse()), new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef()));
-    }
-
-
-    public StaticRegion(IR ir,
-                        Stmt staticStmt,
-                        SlotParamTable slotParamTable,
-                        OutputTable outputTable,
-                        InputTable inputTable,
-                        VarTypeTable varTypeTable,
-                        int endIns,
-                        boolean isMethodRegion){
-
-
-        this.ir = ir;
-        this.staticStmt = staticStmt;
-        this.slotParamTable = slotParamTable;
-        this.outputTable = outputTable;
-        this.inputTable = inputTable;
-        this.varTypeTable = varTypeTable;
-        this.endIns = endIns;
-        this.isMethodRegion = isMethodRegion;
     }
 }

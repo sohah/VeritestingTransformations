@@ -14,6 +14,7 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.strings.StringStuff;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.VeritestingListener;
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.File;
@@ -60,7 +61,12 @@ public class ClassUtils {
         if(allMethodsAdditional.length == 0) return;
         //Only need to add subclass once for all the methods in the class
         Method m = allMethodsAdditional[0];
-        String signature = getSignature(m);
+        String signature = null;
+        try {
+            signature = ReflectUtil.getSignature(m);
+        } catch (StaticRegionException e) {
+            return;
+        }
         MethodReference mr = StringStuff.makeMethodReference(methodSummaryClassName + "." + signature);
         IMethod iMethod = cha.resolveMethod(mr);
         if (iMethod == null) {
@@ -113,7 +119,12 @@ public class ClassUtils {
                     continue;
                 }
                 for (Method method : allMethods) {
-                    String signature = getSignature(method);
+                    String signature = null;
+                    try {
+                        signature = ReflectUtil.getSignature(method);
+                    } catch (StaticRegionException e) {
+                        continue;
+                    }
                     MethodReference mr = StringStuff.makeMethodReference(className + "." + signature);
                     IMethod iMethod = cha.resolveMethod(mr);
                     if(iMethod == null)

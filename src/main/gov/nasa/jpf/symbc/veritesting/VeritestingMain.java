@@ -35,9 +35,6 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import x10.wala.util.NatLoop;
 import x10.wala.util.NatLoopSolver;
 
-
-import static org.apache.bcel.generic.Type.getSignature;
-
 import za.ac.sun.cs.green.expr.Operation;
 
 /**
@@ -65,7 +62,8 @@ public class VeritestingMain {
         try {
             appJar = System.getenv("TARGET_CLASSPATH_WALA");// + appJar;
             AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
-                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
+                    (new FileProvider()).getFile("../MyJava60RegressionExclusions.txt"));
+//                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
             methodSummaryClassNames = new HashSet<String>();
             //veritestingRegions = new HashMap<>();
@@ -95,7 +93,12 @@ public class VeritestingMain {
                 return;
             }
             for (Method m : allMethods) {
-                String signature = ReflectUtil.getSignature(m);
+                String signature = null;
+                try {
+                    signature = ReflectUtil.getSignature(m);
+                } catch (StaticRegionException e) {
+                    continue;
+                }
                 startAnalysis(getPackageName(_className), _className, signature);
             }
             if (VeritestingListener.veritestingMode <= 2) return;
@@ -115,7 +118,12 @@ public class VeritestingMain {
                     continue;
                 }
                 for (Method m : allMethodsAdditional) {
-                    String signature = getSignature(m);
+                    String signature = null;
+                    try {
+                        signature = ReflectUtil.getSignature(m);
+                    } catch (StaticRegionException e) {
+                        continue;
+                    }
                     startAnalysis(getPackageName(methodSummaryClassName), methodSummaryClassName, signature);
                 }
             }
@@ -138,7 +146,12 @@ public class VeritestingMain {
                     continue;
                 }
                 for (Method m : allMethodsAdditional) {
-                    String signature = getSignature(m);
+                    String signature = null;
+                    try {
+                        signature = ReflectUtil.getSignature(m);
+                    } catch (StaticRegionException e) {
+                        continue;
+                    }
                     startAnalysis(getPackageName(methodSummaryClassName), methodSummaryClassName, signature);
                 }
             }
@@ -188,7 +201,12 @@ public class VeritestingMain {
                     continue;
                 }
                 for (Method method : allMethods) {
-                    String signature = getSignature(method);
+                    String signature;
+                    try {
+                        signature = ReflectUtil.getSignature(method);
+                    } catch (StaticRegionException e) {
+                        continue;
+                    }
                     MethodReference mr = StringStuff.makeMethodReference(className + "." + signature);
                     IMethod iMethod = cha.resolveMethod(mr);
                     if(iMethod == null)
@@ -269,9 +287,11 @@ public class VeritestingMain {
                 //regionCreator.createStructuredConditionalRegions(cfg, veritestingRegions);
                 regionCreator.createStructuredConditionalRegions(veriRegions);
             } else {
-                //regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
-                regionCreator.createStructuredConditionalRegions(veriRegions);
-                regionCreator.createStructuredMethodRegion(veriRegions);
+                if (!currentMethodName.equals("NoVeritest")) {
+                    //regionCreator.createStructuredMethodRegion(cfg, veritestingRegions);
+                    regionCreator.createStructuredConditionalRegions(veriRegions);
+                    regionCreator.createStructuredMethodRegion(veriRegions);
+                }
             }
             /* // Placeholder for testing and visualizing static-time transformations
             Set<String> keys = veriRegions.keySet();

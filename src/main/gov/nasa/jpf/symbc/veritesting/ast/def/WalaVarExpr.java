@@ -20,6 +20,11 @@ public final class WalaVarExpr extends Variable {
         this.number = var;
     }
 
+    public WalaVarExpr(int var, String name){
+        super("@w" + name);
+        this.number = var;
+    }
+
 
     @Override
     public void accept(Visitor visitor) throws VisitorException {
@@ -44,8 +49,6 @@ public final class WalaVarExpr extends Variable {
     public String getSymName(){
         return "w"+ Integer.toString(number);
     }
-
-
 
     @Override
     public String toString() {
@@ -78,6 +81,6 @@ public final class WalaVarExpr extends Variable {
     }
 
     public WalaVarExpr clone(){
-        return new WalaVarExpr(number);
+        return new WalaVarExpr(number, super.getName());
     }
 }

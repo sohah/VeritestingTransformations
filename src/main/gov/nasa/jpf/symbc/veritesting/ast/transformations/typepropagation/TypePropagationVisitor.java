@@ -11,10 +11,10 @@ import za.ac.sun.cs.green.expr.Expression;
 import java.util.Set;
 
 public class TypePropagationVisitor extends AstMapVisitor {
-    private VarTypeTable varTypeTable;
+    private DynamicTable varTypeTable;
     private ExprVisitorAdapter<Expression> eva;
 
-    public TypePropagationVisitor(VarTypeTable varTypeTable) {
+    public TypePropagationVisitor(DynamicTable varTypeTable) {
         super(new ExprTypeVisitor(varTypeTable));
         this.varTypeTable = varTypeTable;
         eva = super.eva;
@@ -30,7 +30,7 @@ public class TypePropagationVisitor extends AstMapVisitor {
         return a;
     }
 
-    public static VarTypeTable propagateTypes(DynamicRegion dynRegion) {
+    public static DynamicTable propagateTypes(DynamicRegion dynRegion) {
         TypePropagationVisitor visitor = new TypePropagationVisitor(dynRegion.varTypeTable);
         dynRegion.dynStmt.accept(visitor);
         return visitor.varTypeTable;
