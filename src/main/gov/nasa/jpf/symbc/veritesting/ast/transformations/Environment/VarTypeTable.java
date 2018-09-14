@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * An environment table that holds all vars to types.
  */
-public class VarTypeTable extends Table<String> {
+public class VarTypeTable extends StaticTable<String> {
     /**
      * Constructor that is used to generate the type table for a method region.
      * @param ir
@@ -54,13 +54,16 @@ public class VarTypeTable extends Table<String> {
      * Default constructor.
      */
     private VarTypeTable() {
-        super();
+
+        super("WalaVarTypeTable", " var ", "type");
     }
 
-    /**
+
+    //TODO: Soha remove all below
+/*    *//**
      * Clones the VarTypeTable to a new VarTypeTable, by creating new enteries for the keys.
      * @return A new VarTypeTable that has a new copy for the keys.
-     */
+     *//*
     public VarTypeTable clone() {
         VarTypeTable varTypeTable = new VarTypeTable();
         varTypeTable.tableName = this.tableName;
@@ -74,6 +77,6 @@ public class VarTypeTable extends Table<String> {
             varTypeTable.add(new Integer(key.intValue()), type);
         }
         return varTypeTable;
-    }
+    }*/
 }
 

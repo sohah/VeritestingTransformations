@@ -4,6 +4,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
@@ -18,12 +19,12 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGree
 
 public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
 
-    private final VarTypeTable varTypeTable;
+    private final DynamicTable varTypeTable;
 
     protected final ExprVisitorAdapter<Expression> eva =
             new ExprVisitorAdapter<Expression>(this);
 
-    public WalaVarToSPFVarVisitor(VarTypeTable varTypeTable) {
+    public WalaVarToSPFVarVisitor(DynamicTable varTypeTable) {
         this.varTypeTable = varTypeTable;
     }
 
@@ -72,9 +73,9 @@ public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
 
     @Override
     public Expression visit(WalaVarExpr expr) {
-        String type = varTypeTable.lookup(expr.number);
+        String type = (String) varTypeTable.lookup(expr);
         if (type != null)
-            return createGreenVar(type, expr.getSymName());
+            return createGreenVar(type, expr.getName());
         else
             return expr;
     }

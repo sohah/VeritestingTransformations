@@ -12,7 +12,7 @@ import java.util.Set;
  * This class populates the input variables for the region, it does so by computing the first var use for every slot in case of non-method region, or computing the parameters of a method as the input table in case of a method region.
  */
 
-public class InputTable extends Table<Integer> {
+public class InputTable extends StaticTable<Integer> {
     public final IR ir;
     private boolean isMethodRegion;
 
@@ -61,10 +61,12 @@ public class InputTable extends Table<Integer> {
     }
 
 
-    /**
+    //TODO:Soha remove this
+/*
+    *//**
      * Basic clone method for Slot Param table that generates a new copy of the var.
      *
-     */
+     *//*
     public InputTable clone() {
         InputTable inputTable = new InputTable(this.isMethodRegion, this.ir);
         Set<Integer> keys = this.table.keySet();
@@ -75,5 +77,5 @@ public class InputTable extends Table<Integer> {
             inputTable.add(new Integer(key.intValue()), value);
         }
         return inputTable;
-    }
+    }*/
 }

@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
@@ -166,12 +167,16 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
     }
 
     public static Expression execute(DynamicRegion dynamicRegion){
+
+        System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
         WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynamicRegion.varTypeTable);
         AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
         Stmt noWalaVarStmt = dynamicRegion.dynStmt.accept(astMapVisitor);
 
         AstToGreenVisitor toGreenVisitor = new AstToGreenVisitor();
-        return noWalaVarStmt.accept(toGreenVisitor);
+        Expression regionSummary = noWalaVarStmt.accept(toGreenVisitor);
 
+        System.out.println(ExprUtil.AstToString(regionSummary));
+        return regionSummary;
     }
 }

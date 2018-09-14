@@ -33,7 +33,7 @@ public class StatisticManager {
             regionStatistics.failReason = FailReason.FIELDREFERNCEINSTRUCTION;
         }
 
-        else if(failError.contains("new")){
+        else if(failError.contains("new") || (failError.contains("throw")) || (failError.contains("arrayload")) || (failError.contains("arraystore")) ){
             assert((regionStatistics.failReason == null) || (regionStatistics.failReason == FailReason.SPFCASEINSTRUCTION));
             regionStatistics.failReason = FailReason.SPFCASEINSTRUCTION;
         }
@@ -121,7 +121,6 @@ public class StatisticManager {
     public void updateConcreteHitStatForRegion(String key) {
         if (regionsStatisticsMap.get(key) != null) {
             RegionStatistics regionStatistics = regionsStatisticsMap.get(key);
-            assert (regionStatistics.failReason == FailReason.CONCRETE);
             regionStatistics.hitNumber++;
         } else {
             RegionStatistics regionStatistics = new RegionStatistics(key, false, FailReason.CONCRETE, 1);

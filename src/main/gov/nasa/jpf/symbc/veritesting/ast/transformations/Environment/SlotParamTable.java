@@ -19,7 +19,7 @@ import java.util.*;
 
 
 
-public class SlotParamTable extends Table<int[]> {
+public class SlotParamTable extends StaticTable<int[]> {
     private IR ir;
     private boolean isMethodRegion;
     private Stmt stmt;
@@ -192,20 +192,4 @@ public class SlotParamTable extends Table<int[]> {
         table.forEach((var, stackSlots) -> System.out.println("@w" + var + " --------- " + Arrays.toString(stackSlots)));
     }
 
-    /**
-     * Basic clone method for Slot Param table that generates a new copy of the var.
-     *
-     */
-    public SlotParamTable clone() {
-        SlotParamTable newSlotParamTable = new SlotParamTable(this.isMethodRegion);
-        newSlotParamTable.ir = this.ir;
-        Set<Integer> keys = this.table.keySet();
-        Iterator<Integer> iter = keys.iterator();
-        while (iter.hasNext()) {
-            Integer key = iter.next();
-            int[] values = this.lookup(key);
-            newSlotParamTable.add(new Integer(key.intValue()), values);
-        }
-        return newSlotParamTable;
-    }
 }

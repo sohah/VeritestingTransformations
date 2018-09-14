@@ -23,6 +23,7 @@ package gov.nasa.jpf.symbc;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
+import gov.nasa.jpf.jvm.JVMDirectCallStackFrame;
 import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
@@ -33,6 +34,10 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
@@ -46,6 +51,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
+import za.ac.sun.cs.green.expr.Variable;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -68,11 +74,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int unsatSPFCaseCount = 0;
     public static final int maxStaticExplorationDepth = 2;
     public static boolean firstTime = true;
-    private static int veritestRegionCount = 0;
+    public static int veritestRegionCount = 0;
     private static long staticAnalysisDur;
     private final long runStartTime = System.nanoTime();
     public static StatisticManager statisticManager = new StatisticManager();
-    public static boolean noVeritestingFlag = false;
+    private static int veritestRegionExpectedCount = -1;
 
 
     public VeritestingListener(Config conf, JPF jpf) {
@@ -92,6 +98,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             System.out.println("* Warning: resetting veritestingMode to 0 (aka use vanilla SPF)");
             veritestingMode = 0;
         }
+        if (conf.hasValue("veritestRegionExpectedCount"))
+            veritestRegionExpectedCount = conf.getInt("veritestRegionExpectedCount");
         jpf.addPublisherExtension(ConsolePublisher.class, this);
     }
 
@@ -108,15 +116,24 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      * @param instructionToExecute instruction to be executed.
      */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+        boolean noVeritestingFlag = false;
+        StackFrame curr = ti.getTopFrame();
+        // Begin equivalence checking code
+        while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
+            if (curr.getMethodInfo().getName().equals("NoVeritest")) {
+                noVeritestingFlag = true;
+                break;
+            } else curr = curr.getPrevious();
+        }
+        if (noVeritestingFlag)
+            return;
+        // End equivalence checking code
 
         MethodInfo methodInfo = instructionToExecute.getMethodInfo();
         String className = methodInfo.getClassName();
         String methodName = methodInfo.getName();
         String methodSignature = methodInfo.getSignature();
         int offset = instructionToExecute.getPosition();
-        if (methodName.startsWith("BeginNoVeritest")) noVeritestingFlag = true;
-        if (methodName.startsWith("EndNoVeritest")) noVeritestingFlag = false;
-        if (noVeritestingFlag) return;
         String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
 
         if (firstTime) {
@@ -130,22 +147,22 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 StaticRegion staticRegion = regionsMap.get(key);
                 if ((staticRegion != null) && !(staticRegion.isMethodRegion))
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
-                    if (SpfUtil.isSymCond(ti.getTopFrame(), staticRegion.slotParamTable, staticRegion.staticStmt)) {
+                    if (SpfUtil.isSymCond(ti.getTopFrame(), (SlotParamTable) staticRegion.slotParamTable, staticRegion.staticStmt)) {
 
                         statisticManager.updateHitStatForRegion(key);
-/*
+
                         System.out.println("\n---------- STARTING Transformations for conditional region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
                         staticRegion.slotParamTable.print();
                         staticRegion.inputTable.print();
                         staticRegion.outputTable.print();
                         staticRegion.varTypeTable.print();
-*/
+
 
                         /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
-                        staticRegion = UniqueRegion.execute(staticRegion);
+                        DynamicRegion dynRegion = UniqueRegion.execute(staticRegion);
 
                         /*--------------- SUBSTITUTION TRANSFORMATION ---------------*/
-                        DynamicRegion dynRegion = SubstitutionVisitor.execute(ti, staticRegion);
+                        dynRegion = SubstitutionVisitor.execute(ti, dynRegion);
 
                         // 1. Perform substitution on field references
                         // 2. Replace GetInstruction, PutInstruction by AssignmentStmt with a FieldAccessTriple on rhs or lhs resp.
@@ -156,23 +173,21 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         //dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
                         //TypePropagationVisitor.propagateTypes(dynRegion);
 
-/*
-                        System.out.println("--------------- SPFCases TRANSFORMATION 1ST PASS ---------------");
-                        dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion);
-                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 
-                        System.out.println("--------------- SPFCases TRANSFORMATION 2ND PASS ---------------");
-                        dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
-                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-*/
-                        /*System.out.println("\n--------------- LINEARIZATION TRANSFORMATION ---------------");*/
+                        /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
+                        // dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion);
+
+
+                        // dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
+
+                        /*--------------- LINEARIZATION TRANSFORMATION ---------------*/
                         LinearizationTransformation linearTrans = new LinearizationTransformation();
                         dynRegion = linearTrans.execute(dynRegion);
-                        /*System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));*/
 
-//                        System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
+
+                        /*--------------- TO GREEN TRANSFORMATION ---------------*/
                         Expression regionSummary = AstToGreenVisitor.execute(dynRegion);
-                        /*System.out.println(ExprUtil.AstToString(regionSummary));*/
+
 
                         setupSPF(ti, instructionToExecute, dynRegion, regionSummary);
                         ++veritestRegionCount;
@@ -252,6 +267,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
     }
 
+
+    //TODO: I need to use the wala name not number here.
     /**
      * Populates SPF stack slot with the output of the veritesting region.
      *
@@ -260,15 +277,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      */
     private void populateSlots(ThreadInfo ti, DynamicRegion dynRegion) {
         StackFrame sf = ti.getTopFrame();
-        OutputTable outputTable = dynRegion.outputTable;
-        Set<Integer> slots = outputTable.getKeys();
+        DynamicOutputTable dynOutputTable = dynRegion.outputTable;
+        List<Integer> slots = dynOutputTable.getKeys();
 
         Iterator slotItr = slots.iterator();
 
         while (slotItr.hasNext()) {
             Integer slot = (Integer) slotItr.next();
-            String varId = "w" + Integer.toString(outputTable.lookup(slot));
-            Expression symVar = createGreenVar(dynRegion.varTypeTable.lookup(outputTable.lookup(slot)), varId);
+            Variable var = dynOutputTable.lookup(slot);
+            Expression symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), var.getName());
             sf.setSlotAttr(slot, greenToSPFExpression(symVar));
         }
     }
@@ -328,6 +345,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println(statisticManager.printAccumulativeStatistics());
         pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
         pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
+        /* Begin added for equivalence checking */
+        if (veritestRegionExpectedCount != -1) {
+            pw.println("Expected Number of Veritested Regions Instances = " + veritestRegionExpectedCount);
+            assert (veritestRegionCount == veritestRegionExpectedCount);
+        }
+        /* End added for equivalence checking */
 
     }
 }
