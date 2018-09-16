@@ -1,6 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess;
 
-import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRef;
 
 import java.util.HashMap;
@@ -12,7 +11,7 @@ public final class FieldSubscriptMap {
     protected final String label1 = "FieldRef";
     protected final String label2 = "subscript";
 
-    protected FieldSubscriptMap(){
+    public FieldSubscriptMap(){
         this.table = new HashMap<>();
     }
 

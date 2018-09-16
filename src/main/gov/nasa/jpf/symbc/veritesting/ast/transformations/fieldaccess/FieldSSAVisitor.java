@@ -4,8 +4,6 @@ import com.ibm.wala.ssa.SSAGetInstruction;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.vm.*;
@@ -57,6 +55,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
     public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
         FieldSSAVisitor visitor = new FieldSSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
+        dynRegion.psm = visitor.psm;
         return new DynamicRegion(dynRegion, stmt, new HashSet<>());
     }
 
@@ -68,7 +67,6 @@ public class FieldSSAVisitor extends AstMapVisitor {
         else {
             FieldRef fieldRef = FieldRef.makePutFieldRef(ti, putIns);
             FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
-            DynamicTable varTypeTable = dynRegion.varTypeTable;
             if (WalaVarExpr.class.isInstance(putIns.assignExpr)) {
                 if (dynRegion.varTypeTable.lookup(putIns.assignExpr) != null) {
                     dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(),
@@ -153,7 +151,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
         if (thenSubscript.pathSubscript == FIELD_SUBSCRIPT_BASE && elseSubscript.pathSubscript == FIELD_SUBSCRIPT_BASE) {
             throw new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts");
         }
-        SubstituteGetOutput output = new SubstituteGetOutput(fieldRef).invoke();
+        SubstituteGetOutput output = new SubstituteGetOutput(ti, fieldRef, true, null).invoke();
         if (output.exceptionalMessage != null) throw new IllegalArgumentException(output.exceptionalMessage);
         FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
         if (output.type != null) {
@@ -175,7 +173,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(GetInstruction c) {
         String exceptionalMessage = null;
-        Expression rhs = null;
+        FieldRefVarExpr rhs = null;
         String type = null;
         // If we are doing a get field from a constant object reference or if this field access is a static access,
         // we can fill this input in
@@ -190,6 +188,8 @@ public class FieldSSAVisitor extends AstMapVisitor {
                 try {
                     SubstituteGetOutput output = substituteGet(c);
                     type = output.type;
+                    rhs = new FieldRefVarExpr(output.fieldRef, createSubscript(output.fieldRef));
+                    dynRegion.fieldRefTypeTable.add(rhs.clone(), type);
                 } catch (StaticRegionException e) {
                     exceptionalMessage = e.getMessage();
                 }
@@ -207,104 +207,13 @@ public class FieldSSAVisitor extends AstMapVisitor {
 
     private SubstituteGetOutput substituteGet(GetInstruction getIns)
             throws StaticRegionException {
-        SubstituteGetOutput substituteGetOutput = new SubstituteGetOutput(FieldRef.makeGetFieldRef(ti, getIns)).invoke();
+        SubstituteGetOutput substituteGetOutput =
+                new SubstituteGetOutput(ti, FieldRef.makeGetFieldRef(ti, getIns), true, null).invoke();
         String exceptionalMessage = substituteGetOutput.getExceptionalMessage();
         Expression def = substituteGetOutput.getDef();
         // only one of def and exceptionalMessage should be non-null
         assert (def == null) ^ (exceptionalMessage == null);
         if (exceptionalMessage != null) throw new StaticRegionException(exceptionalMessage);
         return substituteGetOutput;
-    }
-
-    private class SubstituteGetOutput {
-        private FieldRef fieldRef;
-        private String exceptionalMessage;
-        private Expression def;
-        private String type;
-
-        SubstituteGetOutput(FieldRef fieldRef) {
-            this.fieldRef = fieldRef;
-        }
-
-        String getExceptionalMessage() {
-            return exceptionalMessage;
-        }
-
-        public Expression getDef() {
-            return def;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public SubstituteGetOutput invoke() {
-            final boolean isStatic = fieldRef.isStatic;
-            int objRef;
-            if (!isStatic) objRef = fieldRef.ref;
-            else objRef = -1;
-            String fieldName = fieldRef.field;
-            String className = fieldRef.className;
-            exceptionalMessage = null;
-            def = null;
-            type = null;
-            if (objRef == 0) {
-                exceptionalMessage = "java.lang.NullPointerException" + "referencing field '" + fieldName +
-                        "' on null object";
-            } else {
-                ClassInfo ci = null;
-                try {
-                    ci = ClassLoaderInfo.getCurrentResolvedClassInfo(className);
-                } catch (ClassInfoException e) {
-                    exceptionalMessage = "fillFieldInputHole: class loader failed to resolve class name " +
-                            className;
-                }
-                if (ci != null) {
-                    ElementInfo eiFieldOwner;
-                    if (!isStatic)
-                        eiFieldOwner = ti.getElementInfo(objRef);
-                    else
-                        eiFieldOwner = ci.getStaticElementInfo();
-                    if (eiFieldOwner == null) exceptionalMessage = "failed to resolve eiFieldOwner for field";
-                    else {
-                        FieldInfo fieldInfo;
-                        if (!isStatic) fieldInfo = ci.getInstanceField(fieldName);
-                        else fieldInfo = ci.getStaticField(fieldName);
-                        if (fieldInfo == null) {
-                            exceptionalMessage = "java.lang.NoSuchFieldError" + "referencing field '" + fieldName
-                                    + "' in " + eiFieldOwner;
-                        } else {
-                            gov.nasa.jpf.symbc.numeric.Expression fieldAttr =
-                                    (gov.nasa.jpf.symbc.numeric.Expression) eiFieldOwner.getFieldAttr(fieldInfo);
-                            if (fieldAttr != null) {
-                                def = SPFToGreenExpr(fieldAttr);
-                            } else {
-                                if (fieldInfo.getStorageSize() == 1) {
-                                    if (fieldInfo.getType().equals("float")) {
-                                        def = new RealConstant(Float.intBitsToFloat(eiFieldOwner.get1SlotField(fieldInfo)));
-                                    }
-                                    if (Objects.equals(fieldInfo.getType(), "int") ||
-                                            Objects.equals(fieldInfo.getType(), "boolean") ||
-                                            Objects.equals(fieldInfo.getType(), "byte") ||
-                                            Objects.equals(fieldInfo.getType(), "char") ||
-                                            Objects.equals(fieldInfo.getType(), "short"))
-                                        def = new IntConstant(eiFieldOwner.get1SlotField(fieldInfo));
-                                    if (fieldInfo.isReference())
-                                        def = new IntConstant(eiFieldOwner.getReferenceField(fieldInfo));
-                                } else {
-                                    if (Objects.equals(fieldInfo.getType(), "double"))
-                                        def = new RealConstant(Double.longBitsToDouble(eiFieldOwner.get2SlotField(fieldInfo)));
-                                    if (Objects.equals(fieldInfo.getType(), "long"))
-                                        def = new IntConstant((int) eiFieldOwner.get2SlotField(fieldInfo));
-                                }
-                                if (def == null) exceptionalMessage = "unsupported field type";
-                                else type = fieldInfo.getType();
-                            }
-                        }
-                    }
-                }
-            }
-            return this;
-        }
     }
 }

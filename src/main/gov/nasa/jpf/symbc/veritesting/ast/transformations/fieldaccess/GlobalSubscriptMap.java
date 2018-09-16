@@ -13,7 +13,7 @@ public class GlobalSubscriptMap {
     protected final String label1 = "FieldRef";
     protected final String label2 = "subscript";
 
-    protected GlobalSubscriptMap(){
+    public GlobalSubscriptMap(){
         this.table = new HashMap<>();
     }
 

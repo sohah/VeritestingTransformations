@@ -4,6 +4,7 @@ import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import za.ac.sun.cs.green.expr.Variable;
 
@@ -55,6 +56,8 @@ public class DynamicRegion implements Region {
      * An environment table tht holds the types of all field variables, referenced by FieldRefVarExpr objects, in the region.
      */
     public final FieldRefTypeTable fieldRefTypeTable;
+
+    public FieldSubscriptMap psm;
 
     /**
      * Identifies the End Position that the region is summarizing and which also SPF to resume from.
@@ -115,6 +118,7 @@ public class DynamicRegion implements Region {
         this.slotParamTable = oldDynRegion.slotParamTable;
         this.spfCaseSet = spfCaseSet;
         this.fieldRefTypeTable = oldDynRegion.fieldRefTypeTable;
+        this.psm = oldDynRegion.psm;
     }
 
 
@@ -161,5 +165,6 @@ public class DynamicRegion implements Region {
                 staticRegion.isMethodRegion ? "return" : "slot",
                 "var");
         this.fieldRefTypeTable = new FieldRefTypeTable();
+        this.psm = new FieldSubscriptMap();
     }
 }
