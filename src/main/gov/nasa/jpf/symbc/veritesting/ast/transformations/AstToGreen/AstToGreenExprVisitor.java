@@ -41,6 +41,12 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
     }
 
 
+//     <VBS> This setAssign mechanism is terrible. It sets up state in this visitor that gets used in the next visited
+//     expression but there are no expected on the type of next visited expression. The invariant is that toAssign
+//     should be used only in the next assign() call but there is no defense against
+//     (1) the user of this visitor forgetting to set up toAssign
+//     (2) toAssign being used in multiple assign() calls
+//     I wish this visitor was written differently to avoid any prior setup of its internal state
     public void setAssign(Expression toAssign) {
         this.toAssign = toAssign;
     }

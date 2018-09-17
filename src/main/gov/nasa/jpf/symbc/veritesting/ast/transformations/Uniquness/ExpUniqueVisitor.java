@@ -1,5 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
@@ -10,13 +12,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Unique Expression Visitor that ensures the uniquness vars used inside the region.
+ * Unique Expression Visitor that ensures the uniqueness of vars used inside the region.
  */
 public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
+
 
     ArrayList<WalaVarExpr> uniqueSafeList;
 
     int uniqueNum;
+
     private HashMap<Integer, Variable> varToNumUniqueMap;
 
     ExpUniqueVisitor(int uniqueNum, HashMap<Integer, Variable> varToNumUniqueMap) {
