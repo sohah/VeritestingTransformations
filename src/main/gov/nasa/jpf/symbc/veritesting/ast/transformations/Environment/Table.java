@@ -58,7 +58,6 @@ public class Table<K, V> {
         this.table.putAll(t.table);
     }
 
-
     /**
      * Basic print of the table. inside the table.
      */

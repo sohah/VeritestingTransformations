@@ -59,24 +59,10 @@ public class VarTypeTable extends StaticTable<String> {
     }
 
 
-    //TODO: Soha remove all below
-/*    *//**
-     * Clones the VarTypeTable to a new VarTypeTable, by creating new enteries for the keys.
-     * @return A new VarTypeTable that has a new copy for the keys.
-     *//*
-    public VarTypeTable clone() {
-        VarTypeTable varTypeTable = new VarTypeTable();
-        varTypeTable.tableName = this.tableName;
-        varTypeTable.label1 = this.label1;
-        varTypeTable.label2 = this.label2;
-        Set<Integer> keys = this.table.keySet();
-        Iterator<Integer> iter = keys.iterator();
-        while (iter.hasNext()) {
-            Integer key = iter.next();
-            String type = this.lookup(key);
-            varTypeTable.add(new Integer(key.intValue()), type);
-        }
-        return varTypeTable;
-    }*/
+    @Override
+    public void print() {
+        System.out.println("\nprinting " + tableName + " (" + label1 + "->" + label2 + ")");
+        table.forEach((v1, v2) -> System.out.println("@w" + v1 + " --------- " + v2));
+    }
 }
 

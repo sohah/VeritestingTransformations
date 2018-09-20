@@ -1,0 +1,15 @@
+target=tcasv
+classpath=${jpf-symbc}/build/examples
+sourcepath=${jpf-symbc}/src/examples
+symbolic.method = tcasv.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+#symbolic.minint=-100
+#symbolic.maxint=100
+vm.storage.class=nil
+
+#coverage.include=tcasv
+
+#listener = .symbc.VeritestingListener
+#,gov.nasa.jpf.listener.CoverageAnalyzer
+listener = .symbc.SymbolicListener
+#listener = .listener.ChoiceTracker
+symbolic.dp=z3bitvector

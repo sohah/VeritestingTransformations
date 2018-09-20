@@ -172,10 +172,11 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynRegion.varTypeTable);
         AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
         Stmt noWalaVarStmt = dynRegion.dynStmt.accept(astMapVisitor);
-
+        FieldRefVarToSPFVarVisitor fieldRefVisitor = new FieldRefVarToSPFVarVisitor(dynRegion.fieldRefTypeTable);
+        astMapVisitor = new AstMapVisitor(fieldRefVisitor);
+        Stmt noRangerVarStmt = noWalaVarStmt.accept(astMapVisitor);
         AstToGreenVisitor toGreenVisitor = new AstToGreenVisitor();
-        Expression regionSummary = noWalaVarStmt.accept(toGreenVisitor);
-
+        Expression regionSummary = noRangerVarStmt.accept(toGreenVisitor);
         System.out.println(ExprUtil.AstToString(regionSummary));
         DynamicRegion greenDynRegion = new DynamicRegion(dynRegion,
                 dynRegion.dynStmt,

@@ -4,6 +4,7 @@ import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Variable;
@@ -17,7 +18,7 @@ import java.util.HashSet;
  */
 public class DynamicRegion implements Region {
     /**
-     * unique counter used to maintain uniquness among vars in case a region was used multiple times, like in a loop.
+     * unique counter used to maintain uniqueness among vars in case a region was used multiple times, like in a loop.
      */
     public static int uniqueCounter = 0;
 
@@ -48,9 +49,16 @@ public class DynamicRegion implements Region {
     public final IR ir;
 
     /**
-     * An environment table tht holds the times of all vars in the region.
+     * An environment table that holds the types of all Wala vars in the region.
      */
     public final DynamicTable varTypeTable;
+
+    /**
+     * An environment table tht holds the types of all field variables, referenced by FieldRefVarExpr objects, in the region.
+     */
+    public final FieldRefTypeTable fieldRefTypeTable;
+
+    public FieldSubscriptMap psm;
 
     /**
      * Identifies the End Position that the region is summarizing and which also SPF to resume from.
@@ -114,6 +122,8 @@ public class DynamicRegion implements Region {
         this.slotParamTable = oldDynRegion.slotParamTable;
         this.spfCaseSet = spfCaseSet;
         this.regionSummary = regionSummary;
+        this.fieldRefTypeTable = oldDynRegion.fieldRefTypeTable;
+        this.psm = oldDynRegion.psm;
     }
 
 
@@ -160,6 +170,7 @@ public class DynamicRegion implements Region {
                 "Region Output Table",
                 staticRegion.isMethodRegion ? "return" : "slot",
                 "var");
-
+        this.fieldRefTypeTable = new FieldRefTypeTable();
+        this.psm = new FieldSubscriptMap();
     }
 }

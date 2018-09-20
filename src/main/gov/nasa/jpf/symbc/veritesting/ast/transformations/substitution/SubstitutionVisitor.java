@@ -145,7 +145,6 @@ public class SubstitutionVisitor extends AstMapVisitor {
                         values);
 
                 Pair<Stmt, DynamicTable> hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdDynRegion, hgOrdValueSymbolTable);
-
                 Stmt hgOrdStmt = hgOrdUniqueStmtType.getFirst();
                 DynamicTable hgOrdTypeTable = hgOrdUniqueStmtType.getSecond();
 
@@ -291,6 +290,10 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
         System.out.println("\n--------------- AFTER SUBSTITUTION TRANSFORMATION ---------------\n");
         System.out.println(StmtPrintVisitor.print(instantiatedDynRegion.dynStmt));
+        instantiatedDynRegion.slotParamTable.print();
+        instantiatedDynRegion.outputTable.print();
+        instantiatedDynRegion.varTypeTable.print();
+
         return instantiatedDynRegion;
     }
 

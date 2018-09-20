@@ -20,7 +20,8 @@ public class DynamicTable<V> extends Table<Variable, V> {
     }
 
 
-    public DynamicTable(StaticTable staticTable, HashMap<Integer, za.ac.sun.cs.green.expr.Variable> numToVarMap, String tableName, String label1, String label2) {
+    public DynamicTable(StaticTable staticTable, HashMap<Integer, za.ac.sun.cs.green.expr.Variable> numToVarMap,
+                        String tableName, String label1, String label2) {
         super(tableName, label1, label2);
 
         if (staticTable instanceof OutputTable)

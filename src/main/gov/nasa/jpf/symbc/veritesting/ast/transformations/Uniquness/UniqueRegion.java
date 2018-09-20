@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
@@ -24,6 +25,7 @@ public class UniqueRegion {
      * @param staticRegion Dynamic region that needs to be unique.
      * @return A new static region that is unique.
      */
+
     public static DynamicRegion execute(StaticRegion staticRegion){
 
         if((++DynamicRegion.uniqueCounter)% 10 == 0){
@@ -33,12 +35,13 @@ public class UniqueRegion {
         HashMap<Integer, Variable> varToNumUniqueMap = new HashMap<>();
         ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum, varToNumUniqueMap);
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
+
+
         Stmt dynStmt = staticRegion.staticStmt.accept(stmtVisitor);
 
         DynamicRegion dynRegion = new DynamicRegion(staticRegion,
                 dynStmt,
                 varToNumUniqueMap);
-
 
         System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
