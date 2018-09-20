@@ -1,0 +1,13 @@
+target=WBSV
+classpath=${jpf-symbc}/build/examples
+sourcepath=${jpf-symbc}/src/examples
+symbolic.method = WBSV.launch(sym#sym#sym#sym#sym#sym#sym#sym#sym)
+#symbolic.minint=-100
+#symbolic.maxint=100
+vm.storage.class=nil
+#coverage.include=WBSV
+#listener = .symbc.SymbolicListener
+listener = .symbc.VeritestingListener
+#,gov.nasa.jpf.listener.CoverageAnalyzer
+#listener = .listener.ChoiceTracker
+symbolic.dp=z3bitvector

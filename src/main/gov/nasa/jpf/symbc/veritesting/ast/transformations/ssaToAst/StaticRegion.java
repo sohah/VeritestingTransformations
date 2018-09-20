@@ -46,7 +46,7 @@ public class StaticRegion implements Region {
     public final Table inputTable;
 
     /**
-     * An environment table that holds the types of all vars defined inside the region.
+     * An environment table that holds the types of local variables defined inside the region.
      */
     public final VarTypeTable varTypeTable;
 

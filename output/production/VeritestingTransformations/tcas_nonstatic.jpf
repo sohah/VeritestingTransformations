@@ -1,0 +1,11 @@
+target=tcas_nonstatic
+classpath=${jpf-symbc}/build/examples
+sourcepath=${jpf-symbc}/src/examples
+symbolic.method = tcas_nonstatic.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+#symbolic.minint=-100
+#symbolic.maxint=100
+vm.storage.class=nil
+veritestingMode = 3
+listener = .symbc.VeritestingListener
+symbolic.dp=z3bitvector
+#listener = .listener.ChoiceTracker

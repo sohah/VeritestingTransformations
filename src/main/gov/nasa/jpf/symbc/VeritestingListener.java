@@ -33,12 +33,19 @@ import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
+import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRef;
+import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.FieldRefTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.GlobalSubscriptMap;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubstituteGetOutput;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.OutputTable;
@@ -46,6 +53,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
 
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePropagationVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
@@ -154,28 +162,26 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     if (SpfUtil.isSymCond(ti.getTopFrame(), (SlotParamTable) staticRegion.slotParamTable, staticRegion.staticStmt)) {
 
                         statisticManager.updateHitStatForRegion(key);
-
-                        System.out.println("\n---------- STARTING Transformations for conditional region: " + key + "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
+                        System.out.println("\n---------- STARTING Transformations for conditional region: " + key +
+                                "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
                         staticRegion.slotParamTable.print();
                         staticRegion.inputTable.print();
                         staticRegion.outputTable.print();
                         staticRegion.varTypeTable.print();
-
-
                         /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
                         DynamicRegion dynRegion = UniqueRegion.execute(staticRegion);
 
                         /*--------------- SUBSTITUTION TRANSFORMATION ---------------*/
                         dynRegion = SubstitutionVisitor.execute(ti, dynRegion);
 
-                        // 1. Perform substitution on field references
-                        // 2. Replace GetInstruction, PutInstruction by AssignmentStmt with a FieldAccessTriple on rhs or lhs resp.
-                        // 3. Populate the PSM for every statement in the region
-                        // 4. Create gamma expressions for field access
-                        // 5 Propagate type information across operations
-                        //System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
-                        //dynRegion = GetSubstitutionVisitor.doSubstitution(ti, dynRegion);
-                        //TypePropagationVisitor.propagateTypes(dynRegion);
+                        System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
+                        dynRegion = FieldSSAVisitor.execute(ti, dynRegion);
+                        TypePropagationVisitor.propagateTypes(dynRegion);
+                        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+                        FieldRefTypeTable fieldRefTypeTable = dynRegion.fieldRefTypeTable.clone();
+                        fieldRefTypeTable.makeUniqueKey(DynamicRegion.uniqueCounter);
+                        dynRegion.fieldRefTypeTable.print();
+
 
 
                         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
@@ -208,6 +214,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 statisticManager.updateFailStatForRegion(key, sre.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
                 return;
+            } catch (CloneNotSupportedException e) {
+                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+                e.printStackTrace();
+                return;
             }
         }
     }
@@ -225,6 +235,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private void setupSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion, Expression regionSummary) throws StaticRegionException {
         if (canSetPC(ti, regionSummary)) {
             populateSlots(ti, dynRegion);
+            populateFieldOutputs(ti, dynRegion);
             clearStack(ti.getModifiableTopFrame(), ins);
             advanceSpf(ti, ins, dynRegion);
         }
@@ -291,6 +302,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             Variable var = dynOutputTable.lookup(slot);
             Expression symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), var.getName());
             sf.setSlotAttr(slot, greenToSPFExpression(symVar));
+        }
+    }
+
+    private void populateFieldOutputs(ThreadInfo ti, DynamicRegion dynRegion) {
+        Iterator itr = (Iterator) dynRegion.psm.table.entrySet().iterator();
+        while(itr.hasNext()) {
+            Map.Entry pair = (Map.Entry) itr.next();
+            FieldRef fieldRef = (FieldRef) pair.getKey();
+            SubscriptPair subscriptPair = (SubscriptPair) pair.getValue();
+            FieldRefVarExpr expr = new FieldRefVarExpr(fieldRef, subscriptPair);
+            Expression symVar = createGreenVar(dynRegion.fieldRefTypeTable.lookup(expr), expr.getSymName());
+            new SubstituteGetOutput(ti, fieldRef, false, greenToSPFExpression(symVar)).invoke();
         }
     }
 

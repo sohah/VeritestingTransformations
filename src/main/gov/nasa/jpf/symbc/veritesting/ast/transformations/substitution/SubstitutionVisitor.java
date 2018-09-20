@@ -145,7 +145,6 @@ public class SubstitutionVisitor extends AstMapVisitor {
                         values);
 
                 Pair<Stmt, DynamicTable> hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdDynRegion, hgOrdValueSymbolTable);
-
                 Stmt hgOrdStmt = hgOrdUniqueStmtType.getFirst();
                 DynamicTable hgOrdTypeTable = hgOrdUniqueStmtType.getSecond();
 
