@@ -77,6 +77,7 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
         currentCondition = elseCond;
         Expression elseBranches = eva.accept(elseExpr);
         Expression finalExpr = new Operation(Operation.Operator.OR, thenBranches, elseBranches);
+        currentCondition = prevCond;
         return finalExpr;
     }
 

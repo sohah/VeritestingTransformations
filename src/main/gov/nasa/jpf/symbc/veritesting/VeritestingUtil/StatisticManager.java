@@ -34,7 +34,7 @@ public class StatisticManager {
         assert (regionStatistics != null);
         assert (!regionStatistics.veritested);
         if(failError.contains("put") || failError.contains("get")){
-            assert((regionStatistics.failReason == null) || (regionStatistics.failReason == FailReason.FIELDREFERNCEINSTRUCTION));
+//            assert((regionStatistics.failReason == null) || (regionStatistics.failReason == FailReason.FIELDREFERNCEINSTRUCTION));
             regionStatistics.failReason = FailReason.FIELDREFERNCEINSTRUCTION;
         }
 

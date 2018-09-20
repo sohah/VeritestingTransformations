@@ -59,23 +59,4 @@ public class InputTable extends StaticTable<Integer> {
         System.out.println("\nprinting " + tableName + " (" + label1 + "->" + label2 + ")");
         table.forEach((v1, v2) -> System.out.println("@w" + v1 + " --------- " + v2));
     }
-
-
-    //TODO:Soha remove this
-/*
-    *//**
-     * Basic clone method for Slot Param table that generates a new copy of the var.
-     *
-     *//*
-    public InputTable clone() {
-        InputTable inputTable = new InputTable(this.isMethodRegion, this.ir);
-        Set<Integer> keys = this.table.keySet();
-        Iterator<Integer> iter = keys.iterator();
-        while (iter.hasNext()) {
-            Integer key = iter.next();
-            int value = this.lookup(key);
-            inputTable.add(new Integer(key.intValue()), value);
-        }
-        return inputTable;
-    }*/
 }
