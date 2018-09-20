@@ -73,7 +73,7 @@ public class FieldRefVarToSPFVarVisitor implements ExprVisitor<Expression> {
         if (type != null)
             return createGreenVar(type, expr.getSymName());
         else
-            return expr;
+            throw new IllegalArgumentException("Failed to infer type of field reference, " + expr);
     }
 
     @Override

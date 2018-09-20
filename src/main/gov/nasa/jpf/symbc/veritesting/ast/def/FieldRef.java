@@ -23,6 +23,7 @@ public class FieldRef {
     public static FieldRef makeGetFieldRef(ThreadInfo ti, GetInstruction getIns) {
         if (!(getIns.ref instanceof IntConstant))
             throw new IllegalArgumentException("cannot make FieldRef for symbolic object reference");
+        // getIns.ref contains object reference whereas putIns.def contains object reference
         int ref = ((IntConstant)getIns.ref).getValue();
         String fieldName = getIns.field.getName().toString();
         String className = getIns.getOriginal().isStatic() ?

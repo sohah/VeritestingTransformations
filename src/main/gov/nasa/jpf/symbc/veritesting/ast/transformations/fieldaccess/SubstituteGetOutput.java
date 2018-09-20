@@ -14,7 +14,7 @@ public class SubstituteGetOutput {
     public FieldRef fieldRef;
     public String exceptionalMessage;
     public Expression def;
-    public String type;
+    public String type = null;
     private boolean isRead;
     private ThreadInfo ti;
     private gov.nasa.jpf.symbc.numeric.Expression finalValue;
