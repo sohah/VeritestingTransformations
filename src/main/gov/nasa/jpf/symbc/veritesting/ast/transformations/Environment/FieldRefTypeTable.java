@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
@@ -32,19 +33,16 @@ public class FieldRefTypeTable extends CloneableVarTable<String> {
         Iterator<CloneableVariable> iter = keys.iterator();
         while (iter.hasNext()) {
             CloneableVariable key = iter.next();
-            String type = this.lookup(key);
+            String type = this.lookup((Expression)key);
             fieldRefTypeTable.add(key.clone(), type);
         }
         return fieldRefTypeTable;
     }
 
+    // returns null if the key isn't found
     public String lookup(Expression expr) {
-        if (expr instanceof WalaVarExpr) return null;
-        if (expr instanceof FieldRefVarExpr) {
-            return table.getOrDefault(((FieldRefVarExpr)expr).getName(), null);
-        }
-        return null;
+        if (!FieldRefVarExpr.class.isInstance(expr)) return null;
+        else return table.get(expr);
     }
-
 }
 

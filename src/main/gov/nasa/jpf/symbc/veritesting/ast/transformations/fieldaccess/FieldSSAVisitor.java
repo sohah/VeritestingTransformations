@@ -173,7 +173,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(GetInstruction c) {
         String exceptionalMessage = null;
-        FieldRefVarExpr rhs = null;
+        Expression rhs = null;
         String type = null;
         // If we are doing a get field from a constant object reference or if this field access is a static access,
         // we can fill this input in
@@ -188,8 +188,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
                 try {
                     SubstituteGetOutput output = substituteGet(c);
                     type = output.type;
-                    rhs = new FieldRefVarExpr(output.fieldRef, createSubscript(output.fieldRef));
-                    dynRegion.fieldRefTypeTable.add(rhs.clone(), type);
+                    rhs = output.def;
                 } catch (StaticRegionException e) {
                     exceptionalMessage = e.getMessage();
                 }
