@@ -4,10 +4,7 @@ import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.bytecode.IFNONNULL;
 import gov.nasa.jpf.symbc.numeric.*;
-import gov.nasa.jpf.symbc.veritesting.FillHolesOutput;
-import gov.nasa.jpf.symbc.veritesting.LogUtil;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.VeritestingRegion;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.vm.Instruction;
@@ -15,8 +12,6 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
-
-import static gov.nasa.jpf.symbc.VeritestingListener.DEBUG_LIGHT;
 
 
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
@@ -41,15 +36,12 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         assert(choice == STATIC_CHOICE || choice == THEN_CHOICE || choice == ELSE_CHOICE);
 
         Instruction nextInstruction = null;
+        System.out.println("=========choice generator is:" + this);
         if (choice == STATIC_CHOICE) {
-            System.out.println("Executing static region choice in BranchCG");
-            if(this.getCurrentPC().simplify())
-                nextInstruction = setupSPF(ti, instructionToExecute, getRegion());
-            else //ignore choice if it is unsat
-                ti.getVM().getSystemState().setIgnored(true);
-
+            System.out.println("=========Executing static region choice in BranchCG");
+            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion());
         } else if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
-            System.out.println("Executing then/else choice.  Instruction: " + instructionToExecute);
+            System.out.println("=========Executing then/else choice.  Instruction: " + instructionToExecute);
             switch (getKind(instructionToExecute)) {
                 case UNARYIF:
                     nextInstruction = executeUnaryIf(instructionToExecute, choice);
@@ -110,13 +102,9 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                     pc._addDet(byteCodeOp, v1, sym_v2);
 
                 if(!pc.simplify())  {// not satisfiable
-                    // System.out.println("Then choice unsat!  Instruction: " + instruction.toString());
                     ti.getVM().getSystemState().setIgnored(true);
-                    VeritestingListener.unsatSPFCaseCount++;
                 }else{
                     this.setCurrentPC(pc);
-                    // System.out.println("Then choice sat!  Instruction: " + instruction.toString());
-                    // System.out.println(this.getCurrentPC());
                 }
                 return ((IfInstruction) instruction).getTarget();
             } else {
@@ -129,13 +117,9 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                 }else
                     pc._addDet(byteCodeNegOp, v1, sym_v2);
                 if(!pc.simplify())  {// not satisfiable
-                    // System.out.println("Else choice unsat!  Instruction: " + instruction.toString());
                     ti.getVM().getSystemState().setIgnored(true);
-                    VeritestingListener.unsatSPFCaseCount++;
                 }else {
                     this.setCurrentPC(pc);
-                    // System.out.println("Else choice sat!  Instruction: " + instruction.toString());
-                    // System.out.println(this.getCurrentPC());
                 }
                 return instruction.getNext(ti);
             }
@@ -171,30 +155,20 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
         sf.pop();
         PathCondition pc = this.getCurrentPC();
-        /*if(currentTopFrame != null)
-            ti.setTopFrame(currentTopFrame); //retoring the stackframe for SPFCase*/
         if (choice == ELSE_CHOICE) {
             pc._addDet(SpfUtil.getComparator(instruction), sym_v, 0);
             if (!pc.simplify()) {// not satisfiable
-                // System.out.println("Then choice unsat!  Instruction: " + instruction.toString());
                 ti.getVM().getSystemState().setIgnored(true);
-                VeritestingListener.unsatSPFCaseCount++;
             } else {
                 this.setCurrentPC(pc);
-                // System.out.println("Then choice sat!  Instruction: " + instruction.toString());
-                // System.out.println(this.getCurrentPC());
             }
             return ((IfInstruction) instruction).getTarget();
         } else {
             pc._addDet(SpfUtil.getNegComparator(instruction), sym_v, 0);
             if (!pc.simplify()) {// not satisfiable
-                // System.out.println("Else choice unsat!  Instruction: " + instruction.toString());
                 ti.getVM().getSystemState().setIgnored(true);
-                VeritestingListener.unsatSPFCaseCount++;
             } else {
                 this.setCurrentPC(pc);
-                // System.out.println("Else choice sat!  Instruction: " + instruction.toString());
-                // System.out.println(this.getCurrentPC());
             }
             return instruction.getNext(ti);
         }
@@ -214,10 +188,8 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         return pcCopy;
     }
 
-    public void makeVeritestingCG(Expression regionSummary, ThreadInfo ti) throws StaticRegionException {
-        assert(regionSummary != null);
-        //PathCondition pc = ((PCChoiceGenerator)(ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
-
+    public void makeVeritestingCG(ThreadInfo ti) throws StaticRegionException {
+        assert(region.regionSummary != null);
         PathCondition pc;
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
             pc = ((PCChoiceGenerator)(ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
@@ -226,8 +198,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
 
-        //TODO: Soha restore the third choice
-       setPC(createPC(pc, Operation.TRUE, Operation.TRUE), STATIC_CHOICE);
+       setPC(createPC(pc, region.regionSummary, Operation.TRUE), STATIC_CHOICE);
        setPC(createPC(pc, Operation.TRUE, Operation.TRUE), THEN_CHOICE);
        setPC(createPC(pc, Operation.TRUE, Operation.TRUE), ELSE_CHOICE);
         // TODO: create the path predicate for the 'return' case.

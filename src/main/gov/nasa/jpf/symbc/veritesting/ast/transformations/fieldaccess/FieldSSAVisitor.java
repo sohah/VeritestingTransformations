@@ -54,7 +54,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
         FieldSSAVisitor visitor = new FieldSSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
         dynRegion.psm = visitor.psm;
-        return new DynamicRegion(dynRegion, stmt, new HashSet<>());
+        return new DynamicRegion(dynRegion, stmt, new HashSet<SPFCaseStmt>(), null);
     }
 
 

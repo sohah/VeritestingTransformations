@@ -36,35 +36,18 @@
 //
 package gov.nasa.jpf.symbc.veritesting.ChoiceGenerator;
 
-import gov.nasa.jpf.jvm.bytecode.GOTO;
-import gov.nasa.jpf.symbc.InstructionInfo;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.IntConstant;
-import za.ac.sun.cs.green.expr.IntVariable;
-
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-
-import static gov.nasa.jpf.symbc.VeritestingListener.*;
-
-// MWW: general comment: many uses of nulls as 'signal' values.
-// This usually leads to brittle and hard to debug code with lots
-// of null pointer exceptions.  Be explicit!  Use exceptions
-// to handle unexpected circumstances.
 
 public abstract class StaticPCChoiceGenerator extends PCChoiceGenerator {
 
     public enum Kind {UNARYIF, BINARYIF, NULLIF, OTHER}
 
-    private DynamicRegion region;
+    protected DynamicRegion region;
     protected StackFrame currentTopFrame = null;
 
     public StaticPCChoiceGenerator(int count, DynamicRegion region, Instruction instruction) {
@@ -79,7 +62,6 @@ public abstract class StaticPCChoiceGenerator extends PCChoiceGenerator {
 
     protected DynamicRegion getRegion() { return region; }
 
-    // MWW: make choice 0 and choice 4 also the responsibility of the CG
     abstract public Instruction execute(ThreadInfo ti, Instruction instructionToExecute, int choice) throws StaticRegionException;
 
     public static StaticSummaryChoiceGenerator.Kind getKind(Instruction instruction) {
@@ -108,7 +90,7 @@ public abstract class StaticPCChoiceGenerator extends PCChoiceGenerator {
 
 
 
-    public abstract void makeVeritestingCG(Expression regionSummary, ThreadInfo ti) throws StaticRegionException;
+    public abstract void makeVeritestingCG(ThreadInfo ti) throws StaticRegionException;
 
 
 }

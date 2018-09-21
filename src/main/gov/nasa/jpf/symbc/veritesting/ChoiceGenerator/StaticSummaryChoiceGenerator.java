@@ -4,10 +4,7 @@ import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.numeric.GreenConstraint;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
-import gov.nasa.jpf.symbc.veritesting.FillHolesOutput;
-import gov.nasa.jpf.symbc.veritesting.LogUtil;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.VeritestingRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -17,10 +14,8 @@ import za.ac.sun.cs.green.expr.Operation;
 import java.util.ArrayList;
 import java.util.List;
 
-import static gov.nasa.jpf.symbc.VeritestingListener.DEBUG_LIGHT;
 
 public class StaticSummaryChoiceGenerator extends StaticPCChoiceGenerator {
-    public static List<Instruction> spfCasesIgnoreInstList = new ArrayList<>();
 
     //TODO: SOHA to restore that order again
     public static final int STATIC_CHOICE = 0;
@@ -39,10 +34,9 @@ public class StaticSummaryChoiceGenerator extends StaticPCChoiceGenerator {
         if (choice == STATIC_CHOICE) {
             System.out.println("Executing static region choice in SummaryCG");
             if(this.getCurrentPC().simplify())
-                nextInstruction = setupSPF(ti, instruction, getRegion());
+                nextInstruction = VeritestingListener.setupSPF(ti, instruction, getRegion());
             else { //ignore choice if it is unsat
                 ti.getVM().getSystemState().setIgnored(true);
-                ++VeritestingListener.unsatSPFCaseCount;
             }
 
         } else if (choice == SPF_CHOICE) {
@@ -58,7 +52,6 @@ public class StaticSummaryChoiceGenerator extends StaticPCChoiceGenerator {
                 // System.out.println("SPF summary choice sat!  Instruction: " + instruction.toString());
                 /*if(currentTopFrame != null)
                     ti.setTopFrame(currentTopFrame);*/
-                spfCasesIgnoreInstList.add(instruction);
             }
         }
         return nextInstruction;
@@ -73,8 +66,8 @@ public class StaticSummaryChoiceGenerator extends StaticPCChoiceGenerator {
         return pcCopy;
     }
 
-    public void makeVeritestingCG(Expression regionSummary, ThreadInfo ti) throws StaticRegionException {
-        assert(regionSummary != null);
+    public void makeVeritestingCG(ThreadInfo ti) throws StaticRegionException {
+        assert(this.region.regionSummary != null);
         PathCondition pc;
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
             pc = ((PCChoiceGenerator)(ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
@@ -83,8 +76,8 @@ public class StaticSummaryChoiceGenerator extends StaticPCChoiceGenerator {
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
 
-        setPC(createPC(pc, regionSummary, getRegion().staticNominalPredicate()), STATIC_CHOICE);
-        setPC(createPC(pc, regionSummary, getRegion().spfPathPredicate()), SPF_CHOICE);
+        setPC(createPC(pc, region.regionSummary, Operation.TRUE), STATIC_CHOICE); //staticNominalPredicate
+        setPC(createPC(pc, region.regionSummary, Operation.TRUE), SPF_CHOICE); //spfPathPredicate
         // TODO: create the path predicate for the 'return' case.
     }
 }
