@@ -99,14 +99,14 @@ public class PrettyPrintVisitor implements AstVisitor<Void> {
     @Override
     public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.ArrayLoadInstruction c) {
         ind();
-        write(c.original.toString()); nl();
+        write(c.toString()); nl();
         return null;
     }
 
     @Override
     public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.ArrayStoreInstruction c) {
         ind();
-        write(c.original.toString()); nl();
+        write(c.toString()); nl();
         return null;
     }
 

@@ -63,6 +63,20 @@ public class StmtPrintVisitor extends PrettyPrintVisitor{
     }
 
     @Override
+    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.ArrayLoadInstruction c) {
+        ind();
+        write(c.toString()); nl();
+        return null;
+    }
+
+    @Override
+    public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.ArrayStoreInstruction c) {
+        ind();
+        write(c.toString()); nl();
+        return null;
+    }
+
+    @Override
     public Void visit(gov.nasa.jpf.symbc.veritesting.ast.def.ThrowInstruction c) {
         ind();
         write(c.toString()); nl();
