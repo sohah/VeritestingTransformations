@@ -85,16 +85,16 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static StatisticManager statisticManager = new StatisticManager();
     private static int veritestRegionExpectedCount = -1;
 
-    enum VeritestingMode {VANILLASPF, VERITESTING, SPFCASES}
+    enum VeritestingMode {VANILLASPF, //not effective yet
+        VERITESTING, SPFCASES}
 
     private VeritestingMode runMode;
 
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
             veritestingMode = conf.getInt("veritestingMode");
-            runMode = (veritestingMode == 1) ?
-                    VeritestingMode.VERITESTING :
-                    (veritestingMode == 2) ? VeritestingMode.SPFCASES : VeritestingMode.VANILLASPF;
+            runMode = (veritestingMode == 2) ?
+                    VeritestingMode.SPFCASES : VeritestingMode.VERITESTING;
 
             switch (runMode) {
                 case VANILLASPF:
@@ -379,6 +379,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 ins = ((GOTO) ins).getTarget();
             else ins = ins.getNext();
         }
+
+        //if (ins.getMnemonic().contains("store")) ins = ins.getNext();
         //ti.setNextPC(ins);
         return ins;
     }

@@ -41,7 +41,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             System.out.println("=========Executing static region choice in BranchCG");
             nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion());
         } else if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
-            System.out.println("=========Executing then/else choice.  Instruction: " + instructionToExecute);
+            System.out.println("=========Executing then/else choice.  Instruction: ");
             switch (getKind(instructionToExecute)) {
                 case UNARYIF:
                     nextInstruction = executeUnaryIf(instructionToExecute, choice);

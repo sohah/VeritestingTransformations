@@ -8,8 +8,10 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUseVisit;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
+import za.ac.sun.cs.green.expr.Visitor;
 
 
 /*
@@ -65,12 +67,11 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
     }
 
     public Expression transform(Stmt stmt) {
+        assert!(stmt instanceof SkipStmt);
         if (stmt instanceof AssignmentStmt) {
             return assignStmt((AssignmentStmt) stmt);
         } else if (stmt instanceof CompositionStmt) {
             return compositionStmt((CompositionStmt) stmt);
-        } else if (stmt instanceof SkipStmt) {
-            return Operation.TRUE;
         } else {
             return bad(stmt);
         }
@@ -168,15 +169,22 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
 
     public static DynamicRegion execute(DynamicRegion dynRegion){
 
-        System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
         WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynRegion.varTypeTable);
         AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
         Stmt noWalaVarStmt = dynRegion.dynStmt.accept(astMapVisitor);
         FieldRefVarToSPFVarVisitor fieldRefVisitor = new FieldRefVarToSPFVarVisitor(dynRegion.fieldRefTypeTable);
         astMapVisitor = new AstMapVisitor(fieldRefVisitor);
         Stmt noRangerVarStmt = noWalaVarStmt.accept(astMapVisitor);
+        NoSkipVisitor noSkipVisitor = new NoSkipVisitor();
+
+        System.out.println("\n--------------- NO-SKIP OPTIMIZATION ---------------");
+
+        Stmt noSkipStmt = noRangerVarStmt.accept(noSkipVisitor);
+        System.out.println(PrettyPrintVisitor.print(noSkipStmt));
+
+        System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
         AstToGreenVisitor toGreenVisitor = new AstToGreenVisitor();
-        Expression regionSummary = noRangerVarStmt.accept(toGreenVisitor);
+        Expression regionSummary = noSkipStmt.accept(toGreenVisitor);
         System.out.println(ExprUtil.AstToString(regionSummary));
         DynamicRegion greenDynRegion = new DynamicRegion(dynRegion,
                 dynRegion.dynStmt,
