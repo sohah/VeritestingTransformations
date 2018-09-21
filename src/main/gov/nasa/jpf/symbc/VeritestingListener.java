@@ -42,6 +42,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.FieldRefTy
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubstituteGetOutput;
@@ -238,10 +239,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         staticRegion.inputTable.print();
         staticRegion.outputTable.print();
         staticRegion.varTypeTable.print();
-                        /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
+        /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
         DynamicRegion dynRegion = UniqueRegion.execute(staticRegion);
 
-                        /*--------------- SUBSTITUTION TRANSFORMATION ---------------*/
+        /*--------------- SUBSTITUTION TRANSFORMATION ---------------*/
         dynRegion = SubstitutionVisitor.execute(ti, dynRegion);
 
         System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
@@ -252,19 +253,21 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         fieldRefTypeTable.makeUniqueKey(DynamicRegion.uniqueCounter);
         dynRegion.fieldRefTypeTable.print();
 
+        System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
+        dynRegion = ArrayVisitor.execute(ti, dynRegion);
 
-                        /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
+        /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
         // dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion);
 
 
         // dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
 
-                        /*--------------- LINEARIZATION TRANSFORMATION ---------------*/
+        /*--------------- LINEARIZATION TRANSFORMATION ---------------*/
         LinearizationTransformation linearTrans = new LinearizationTransformation();
         dynRegion = linearTrans.execute(dynRegion);
 
 
-                        /*--------------- TO GREEN TRANSFORMATION ---------------*/
+        /*--------------- TO GREEN TRANSFORMATION ---------------*/
         dynRegion = AstToGreenVisitor.execute(dynRegion);
         return dynRegion;
     }
