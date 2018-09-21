@@ -79,6 +79,8 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
             firstDef = ((WalaVarExpr)c.def).number;
             firstDefFound = true;
         }
+        eva.accept(c.arrayref);
+        eva.accept(c.index);
         return null;
     }
 
