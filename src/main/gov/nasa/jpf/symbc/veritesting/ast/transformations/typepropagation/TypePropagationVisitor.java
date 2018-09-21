@@ -1,8 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.AssignmentStmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
@@ -35,4 +33,5 @@ public class TypePropagationVisitor extends AstMapVisitor {
         dynRegion.dynStmt.accept(visitor);
         return visitor.varTypeTable;
     }
+
 }

@@ -7,9 +7,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicReg
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.vm.*;
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.IntConstant;
-import za.ac.sun.cs.green.expr.RealConstant;
+import za.ac.sun.cs.green.expr.*;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -67,17 +65,24 @@ public class FieldSSAVisitor extends AstMapVisitor {
         else {
             FieldRef fieldRef = FieldRef.makePutFieldRef(ti, putIns);
             FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
+            AssignmentStmt assignStmt = new AssignmentStmt(fieldRefVarExpr, putIns.assignExpr);
+            String type = null;
             if (WalaVarExpr.class.isInstance(putIns.assignExpr)) {
                 if (dynRegion.varTypeTable.lookup(putIns.assignExpr) != null) {
-                    dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(),
-                            (String)dynRegion.varTypeTable.lookup(putIns.assignExpr));
+                    type = (String)dynRegion.varTypeTable.lookup(putIns.assignExpr);
+                } else {
+                    type = new SubstituteGetOutput(ti, fieldRef, true, null).invoke().type;
                 }
-                return new AssignmentStmt(fieldRefVarExpr, putIns.assignExpr);
             } else if (isConstant(putIns.assignExpr)) {
-                dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(),
-                        getConstantType(putIns.assignExpr));
-                return new AssignmentStmt(fieldRefVarExpr, putIns.assignExpr);
-            } else throw new IllegalArgumentException("Cannot handle PutInstruction with non-WalaVarExpr rhs");
+                type = getConstantType(putIns.assignExpr);
+            } else if (IntVariable.class.isInstance(putIns.assignExpr)) {
+                type = "int";
+            } else if (RealVariable.class.isInstance(putIns.assignExpr)) {
+                type = "float";
+            }
+            if (type != null)
+                dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(), type);
+            return assignStmt;
         }
     }
 
@@ -106,7 +111,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
         Stmt gammaStmt = mergePSM(stmt.condition, thenMap, elseMap);
         if (gammaStmt != null)
             return new CompositionStmt(new IfThenElseStmt(stmt.original, stmt.condition, newThen, newElse), gammaStmt);
-        else return stmt;
+        else return new IfThenElseStmt(stmt.original, stmt.condition, newThen, newElse);
     }
 
     private Stmt mergePSM(Expression condition, FieldSubscriptMap thenMap, FieldSubscriptMap elseMap) {
@@ -197,8 +202,9 @@ public class FieldSSAVisitor extends AstMapVisitor {
         } else exceptionalMessage = "encountered obj-ref in GetInstruction that is not a constant";
         // only one of rhs and exceptionalMessage should be non-null
         assert (rhs == null) ^ (exceptionalMessage == null);
-        if (c.def instanceof WalaVarExpr)
+        if (c.def instanceof WalaVarExpr) {
             if (type != null) dynRegion.varTypeTable.add(((WalaVarExpr) c.def).number, type);
+        }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
         if (exceptionalMessage != null) throw new IllegalArgumentException(exceptionalMessage);
         else return new AssignmentStmt(c.def, rhs);

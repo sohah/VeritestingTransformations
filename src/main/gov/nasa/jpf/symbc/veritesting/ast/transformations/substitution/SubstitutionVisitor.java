@@ -290,6 +290,10 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
         System.out.println("\n--------------- AFTER SUBSTITUTION TRANSFORMATION ---------------\n");
         System.out.println(StmtPrintVisitor.print(instantiatedDynRegion.dynStmt));
+        instantiatedDynRegion.slotParamTable.print();
+        instantiatedDynRegion.outputTable.print();
+        instantiatedDynRegion.varTypeTable.print();
+
         return instantiatedDynRegion;
     }
 
