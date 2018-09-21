@@ -169,12 +169,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         if (runMode != VeritestingMode.SPFCASES) {
                             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
                             Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
+                            ++veritestRegionCount;
+                            statisticManager.updateSuccStatForRegion(key);
                             ti.setNextPC(nextInstruction);
                         } else {
                             runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
                         }
-                        //++veritestRegionCount;
-                        //statisticManager.updateSuccStatForRegion(key);
                     } else
                         statisticManager.updateConcreteHitStatForRegion(key);
 
@@ -203,9 +203,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             } else {
                 newCG = new StaticBranchChoiceGenerator(dynRegion, instructionToExecute);
             }
-
             newCG.makeVeritestingCG(ti);
-            //instantiateRegionOutputStack.push(instantiateRegionOutput);
 
             SystemState systemState = vm.getSystemState();
             systemState.setNextChoiceGenerator(newCG);
@@ -213,7 +211,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         } else {
             ChoiceGenerator<?> cg = ti.getVM().getSystemState().getChoiceGenerator();
             if (cg instanceof StaticPCChoiceGenerator) {
-                //InstantiateRegionOutput instantiateRegionOutput = instantiateRegionOutputStack.peek();
                 StaticPCChoiceGenerator vcg = (StaticPCChoiceGenerator) cg;
                 int choice = (Integer) cg.getNextChoice();
                 Instruction nextInstruction = null;
@@ -223,8 +220,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     System.out.println(sre.toString());
                     return;
                 }
+                if(choice ==0){ //static or veritesting choice
+                    ++veritestRegionCount;
+                    statisticManager.updateSuccStatForRegion(key);
+                }
                 ti.setNextPC(nextInstruction);
-                //if (!cg.hasMoreChoices()) instantiateRegionOutputStack.pop();
             }
         }
     }
