@@ -384,8 +384,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             else ins = ins.getNext();
         }
 
-        if (ins.getMnemonic().contains("store")) ins = ins.getNext();
-
+//        if (ins.getMnemonic().contains("store")) ins = ins.getNext();
         //ti.setNextPC(ins);
         return ins;
     }
