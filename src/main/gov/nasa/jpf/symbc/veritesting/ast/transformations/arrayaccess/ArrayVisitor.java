@@ -41,8 +41,7 @@ public class ArrayVisitor extends AstMapVisitor {
             int index = ((IntConstant)c.index).getValue();
             if (index >= len) //TODO make this a SPF case in the future
                 throw new IllegalArgumentException("Array index greater than or equal to array length");
-            int value = getArrayElement(eiArray, index);
-            rhs = new IntConstant(value);
+            rhs = getArrayElement(eiArray, index);
         } else { // the index is symbolic
             rhs = constructArrayITE(eiArray, c.index, 0, len);
         }
@@ -50,23 +49,23 @@ public class ArrayVisitor extends AstMapVisitor {
     }
 
     private Expression constructArrayITE(ElementInfo eiArray, Expression indexExpression, int index, int len) {
-        if (index == len-1) return new IntConstant(getArrayElement(eiArray, index));
+        if (index == len-1) return getArrayElement(eiArray, index);
         else {
             Expression cond = new Operation(EQ, indexExpression, new IntConstant(index));
             return new IfThenElseExpr(cond,
-                    new IntConstant(getArrayElement(eiArray, index)),
+                    getArrayElement(eiArray, index),
                     constructArrayITE(eiArray, indexExpression, index+1, len));
         }
     }
 
-    private int getArrayElement(ElementInfo ei, int index) {
+    private Expression getArrayElement(ElementInfo ei, int index) {
         // copied from Soha's implementation of FillArrayLoadHoles in the previous veritesting implementation
         if(ei.getArrayType().equals("B")){
-            return ei.getByteElement(index); //elements of the array are concrete
+            return new IntConstant(ei.getByteElement(index)); //elements of the array are concrete
         }
-        else {
-            return ei.getIntElement(index); //elements of the array are concrete
-        }
+        else if (ei.getArrayType().equals("I")){
+            return new IntConstant(ei.getIntElement(index)); //elements of the array are concrete
+        } else throw new IllegalArgumentException("Unsupported element type in array");
     }
 
     @Override

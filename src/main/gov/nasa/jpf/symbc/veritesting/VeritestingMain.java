@@ -45,7 +45,7 @@ public class VeritestingMain {
     public HashSet endingInsnsHash;
     ClassHierarchy cha;
     HashSet<String> methodSummaryClassNames, methodSummarySubClassNames;
-    private boolean methodAnalysis = true;
+    private boolean methodAnalysis = false;
     private String currentPackageName;
     public static HashMap<String, StaticRegion> veriRegions;
     private ThreadInfo ti;
