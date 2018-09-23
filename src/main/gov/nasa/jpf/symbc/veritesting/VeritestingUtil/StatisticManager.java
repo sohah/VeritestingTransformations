@@ -32,7 +32,7 @@ public class StatisticManager {
     public void updateFailStatForRegion(String key, String failError) {
         RegionStatistics regionStatistics = regionsStatisticsMap.get(key);
         assert (regionStatistics != null);
-        assert (!regionStatistics.veritested);
+//        assert (!regionStatistics.veritested);
         if(failError.contains("put") || failError.contains("get")){
 //            assert((regionStatistics.failReason == null) || (regionStatistics.failReason == FailReason.FIELDREFERNCEINSTRUCTION));
             regionStatistics.failReason = FailReason.FIELDREFERNCEINSTRUCTION;
@@ -43,7 +43,7 @@ public class StatisticManager {
             regionStatistics.failReason = FailReason.SPFCASEINSTRUCTION;
         }
         else{
-            assert((regionStatistics.failReason == null) || (regionStatistics.failReason == FailReason.OTHER));
+//            assert((regionStatistics.failReason == null) || (regionStatistics.failReason == FailReason.OTHER));
             regionStatistics.failReason = FailReason.OTHER;
         }
 

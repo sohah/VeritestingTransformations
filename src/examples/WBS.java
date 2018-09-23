@@ -17,6 +17,7 @@
  */
 
 
+import com.ibm.wala.cast.tree.pattern.Alt;
 import gov.nasa.jpf.symbc.Debug;
 import gov.nasa.jpf.vm.Verify;
 
