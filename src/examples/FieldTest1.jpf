@@ -4,7 +4,7 @@ veritestRegionExpectedCount = 2
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil
-symbolic.debug=true
+symbolic.debug=false
 
 ######## testing equivalence ######
 symbolic.method=TestVeritesting.testHarness(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)

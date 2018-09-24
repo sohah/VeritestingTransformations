@@ -1,13 +1,13 @@
 public class FieldTest3  extends TestRegionBaseClass {
 
-    int testFunction(int in0, int in1, int in2, int in3, int in4, int in5,
+    Outputs testFunction(int in0, int in1, int in2, int in3, int in4, int in5,
                      boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5) {
         return fieldTest3(in0);
     }
 
     int count = 0;
 
-    public int fieldTest3(int x) {
+    public Outputs fieldTest3(int x) {
         count = x;
         if (x != 0) {
             count += 1;
@@ -18,7 +18,10 @@ public class FieldTest3  extends TestRegionBaseClass {
             count += 1;
         }
 //        assert (x != 0 ? count == x + 3 : count == 3);
-        return count;
+        Outputs o = new Outputs();
+        o.intOutputs = new int[1];
+        o.intOutputs[0] = count;
+        return o;
     }
     public static void main(String[] args) {
         TestVeritesting t = new TestVeritesting();
