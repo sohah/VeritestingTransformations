@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 
+import aima.core.search.csp.Assignment;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -13,9 +14,8 @@ import za.ac.sun.cs.green.expr.*;
 import java.util.HashSet;
 import java.util.Map;
 
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.getConstantType;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
-import static za.ac.sun.cs.green.expr.Operation.Operator.EQ;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
+import static za.ac.sun.cs.green.expr.Operation.Operator.*;
 
 public class ArraySSAVisitor extends AstMapVisitor {
     private DynamicRegion dynRegion;
@@ -107,10 +107,10 @@ public class ArraySSAVisitor extends AstMapVisitor {
         } else throw new IllegalArgumentException("Unsupported element type in array");
     }
 
-    public static void doArrayStore(ThreadInfo ti, ArrayRef arrayRef, Expression assignExpr) {
-        ElementInfo eiArray = ti.getElementInfo(arrayRef.ref);
+    public static void doArrayStore(ThreadInfo ti, ArrayRefVarExpr arrayRefVarExpr, Expression assignExpr, String type) {
+        ElementInfo eiArray = ti.getElementInfo(arrayRefVarExpr.arrayRef.ref);
         int len=(eiArray.getArrayFields()).arrayLength(); // assumed concrete
-        Expression indexExp = arrayRef.index;
+        Expression indexExp = arrayRefVarExpr.arrayRef.index;
         if (IntConstant.class.isInstance(indexExp)) {
             int index = ((IntConstant)indexExp).getValue();
             if (index >= len) //TODO make this a SPF case in the future
@@ -121,12 +121,11 @@ public class ArraySSAVisitor extends AstMapVisitor {
         } else { // the index is symbolic
             for (int i=0; i<len; i++) {
                 Pair<Expression, String> p = getArrayElement(eiArray, i);
-                Expression oldValue = p.getFirst();
-                Expression value = new IfThenElseExpr(new Operation(EQ, indexExp, new IntConstant(i)),
-                        assignExpr, oldValue);
+                ArrayRef ref = new ArrayRef(arrayRefVarExpr.arrayRef.ref, new IntConstant(i));
+                ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript);
                 eiArray.checkArrayBounds(i);
                 eiArray.setIntElement(i, 0);
-                eiArray.setElementAttrNoClone(i, value);
+                eiArray.setElementAttrNoClone(i, greenToSPFExpression(createGreenVar(type, newExpr.getSymName())));
             }
         }
     }
@@ -238,6 +237,23 @@ public class ArraySSAVisitor extends AstMapVisitor {
                 new ArrayRefVarExpr(arrayRef, thenSubscript) : pair.getFirst();
         Expression elseExpr = elseSubscript.pathSubscript != ARRAY_SUBSCRIPT_BASE ?
                 new ArrayRefVarExpr(arrayRef, elseSubscript) : pair.getFirst();
-        return new AssignmentStmt(arrayRefVarExpr, new GammaVarExpr(condition, thenExpr, elseExpr));
+        Expression assignExpr = new GammaVarExpr(condition, thenExpr, elseExpr);
+        AssignmentStmt assignmentStmt = new AssignmentStmt(arrayRefVarExpr, assignExpr);
+        Stmt retStmt = assignmentStmt;
+
+        ElementInfo eiArray = ti.getElementInfo(arrayRef.ref);
+        Expression indexExp = arrayRef.index;
+        int len=(eiArray.getArrayFields()).arrayLength(); // assumed concrete
+        for (int i=0; i<len; i++) {
+            Pair<Expression, String> p = getArrayElement(eiArray, i);
+            Expression oldValue = p.getFirst();
+            Expression cond = new Operation(EQ, indexExp, new IntConstant(i));
+            Expression value = new IfThenElseExpr(cond, assignExpr, oldValue);
+            ArrayRef ref = new ArrayRef(arrayRef.ref, new IntConstant(i));
+            ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript);
+            AssignmentStmt stmt = new AssignmentStmt(createGreenVar(p.getSecond(), newExpr.getSymName()), value);
+            retStmt = new CompositionStmt(retStmt, stmt);
+        }
+        return retStmt;
     }
 }

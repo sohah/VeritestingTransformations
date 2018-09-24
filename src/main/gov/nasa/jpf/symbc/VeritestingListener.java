@@ -374,14 +374,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     private static void populateArrayOutputs(ThreadInfo ti, DynamicRegion dynRegion) {
-        Iterator itr = (Iterator) dynRegion.arrayPSM.table.entrySet().iterator();
+        Iterator itr = dynRegion.arrayPSM.table.entrySet().iterator();
         while (itr.hasNext()) {
             Map.Entry pair = (Map.Entry) itr.next();
             ArrayRef arrayRef = (ArrayRef) pair.getKey();
             SubscriptPair subscriptPair = (SubscriptPair) pair.getValue();
             ArrayRefVarExpr expr = new ArrayRefVarExpr(arrayRef, subscriptPair);
             Expression symVar = createGreenVar(dynRegion.fieldRefTypeTable.lookup(expr), expr.getSymName());
-            doArrayStore(ti, arrayRef, symVar);
+            doArrayStore(ti, expr, symVar, dynRegion.fieldRefTypeTable.lookup(expr));
         }
     }
 
