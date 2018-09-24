@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.FieldRefTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
@@ -69,6 +66,15 @@ public class FieldRefVarToSPFVarVisitor implements ExprVisitor<Expression> {
 
     @Override
     public Expression visit(FieldRefVarExpr expr) {
+        String type = fieldRefTypeTable.lookup(expr);
+        if (type != null)
+            return createGreenVar(type, expr.getSymName());
+        else
+            throw new IllegalArgumentException("Failed to infer type of field reference, " + expr);
+    }
+
+    @Override
+    public Expression visit(ArrayRefVarExpr expr) {
         String type = fieldRefTypeTable.lookup(expr);
         if (type != null)
             return createGreenVar(type, expr.getSymName());

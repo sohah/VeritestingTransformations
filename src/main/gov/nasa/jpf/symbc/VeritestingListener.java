@@ -35,6 +35,8 @@ import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticSummaryChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
+import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
+import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRef;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
@@ -42,7 +44,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.FieldRefTy
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubstituteGetOutput;
@@ -66,6 +68,7 @@ import java.util.concurrent.TimeUnit;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor.doArrayStore;
 
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
 
@@ -254,7 +257,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         dynRegion.fieldRefTypeTable.print();
 
         System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
-        dynRegion = ArrayVisitor.execute(ti, dynRegion);
+        dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
 
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
         // dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion);
@@ -286,6 +289,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (canSetPC(ti, dynRegion.regionSummary)) {
             populateSlots(ti, dynRegion);
             populateFieldOutputs(ti, dynRegion);
+            populateArrayOutputs(ti, dynRegion);
             clearStack(ti.getModifiableTopFrame(), ins);
             return advanceSpf(ti, ins, dynRegion);
         }
@@ -366,6 +370,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             FieldRefVarExpr expr = new FieldRefVarExpr(fieldRef, subscriptPair);
             Expression symVar = createGreenVar(dynRegion.fieldRefTypeTable.lookup(expr), expr.getSymName());
             new SubstituteGetOutput(ti, fieldRef, false, greenToSPFExpression(symVar)).invoke();
+        }
+    }
+
+    private static void populateArrayOutputs(ThreadInfo ti, DynamicRegion dynRegion) {
+        Iterator itr = (Iterator) dynRegion.arrayPSM.table.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry pair = (Map.Entry) itr.next();
+            ArrayRef arrayRef = (ArrayRef) pair.getKey();
+            SubscriptPair subscriptPair = (SubscriptPair) pair.getValue();
+            ArrayRefVarExpr expr = new ArrayRefVarExpr(arrayRef, subscriptPair);
+            Expression symVar = createGreenVar(dynRegion.fieldRefTypeTable.lookup(expr), expr.getSymName());
+            doArrayStore(ti, arrayRef, symVar);
         }
     }
 

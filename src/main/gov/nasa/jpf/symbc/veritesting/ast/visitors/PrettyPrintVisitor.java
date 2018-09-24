@@ -203,6 +203,12 @@ public class PrettyPrintVisitor implements AstVisitor<Void> {
         }
 
         @Override
+        public Void visit(ArrayRefVarExpr expr) {
+            write(expr.toString());
+            return null;
+        }
+
+        @Override
         public Void visit(GammaVarExpr expr) {
             write(expr.toString());
             return null;

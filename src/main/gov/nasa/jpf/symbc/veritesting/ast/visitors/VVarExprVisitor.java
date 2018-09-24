@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
+import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
@@ -11,5 +12,6 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 public interface VVarExprVisitor<T> {
     public T visit(WalaVarExpr expr);
     public T visit(FieldRefVarExpr expr);
+    public T visit(ArrayRefVarExpr expr);
     public T visit(GammaVarExpr expr);
 }

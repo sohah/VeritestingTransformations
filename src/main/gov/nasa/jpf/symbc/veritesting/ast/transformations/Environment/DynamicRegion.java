@@ -4,6 +4,7 @@ import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import za.ac.sun.cs.green.expr.Expression;
@@ -77,7 +78,12 @@ public class DynamicRegion implements Region {
 
     public final Expression regionSummary;
 
-/*
+    /**
+     * Holds path subscript map for array references in the region
+     */
+    public ArraySubscriptMap arrayPSM;
+
+    /*
 
 */
 /**
@@ -124,6 +130,7 @@ public class DynamicRegion implements Region {
         this.regionSummary = regionSummary;
         this.fieldRefTypeTable = oldDynRegion.fieldRefTypeTable;
         this.psm = oldDynRegion.psm;
+        this.arrayPSM = oldDynRegion.arrayPSM;
     }
 
 
@@ -172,5 +179,6 @@ public class DynamicRegion implements Region {
                 "var");
         this.fieldRefTypeTable = new FieldRefTypeTable();
         this.psm = new FieldSubscriptMap();
+        this.arrayPSM = new ArraySubscriptMap();
     }
 }

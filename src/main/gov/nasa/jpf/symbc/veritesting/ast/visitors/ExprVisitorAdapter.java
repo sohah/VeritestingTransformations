@@ -34,6 +34,8 @@ public class ExprVisitorAdapter<T>  {
             return theVisitor.visit((StringVariable) e);
         } else if (e instanceof FieldRefVarExpr) {
             return theVisitor.visit((FieldRefVarExpr) e);
+        } else if (e instanceof ArrayRefVarExpr) {
+            return theVisitor.visit((ArrayRefVarExpr) e);
         } else if (e instanceof GammaVarExpr) {
             return theVisitor.visit((GammaVarExpr) e);
         } else if (e instanceof WalaVarExpr) {

@@ -8,8 +8,8 @@ public class FieldTest2 extends TestRegionBaseClass {
     int count = 0;
 
     public int fieldTest2(int x) {
-        if (x != 0) count = 1;
-        else count = 2;
+        if (x != 0) count = 2;
+        else x = 1;
 //        assert( x != 0 ? count == 1 : count == 2);
         return count;
     }

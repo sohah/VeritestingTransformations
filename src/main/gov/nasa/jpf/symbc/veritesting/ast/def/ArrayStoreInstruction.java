@@ -34,7 +34,7 @@ public class ArrayStoreInstruction extends Instruction {
         arrayref = new WalaVarExpr(ins.getArrayRef());
         index = new WalaVarExpr(ins.getIndex());
         elementType = ins.getElementType();
-        assignExpr = new WalaVarExpr(ins.getDef());
+        assignExpr = new WalaVarExpr(ins.getValue());
     }
 
     @Override

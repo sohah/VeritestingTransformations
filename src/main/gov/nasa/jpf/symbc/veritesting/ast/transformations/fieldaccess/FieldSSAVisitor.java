@@ -135,8 +135,8 @@ public class FieldSSAVisitor extends AstMapVisitor {
             if (thenMap.lookup(elseFieldRef) != null) {
                 throw new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point");
             } else {
-                compStmt = compose(compStmt, createGammaStmt(condition, elseFieldRef, elseSubscript,
-                        new SubscriptPair(FIELD_SUBSCRIPT_BASE, gsm.createSubscript(elseFieldRef))));
+                compStmt = compose(compStmt, createGammaStmt(condition, elseFieldRef,
+                        new SubscriptPair(FIELD_SUBSCRIPT_BASE, gsm.createSubscript(elseFieldRef)), elseSubscript));
             }
         }
 
