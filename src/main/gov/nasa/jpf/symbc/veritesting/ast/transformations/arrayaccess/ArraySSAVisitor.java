@@ -89,7 +89,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             Expression cond = new Operation(EQ, indexExpression, new IntConstant(index));
             Pair<Expression, String> elem = getArrayElement(eiArray, index);
             Expression ite = (Expression) constructArrayITE(eiArray, indexExpression, index+1, len).getFirst();
-            return new Pair(new IfThenElseExpr(cond, elem.getFirst(), ite), elem.getSecond());
+            return new Pair(new GammaVarExpr(cond, elem.getFirst(), ite), elem.getSecond());
         }
     }
 
@@ -253,7 +253,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             Pair<Expression, String> p = getArrayElement(eiArray, i);
             Expression oldValue = p.getFirst();
             Expression cond = new Operation(EQ, indexExp, new IntConstant(i));
-            Expression value = new IfThenElseExpr(cond, assignExpr, oldValue);
+            Expression value = new GammaVarExpr(cond, assignExpr, oldValue);
             ArrayRef ref = new ArrayRef(arrayRefVarExpr.arrayRef.ref, new IntConstant(i));
             ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript);
             AssignmentStmt stmt = new AssignmentStmt(createGreenVar(p.getSecond(), newExpr.getSymName()), value);

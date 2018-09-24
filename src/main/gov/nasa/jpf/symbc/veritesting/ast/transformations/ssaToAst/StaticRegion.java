@@ -1,9 +1,9 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import com.ibm.wala.ssa.IR;
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 
 /**
@@ -50,7 +50,7 @@ public class StaticRegion implements Region {
      */
     public final VarTypeTable varTypeTable;
 
-    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns) {
+    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns) throws StaticRegionException {
         this.staticStmt = staticStmt;
         this.ir = ir;
         this.isMethodRegion = isMethodRegion;
@@ -94,6 +94,11 @@ public class StaticRegion implements Region {
                 outputTable = new OutputTable(ir, isMethodRegion, (SlotParamTable) slotParamTable, (InputTable) inputTable, staticStmt, new Pair<>(firstDef, lastDef));
         }
         this.endIns = endIns;
+        if (staticStmt instanceof CompositionStmt && ((CompositionStmt) staticStmt).s2 instanceof AssignmentStmt) {
+            AssignmentStmt assignmentStmt = (AssignmentStmt) ((CompositionStmt) staticStmt).s2;
+            if ((assignmentStmt.rhs instanceof GammaVarExpr) && (outputTable.table.size() == 0))
+                throw new StaticRegionException("static region with gamma expression cannot have no local outputs");
+        }
     }
 
     /**
