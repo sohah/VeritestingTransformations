@@ -13,14 +13,14 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGree
  * A visitor that visits all FieldRefVarExpr and generates the appropriate SPF symbolic variable based on its type.
  */
 
-public class FieldRefVarToSPFVarVisitor implements ExprVisitor<Expression> {
+public class FieldArrayVarToSPFVarVisitor implements ExprVisitor<Expression> {
 
     private final FieldRefTypeTable fieldRefTypeTable;
 
     protected final ExprVisitorAdapter<Expression> eva =
             new ExprVisitorAdapter<Expression>(this);
 
-    public FieldRefVarToSPFVarVisitor(FieldRefTypeTable fieldRefTypeTable) {
+    public FieldArrayVarToSPFVarVisitor(FieldRefTypeTable fieldRefTypeTable) {
         this.fieldRefTypeTable = fieldRefTypeTable;
     }
 

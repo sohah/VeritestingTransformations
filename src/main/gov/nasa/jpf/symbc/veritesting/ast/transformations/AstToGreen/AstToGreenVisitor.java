@@ -3,15 +3,12 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUseVisit;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
-import za.ac.sun.cs.green.expr.Visitor;
 
 
 /*
@@ -172,7 +169,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynRegion.varTypeTable);
         AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
         Stmt noWalaVarStmt = dynRegion.dynStmt.accept(astMapVisitor);
-        FieldRefVarToSPFVarVisitor fieldRefVisitor = new FieldRefVarToSPFVarVisitor(dynRegion.fieldRefTypeTable);
+        FieldArrayVarToSPFVarVisitor fieldRefVisitor = new FieldArrayVarToSPFVarVisitor(dynRegion.fieldRefTypeTable);
         astMapVisitor = new AstMapVisitor(fieldRefVisitor);
         Stmt noRangerVarStmt = noWalaVarStmt.accept(astMapVisitor);
         NoSkipVisitor noSkipVisitor = new NoSkipVisitor();

@@ -241,15 +241,20 @@ public class ArraySSAVisitor extends AstMapVisitor {
         AssignmentStmt assignmentStmt = new AssignmentStmt(arrayRefVarExpr, assignExpr);
         Stmt retStmt = assignmentStmt;
 
-        ElementInfo eiArray = ti.getElementInfo(arrayRef.ref);
-        Expression indexExp = arrayRef.index;
+        retStmt = makeAssignStmts(arrayRefVarExpr, assignExpr, retStmt);
+        return retStmt;
+    }
+
+    private Stmt makeAssignStmts(ArrayRefVarExpr arrayRefVarExpr, Expression assignExpr, Stmt retStmt) {
+        ElementInfo eiArray = ti.getElementInfo(arrayRefVarExpr.arrayRef.ref);
+        Expression indexExp = arrayRefVarExpr.arrayRef.index;
         int len=(eiArray.getArrayFields()).arrayLength(); // assumed concrete
         for (int i=0; i<len; i++) {
             Pair<Expression, String> p = getArrayElement(eiArray, i);
             Expression oldValue = p.getFirst();
             Expression cond = new Operation(EQ, indexExp, new IntConstant(i));
             Expression value = new IfThenElseExpr(cond, assignExpr, oldValue);
-            ArrayRef ref = new ArrayRef(arrayRef.ref, new IntConstant(i));
+            ArrayRef ref = new ArrayRef(arrayRefVarExpr.arrayRef.ref, new IntConstant(i));
             ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript);
             AssignmentStmt stmt = new AssignmentStmt(createGreenVar(p.getSecond(), newExpr.getSymName()), value);
             retStmt = new CompositionStmt(retStmt, stmt);
