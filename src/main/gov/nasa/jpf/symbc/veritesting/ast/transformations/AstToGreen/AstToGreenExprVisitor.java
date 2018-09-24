@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUseVisit;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
@@ -116,6 +113,11 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
 
     @Override
     public Expression visit(FieldRefVarExpr expr) {
+        return bad(expr);
+    }
+
+    @Override
+    public Expression visit(ArrayRefVarExpr expr) {
         return bad(expr);
     }
 

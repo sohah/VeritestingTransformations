@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
@@ -45,6 +42,11 @@ public class SymbCondVisitor implements ExprVisitor<Expression> {
 
     @Override
     public Expression visit(FieldRefVarExpr expr) {
+        return null;
+    }
+
+    @Override
+    public Expression visit(ArrayRefVarExpr expr) {
         return null;
     }
 
