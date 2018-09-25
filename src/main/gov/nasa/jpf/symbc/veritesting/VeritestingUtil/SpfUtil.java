@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
+import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.numeric.IntegerExpression;
@@ -8,6 +9,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
@@ -198,6 +200,34 @@ public class SpfUtil {
                 assert(false);
                 return null;
         }
+    }
+
+    // we want to allow only stores at the end of the region but skip regions that end on any other instruction that
+    // consumes 1 or more stack operands
+    public static Instruction isUnsupportedRegionEnd(StaticRegion region, Instruction ins) {
+        int endIns = region.endIns;
+        while (ins.getPosition() != endIns) {
+            if (ins instanceof GOTO && (((GOTO) ins).getTarget().getPosition() <= endIns)) {
+                ins = ((GOTO) ins).getTarget();
+            }
+            else ins = ins.getNext();
+        }
+        Instruction ret = ins;
+        if (ret.getMnemonic().contains("store")) return null;
+        // https://en.wikipedia.org/wiki/Java_bytecode_instruction_listings
+        int bytecode = ret.getByteCode();
+        if (bytecode <= 0x2d) return null;
+        if (bytecode >= 0x2e && bytecode <= 0x83) return ret;
+        if (bytecode == 0x84) return null;
+        if (bytecode >= 0x85 && bytecode <= 0xa6) return ret;
+        if (bytecode >= 0xa7 && bytecode <= 0xa9) return null;
+        if (bytecode >= 0xaa && bytecode <= 0xb0) return ret;
+        if (bytecode >= 0xb1 && bytecode <= 0xb2) return null;
+        if (bytecode >= 0xb3 && bytecode <= 0xba) return ret;
+        if (bytecode == 0xbb) return null;
+        if (bytecode >= 0xbc && bytecode <= 0xc7) return ret;
+        if (bytecode >= 0xc8 && bytecode <= 0xc9) return null;
+        return ret;
     }
 
 }

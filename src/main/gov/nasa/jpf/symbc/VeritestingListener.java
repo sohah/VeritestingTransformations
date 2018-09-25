@@ -68,6 +68,7 @@ import java.util.concurrent.TimeUnit;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isUnsupportedRegionEnd;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor.doArrayStore;
 
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
@@ -171,6 +172,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                     if (SpfUtil.isSymCond(ti.getTopFrame(), (SlotParamTable) staticRegion.slotParamTable, staticRegion.staticStmt)) {
                         if (runMode != VeritestingMode.SPFCASES) {
+                            // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
+                            Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
+                            if (regionEndInsn != null) {
+                                throw new StaticRegionException("Unsupported region end instruction: " + regionEndInsn);
+                            }
                             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
                             Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
                             ++veritestRegionCount;
@@ -400,7 +406,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             else ins = ins.getNext();
         }
 
-//        if (ins.getMnemonic().contains("store")) ins = ins.getNext();
+        if (ins.getMnemonic().contains("store")) {
+            ins = ins.getNext();
+            System.out.println("advancing beyond a store at end of region");
+        }
         //ti.setNextPC(ins);
         return ins;
     }
