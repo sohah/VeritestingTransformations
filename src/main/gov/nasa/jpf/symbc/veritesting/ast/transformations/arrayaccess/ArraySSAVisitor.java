@@ -117,7 +117,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
                 throw new IllegalArgumentException("Array index greater than or equal to array length");
             eiArray.checkArrayBounds(index);
             eiArray.setIntElement(index, 0);
-            eiArray.setElementAttrNoClone(index, assignExpr);
+            eiArray.setElementAttrNoClone(index, greenToSPFExpression(assignExpr));
         } else { // the index is symbolic
             for (int i=0; i<len; i++) {
                 Pair<Expression, String> p = getArrayElement(eiArray, i);
