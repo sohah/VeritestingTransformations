@@ -15,7 +15,7 @@ class Simple1 extends TestRegionBaseClass {
         }
         Outputs o = new Outputs();
         o.intOutputs = new int[1];
-        o.intOutputs[0] = count;
+        o.intOutputs[0] = count+1;
         return o;
     }
 

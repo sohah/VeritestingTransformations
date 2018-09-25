@@ -13,7 +13,7 @@ public class TestComplexCondition1 extends TestRegionBaseClass {
         }
         Outputs o = new Outputs();
         o.intOutputs = new int[1];
-        o.intOutputs[0] = a;
+        o.intOutputs[0] = a+1;
         return o;
     }
 

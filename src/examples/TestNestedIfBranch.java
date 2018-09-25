@@ -17,7 +17,7 @@ public class TestNestedIfBranch extends TestRegionBaseClass {
         }
         Outputs o = new Outputs();
         o.intOutputs = new int[1];
-        o.intOutputs[0] = y;
+        o.intOutputs[0] = y+1;
         return o;
     }
 

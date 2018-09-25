@@ -1,5 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Eq-checks" type="CompoundRunConfigurationType" factoryName="Compound Run Configuration">
+    <toRun type="JarApplication" name="ArrayTest1" />
     <toRun type="JarApplication" name="FieldTest1" />
     <toRun type="JarApplication" name="FieldTest2" />
     <toRun type="JarApplication" name="FieldTest3" />
@@ -11,6 +12,6 @@
     <toRun type="JarApplication" name="TestComplexCondition1" />
     <toRun type="JarApplication" name="TestNestedIfBranch" />
     <toRun type="JarApplication" name="TestOrIte" />
-    <method />
+    <method v="2" />
   </configuration>
 </component>

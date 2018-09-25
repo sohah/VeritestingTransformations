@@ -1,5 +1,5 @@
 target=HigherOrder2
-veritestRegionExpectedCount = 4
+veritestRegionExpectedCount = 3
 # Classes that wish to test a veritesting region can populate the expected value of
 # VeritestingListener.veritestRegionCount in this variable. TestVeritesting will assert
 # VeritestingListener.veritestRegionCount to be equal to veritestRegionExpectedCount
