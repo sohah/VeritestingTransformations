@@ -9,32 +9,47 @@ import gov.nasa.jpf.vm.StackFrame;
 import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Visits expression in a conditional statement to check if any of its arguments are indeed symbolic.
  */
 public class SymbCondVisitor implements ExprVisitor<Expression> {
+    private final boolean findStackSlotsOnly;
+    public boolean stackSlotNotFound;
+    public ArrayList noStackSlotVars;
     private boolean isSymCondition = false;
+    private boolean foundWalaVarExpr = false;
     private SlotParamTable slotParamTable;
     private StackFrame sf;
     public final ExprVisitorAdapter<Expression> eva =
             new ExprVisitorAdapter<Expression>(this);
 
 
-    public SymbCondVisitor(StackFrame sf, SlotParamTable slotParamTable) {
+    public SymbCondVisitor(StackFrame sf, SlotParamTable slotParamTable, boolean findStackSlotsOnly) {
         this.slotParamTable = slotParamTable;
         this.sf = sf;
+        this.findStackSlotsOnly = findStackSlotsOnly;
+        this.stackSlotNotFound = false;
+        noStackSlotVars = new ArrayList<WalaVarExpr>();
     }
 
     public Expression visit(WalaVarExpr expr) {
+        foundWalaVarExpr = true;
         if (!isSymCondition) {
             int[] slots = slotParamTable.lookup(expr.number);
             int slot;
-            if (slots != null){
+            if (slots != null && !findStackSlotsOnly){
                 slot = slots[0];
                 gov.nasa.jpf.symbc.numeric.Expression operand = (gov.nasa.jpf.symbc.numeric.Expression)
                         sf.getSlotAttr(slot);
                 if (operand != null)
                     isSymCondition = true;
+            }
+            if(slots == null) {
+                stackSlotNotFound = true;
+                noStackSlotVars.add(expr);
             }
         }
         return null;
@@ -104,5 +119,9 @@ public class SymbCondVisitor implements ExprVisitor<Expression> {
 
     public boolean isSymCondition() {
         return isSymCondition;
+    }
+
+    public boolean isFoundWalaVarExpr() {
+        return foundWalaVarExpr;
     }
 }

@@ -1,9 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
 import gov.nasa.jpf.jvm.bytecode.GOTO;
-import gov.nasa.jpf.symbc.numeric.Comparator;
-import gov.nasa.jpf.symbc.numeric.IntegerConstant;
-import gov.nasa.jpf.symbc.numeric.IntegerExpression;
+import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
@@ -13,8 +11,13 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
+import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
+import za.ac.sun.cs.green.expr.Operation;
 
 import java.io.File;
+
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 
 /**
  * This class provides some utility methods for SPF.
@@ -73,10 +76,12 @@ public class SpfUtil {
                 isSymCondition = true;
         }
         if (operandNum == 2) {
-            IntegerExpression operand1 = (IntegerExpression) sf.getOperandAttr(1);
+            gov.nasa.jpf.symbc.numeric.Expression operand1 = (gov.nasa.jpf.symbc.numeric.Expression)
+                    sf.getOperandAttr(1);
             if (operand1 != null)
                 isSymCondition = true;
-            IntegerExpression operand2 = (IntegerExpression) sf.getOperandAttr(0);
+            gov.nasa.jpf.symbc.numeric.Expression operand2 = (gov.nasa.jpf.symbc.numeric.Expression)
+                    sf.getOperandAttr(0);
             if (operand2 != null)
                 isSymCondition = true;
         }
@@ -86,23 +91,35 @@ public class SpfUtil {
     /**
      * Checks if the "if" condition is symbolic by visiting the condition expression of the statement of the staticRegion
      * @param sf Current stack frame.
-     * @param slotParamTable Environment table that is holding var to slot mapping.
      * @param stmt Statement of the static region.
      * @return True if the operand(s) of "if" condition is symbolic and false if it was concerete.
      * @throws StaticRegionException
      */
-    public static boolean isSymCond(StackFrame sf, SlotParamTable slotParamTable, Stmt stmt) throws StaticRegionException {
-
-        SymbCondVisitor symbCondVisitor = new SymbCondVisitor(sf, slotParamTable);
+    public static boolean isSymCond(StackFrame sf, Stmt stmt, SlotParamTable slotParamTable, Instruction ins)
+            throws StaticRegionException {
+        /*Expression condition = getFirstCond(stmt);
+        SymbCondVisitor symbCondVisitor = new SymbCondVisitor(sf, slotParamTable, false);
         ExprVisitorAdapter eva = symbCondVisitor.eva;
-        if(stmt instanceof CompositionStmt){
-            eva.accept(((IfThenElseStmt)((CompositionStmt) stmt).s1).condition);
+        if (condition != null) eva.accept(condition);
+        else throw new StaticRegionException("Cant veritesting a region that does not start with if condition");
+        if (!symbCondVisitor.isSymCondition()) {
+            boolean isSymCond = isSymCond(sf, ins);
+            if (!isSymCond) return false;
+            else throw new StaticRegionException("Failed to instantiate symbolic condition");
+        } else return true;*/
+        return isSymCond(sf, ins);
+
+    }
+
+    private static Expression getFirstCond(Stmt stmt) {
+        if (stmt instanceof IfThenElseStmt) return ((IfThenElseStmt) stmt).condition;
+        if (stmt instanceof CompositionStmt) {
+            Expression cond = getFirstCond(((CompositionStmt) stmt).s1);
+            if (cond != null) return cond;
+            cond = getFirstCond(((CompositionStmt) stmt).s2);
+            if (cond != null) return cond;
         }
-        else if(stmt instanceof IfThenElseStmt)
-            eva.accept(((IfThenElseStmt) stmt).condition);
-        else
-            throw new StaticRegionException("Cant veritesting a region that does not start with if condition");
-        return symbCondVisitor.isSymCondition();
+        return null;
     }
 
     /**

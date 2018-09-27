@@ -13,6 +13,10 @@ import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.convertWalaVar;
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.translateBinaryOp;
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.translateUnaryOp;
+
 /**
  * This visitor translates specific Wala SSAInstructions to RangerIR.
  */
@@ -90,30 +94,6 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
             }
         } else {
 */
-
-    /**
-     * Converts a Wala Constant Variable to the appropriate Green expression.
-     *
-     */
-    private Expression convertWalaVar(int ssaVar) {
-        SymbolTable symtab = ir.getSymbolTable();
-        if (symtab.isConstant(ssaVar)) {
-            Object val = symtab.getConstantValue(ssaVar);
-            if (val instanceof Boolean) {
-                return new IntConstant(val.equals(Boolean.TRUE) ? 1 : 0);
-            } else if (val instanceof Integer) {
-                return new IntConstant((Integer)val);
-            } else if (val instanceof Double) {
-                return new RealConstant((Double)val);
-            } else if (val instanceof String) {
-                return new StringConstantGreen((String)val);
-            } else {
-                throw new IllegalArgumentException("translateTruncatedFinalBlock: unsupported constant type");
-            }
-        } else {
-            return new WalaVarExpr(ssaVar);
-        }
-    }
 
 
     private Expression conjunct(List<Expression> le) {
@@ -228,7 +208,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
                 }
                 else {
                     conds.add(new LinkedList<PhiCondition>(cond));
-                    values.add(convertWalaVar(ssaVar));
+                    values.add(convertWalaVar(ir, ssaVar));
                 }
             }
             // create Gamma statement
@@ -269,25 +249,6 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     }
 
     /**
-     * Translate a binary operation to the appropriate Green operator.
-     * @param op Wala operation
-     * @return Equivalent Green operator
-     */
-    private Operation.Operator translateBinaryOp(IBinaryOpInstruction.Operator op) {
-        switch (op) {
-            case ADD: return Operation.Operator.ADD;
-            case SUB: return Operation.Operator.SUB;
-            case MUL: return Operation.Operator.MUL;
-            case DIV: return Operation.Operator.DIV;
-            case REM: return Operation.Operator.MOD;
-            case AND: return Operation.Operator.AND;
-            case OR: return Operation.Operator.OR;
-            case XOR: return Operation.Operator.NOTEQUALS;
-        }
-        throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
-    }
-
-    /**
      * Create an Assignment Statement in RangerIR for binary operations in Wala.
      * @param ssa Wala SSA binary instruction.
      */
@@ -295,8 +256,8 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public void visitBinaryOp(SSABinaryOpInstruction ssa) {
         Expression lhs = new WalaVarExpr(ssa.getDef());
         Operation.Operator op = translateBinaryOp((IBinaryOpInstruction.Operator)ssa.getOperator());
-        Expression op1 = convertWalaVar(ssa.getUse(0));
-        Expression op2 = convertWalaVar(ssa.getUse(1));
+        Expression op1 = convertWalaVar(ir, ssa.getUse(0));
+        Expression op2 = convertWalaVar(ir, ssa.getUse(1));
         Expression rhs = new Operation(op, op1, op2);
         Stmt s = new AssignmentStmt(lhs, rhs);
         veriStatement = s;
@@ -308,17 +269,6 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     }
 
     /**
-     * Translates a unary operation in Wala to its corresponding Green operator.
-     *
-     */
-    Operation.Operator translateUnaryOp(IUnaryOpInstruction.Operator op) {
-        switch(op) {
-            case NEG: return Operation.Operator.NEG;
-        }
-        throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateUnaryOp");
-    }
-
-    /**
      * Translates a unary instruction in Wala SSA to RangerIR assignment statement.
      * @param ssa SSA unary instruction.
      */
@@ -327,7 +277,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()),
                 new Operation(
                         translateUnaryOp((IUnaryOpInstruction.Operator)ssa.getOpcode()),
-                                convertWalaVar(ssa.getUse(0)))
+                                convertWalaVar(ir, ssa.getUse(0)))
                 );
     }
 
@@ -349,8 +299,8 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     @Override
     public void visitComparison(SSAComparisonInstruction ssa) {
         Expression expr;
-        Expression condlhs = convertWalaVar(ssa.getUse(0));
-        Expression condrhs = convertWalaVar(ssa.getUse(1));
+        Expression condlhs = convertWalaVar(ir, ssa.getUse(0));
+        Expression condrhs = convertWalaVar(ir, ssa.getUse(1));
         Operation.Operator condOp =
                 (ssa.getOperator() == IComparisonInstruction.Operator.CMP ||
                         ssa.getOperator() == IComparisonInstruction.Operator.CMPG) ?

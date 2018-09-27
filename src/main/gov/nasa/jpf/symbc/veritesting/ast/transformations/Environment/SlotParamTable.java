@@ -62,10 +62,10 @@ public class SlotParamTable extends StaticTable<int[]> {
                 ins.visit(stackSlotIVisitor);
         }
         stackSlotPhiPropagation();
-        filterTableForBoundary(stmt, firstUseLastDef);
+//        filterTableForBoundary(stmt, firstUseLastDef);
     }
 
-    private void filterTableForBoundary(Stmt stmt, Pair<Integer, Integer> firstUseLastDef) {
+    public void filterTableForBoundary(Stmt stmt, Pair<Integer, Integer> firstUseLastDef) {
         Iterator<Integer> keyItr = this.getKeys().iterator();
 
         while (keyItr.hasNext()) {

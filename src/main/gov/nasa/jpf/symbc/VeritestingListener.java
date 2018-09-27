@@ -168,16 +168,17 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             try {
                 HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
                 StaticRegion staticRegion = regionsMap.get(key);
-                if ((staticRegion != null) && !(staticRegion.isMethodRegion))
+                if ((staticRegion != null) && !(staticRegion.isMethodRegion)) {
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
-                    if (SpfUtil.isSymCond(ti.getTopFrame(), (SlotParamTable) staticRegion.slotParamTable, staticRegion.staticStmt)) {
+                    DynamicRegion dynRegion = runVeritestingFixedPoint(ti, instructionToExecute, staticRegion, key);
+                    if (SpfUtil.isSymCond(ti.getTopFrame(), dynRegion.dynStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
                         if (runMode != VeritestingMode.SPFCASES) {
                             // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
                             Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
                             if (regionEndInsn != null) {
                                 throw new StaticRegionException("Unsupported region end instruction: " + regionEndInsn);
                             }
-                            DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
+                            dynRegion = runVeritesting(ti, instructionToExecute, dynRegion, key);
                             Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
                             ++veritestRegionCount;
                             statisticManager.updateSuccStatForRegion(key);
@@ -187,7 +188,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         }
                     } else
                         statisticManager.updateConcreteHitStatForRegion(key);
-
+                }
             } catch (IllegalArgumentException e) {
                 statisticManager.updateFailStatForRegion(key, e.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
@@ -207,7 +208,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private void runVeritestingWithSPF(ThreadInfo ti, VM vm, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws StaticRegionException, CloneNotSupportedException {
         if (!ti.isFirstStepInsn()) { // first time around
             StaticPCChoiceGenerator newCG;
-            DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
+            DynamicRegion dynRegion = runVeritestingFixedPoint(ti, instructionToExecute, staticRegion, key);
+            dynRegion = runVeritesting(ti, instructionToExecute, dynRegion, key);
             if (StaticPCChoiceGenerator.getKind(instructionToExecute) == StaticPCChoiceGenerator.Kind.OTHER) {
                 newCG = new StaticSummaryChoiceGenerator(dynRegion, instructionToExecute);
             } else {
@@ -240,7 +242,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
 
-    private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws CloneNotSupportedException, StaticRegionException {
+    private DynamicRegion runVeritestingFixedPoint(ThreadInfo ti, Instruction instructionToExecute,
+                                                   StaticRegion staticRegion, String key)
+            throws CloneNotSupportedException, StaticRegionException {
         statisticManager.updateHitStatForRegion(key);
         System.out.println("\n---------- STARTING Transformations for conditional region: " + key +
                 "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
@@ -264,6 +268,34 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
         dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
+
+        return dynRegion;
+    }
+
+    private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, DynamicRegion dynRegion, String key) throws CloneNotSupportedException, StaticRegionException {
+        statisticManager.updateHitStatForRegion(key);
+        /*System.out.println("\n---------- STARTING Transformations for conditional region: " + key +
+                "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
+        staticRegion.slotParamTable.print();
+        staticRegion.inputTable.print();
+        staticRegion.outputTable.print();
+        staticRegion.varTypeTable.print();
+        *//*-------------- UNIQUENESS TRANSFORMATION ---------------*//*
+        DynamicRegion dynRegion = UniqueRegion.execute(staticRegion);
+
+        *//*--------------- SUBSTITUTION TRANSFORMATION ---------------*//*
+        dynRegion = SubstitutionVisitor.execute(ti, dynRegion);
+
+        System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
+        dynRegion = FieldSSAVisitor.execute(ti, dynRegion);
+        TypePropagationVisitor.propagateTypes(dynRegion);
+        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+        FieldRefTypeTable fieldRefTypeTable = dynRegion.fieldRefTypeTable.clone();
+        fieldRefTypeTable.makeUniqueKey(DynamicRegion.uniqueCounter);
+        dynRegion.fieldRefTypeTable.print();
+
+        System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
+        dynRegion = ArraySSAVisitor.execute(ti, dynRegion);*/
 
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
         // dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion);

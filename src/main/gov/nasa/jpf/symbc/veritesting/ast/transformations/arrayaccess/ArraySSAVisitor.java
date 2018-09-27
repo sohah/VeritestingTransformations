@@ -1,6 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 
-import aima.core.search.csp.Assignment;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -96,15 +95,24 @@ public class ArraySSAVisitor extends AstMapVisitor {
     public static Pair getArrayElement(ElementInfo ei, int index) {
         // copied from Soha's implementation of FillArrayLoadHoles in the previous veritesting implementation
         if(ei.getArrayType().equals("B")){
-            return new Pair(new IntConstant(ei.getByteElement(index)), "int"); //elements of the array are concrete
-        }
-        else if (ei.getArrayType().equals("I")){
-            return new Pair(new IntConstant(ei.getIntElement(index)), "int"); //elements of the array are concrete
+            return new Pair(getArrayExpression(ei, index, "byte"), "int"); //elements of the array are concrete
+        } else if (ei.getArrayType().equals("I")){
+            return new Pair(getArrayExpression(ei, index, "int"), "int"); //elements of the array are concrete
         } else if (ei.getArrayType().equals("F")){
-            return new Pair(new RealConstant(ei.getFloatElement(index)), "real"); //elements of the array are concrete
+            return new Pair(getArrayExpression(ei, index, "float"), "real"); //elements of the array are concrete
         } else if (ei.getArrayType().equals("D")){
-            return new Pair(new RealConstant(ei.getDoubleElement(index)), "real"); //elements of the array are concrete
+            return new Pair(getArrayExpression(ei, index, "double"), "real"); //elements of the array are concrete
         } else throw new IllegalArgumentException("Unsupported element type in array");
+    }
+
+    private static Expression getArrayExpression(ElementInfo ei, int index, String type) {
+        if (ei.getElementAttr(index) != null)
+            return SPFToGreenExpr((gov.nasa.jpf.symbc.numeric.Expression)ei.getElementAttr(index));
+        else
+            return type.equals("float") ? new RealConstant(ei.getFloatElement(index)) :
+                    type.equals("double") ? new RealConstant(ei.getDoubleElement(index)) :
+                            type.equals("byte") ? new IntConstant(ei.getByteElement(index)) :
+                                    new IntConstant(ei.getIntElement(index)) ;
     }
 
     public static void doArrayStore(ThreadInfo ti, ArrayRefVarExpr arrayRefVarExpr, Expression assignExpr, String type) {
