@@ -138,7 +138,7 @@ public class SSAToStatDefVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitInvoke(SSAInvokeInstruction ssaInvokeInstruction) {
-        veriStatement = new InvokeInstruction(ssaInvokeInstruction);
+        /*veriStatement = new InvokeInstruction(ssaInvokeInstruction);
         for (Expression expression : ((InvokeInstruction) veriStatement).result) {
             WalaVarExpr wve = (WalaVarExpr) expression;
             if (extractStackSlotStmt(wve)) {
@@ -146,7 +146,7 @@ public class SSAToStatDefVisitor implements SSAInstruction.IVisitor {
                     addToNoStackSlotVars((WalaVarExpr) p);
                 }
             }
-        }
+        }*/
     }
 
     @Override
