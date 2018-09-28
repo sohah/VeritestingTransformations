@@ -50,8 +50,6 @@ public class VeritestingMain {
     public static HashMap<String, StaticRegion> veriRegions;
     private ThreadInfo ti;
 
-
-
     SSACFG cfg;
     HashSet startingPointsHistory;
     String currentClassName, currentMethodName, methodSig;
@@ -101,7 +99,8 @@ public class VeritestingMain {
                 }
                 startAnalysis(getPackageName(_className), _className, signature);
             }
-            if (VeritestingListener.veritestingMode <= 2) return;
+            //Return if not in highOrder mode or higher
+            if ( VeritestingListener.veritestingMode <= 2) return;
             for (String methodSummaryClassName : methodSummaryClassNames) {
                 Class cAdditional;
                 try {

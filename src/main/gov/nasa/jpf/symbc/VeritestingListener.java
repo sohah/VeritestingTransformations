@@ -94,16 +94,16 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static StatisticManager statisticManager = new StatisticManager();
     private static int veritestRegionExpectedCount = -1;
 
-    enum VeritestingMode {VANILLASPF, //not effective yet
-        VERITESTING, SPFCASES}
+    public enum VeritestingMode {VANILLASPF, //not effective yet
+        VERITESTING, HIGHORDER, SPFCASES}
 
     private VeritestingMode runMode;
 
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
             veritestingMode = conf.getInt("veritestingMode");
-            runMode = (veritestingMode == 2) ?
-                    VeritestingMode.SPFCASES : VeritestingMode.VERITESTING;
+            runMode = (veritestingMode == 4) ?
+                    VeritestingMode.SPFCASES : (veritestingMode == 3) ? VeritestingMode.HIGHORDER: VeritestingMode.VERITESTING;
 
             switch (runMode) {
                 case VANILLASPF:
