@@ -186,9 +186,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             ++veritestRegionCount;
                             statisticManager.updateSuccStatForRegion(key);
                             ti.setNextPC(nextInstruction);
+                            System.out.println("------------- Region was successfully veritested --------------- ");
                         } else {
-                            runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
-                        }
+                            runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key); }
                     } else
                         statisticManager.updateConcreteHitStatForRegion(key);
                 }
@@ -282,8 +282,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
          dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
 
-
-         //dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
+        /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
+         dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
 
         /*--------------- LINEARIZATION TRANSFORMATION ---------------*/
         LinearizationTransformation linearTrans = new LinearizationTransformation();

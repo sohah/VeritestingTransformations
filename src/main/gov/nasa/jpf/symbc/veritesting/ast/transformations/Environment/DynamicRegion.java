@@ -75,8 +75,14 @@ public class DynamicRegion implements Region {
      */
     public final SPFCaseList spfCaseList;
 
+    /**
+     * This holds the region greeen expression after all transformations are done.
+     */
     public final Expression regionSummary;
 
+    /**
+     * This carries the green expression under which partial evaluation will be done with SPF.
+     */
     public final Expression spfPredicateSummary;
 
     /**

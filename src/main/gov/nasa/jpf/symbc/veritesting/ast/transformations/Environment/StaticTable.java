@@ -31,33 +31,6 @@ public class StaticTable<V> extends Table<Integer, V>{
     }
 
 
-    //TODO: Soha remove this.
-/*
-
-    */
-/**
-     * Appends a postfix to each key in the table.
-     *
-     * @param unique A unquie postfix.
-     *//*
-
-
-    public void makeUniqueKey(int unique) {
-        List keys = new ArrayList(table.keySet());
-        Collections.sort(keys);
-        Collections.reverse(keys);
-        Iterator itr = keys.iterator();
-        while (itr.hasNext()) {
-            Integer key = (Integer) itr.next();
-            String varId = Integer.toString(key);
-            varId = varId.concat(Integer.toString(unique));
-            table.put(Integer.valueOf(varId), table.get(key));
-            table.remove(key);
-        }
-    }
-
-*/
-
     /**
      * Merge the table with the eateries of another table.
      */

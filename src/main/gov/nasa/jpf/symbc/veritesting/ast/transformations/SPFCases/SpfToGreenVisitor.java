@@ -4,10 +4,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.*;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
@@ -166,6 +163,9 @@ public class SpfToGreenVisitor implements AstVisitor<Expression> {
         SPFCaseList greenSPFCaseList = new SPFCaseList(greenList);
         Expression spfPredicateSummary = toGreenSinglePredicate(greenSPFCaseList);
 
+        System.out.println("\n--------------- SPFCases GREEN PREDICATE ---------------");
+        System.out.println(StmtPrintVisitor.print(spfPredicateSummary));
+
         DynamicRegion greenDynRegion = new DynamicRegion(dynRegion,
                 dynRegion.dynStmt,
                 dynRegion.spfCaseList,
@@ -178,8 +178,6 @@ public class SpfToGreenVisitor implements AstVisitor<Expression> {
     private static Expression toGreenSinglePredicate(SPFCaseList greenSPFCaseList) {
         Expression result = Operation.FALSE;
         for (SPFCaseStmt spfStmt: greenSPFCaseList.casesList) {
-            //SpfToGreenVisitor toGreenVisitor = new SpfToGreenVisitor();
-            //Expression spfStmtExpr = spfStmt.accept(toGreenVisitor);
             result = new Operation(Operation.Operator.OR, result, spfStmt.spfCondition);
         }
         return result;

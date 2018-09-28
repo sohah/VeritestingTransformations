@@ -36,7 +36,7 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
         this.ti = ti;
         if (spfCasesInstructionList == null) { // if null (no SPFCases Instructions is set) assume all possible instructions.
             this.spfCasesInstructionList = new ArrayList<>();
-            spfCasesInstructionList.add(SpfCasesInstruction.ALL);
+            this.spfCasesInstructionList.add(SpfCasesInstruction.ALL);
         } else
             this.spfCasesInstructionList = spfCasesInstructionList;
         //asserting spfCasesInstructionList has All, then it is a singleton, no other values should exist in the list.
@@ -46,7 +46,8 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(AssignmentStmt a) {
-        if (!(a.rhs instanceof ArrayRefVarExpr) && !(a.lhs instanceof ArrayRefVarExpr))
+        //SH: Dealing with arrays out of bounds here, delayed until we figure out how to do it.
+        /*if (!(a.rhs instanceof ArrayRefVarExpr) && !(a.lhs instanceof ArrayRefVarExpr))
             return new AssignmentStmt(a.lhs, a.rhs);
 
         //case where one of the sides of the assignment is arrayreference.
@@ -64,7 +65,7 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
             assert (arrayCondition != null);
             return new IfThenElseStmt(dummy, arrayCondition, a, elseStmt);
-        }
+        }*/
 
         return new AssignmentStmt(a.lhs, a.rhs);
     }
@@ -211,9 +212,8 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
     public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion, ArrayList spfCasesInstructionList) {
         SpfCasesPass1Visitor visitor = new SpfCasesPass1Visitor(ti, spfCasesInstructionList);
-        NoSkipVisitor noSkipVisitor = new NoSkipVisitor();
-        Stmt noSkipDynStmt = dynRegion.dynStmt.accept(noSkipVisitor);
-        Stmt dynStmt = noSkipDynStmt.accept(visitor);
+        Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
+
 
         System.out.println("--------------- SPFCases TRANSFORMATION 1ST PASS ---------------");
         System.out.println(StmtPrintVisitor.print(dynStmt));

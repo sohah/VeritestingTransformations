@@ -164,7 +164,11 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
                 c.rhs);
     }
 
-
+    /**
+     * This executes the second path of the SPFCases. It removes all SPFCases nodes and creates a new condition instead onto the spfCaseSet. There is still one more step that SPFCases needs to go through which is actually generating a green expression out of the spfCaseSet, this happens seperately after the green transformation is done.
+     * @param dynRegion Dynamic region for which SPFCases nodes are going to be removed from the AST and replaced with a condition onto the spfCaseSet instead.
+     * @return Dynamic Region with a new AST and spfCaseSet populated.
+     */
     public static DynamicRegion execute(DynamicRegion dynRegion) {
         SpfCasesPass2Visitor visitor = new SpfCasesPass2Visitor();
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
