@@ -4,6 +4,7 @@ import com.ibm.wala.ssa.SSAGetInstruction;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.vm.*;
@@ -54,7 +55,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
         FieldSSAVisitor visitor = new FieldSSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
         dynRegion.psm = visitor.psm;
-        return new DynamicRegion(dynRegion, stmt, new HashSet<SPFCaseStmt>(), null);
+        return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
     }
 
 

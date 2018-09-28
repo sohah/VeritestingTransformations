@@ -43,6 +43,10 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenV
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.FieldRefTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenExprVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
@@ -208,6 +212,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (!ti.isFirstStepInsn()) { // first time around
             StaticPCChoiceGenerator newCG;
             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
+            dynRegion = greenTranformationForSPFCases(dynRegion);
             if (StaticPCChoiceGenerator.getKind(instructionToExecute) == StaticPCChoiceGenerator.Kind.OTHER) {
                 newCG = new StaticSummaryChoiceGenerator(dynRegion, instructionToExecute);
             } else {
@@ -239,6 +244,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
     }
 
+    /**
+     * creates a green expression for all SPFCases of the region.
+     * @param dynRegion Dynamic Region where SPFCases needs to be transformed into a green expression
+     * @return A new dynamic region that has SPFCaseList changed to greenExpressions. It will also have greenSPFRegionSummary populated with the SPF appropriate predicate.
+     */
+    private DynamicRegion greenTranformationForSPFCases(DynamicRegion dynRegion) {
+        return SpfToGreenVisitor.execute(dynRegion);
+    }
+
 
     private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws CloneNotSupportedException, StaticRegionException {
         statisticManager.updateHitStatForRegion(key);
@@ -266,10 +280,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
 
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
-        // dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion);
+         dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
 
 
-        // dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
+         //dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
 
         /*--------------- LINEARIZATION TRANSFORMATION ---------------*/
         LinearizationTransformation linearTrans = new LinearizationTransformation();

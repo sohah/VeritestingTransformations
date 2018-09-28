@@ -1,7 +1,8 @@
-package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
+package gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases;
 
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
@@ -9,6 +10,9 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 
 
 /*
@@ -27,13 +31,13 @@ import za.ac.sun.cs.green.expr.Operation;
  * Main visitor that visits all statements and translate them to the appropriate green expression. At the point the expected statements are, assignments, composition and skip.
  */
 
-public class AstToGreenVisitor implements AstVisitor<Expression> {
+public class SpfToGreenVisitor implements AstVisitor<Expression> {
 
     ExprVisitorAdapter<Expression> eva;
     AstToGreenExprVisitor exprVisitor;
 
 
-    public AstToGreenVisitor() {
+    public SpfToGreenVisitor() {
         exprVisitor = new AstToGreenExprVisitor();
         eva = new ExprVisitorAdapter<>(exprVisitor);
     }
@@ -46,8 +50,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
 
 
     public Expression assignStmt(AssignmentStmt stmt) {
-        exprVisitor.setAssign(stmt.lhs);
-        return eva.accept(stmt.rhs);
+        return bad(stmt);
     }
 
     /**
@@ -56,35 +59,26 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
      * @return A green expression that represents the compsition statement.
      */
     public Expression compositionStmt(CompositionStmt stmt) {
-        Expression lhs = transform(stmt.s1);
-        Expression rhs = transform(stmt.s2);
-        return new Operation(Operation.Operator.AND, lhs, rhs);
+        return bad(stmt);
     }
 
     public Expression transform(Stmt stmt) {
-        assert!(stmt instanceof SkipStmt);
-        if (stmt instanceof AssignmentStmt) {
-            return assignStmt((AssignmentStmt) stmt);
-        } else if (stmt instanceof CompositionStmt) {
-            return compositionStmt((CompositionStmt) stmt);
-        } else {
-            return bad(stmt);
-        }
+        return bad(stmt);
     }
 
     @Override
     public Expression visit(SkipStmt a) {
-        return Operation.TRUE;
+        return bad(a);
     }
 
     @Override
     public Expression visit(AssignmentStmt a) {
-        return assignStmt(a);
+        return bad(a);
     }
 
     @Override
     public Expression visit(CompositionStmt a) {
-        return compositionStmt(a);
+        return bad(a);
     }
 
     @Override
@@ -94,7 +88,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
 
     @Override
     public Expression visit(SPFCaseStmt c) {
-        return bad(c);
+        return eva.accept(c.spfCondition);
     }
 
     @Override
@@ -164,29 +158,42 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
 
     public static DynamicRegion execute(DynamicRegion dynRegion){
 
-        WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynRegion.varTypeTable);
-        AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
-        Stmt noWalaVarStmt = dynRegion.dynStmt.accept(astMapVisitor);
-        FieldArrayVarToSPFVarVisitor fieldRefVisitor = new FieldArrayVarToSPFVarVisitor(dynRegion.fieldRefTypeTable);
-        astMapVisitor = new AstMapVisitor(fieldRefVisitor);
-        Stmt noRangerVarStmt = noWalaVarStmt.accept(astMapVisitor);
-        NoSkipVisitor noSkipVisitor = new NoSkipVisitor();
+        HashSet<SPFCaseStmt> greenList = new HashSet<>();
+        for(SPFCaseStmt spfCaseStmt: dynRegion.spfCaseList.casesList){
+            greenList.add(noVars(spfCaseStmt, dynRegion));
+        }
 
-        System.out.println("\n--------------- NO-SKIP OPTIMIZATION ---------------");
+        SPFCaseList greenSPFCaseList = new SPFCaseList(greenList);
+        Expression spfPredicateSummary = toGreenSinglePredicate(greenSPFCaseList);
 
-        Stmt noSkipStmt = noRangerVarStmt.accept(noSkipVisitor);
-        System.out.println(PrettyPrintVisitor.print(noSkipStmt));
-
-        System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
-        AstToGreenVisitor toGreenVisitor = new AstToGreenVisitor();
-        Expression regionSummary = noSkipStmt.accept(toGreenVisitor);
-        System.out.println(ExprUtil.AstToString(regionSummary));
         DynamicRegion greenDynRegion = new DynamicRegion(dynRegion,
                 dynRegion.dynStmt,
                 dynRegion.spfCaseList,
-                regionSummary,
-                null);
+                dynRegion.regionSummary,
+                spfPredicateSummary);
 
         return greenDynRegion;
+    }
+
+    private static Expression toGreenSinglePredicate(SPFCaseList greenSPFCaseList) {
+        Expression result = Operation.FALSE;
+        for (SPFCaseStmt spfStmt: greenSPFCaseList.casesList) {
+            //SpfToGreenVisitor toGreenVisitor = new SpfToGreenVisitor();
+            //Expression spfStmtExpr = spfStmt.accept(toGreenVisitor);
+            result = new Operation(Operation.Operator.OR, result, spfStmt.spfCondition);
+        }
+        return result;
+    }
+
+    private static SPFCaseStmt noVars(SPFCaseStmt spfCaseStmt, DynamicRegion dynRegion) {
+        WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynRegion.varTypeTable);
+        AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
+        Stmt noWalaVarStmt = spfCaseStmt.accept(astMapVisitor);
+        FieldArrayVarToSPFVarVisitor fieldRefVisitor = new FieldArrayVarToSPFVarVisitor(dynRegion.fieldRefTypeTable);
+        astMapVisitor = new AstMapVisitor(fieldRefVisitor);
+        Stmt noRangerVarStmt = noWalaVarStmt.accept(astMapVisitor);
+
+        assert(noRangerVarStmt instanceof SPFCaseStmt);
+        return (SPFCaseStmt) noRangerVarStmt;
     }
 }

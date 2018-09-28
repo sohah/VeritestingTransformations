@@ -2,8 +2,8 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
-import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
@@ -11,7 +11,6 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * This class represents a DynamicRegion, that is, a StaticRegion that has been processed dynamically, this is done initially through uniquness transformation then later with the substitution and other transformations.
@@ -74,9 +73,11 @@ public class DynamicRegion implements Region {
     /**
      * Holds all SPFCases predicates that are not statically summarized and are left for SPF to explore.
      */
-    public final HashSet<SPFCaseStmt> spfCaseSet;
+    public final SPFCaseList spfCaseList;
 
     public final Expression regionSummary;
+
+    public final Expression spfPredicateSummary;
 
     /**
      * Holds path subscript map for array references in the region
@@ -113,8 +114,9 @@ public class DynamicRegion implements Region {
 
     public DynamicRegion(DynamicRegion oldDynRegion,
                          Stmt dynStmt,
-                         HashSet<SPFCaseStmt> spfCaseSet,
-                         Expression regionSummary) {
+                         SPFCaseList spfCaseList,
+                         Expression regionSummary,
+                         Expression spfRegionSummary) {
         this.ir = oldDynRegion.ir;
         this.dynStmt = dynStmt;
         this.inputTable = new DynamicTable(
@@ -126,8 +128,9 @@ public class DynamicRegion implements Region {
         this.outputTable = oldDynRegion.outputTable;
         this.varTypeTable = oldDynRegion.varTypeTable;
         this.slotParamTable = oldDynRegion.slotParamTable;
-        this.spfCaseSet = spfCaseSet;
+        this.spfCaseList = spfCaseList;
         this.regionSummary = regionSummary;
+        this.spfPredicateSummary = spfRegionSummary;
         this.fieldRefTypeTable = oldDynRegion.fieldRefTypeTable;
         this.psm = oldDynRegion.psm;
         this.arrayPSM = oldDynRegion.arrayPSM;
@@ -147,8 +150,9 @@ public class DynamicRegion implements Region {
         this.dynStmt = dynStmt;
         this.endIns = staticRegion.endIns;
         this.isMethodRegion = staticRegion.isMethodRegion;
-        this.spfCaseSet = new HashSet<>();
+        this.spfCaseList = new SPFCaseList();
         this.regionSummary = null;
+        this.spfPredicateSummary = null;
 
         this.slotParamTable = new DynamicTable(
                 (StaticTable) staticRegion.slotParamTable,

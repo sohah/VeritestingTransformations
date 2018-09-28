@@ -49,20 +49,11 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
         Expression oldSPFCondition = spfCondition;
         spfCondition = new Operation(Operation.Operator.AND, spfCondition, a.condition);
         Stmt thenStmt = a.thenStmt.accept(this);
+        spfCondition = new Operation(Operation.Operator.AND, oldSPFCondition, new Operation(Operation.Operator.NOT, a.condition));
         Stmt elseStmt = a.elseStmt.accept(this);
         if ((thenStmt instanceof SPFCaseStmt) && (elseStmt instanceof SPFCaseStmt)){ //attempting to collapse unncessary nodes
             s = new SPFCaseStmt(oldSPFCondition, SPFCaseStmt.SPFReason.MULTIPLE);
             spfCaseSet.remove(thenStmt);
-            spfCaseSet.remove(elseStmt);
-            spfCaseSet.add((SPFCaseStmt) s);
-        }
-        else if ((thenStmt instanceof SPFCaseStmt) && (elseStmt.equals(SkipStmt.skip))){
-            s = new SPFCaseStmt(oldSPFCondition, ((SPFCaseStmt) thenStmt).reason);
-            spfCaseSet.remove(thenStmt);
-            spfCaseSet.add((SPFCaseStmt) s);
-        }
-        else if ((elseStmt instanceof SPFCaseStmt) && (thenStmt.equals(SkipStmt.skip))){
-            s = new SPFCaseStmt(oldSPFCondition, ((SPFCaseStmt) elseStmt).reason);
             spfCaseSet.remove(elseStmt);
             spfCaseSet.add((SPFCaseStmt) s);
         }
@@ -183,6 +174,6 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
 
         return new DynamicRegion(dynRegion,
                 dynStmt,
-                spfCaseSet, null);
+                new SPFCaseList(spfCaseSet), null, null);
     }
 }

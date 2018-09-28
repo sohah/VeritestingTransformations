@@ -2,41 +2,87 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases;
 
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.NoSkipVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.ArrayFields;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 
 /**
- *This is the first pass of SPFCases that creates SPFCases nodes. It assumes substitution has run. The purpose of this transformation is to provide a place holder for specific instructions to become SPFCase Statements in RangerIR.
-  */
+ * This is the first pass of SPFCases that creates SPFCases nodes. It assumes substitution has run. The purpose of this transformation is to provide a place holder for specific instructions to become SPFCase Statements in RangerIR.
+ */
+
+enum SpfCasesInstruction {
+    THROWINSTRUCTION, NEWINSTRUCTION, ARRAYINSTRUCTION, ALL
+}
 
 
 public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
     private Expression spfCondition = Operation.TRUE;
     private ThreadInfo ti;
+    private ArrayList<SpfCasesInstruction> spfCasesInstructionList;
 
-    public SpfCasesPass1Visitor(ThreadInfo ti){
+    public SpfCasesPass1Visitor(ThreadInfo ti, ArrayList spfCasesInstructionList) {
         this.ti = ti;
+        if (spfCasesInstructionList == null) { // if null (no SPFCases Instructions is set) assume all possible instructions.
+            this.spfCasesInstructionList = new ArrayList<>();
+            spfCasesInstructionList.add(SpfCasesInstruction.ALL);
+        } else
+            this.spfCasesInstructionList = spfCasesInstructionList;
+        //asserting spfCasesInstructionList has All, then it is a singleton, no other values should exist in the list.
+        assert (this.spfCasesInstructionList.contains(SpfCasesInstruction.ALL) ? this.spfCasesInstructionList.size() == 1 : true);
     }
 
 
     @Override
     public Stmt visit(AssignmentStmt a) {
+        if (!(a.rhs instanceof ArrayRefVarExpr) && !(a.lhs instanceof ArrayRefVarExpr))
+            return new AssignmentStmt(a.lhs, a.rhs);
+
+        //case where one of the sides of the assignment is arrayreference.
+        Expression arrayCondition = null;
+        if ((spfCasesInstructionList.contains(SpfCasesInstruction.ARRAYINSTRUCTION)) || (spfCasesInstructionList.contains(SpfCasesInstruction.ALL))) {
+            if (a.rhs instanceof ArrayRefVarExpr) {
+                arrayCondition = createArrayCondition((ArrayRefVarExpr) a.rhs);
+            } else if (a.lhs instanceof ArrayRefVarExpr) {
+                arrayCondition = createArrayCondition((ArrayRefVarExpr) a.lhs);
+            }
+
+            Stmt elseStmt = new SPFCaseStmt(Operation.TRUE, SPFCaseStmt.SPFReason.OUT_OF_BOUND_EXCEPTION);
+
+            SSAConditionalBranchInstruction dummy = new SSAConditionalBranchInstruction(-2, null, null, -2, -2, -2);
+
+            assert (arrayCondition != null);
+            return new IfThenElseStmt(dummy, arrayCondition, a, elseStmt);
+        }
+
         return new AssignmentStmt(a.lhs, a.rhs);
+    }
+
+    private Expression createArrayCondition(ArrayRefVarExpr arrayRefVarExpr) {
+        int arrayRef = arrayRefVarExpr.arrayRef.ref;
+        Expression arrayIndex = arrayRefVarExpr.arrayRef.index;
+        ElementInfo ei = ti.getElementInfo(arrayRef);
+        int arrayLength = ((ArrayFields) ei.getFields()).arrayLength();
+        Expression lowBoundCondition = new Operation(Operation.Operator.GE, arrayIndex, new IntConstant(0));
+        Expression upperBoundCondition = new Operation(Operation.Operator.LT, arrayIndex, new IntConstant(arrayLength));
+        Expression arrayCcondition = new Operation(Operation.Operator.AND, lowBoundCondition, upperBoundCondition);
+
+        return arrayCcondition;
     }
 
     @Override
     public Stmt visit(CompositionStmt a) {
-
         Stmt s1 = a.s1.accept(this);
         Stmt s2 = a.s2.accept(this);
         return new CompositionStmt(s1, s2);
@@ -44,7 +90,6 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
     /**
      * Used to collect the predicate under which an SPFCase needs to occur.
-     *
      */
     @Override
     public Stmt visit(IfThenElseStmt a) {
@@ -52,6 +97,7 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
         Expression oldSPFCondition = spfCondition;
         spfCondition = new Operation(Operation.Operator.AND, spfCondition, a.condition);
         Stmt thenStmt = a.thenStmt.accept(this);
+        spfCondition = new Operation(Operation.Operator.AND, oldSPFCondition, new Operation(Operation.Operator.NOT,  a.condition));
         Stmt elseStmt = a.elseStmt.accept(this);
         s = new IfThenElseStmt(a.original, a.condition, thenStmt, elseStmt);
         spfCondition = oldSPFCondition;
@@ -69,79 +115,14 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
         return c;
     }
 
-    /**
-     * An arrayLoad instruction creates an SPFCase for the OutOfBound case. Therefore the RangerIR at this point is translated to an "if" statement that hs the "arrayCondition" and non-exceptional case on the "then" side and the exceptional case on the "else" side.
-     *
-     */
     @Override
     public Stmt visit(ArrayLoadInstruction c) {
-
-        if(c.arrayref instanceof IntConstant) {
-            int arrayRef = ((IntConstant) c.arrayref).getValue();
-            ElementInfo ei = ti.getElementInfo(arrayRef);
-            int arrayLength = ((ArrayFields) ei.getFields()).arrayLength();
-            Expression lowBoundCondition = new Operation(Operation.Operator.GE, c.index, new IntConstant(0));
-            Expression upperBoundCondition = new Operation(Operation.Operator.LT, c.index, new IntConstant(arrayLength));
-
-            Expression arrayCcondition = new Operation(Operation.Operator.AND, lowBoundCondition, upperBoundCondition);
-
-            Stmt thenStmt = new ArrayLoadInstruction(c.getOriginal(),
-                    c.arrayref,
-                    c.index,
-                    c.elementType,
-                    c.def);
-
-            Stmt elseStmt = new SPFCaseStmt(Operation.TRUE, SPFCaseStmt.SPFReason.OUT_OF_BOUND_EXCEPTION);
-
-            SSAConditionalBranchInstruction dummy = new SSAConditionalBranchInstruction(-2, null, null, -2, -2, -2);
-
-            return new IfThenElseStmt(dummy, arrayCcondition, thenStmt, elseStmt);
-        }
-        else{ //arrayRef was not substitutetd - something is wrong
-            return new ArrayLoadInstruction(c.getOriginal(),
-                    c.arrayref,
-                    c.index,
-                    c.elementType,
-                    c.def);
-        }
+        return new ArrayLoadInstruction(c.getOriginal(), c.arrayref, c.index, c.elementType, c.def);
     }
-
-    /**
-     * An ArrayStore instruction creates an SPFCase for the OutOfBound case. Therefore the RangerIR at this point is translated to an "if" statement that hs the "arrayCondition" and non-exceptional case on the "then" side and the exceptional case on the "else" side.
-     *
-     */
 
     @Override
     public Stmt visit(ArrayStoreInstruction c) {
-
-        if(c.arrayref instanceof IntConstant) {
-            int arrayRef = ((IntConstant) c.arrayref).getValue();
-            ElementInfo ei = ti.getElementInfo(arrayRef);
-            int arrayLength = ((ArrayFields) ei.getFields()).arrayLength();
-            Expression lowBoundCondition = new Operation(Operation.Operator.GE, c.index, new IntConstant(0));
-            Expression upperBoundCondition = new Operation(Operation.Operator.LT, c.index, new IntConstant(arrayLength));
-
-            Expression arrayCcondition = new Operation(Operation.Operator.AND, lowBoundCondition, upperBoundCondition);
-
-            Stmt thenStmt = new ArrayStoreInstruction(c.getOriginal(),
-                    c.arrayref,
-                    c.index,
-                    c.elementType,
-                    c.assignExpr);
-
-            Stmt elseStmt = new SPFCaseStmt(Operation.TRUE, SPFCaseStmt.SPFReason.OUT_OF_BOUND_EXCEPTION);
-
-            SSAConditionalBranchInstruction dummy = new SSAConditionalBranchInstruction(-2, null, null, -2, -2, -2);
-
-            return new IfThenElseStmt(dummy, arrayCcondition, thenStmt, elseStmt);
-        }
-        else{ //arrayRef was not substitutetd - something is wrong
-            return new ArrayStoreInstruction(c.getOriginal(),
-                    c.arrayref,
-                    c.index,
-                    c.elementType,
-                    c.assignExpr);
-        }
+        return new ArrayStoreInstruction(c.getOriginal(), c.arrayref, c.index, c.elementType, c.assignExpr);
     }
 
     @Override
@@ -173,8 +154,12 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(NewInstruction c) {
-        return new SPFCaseStmt(spfCondition,
-                SPFCaseStmt.SPFReason.OBJECT_CREATION);
+        if (this.spfCasesInstructionList.contains(SpfCasesInstruction.NEWINSTRUCTION) ||
+                this.spfCasesInstructionList.contains(SpfCasesInstruction.ALL))
+            return new SPFCaseStmt(spfCondition,
+                    SPFCaseStmt.SPFReason.OBJECT_CREATION);
+        else
+            return new NewInstruction(c.getOriginal());
     }
 
     @Override
@@ -193,8 +178,12 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(ThrowInstruction c) {
-        return new SPFCaseStmt(spfCondition,
-                SPFCaseStmt.SPFReason.THROW);
+        if (this.spfCasesInstructionList.contains(SpfCasesInstruction.THROWINSTRUCTION) ||
+                this.spfCasesInstructionList.contains(SpfCasesInstruction.ALL))
+            return new SPFCaseStmt(spfCondition,
+                    SPFCaseStmt.SPFReason.THROW);
+        else
+            return new ThrowInstruction(c.getOriginal());
     }
 
     @Override
@@ -220,15 +209,17 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
                 c.rhs);
     }
 
-    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
-        SpfCasesPass1Visitor visitor = new SpfCasesPass1Visitor(ti);
-        Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
+    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion, ArrayList spfCasesInstructionList) {
+        SpfCasesPass1Visitor visitor = new SpfCasesPass1Visitor(ti, spfCasesInstructionList);
+        NoSkipVisitor noSkipVisitor = new NoSkipVisitor();
+        Stmt noSkipDynStmt = dynRegion.dynStmt.accept(noSkipVisitor);
+        Stmt dynStmt = noSkipDynStmt.accept(visitor);
 
         System.out.println("--------------- SPFCases TRANSFORMATION 1ST PASS ---------------");
         System.out.println(StmtPrintVisitor.print(dynStmt));
 
         return new DynamicRegion(dynRegion,
                 dynStmt,
-                new HashSet<>(), null);
+                new SPFCaseList(), null, null);
     }
 }

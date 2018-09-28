@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
@@ -35,7 +36,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         ArraySSAVisitor visitor = new ArraySSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
         dynRegion.arrayPSM = visitor.psm;
-        return new DynamicRegion(dynRegion, stmt, new HashSet<>(), null);
+        return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
     }
 
     @Override
