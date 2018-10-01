@@ -1,5 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 
+import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAInstructionFactory;
+import com.ibm.wala.ssa.SSAThrowInstruction;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -64,7 +67,11 @@ public class ArraySSAVisitor extends AstMapVisitor {
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
         if (exceptionalMessage != null) throw new IllegalArgumentException(exceptionalMessage);
-        else return new AssignmentStmt(c.def, rhs);
+        ElementInfo eiArray = ti.getElementInfo(arrayRef.ref);
+        int len=(eiArray.getArrayFields()).arrayLength(); // assumed concrete
+        Expression condition = new Operation(LT, arrayRef.index, new IntConstant(len));
+        ThrowInstruction throwInstruction = new ThrowInstruction(new SSAThrowInstruction(-1, 42) {});
+        return new IfThenElseStmt(null, condition, new AssignmentStmt(c.def, rhs), throwInstruction);
     }
 
     private Pair getExpression(ArrayRef c) {
