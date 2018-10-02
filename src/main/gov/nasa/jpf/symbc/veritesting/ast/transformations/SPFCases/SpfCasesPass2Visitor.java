@@ -35,12 +35,8 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
 
         Stmt s1 = a.s1.accept(this);
         Stmt s2 = a.s2.accept(this);
-        if (s1 instanceof SPFCaseStmt)
-            return s1;
-        else if (s2 instanceof SPFCaseStmt)
-            return s2;
-        else
-            return new CompositionStmt(s1, s2);
+
+        return new CompositionStmt(s1, s2);
     }
 
     @Override
@@ -51,13 +47,12 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
         Stmt thenStmt = a.thenStmt.accept(this);
         spfCondition = new Operation(Operation.Operator.AND, oldSPFCondition, new Operation(Operation.Operator.NOT, a.condition));
         Stmt elseStmt = a.elseStmt.accept(this);
-        if ((thenStmt instanceof SPFCaseStmt) && (elseStmt instanceof SPFCaseStmt)){ //attempting to collapse unncessary nodes
+        if ((thenStmt instanceof SPFCaseStmt) && (elseStmt instanceof SPFCaseStmt)) { //attempting to collapse unncessary nodes
             s = new SPFCaseStmt(oldSPFCondition, SPFCaseStmt.SPFReason.MULTIPLE);
             spfCaseSet.remove(thenStmt);
             spfCaseSet.remove(elseStmt);
             spfCaseSet.add((SPFCaseStmt) s);
-        }
-        else if (thenStmt instanceof SPFCaseStmt)
+        } else if (thenStmt instanceof SPFCaseStmt)
             s = elseStmt;
         else if (elseStmt instanceof SPFCaseStmt)
             s = thenStmt;
@@ -166,6 +161,7 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
 
     /**
      * This executes the second path of the SPFCases. It removes all SPFCases nodes and creates a new condition instead onto the spfCaseSet. There is still one more step that SPFCases needs to go through which is actually generating a green expression out of the spfCaseSet, this happens seperately after the green transformation is done.
+     *
      * @param dynRegion Dynamic region for which SPFCases nodes are going to be removed from the AST and replaced with a condition onto the spfCaseSet instead.
      * @return Dynamic Region with a new AST and spfCaseSet populated.
      */
