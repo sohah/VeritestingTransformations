@@ -103,7 +103,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (conf.hasValue("veritestingMode")) {
             veritestingMode = conf.getInt("veritestingMode");
             runMode = (veritestingMode == 4) ?
-                    VeritestingMode.SPFCASES : (veritestingMode == 3) ? VeritestingMode.HIGHORDER: VeritestingMode.VERITESTING;
+                    VeritestingMode.SPFCASES :( (veritestingMode == 3) ? VeritestingMode.HIGHORDER: VeritestingMode.VERITESTING);
 
             switch (runMode) {
                 case VANILLASPF:
