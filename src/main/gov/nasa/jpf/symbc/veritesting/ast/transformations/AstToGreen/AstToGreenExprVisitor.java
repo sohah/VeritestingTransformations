@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUseVisit;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
@@ -27,7 +24,7 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGree
  * This is a visitor class that Translate expression in RangerIR to te appropriate Green expression.
  */
 
-public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
+public class    AstToGreenExprVisitor implements ExprVisitor<Expression> {
 
     Expression toAssign;
     Expression currentCondition;
@@ -89,6 +86,11 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
     @Override
     public Expression visit(GammaVarExpr expr) {
         return ite(expr.condition, (Expression) expr.thenExpr, (Expression) expr.elseExpr);
+    }
+
+    @Override
+    public Expression visit(AstVarExpr expr) {
+        return bad(expr);
     }
 
     /**

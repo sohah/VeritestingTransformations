@@ -1,6 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprIdVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
@@ -247,10 +249,10 @@ Similar things can be done for SPF Cases.
 
  */
 
-    public ReturnResult analyze(Stmt stmt) {
+    public StaticRegion analyze(StaticRegion region) {
         System.out.println("Region prior to removeEarlyReturns: " +
-                PrettyPrintVisitor.print(stmt));
-        ReturnResult stmtResult = doStmt(new ReturnResult(stmt));
+                PrettyPrintVisitor.print(region.staticStmt));
+        ReturnResult stmtResult = doStmt(new ReturnResult(region.staticStmt));
         AstVarExpr assignVarExpr = new AstVarExpr("~earlyReturnResult", "UNKNOWN");
         AstVarExpr erOccurredExpr = new AstVarExpr("~earlyReturnOccurred", "BOOL");
         Stmt resultStmt =
@@ -259,14 +261,22 @@ Similar things can be done for SPF Cases.
                             new AssignmentStmt(assignVarExpr, stmtResult.assign),
                             new AssignmentStmt(erOccurredExpr, stmtResult.condition)));
         System.out.println("Region after removeEarlyReturns: " +
-                PrettyPrintVisitor.print(stmt));
-        ReturnResult finalResult = new ReturnResult(resultStmt, stmtResult);
-        return finalResult;
+                PrettyPrintVisitor.print(resultStmt));
+        // VarTypeTable varTypeTable = new VarTypeTable(region.varTypeTable);
+
+        // MWW TODO: need to add in types and new vars somewhere.
+        // MWW TODO: Current type table is from integers; this is not the way to do it.
+        StaticRegion resultRegion = new StaticRegion(resultStmt,
+                region.ir, region.slotParamTable, region.outputTable, region.endIns,
+                region.isMethodRegion, region.inputTable, region.varTypeTable);
+
+        return resultRegion;
     }
 
-    public static Stmt removeEarlyReturns(Stmt stmt) {
+    public static StaticRegion removeEarlyReturns(StaticRegion region) {
         RemoveEarlyReturns rer = new RemoveEarlyReturns();
-        ReturnResult result = rer.analyze(stmt);
-        return result.stmt;
+        StaticRegion result = rer.analyze(region);
+        return result;
     }
+
 }

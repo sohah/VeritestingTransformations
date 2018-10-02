@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
@@ -90,5 +87,10 @@ public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
         return new GammaVarExpr(eva.accept(expr.condition),
                 eva.accept(expr.thenExpr),
                 eva.accept(expr.elseExpr));
+    }
+
+    @Override
+    public Expression visit(AstVarExpr expr) {
+        return createGreenVar(expr.type, expr.getName());
     }
 }
