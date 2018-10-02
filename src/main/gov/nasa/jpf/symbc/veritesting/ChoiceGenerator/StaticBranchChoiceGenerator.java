@@ -40,7 +40,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             System.out.println("\n=========Executing static region choice in BranchCG");
             nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion());
         } else if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
-            System.out.println("\n=========Executing then/else choice.  Instruction: ");
+            System.out.println("\n=========Executing"+  (choice==THEN_CHOICE? " then ": " else ") +".  Instruction: ");
             switch (getKind(instructionToExecute)) {
                 case UNARYIF:
                     nextInstruction = executeUnaryIf(instructionToExecute, choice);
@@ -89,6 +89,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
             assert pc != null;
             assert(choice == THEN_CHOICE || choice == ELSE_CHOICE);
+
 
             if (choice == ELSE_CHOICE) {
                 Comparator byteCodeOp = SpfUtil.getComparator(instruction);
@@ -198,8 +199,8 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         }
 
        setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
-       setPC(createPC(pc, new Operation(Operation.Operator.NOT, region.regionSummary), region.spfPredicateSummary), THEN_CHOICE);
-       setPC(createPC(pc, new Operation(Operation.Operator.NOT, region.regionSummary), region.spfPredicateSummary), ELSE_CHOICE);
+       setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
+       setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
         // TODO: create the path predicate for the 'return' case.
     }
 

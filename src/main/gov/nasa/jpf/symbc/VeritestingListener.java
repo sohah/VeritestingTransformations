@@ -97,7 +97,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public enum VeritestingMode {VANILLASPF, //not effective yet
         VERITESTING, HIGHORDER, SPFCASES}
 
-    private VeritestingMode runMode;
+    private static VeritestingMode runMode;
 
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
@@ -338,7 +338,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             return true;
         } else {
-            throw new StaticRegionException("Path condition is unsat, no region is created.");
+            if(runMode==VeritestingMode.SPFCASES){
+                ti.getVM().getSystemState().setIgnored(true);
+            }
+            else
+
+                throw new StaticRegionException("Path condition is unsat, no region is created.");
+                return false;
         }
     }
 
