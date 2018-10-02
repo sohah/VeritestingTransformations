@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 
+import com.ibm.wala.ssa.SSAThrowInstruction;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -18,6 +19,7 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
 import static za.ac.sun.cs.green.expr.Operation.Operator.*;
 
 public class ArraySSAVisitor extends AstMapVisitor {
+    private static int arrayExceptionNumber = 4242  ;
     private DynamicRegion dynRegion;
     private ArraySubscriptMap psm;
     private ThreadInfo ti;
@@ -44,8 +46,12 @@ public class ArraySSAVisitor extends AstMapVisitor {
         String exceptionalMessage = null;
         Expression rhs = null;
         String type = null;
+        Stmt assignStmt = null;
         ArrayRef arrayRef = ArrayRef.makeArrayRef(c);
         if (c.arrayref instanceof IntConstant) {
+            if (arrayRef.ref == 0) {
+                return getThrowInstruction();
+            }
             if (psm.lookup(arrayRef) != null) {
                 rhs = new ArrayRefVarExpr(arrayRef, psm.lookup(arrayRef));
                 if (dynRegion.fieldRefTypeTable.lookup(rhs) != null)
@@ -64,7 +70,25 @@ public class ArraySSAVisitor extends AstMapVisitor {
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
         if (exceptionalMessage != null) throw new IllegalArgumentException(exceptionalMessage);
-        else return new AssignmentStmt(c.def, rhs);
+        assignStmt = new AssignmentStmt(c.def, rhs);
+        return getIfThenElseStmt(arrayRef, assignStmt);
+    }
+
+    private Stmt getIfThenElseStmt(ArrayRef arrayRef, Stmt assignStmt) {
+        int len = ti.getElementInfo(arrayRef.ref).getArrayFields().arrayLength();
+        Expression arrayOutOfBoundsCond = new Operation(AND,
+                new Operation(LT, arrayRef.index, new IntConstant(len)),
+                new Operation(GE, arrayRef.index, new IntConstant(0)));
+        return new IfThenElseStmt(null, arrayOutOfBoundsCond, assignStmt, getThrowInstruction());
+    }
+
+    public static Stmt getThrowInstruction() {
+        return new ThrowInstruction(new SSAThrowInstruction(-1, nextArrayExceptionNumber()) {});
+    }
+
+    public static int nextArrayExceptionNumber() {
+        ++arrayExceptionNumber;
+        return arrayExceptionNumber;
     }
 
     private Pair getExpression(ArrayRef c) {
@@ -145,8 +169,11 @@ public class ArraySSAVisitor extends AstMapVisitor {
             throw new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor");
         else {
             ArrayRef arrayRef = ArrayRef.makeArrayRef(putIns);
+            if (arrayRef.ref == 0) {
+                return getThrowInstruction();
+            }
             ArrayRefVarExpr arrayRefVarExpr = new ArrayRefVarExpr(arrayRef, createSubscript(arrayRef));
-            AssignmentStmt assignStmt = new AssignmentStmt(arrayRefVarExpr, putIns.assignExpr);
+            Stmt assignStmt = new AssignmentStmt(arrayRefVarExpr, putIns.assignExpr);
             String type = null;
             if (WalaVarExpr.class.isInstance(putIns.assignExpr)) {
                 if (dynRegion.varTypeTable.lookup(putIns.assignExpr) != null) {
@@ -163,7 +190,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             }
             if (type != null)
                 dynRegion.fieldRefTypeTable.add(arrayRefVarExpr.clone(), type);
-            return assignStmt;
+            return getIfThenElseStmt(arrayRef, assignStmt);
         }
     }
 
