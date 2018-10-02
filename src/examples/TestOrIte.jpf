@@ -1,5 +1,5 @@
 target=TestOrIte
-veritestRegionExpectedCount = 2
+veritestRegionExpectedCount = 3
 # Classes that wish to test a veritesting region can populate the expected value of
 # VeritestingListener.veritestRegionCount in this variable. TestVeritesting will assert
 # VeritestingListener.veritestRegionCount to be equal to veritestRegionExpectedCount
@@ -17,11 +17,6 @@ symbolic.debug=false
 symbolic.method=TestVeritesting.testHarness(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 symbolic.dp=z3bitvector
 
-#symbolic.min_int=-1
-#symbolic.max_int=2
-
-symbolic.min_int=-15
-symbolic.max_int=16
 
 #symbolic.min_int=-2147483648
 #symbolic.max_int=2147483647
@@ -29,5 +24,5 @@ symbolic.min_double=-100.0
 symbolic.max_double=100.0
 listener = .symbc.VeritestingListener
 #listener = .symbc.SymbolicListener
-veritestingMode = 3
+veritestingMode = 1
 symbolic.lazy = true

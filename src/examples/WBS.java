@@ -17,6 +17,7 @@
  */
 
 
+import com.ibm.wala.cast.tree.pattern.Alt;
 import gov.nasa.jpf.symbc.Debug;
 import gov.nasa.jpf.vm.Verify;
 
@@ -27,12 +28,26 @@ public class WBS {
 	private int WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE; 
 	private int WBS_Node_WBS_BSCU_rlt_PRE1; 
 	private int WBS_Node_WBS_rlt_PRE2;
-	
+//	boolean WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6; //10
+
 	//Outputs
 	private int Nor_Pressure;
 	private int Alt_Pressure;
 	private int Sys_Mode;
-	
+
+	@Override
+	public boolean equals(Object obj) {
+		if (WBS.class.isInstance(obj)) {
+			WBS o = (WBS) obj;
+			return (Nor_Pressure == o.Nor_Pressure) && (Alt_Pressure == o.Alt_Pressure) && (Sys_Mode == o.Sys_Mode) &&
+					(WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE == o.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE) &&
+					(WBS_Node_WBS_BSCU_rlt_PRE1 == o.WBS_Node_WBS_BSCU_rlt_PRE1) &&
+					(WBS_Node_WBS_rlt_PRE2 == o.WBS_Node_WBS_rlt_PRE2);// &&
+//					(WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6 == o.WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6);
+		}
+		return false;
+	}
+
 	public WBS() {
 		WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE = 0;	
 		WBS_Node_WBS_BSCU_rlt_PRE1 = 0;
@@ -99,7 +114,7 @@ public class WBS {
 		//Debug.printPC("PC @fter(AutoBrake && WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator) [Region 2] = ");
 
 
-	   WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6 = ((((!(WBS_Node_WBS_BSCU_Unit_Delay1 == 0)) && 
+	   WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6 = ((((!(WBS_Node_WBS_BSCU_Unit_Delay1 == 0)) &&
 	         (WBS_Node_WBS_Unit_Delay2 <= 0)) && 
 	         WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator) || 
 	         (!WBS_Node_WBS_BSCU_Command_Is_Normal_Relational_Operator));
@@ -120,7 +135,7 @@ public class WBS {
 
 
 	   if (WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6) {
-	      WBS_Node_WBS_Green_Pump_IsolationValve_Switch = 0; 
+	      WBS_Node_WBS_Green_Pump_IsolationValve_Switch = 0;
 	   }  else { 
 	      WBS_Node_WBS_Green_Pump_IsolationValve_Switch = 5; 
 	    }
@@ -282,6 +297,7 @@ public class WBS {
 	   WBS_Node_WBS_BSCU_rlt_PRE1 = WBS_Node_WBS_BSCU_Switch2; 
 
 	   WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE = Sys_Mode;
+//	   WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE += WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6 ? 1 : 0;
 
 		// Assertions added by MWW: these are the truth values for "my" version of the model - may not be true for this code, but should be
 		// consistent between SPF and Veritest-SPF.
@@ -313,7 +329,7 @@ public class WBS {
 		WBS wbs = new WBS();
 		wbs.update(pedal1, auto1, skid1);
 		wbs.update(pedal2, auto2, skid2);
-		//wbs.update(pedal3, auto3, skid3);
+		wbs.update(pedal3, auto3, skid3);
 	}
 	
 	public static void main(String[] args) {

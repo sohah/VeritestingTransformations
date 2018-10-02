@@ -33,6 +33,12 @@ public class ExprIdVisitor implements ExprVisitor<Expression> {
     @Override public Expression visit(FieldRefVarExpr expr) {
         return expr;
     }
+
+    @Override
+    public Expression visit(ArrayRefVarExpr expr) {
+        return expr;
+    }
+
     @Override public Expression visit(GammaVarExpr expr) { return expr; }
     @Override public Expression visit(IfThenElseExpr expr) { return expr; }
 }

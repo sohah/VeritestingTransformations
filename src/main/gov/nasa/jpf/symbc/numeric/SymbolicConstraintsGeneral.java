@@ -37,6 +37,7 @@
 
 package gov.nasa.jpf.symbc.numeric;
 
+import java.io.*;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -62,169 +63,163 @@ import java.util.Map.Entry;
 // types come in and out of each particular dp !!!!!!!!!!!!!!!
 
 public class SymbolicConstraintsGeneral {
-	  protected ProblemGeneral pb;
-	  protected Boolean result; // tells whether result is satisfiable or not
-	  
-	public boolean isSatisfiable(final PathCondition pc) {
-        long t0 = System.nanoTime();
-		if (pc == null || pc.count == 0) {
-			if (SymbolicInstructionFactory.debugMode)
-				System.out.println("## Warning: empty path condition");
-			return true;
-		}
+    protected ProblemGeneral pb;
+    protected Boolean result; // tells whether result is satisfiable or not
 
-		if (pc.count() > SymbolicInstructionFactory.maxPcLength) {
-		    System.out.println("## Warning: Path condition exceeds symbolic.max_pc_length=" +
-				       SymbolicInstructionFactory.maxPcLength + ".  Pretending it is unsatisfiable.");
-		    return false;
-		}
-		if (SymbolicInstructionFactory.maxPcMSec > 0 && System.currentTimeMillis() - SymbolicInstructionFactory.startSystemMillis > SymbolicInstructionFactory.maxPcMSec) {
-		    System.out.println("## Warning: Exploration time exceeds symbolic.max_pc_msec=" +
-				       SymbolicInstructionFactory.maxPcMSec + ".  Pretending all paths are unsatisfiable.");
-		    return false;
-		}
+    public boolean isSatisfiable(final PathCondition pc) {
+        long t0 = System.nanoTime();
+        if (pc == null || pc.count == 0) {
+            if (SymbolicInstructionFactory.debugMode)
+                System.out.println("## Warning: empty path condition");
+            return true;
+        }
+
+        if (pc.count() > SymbolicInstructionFactory.maxPcLength) {
+            System.out.println("## Warning: Path condition exceeds symbolic.max_pc_length=" +
+                    SymbolicInstructionFactory.maxPcLength + ".  Pretending it is unsatisfiable.");
+            return false;
+        }
+        if (SymbolicInstructionFactory.maxPcMSec > 0 && System.currentTimeMillis() - SymbolicInstructionFactory.startSystemMillis > SymbolicInstructionFactory.maxPcMSec) {
+            System.out.println("## Warning: Exploration time exceeds symbolic.max_pc_msec=" +
+                    SymbolicInstructionFactory.maxPcMSec + ".  Pretending all paths are unsatisfiable.");
+            return false;
+        }
 
 //		if (SymbolicInstructionFactory.debugMode)
 //			System.out.println("checking: PC "+pc);
 
 
-
-		final String[] dp = SymbolicInstructionFactory.dp;
-		if(dp == null) { // default: use choco
-			pb = new ProblemChoco();
-		} else if(dp[0].equalsIgnoreCase("choco")){
-			pb = new ProblemChoco();
+        final String[] dp = SymbolicInstructionFactory.dp;
+        if (dp == null) { // default: use choco
+            pb = new ProblemChoco();
+        } else if (dp[0].equalsIgnoreCase("choco")) {
+            pb = new ProblemChoco();
 //		} else if(dp[0].equalsIgnoreCase("choco2")){
 //			pb = new ProblemChoco2();
-    } else if(dp[0].equalsIgnoreCase("coral")){
-      pb = new ProblemCoral();
-    } else if(dp[0].equalsIgnoreCase("dreal")){
-      // Added for dReal by Nima
-      pb = ProblemDReal.createInstance(new Config(new String[]{}));
-    }
-		else if(dp[0].equalsIgnoreCase("iasolver")){
-			pb = new ProblemIAsolver();
-		} else if(dp[0].equalsIgnoreCase("cvc3")){
-			pb = new ProblemCVC3();
-		} else if (dp[0].equalsIgnoreCase("cvc3bitvec")) {
-			pb = new ProblemCVC3BitVector();
-		} else if (dp[0].equalsIgnoreCase("yices")) {
-	    	pb = new ProblemYices();
-		} else if(dp[0].equalsIgnoreCase("z3")){
-			pb = new ProblemZ3();
-		} else if(dp[0].equalsIgnoreCase("z3inc")){
-	        pb = new ProblemZ3Incremental();
-		}  else if(dp[0].equalsIgnoreCase("z3bitvectorinc")){
-          pb = new ProblemZ3BitVectorIncremental();
+        } else if (dp[0].equalsIgnoreCase("coral")) {
+            pb = new ProblemCoral();
+        } else if (dp[0].equalsIgnoreCase("dreal")) {
+            // Added for dReal by Nima
+            pb = ProblemDReal.createInstance(new Config(new String[]{}));
+        } else if (dp[0].equalsIgnoreCase("iasolver")) {
+            pb = new ProblemIAsolver();
+        } else if (dp[0].equalsIgnoreCase("cvc3")) {
+            pb = new ProblemCVC3();
+        } else if (dp[0].equalsIgnoreCase("cvc3bitvec")) {
+            pb = new ProblemCVC3BitVector();
+        } else if (dp[0].equalsIgnoreCase("yices")) {
+            pb = new ProblemYices();
+        } else if (dp[0].equalsIgnoreCase("z3")) {
+            pb = new ProblemZ3();
+        } else if (dp[0].equalsIgnoreCase("z3inc")) {
+            pb = new ProblemZ3Incremental();
+        } else if (dp[0].equalsIgnoreCase("z3bitvectorinc")) {
+            pb = new ProblemZ3BitVectorIncremental();
         } else if (dp[0].equalsIgnoreCase("debug")) {
-			pb = new DebugSolvers(pc);
-		} else if (dp[0].equalsIgnoreCase("compare")){
-			pb = new ProblemCompare(pc, this);
-		} else if (dp[0].equalsIgnoreCase("z3bitvector")){
-			pb = new ProblemZ3BitVector();
-		}
-		
-		
-		
-		// added option to have no-solving
-		// as a result symbolic execution will explore an over-approximation of the program paths
-		// equivalent to a CFG analysis
-		else if (dp[0].equalsIgnoreCase("no_solver")) {
-			return true;
-		}
-		else
-			throw new RuntimeException("## Error: unknown decision procedure symbolic.dp="+dp[0]+
-					"\n(use choco or IAsolver or CVC3)");
-
-		VeritestingListener.solverAllocTime += (System.nanoTime() - t0);
-		long t1 = System.nanoTime();
-		pb = PCParser.parse(pc,pb);
-		VeritestingListener.parseTime += (System.nanoTime() - t1);
-		if(pb==null)
-			result = Boolean.FALSE;
-		else
-			result = pb.solve();
-
-		if (SymbolicInstructionFactory.debugMode)
-			System.out.println("numeric PC: " + pc + " -> " + result+"\n");
-		
-		if (SymbolicInstructionFactory.regressMode) {
-			String output = "##NUMERIC PC: ";
-			output = output + (result == Boolean.TRUE ? "(SOLVED)" : "(UNSOLVED)");
-			output = output + " " + pc;
-			System.out.println(output);
-		}
-
-		if(result == null) {
-			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) "+pc);
-			return false;
-		}
-		if (result == Boolean.TRUE) {
-			return true;
-		}
-		else {
-			return false;
-		}
+            pb = new DebugSolvers(pc);
+        } else if (dp[0].equalsIgnoreCase("compare")) {
+            pb = new ProblemCompare(pc, this);
+        } else if (dp[0].equalsIgnoreCase("z3bitvector")) {
+            pb = new ProblemZ3BitVector();
+        }
 
 
-	}
+        // added option to have no-solving
+        // as a result symbolic execution will explore an over-approximation of the program paths
+        // equivalent to a CFG analysis
+        else if (dp[0].equalsIgnoreCase("no_solver")) {
+            return true;
+        } else
+            throw new RuntimeException("## Error: unknown decision procedure symbolic.dp=" + dp[0] +
+                    "\n(use choco or IAsolver or CVC3)");
 
-	public boolean isSatisfiableGreen(final PathCondition pc) {
-		if (pc == null || pc.count == 0) {
-			if (SymbolicInstructionFactory.debugMode)
-				System.out.println("## Warning: empty path condition");
-			return true;
-		}
-		result = pc.solve();
+        VeritestingListener.solverAllocTime += (System.nanoTime() - t0);
+        long t1 = System.nanoTime();
+        pb = PCParser.parse(pc, pb);
+        VeritestingListener.parseTime += (System.nanoTime() - t1);
+        if (pb == null)
+            result = Boolean.FALSE;
+        else
+            result = pb.solve();
 
-		if (SymbolicInstructionFactory.debugMode)
-			System.out.println(" --> " + pc + " -> " + result);
+        if (SymbolicInstructionFactory.debugMode)
+            System.out.println("numeric PC: " + pc + " -> " + result + "\n");
 
-		if(result == null) {
-			System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) "+pc);
-			return false;
-		}
-		if (result == Boolean.TRUE) {
-			return true;
-		}
-		else {
-			return false;
-		}
+        if (SymbolicInstructionFactory.regressMode) {
+            String output = "##NUMERIC PC: ";
+            output = output + (result == Boolean.TRUE ? "(SOLVED)" : "(UNSOLVED)");
+            output = output + " " + pc;
+            System.out.println(output);
+        }
 
-
-	}
-	
-	
-   public void cleanup () {
-	   if(pb instanceof ProblemCVC3) {
-		   ((ProblemCVC3) pb).cleanup();
-	   } else if (pb instanceof ProblemCoral) {
-		   ((ProblemCoral) pb).cleanup();
-	   } else if (pb instanceof ProblemZ3) {
-		   ((ProblemZ3) pb).cleanup();
-	   } else if (pb instanceof ProblemZ3BitVector) {
-		   ((ProblemZ3BitVector) pb).cleanup();
-	   }
-   }
+        if (result == null) {
+            System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) " + pc);
+            return false;
+        }
+        if (result == Boolean.TRUE) {
+            return true;
+        } else {
+            return false;
+        }
 
 
-	public boolean solve(final PathCondition pc) {
-		//if (SymbolicInstructionFactory.debugMode)
-			//System.out.println("solving: PC " + pc);
+    }
+
+    public boolean isSatisfiableGreen(final PathCondition pc) {
+        if (pc == null || pc.count == 0) {
+            if (SymbolicInstructionFactory.debugMode)
+                System.out.println("## Warning: empty path condition");
+            return true;
+        }
+        result = pc.solve();
+
+        if (SymbolicInstructionFactory.debugMode)
+            System.out.println(" --> " + pc + " -> " + result);
+
+        if (result == null) {
+            System.out.println("## Warning: timed out/ don't know (returned PC not-satisfiable) " + pc);
+            return false;
+        }
+        if (result == Boolean.TRUE) {
+            return true;
+        } else {
+            return false;
+        }
 
 
-		if (pc == null || pc.count == 0) return true;
+    }
 
-		final String[] dp = SymbolicInstructionFactory.dp;
-		if (dp[0].equalsIgnoreCase("no_solver"))
-			return true;
 
-		if(isSatisfiable(pc)) {
+    public void cleanup() {
+        if (pb instanceof ProblemCVC3) {
+            ((ProblemCVC3) pb).cleanup();
+        } else if (pb instanceof ProblemCoral) {
+            ((ProblemCoral) pb).cleanup();
+        } else if (pb instanceof ProblemZ3) {
+            ((ProblemZ3) pb).cleanup();
+        } else if (pb instanceof ProblemZ3BitVector) {
+            ((ProblemZ3BitVector) pb).cleanup();
+        }
+    }
 
-			// compute solutions for real variables:
-			Set<Entry<SymbolicReal,Object>> sym_realvar_mappings = PCParser.symRealVar.entrySet();
-			Iterator<Entry<SymbolicReal,Object>> i_real = sym_realvar_mappings.iterator();
-			// first set inf / sup values
+
+    public boolean solve(final PathCondition pc) {
+        //if (SymbolicInstructionFactory.debugMode)
+        //System.out.println("solving: PC " + pc);
+
+
+        if (pc == null || pc.count == 0) return true;
+
+        final String[] dp = SymbolicInstructionFactory.dp;
+        if (dp[0].equalsIgnoreCase("no_solver"))
+            return true;
+
+        if (isSatisfiable(pc)) {
+
+            // compute solutions for real variables:
+            Set<Entry<SymbolicReal, Object>> sym_realvar_mappings = PCParser.symRealVar.entrySet();
+            Iterator<Entry<SymbolicReal, Object>> i_real = sym_realvar_mappings.iterator();
+            // first set inf / sup values
 //			while(i_real.hasNext()) {
 //				Entry<SymbolicReal,Object> e = i_real.next();
 //				SymbolicReal pcVar = e.getKey();
@@ -233,32 +228,32 @@ public class SymbolicConstraintsGeneral {
 //				pcVar.solution_sup=pb.getRealValueSup(dpVar);
 //			}
 
-			try{
-				sym_realvar_mappings = PCParser.symRealVar.entrySet();
-				i_real = sym_realvar_mappings.iterator();
-				while(i_real.hasNext()) {
-					final Entry<SymbolicReal,Object> e = i_real.next();
-					final SymbolicReal pcVar = e.getKey();
-					final Object dpVar = e.getValue();
-					pcVar.solution=pb.getRealValue(dpVar); // may be undefined: throws an exception
-				}
-			} catch (final Exception exp) {
-				this.catchBody(PCParser.symRealVar, pb, pc);
-			} // end catch
+            try {
+                sym_realvar_mappings = PCParser.symRealVar.entrySet();
+                i_real = sym_realvar_mappings.iterator();
+                while (i_real.hasNext()) {
+                    final Entry<SymbolicReal, Object> e = i_real.next();
+                    final SymbolicReal pcVar = e.getKey();
+                    final Object dpVar = e.getValue();
+                    pcVar.solution = pb.getRealValue(dpVar); // may be undefined: throws an exception
+                }
+            } catch (final Exception exp) {
+                this.catchBody(PCParser.symRealVar, pb, pc);
+            } // end catch
 
 
-			// compute solutions for integer variables
-			final Set<Entry<SymbolicInteger,Object>> sym_intvar_mappings = PCParser.symIntegerVar.entrySet();
-			final Iterator<Entry<SymbolicInteger,Object>> i_int = sym_intvar_mappings.iterator();
-			//try {
-				while(i_int.hasNext()) {
-					final Entry<SymbolicInteger,Object> e =  i_int.next();
-					e.getKey().solution=pb.getIntValue(e.getValue());
+            // compute solutions for integer variables
+            final Set<Entry<SymbolicInteger, Object>> sym_intvar_mappings = PCParser.symIntegerVar.entrySet();
+            final Iterator<Entry<SymbolicInteger, Object>> i_int = sym_intvar_mappings.iterator();
+            //try {
+            while (i_int.hasNext()) {
+                final Entry<SymbolicInteger, Object> e = i_int.next();
+                e.getKey().solution = pb.getIntValue(e.getValue());
 
-				}
-			//}
-				/*
-			catch (Exception exp) {
+            }
+            //}
+                /*
+            catch (Exception exp) {
 				Boolean isSolvable = true;
 				sym_intvar_mappings = symIntegerVar.entrySet();
 				i_int = sym_intvar_mappings.iterator();
@@ -280,31 +275,30 @@ public class SymbolicConstraintsGeneral {
 					System.err.println("# Warning: PC "+pc.stringPC()+" is solvable but could not find the solution!");
 			} // end catch
 */
-			cleanup();
-			return true;
-		}
-		else
-			return false;
-		}
+            cleanup();
+            return true;
+        } else
+            return false;
+    }
 
     public Map<String, Object> solveWithSolution(PathCondition pc) {
-		//if (SymbolicInstructionFactory.debugMode)
-			//System.out.println("solving: PC " + pc);
+        //if (SymbolicInstructionFactory.debugMode)
+        //System.out.println("solving: PC " + pc);
         Map<String, Object> result = new HashMap<String, Object>();
 
 
-		if (pc == null || pc.count == 0) return result;
+        if (pc == null || pc.count == 0) return result;
 
-		String[] dp = SymbolicInstructionFactory.dp;
-		if (dp[0].equalsIgnoreCase("no_solver"))
-			return result;
+        String[] dp = SymbolicInstructionFactory.dp;
+        if (dp[0].equalsIgnoreCase("no_solver"))
+            return result;
 
-		if(isSatisfiable(pc)) {
+        if (isSatisfiable(pc)) {
 
-			// compute solutions for real variables:
-			Set<Entry<SymbolicReal,Object>> sym_realvar_mappings = PCParser.symRealVar.entrySet();
-			Iterator<Entry<SymbolicReal,Object>> i_real = sym_realvar_mappings.iterator();
-			// first set inf / sup values
+            // compute solutions for real variables:
+            Set<Entry<SymbolicReal, Object>> sym_realvar_mappings = PCParser.symRealVar.entrySet();
+            Iterator<Entry<SymbolicReal, Object>> i_real = sym_realvar_mappings.iterator();
+            // first set inf / sup values
 //			while(i_real.hasNext()) {
 //				Entry<SymbolicReal,Object> e = i_real.next();
 //				SymbolicReal pcVar = e.getKey();
@@ -313,34 +307,34 @@ public class SymbolicConstraintsGeneral {
 //				pcVar.solution_sup=pb.getRealValueSup(dpVar);
 //			}
 
-			try{
-				sym_realvar_mappings = PCParser.symRealVar.entrySet();
-				i_real = sym_realvar_mappings.iterator();
-				while(i_real.hasNext()) {
-					Entry<SymbolicReal,Object> e = i_real.next();
-					SymbolicReal pcVar = e.getKey();
-					Object dpVar = e.getValue();
+            try {
+                sym_realvar_mappings = PCParser.symRealVar.entrySet();
+                i_real = sym_realvar_mappings.iterator();
+                while (i_real.hasNext()) {
+                    Entry<SymbolicReal, Object> e = i_real.next();
+                    SymbolicReal pcVar = e.getKey();
+                    Object dpVar = e.getValue();
                     double e_value = pb.getRealValue(dpVar);
-					pcVar.solution=e_value; // may be undefined: throws an exception
+                    pcVar.solution = e_value; // may be undefined: throws an exception
                     result.put(pcVar.getName(), e_value);
-				}
-			} catch (Exception exp) {
-				this.catchBody(PCParser.symRealVar, pb, pc);
-			} // end catch
+                }
+            } catch (Exception exp) {
+                this.catchBody(PCParser.symRealVar, pb, pc);
+            } // end catch
 
 
-			// compute solutions for integer variables
-			Set<Entry<SymbolicInteger,Object>> sym_intvar_mappings = PCParser.symIntegerVar.entrySet();
-			Iterator<Entry<SymbolicInteger,Object>> i_int = sym_intvar_mappings.iterator();
-			//try {
-				while(i_int.hasNext()) {
-					Entry<SymbolicInteger,Object> e =  i_int.next();
-                    long e_value = pb.getIntValue(e.getValue());
-					e.getKey().solution=e_value;
-                    result.put(e.getKey().getName(), e_value);
+            // compute solutions for integer variables
+            Set<Entry<SymbolicInteger, Object>> sym_intvar_mappings = PCParser.symIntegerVar.entrySet();
+            Iterator<Entry<SymbolicInteger, Object>> i_int = sym_intvar_mappings.iterator();
+            //try {
+            while (i_int.hasNext()) {
+                Entry<SymbolicInteger, Object> e = i_int.next();
+                long e_value = pb.getIntValue(e.getValue());
+                e.getKey().solution = e_value;
+                result.put(e.getKey().getName(), e_value);
 
-				}
-			//}
+            }
+            //}
 				/*
 			catch (Exception exp) {
 				Boolean isSolvable = true;
@@ -364,56 +358,55 @@ public class SymbolicConstraintsGeneral {
 					System.err.println("# Warning: PC "+pc.stringPC()+" is solvable but could not find the solution!");
 			} // end catch
 */
-			cleanup();
-			return result;
-		}
-		else
-			return result;
+            cleanup();
+            return result;
+        } else
+            return result;
     }
 
-	/**
-	 * The "ProblemCompare" solver calls this to
-	 * deal with yices and choco refinements of
-	 * solution ranges.
-	 */
-	public Map<SymbolicReal, Object> catchBody(final Map<SymbolicReal, Object> realVars, final ProblemGeneral prob, final PathCondition pc) {
-		Set<Entry<SymbolicReal, Object>> sym_realvar_mappings;
-		Iterator<Entry<SymbolicReal, Object>> i_real;
+    /**
+     * The "ProblemCompare" solver calls this to
+     * deal with yices and choco refinements of
+     * solution ranges.
+     */
+    public Map<SymbolicReal, Object> catchBody(final Map<SymbolicReal, Object> realVars, final ProblemGeneral prob, final PathCondition pc) {
+        Set<Entry<SymbolicReal, Object>> sym_realvar_mappings;
+        Iterator<Entry<SymbolicReal, Object>> i_real;
 
-		// For each variable Xi:
-		// Choose a value Vi for Xi from its range
-		// Add "Xi == Vi" to the Choco problem
-		// Solve the problem to get new ranges of values for the remaining
-		// variables.
+        // For each variable Xi:
+        // Choose a value Vi for Xi from its range
+        // Add "Xi == Vi" to the Choco problem
+        // Solve the problem to get new ranges of values for the remaining
+        // variables.
 
-		final Boolean isSolvable = true;
-		sym_realvar_mappings = realVars.entrySet();
-		i_real = sym_realvar_mappings.iterator();
+        final Boolean isSolvable = true;
+        sym_realvar_mappings = realVars.entrySet();
+        i_real = sym_realvar_mappings.iterator();
 
-		while (i_real.hasNext() && isSolvable) {
-			final Entry<SymbolicReal, Object> e = i_real.next();
-			final SymbolicReal pcVar = e.getKey();
-			final Object dpVar = e.getValue();
+        while (i_real.hasNext() && isSolvable) {
+            final Entry<SymbolicReal, Object> e = i_real.next();
+            final SymbolicReal pcVar = e.getKey();
+            final Object dpVar = e.getValue();
 
-			// Note: using solution_inf or solution_sup alone sometimes fails
-			// because of floating point inaccuracies
-			// trick to get a better value: cast to float?
-			pcVar.solution =  prob.getRealValueInf(dpVar);
-				//(prob.getRealValueInf(dpVar) + prob
-					//.getRealValueSup(dpVar)) / 2;
-			// (float)pcVar.solution_inf;
-			//prob.post(prob.eq(dpVar, pcVar.solution));
-			//isSolvable = prob.solve();
-			//if (isSolvable == null)
-				//isSolvable = Boolean.FALSE;
+            // Note: using solution_inf or solution_sup alone sometimes fails
+            // because of floating point inaccuracies
+            // trick to get a better value: cast to float?
+            pcVar.solution = prob.getRealValueInf(dpVar);
+            //(prob.getRealValueInf(dpVar) + prob
+            //.getRealValueSup(dpVar)) / 2;
+            // (float)pcVar.solution_inf;
+            //prob.post(prob.eq(dpVar, pcVar.solution));
+            //isSolvable = prob.solve();
+            //if (isSolvable == null)
+            //isSolvable = Boolean.FALSE;
 
-		}
-		if (!isSolvable) {
-			System.out.println("# Warning: PC " //+ pc.stringPC()
-					+ " is solvable but could not find the solution!");
-			return null; // alert debugSolver to not bother checking this result
-		} else {
-			return realVars;
-		}
-	}
+        }
+        if (!isSolvable) {
+            System.out.println("# Warning: PC " //+ pc.stringPC()
+                    + " is solvable but could not find the solution!");
+            return null; // alert debugSolver to not bother checking this result
+        } else {
+            return realVars;
+        }
+    }
 }

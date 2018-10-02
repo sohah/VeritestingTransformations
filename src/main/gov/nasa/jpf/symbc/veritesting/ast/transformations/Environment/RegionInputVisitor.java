@@ -22,10 +22,11 @@ public class RegionInputVisitor extends AstMapVisitor{
 
     @Override
     public Stmt visit(AssignmentStmt a) {
-        exprRegionInputVisitor.defUseVisit = DEF;
-        eva.accept(a.lhs);
         exprRegionInputVisitor.defUseVisit = USE;
         eva.accept(a.rhs);
+
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(a.lhs);
         return null;
     }
 
@@ -58,11 +59,11 @@ public class RegionInputVisitor extends AstMapVisitor{
 
     @Override
     public Stmt visit(ArrayLoadInstruction c) {
-        exprRegionInputVisitor.defUseVisit = DEF;
-        eva.accept(c.def);
         exprRegionInputVisitor.defUseVisit = USE;
         eva.accept(c.arrayref);
         eva.accept(c.index);
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.def);
         return null;
     }
 
@@ -89,10 +90,11 @@ public class RegionInputVisitor extends AstMapVisitor{
 
     @Override
     public Stmt visit(GetInstruction c) {
-        exprRegionInputVisitor.defUseVisit = DEF;
-        eva.accept(c.def);
         exprRegionInputVisitor.defUseVisit = USE;
         eva.accept(c.ref);
+
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.def);
         return null;
     }
 
@@ -111,26 +113,27 @@ public class RegionInputVisitor extends AstMapVisitor{
 
     @Override
     public Stmt visit(InvokeInstruction c) {
+        exprRegionInputVisitor.defUseVisit = USE;
+        Expression [] params = new Expression [c.params.length];
+        for (int i=0; i < params.length; i++) {
+            params[i] = eva.accept(c.params[i]);
+        }
         exprRegionInputVisitor.defUseVisit = DEF;
         Expression [] result = new Expression [c.result.length];
         for (int i=0; i < result.length; i++) {
             result[i] = eva.accept(c.result[i]);
         }
 
-        exprRegionInputVisitor.defUseVisit = USE;
-        Expression [] params = new Expression [c.params.length];
-        for (int i=0; i < params.length; i++) {
-            params[i] = eva.accept(c.params[i]);
-        }
         return null;
     }
 
     @Override
     public Stmt visit(ArrayLengthInstruction c) {
-        exprRegionInputVisitor.defUseVisit = DEF;
-        eva.accept(c.def);
         exprRegionInputVisitor.defUseVisit = USE;
         eva.accept(c.arrayref);
+
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.def);
         return null;
     }
 
@@ -141,31 +144,34 @@ public class RegionInputVisitor extends AstMapVisitor{
 
     @Override
     public Stmt visit(CheckCastInstruction c) {
-        exprRegionInputVisitor.defUseVisit = DEF;
-        eva.accept(c.result);
         exprRegionInputVisitor.defUseVisit = USE;
         eva.accept(c.val);
+
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.result);
         return null;
     }
 
     @Override
     public Stmt visit(InstanceOfInstruction c) {
-        exprRegionInputVisitor.defUseVisit = DEF;
-        eva.accept(c.result);
         exprRegionInputVisitor.defUseVisit = USE;
         eva.accept(c.val);
+
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.result);
         return null;
     }
 
     @Override
     public Stmt visit(PhiInstruction c) {
-        exprRegionInputVisitor.defUseVisit = DEF;
-        eva.accept(c.def);
         exprRegionInputVisitor.defUseVisit = USE;
         Expression [] rhs = new Expression[c.rhs.length];
         for (int i=0; i < rhs.length; i++) {
             rhs[i] = eva.accept(c.rhs[i]);
         }
+
+        exprRegionInputVisitor.defUseVisit = DEF;
+        eva.accept(c.def);
 
         return null;
     }

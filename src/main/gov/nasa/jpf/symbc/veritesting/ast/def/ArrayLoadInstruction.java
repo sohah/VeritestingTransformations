@@ -44,6 +44,6 @@ public class ArrayLoadInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return "\n" + def + " = "+ arrayref + "[" + index+":"+elementType +"]";
+        return "" + def + " = "+ arrayref + "[" + index+":"+elementType +"]";
     }
 }

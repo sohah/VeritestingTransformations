@@ -1,6 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
+import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
+import com.ibm.wala.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import za.ac.sun.cs.green.expr.*;
@@ -108,6 +110,36 @@ public class SSAUtil {
                 convertOperator((IConditionalBranchInstruction.Operator)cond.getOperator()),
                 convertWalaVar(ir, cond.getUse(0)),
                 convertWalaVar(ir, cond.getUse(1)));
+    }
+
+    /**
+     * Translate a binary operation to the appropriate Green operator.
+     * @param op Wala operation
+     * @return Equivalent Green operator
+     */
+    public static Operation.Operator translateBinaryOp(IBinaryOpInstruction.Operator op) {
+        switch (op) {
+            case ADD: return Operation.Operator.ADD;
+            case SUB: return Operation.Operator.SUB;
+            case MUL: return Operation.Operator.MUL;
+            case DIV: return Operation.Operator.DIV;
+            case REM: return Operation.Operator.MOD;
+            case AND: return Operation.Operator.BIT_AND;
+            case OR: return Operation.Operator.BIT_OR;
+            case XOR: return Operation.Operator.BIT_XOR;
+        }
+        throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
+    }
+
+    /**
+     * Translates a unary operation in Wala to its corresponding Green operator.
+     *
+     */
+    public static Operation.Operator translateUnaryOp(IUnaryOpInstruction.Operator op) {
+        switch(op) {
+            case NEG: return Operation.Operator.NEG;
+        }
+        throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateUnaryOp");
     }
 
 }

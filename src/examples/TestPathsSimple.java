@@ -79,6 +79,7 @@ public class TestPathsSimple {
     return y;
   }
 
+    // Vaibhav: Added as equivalence-check in TestAndIte.java
     public static int mwwTestAndIte(boolean x, boolean y, int a) {
         if (x && y) {
             a = a + 1;
@@ -88,6 +89,7 @@ public class TestPathsSimple {
         return a;
     }
 
+    // // Vaibhav: Added as equivalence-check in TestOrIte.java
     public static int mwwTestOrIte(boolean x, boolean y, int a) {
         if (x || y) {
             a = a + 1;
@@ -97,6 +99,7 @@ public class TestPathsSimple {
         return a;
     }
 
+    // Vaibhav: Added as equivalence-check in TestComplexCondition1.java
     public static int mwwTestComplexCondition1(boolean w, boolean x, boolean y, boolean z, int a) {
         if ((w && x) || (y && z)) {
             a = a + 1;

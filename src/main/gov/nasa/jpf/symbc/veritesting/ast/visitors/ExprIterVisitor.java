@@ -68,6 +68,11 @@ public class ExprIterVisitor<T> implements ExprVisitor<T> {
     }
 
     @Override
+    public T visit(ArrayRefVarExpr expr) {
+        return defaultVal;
+    }
+
+    @Override
     public T visit(GammaVarExpr expr) {
         return combine.apply(eva.accept(expr.condition),
                 combine.apply(eva.accept(expr.thenExpr),

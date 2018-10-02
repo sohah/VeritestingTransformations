@@ -67,6 +67,11 @@ public class ExprMapVisitor implements ExprVisitor<Expression> {
     }
 
     @Override
+    public Expression visit(ArrayRefVarExpr expr) {
+        return expr;
+    }
+
+    @Override
     public Expression visit(GammaVarExpr expr) {
         return new GammaVarExpr(eva.accept(expr.condition),
                 eva.accept(expr.thenExpr),

@@ -1,5 +1,6 @@
 public class HigherOrder2 extends TestRegionBaseClass {
-    int testFunction(int in0) {
+    Outputs testFunction(int in0, int in1, int in2, int in3, int in4, int in5,
+                     boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5) {
         return simpleRegion(in0);
     }
     public static int staticMethod2(int x) {
@@ -23,11 +24,14 @@ public class HigherOrder2 extends TestRegionBaseClass {
 
 
 
-    public int simpleRegion(int x) {
+    public Outputs simpleRegion(int x) {
         int val = -1;
         if (x != 0)
             val = staticMethod1(x );
-        return val;
+        Outputs o = new Outputs();
+        o.intOutputs = new int[1];
+        o.intOutputs[0] = val;
+        return o;
     }
 
     public static void main(String[] args) {

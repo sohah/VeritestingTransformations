@@ -3,11 +3,10 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.DefUseVisit;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
@@ -65,12 +64,11 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
     }
 
     public Expression transform(Stmt stmt) {
+        assert!(stmt instanceof SkipStmt);
         if (stmt instanceof AssignmentStmt) {
             return assignStmt((AssignmentStmt) stmt);
         } else if (stmt instanceof CompositionStmt) {
             return compositionStmt((CompositionStmt) stmt);
-        } else if (stmt instanceof SkipStmt) {
-            return Operation.TRUE;
         } else {
             return bad(stmt);
         }
@@ -166,17 +164,30 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         return bad(c);
     }
 
-    public static Expression execute(DynamicRegion dynamicRegion){
+    public static DynamicRegion execute(DynamicRegion dynRegion){
+
+        WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynRegion.varTypeTable);
+        AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
+        Stmt noWalaVarStmt = dynRegion.dynStmt.accept(astMapVisitor);
+        FieldArrayVarToSPFVarVisitor fieldRefVisitor = new FieldArrayVarToSPFVarVisitor(dynRegion.fieldRefTypeTable);
+        astMapVisitor = new AstMapVisitor(fieldRefVisitor);
+        Stmt noRangerVarStmt = noWalaVarStmt.accept(astMapVisitor);
+        NoSkipVisitor noSkipVisitor = new NoSkipVisitor();
+
+        System.out.println("\n--------------- NO-SKIP OPTIMIZATION ---------------");
+
+        Stmt noSkipStmt = noRangerVarStmt.accept(noSkipVisitor);
+        System.out.println(PrettyPrintVisitor.print(noSkipStmt));
 
         System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
-        WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynamicRegion.varTypeTable);
-        AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
-        Stmt noWalaVarStmt = dynamicRegion.dynStmt.accept(astMapVisitor);
-
         AstToGreenVisitor toGreenVisitor = new AstToGreenVisitor();
-        Expression regionSummary = noWalaVarStmt.accept(toGreenVisitor);
-
+        Expression regionSummary = noSkipStmt.accept(toGreenVisitor);
         System.out.println(ExprUtil.AstToString(regionSummary));
-        return regionSummary;
+        DynamicRegion greenDynRegion = new DynamicRegion(dynRegion,
+                dynRegion.dynStmt,
+                dynRegion.spfCaseSet,
+                regionSummary);
+
+        return greenDynRegion;
     }
 }

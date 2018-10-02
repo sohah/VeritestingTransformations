@@ -2,10 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
 import gov.nasa.jpf.symbc.numeric.GreenToSPFTranslator;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.IntVariable;
-import za.ac.sun.cs.green.expr.Operation;
-import za.ac.sun.cs.green.expr.RealVariable;
+import za.ac.sun.cs.green.expr.*;
 
 /**
  * A utility class that provides some methods from SPF to Green and vise versa.
@@ -59,16 +56,28 @@ public class ExprUtil {
      * @return A Green variable.
      */
     public static Expression createGreenVar(String type, String varId) {
-            switch (type) {
-                case "double":
-                case "float":
-                case "long":
-                    return new RealVariable(varId, Double.MIN_VALUE, Double.MAX_VALUE);
-                case "int":
-                case "short":
-                case "boolean":
-                default: //considered here an object reference
-                    return new IntVariable(varId, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            }
+        switch (type) {
+            case "double":
+            case "float":
+            case "long":
+                return new RealVariable(varId, Double.MIN_VALUE, Double.MAX_VALUE);
+            case "int":
+            case "short":
+            case "boolean":
+            default: //considered here an object reference
+                return new IntVariable(varId, Integer.MIN_VALUE, Integer.MAX_VALUE);
         }
     }
+
+    public static boolean isConstant(Expression expr) {
+        return  IntConstant.class.isInstance(expr) || RealConstant.class.isInstance(expr);
+    }
+
+    public static String getConstantType(Expression expr) {
+        assert isConstant(expr);
+        if (IntConstant.class.isInstance(expr)) return "int";
+        if (RealConstant.class.isInstance(expr)) return "real";
+        return null;
+    }
+
+}

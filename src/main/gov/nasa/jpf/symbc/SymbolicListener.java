@@ -22,6 +22,8 @@ package gov.nasa.jpf.symbc;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DynamicElementInfo;
@@ -68,6 +70,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.solverCount;
 
 
 public class SymbolicListener extends PropertyListenerAdapter implements PublisherExtension {
@@ -81,6 +84,7 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
     private String currentMethodName = "";
 
 	public SymbolicListener(Config conf, JPF jpf) {
+		StatisticManager.veritestingRunning = false;
 		jpf.addPublisherExtension(ConsolePublisher.class, this);
 		allSummaries = new HashMap<String, MethodSummary>();
 	}
@@ -170,7 +174,19 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	}
 	
 	
-	
+	@Override
+	public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute){
+
+
+		MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+		String className = methodInfo.getClassName();
+		String methodName = methodInfo.getName();
+		String methodSignature = methodInfo.getSignature();
+		int offset = instructionToExecute.getPosition();
+		String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+
+		StatisticManager.instructionToExec = key;
+	}
 
 	@Override
 	 public void instructionExecuted(VM vm, ThreadInfo currentThread, Instruction nextInstruction, Instruction executedInstruction) {
@@ -633,7 +649,9 @@ public class SymbolicListener extends PropertyListenerAdapter implements Publish
 	    	MethodSummary methodSummary = (MethodSummary)me.getValue();
 	    	printMethodSummaryHTML(pw, methodSummary);
 	    }
-	    
+	    publisher.publishTopicStart("Veritesting Statistics");
+		  pw.println("Total Solver Queries Count = " + solverCount);
+
 	  }
 
 	  protected class MethodSummary{
