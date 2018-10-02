@@ -60,6 +60,9 @@ public class FieldArrayVarToSPFVarVisitor implements ExprVisitor<Expression> {
     }
 
     @Override
+    public Expression visit(AstVarExpr expr) { return expr; }
+
+    @Override
     public Expression visit(IfThenElseExpr expr) {
         return new IfThenElseExpr(eva.accept(expr.condition),
                 eva.accept(expr.thenExpr),

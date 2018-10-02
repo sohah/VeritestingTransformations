@@ -121,7 +121,6 @@ public class    AstToGreenExprVisitor implements ExprVisitor<Expression> {
         return bad(expr);
     }
 
-    @Override
     public Expression visit(ArrayRefVarExpr expr) {
         return bad(expr);
     }

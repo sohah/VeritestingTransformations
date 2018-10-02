@@ -80,6 +80,8 @@ public class SymbCondVisitor implements ExprVisitor<Expression> {
         return null;
     }
 
+    @Override
+    public Expression visit(AstVarExpr expr) { return null; }
 
     @Override
     public Expression visit(Operation expr) {

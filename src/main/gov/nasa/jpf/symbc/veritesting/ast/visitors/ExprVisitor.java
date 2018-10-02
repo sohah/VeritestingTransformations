@@ -17,7 +17,7 @@ public interface ExprVisitor<T> {
     public T visit(StringConstantGreen expr);
     public T visit(StringVariable expr);
     public T visit(IfThenElseExpr expr);
-
+    public T visit(ArrayRefVarExpr expr);
     public T visit(WalaVarExpr expr);
     public T visit(FieldRefVarExpr expr);
     public T visit(GammaVarExpr expr);
