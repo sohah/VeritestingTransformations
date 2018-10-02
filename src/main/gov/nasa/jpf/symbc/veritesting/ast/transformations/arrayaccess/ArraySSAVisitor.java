@@ -1,7 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 
-import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SSAThrowInstruction;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
@@ -21,6 +19,7 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
 import static za.ac.sun.cs.green.expr.Operation.Operator.*;
 
 public class ArraySSAVisitor extends AstMapVisitor {
+    private static int arrayExceptionNumber = 4242  ;
     private DynamicRegion dynRegion;
     private ArraySubscriptMap psm;
     private ThreadInfo ti;
@@ -67,11 +66,25 @@ public class ArraySSAVisitor extends AstMapVisitor {
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
         if (exceptionalMessage != null) throw new IllegalArgumentException(exceptionalMessage);
-        ElementInfo eiArray = ti.getElementInfo(arrayRef.ref);
-        int len=(eiArray.getArrayFields()).arrayLength(); // assumed concrete
+        AssignmentStmt assignStmt = new AssignmentStmt(c.def, rhs);
+        return getIfThenElseStmt(arrayRef, assignStmt);
+    }
+
+    private Stmt getIfThenElseStmt(ArrayRef arrayRef, AssignmentStmt assignStmt) {
+        int len = ti.getElementInfo(arrayRef.ref).getArrayFields().arrayLength();
         Expression condition = new Operation(LT, arrayRef.index, new IntConstant(len));
-        ThrowInstruction throwInstruction = new ThrowInstruction(new SSAThrowInstruction(-1, 42) {});
-        return new IfThenElseStmt(null, condition, new AssignmentStmt(c.def, rhs), throwInstruction);
+        ThrowInstruction throwStmt = new ThrowInstruction(new SSAThrowInstruction(-1, nextArrayExceptionNumber()) {
+            @Override
+            public int getException() {
+                return super.getException();
+            }
+        });
+        return new IfThenElseStmt(null, condition, assignStmt, throwStmt);
+    }
+
+    public static int nextArrayExceptionNumber() {
+        ++arrayExceptionNumber;
+        return arrayExceptionNumber;
     }
 
     private Pair getExpression(ArrayRef c) {
@@ -170,7 +183,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             }
             if (type != null)
                 dynRegion.fieldRefTypeTable.add(arrayRefVarExpr.clone(), type);
-            return assignStmt;
+            return getIfThenElseStmt(arrayRef, assignStmt);
         }
     }
 
