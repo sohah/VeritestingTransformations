@@ -9,12 +9,11 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SymbCondVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Invariants.LocalOutputInvariantVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.Expression;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * A class that represents a Static Region. That is a region that has been statically analyzed but has not been instantiated yet.
@@ -141,9 +140,9 @@ public class StaticRegion implements Region {
             AssignmentStmt assignmentStmt = (AssignmentStmt) ((CompositionStmt) staticStmt).s2;
             if ((assignmentStmt.rhs instanceof GammaVarExpr) && (outputTable.table.size() == 0)) {
                 throw new StaticRegionException("static region with gamma expression cannot have no local outputs");
-
             }
         }
+        LocalOutputInvariantVisitor.execute(this);
     }
 
     /**
