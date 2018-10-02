@@ -46,8 +46,12 @@ public class ArraySSAVisitor extends AstMapVisitor {
         String exceptionalMessage = null;
         Expression rhs = null;
         String type = null;
+        Stmt assignStmt = null;
         ArrayRef arrayRef = ArrayRef.makeArrayRef(c);
         if (c.arrayref instanceof IntConstant) {
+            if (arrayRef.ref == 0) {
+                return getThrowInstruction();
+            }
             if (psm.lookup(arrayRef) != null) {
                 rhs = new ArrayRefVarExpr(arrayRef, psm.lookup(arrayRef));
                 if (dynRegion.fieldRefTypeTable.lookup(rhs) != null)
@@ -66,20 +70,20 @@ public class ArraySSAVisitor extends AstMapVisitor {
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
         if (exceptionalMessage != null) throw new IllegalArgumentException(exceptionalMessage);
-        AssignmentStmt assignStmt = new AssignmentStmt(c.def, rhs);
+        assignStmt = new AssignmentStmt(c.def, rhs);
         return getIfThenElseStmt(arrayRef, assignStmt);
     }
 
-    private Stmt getIfThenElseStmt(ArrayRef arrayRef, AssignmentStmt assignStmt) {
+    private Stmt getIfThenElseStmt(ArrayRef arrayRef, Stmt assignStmt) {
         int len = ti.getElementInfo(arrayRef.ref).getArrayFields().arrayLength();
-        Expression condition = new Operation(LT, arrayRef.index, new IntConstant(len));
-        ThrowInstruction throwStmt = new ThrowInstruction(new SSAThrowInstruction(-1, nextArrayExceptionNumber()) {
-            @Override
-            public int getException() {
-                return super.getException();
-            }
-        });
-        return new IfThenElseStmt(null, condition, assignStmt, throwStmt);
+        Expression arrayOutOfBoundsCond = new Operation(AND,
+                new Operation(LT, arrayRef.index, new IntConstant(len)),
+                new Operation(GE, arrayRef.index, new IntConstant(0)));
+        return new IfThenElseStmt(null, arrayOutOfBoundsCond, assignStmt, getThrowInstruction());
+    }
+
+    public static Stmt getThrowInstruction() {
+        return new ThrowInstruction(new SSAThrowInstruction(-1, nextArrayExceptionNumber()) {});
     }
 
     public static int nextArrayExceptionNumber() {
@@ -165,8 +169,11 @@ public class ArraySSAVisitor extends AstMapVisitor {
             throw new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor");
         else {
             ArrayRef arrayRef = ArrayRef.makeArrayRef(putIns);
+            if (arrayRef.ref == 0) {
+                return getThrowInstruction();
+            }
             ArrayRefVarExpr arrayRefVarExpr = new ArrayRefVarExpr(arrayRef, createSubscript(arrayRef));
-            AssignmentStmt assignStmt = new AssignmentStmt(arrayRefVarExpr, putIns.assignExpr);
+            Stmt assignStmt = new AssignmentStmt(arrayRefVarExpr, putIns.assignExpr);
             String type = null;
             if (WalaVarExpr.class.isInstance(putIns.assignExpr)) {
                 if (dynRegion.varTypeTable.lookup(putIns.assignExpr) != null) {
