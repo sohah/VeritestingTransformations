@@ -59,7 +59,18 @@ public class StaticRegion implements Region {
      */
     public final VarTypeTable varTypeTable;
 
-    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock currentBlock) throws StaticRegionException {
+    /**
+     * @param staticStmt: Ranger IR statement that summarizes this static region
+     * @param ir: Wala IR for the method which contains this StaticRegion
+     * @param isMethodRegion: boolean value that if true indicates that this StaticRegion is for a method summary
+     * @param endIns: Ending instruction's bytecode offset for this static region
+     * @param startingBlock: if given, startingBlock is used for constructing definitions for variables used in the
+     *                     condition of the staticStmt, if the StaticRegion is for a multi-path region.
+     *                     startingBlock should correspond to the beginning block of the region.
+     *                     If unavailable, it can be given a null value.
+     * @throws StaticRegionException
+     */
+    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock startingBlock) throws StaticRegionException {
 
         this.ir = ir;
         this.isMethodRegion = isMethodRegion;
@@ -88,8 +99,8 @@ public class StaticRegion implements Region {
             if (symbCondVisitor.stackSlotNotFound) {
                 StaticRegionException sre = new StaticRegionException("region contains condition that cannot be instantiated");
                 SSACFG cfg = ir.getControlFlowGraph();
-                if (currentBlock == null) throw sre;
-                ISSABasicBlock bb = currentBlock;
+                if (startingBlock == null) throw sre;
+                ISSABasicBlock bb = startingBlock;
                 boolean foundStoppingInsn = false;
                 while (symbCondVisitor.noStackSlotVars.size() > 0 && !foundStoppingInsn) {
                     for (SSAInstruction ins : bb) {

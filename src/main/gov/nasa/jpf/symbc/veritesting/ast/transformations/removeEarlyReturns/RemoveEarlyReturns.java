@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
@@ -249,7 +250,7 @@ Similar things can be done for SPF Cases.
 
  */
 
-    public StaticRegion analyze(StaticRegion region) {
+    public StaticRegion analyze(StaticRegion region) throws StaticRegionException {
         System.out.println("Region prior to removeEarlyReturns: " +
                 PrettyPrintVisitor.print(region.staticStmt));
         ReturnResult stmtResult = doStmt(new ReturnResult(region.staticStmt));
@@ -266,14 +267,12 @@ Similar things can be done for SPF Cases.
 
         // MWW TODO: need to add in types and new vars somewhere.
         // MWW TODO: Current type table is from integers; this is not the way to do it.
-        StaticRegion resultRegion = new StaticRegion(resultStmt,
-                region.ir, region.slotParamTable, region.outputTable, region.endIns,
-                region.isMethodRegion, region.inputTable, region.varTypeTable);
+        StaticRegion resultRegion = new StaticRegion(resultStmt, region.ir, region.isMethodRegion, region.endIns, null);
 
         return resultRegion;
     }
 
-    public static StaticRegion removeEarlyReturns(StaticRegion region) {
+    public static StaticRegion removeEarlyReturns(StaticRegion region) throws StaticRegionException {
         RemoveEarlyReturns rer = new RemoveEarlyReturns();
         StaticRegion result = rer.analyze(region);
         return result;
