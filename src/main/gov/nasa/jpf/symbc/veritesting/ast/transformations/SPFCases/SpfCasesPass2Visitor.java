@@ -18,11 +18,7 @@ import java.util.HashSet;
 
 public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
     private Expression spfCondition = Operation.TRUE;
-    private static final HashSet<SPFCaseStmt> spfCaseSet = new HashSet<>();
-
-    public SpfCasesPass2Visitor() {
-        spfCaseSet.clear();
-    }
+    private final HashSet<SPFCaseStmt> spfCaseSet = new HashSet<>();
 
 
     @Override
@@ -36,10 +32,18 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
         Stmt s1 = a.s1.accept(this);
         Stmt s2 = a.s2.accept(this);
 
+        if ((s1 instanceof SPFCaseStmt) && (s2 instanceof SPFCaseStmt)){
+            spfCaseSet.remove(s1);
+            spfCaseSet.remove(s2);
+            SPFCaseStmt stmt = new SPFCaseStmt(spfCondition, SPFCaseStmt.SPFReason.MULTIPLE);
+            spfCaseSet.add(stmt);
+            return stmt;
+        }
+
         if (s1 instanceof SPFCaseStmt)
-            return s2;
-        else if (s2 instanceof SPFCaseStmt)
             return s1;
+        else if (s2 instanceof SPFCaseStmt)
+            return s2;
         else
             return new CompositionStmt(s1, s2);
     }
@@ -179,6 +183,6 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
 
         return new DynamicRegion(dynRegion,
                 dynStmt,
-                new SPFCaseList(spfCaseSet), null, null);
+                new SPFCaseList(visitor.spfCaseSet), null, null);
     }
 }
