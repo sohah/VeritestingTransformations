@@ -114,7 +114,7 @@ public class StaticRegion implements Region {
                     }
                     Iterator itr = cfg.getPredNodes(bb);
                     if (cfg.getPredNodeCount(bb) != 1) foundStoppingInsn = true;
-                    bb = (ISSABasicBlock) itr.next();
+                    else bb = (ISSABasicBlock) itr.next();
                 }
                 if (symbCondVisitor.noStackSlotVars.size() > 0) {
                     throw sre;
@@ -128,7 +128,7 @@ public class StaticRegion implements Region {
             firstDef = regionBoundary.getSecond().getFirst();
             lastDef = regionBoundary.getSecond().getSecond();
 
-            lastVar = ((lastDef != null) && (lastDef > lastUse)) ? lastDef: lastUse;
+            lastVar = (lastDef != null) && (lastUse == null) ? lastDef : ((lastDef == null) && (lastUse != null) ? lastUse : (lastDef > lastUse ? lastDef: lastUse));
             ((SlotParamTable) slotParamTable).filterTableForBoundary(staticStmt, new Pair<>(firstUse, lastVar));
             varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastVar));
         }

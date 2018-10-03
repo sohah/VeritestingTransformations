@@ -21,10 +21,10 @@ public class FieldRef {
     }
 
     public static FieldRef makeGetFieldRef(ThreadInfo ti, GetInstruction getIns) {
-        if (!(getIns.ref instanceof IntConstant))
+        if (!(getIns.ref instanceof IntConstant) && !getIns.getOriginal().isStatic())
             throw new IllegalArgumentException("cannot make FieldRef for symbolic object reference");
         // getIns.ref contains object reference whereas putIns.def contains object reference
-        int ref = ((IntConstant)getIns.ref).getValue();
+        int ref = getIns.getOriginal().isStatic() ? -1 : ((IntConstant)getIns.ref).getValue();
         String fieldName = getIns.field.getName().toString();
         String className = getIns.getOriginal().isStatic() ?
                 getIns.field.getDeclaringClass().getName().getClassName().toString():
@@ -33,9 +33,9 @@ public class FieldRef {
     }
 
     public static FieldRef makePutFieldRef(ThreadInfo ti, PutInstruction putIns) {
-        if (!(putIns.def instanceof IntConstant))
+        if (!(putIns.def instanceof IntConstant) && !putIns.getOriginal().isStatic())
             throw new IllegalArgumentException("cannot make FieldRef for symbolic object reference");
-        int ref = ((IntConstant)putIns.def).getValue();
+        int ref = putIns.getOriginal().isStatic() ? -1 : ((IntConstant)putIns.def).getValue();
         String fieldName = putIns.field.getName().toString();
         String className = putIns.getOriginal().isStatic() ?
                 putIns.field.getDeclaringClass().getName().getClassName().toString():
