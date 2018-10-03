@@ -45,7 +45,6 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOut
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
@@ -94,8 +93,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static StatisticManager statisticManager = new StatisticManager();
     private static int veritestRegionExpectedCount = -1;
 
-    public enum VeritestingMode {VANILLASPF, //not effective yet
-        VERITESTING, HIGHORDER, SPFCASES}
+    public enum VeritestingMode {
+        VANILLASPF, //not effective yet
+        VERITESTING, HIGHORDER, SPFCASES
+    }
 
     private static VeritestingMode runMode;
 
@@ -103,7 +104,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (conf.hasValue("veritestingMode")) {
             veritestingMode = conf.getInt("veritestingMode");
             runMode = (veritestingMode == 4) ?
-                    VeritestingMode.SPFCASES :( (veritestingMode == 3) ? VeritestingMode.HIGHORDER: VeritestingMode.VERITESTING);
+                    VeritestingMode.SPFCASES : ((veritestingMode == 3) ? VeritestingMode.HIGHORDER : VeritestingMode.VERITESTING);
 
             switch (runMode) {
                 case VANILLASPF:
@@ -184,20 +185,22 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
                             Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
                             ++veritestRegionCount;
-                            statisticManager.updateSuccStatForRegion(key);
                             ti.setNextPC(nextInstruction);
+                            statisticManager.updateVeriSuccForRegion(key);
+
                             System.out.println("------------- Region was successfully veritested --------------- ");
                         } else {
-                            runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key); }
+                            runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
+                        }
                     } else
                         statisticManager.updateConcreteHitStatForRegion(key);
                 }
             } catch (IllegalArgumentException e) {
-                statisticManager.updateFailStatForRegion(key, e.getMessage());
+                statisticManager.updateSPFHitForRegion(key, e.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
                 return;
             } catch (StaticRegionException sre) {
-                statisticManager.updateFailStatForRegion(key, sre.getMessage());
+                statisticManager.updateSPFHitForRegion(key, sre.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
                 return;
             } catch (CloneNotSupportedException e) {
@@ -235,10 +238,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     System.out.println(sre.toString());
                     return;
                 }
-                if(choice ==0){ //static or veritesting choice
-                    ++veritestRegionCount;
-                    statisticManager.updateSuccStatForRegion(key);
-                }
+
                 ti.setNextPC(nextInstruction);
             }
         }
@@ -246,6 +246,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     /**
      * creates a green expression for all SPFCases of the region.
+     *
      * @param dynRegion Dynamic Region where SPFCases needs to be transformed into a green expression
      * @return A new dynamic region that has SPFCaseList changed to greenExpressions. It will also have greenSPFRegionSummary populated with the SPF appropriate predicate.
      */
@@ -255,7 +256,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
     private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws CloneNotSupportedException, StaticRegionException {
-        statisticManager.updateHitStatForRegion(key);
         System.out.println("\n---------- STARTING Transformations for conditional region: " + key +
                 "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
         staticRegion.slotParamTable.print();
@@ -280,10 +280,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
 
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
-         dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
+        dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
 
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
-         dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
+        dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
 
         /*--------------- LINEARIZATION TRANSFORMATION ---------------*/
         LinearizationTransformation linearTrans = new LinearizationTransformation();
@@ -338,13 +338,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             return true;
         } else {
-            if(runMode==VeritestingMode.SPFCASES){
-                ti.getVM().getSystemState().setIgnored(true);
-            }
-            else
-
-                throw new StaticRegionException("Path condition is unsat, no region is created.");
-                return false;
+            if (runMode == VeritestingMode.SPFCASES)
+                ti.getVM().getSystemState().setIgnored(true); //to ignore counting of the current choice generator.
+            throw new StaticRegionException("Path condition is unsat, no region is created.");
         }
     }
 
@@ -355,6 +351,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      * @param ins Current executing instruction
      * @throws StaticRegionException Exception to indicate a problem while clearning the stack.
      */
+
     private static void clearStack(StackFrame sf, Instruction ins) throws StaticRegionException {
         int numOperands = SpfUtil.getOperandNumber(ins.getMnemonic());
         while (numOperands > 0) {

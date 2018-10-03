@@ -7,11 +7,15 @@ import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
+
+import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
 
 
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
@@ -39,6 +43,15 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         if (choice == STATIC_CHOICE) {
             System.out.println("\n=========Executing static region choice in BranchCG");
             nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion());
+            MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+            String className = methodInfo.getClassName();
+            String methodName = methodInfo.getName();
+            String methodSignature = methodInfo.getSignature();
+            int offset = instructionToExecute.getPosition();
+            String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+            statisticManager.updateVeriSuccForRegion(key);
+            ++VeritestingListener.veritestRegionCount;
+
         } else if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
             System.out.println("\n=========Executing"+  (choice==THEN_CHOICE? " then ": " else ") +".  Instruction: ");
             switch (getKind(instructionToExecute)) {
@@ -144,7 +157,6 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
 
 
-
     public Instruction executeUnaryIf(Instruction instruction, int choice) {
         StackFrame sf = ti.getModifiableTopFrame();
         IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
@@ -197,6 +209,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             pc = new PathCondition();
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
+
 
        setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
        setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);

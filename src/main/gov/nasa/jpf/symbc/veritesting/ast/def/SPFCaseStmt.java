@@ -17,7 +17,7 @@ public class SPFCaseStmt implements Stmt {
      */
     public enum SPFReason{
         OBJECT_CREATION, THROW,
-        MULTIPLE, OUT_OF_BOUND_EXCEPTION; //used when the two sides of the ifStmt have SPFCases
+        MULTIPLE, OUT_OF_BOUND_EXCEPTION, INVOKE; //used when the two sides of the ifStmt have SPFCases
     }
 
     public SPFCaseStmt(Expression spfCondition, SPFReason reason) {

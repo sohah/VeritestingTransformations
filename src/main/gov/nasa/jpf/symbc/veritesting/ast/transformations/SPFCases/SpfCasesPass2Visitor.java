@@ -36,7 +36,12 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
         Stmt s1 = a.s1.accept(this);
         Stmt s2 = a.s2.accept(this);
 
-        return new CompositionStmt(s1, s2);
+        if (s1 instanceof SPFCaseStmt)
+            return s2;
+        else if (s2 instanceof SPFCaseStmt)
+            return s1;
+        else
+            return new CompositionStmt(s1, s2);
     }
 
     @Override

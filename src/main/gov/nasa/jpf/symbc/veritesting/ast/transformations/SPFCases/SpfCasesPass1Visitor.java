@@ -23,7 +23,11 @@ import java.util.HashSet;
  */
 
 enum SpfCasesInstruction {
-    THROWINSTRUCTION, NEWINSTRUCTION, ARRAYINSTRUCTION, ALL
+    THROWINSTRUCTION,
+    NEWINSTRUCTION,
+    ARRAYINSTRUCTION,
+    INVOKE, //any invoke that has reached SPFCase pass, is an invoke that we couldn't deal with, and so we leave it up to SPF.
+    ALL
 }
 
 
@@ -165,9 +169,12 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(InvokeInstruction c) {
-        return new InvokeInstruction(c.getOriginal(),
-                c.result,
-                c.params);
+        if (this.spfCasesInstructionList.contains(SpfCasesInstruction.INVOKE) ||
+                this.spfCasesInstructionList.contains(SpfCasesInstruction.ALL))
+            return new SPFCaseStmt(spfCondition,
+                    SPFCaseStmt.SPFReason.INVOKE);
+        else
+            return new InvokeInstruction(c.getOriginal());
     }
 
     @Override
