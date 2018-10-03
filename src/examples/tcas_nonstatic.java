@@ -268,7 +268,13 @@ public class tcas_nonstatic {
         Other_Capability = a11;
         Climb_Inhibit = a12;
 
-        alt_sep_test();
+        int result = alt_sep_test();
+        int alim = ALIM();
+
+        // passes
+        assert((Up_Separation < alim &&
+                Down_Separation < alim) ?
+                result != DOWNWARD_RA : true);
     }
 
     public static void main(String[] argv) {

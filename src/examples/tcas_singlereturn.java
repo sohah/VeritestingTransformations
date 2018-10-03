@@ -1,3 +1,4 @@
+// Vaibhav: This file is heavily reduced to a simple version of TCAS because we have an assertion failure in TCAS as of now. I will return it to its former glory once equivalence-checking with TCASEqCheck is passing.
 
 public class tcas_singlereturn {
 	public static int OLEV = 600;
@@ -200,7 +201,7 @@ public class tcas_singlereturn {
 
 	public static int alt_assign(){
 		int alt_sep = UNRESOLVED;
-		boolean need_upward_RA = false;
+		/*boolean need_upward_RA = false;
 		boolean non_crossing_biased_climb = false; //Non_Crossing_Biased_Climb();
 		boolean own_below_threat, own_above_threat;
 		if(non_crossing_biased_climb){
@@ -233,7 +234,7 @@ public class tcas_singlereturn {
 			else{
 				 alt_sep = UNRESOLVED;
 			}
-		}
+		}*/
 
 		/*commented from before: if(need_upward_RA && need_downward_RA) alt_sep = 0;
 		if(need_upward_RA && !need_downward_RA) alt_sep = 1;
@@ -249,7 +250,7 @@ public class tcas_singlereturn {
 	    boolean intent_not_known = false;
 	    int alt_sep = UNRESOLVED;
 
-	    if(High_Confidence){
+	   /*if(High_Confidence){
 	    	if(Own_Tracked_Alt_Rate <= OLEV){
 	    		if(Cur_Vertical_Sep > MAXALTDIFF){
 	    			enabled = true;
@@ -267,13 +268,16 @@ public class tcas_singlereturn {
 	    	    	}
 	    	    }
 	    		if(intent_not_known){
-	    			alt_sep = alt_assign();
+	    			alt_sep = 0; //alt_assign();
 	    		}
 	    	}
 	    	else{
 	    		alt_sep = alt_assign();
 	    	}
-	    }
+	    }*/
+		if(Cur_Vertical_Sep > MAXALTDIFF){
+			alt_sep = UNRESOLVED; // alt_assign();
+		}
 
 	    return alt_sep;
 	}
