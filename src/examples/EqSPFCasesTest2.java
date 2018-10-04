@@ -8,6 +8,7 @@ public class EqSPFCasesTest2 extends TestRegionBaseClass {
     int count = 0;
 
     public Outputs createObjectTC8(boolean x, boolean y) {
+
             int a = 0;
             if (y) {
                 if (x) {

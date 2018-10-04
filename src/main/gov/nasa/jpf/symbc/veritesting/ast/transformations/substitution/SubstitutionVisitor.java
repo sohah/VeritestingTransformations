@@ -133,8 +133,6 @@ public class SubstitutionVisitor extends AstMapVisitor {
             if (hgOrdStaticRegion != null) {
                 String key = keyRegionPair.getFirst();
 
-                VeritestingListener.statisticManager.updateHitStatForRegion(key);
-
                 System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
                 System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
                 DynamicRegion uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);

@@ -15,23 +15,13 @@ public class EqSPFCasesTest1 extends TestRegionBaseClass {
             a = 2 + a;
             TempClass tempClass2 = new TempClass();
         }
-/*
-
-        assert(x? a == 3: true);
-        assert(!x? a == 2: true);
-*/
 
         if (y) {
             a = 4 + a;
         } else {
             a = 2 + a;
         }
-/*
-        assert(x & y ? a==7: true);
-        assert(x & !y ? a==5: true);
-        assert(!x & y ? a==6: true);
-        assert(!x & !y ? a==4: true);
-*/      Outputs o = new Outputs();
+      Outputs o = new Outputs();
         o.intOutputs = new int[a];
         return o;
     }

@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.IntConstant;
 /**
@@ -20,11 +21,12 @@ public class FieldRef {
         this.className = className;
     }
 
-    public static FieldRef makeGetFieldRef(ThreadInfo ti, GetInstruction getIns) {
-        if (!(getIns.ref instanceof IntConstant) && !getIns.getOriginal().isStatic())
+    public static FieldRef makeGetFieldRef(ThreadInfo ti, GetInstruction getIns) throws StaticRegionException {
+        if (!(getIns.ref instanceof IntConstant))
             throw new IllegalArgumentException("cannot make FieldRef for symbolic object reference");
         // getIns.ref contains object reference whereas putIns.def contains object reference
-        int ref = getIns.getOriginal().isStatic() ? -1 : ((IntConstant)getIns.ref).getValue();
+        int ref = ((IntConstant)getIns.ref).getValue();
+        if (ref == 0) throw new StaticRegionException("Cannot get any information from null objects");
         String fieldName = getIns.field.getName().toString();
         String className = getIns.getOriginal().isStatic() ?
                 getIns.field.getDeclaringClass().getName().getClassName().toString():
@@ -32,10 +34,11 @@ public class FieldRef {
         return new FieldRef(ref, className, fieldName, getIns.getOriginal().isStatic());
     }
 
-    public static FieldRef makePutFieldRef(ThreadInfo ti, PutInstruction putIns) {
-        if (!(putIns.def instanceof IntConstant) && !putIns.getOriginal().isStatic())
+    public static FieldRef makePutFieldRef(ThreadInfo ti, PutInstruction putIns) throws StaticRegionException {
+        if (!(putIns.def instanceof IntConstant))
             throw new IllegalArgumentException("cannot make FieldRef for symbolic object reference");
-        int ref = putIns.getOriginal().isStatic() ? -1 : ((IntConstant)putIns.def).getValue();
+        int ref = ((IntConstant)putIns.def).getValue();
+        if (ref == 0) throw new StaticRegionException("Cannot get any information from null objects");
         String fieldName = putIns.field.getName().toString();
         String className = putIns.getOriginal().isStatic() ?
                 putIns.field.getDeclaringClass().getName().getClassName().toString():

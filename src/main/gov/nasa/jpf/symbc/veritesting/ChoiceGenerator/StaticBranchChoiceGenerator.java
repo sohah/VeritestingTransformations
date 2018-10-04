@@ -7,14 +7,20 @@ import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
+
 
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
+
+    Object[] spfSlotAttr;
 
     public static final int STATIC_CHOICE = 0;
     public static final int THEN_CHOICE = 1;
@@ -25,22 +31,34 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         super(2, region, instruction);
         Kind kind = getKind(instruction);
 
-        assert(kind == Kind.BINARYIF ||
-            kind == Kind.NULLIF ||
-            kind == Kind.UNARYIF);
+        assert (kind == Kind.BINARYIF ||
+                kind == Kind.NULLIF ||
+                kind == Kind.UNARYIF);
     }
 
     // MWW: make choice 0 and choice 4 also the responsibility of the CG
     public Instruction execute(ThreadInfo ti, Instruction instructionToExecute, int choice) throws StaticRegionException {
         // if/else conditions.
-        assert(choice == STATIC_CHOICE || choice == THEN_CHOICE || choice == ELSE_CHOICE);
+        assert (choice == STATIC_CHOICE || choice == THEN_CHOICE || choice == ELSE_CHOICE);
 
         Instruction nextInstruction = null;
         if (choice == STATIC_CHOICE) {
+            collectSpfStackFrame();
             System.out.println("\n=========Executing static region choice in BranchCG");
             nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion());
+            MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+            String className = methodInfo.getClassName();
+            String methodName = methodInfo.getName();
+            String methodSignature = methodInfo.getSignature();
+            int offset = instructionToExecute.getPosition();
+            String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+            statisticManager.updateVeriSuccForRegion(key);
+            ++VeritestingListener.veritestRegionCount;
+
+
         } else if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
-            System.out.println("\n=========Executing then/else choice.  Instruction: ");
+            restoreSpfStackFrame();
+            System.out.println("\n=========Executing" + (choice == THEN_CHOICE ? " then " : " else ") + ".  Instruction: ");
             switch (getKind(instructionToExecute)) {
                 case UNARYIF:
                     nextInstruction = executeUnaryIf(instructionToExecute, choice);
@@ -56,9 +74,25 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             }
         } else {
             // should never get here (until we make early returns)
-            assert(false);
+            assert (false);
         }
         return nextInstruction;
+    }
+
+    private void restoreSpfStackFrame() {
+
+        int slotSize = spfSlotAttr.length;
+
+        for (int i = 0; i < slotSize; i++) {
+            ti.getTopFrame().setSlotAttr(i,spfSlotAttr[i]);
+        }
+    }
+
+    /**
+     * The puprose of this function is to collect the stack slot state before running veritesting choice, so that if veritesting changed the slots attributes by populating its outputs, we would be able to restore the slots back to their original states when running the SPF then, and else choices.
+     */
+    private void collectSpfStackFrame() {
+        spfSlotAttr = ti.getTopFrame().getSlotAttrs().clone();
     }
 
     /*
@@ -82,42 +116,43 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             //System.out.println("Execute IF_ICMPEQ: The conditions are concrete");
             return instruction.execute(ti);
         } else {
-            int	v2 = sf.pop();
-            int	v1 = sf.pop();
+            int v2 = sf.pop();
+            int v1 = sf.pop();
             PathCondition pc;
             pc = this.getCurrentPC();
 
             assert pc != null;
-            assert(choice == THEN_CHOICE || choice == ELSE_CHOICE);
+            assert (choice == THEN_CHOICE || choice == ELSE_CHOICE);
+
 
             if (choice == ELSE_CHOICE) {
                 Comparator byteCodeOp = SpfUtil.getComparator(instruction);
-                if (sym_v1 != null){
-                    if (sym_v2 != null){ //both are symbolic values
-                        pc._addDet(byteCodeOp,sym_v1,sym_v2);
-                    }else
-                        pc._addDet(byteCodeOp,sym_v1,v2);
-                }else
+                if (sym_v1 != null) {
+                    if (sym_v2 != null) { //both are symbolic values
+                        pc._addDet(byteCodeOp, sym_v1, sym_v2);
+                    } else
+                        pc._addDet(byteCodeOp, sym_v1, v2);
+                } else
                     pc._addDet(byteCodeOp, v1, sym_v2);
 
-                if(!pc.simplify())  {// not satisfiable
+                if (!pc.simplify()) {// not satisfiable
                     ti.getVM().getSystemState().setIgnored(true);
-                }else{
+                } else {
                     this.setCurrentPC(pc);
                 }
                 return ((IfInstruction) instruction).getTarget();
             } else {
                 Comparator byteCodeNegOp = SpfUtil.getNegComparator(instruction);
-                if (sym_v1 != null){
-                    if (sym_v2 != null){ //both are symbolic values
-                        pc._addDet(byteCodeNegOp,sym_v1,sym_v2);
-                    }else
-                        pc._addDet(byteCodeNegOp,sym_v1,v2);
-                }else
+                if (sym_v1 != null) {
+                    if (sym_v2 != null) { //both are symbolic values
+                        pc._addDet(byteCodeNegOp, sym_v1, sym_v2);
+                    } else
+                        pc._addDet(byteCodeNegOp, sym_v1, v2);
+                } else
                     pc._addDet(byteCodeNegOp, v1, sym_v2);
-                if(!pc.simplify())  {// not satisfiable
+                if (!pc.simplify()) {// not satisfiable
                     ti.getVM().getSystemState().setIgnored(true);
-                }else {
+                } else {
                     this.setCurrentPC(pc);
                 }
                 return instruction.getNext(ti);
@@ -136,19 +171,17 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             // MWW: I do not understand this code, I am asserting false!
             // MWW: I think SPF code may be wrong.
             sf.pop();
-            assert(false);
+            assert (false);
             return ((IfInstruction) instruction).getTarget();
         }
     }
-
-
 
 
     public Instruction executeUnaryIf(Instruction instruction, int choice) {
         StackFrame sf = ti.getModifiableTopFrame();
         IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
 
-        if(sym_v == null) { // the condition is concrete
+        if (sym_v == null) { // the condition is concrete
             return instruction.execute(ti);
         }
 
@@ -188,18 +221,19 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
     }
 
     public void makeVeritestingCG(ThreadInfo ti) throws StaticRegionException {
-        assert(region.regionSummary != null);
+        assert (region.regionSummary != null);
         PathCondition pc;
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
-            pc = ((PCChoiceGenerator)(ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
-        else{
+            pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
+        else {
             pc = new PathCondition();
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
 
-       setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
-       setPC(createPC(pc, new Operation(Operation.Operator.NOT, region.regionSummary), region.spfPredicateSummary), THEN_CHOICE);
-       setPC(createPC(pc, new Operation(Operation.Operator.NOT, region.regionSummary), region.spfPredicateSummary), ELSE_CHOICE);
+
+        setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
+        setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
+        setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
         // TODO: create the path predicate for the 'return' case.
     }
 

@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess;
 
 import com.ibm.wala.ssa.SSAGetInstruction;
+import com.ibm.wala.ssa.SSAThrowInstruction;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -37,6 +38,7 @@ expression visitor that replaces FieldRefVarExpr objects that have subscript 1 w
 
 
 public class FieldSSAVisitor extends AstMapVisitor {
+    private static int fieldExceptionNumber=42424242;
     private DynamicRegion dynRegion;
     private FieldSubscriptMap psm;
     private ThreadInfo ti;
@@ -64,7 +66,12 @@ public class FieldSSAVisitor extends AstMapVisitor {
         if (!IntConstant.class.isInstance(putIns.def) && !putIns.getOriginal().isStatic())
             throw new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor");
         else {
-            FieldRef fieldRef = FieldRef.makePutFieldRef(ti, putIns);
+            FieldRef fieldRef;
+            try {
+                fieldRef = FieldRef.makePutFieldRef(ti, putIns);
+            } catch (StaticRegionException e) {
+                return getThrowInstruction();
+            }
             FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
             AssignmentStmt assignStmt = new AssignmentStmt(fieldRefVarExpr, putIns.assignExpr);
             String type = null;
@@ -86,6 +93,16 @@ public class FieldSSAVisitor extends AstMapVisitor {
             return assignStmt;
         }
     }
+
+    public static Stmt getThrowInstruction() {
+        return new ThrowInstruction(new SSAThrowInstruction(-1, nextFieldExceptionNumber()) {});
+    }
+
+    public static int nextFieldExceptionNumber() {
+        ++fieldExceptionNumber;
+        return fieldExceptionNumber;
+    }
+
 
     private SubscriptPair createSubscript(FieldRef fieldRef) {
         SubscriptPair subscript = psm.lookup(fieldRef);
@@ -184,7 +201,12 @@ public class FieldSSAVisitor extends AstMapVisitor {
         // If we are doing a get field from a constant object reference or if this field access is a static access,
         // we can fill this input in
         if ((c.ref instanceof IntConstant || ((SSAGetInstruction)c.original).isStatic())) {
-            FieldRef fieldRef = FieldRef.makeGetFieldRef(ti, c);
+            FieldRef fieldRef = null;
+            try {
+                fieldRef = FieldRef.makeGetFieldRef(ti, c);
+            } catch (StaticRegionException e) {
+                return getThrowInstruction();
+            }
             if (psm.lookup(fieldRef) != null) {
                 rhs = new FieldRefVarExpr(fieldRef, psm.lookup(fieldRef));
                 if (dynRegion.fieldRefTypeTable.lookup(rhs) != null)
@@ -192,7 +214,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
             }
             else {
                 try {
-                    SubstituteGetOutput output = substituteGet(c);
+                    SubstituteGetOutput output = substituteGet(c, fieldRef);
                     type = output.type;
                     rhs = output.def;
                 } catch (StaticRegionException e) {
@@ -211,10 +233,10 @@ public class FieldSSAVisitor extends AstMapVisitor {
         else return new AssignmentStmt(c.def, rhs);
     }
 
-    private SubstituteGetOutput substituteGet(GetInstruction getIns)
+    private SubstituteGetOutput substituteGet(GetInstruction getIns, FieldRef fieldRef)
             throws StaticRegionException {
         SubstituteGetOutput substituteGetOutput =
-                new SubstituteGetOutput(ti, FieldRef.makeGetFieldRef(ti, getIns), true, null).invoke();
+                new SubstituteGetOutput(ti, fieldRef, true, null).invoke();
         String exceptionalMessage = substituteGetOutput.getExceptionalMessage();
         Expression def = substituteGetOutput.getDef();
         // only one of def and exceptionalMessage should be non-null
