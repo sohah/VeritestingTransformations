@@ -10,6 +10,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
+import java.util.ArrayList;
+
 
 /*
     Preconditions:
@@ -29,6 +31,9 @@ import za.ac.sun.cs.green.expr.Operation;
 
 public class AstToGreenVisitor implements AstVisitor<Expression> {
 
+    public final ArrayList<Expression> greenList = new ArrayList<>();
+    public final ArrayList<Stmt> stmtList = new ArrayList<>();
+
     ExprVisitorAdapter<Expression> eva;
     AstToGreenExprVisitor exprVisitor;
 
@@ -47,11 +52,16 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
 
     public Expression assignStmt(AssignmentStmt stmt) {
         exprVisitor.setAssign(stmt.lhs);
-        return eva.accept(stmt.rhs);
+        Expression rhsExp=  eva.accept(stmt.rhs);
+        greenList.add(rhsExp);
+        stmtList.add(stmt);
+        return rhsExp;
+
     }
 
     /**
      * Transform a composition statement into a conjunction in green.
+     *
      * @param stmt The composition statement to be translated.
      * @return A green expression that represents the compsition statement.
      */
@@ -62,7 +72,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
     }
 
     public Expression transform(Stmt stmt) {
-        assert!(stmt instanceof SkipStmt);
+        assert !(stmt instanceof SkipStmt);
         if (stmt instanceof AssignmentStmt) {
             return assignStmt((AssignmentStmt) stmt);
         } else if (stmt instanceof CompositionStmt) {
@@ -162,7 +172,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         return bad(c);
     }
 
-    public static DynamicRegion execute(DynamicRegion dynRegion){
+    public static DynamicRegion execute(DynamicRegion dynRegion) {
 
         WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynRegion.varTypeTable);
         AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
@@ -180,7 +190,19 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
         AstToGreenVisitor toGreenVisitor = new AstToGreenVisitor();
         Expression regionSummary = noSkipStmt.accept(toGreenVisitor);
+
+
+        System.out.format("%1$-70s %2$-100s\n", "|Stmt", "|Green Expression");
+        System.out.format("%1$-70s %2$-100s\n", "|-----------------------------------------------------------",
+                "|------------------------------------------------------");
+
+        for (int i = 0; i < toGreenVisitor.stmtList.size(); i++) {
+            System.out.format("%1$-70s %2$-100s\n", toGreenVisitor.stmtList.get(i), ExprUtil.AstToString(toGreenVisitor.greenList.get(i)));
+        }
+
+        System.out.println("\nGreen Expression pushed on the Path Condition:");
         System.out.println(ExprUtil.AstToString(regionSummary));
+
         DynamicRegion greenDynRegion = new DynamicRegion(dynRegion,
                 dynRegion.dynStmt,
                 dynRegion.spfCaseList,
