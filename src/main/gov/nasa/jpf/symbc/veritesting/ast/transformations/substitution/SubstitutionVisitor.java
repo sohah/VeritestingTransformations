@@ -1,21 +1,17 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
-import choco.Var;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.strings.Atom;
-import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.ValueSymbolTable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
@@ -25,9 +21,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import stp.Expr;
 import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.*;
 
@@ -127,8 +121,8 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
         SSAInvokeInstruction instruction = c.getOriginal();
         IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
-        if (invokeCode == IInvokeInstruction.Dispatch.STATIC) {
-            Pair<String, StaticRegion> keyRegionPair = findMethodStaticRegion(c);
+        if ((invokeCode == IInvokeInstruction.Dispatch.STATIC) ||(invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)) {
+            Pair<String, StaticRegion> keyRegionPair = findMethodRegion(c);
             StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
             if (hgOrdStaticRegion != null) {
                 String key = keyRegionPair.getFirst();
@@ -136,6 +130,10 @@ public class SubstitutionVisitor extends AstMapVisitor {
                 System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
                 System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
                 DynamicRegion uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
+
+                if(invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)
+                    values.remove(0); //removing the object reference from being substituted.
+
 
                 DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
                         "var",
@@ -205,7 +203,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
      * @param c Current invoke instruction.
      * @return A pair of the key and the methodRegion if a matching could be found.
      */
-    private Pair<String, StaticRegion> findMethodStaticRegion(InvokeInstruction c) {
+    private Pair<String, StaticRegion> findMethodRegion(InvokeInstruction c) {
 
         SSAInvokeInstruction instruction = c.getOriginal();
         MethodReference methodReference = instruction.getDeclaredTarget();
