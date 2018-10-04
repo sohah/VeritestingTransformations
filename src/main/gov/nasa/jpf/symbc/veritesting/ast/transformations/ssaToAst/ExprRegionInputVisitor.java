@@ -7,7 +7,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 
 /**
@@ -17,7 +17,8 @@ public class ExprRegionInputVisitor extends ExprMapVisitor implements ExprVisito
 
 //SH:
 
-    private ArrayList seenSlots;
+    // maps seen stack slots to the smallest Wala variable number seen for that stack slot
+    private HashMap<Integer, Integer> seenSlots;
     private InputTable inputTable;
     private SlotParamTable slotParamTable;
     public DefUseVisit defUseVisit;
@@ -25,7 +26,7 @@ public class ExprRegionInputVisitor extends ExprMapVisitor implements ExprVisito
     public ExprRegionInputVisitor(InputTable inputTable, SlotParamTable slotParamTable) {
         this.inputTable = inputTable;
         this.slotParamTable = slotParamTable;
-        this.seenSlots = new ArrayList();
+        this.seenSlots = new HashMap();
     }
 
     @Override
@@ -33,13 +34,18 @@ public class ExprRegionInputVisitor extends ExprMapVisitor implements ExprVisito
         int[] varSlots = slotParamTable.lookup(expr.number);
         if (varSlots != null) {
             for (int i = 0; i < varSlots.length; i++)
-                if (!seenSlots.contains(varSlots[i])) {
+                if (seenBiggerWalaNum(varSlots[i], expr.number)) {
                     if (defUseVisit == DefUseVisit.USE)
                         inputTable.add(expr.number, varSlots[i]);
-                    seenSlots.add(varSlots[i]);
+                    seenSlots.put(varSlots[i], expr.number);
                 }
         }
         return expr;
+    }
+
+    private boolean seenBiggerWalaNum(int varSlot, int expNum) {
+        if (!seenSlots.containsKey(varSlot)) return true;
+        return seenSlots.get(varSlot) > expNum;
     }
 
 }

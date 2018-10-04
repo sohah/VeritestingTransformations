@@ -51,6 +51,9 @@ public class SpfToGreenExprVisitor implements ExprVisitor<Expression> {
     }
 
     @Override
+    public Expression visit(AstVarExpr expr) { return bad(expr); }
+
+    @Override
     public Expression visit(IfThenElseExpr expr) {
         return bad(expr);
     }

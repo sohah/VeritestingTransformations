@@ -1,4 +1,3 @@
-// Vaibhav: This file is heavily reduced to a simple version of TCAS because we have an assertion failure in TCAS as of now. I will return it to its former glory once equivalence-checking with TCASEqCheck is passing.
 
 public class tcas_singlereturn {
 	public static int OLEV = 600;
@@ -185,36 +184,36 @@ public class tcas_singlereturn {
 
 	public static boolean Own_Below_Threat() {
 		boolean ret = false;
-		/*if(Own_Tracked_Alt < Other_Tracked_Alt){
+		if(Own_Tracked_Alt < Other_Tracked_Alt){
 			ret = true;
-		}*/
+		}
 		return ret;
 	}
 
 	public static boolean Own_Above_Threat() {
 		boolean ret = false;
-		/*if(Other_Tracked_Alt < Own_Tracked_Alt){
+		if(Other_Tracked_Alt < Own_Tracked_Alt){
 			ret = true;
-		}*/
+		}
 		return ret;
 	}
 
 	public static int alt_assign(){
 		int alt_sep = UNRESOLVED;
-		/*boolean need_upward_RA = false;
-		boolean non_crossing_biased_climb = false; //Non_Crossing_Biased_Climb();
+		boolean need_upward_RA = false;
+		boolean non_crossing_biased_climb = Non_Crossing_Biased_Climb();
 		boolean own_below_threat, own_above_threat;
 		if(non_crossing_biased_climb){
-			own_below_threat = false; //Own_Below_Threat(); //return symbolic temp variable
+			own_below_threat = Own_Below_Threat(); //return symbolic temp variable
 			if(own_below_threat){
 				need_upward_RA = true; //is symbolic
 			}
 		}
 
 		boolean need_downward_RA = false;
-		boolean non_crossing_biased_descend = false; //Non_Crossing_Biased_Descend();
+		boolean non_crossing_biased_descend = Non_Crossing_Biased_Descend();
 		if(non_crossing_biased_descend){
-			own_above_threat = false; //Own_Above_Threat();
+			own_above_threat = Own_Above_Threat();
 			if(own_above_threat){
 				need_downward_RA = true;
 			}
@@ -234,7 +233,7 @@ public class tcas_singlereturn {
 			else{
 				 alt_sep = UNRESOLVED;
 			}
-		}*/
+		}
 
 		/*commented from before: if(need_upward_RA && need_downward_RA) alt_sep = 0;
 		if(need_upward_RA && !need_downward_RA) alt_sep = 1;
@@ -250,7 +249,7 @@ public class tcas_singlereturn {
 	    boolean intent_not_known = false;
 	    int alt_sep = UNRESOLVED;
 
-	   /*if(High_Confidence){
+	   if(High_Confidence){
 	    	if(Own_Tracked_Alt_Rate <= OLEV){
 	    		if(Cur_Vertical_Sep > MAXALTDIFF){
 	    			enabled = true;
@@ -268,16 +267,13 @@ public class tcas_singlereturn {
 	    	    	}
 	    	    }
 	    		if(intent_not_known){
-	    			alt_sep = 0; //alt_assign();
+	    			alt_sep = alt_assign();
 	    		}
 	    	}
 	    	else{
 	    		alt_sep = alt_assign();
 	    	}
-	    }*/
-		if(Cur_Vertical_Sep > MAXALTDIFF){
-			alt_sep = UNRESOLVED; // alt_assign();
-		}
+	    }
 
 	    return alt_sep;
 	}
@@ -310,7 +306,7 @@ public class tcas_singlereturn {
 		//alt_sep_test();
 
 		result_alt_sep_test = alt_sep_test();
-//		result_alim = ALIM();
+		result_alim = ALIM();
 
 		// MWW assertions.  These come from ACSL safety property paper: http://people.rennes.inria.fr/Arnaud.Gotlieb/CT_ATM_gotlieb.pdf
 		// fails
@@ -320,14 +316,14 @@ public class tcas_singlereturn {
 //				result != DOWNWARD_RA : true);
 
 		// passes
-//		assert((Up_Separation < alim &&
-//				Down_Separation < alim) ?
-//				result != DOWNWARD_RA : true);
+//		assert((Up_Separation < result_alim &&
+//				Down_Separation < result_alim) ?
+//				result_alim != DOWNWARD_RA : true);
 
 		//passes
-//		assert((Up_Separation < alim &&
-//				Down_Separation >= alim) ?
-//				result != UPWARD_RA : true);
+//		assert((Up_Separation < result_alim &&
+//				Down_Separation >= result_alim) ?
+//				result_alim != UPWARD_RA : true);
 
 		// fails
 //		assert((Up_Separation >= alim &&

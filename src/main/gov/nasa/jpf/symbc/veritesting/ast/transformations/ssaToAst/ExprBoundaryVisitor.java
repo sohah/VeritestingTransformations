@@ -22,6 +22,7 @@ public class ExprBoundaryVisitor extends ExprMapVisitor implements ExprVisitor<E
 
     @Override
     public Expression visit(WalaVarExpr expr) {
+        if (expr.number == -1) return expr;
         if(seenFirstUse){
             if (expr.number < firstUse){
                 firstUse = expr.number;
