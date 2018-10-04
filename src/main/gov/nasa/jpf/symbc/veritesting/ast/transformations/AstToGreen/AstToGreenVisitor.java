@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SimplifyGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
@@ -9,6 +10,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
+import za.ac.sun.cs.green.expr.Visitor;
+import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.ArrayList;
 
@@ -172,7 +175,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         return bad(c);
     }
 
-    public static DynamicRegion execute(DynamicRegion dynRegion) {
+    public static DynamicRegion execute(DynamicRegion dynRegion) throws VisitorException {
 
         WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynRegion.varTypeTable);
         AstMapVisitor astMapVisitor = new AstMapVisitor(walaVarVisitor);
@@ -202,6 +205,14 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
 
         System.out.println("\nGreen Expression pushed on the Path Condition:");
         System.out.println(ExprUtil.AstToString(regionSummary));
+
+        SimplifyGreenVisitor simplifyVisitor = new SimplifyGreenVisitor();
+        regionSummary.accept(simplifyVisitor);
+
+        Expression simpleRegionSummary = simplifyVisitor.returnExp;
+
+        System.out.println("\nSimplified region Summary is:");
+        System.out.println(ExprUtil.AstToString(simpleRegionSummary));
 
         DynamicRegion greenDynRegion = new DynamicRegion(dynRegion,
                 dynRegion.dynStmt,
