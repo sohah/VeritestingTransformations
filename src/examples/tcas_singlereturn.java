@@ -1,3 +1,4 @@
+// Vaibhav: This file is heavily reduced to a simple version of TCAS because we have an assertion failure in TCAS as of now. I will return it to its former glory once equivalence-checking with TCASEqCheck is passing.
 
 public class tcas_singlereturn {
 	public static int OLEV = 600;
@@ -38,6 +39,8 @@ public class tcas_singlereturn {
 	public static int UNRESOLVED = 0;
 	public static int UPWARD_RA = 1;
 	public static int DOWNWARD_RA = 2;
+	private static int result_alt_sep_test = -1;
+	private static int result_alim = -1;
 
 	public static void initialize() {
 		Positive_RA_Alt_Thresh_0 = 400;
@@ -46,8 +49,26 @@ public class tcas_singlereturn {
 		Positive_RA_Alt_Thresh_3 = 740;
 	}
 
+	public static int b2I(boolean b) { return b ? 1 : 0; }
+
+	public static Outputs getOutputs() {
+		int[] ret = new int[]{Cur_Vertical_Sep, b2I(High_Confidence), b2I(Two_of_Three_Reports_Valid),
+		Own_Tracked_Alt, Own_Tracked_Alt_Rate, Other_Tracked_Alt, Alt_Layer_Value, Up_Separation, Down_Separation, Other_RAC, Climb_Inhibit,
+		result_alt_sep_test, result_alim};
+		return new Outputs(ret);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (tcas_singlereturn.class.isInstance(obj)) {
+			tcas_singlereturn o = (tcas_singlereturn) obj;
+			return true;
+		}
+		return false;
+	}
+
 	public static int ALIM() {
-		int result; 
+		int result;
 		if (Alt_Layer_Value == 0){
 			result =  Positive_RA_Alt_Thresh_0;
 		}
@@ -76,7 +97,7 @@ public class tcas_singlereturn {
 
 	public static boolean Non_Crossing_Biased_Climb() {
 		int upward_preferred;
-		boolean result; 
+		boolean result;
 		int inhibit_biased_climb = Inhibit_Biased_Climb();
 		if (inhibit_biased_climb > Down_Separation) {
 			upward_preferred = 1;
@@ -119,8 +140,8 @@ public class tcas_singlereturn {
 
 	public static boolean Non_Crossing_Biased_Descend() {
 		int upward_preferred;
-		boolean result; 
-		
+		boolean result;
+
 		int inhibit_biased_climb = Inhibit_Biased_Climb();
 		if (inhibit_biased_climb > Down_Separation) {
 			upward_preferred = 1;
@@ -164,34 +185,36 @@ public class tcas_singlereturn {
 
 	public static boolean Own_Below_Threat() {
 		boolean ret = false;
-		if(Own_Tracked_Alt < Other_Tracked_Alt){
+		/*if(Own_Tracked_Alt < Other_Tracked_Alt){
 			ret = true;
-		}
+		}*/
 		return ret;
 	}
 
 	public static boolean Own_Above_Threat() {
 		boolean ret = false;
-		if(Other_Tracked_Alt < Own_Tracked_Alt){
+		/*if(Other_Tracked_Alt < Own_Tracked_Alt){
 			ret = true;
-		}
+		}*/
 		return ret;
 	}
 
 	public static int alt_assign(){
 		int alt_sep = UNRESOLVED;
-		boolean need_upward_RA = false;
-		boolean non_crossing_biased_climb = Non_Crossing_Biased_Climb();
+		/*boolean need_upward_RA = false;
+		boolean non_crossing_biased_climb = false; //Non_Crossing_Biased_Climb();
+		boolean own_below_threat, own_above_threat;
 		if(non_crossing_biased_climb){
-			boolean own_below_threat = Own_Below_Threat(); //return symbolic temp variable
+			own_below_threat = false; //Own_Below_Threat(); //return symbolic temp variable
 			if(own_below_threat){
 				need_upward_RA = true; //is symbolic
 			}
 		}
+
 		boolean need_downward_RA = false;
-		boolean non_crossing_biased_descend = Non_Crossing_Biased_Descend();
+		boolean non_crossing_biased_descend = false; //Non_Crossing_Biased_Descend();
 		if(non_crossing_biased_descend){
-			boolean own_above_threat = Own_Above_Threat();
+			own_above_threat = false; //Own_Above_Threat();
 			if(own_above_threat){
 				need_downward_RA = true;
 			}
@@ -211,9 +234,9 @@ public class tcas_singlereturn {
 			else{
 				 alt_sep = UNRESOLVED;
 			}
-		}
+		}*/
 
-		/*if(need_upward_RA && need_downward_RA) alt_sep = 0;
+		/*commented from before: if(need_upward_RA && need_downward_RA) alt_sep = 0;
 		if(need_upward_RA && !need_downward_RA) alt_sep = 1;
 		if(!need_upward_RA && need_downward_RA) alt_sep = 2;
 		if(!need_upward_RA && !need_downward_RA) alt_sep = 0;*/
@@ -221,13 +244,13 @@ public class tcas_singlereturn {
 	    return alt_sep;
 	}
 
-	public static int alt_sep_test() {
+	public int alt_sep_test() {
 	    boolean enabled = false;
 	    boolean tcas_equipped = false;
 	    boolean intent_not_known = false;
 	    int alt_sep = UNRESOLVED;
 
-	    if(High_Confidence){
+	   /*if(High_Confidence){
 	    	if(Own_Tracked_Alt_Rate <= OLEV){
 	    		if(Cur_Vertical_Sep > MAXALTDIFF){
 	    			enabled = true;
@@ -245,18 +268,21 @@ public class tcas_singlereturn {
 	    	    	}
 	    	    }
 	    		if(intent_not_known){
-	    			alt_sep = alt_assign();
+	    			alt_sep = 0; //alt_assign();
 	    		}
 	    	}
 	    	else{
 	    		alt_sep = alt_assign();
 	    	}
-	    }
+	    }*/
+		if(Cur_Vertical_Sep > MAXALTDIFF){
+			alt_sep = UNRESOLVED; // alt_assign();
+		}
 
 	    return alt_sep;
 	}
 
-	public static void mainProcess(int a1, int a2, int a3, int a4, int a5,int a6, int a7, int a8, int a9, int a10, int a11, int a12) {
+	public void mainProcess(int a1, int a2, int a3, int a4, int a5,int a6, int a7, int a8, int a9, int a10, int a11, int a12) {
 		initialize();
 		Cur_Vertical_Sep = a1;
 		if (a2 == 0) {
@@ -283,8 +309,8 @@ public class tcas_singlereturn {
 		Climb_Inhibit = a12;
 		//alt_sep_test();
 
-		int result = alt_sep_test();
-		//int alim = ALIM();
+		result_alt_sep_test = alt_sep_test();
+//		result_alim = ALIM();
 
 		// MWW assertions.  These come from ACSL safety property paper: http://people.rennes.inria.fr/Arnaud.Gotlieb/CT_ATM_gotlieb.pdf
 		// fails
@@ -329,6 +355,8 @@ Down_Separation < Positive_RA_Alt_Tresh; ensures \result != need_Downward_RA;
 	}
 
 	public static void main(String[] argv) {
-		mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		tcas_singlereturn t = new tcas_singlereturn();
+		t.mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+//		mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
 	}
 }

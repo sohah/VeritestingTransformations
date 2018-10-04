@@ -145,6 +145,9 @@ public class TestPathsSimple {
         return a;
     }
 
+
+
+
     public static int countBs100(char[] ary) {
         int count = 0;
         for (int i = 0; i < 100; i++) {

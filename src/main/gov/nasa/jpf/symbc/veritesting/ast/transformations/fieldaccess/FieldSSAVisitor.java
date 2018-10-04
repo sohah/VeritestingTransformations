@@ -61,7 +61,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(PutInstruction putIns) {
-        if (!IntConstant.class.isInstance(putIns.def))
+        if (!IntConstant.class.isInstance(putIns.def) && !putIns.getOriginal().isStatic())
             throw new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor");
         else {
             FieldRef fieldRef = FieldRef.makePutFieldRef(ti, putIns);

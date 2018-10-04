@@ -60,6 +60,9 @@ public class ExprIterVisitor<T> implements ExprVisitor<T> {
     @Override public T visit(WalaVarExpr expr) {
         return defaultVal;
     }
+    @Override public T visit(AstVarExpr expr) {
+        return defaultVal;
+    }
     @Override public T visit(FieldRefVarExpr expr) {
         return defaultVal;
     }

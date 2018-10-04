@@ -42,7 +42,10 @@ public class ExprVisitorAdapter<T>  {
             return theVisitor.visit((WalaVarExpr) e);
         } else if (e instanceof IfThenElseExpr) {
             return theVisitor.visit((IfThenElseExpr) e);
-        } else {
+        } else if (e instanceof AstVarExpr) {
+            return theVisitor.visit((AstVarExpr)e);
+        }
+        else {
             throw new IllegalArgumentException("Unknown class in ExprVisitorAdapter!");
         }
     }

@@ -9,12 +9,11 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SymbCondVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Invariants.LocalOutputInvariantVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.Expression;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * A class that represents a Static Region. That is a region that has been statically analyzed but has not been instantiated yet.
@@ -60,7 +59,18 @@ public class StaticRegion implements Region {
      */
     public final VarTypeTable varTypeTable;
 
-    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock currentBlock) throws StaticRegionException {
+    /**
+     * @param staticStmt: Ranger IR statement that summarizes this static region
+     * @param ir: Wala IR for the method which contains this StaticRegion
+     * @param isMethodRegion: boolean value that if true indicates that this StaticRegion is for a method summary
+     * @param endIns: Ending instruction's bytecode offset for this static region
+     * @param startingBlock: if given, startingBlock is used for constructing definitions for variables used in the
+     *                     condition of the staticStmt, if the StaticRegion is for a multi-path region.
+     *                     startingBlock should correspond to the beginning block of the region.
+     *                     If unavailable, it can be given a null value.
+     * @throws StaticRegionException
+     */
+    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock startingBlock) throws StaticRegionException {
 
         this.ir = ir;
         this.isMethodRegion = isMethodRegion;
@@ -89,8 +99,8 @@ public class StaticRegion implements Region {
             if (symbCondVisitor.stackSlotNotFound) {
                 StaticRegionException sre = new StaticRegionException("region contains condition that cannot be instantiated");
                 SSACFG cfg = ir.getControlFlowGraph();
-                if (currentBlock == null) throw sre;
-                ISSABasicBlock bb = currentBlock;
+                if (startingBlock == null) throw sre;
+                ISSABasicBlock bb = startingBlock;
                 boolean foundStoppingInsn = false;
                 while (symbCondVisitor.noStackSlotVars.size() > 0 && !foundStoppingInsn) {
                     for (SSAInstruction ins : bb) {
@@ -104,7 +114,7 @@ public class StaticRegion implements Region {
                     }
                     Iterator itr = cfg.getPredNodes(bb);
                     if (cfg.getPredNodeCount(bb) != 1) foundStoppingInsn = true;
-                    bb = (ISSABasicBlock) itr.next();
+                    else bb = (ISSABasicBlock) itr.next();
                 }
                 if (symbCondVisitor.noStackSlotVars.size() > 0) {
                     throw sre;
@@ -118,7 +128,7 @@ public class StaticRegion implements Region {
             firstDef = regionBoundary.getSecond().getFirst();
             lastDef = regionBoundary.getSecond().getSecond();
 
-            lastVar = ((lastDef != null) && (lastDef > lastUse)) ? lastDef: lastUse;
+            lastVar = (lastDef != null) && (lastUse == null) ? lastDef : ((lastDef == null) && (lastUse != null) ? lastUse : (lastDef > lastUse ? lastDef: lastUse));
             ((SlotParamTable) slotParamTable).filterTableForBoundary(staticStmt, new Pair<>(firstUse, lastVar));
             varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastVar));
         }
@@ -141,9 +151,9 @@ public class StaticRegion implements Region {
             AssignmentStmt assignmentStmt = (AssignmentStmt) ((CompositionStmt) staticStmt).s2;
             if ((assignmentStmt.rhs instanceof GammaVarExpr) && (outputTable.table.size() == 0)) {
                 throw new StaticRegionException("static region with gamma expression cannot have no local outputs");
-
             }
         }
+        LocalOutputInvariantVisitor.execute(this);
     }
 
     /**

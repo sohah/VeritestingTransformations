@@ -24,7 +24,7 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGree
  * This is a visitor class that Translate expression in RangerIR to te appropriate Green expression.
  */
 
-public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
+public class    AstToGreenExprVisitor implements ExprVisitor<Expression> {
 
     Expression toAssign;
     Expression currentCondition;
@@ -95,6 +95,11 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
         return ite(expr.condition, (Expression) expr.thenExpr, (Expression) expr.elseExpr);
     }
 
+    @Override
+    public Expression visit(AstVarExpr expr) {
+        return bad(expr);
+    }
+
     /**
      * Translating a TfThenElseExpr into an IfThenElseExpression
      *
@@ -116,7 +121,6 @@ public class AstToGreenExprVisitor implements ExprVisitor<Expression> {
         return bad(expr);
     }
 
-    @Override
     public Expression visit(ArrayRefVarExpr expr) {
         return bad(expr);
     }

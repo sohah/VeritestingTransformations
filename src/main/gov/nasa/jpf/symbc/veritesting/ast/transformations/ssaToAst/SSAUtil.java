@@ -98,7 +98,8 @@ public class SSAUtil {
             } else if (val instanceof String) {
                 return new StringConstantGreen((String)val);
             } else {
-                throw new IllegalArgumentException("translateTruncatedFinalBlock: unsupported constant type");
+                // Eh...we don't know what it is.  Kick it to the next pass.
+                return new WalaVarExpr(ssaVar);
             }
         } else {
             return new WalaVarExpr(ssaVar);

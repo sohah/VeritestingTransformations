@@ -169,9 +169,9 @@ public class StaticTypeIVisitor implements SSAInstruction.IVisitor {
     public void populateVars(SSAInstruction ins, int var) {
         if ((varTypeTable.lookup(var) == null)
                 && (var != -1)
-                && (((var >= firstUse) && (var <= lastDef))
+                && (((firstUse == null || var >= firstUse) && (lastDef == null || var <= lastDef))
                 //SH: case of a method region where there aren't really boundaries.
-                    || ((firstUse == -100) && (lastDef == -100))))
+                    || ((firstUse != null && firstUse == -100) && (lastDef != null && lastDef == -100))))
        varTypeTable.add(var, (TypeInference.make(ir, true)).getType(var).toString());
     }
 }

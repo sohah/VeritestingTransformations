@@ -70,7 +70,8 @@ public class SlotParamTable extends StaticTable<int[]> {
 
         while (keyItr.hasNext()) {
             Integer var = keyItr.next();
-            if ((var < firstUseLastDef.getFirst()) || (var > firstUseLastDef.getSecond()))
+            if ((firstUseLastDef.getFirst() != null && var < firstUseLastDef.getFirst()) ||
+                    (firstUseLastDef.getSecond() != null && var > firstUseLastDef.getSecond()))
                 keyItr.remove();
         }
     }
