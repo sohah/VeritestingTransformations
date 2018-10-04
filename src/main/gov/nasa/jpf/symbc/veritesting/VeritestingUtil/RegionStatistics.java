@@ -32,8 +32,8 @@ public class RegionStatistics {
 
     public String print() {
         String table = new String("\n*** Region Key = " + regionKey + "\n" +
-                "veriHitNumber | spfHitNumber | concreteHit\n" + veriHitNumber + "  | " + spfHitNumber
-                + "  | " + concreteNumber
+                "veriHitNumber | spfHitNumber | concreteHit\n" + veriHitNumber + "      | " + spfHitNumber
+                + "         | " + concreteNumber
                 + "\n-------------------------------------------");
 
         table += "\nFail Reasons\n";
