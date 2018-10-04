@@ -40,6 +40,12 @@ public class SubstitutionVisitor extends AstMapVisitor {
     public final DynamicRegion dynRegion;
     public final ThreadInfo ti;
 
+    /**
+     * This is used to identify if a path had spfCase instruction that requires prouning the path. The flag is used
+     * to stop embedding high order region along that path.
+     */
+    private boolean spfCasePath = false;
+
     private SubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
                                 DynamicTable valueSymbolTable) {
 
@@ -82,6 +88,39 @@ public class SubstitutionVisitor extends AstMapVisitor {
     }
 
     @Override
+    public Stmt visit(NewInstruction c) {
+        spfCasePath = true;
+        return new NewInstruction(c.getOriginal());
+    }
+
+    @Override
+    public Stmt visit(ThrowInstruction c){
+        spfCasePath = true;
+        return new ThrowInstruction(c.getOriginal());
+    }
+
+
+    /**
+     * While visiting IfThenElse, it is responsible for resetting the spfCasePath, if on one path of its branches an SPFCase instruction was discoverd, such as throw or object creation, if this happens then along that path, there should be no high order regions inlined. And when the branch returns the flag needs to be reset and we need to explore the other side of the branch.
+     * @param c
+     * @return
+     */
+    @Override
+    public Stmt visit(IfThenElseStmt c){
+        Expression cond = eva.accept(c.condition);
+        boolean oldSpfPath = this.spfCasePath;
+        Stmt thenStmt = c.thenStmt.accept(this);
+        if(!oldSpfPath && spfCasePath)
+            spfCasePath = false;
+
+        Stmt elseStmt = c.elseStmt.accept(this);
+        if(!oldSpfPath && spfCasePath)
+            spfCasePath = false;
+
+        return  new IfThenElseStmt(c.original,cond, thenStmt, elseStmt);
+    }
+
+    @Override
     public Stmt visit(ReturnInstruction c) {
         return new ReturnInstruction(c.getOriginal(), eva.accept(c.rhs));
     }
@@ -119,51 +158,54 @@ public class SubstitutionVisitor extends AstMapVisitor {
             values.add(params[i]); // in case of non static, the first parameter needs to be de-referenced because it will refer to an object class.
         }
 
-        SSAInvokeInstruction instruction = c.getOriginal();
-        IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
-        if ((invokeCode == IInvokeInstruction.Dispatch.STATIC) ||(invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)) {
-            Pair<String, StaticRegion> keyRegionPair = findMethodRegion(c);
-            StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
-            if (hgOrdStaticRegion != null) {
-                String key = keyRegionPair.getFirst();
+        if (!spfCasePath) {
+            SSAInvokeInstruction instruction = c.getOriginal();
+            IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
+            if ((invokeCode == IInvokeInstruction.Dispatch.STATIC) || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)) {
+                Pair<String, StaticRegion> keyRegionPair = findMethodRegion(c);
+                StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
+                if (hgOrdStaticRegion != null) {
+                    String key = keyRegionPair.getFirst();
 
-                System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
-                System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
-                DynamicRegion uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
+                    System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
+                    System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
+                    DynamicRegion uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
 
-                if(invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)
-                    values.remove(0); //removing the object reference from being substituted.
+                    if (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)
+                        values.remove(0); //removing the object reference from being substituted.
 
 
-                DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
-                        "var",
-                        "value",
-                        uniqueHgOrdDynRegion.slotParamTable.getKeys(),
-                        values);
+                    DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
+                            "var",
+                            "value",
+                            uniqueHgOrdDynRegion.slotParamTable.getKeys(),
+                            values);
 
-                Pair<Stmt, DynamicTable> hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdDynRegion, hgOrdValueSymbolTable);
-                Stmt hgOrdStmt = hgOrdUniqueStmtType.getFirst();
-                DynamicTable hgOrdTypeTable = hgOrdUniqueStmtType.getSecond();
+                    Pair<Stmt, DynamicTable> hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdDynRegion, hgOrdValueSymbolTable);
+                    Stmt hgOrdStmt = hgOrdUniqueStmtType.getFirst();
+                    DynamicTable hgOrdTypeTable = hgOrdUniqueStmtType.getSecond();
 
-                dynRegion.varTypeTable.mergeTable(hgOrdTypeTable);
-                Stmt returnStmt;
-                if (c.result.length == 1) {
-                    Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
-                    returnStmt = new AssignmentStmt(c.result[0], stmtRetPair.getSecond());
-                    return new CompositionStmt(stmtRetPair.getFirst(), returnStmt);
+                    dynRegion.varTypeTable.mergeTable(hgOrdTypeTable);
+                    Stmt returnStmt;
+                    if (c.result.length == 1) {
+                        Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
+                        returnStmt = new AssignmentStmt(c.result[0], stmtRetPair.getSecond());
+                        return new CompositionStmt(stmtRetPair.getFirst(), returnStmt);
+                    } else
+                        return hgOrdStmt;
                 } else
-                    return hgOrdStmt;
+                    return new InvokeInstruction(c.getOriginal(), c.result, params);
             } else
                 return new InvokeInstruction(c.getOriginal(), c.result, params);
-        } else {
+        } else
             return new InvokeInstruction(c.getOriginal(), c.result, params);
-        }
     }
 
     /**
      * Attempts to substitute in a high order region.
-     * @param c Current invoke instruction
-     * @param methodRegion MethodRegion where the substitution is going to be attempted.
+     *
+     * @param c                     Current invoke instruction
+     * @param methodRegion          MethodRegion where the substitution is going to be attempted.
      * @param hgOrdValueSymbolTable Value symbol table for te MethodRegion, usually populated with the parameters.
      * @return A pair of substituted statement for the high order region as well as its VarTypeTable.
      */
@@ -200,6 +242,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
     /**
      * Attempts to find a mapping MethodRegion.
+     *
      * @param c Current invoke instruction.
      * @return A pair of the key and the methodRegion if a matching could be found.
      */
@@ -221,7 +264,8 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
     /**
      * Fills out the values of all vars that could be discovered in the region.
-     * @param ti Current executing thread.
+     *
+     * @param ti        Current executing thread.
      * @param dynRegion DynamicRegion for which the ValueSymbolTable is going to be created.
      * @return Populated ValueSymbolTable for variables in the static region.
      */
@@ -262,7 +306,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
     /**
      * Executes substitution over a non-method region.
      *
-     * @param ti           Thread Information currently running by JPF.
+     * @param ti        Thread Information currently running by JPF.
      * @param dynRegion A non-method region that was statically summarized.
      * @return A Dynamic Region that has been substituted by symbolic or concerete values for inputs as well as constants being substituted.
      */
