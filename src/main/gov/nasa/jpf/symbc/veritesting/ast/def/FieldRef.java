@@ -22,10 +22,10 @@ public class FieldRef {
     }
 
     public static FieldRef makeGetFieldRef(ThreadInfo ti, GetInstruction getIns) throws StaticRegionException {
-        if (!(getIns.ref instanceof IntConstant))
+        if (!(getIns.ref instanceof IntConstant) && !getIns.getOriginal().isStatic())
             throw new IllegalArgumentException("cannot make FieldRef for symbolic object reference");
         // getIns.ref contains object reference whereas putIns.def contains object reference
-        int ref = ((IntConstant)getIns.ref).getValue();
+        int ref = getIns.getOriginal().isStatic() ? -1 : ((IntConstant)getIns.ref).getValue();
         if (ref == 0) throw new StaticRegionException("Cannot get any information from null objects");
         String fieldName = getIns.field.getName().toString();
         String className = getIns.getOriginal().isStatic() ?
@@ -35,9 +35,9 @@ public class FieldRef {
     }
 
     public static FieldRef makePutFieldRef(ThreadInfo ti, PutInstruction putIns) throws StaticRegionException {
-        if (!(putIns.def instanceof IntConstant))
+        if (!(putIns.def instanceof IntConstant)&& !putIns.getOriginal().isStatic())
             throw new IllegalArgumentException("cannot make FieldRef for symbolic object reference");
-        int ref = ((IntConstant)putIns.def).getValue();
+        int ref = putIns.getOriginal().isStatic() ? -1 : ((IntConstant)putIns.def).getValue();
         if (ref == 0) throw new StaticRegionException("Cannot get any information from null objects");
         String fieldName = putIns.field.getName().toString();
         String className = putIns.getOriginal().isStatic() ?
