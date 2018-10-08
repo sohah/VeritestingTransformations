@@ -8,7 +8,8 @@ vm.storage.class=nil
 #coverage.include=WBS
 #listener = .symbc.SymbolicListener
 listener = .symbc.VeritestingListener
-veritestingMode = 1
+veritestingMode = 4
+testingMode = true
 #,gov.nasa.jpf.listener.CoverageAnalyzer
 #listener = .listener.ChoiceTracker
 symbolic.dp=z3bitvector

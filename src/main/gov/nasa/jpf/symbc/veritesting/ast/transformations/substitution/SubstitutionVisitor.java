@@ -94,7 +94,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
     }
 
     @Override
-    public Stmt visit(ThrowInstruction c){
+    public Stmt visit(ThrowInstruction c) {
         spfCasePath = true;
         return new ThrowInstruction(c.getOriginal());
     }
@@ -102,22 +102,23 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
     /**
      * While visiting IfThenElse, it is responsible for resetting the spfCasePath, if on one path of its branches an SPFCase instruction was discoverd, such as throw or object creation, if this happens then along that path, there should be no high order regions inlined. And when the branch returns the flag needs to be reset and we need to explore the other side of the branch.
+     *
      * @param c
      * @return
      */
     @Override
-    public Stmt visit(IfThenElseStmt c){
+    public Stmt visit(IfThenElseStmt c) {
         Expression cond = eva.accept(c.condition);
         boolean oldSpfPath = this.spfCasePath;
         Stmt thenStmt = c.thenStmt.accept(this);
-        if(!oldSpfPath && spfCasePath)
+        if (!oldSpfPath && spfCasePath)
             spfCasePath = false;
 
         Stmt elseStmt = c.elseStmt.accept(this);
-        if(!oldSpfPath && spfCasePath)
+        if (!oldSpfPath && spfCasePath)
             spfCasePath = false;
 
-        return  new IfThenElseStmt(c.original,cond, thenStmt, elseStmt);
+        return new IfThenElseStmt(c.original, cond, thenStmt, elseStmt);
     }
 
     @Override
@@ -161,7 +162,9 @@ public class SubstitutionVisitor extends AstMapVisitor {
         if (!spfCasePath) {
             SSAInvokeInstruction instruction = c.getOriginal();
             IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
-            if ((invokeCode == IInvokeInstruction.Dispatch.STATIC) || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)) {
+            if ((invokeCode == IInvokeInstruction.Dispatch.STATIC)
+                    //|| (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)
+                    ) {
                 Pair<String, StaticRegion> keyRegionPair = findMethodRegion(c);
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
                 if (hgOrdStaticRegion != null) {
@@ -170,10 +173,15 @@ public class SubstitutionVisitor extends AstMapVisitor {
                     System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
                     System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
                     DynamicRegion uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
+/*
 
-                    if (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)
+                    if (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL) {
                         values.remove(0); //removing the object reference from being substituted.
+                        ArrayList highOrdKeys = uniqueHgOrdDynRegion.slotParamTable.getKeys();
+                        uniqueHgOrdDynRegion.slotParamTable.remove(highOrdKeys.get(0));
 
+                    }
+*/
 
                     DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
                             "var",
