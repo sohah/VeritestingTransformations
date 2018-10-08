@@ -163,7 +163,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
             SSAInvokeInstruction instruction = c.getOriginal();
             IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
             if ((invokeCode == IInvokeInstruction.Dispatch.STATIC)
-                    //|| (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)
+                    || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)
                     ) {
                 Pair<String, StaticRegion> keyRegionPair = findMethodRegion(c);
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();

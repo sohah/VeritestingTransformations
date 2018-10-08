@@ -41,7 +41,8 @@ public class UniqueRegion {
 
         DynamicRegion dynRegion = new DynamicRegion(staticRegion,
                 dynStmt,
-                varToNumUniqueMap);
+                varToNumUniqueMap, uniqueNum);
+
 
         System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));

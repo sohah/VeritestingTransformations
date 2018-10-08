@@ -93,7 +93,8 @@ public class DynamicRegion implements Region {
     /*
 
 */
-/**
+
+    /**
      * Basic constructor that is used to construct the DynamicRegion from another DynamicRegion, it also clones the tables of the old region.
      *//*
 
@@ -116,8 +117,6 @@ public class DynamicRegion implements Region {
     }
 
 */
-
-
     public DynamicRegion(DynamicRegion oldDynRegion,
                          Stmt dynStmt,
                          SPFCaseList spfCaseList,
@@ -128,7 +127,8 @@ public class DynamicRegion implements Region {
         this.inputTable = new DynamicTable(
                 "Region Input Table",
                 "var",
-                oldDynRegion.isMethodRegion ? "param" : "slot");;
+                oldDynRegion.isMethodRegion ? "param" : "slot");
+        ;
         this.endIns = oldDynRegion.endIns;
         this.isMethodRegion = oldDynRegion.isMethodRegion;
         this.outputTable = oldDynRegion.outputTable;
@@ -143,15 +143,16 @@ public class DynamicRegion implements Region {
     }
 
 
-
     /**
      * Constructor that is used to create a dynamic region out of a static region.
+     *
      * @param staticRegion
      * @param dynStmt
      * @param varToNumMap
+     * @param uniqueNum
      */
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, HashMap<Integer, Variable> varToNumMap) {
+    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, HashMap<Integer, Variable> varToNumMap, int uniqueNum) {
         this.ir = staticRegion.ir;
         this.dynStmt = dynStmt;
         this.endIns = staticRegion.endIns;
@@ -160,22 +161,30 @@ public class DynamicRegion implements Region {
         this.regionSummary = null;
         this.spfPredicateSummary = null;
 
-        this.slotParamTable = new DynamicTable(
-                (StaticTable) staticRegion.slotParamTable,
-                varToNumMap,
-                "stack-slot table",
-                "var",
-                staticRegion.isMethodRegion ? "param" : "slot");
+        if (isMethodRegion)
+            this.slotParamTable = new DynamicTable(
+                    (StaticTable) staticRegion.slotParamTable,
+                    varToNumMap,
+                    "stack-slot table",
+                    "var",
+                    staticRegion.isMethodRegion ? "param" : "slot", uniqueNum);
+        else
+            this.slotParamTable = new DynamicTable(
+                    (StaticTable) staticRegion.slotParamTable,
+                    varToNumMap,
+                    "stack-slot table",
+                    "var",
+                    staticRegion.isMethodRegion ? "param" : "slot");
 
         this.inputTable = new DynamicTable(
-                (StaticTable)staticRegion.inputTable,
+                (StaticTable) staticRegion.inputTable,
                 varToNumMap,
                 "Region Input Table",
                 "var",
                 staticRegion.isMethodRegion ? "param" : "slot");
 
         this.varTypeTable = new DynamicTable(
-                (StaticTable)staticRegion.varTypeTable,
+                (StaticTable) staticRegion.varTypeTable,
                 varToNumMap,
                 "WalaVarTypeTable",
                 " var ",

@@ -1,10 +1,12 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 
+import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class DynamicTable<V> extends Table<Variable, V> {
 
@@ -28,6 +30,24 @@ public class DynamicTable<V> extends Table<Variable, V> {
             populateReverseDynamicTable(staticTable, numToVarMap);
         else
             populateDynamicTable(staticTable, numToVarMap);
+    }
+
+    public DynamicTable(StaticTable slotParamTable, HashMap<Integer, Variable> varToNumMap, String s, String var, String s1, int uniqueNum) {
+        int paramSize = slotParamTable.table.size();
+
+        for(int i =0; i<paramSize; i++){
+            Variable uniqueVar = varToNumMap.get(i + 1);
+            if(uniqueVar != null){
+                this.add(uniqueVar, (V) slotParamTable.lookup(i+1));
+            }
+            else{
+                String varId = Integer.toString(i+1);
+                varId = varId.concat("$");
+                varId = varId.concat(Integer.toString(uniqueNum));
+                WalaVarExpr walaVar = new WalaVarExpr(i+1, varId);
+                this.add(walaVar,(V) slotParamTable.lookup(i+1));
+            }
+        }
     }
 
     private void populateDynamicTable(StaticTable staticTable, HashMap<Integer, Variable> numToVarMap) {
