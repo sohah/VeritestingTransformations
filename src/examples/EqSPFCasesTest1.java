@@ -22,7 +22,7 @@ public class EqSPFCasesTest1 extends TestRegionBaseClass {
             a = 2 + a;
         }
       Outputs o = new Outputs();
-        o.intOutputs = new int[a];
+        o.intOutputs = new int[]{a};
         return o;
     }
 

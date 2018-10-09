@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
-import com.ibm.wala.ssa.IR;
-import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAPhiInstruction;
-import com.ibm.wala.ssa.SymbolTable;
+import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprBoundaryVisitor;
@@ -60,6 +57,11 @@ public class SlotParamTable extends StaticTable<int[]> {
         for (SSAInstruction ins : ir.getControlFlowGraph().getInstructions()) {
             if (ins != null)
                 ins.visit(stackSlotIVisitor);
+        }
+        for (Iterator<ISSABasicBlock> bbItr = ir.getControlFlowGraph().iterator(); bbItr.hasNext();) {
+            for (Iterator<SSAPhiInstruction> phiItr = bbItr.next().iteratePhis(); phiItr.hasNext(); ) {
+                phiItr.next().visit(stackSlotIVisitor);
+            }
         }
         stackSlotPhiPropagation();
 //        filterTableForBoundary(stmt, firstUseLastDef);
