@@ -95,7 +95,7 @@ public class ArraySubscriptMap {
             ArrayRef arrayRef = (ArrayRef) pair.getKey();
             SubscriptPair subscriptPair = (SubscriptPair) pair.getValue();
             ArrayRefVarExpr expr = new ArrayRefVarExpr(arrayRef, subscriptPair);
-            expr.makeUnique(uniqueNum);
+            expr = expr.makeUnique(uniqueNum);
             retList.add(expr);
         }
         return retList;

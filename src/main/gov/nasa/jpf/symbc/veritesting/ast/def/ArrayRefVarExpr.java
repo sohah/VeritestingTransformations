@@ -7,6 +7,8 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr.getUniqueWalaVarExpr;
+
 public class ArrayRefVarExpr extends CloneableVariable {
     public final ArrayRef arrayRef;
     public final SubscriptPair subscript;
@@ -90,9 +92,17 @@ public class ArrayRefVarExpr extends CloneableVariable {
     }
 
     @Override
-    public void makeUnique(int unique) throws StaticRegionException {
-        if (uniqueNum != -1 && unique != uniqueNum) throw new StaticRegionException("Attempting to make a already-unique ArrayRefVarExpr unique");
+    public ArrayRefVarExpr makeUnique(int unique) throws StaticRegionException {
+        ArrayRefVarExpr retExpr = this;
+        if (uniqueNum != -1 && unique != uniqueNum)
+            throw new StaticRegionException("Attempting to make a already-unique ArrayRefVarExpr unique");
         uniqueNum = unique;
+        if (WalaVarExpr.class.isInstance(arrayRef.index))
+            assert ((WalaVarExpr)arrayRef.index).getName().contains("$");
+//        if (WalaVarExpr.class.isInstance(arrayRef.index)) {
+//            retExpr = new ArrayRefVarExpr(new ArrayRef(arrayRef.ref, getUniqueWalaVarExpr((WalaVarExpr) arrayRef.index, uniqueNum)), subscript, uniqueNum);
+//        }
+        return retExpr.clone();
     }
 
     @Override

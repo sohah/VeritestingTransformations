@@ -81,6 +81,16 @@ public final class WalaVarExpr extends Variable {
     }
 
     public WalaVarExpr clone(){
-        return new WalaVarExpr(number);
+        String name = getName();
+        if (name.startsWith("@w"))
+            return new WalaVarExpr(number, name.substring(2));
+        else return new WalaVarExpr(number, name);
+    }
+
+    public static WalaVarExpr getUniqueWalaVarExpr(WalaVarExpr expr, int uniqueNum) {
+        String varId = Integer.toString(expr.number);
+        varId = varId.concat("$");
+        varId = varId.concat(Integer.toString(uniqueNum));
+        return new WalaVarExpr(expr.number, varId);
     }
 }

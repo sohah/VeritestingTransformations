@@ -97,7 +97,7 @@ public final class FieldSubscriptMap {
             FieldRef fieldRef = (FieldRef) pair.getKey();
             SubscriptPair subscriptPair = (SubscriptPair) pair.getValue();
             FieldRefVarExpr expr = new FieldRefVarExpr(fieldRef, subscriptPair);
-            expr.makeUnique(uniqueNum);
+            expr = expr.makeUnique(uniqueNum);
             retList.add(expr);
         }
         return retList;
