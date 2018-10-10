@@ -106,7 +106,7 @@ public class CloneableVarTable<T> {
         while(itr.hasNext()){
             CloneableVariable oldKey = (CloneableVariable) itr.next();
             CloneableVariable newKey = oldKey.clone();
-            newKey.makeUnique(unique);
+            newKey = newKey.makeUnique(unique);
             table.put(newKey, table.get(oldKey));
             table.remove(oldKey);
         }

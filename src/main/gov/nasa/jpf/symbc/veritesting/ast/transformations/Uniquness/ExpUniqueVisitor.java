@@ -11,6 +11,8 @@ import za.ac.sun.cs.green.expr.Variable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr.getUniqueWalaVarExpr;
+
 /**
  * Unique Expression Visitor that ensures the uniqueness of vars used inside the region.
  */
@@ -40,10 +42,7 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
         if (varToNumUniqueMap.containsKey(expr.number))
             return varToNumUniqueMap.get(expr.number);
         else {
-            String varId = Integer.toString(expr.number);
-            varId = varId.concat("$");
-            varId = varId.concat(Integer.toString(uniqueNum));
-            WalaVarExpr walaVar = new WalaVarExpr(expr.number, varId);
+            WalaVarExpr walaVar = getUniqueWalaVarExpr(expr, uniqueNum);
             varToNumUniqueMap.put(expr.number, walaVar);
             return walaVar;
         }

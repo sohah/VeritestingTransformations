@@ -112,6 +112,6 @@ public class NoSkipVisitor implements AstVisitor<Stmt> {
     public Stmt bad(Object obj) {
         String name = obj.getClass().getCanonicalName();
         throw new IllegalArgumentException("Unsupported class: " + name +
-                " value: " + obj.toString() + " seen in AstToGreenVisitor");
+                " value: " + obj.toString() + " seen in NoSkipVisitor");
     }
 }

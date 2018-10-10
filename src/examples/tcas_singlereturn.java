@@ -321,9 +321,9 @@ public class tcas_singlereturn {
 //				result_alim != DOWNWARD_RA : true);
 
 		//passes
-//		assert((Up_Separation < result_alim &&
-//				Down_Separation >= result_alim) ?
-//				result_alim != UPWARD_RA : true);
+		assert((Up_Separation < result_alim &&
+				Down_Separation >= result_alim) ?
+				result_alim != UPWARD_RA : true);
 
 		// fails
 //		assert((Up_Separation >= alim &&

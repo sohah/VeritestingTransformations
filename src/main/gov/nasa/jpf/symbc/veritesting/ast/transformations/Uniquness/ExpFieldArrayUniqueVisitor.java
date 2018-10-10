@@ -25,9 +25,9 @@ public class ExpFieldArrayUniqueVisitor extends ExprMapVisitor implements ExprVi
      */
     @Override
     public Expression visit(FieldRefVarExpr expr) {
-        FieldRefVarExpr uniqueExpr = expr.clone();
+        FieldRefVarExpr uniqueExpr = expr;
         try {
-            uniqueExpr.makeUnique(uniqueNum);
+            uniqueExpr = uniqueExpr.makeUnique(uniqueNum);
         } catch (StaticRegionException e) {
             sre = e;
         }
@@ -42,9 +42,9 @@ public class ExpFieldArrayUniqueVisitor extends ExprMapVisitor implements ExprVi
      */
     @Override
     public Expression visit(ArrayRefVarExpr expr) {
-        ArrayRefVarExpr uniqueExpr = expr.clone();
+        ArrayRefVarExpr uniqueExpr = expr;
         try {
-            uniqueExpr.makeUnique(uniqueNum);
+            uniqueExpr = uniqueExpr.makeUnique(uniqueNum);
         } catch (StaticRegionException e) {
             sre = e;
         }

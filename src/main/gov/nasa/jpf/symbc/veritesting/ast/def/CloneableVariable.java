@@ -15,7 +15,7 @@ public abstract class CloneableVariable extends Variable implements Cloneable {
     @Override
     public abstract CloneableVariable clone() throws CloneNotSupportedException;
 
-    public abstract void makeUnique(int unique) throws StaticRegionException;
+    public abstract CloneableVariable makeUnique(int unique) throws StaticRegionException;
 
     @Override
     public abstract int hashCode();
