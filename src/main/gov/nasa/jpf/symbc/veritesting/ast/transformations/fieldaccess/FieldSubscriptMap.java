@@ -3,6 +3,8 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRef;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 public final class FieldSubscriptMap {
@@ -37,9 +39,12 @@ public final class FieldSubscriptMap {
 
     public void remove(FieldRef key) {
         if (lookup(key) != null)
-            for (FieldRef field: table.keySet()) {
+            for (Iterator<Map.Entry<FieldRef, SubscriptPair>> fieldRefItr = table.entrySet().iterator();
+                 ((Iterator) fieldRefItr).hasNext(); ) {
+                Map.Entry<FieldRef, SubscriptPair> entry = fieldRefItr.next();
+                FieldRef field = entry.getKey();
                 if (field.ref == key.ref && field.field.equals(key.field))
-                    table.remove(field);
+                    fieldRefItr.remove();
             }
     }
 
