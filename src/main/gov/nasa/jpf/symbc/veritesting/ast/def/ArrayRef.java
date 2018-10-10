@@ -57,11 +57,8 @@ public class ArrayRef {
         }
         else if (index instanceof IntConstant) {
             return new ArrayRef(ref, new IntConstant(((IntConstant) index).getValue()));
-        } else if (index instanceof RealVariable){
-            RealVariable r = (RealVariable) index;
-            return new ArrayRef(ref, new RealVariable(r.getName(), r.getLowerBound(), r.getUpperBound()));
-        } else if (index instanceof RealConstant) {
-            return new ArrayRef(ref, new RealConstant(((RealConstant) index).getValue()));
-        } else throw new IllegalArgumentException("Unsupported index type found when cloning ArrayRef");
+        } else if (index instanceof WalaVarExpr) {
+            return new ArrayRef(ref, ((WalaVarExpr)index).clone());
+        }  else throw new IllegalArgumentException("Unsupported index type found when cloning ArrayRef");
     }
 }

@@ -15,6 +15,8 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
+import static java.util.Collections.reverse;
+
 /**
  * A class that represents a Static Region. That is a region that has been statically analyzed but has not been instantiated yet.
  */
@@ -103,7 +105,9 @@ public class StaticRegion implements Region {
                 ISSABasicBlock bb = startingBlock;
                 boolean foundStoppingInsn = false;
                 while (symbCondVisitor.noStackSlotVars.size() > 0 && !foundStoppingInsn) {
-                    for (SSAInstruction ins : bb) {
+                    List<SSAInstruction> bbInsns = ((SSACFG.BasicBlock)bb).getAllInstructions();
+                    reverse(bbInsns);
+                    for (SSAInstruction ins : bbInsns) {
                         SSAToStatDefVisitor visitor =
                                 new SSAToStatDefVisitor(ir, symbCondVisitor.noStackSlotVars, (SlotParamTable) slotParamTable);
                         Stmt stmt = visitor.convert(ins);

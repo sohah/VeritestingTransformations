@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.IR;
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
@@ -54,10 +55,14 @@ public class DynamicRegion implements Region {
     public final DynamicTable varTypeTable;
 
     /**
-     * An environment table tht holds the types of all field variables, referenced by FieldRefVarExpr objects, in the region.
+     * An environment table that holds the types of all field variables, referenced by FieldRefVarExpr objects, in the region.
+     * This table also holds the types of all array references, referenced by ArrayRefVarExpr objects, in the region.
      */
     public final FieldRefTypeTable fieldRefTypeTable;
 
+    /**
+     * Holds path subscript map for field references in the region
+     */
     public FieldSubscriptMap psm;
 
     /**

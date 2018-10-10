@@ -1,17 +1,17 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRef;
+import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public final class FieldSubscriptMap {
     public final HashMap<FieldRef, SubscriptPair> table;
     protected final String tableName = "Path Subscript Map";
     protected final String label1 = "FieldRef";
     protected final String label2 = "subscript";
+    private int uniqueNum = -1;
 
     public FieldSubscriptMap(){
         this.table = new HashMap<>();
@@ -82,5 +82,24 @@ public final class FieldSubscriptMap {
                 table.put(key, p);
             }
         }
+    }
+
+    public void setUniqueNum(int uniqueNum) {
+        this.uniqueNum = uniqueNum;
+    }
+
+    public ArrayList<FieldRefVarExpr> getUniqueFieldAccess() throws StaticRegionException {
+        ArrayList<FieldRefVarExpr> retList = new ArrayList();
+        if (uniqueNum == -1) throw new StaticRegionException("uniqueNum not set before getting unique field accesses");
+        Iterator itr = this.table.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry pair = (Map.Entry) itr.next();
+            FieldRef fieldRef = (FieldRef) pair.getKey();
+            SubscriptPair subscriptPair = (SubscriptPair) pair.getValue();
+            FieldRefVarExpr expr = new FieldRefVarExpr(fieldRef, subscriptPair);
+            expr.makeUnique(uniqueNum);
+            retList.add(expr);
+        }
+        return retList;
     }
 }

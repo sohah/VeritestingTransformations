@@ -67,7 +67,7 @@ public class CloneableVarTable<T> {
 
     public void print() {
         System.out.println("\nprinting " + tableName+" ("+ label1 + "->" + label2 +")");
-        table.forEach((v1, v2) -> System.out.println("@w"+v1 + " --------- " + v2));
+        table.forEach((v1, v2) -> System.out.println(v1 + " --------- " + v2));
     }
 
     /**

@@ -26,7 +26,7 @@ public class UniqueRegion {
      * @return A new static region that is unique.
      */
 
-    public static DynamicRegion execute(StaticRegion staticRegion){
+    public static DynamicRegion execute(StaticRegion staticRegion) {
 
         if((++DynamicRegion.uniqueCounter)% 10 == 0){
             ++DynamicRegion.uniqueCounter; //just to skip numbers with zero on the right handside
@@ -52,6 +52,26 @@ public class UniqueRegion {
         dynRegion.outputTable.print();
 
         return dynRegion;
+    }
+
+    public static DynamicRegion execute(DynamicRegion oldDynRegion) throws StaticRegionException, CloneNotSupportedException {
+        int uniqueNum = DynamicRegion.uniqueCounter;
+        FieldRefTypeTable fieldRefTypeTable = oldDynRegion.fieldRefTypeTable.clone();
+        fieldRefTypeTable.makeUniqueKey(uniqueNum);
+        fieldRefTypeTable.print();
+        ExpFieldArrayUniqueVisitor expUniqueVisitor = new ExpFieldArrayUniqueVisitor(uniqueNum);
+        if (expUniqueVisitor.sre != null) throw expUniqueVisitor.sre;
+        AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
+
+        Stmt dynStmt = oldDynRegion.dynStmt.accept(stmtVisitor);
+
+        DynamicRegion newDynRegion = new DynamicRegion(oldDynRegion,
+                dynStmt,
+                oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary);
+        newDynRegion.fieldRefTypeTable.makeUniqueKey(uniqueNum);
+        newDynRegion.psm.setUniqueNum(uniqueNum);
+        newDynRegion.arrayPSM.setUniqueNum(uniqueNum);
+        return newDynRegion;
     }
 
 }

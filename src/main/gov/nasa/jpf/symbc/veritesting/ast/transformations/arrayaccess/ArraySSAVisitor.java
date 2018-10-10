@@ -49,9 +49,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         Stmt assignStmt = null;
         ArrayRef arrayRef = ArrayRef.makeArrayRef(c);
         if (c.arrayref instanceof IntConstant) {
-            if (arrayRef.ref == 0) {
-                return getThrowInstruction();
-            }
+            if (isUnsupportedArrayRef(arrayRef)) return getThrowInstruction();
             if (psm.lookup(arrayRef) != null) {
                 rhs = new ArrayRefVarExpr(arrayRef, psm.lookup(arrayRef));
                 if (dynRegion.fieldRefTypeTable.lookup(rhs) != null)
@@ -127,7 +125,10 @@ public class ArraySSAVisitor extends AstMapVisitor {
             return new Pair(getArrayExpression(ei, index, "float"), "real"); //elements of the array are concrete
         } else if (ei.getArrayType().equals("D")){
             return new Pair(getArrayExpression(ei, index, "double"), "real"); //elements of the array are concrete
-        } else throw new IllegalArgumentException("Unsupported element type in array");
+        } else if (ei.getArrayType().equals("C")) {
+            return new Pair(getArrayExpression(ei, index, "char"), "int"); //elements of the array are concrete
+        } else
+            throw new IllegalArgumentException("Unsupported element type in array");
     }
 
     private static Expression getArrayExpression(ElementInfo ei, int index, String type) {
@@ -137,7 +138,8 @@ public class ArraySSAVisitor extends AstMapVisitor {
             return type.equals("float") ? new RealConstant(ei.getFloatElement(index)) :
                     type.equals("double") ? new RealConstant(ei.getDoubleElement(index)) :
                             type.equals("byte") ? new IntConstant(ei.getByteElement(index)) :
-                                    new IntConstant(ei.getIntElement(index)) ;
+                                    type.equals("char") ? new IntConstant(ei.getCharElement(index)) :
+                                            new IntConstant(ei.getIntElement(index)) ;
     }
 
     public static void doArrayStore(ThreadInfo ti, ArrayRefVarExpr arrayRefVarExpr, Expression assignExpr, String type) {
@@ -169,9 +171,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             throw new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor");
         else {
             ArrayRef arrayRef = ArrayRef.makeArrayRef(putIns);
-            if (arrayRef.ref == 0) {
-                return getThrowInstruction();
-            }
+            if (isUnsupportedArrayRef(arrayRef)) return getThrowInstruction();
             ArrayRefVarExpr arrayRefVarExpr = new ArrayRefVarExpr(arrayRef, createSubscript(arrayRef));
             Stmt assignStmt = new AssignmentStmt(arrayRefVarExpr, putIns.assignExpr);
             String type = null;
@@ -192,6 +192,16 @@ public class ArraySSAVisitor extends AstMapVisitor {
                 dynRegion.fieldRefTypeTable.add(arrayRefVarExpr.clone(), type);
             return getIfThenElseStmt(arrayRef, assignStmt);
         }
+    }
+
+    private boolean isUnsupportedArrayRef(ArrayRef arrayRef) {
+        if (WalaVarExpr.class.isInstance(arrayRef.index))
+            if (!dynRegion.varTypeTable.lookup(arrayRef.index).equals("int"))
+                return true;
+        if (arrayRef.ref == 0) {
+            return true;
+        }
+        return false;
     }
 
     private SubscriptPair createSubscript(ArrayRef arrayRef) {

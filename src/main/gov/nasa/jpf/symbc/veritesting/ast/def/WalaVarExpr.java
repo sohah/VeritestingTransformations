@@ -81,6 +81,6 @@ public final class WalaVarExpr extends Variable {
     }
 
     public WalaVarExpr clone(){
-        return new WalaVarExpr(number, super.getName());
+        return new WalaVarExpr(number);
     }
 }

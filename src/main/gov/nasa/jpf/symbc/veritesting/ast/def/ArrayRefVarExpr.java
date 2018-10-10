@@ -91,7 +91,7 @@ public class ArrayRefVarExpr extends CloneableVariable {
 
     @Override
     public void makeUnique(int unique) throws StaticRegionException {
-        if (uniqueNum != -1) throw new StaticRegionException("Attempting to make a already-unique ArrayRefVarExpr unique");
+        if (uniqueNum != -1 && unique != uniqueNum) throw new StaticRegionException("Attempting to make a already-unique ArrayRefVarExpr unique");
         uniqueNum = unique;
     }
 

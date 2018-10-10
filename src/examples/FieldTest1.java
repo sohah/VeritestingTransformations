@@ -8,7 +8,9 @@ public class FieldTest1 extends TestRegionBaseClass {
     int count = 0;
 
     public Outputs fieldTest1(int x) {
-        if (x != 0) count = 1;
+        count = x;
+        for (int i=0; i < 2; i++)
+            if (count%2 != 0) count += 1;
 //        assert( x != 0 ? count == 1 : true);
         Outputs o = new Outputs();
         o.intOutputs = new int[1];

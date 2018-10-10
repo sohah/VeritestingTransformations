@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
@@ -18,6 +19,11 @@ public class FieldRefTypeTable extends CloneableVarTable<String> {
      */
     public FieldRefTypeTable() {
         super("FieldRefTypeTable", "FieldRefVarExpr", "type");
+    }
+
+    public FieldRefTypeTable(int uniqueNum) throws StaticRegionException, CloneNotSupportedException {
+        super("FieldRefTypeTable", "FieldRefVarExpr", "type");
+        makeUniqueKey(uniqueNum);
     }
 
     /**

@@ -1,16 +1,18 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
+import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 public class ArraySubscriptMap {
     public final HashMap<ArrayRef, SubscriptPair> table;
     protected final String tableName = "Path Subscript Map";
     protected final String label1 = "ArrayRef";
     protected final String label2 = "subscript";
+    private int uniqueNum = -1;
 
     public ArraySubscriptMap(){
         this.table = new HashMap<>();
@@ -78,6 +80,25 @@ public class ArraySubscriptMap {
                 table.put(key, p);
             }
         }
+    }
+
+    public void setUniqueNum(int uniqueNum) {
+        this.uniqueNum = uniqueNum;
+    }
+
+    public ArrayList<ArrayRefVarExpr> getUniqueArrayAccess() throws StaticRegionException {
+        ArrayList<ArrayRefVarExpr> retList = new ArrayList();
+        if (uniqueNum == -1) throw new StaticRegionException("uniqueNum not set before getting unique array accesses");
+        Iterator itr = this.table.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry pair = (Map.Entry) itr.next();
+            ArrayRef arrayRef = (ArrayRef) pair.getKey();
+            SubscriptPair subscriptPair = (SubscriptPair) pair.getValue();
+            ArrayRefVarExpr expr = new ArrayRefVarExpr(arrayRef, subscriptPair);
+            expr.makeUnique(uniqueNum);
+            retList.add(expr);
+        }
+        return retList;
     }
 }
 
