@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.numeric;
 import java.util.*;
 
 import choco.Problem;
+import com.microsoft.z3.*;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemGeneral;
 import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.IntVariable;
@@ -12,12 +13,6 @@ import za.ac.sun.cs.green.expr.RealVariable;
 import za.ac.sun.cs.green.expr.Variable;
 import za.ac.sun.cs.green.expr.Visitor;
 import za.ac.sun.cs.green.expr.VisitorException;
-
-import com.microsoft.z3.ArithExpr;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Expr;
-import com.microsoft.z3.Z3Exception;
 
 class GreenPbTranslator extends Visitor {
 
@@ -173,7 +168,14 @@ class GreenPbTranslator extends Visitor {
                 case DIV:
                     stack.push((Expr)context.div( l, r));
                     break;
-                case MOD: assert(false);
+                case MOD:
+                    if (BitVecNum.class.isInstance(r)) {
+                        int rValue = ((BitVecNum)r).getInt();
+                        // if rValue is a power of 2, we can implement a mod 2^i as a & (2^i–1)
+                        if ((rValue & (rValue-1)) == 0) {
+                            stack.push((Expr)context.and(l, context.minus(r, 1)));
+                        }
+                    } else assert(false);
                     break;
                 case NEG: assert(false);
                     break;
