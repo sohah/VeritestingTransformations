@@ -93,11 +93,4 @@ public final class WalaVarExpr extends Variable {
         varId = varId.concat(Integer.toString(uniqueNum));
         return new WalaVarExpr(expr.number, varId);
     }
-
-    public static WalaVarExpr getUniqueWalaVarExpr(WalaVarExpr expr, int uniqueNum) {
-        String varId = Integer.toString(expr.number);
-        varId = varId.concat("$");
-        varId = varId.concat(Integer.toString(uniqueNum));
-        return new WalaVarExpr(expr.number, varId);
-    }
 }
