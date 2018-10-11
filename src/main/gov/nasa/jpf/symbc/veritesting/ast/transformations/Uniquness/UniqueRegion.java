@@ -28,9 +28,7 @@ public class UniqueRegion {
 
     public static DynamicRegion execute(StaticRegion staticRegion) {
 
-        if((++DynamicRegion.uniqueCounter)% 10 == 0){
-            ++DynamicRegion.uniqueCounter; //just to skip numbers with zero on the right handside
-        }
+        ++DynamicRegion.uniqueCounter;
         int uniqueNum = DynamicRegion.uniqueCounter;
         HashMap<Integer, Variable> varToNumUniqueMap = new HashMap<>();
         ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum, varToNumUniqueMap);

@@ -206,6 +206,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         System.out.println("\nGreen Expression pushed on the Path Condition:");
         System.out.println(ExprUtil.AstToString(regionSummary));
 /*
+
         SimplifyGreenVisitor simplifyVisitor = new SimplifyGreenVisitor();
         regionSummary.accept(simplifyVisitor);
 
@@ -214,6 +215,7 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         System.out.println("\nSimplified region Summary is:");
         System.out.println(ExprUtil.AstToString(simpleRegionSummary));
 */
+
         DynamicRegion greenDynRegion = new DynamicRegion(dynRegion,
                 dynRegion.dynStmt,
                 dynRegion.spfCaseList,

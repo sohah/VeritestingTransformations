@@ -11,6 +11,7 @@ public class StatisticManager {
     public static boolean veritestingRunning = false;
     public static int solverQueriesUnique = 0;
     public static boolean inializeQueriesFile = true;
+    public static int hgOrdRegionInstance = 0;
 
 
     public void updateVeriSuccForRegion(String key) {
@@ -79,7 +80,8 @@ public class StatisticManager {
                 + "\nNumber of Distinct Un-Veritested Concrete Regions = "+ getConcreteRegionNum()
                 + "\nNumber of Distinct Failed Regions for Field Reference = " + getFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION)
                 + "\nNumber of Distinct Failed Regions for SPFCases = " + getFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION)
-                + "\nNumber of Distinct Failed Regions for Other Reasons = " + getFailNum(FailEntry.FailReason.OTHER);
+                + "\nNumber of Distinct Failed Regions for Other Reasons = " + getFailNum(FailEntry.FailReason.OTHER)
+                + "\nNumber of High Order Regions Attempted = " + hgOrdRegionInstance;
         return out;
     }
 

@@ -1,9 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.Operation;
-import za.ac.sun.cs.green.expr.Visitor;
-import za.ac.sun.cs.green.expr.VisitorException;
+import za.ac.sun.cs.green.expr.*;
 
 public class SimplifyGreenVisitor extends Visitor {
 

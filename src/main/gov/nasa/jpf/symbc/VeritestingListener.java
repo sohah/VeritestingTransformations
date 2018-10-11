@@ -283,12 +283,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
         dynRegion = UniqueRegion.execute(dynRegion);
 
+        if(runMode == VeritestingMode.SPFCASES) {
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
-        dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
+            dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
 
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
-        dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
-
+            dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
+        }
         /*--------------- LINEARIZATION TRANSFORMATION ---------------*/
         LinearizationTransformation linearTrans = new LinearizationTransformation();
         dynRegion = linearTrans.execute(dynRegion);

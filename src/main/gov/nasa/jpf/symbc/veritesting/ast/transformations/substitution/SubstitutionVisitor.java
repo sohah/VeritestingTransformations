@@ -9,6 +9,7 @@ import com.ibm.wala.util.strings.Atom;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
@@ -165,6 +166,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
             if ((invokeCode == IInvokeInstruction.Dispatch.STATIC)
                     || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)
                     ) {
+                ++StatisticManager.hgOrdRegionInstance;
                 Pair<String, StaticRegion> keyRegionPair = findMethodRegion(c);
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
                 if (hgOrdStaticRegion != null) {
@@ -173,16 +175,6 @@ public class SubstitutionVisitor extends AstMapVisitor {
                     System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
                     System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
                     DynamicRegion uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
-/*
-
-                    if (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL) {
-                        values.remove(0); //removing the object reference from being substituted.
-                        ArrayList highOrdKeys = uniqueHgOrdDynRegion.slotParamTable.getKeys();
-                        uniqueHgOrdDynRegion.slotParamTable.remove(highOrdKeys.get(0));
-
-                    }
-*/
-
                     DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
                             "var",
                             "value",
