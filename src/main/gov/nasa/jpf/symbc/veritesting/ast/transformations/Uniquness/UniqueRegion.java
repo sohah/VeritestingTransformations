@@ -54,10 +54,7 @@ public class UniqueRegion {
 
     public static DynamicRegion execute(DynamicRegion oldDynRegion) throws StaticRegionException, CloneNotSupportedException {
         int uniqueNum = DynamicRegion.uniqueCounter;
-        FieldRefTypeTable fieldRefTypeTable = oldDynRegion.fieldRefTypeTable.clone();
-        fieldRefTypeTable.makeUniqueKey(uniqueNum);
-        fieldRefTypeTable.print();
-        ExpFieldArrayUniqueVisitor expUniqueVisitor = new ExpFieldArrayUniqueVisitor(uniqueNum);
+        ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum);
         if (expUniqueVisitor.sre != null) throw expUniqueVisitor.sre;
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
 

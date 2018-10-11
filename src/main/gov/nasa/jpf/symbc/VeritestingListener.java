@@ -390,13 +390,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     private static void populateFieldOutputs(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException {
-        Iterator itr = (Iterator) dynRegion.psm.getUniqueFieldAccess().iterator();
+        Iterator itr = dynRegion.psm.getUniqueFieldAccess().iterator();
         while (itr.hasNext()) {
-            /*Map.Entry pair = (Map.Entry) itr.next();
-            FieldRef fieldRef = (FieldRef) pair.getKey();
-            SubscriptPair subscriptPair = (SubscriptPair) pair.getValue();*/
             FieldRefVarExpr expr = (FieldRefVarExpr) itr.next();
-//            expr.makeUnique(DynamicRegion.uniqueCounter);
             Expression symVar = createGreenVar(dynRegion.fieldRefTypeTable.lookup(expr), expr.getSymName());
             new SubstituteGetOutput(ti, expr.fieldRef, false, greenToSPFExpression(symVar)).invoke();
         }
@@ -405,11 +401,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static void populateArrayOutputs(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException {
         Iterator itr = dynRegion.arrayPSM.getUniqueArrayAccess().iterator();
         while (itr.hasNext()) {
-            /*Map.Entry pair = (Map.Entry) itr.next();
-            ArrayRef arrayRef = (ArrayRef) pair.getKey();
-            SubscriptPair subscriptPair = (SubscriptPair) pair.getValue();*/
             ArrayRefVarExpr expr = (ArrayRefVarExpr) itr.next();
-//            expr.makeUnique(DynamicRegion.uniqueCounter);
             Expression symVar = createGreenVar(dynRegion.fieldRefTypeTable.lookup(expr), expr.getSymName());
             doArrayStore(ti, expr, symVar, dynRegion.fieldRefTypeTable.lookup(expr));
         }
