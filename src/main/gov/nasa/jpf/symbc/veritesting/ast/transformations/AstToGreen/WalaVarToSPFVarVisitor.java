@@ -74,7 +74,7 @@ public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
         if (type != null)
             return createGreenVar(type, expr.getName());
         else
-            return expr;
+            throw new IllegalArgumentException("Failed to infer type of Wala var, " + expr);
     }
 
     @Override
