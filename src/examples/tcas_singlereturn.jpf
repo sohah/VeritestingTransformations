@@ -10,7 +10,7 @@ vm.storage.class=nil
 #coverage.include=tcas_singlereturn
 listener = .symbc.VeritestingListener
 #listener = .symbc.SymbolicListener
-veritestingMode = 3
+veritestingMode = 4
 performanceMode = true
 #,gov.nasa.jpf.listener.CoverageAnalyzer
 #listener = .listener.ChoiceTracker

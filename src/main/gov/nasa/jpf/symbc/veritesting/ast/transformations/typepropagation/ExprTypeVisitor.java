@@ -79,7 +79,7 @@ public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expre
                 if (dstOp instanceof WalaVarExpr) {
                     int dstNum = ((WalaVarExpr) dstOp).number;
                     if (varTypeTable.lookup(dstNum) == null) return true;
-                    else if (varTypeTable.lookup(srcNum).equals(varTypeTable.lookup(dstNum)))
+                    else if (!varTypeTable.lookup(srcNum).equals(varTypeTable.lookup(dstNum)))
                         throw new IllegalArgumentException("unequal types set for Wala vars used in a binop");
                 }
             }
