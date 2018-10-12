@@ -191,8 +191,9 @@ public class SubstitutionVisitor extends AstMapVisitor {
                         Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
                         returnStmt = new AssignmentStmt(c.result[0], stmtRetPair.getSecond());
                         return new CompositionStmt(stmtRetPair.getFirst(), returnStmt);
-                    } else
-                        return hgOrdStmt;
+                    } else{
+                        return getStmtRetExp(hgOrdStmt).getFirst();
+                    }
                 } else
                     return new InvokeInstruction(c.getOriginal(), c.result, params);
             } else
