@@ -243,7 +243,7 @@ public class tcas_singlereturn {
 	    return alt_sep;
 	}
 
-	public int alt_sep_test() {
+	public static int alt_sep_test() {
 	    boolean enabled = false;
 	    boolean tcas_equipped = false;
 	    boolean intent_not_known = false;
@@ -278,7 +278,7 @@ public class tcas_singlereturn {
 	    return alt_sep;
 	}
 
-	public void mainProcess(int a1, int a2, int a3, int a4, int a5,int a6, int a7, int a8, int a9, int a10, int a11, int a12) {
+	public static void mainProcess(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12) {
 		initialize();
 		Cur_Vertical_Sep = a1;
 		if (a2 == 0) {
@@ -351,8 +351,9 @@ Down_Separation < Positive_RA_Alt_Tresh; ensures \result != need_Downward_RA;
 	}
 
 	public static void main(String[] argv) {
-		tcas_singlereturn t = new tcas_singlereturn();
-		t.mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+//		tcas_singlereturn t = new tcas_singlereturn();
+//		t.mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
 //		mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
 	}
 }

@@ -33,6 +33,7 @@ import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticSummaryChoiceGenerator;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
@@ -73,6 +74,7 @@ import java.util.concurrent.TimeUnit;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isUnsupportedRegionEnd;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.hgOrdRegionInstance;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor.doArrayStore;
 
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
@@ -94,10 +96,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static StatisticManager statisticManager = new StatisticManager();
     private static int veritestRegionExpectedCount = -1;
 
-    public enum VeritestingMode {
-        VANILLASPF, //not effective yet
-        VERITESTING, HIGHORDER, SPFCASES
-    }
+    public enum VeritestingMode { VANILLASPF, VERITESTING, HIGHORDER, SPFCASES }
 
     private static VeritestingMode runMode;
     public static boolean performanceMode = false;
@@ -105,15 +104,17 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
             veritestingMode = conf.getInt("veritestingMode");
-            runMode = (veritestingMode == 4) ?
-                    VeritestingMode.SPFCASES : ((veritestingMode == 3) ? VeritestingMode.HIGHORDER : VeritestingMode.VERITESTING);
+            runMode = veritestingMode == 4 ? VeritestingMode.SPFCASES :
+                    ((veritestingMode == 3 ? VeritestingMode.HIGHORDER :
+                            (veritestingMode == 2 ? VeritestingMode.VERITESTING : VeritestingMode.VANILLASPF)));
 
             switch (runMode) {
                 case VANILLASPF:
                     System.out.println("* Warning: either invalid or no veritestingMode specified.");
-                    System.out.println("* Warning: set veritestingMode to 0 to use vanilla SPF with VeritestingListener");
-                    System.out.println("* Warning: set veritestingMode to 1 to use veritesting");
-                    System.out.println("* Warning: set veritestingMode to 2 to use veritesting with SPFCases");
+                    System.out.println("* Warning: set veritestingMode to 1 to use vanilla SPF with VeritestingListener");
+                    System.out.println("* Warning: set veritestingMode to 2 to use veritesting");
+                    System.out.println("* Warning: set veritestingMode to 3 to use veritesting with higher order regions");
+                    System.out.println("* Warning: set veritestingMode to 4 to use veritesting with higher order regions and SPFCases");
                     System.out.println("* Warning: resetting veritestingMode to 0 (aka use vanilla SPF)");
                     veritestingMode = 0;
                     break;
@@ -149,6 +150,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      * @param instructionToExecute instruction to be executed.
      */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+        if (runMode == VeritestingMode.VANILLASPF) return;
         boolean noVeritestingFlag = false;
         StackFrame curr = ti.getTopFrame();
         // Begin equivalence checking code
@@ -336,18 +338,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static boolean canSetPC(ThreadInfo ti, Expression regionSummary) throws StaticRegionException {
         PathCondition pc;
 
-        // if we're trying to run fast, then assume that the region summary is satisfiable in any non-SPFCASES mode
-        if (performanceMode && (runMode == VeritestingMode.VERITESTING || runMode == VeritestingMode.HIGHORDER))
-            return true;
 
-        if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
+        if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator) {
             pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
+        }
         else {
             pc = new PathCondition();
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
         pc._addDet(new GreenConstraint(regionSummary));
-        if (pc.simplify()) {
+        // if we're trying to run fast, then assume that the region summary is satisfiable in any non-SPFCASES mode
+        if ((performanceMode && (runMode == VeritestingMode.VERITESTING || runMode == VeritestingMode.HIGHORDER)) ||
+                pc.simplify()) {
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             return true;
         } else {
@@ -474,6 +476,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Total Solver Clean up Time = " + TimeUnit.NANOSECONDS.toMillis(cleanupTime) + " msec");
 
         pw.println(statisticManager.printAccumulativeStatistics());
+
         pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
         pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
         /* Begin added for equivalence checking */
@@ -482,6 +485,22 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             assert (veritestRegionCount == veritestRegionExpectedCount);
         }
         /* End added for equivalence checking */
+
+        pw.println(TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur)+","+
+                TimeUnit.NANOSECONDS.toMillis(dynRunTime) + "," +
+                solverCount + "," +
+                TimeUnit.NANOSECONDS.toMillis(totalSolverTime) + "," +
+                TimeUnit.NANOSECONDS.toMillis(parseTime) + "," +
+                TimeUnit.NANOSECONDS.toMillis(cleanupTime) + "," +
+                statisticManager.getDistinctVeriRegionNum() + "," +
+                statisticManager.getDistinctSpfRegionNum() + "," +
+                statisticManager.getConcreteRegionNum() + "," +
+                statisticManager.getFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION) + "," +
+                statisticManager.getFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION) + "," +
+                statisticManager.getFailNum(FailEntry.FailReason.OTHER) + "," +
+                hgOrdRegionInstance + "," +
+                statisticManager.regionCount() + "," +
+                veritestRegionCount);
 
     }
 }

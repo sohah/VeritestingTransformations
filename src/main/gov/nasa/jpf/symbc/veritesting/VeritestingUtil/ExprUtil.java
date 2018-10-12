@@ -91,6 +91,7 @@ public class ExprUtil {
     }
 
     /*
+    TODO: This method needs to be replaced by the use of the SimplifyGreenVisitor. Soha to look into this in the future.
     returns unsatisfiable only if it is certain, else it returns satisfiable. This method doesn't make any solver calls.
     It walks over each expression inside each GreenConstraint and checks if the expression was found to be unsatisfiable.
      */
