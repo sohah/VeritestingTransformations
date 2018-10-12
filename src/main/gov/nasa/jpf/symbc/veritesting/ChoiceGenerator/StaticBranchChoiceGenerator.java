@@ -17,6 +17,7 @@ import za.ac.sun.cs.green.expr.Operation;
 
 import static gov.nasa.jpf.symbc.VeritestingListener.performanceMode;
 import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatisfiable;
 
 
@@ -207,22 +208,6 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             }
             return instruction.getNext(ti);
         }
-    }
-
-    /*
-    This method tries to avoid a solver call to check satisfiability of the path condition if running in
-    performance mode. It avoids the solver call if the isSatisfiable method returns false.
-     */
-    private boolean isPCSat(PathCondition pc) throws StaticRegionException {
-        boolean isPCSat = isSatisfiable(pc);
-        // verify that static unsatisfiability is confirmed by solver if we dont want to run fast
-        if (!performanceMode && !isPCSat)
-            assert (!pc.simplify());
-        // in performanceMode, ask the solver for satisfiability only if we didn't find the PC to be unsat.
-        if (performanceMode) {
-            if (isPCSat) isPCSat = pc.simplify();
-        } else isPCSat = pc.simplify();
-        return isPCSat;
     }
 
     // 4 cases (they may be UNSAT, but that's ok):

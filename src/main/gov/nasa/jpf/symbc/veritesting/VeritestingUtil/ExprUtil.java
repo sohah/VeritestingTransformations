@@ -10,6 +10,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import za.ac.sun.cs.green.expr.*;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.performanceMode;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SatResult.DONTKNOW;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SatResult.FALSE;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SatResult.TRUE;
@@ -88,6 +89,22 @@ public class ExprUtil {
         if (IntConstant.class.isInstance(expr)) return "int";
         if (RealConstant.class.isInstance(expr)) return "real";
         return null;
+    }
+
+    /*
+    This method tries to avoid a solver call to check satisfiability of the path condition if running in
+    performance mode. It avoids the solver call if the isSatisfiable method returns false.
+     */
+    public static boolean isPCSat(PathCondition pc) throws StaticRegionException {
+        boolean isPCSat = isSatisfiable(pc);
+        // verify that static unsatisfiability is confirmed by solver if we dont want to run fast
+        if (!performanceMode && !isPCSat)
+            assert (!pc.simplify());
+        // in performanceMode, ask the solver for satisfiability only if we didn't find the PC to be unsat.
+        if (performanceMode) {
+            if (isPCSat) isPCSat = pc.simplify();
+        } else isPCSat = pc.simplify();
+        return isPCSat;
     }
 
     /*

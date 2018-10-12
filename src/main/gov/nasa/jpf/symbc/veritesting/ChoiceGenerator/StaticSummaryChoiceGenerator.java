@@ -14,6 +14,8 @@ import za.ac.sun.cs.green.expr.Operation;
 import java.util.ArrayList;
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
+
 
 public class StaticSummaryChoiceGenerator extends StaticPCChoiceGenerator {
 
@@ -33,7 +35,7 @@ public class StaticSummaryChoiceGenerator extends StaticPCChoiceGenerator {
         Instruction nextInstruction = null;
         if (choice == STATIC_CHOICE) {
             System.out.println("Executing static region choice in SummaryCG");
-            if(this.getCurrentPC().simplify())
+            if(isPCSat(this.getCurrentPC()))
                 nextInstruction = VeritestingListener.setupSPF(ti, instruction, getRegion());
             else { //ignore choice if it is unsat
                 ti.getVM().getSystemState().setIgnored(true);
@@ -44,7 +46,7 @@ public class StaticSummaryChoiceGenerator extends StaticPCChoiceGenerator {
             PathCondition pc;
             pc = this.getCurrentPC();
             nextInstruction = instruction;
-            if(!pc.simplify()) {// not satisfiable
+            if(!isPCSat(pc)) {// not satisfiable
                 // System.out.println("SPF Summary choice unsat!  Instruction: " + instruction.toString());
                 ti.getVM().getSystemState().setIgnored(true);
             }
