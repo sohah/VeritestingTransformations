@@ -143,7 +143,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
     }
 
     public static void doArrayStore(ThreadInfo ti, ArrayRefVarExpr arrayRefVarExpr, Expression assignExpr, String type) {
-        ElementInfo eiArray = ti.getElementInfo(arrayRefVarExpr.arrayRef.ref);
+        ElementInfo eiArray = ti.getModifiableElementInfo(arrayRefVarExpr.arrayRef.ref);
         int len=(eiArray.getArrayFields()).arrayLength(); // assumed concrete
         Expression indexExp = arrayRefVarExpr.arrayRef.index;
         if (IntConstant.class.isInstance(indexExp)) {

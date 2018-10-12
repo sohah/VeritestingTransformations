@@ -100,6 +100,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     private static VeritestingMode runMode;
+    public static boolean performanceMode = false;
 
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
@@ -123,6 +124,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     System.out.println("* running veritesting with SPFCases.");
                     break;
             }
+
+            if (conf.hasValue("performanceMode"))
+                performanceMode = conf.getBoolean("performanceMode");
 
             if (conf.hasValue("veritestRegionExpectedCount"))
                 veritestRegionExpectedCount = conf.getInt("veritestRegionExpectedCount");
@@ -331,6 +335,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      */
     private static boolean canSetPC(ThreadInfo ti, Expression regionSummary) throws StaticRegionException {
         PathCondition pc;
+
+        // if we're trying to run fast, then assume that the region summary is satisfiable in any non-SPFCASES mode
+        if (performanceMode && (runMode == VeritestingMode.VERITESTING || runMode == VeritestingMode.HIGHORDER))
+            return true;
 
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
             pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
