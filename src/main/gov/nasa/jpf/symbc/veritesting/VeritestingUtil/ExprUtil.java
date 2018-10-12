@@ -1,8 +1,18 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
+import gov.nasa.jpf.symbc.numeric.Constraint;
+import gov.nasa.jpf.symbc.numeric.GreenConstraint;
 import gov.nasa.jpf.symbc.numeric.GreenToSPFTranslator;
+import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import za.ac.sun.cs.green.expr.*;
+
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SatResult.DONTKNOW;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SatResult.FALSE;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SatResult.TRUE;
 
 /**
  * A utility class that provides some methods from SPF to Green and vise versa.
@@ -79,5 +89,93 @@ public class ExprUtil {
         if (RealConstant.class.isInstance(expr)) return "real";
         return null;
     }
+
+    /*
+    returns unsatisfiable only if it is certain, else it returns satisfiable. This method doesn't make any solver calls.
+    It walks over each expression inside each GreenConstraint and checks if the expression was found to be unsatisfiable.
+     */
+    public static boolean isSatisfiable(PathCondition pc) throws StaticRegionException {
+        Constraint constraint = pc.header;
+        while (constraint != null) {
+            if (GreenConstraint.class.isInstance(constraint)) {
+                Expression greenExpression = ((GreenConstraint) constraint).getExp();
+                if (isSatExpression(greenExpression) == FALSE) {
+                    System.out.println("found an unsat pc");
+                    return false;
+                }
+//                try {
+//                    greenExpression.accept(satVisitor);
+//                } catch (VisitorException e) {
+//                    throw new StaticRegionException(e.getMessage());
+//                }
+            }
+            constraint = constraint.and;
+        }
+        return true;
+    }
+
+    public enum SatResult { TRUE, FALSE, DONTKNOW };
+
+    private static SatResult isSatExpression(Expression expression) {
+        if (expression instanceof Operation) {
+            Operation operation = (Operation) expression;
+            if (operation.getArity() == 2) {
+                Expression operand1 = operation.getOperand(0);
+                Expression operand2 = operation.getOperand(1);
+                if (operand1 instanceof IntConstant && operand2 instanceof IntConstant) {
+                    int val1 = ((IntConstant)operand1).getValue();
+                    int val2 = ((IntConstant)operand2).getValue();
+                    switch(operation.getOperator()) {
+                        case EQ: return val1 == val2 ? TRUE: FALSE;
+                        case NE: return val1 != val2 ? TRUE: FALSE;
+                        case LT: return val1 < val2 ? TRUE: FALSE;
+                        case LE: return val1 <= val2 ? TRUE: FALSE;
+                        case GT: return val1 > val2 ? TRUE: FALSE;
+                        case GE: return val1 >= val2 ? TRUE: FALSE;
+                        case BIT_AND: return (val1 & val2) != 0 ? TRUE: FALSE;
+                        case BIT_OR: return (val1 | val2) != 0 ? TRUE: FALSE;
+                        case BIT_XOR: return (val1 ^ val2) != 0 ? TRUE: FALSE;
+                        default: return DONTKNOW;
+                    }
+                }
+            } else if (operation.getArity() == 1) {
+                Expression operand1 = operation.getOperand(0);
+                if (operand1 instanceof IntConstant) {
+                    int val1 = ((IntConstant) operand1).getValue();
+                    switch (operation.getOperator()) {
+                        case BIT_NOT: return (~val1) != 0 ? TRUE: FALSE;
+                        case NOT: return val1 == 0 ? TRUE: FALSE;
+                        default: return DONTKNOW;
+                    }
+                }
+            }
+            if (operation.getArity() == 2) {
+                SatResult operand1Sat = isSatExpression(operation.getOperand(0));
+                SatResult operand2Sat = isSatExpression(operation.getOperand(1));
+                SatResult result;
+                switch(operation.getOperator()) {
+                    case AND:
+                        result = (operand1Sat == FALSE || operand2Sat == FALSE) ? FALSE :
+                                ((operand1Sat == TRUE && operand2Sat == TRUE) ? TRUE : DONTKNOW);
+                        return result;
+                    case OR:
+                        result = (operand1Sat == TRUE || operand2Sat == TRUE) ? TRUE:
+                            ((operand1Sat == FALSE && operand2Sat == FALSE) ? FALSE: DONTKNOW);
+                        return result;
+                    default: return DONTKNOW;
+                }
+            }
+            else if (operation.getArity() == 1) {
+                SatResult operand1Sat = isSatExpression(operation.getOperand(0));
+                if (operand1Sat == DONTKNOW) return DONTKNOW;
+                switch(operation.getOperator()) {
+                    case NOT: return operand1Sat == FALSE ? TRUE : FALSE;
+                    default: return DONTKNOW;
+                }
+            }
+        }
+        return DONTKNOW;
+    }
+
 
 }

@@ -15,7 +15,9 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.performanceMode;
 import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatisfiable;
 
 
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
@@ -100,7 +102,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
         We unpack the instruction, add it to the PC, and execute.
      */
-    private Instruction executeBinaryIf(Instruction instruction, int choice) {
+    private Instruction executeBinaryIf(Instruction instruction, int choice) throws StaticRegionException {
         /*if(currentTopFrame != null)
             ti.setTopFrame(currentTopFrame); //retoring the stackframe for SPFCase
 */
@@ -132,8 +134,8 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                         pc._addDet(byteCodeOp, sym_v1, v2);
                 } else
                     pc._addDet(byteCodeOp, v1, sym_v2);
-
-                if (!pc.simplify()) {// not satisfiable
+                boolean isPCSat = isPCSat(pc);
+                if (!isPCSat) {// not satisfiable
                     ti.getVM().getSystemState().setIgnored(true);
                 } else {
                     this.setCurrentPC(pc);
@@ -148,7 +150,8 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                         pc._addDet(byteCodeNegOp, sym_v1, v2);
                 } else
                     pc._addDet(byteCodeNegOp, v1, sym_v2);
-                if (!pc.simplify()) {// not satisfiable
+                boolean isPCSat = isPCSat(pc);
+                if (!isPCSat) {// not satisfiable
                     ti.getVM().getSystemState().setIgnored(true);
                 } else {
                     this.setCurrentPC(pc);
@@ -175,7 +178,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
     }
 
 
-    public Instruction executeUnaryIf(Instruction instruction, int choice) {
+    public Instruction executeUnaryIf(Instruction instruction, int choice) throws StaticRegionException {
         StackFrame sf = ti.getModifiableTopFrame();
         IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
 
@@ -187,7 +190,8 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         PathCondition pc = this.getCurrentPC();
         if (choice == ELSE_CHOICE) {
             pc._addDet(SpfUtil.getComparator(instruction), sym_v, 0);
-            if (!pc.simplify()) {// not satisfiable
+            boolean isPCSat = isPCSat(pc);
+            if (!isPCSat) {// not satisfiable
                 ti.getVM().getSystemState().setIgnored(true);
             } else {
                 this.setCurrentPC(pc);
@@ -195,13 +199,30 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             return ((IfInstruction) instruction).getTarget();
         } else {
             pc._addDet(SpfUtil.getNegComparator(instruction), sym_v, 0);
-            if (!pc.simplify()) {// not satisfiable
+            boolean isPCSat = isPCSat(pc);
+            if (!isPCSat) {// not satisfiable
                 ti.getVM().getSystemState().setIgnored(true);
             } else {
                 this.setCurrentPC(pc);
             }
             return instruction.getNext(ti);
         }
+    }
+
+    /*
+    This method tries to avoid a solver call to check satisfiability of the path condition if running in
+    performance mode. It avoids the solver call if the isSatisfiable method returns false.
+     */
+    private boolean isPCSat(PathCondition pc) throws StaticRegionException {
+        boolean isPCSat = isSatisfiable(pc);
+        // verify that static unsatisfiability is confirmed by solver if we dont want to run fast
+        if (!performanceMode && !isPCSat)
+            assert (!pc.simplify());
+        // in performanceMode, ask the solver for satisfiability only if we didn't find the PC to be unsat.
+        if (performanceMode) {
+            if (isPCSat) isPCSat = pc.simplify();
+        } else isPCSat = pc.simplify();
+        return isPCSat;
     }
 
     // 4 cases (they may be UNSAT, but that's ok):
