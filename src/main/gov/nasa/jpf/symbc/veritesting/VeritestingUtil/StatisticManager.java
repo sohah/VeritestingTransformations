@@ -12,6 +12,9 @@ public class StatisticManager {
     public static int solverQueriesUnique = 0;
     public static boolean inializeQueriesFile = true;
     public static int hgOrdRegionInstance = 0;
+    public static int SPFCaseSolverCount = 0;
+    public static long SPFCaseSolverTime = 0;
+    public static long constPropTime = 0;
 
 
     public void updateVeriSuccForRegion(String key) {

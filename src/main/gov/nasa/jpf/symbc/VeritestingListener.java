@@ -474,6 +474,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Total Solver Time = " + TimeUnit.NANOSECONDS.toMillis(totalSolverTime) + " msec");
         pw.println("Total Solver Parse Time = " + TimeUnit.NANOSECONDS.toMillis(parseTime) + " msec");
         pw.println("Total Solver Clean up Time = " + TimeUnit.NANOSECONDS.toMillis(cleanupTime) + " msec");
+        pw.println("SPFCaseSolverCount = " + StatisticManager.SPFCaseSolverCount);
+        pw.println("SPFCaseSolverTime = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.SPFCaseSolverTime) + " msec");
+        pw.println("Constant Propagation Time for PC sat. checks = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.constPropTime));
 
         pw.println(statisticManager.printAccumulativeStatistics());
 
@@ -485,6 +488,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             assert (veritestRegionCount == veritestRegionExpectedCount);
         }
         /* End added for equivalence checking */
+
 
         pw.println(TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur)+","+
                 TimeUnit.NANOSECONDS.toMillis(dynRunTime) + "," +

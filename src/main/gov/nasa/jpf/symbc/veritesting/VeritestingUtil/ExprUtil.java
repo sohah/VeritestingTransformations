@@ -6,8 +6,6 @@ import gov.nasa.jpf.symbc.numeric.GreenToSPFTranslator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import za.ac.sun.cs.green.expr.*;
 
 import static gov.nasa.jpf.symbc.VeritestingListener.performanceMode;
@@ -96,14 +94,26 @@ public class ExprUtil {
     performance mode. It avoids the solver call if the isSatisfiable method returns false.
      */
     public static boolean isPCSat(PathCondition pc) throws StaticRegionException {
+        long startTime = System.nanoTime();
         boolean isPCSat = isSatisfiable(pc);
+        StatisticManager.constPropTime += (System.nanoTime() - startTime);
         // verify that static unsatisfiability is confirmed by solver if we dont want to run fast
         if (!performanceMode && !isPCSat)
             assert (!pc.simplify());
         // in performanceMode, ask the solver for satisfiability only if we didn't find the PC to be unsat.
         if (performanceMode) {
-            if (isPCSat) isPCSat = pc.simplify();
-        } else isPCSat = pc.simplify();
+            if (isPCSat) {
+                StatisticManager.SPFCaseSolverCount++;
+                startTime = System.nanoTime();
+                isPCSat = pc.simplify();
+                StatisticManager.SPFCaseSolverTime += (System.nanoTime() - startTime);
+            }
+        } else {
+            StatisticManager.SPFCaseSolverCount++;
+            startTime = System.nanoTime();
+            isPCSat = pc.simplify();
+            StatisticManager.SPFCaseSolverTime += (System.nanoTime() - startTime);
+        }
         return isPCSat;
     }
 

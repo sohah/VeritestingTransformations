@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 
 import com.ibm.wala.ssa.SSAThrowInstruction;
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -118,15 +119,15 @@ public class ArraySSAVisitor extends AstMapVisitor {
     public static Pair getArrayElement(ElementInfo ei, int index) {
         // copied from Soha's implementation of FillArrayLoadHoles in the previous veritesting implementation
         if(ei.getArrayType().equals("B")){
-            return new Pair(getArrayExpression(ei, index, "byte"), "int"); //elements of the array are concrete
+            return new Pair(getArrayExpression(ei, index, "byte"), "byte"); //elements of the array are concrete
         } else if (ei.getArrayType().equals("I")){
             return new Pair(getArrayExpression(ei, index, "int"), "int"); //elements of the array are concrete
         } else if (ei.getArrayType().equals("F")){
-            return new Pair(getArrayExpression(ei, index, "float"), "real"); //elements of the array are concrete
+            return new Pair(getArrayExpression(ei, index, "float"), "float"); //elements of the array are concrete
         } else if (ei.getArrayType().equals("D")){
-            return new Pair(getArrayExpression(ei, index, "double"), "real"); //elements of the array are concrete
+            return new Pair(getArrayExpression(ei, index, "double"), "double"); //elements of the array are concrete
         } else if (ei.getArrayType().equals("C")) {
-            return new Pair(getArrayExpression(ei, index, "char"), "int"); //elements of the array are concrete
+            return new Pair(getArrayExpression(ei, index, "char"), "char"); //elements of the array are concrete
         } else
             throw new IllegalArgumentException("Unsupported element type in array");
     }
@@ -142,7 +143,8 @@ public class ArraySSAVisitor extends AstMapVisitor {
                                             new IntConstant(ei.getIntElement(index)) ;
     }
 
-    public static void doArrayStore(ThreadInfo ti, ArrayRefVarExpr arrayRefVarExpr, Expression assignExpr, String type) {
+    public static void doArrayStore(ThreadInfo ti, ArrayRefVarExpr arrayRefVarExpr, Expression assignExpr, String type)
+            throws StaticRegionException {
         ElementInfo eiArray = ti.getModifiableElementInfo(arrayRefVarExpr.arrayRef.ref);
         int len=(eiArray.getArrayFields()).arrayLength(); // assumed concrete
         Expression indexExp = arrayRefVarExpr.arrayRef.index;
@@ -159,7 +161,13 @@ public class ArraySSAVisitor extends AstMapVisitor {
                 ArrayRef ref = new ArrayRef(arrayRefVarExpr.arrayRef.ref, new IntConstant(i));
                 ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript);
                 eiArray.checkArrayBounds(i);
-                eiArray.setIntElement(i, 0);
+                if (type.equals("int")) eiArray.setIntElement(i, 0);
+                else if (type.equals("char")) eiArray.setCharElement(i, '0');
+                else if (type.equals("float")) eiArray.setFloatElement(i, 0);
+                else if (type.equals("double")) eiArray.setDoubleElement(i, 0);
+                else if (type.equals("byte")) eiArray.setByteElement(i, (byte)0);
+                else throw new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore");
+
                 eiArray.setElementAttrNoClone(i, greenToSPFExpression(createGreenVar(type, newExpr.getSymName())));
             }
         }
