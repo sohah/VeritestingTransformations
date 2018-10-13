@@ -73,6 +73,7 @@ import java.util.concurrent.TimeUnit;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isUnsupportedRegionEnd;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.hgOrdRegionInstance;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor.doArrayStore;
@@ -349,7 +350,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pc._addDet(new GreenConstraint(regionSummary));
         // if we're trying to run fast, then assume that the region summary is satisfiable in any non-SPFCASES mode
         if ((performanceMode && (runMode == VeritestingMode.VERITESTING || runMode == VeritestingMode.HIGHORDER)) ||
-                pc.simplify()) {
+                isPCSat(pc)) {
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             return true;
         } else {
