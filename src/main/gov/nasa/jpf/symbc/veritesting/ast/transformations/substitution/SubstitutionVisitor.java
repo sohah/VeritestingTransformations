@@ -74,6 +74,15 @@ public class SubstitutionVisitor extends AstMapVisitor {
     }
 
     @Override
+    public Stmt visit(ArrayStoreInstruction c) {
+        return new ArrayStoreInstruction(c.getOriginal(),
+                eva.accept(c.arrayref),
+                eva.accept(c.index),
+                c.elementType,
+                eva.accept(c.assignExpr));
+    }
+
+    @Override
     public Stmt visit(GetInstruction c) {
         return new GetInstruction(c.getOriginal(),
                 c.def,

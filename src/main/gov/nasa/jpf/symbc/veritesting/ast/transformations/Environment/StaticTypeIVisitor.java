@@ -35,7 +35,7 @@ public class StaticTypeIVisitor implements SSAInstruction.IVisitor {
     public void visitArrayStore(SSAArrayStoreInstruction ins) {
         populateVars(ins, ins.getArrayRef());
         populateVars(ins, ins.getIndex());
-        populateVars(ins, ins.getDef());
+        populateVars(ins, ins.getValue());
 
     }
 
