@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 import com.ibm.wala.ssa.SSAThrowInstruction;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
@@ -75,10 +76,11 @@ public class ArraySSAVisitor extends AstMapVisitor {
 
     private Stmt getIfThenElseStmt(ArrayRef arrayRef, Stmt assignStmt) {
         int len = ti.getElementInfo(arrayRef.ref).getArrayFields().arrayLength();
-        Expression arrayOutOfBoundsCond = new Operation(AND,
+        Expression arrayInBoundsCond = new Operation(AND,
                 new Operation(LT, arrayRef.index, new IntConstant(len)),
                 new Operation(GE, arrayRef.index, new IntConstant(0)));
-        return new IfThenElseStmt(null, arrayOutOfBoundsCond, assignStmt, getThrowInstruction());
+        StatisticManager.ArraySPFCaseCount++;
+        return new IfThenElseStmt(null, arrayInBoundsCond, assignStmt, getThrowInstruction());
     }
 
     public static Stmt getThrowInstruction() {

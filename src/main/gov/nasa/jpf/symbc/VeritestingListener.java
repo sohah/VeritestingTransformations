@@ -478,6 +478,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("SPFCaseSolverCount = " + StatisticManager.SPFCaseSolverCount);
         pw.println("SPFCaseSolverTime = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.SPFCaseSolverTime) + " msec");
         pw.println("Constant Propagation Time for PC sat. checks = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.constPropTime));
+        pw.println("Array SPF Case count = " + StatisticManager.ArraySPFCaseCount);
 
         pw.println(statisticManager.printAccumulativeStatistics());
 
