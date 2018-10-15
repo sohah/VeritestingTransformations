@@ -1,8 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
-import java.sql.Array;
+import gov.nasa.jpf.symbc.veritesting.ast.def.AssignmentStmt;
+
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Table<K, V> {
 
@@ -35,6 +35,7 @@ public class Table<K, V> {
 
     /**
      * Basic lookup inside the table.
+     * @param v
      */
     public V lookup(K v) {
         return table.get(v);

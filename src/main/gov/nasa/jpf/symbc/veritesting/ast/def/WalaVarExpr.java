@@ -22,13 +22,9 @@ public final class WalaVarExpr extends CloneableVariable {
         this.number = var;
     }
 
-    public WalaVarExpr(int var, String name){
-        super("@w" + name);
-        this.number = var;
-    }
 
-    private WalaVarExpr(int var, String name, int uniqueNum){
-        super("@w" + name);
+    private WalaVarExpr(int var, int uniqueNum) {
+        super("@w" + var);
         this.number = var;
         this.uniqueNum = uniqueNum;
     }
@@ -42,8 +38,8 @@ public final class WalaVarExpr extends CloneableVariable {
     @Override
     public boolean equals(Object o) {
         if (o != null && o instanceof WalaVarExpr) {
-            WalaVarExpr other = (WalaVarExpr)o;
-            return ((this.number == other.number)&&
+            WalaVarExpr other = (WalaVarExpr) o;
+            return ((this.number == other.number) &&
                     (this.uniqueNum == other.uniqueNum));
         }
         return false;
@@ -52,18 +48,19 @@ public final class WalaVarExpr extends CloneableVariable {
 
     /**
      * Gets the symbolic name to be used for vars in SPF.
+     *
      * @return retrunds symbolic name, which is the name of the WalaVarExpr, without the @ sign
      */
-    public String getSymName(){
-        String ret = "w"+ Integer.toString(number);
-        if(uniqueNum != -1)
+    public String getSymName() {
+        String ret = "w" + Integer.toString(number);
+        if (uniqueNum != -1)
             ret += "$" + uniqueNum;
         return ret;
     }
 
     @Override
     public String toString() {
-        return getName();
+        return getSymName();
     }
 
     @Override
@@ -91,18 +88,15 @@ public final class WalaVarExpr extends CloneableVariable {
         return null;
     }
 
-    public WalaVarExpr clone(){
-        String name = getName();
-        if (name.startsWith("@w"))
-            return new WalaVarExpr(number, name.substring(2), uniqueNum);
-        else return new WalaVarExpr(number, name, uniqueNum);
+    public WalaVarExpr clone() {
+        return new WalaVarExpr(number, uniqueNum);
     }
 
     @Override
     public WalaVarExpr makeUnique(int unique) throws StaticRegionException {
-        if (uniqueNum != -1 && unique != uniqueNum) throw new StaticRegionException("Attempting to make a already-unique WalaVarExpr unique");
-        uniqueNum = unique;
-        return this.clone();
+        if (uniqueNum != -1 && unique != uniqueNum)
+            throw new StaticRegionException("Attempting to make a already-unique WalaVarExpr unique");
+        return new WalaVarExpr(number, unique);
     }
 
     @Override

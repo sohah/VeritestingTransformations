@@ -34,7 +34,7 @@ public class DynamicTable<V> extends Table<CloneableVariable, V> {
             Integer oldWalaId = (Integer) itr.next();
             WalaVarExpr newKey = new WalaVarExpr(oldWalaId);
             newKey = newKey.makeUnique(uniqueNum);
-            table.put(newKey, table.get(oldWalaId));
+            table.put(newKey, (V) staticTable.lookup(oldWalaId));
         }
     }
 
