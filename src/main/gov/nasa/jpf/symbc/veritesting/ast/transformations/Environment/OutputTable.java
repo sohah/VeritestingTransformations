@@ -11,7 +11,6 @@ import java.util.*;
  * An Environment table that holds all slots that needs to be populated after successful symmetrization of the region. Vars associated with the slot are the last instance discovered for the slots.
  */
 public class OutputTable extends StaticTable<Integer> {
-    private boolean isMethodRegion;
 
     public OutputTable(IR ir, boolean isMethodRegion, SlotParamTable slotParamTable, InputTable inputTable, Stmt stmt) {
         super("Region Output Table", isMethodRegion ? "return" : "slot", "var");

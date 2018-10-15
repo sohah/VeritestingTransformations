@@ -9,9 +9,6 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySubsc
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.Variable;
-
-import java.util.HashMap;
 
 /**
  * This class represents a DynamicRegion, that is, a StaticRegion that has been processed dynamically, this is done initially through uniquness transformation then later with the substitution and other transformations.
@@ -99,29 +96,6 @@ public class DynamicRegion implements Region {
 
 */
 
-    /**
-     * Basic constructor that is used to construct the DynamicRegion from another DynamicRegion, it also clones the tables of the old region.
-     *//*
-
-
-    public DynamicRegion(DynamicRegion oldDynRegion,
-                         Stmt dynStmt,
-                         HashSet<SPFCaseStmt> spfCaseSet, HashMap<Variable, Variable> varToVarMap) {
-        this.ir = oldDynRegion.ir;
-        this.dynStmt = dynStmt;
-        this.inputTable = new DynamicTable(
-                "Region Input Table",
-                "var",
-                oldDynRegion.isMethodRegion ? "param" : "slot");;
-        this.endIns = oldDynRegion.endIns;
-        this.isMethodRegion = oldDynRegion.isMethodRegion;
-        this.outputTable = oldDynRegion.outputTable.clone(varToVarMap);
-        this.varTypeTable = oldDynRegion.varTypeTable.clone(varToVarMap);
-        this.slotParamTable = oldDynRegion.slotParamTable.clone(varToVarMap);
-        this.spfCaseSet = spfCaseSet;
-    }
-
-*/
     public DynamicRegion(DynamicRegion oldDynRegion,
                          Stmt dynStmt,
                          SPFCaseList spfCaseList,
@@ -153,11 +127,10 @@ public class DynamicRegion implements Region {
      *
      * @param staticRegion
      * @param dynStmt
-     * @param varToNumMap
      * @param uniqueNum
      */
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, HashMap<Integer, Variable> varToNumMap, int uniqueNum) {
+    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, int uniqueNum) throws StaticRegionException, CloneNotSupportedException {
         this.ir = staticRegion.ir;
         this.dynStmt = dynStmt;
         this.endIns = staticRegion.endIns;
@@ -166,41 +139,19 @@ public class DynamicRegion implements Region {
         this.regionSummary = null;
         this.spfPredicateSummary = null;
 
-        if (isMethodRegion)
-            this.slotParamTable = new DynamicTable(
-                    (StaticTable) staticRegion.slotParamTable,
-                    varToNumMap,
-                    "stack-slot table",
-                    "var",
-                    staticRegion.isMethodRegion ? "param" : "slot", uniqueNum);
-        else
-            this.slotParamTable = new DynamicTable(
-                    (StaticTable) staticRegion.slotParamTable,
-                    varToNumMap,
-                    "stack-slot table",
-                    "var",
-                    staticRegion.isMethodRegion ? "param" : "slot");
+        this.slotParamTable = new DynamicTable(
+                (StaticTable) staticRegion.slotParamTable, uniqueNum);
 
         this.inputTable = new DynamicTable(
                 (StaticTable) staticRegion.inputTable,
-                varToNumMap,
-                "Region Input Table",
-                "var",
-                staticRegion.isMethodRegion ? "param" : "slot");
+                uniqueNum);
 
         this.varTypeTable = new DynamicTable(
                 (StaticTable) staticRegion.varTypeTable,
-                varToNumMap,
-                "WalaVarTypeTable",
-                " var ",
-                "type");
+                uniqueNum);
 
         this.outputTable = new DynamicOutputTable(
-                (OutputTable) staticRegion.outputTable,
-                varToNumMap,
-                "Region Output Table",
-                staticRegion.isMethodRegion ? "return" : "slot",
-                "var");
+                (OutputTable) staticRegion.outputTable, uniqueNum);
         this.fieldRefTypeTable = new FieldRefTypeTable();
         this.psm = new FieldSubscriptMap();
         this.arrayPSM = new ArraySubscriptMap();

@@ -1,32 +1,35 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
+import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import za.ac.sun.cs.green.expr.Variable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 //slot -> var
-public class DynamicOutputTable extends Table<Integer, Variable> {
+public class DynamicOutputTable extends Table<Integer, CloneableVariable> {
 
     public DynamicOutputTable(String tableName, String label1, String label2) {
         super(tableName, label1, label2);
     }
 
-    public DynamicOutputTable(OutputTable staticTable, HashMap<Integer, Variable> numToVarMap, String tableName, String label1, String label2) {
-        super(tableName, label1, label2);
-        populateDynamicTable(staticTable, numToVarMap);
-    }
+    public DynamicOutputTable(OutputTable staticTable, int uniqueNum) throws StaticRegionException {
+        super(staticTable.tableName, staticTable.label1, staticTable.label2);
 
-    private void populateDynamicTable(OutputTable outputTable, HashMap<Integer, Variable> numToVarMap) {
-        for (Integer varId : numToVarMap.keySet()) {
-            for (Integer slotId : outputTable.getKeys()) {
-                if (outputTable.lookup(slotId) == varId)
-                    this.add(slotId, numToVarMap.get(varId));
-            }
+        List keys = new ArrayList(staticTable.table.keySet());
+        Collections.sort(keys);
+        Collections.reverse(keys);
+        Iterator itr = keys.iterator();
+        while(itr.hasNext()){
+            Integer slot = (Integer) itr.next();
+            Integer oldWalaId = staticTable.lookup(slot);
+            WalaVarExpr newWalaVar = new WalaVarExpr(oldWalaId);
+            newWalaVar = newWalaVar.makeUnique(uniqueNum);
+            table.put(slot, newWalaVar);
         }
     }
-
 
     /**
      * Returns all keys of the table.
@@ -34,18 +37,6 @@ public class DynamicOutputTable extends Table<Integer, Variable> {
 
     public ArrayList<Integer> getKeys() {
         return new ArrayList<Integer>(this.table.keySet());
-    }
-
-    public DynamicOutputTable clone(HashMap<Variable, Variable> varToVarMap){
-        DynamicOutputTable clonedTable = new DynamicOutputTable(this.tableName, this.label1, this.label2);
-
-        for (Variable oldVar : varToVarMap.keySet()) {
-            for (Integer slotId : this.getKeys()) {
-                if (this.lookup(slotId) == oldVar)
-                    clonedTable.add(slotId, varToVarMap.get(oldVar));
-            }
-        }
-        return clonedTable;
     }
 
 }

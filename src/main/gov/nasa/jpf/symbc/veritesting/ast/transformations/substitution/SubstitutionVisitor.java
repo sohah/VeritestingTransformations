@@ -40,12 +40,15 @@ public class SubstitutionVisitor extends AstMapVisitor {
     public final DynamicTable valueSymbolTable;
     public final DynamicRegion dynRegion;
     public final ThreadInfo ti;
+    public StaticRegionException sre = null;
+    public CloneNotSupportedException cne = null;
 
     /**
      * This is used to identify if a path had spfCase instruction that requires prouning the path. The flag is used
      * to stop embedding high order region along that path.
      */
     private boolean spfCasePath = false;
+
 
     private SubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
                                 DynamicTable valueSymbolTable) {
@@ -183,7 +186,14 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
                     System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
                     System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
-                    DynamicRegion uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
+                    DynamicRegion uniqueHgOrdDynRegion = null;
+                    try {
+                        uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
+                    } catch (CloneNotSupportedException e) {
+                        cne = e;
+                    } catch (StaticRegionException e) {
+                        sre = e;
+                    }
                     DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
                             "var",
                             "value",
@@ -321,7 +331,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
      * @return A Dynamic Region that has been substituted by symbolic or concerete values for inputs as well as constants being substituted.
      */
 
-    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
+    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException, CloneNotSupportedException {
 
         DynamicTable valueSymbolTable;
 
@@ -330,6 +340,8 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
+        if (visitor.sre != null) throw visitor.sre;
+        if (visitor.cne != null) throw visitor.cne;
         DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null);
 
 

@@ -26,20 +26,18 @@ public class UniqueRegion {
      * @return A new static region that is unique.
      */
 
-    public static DynamicRegion execute(StaticRegion staticRegion) {
+    public static DynamicRegion execute(StaticRegion staticRegion) throws CloneNotSupportedException, StaticRegionException {
 
         ++DynamicRegion.uniqueCounter;
         int uniqueNum = DynamicRegion.uniqueCounter;
-        HashMap<Integer, Variable> varToNumUniqueMap = new HashMap<>();
-        ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum, varToNumUniqueMap);
+        ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum);
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
 
 
         Stmt dynStmt = staticRegion.staticStmt.accept(stmtVisitor);
 
         DynamicRegion dynRegion = new DynamicRegion(staticRegion,
-                dynStmt,
-                varToNumUniqueMap, uniqueNum);
+                dynStmt, uniqueNum);
 
 
         System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
