@@ -331,7 +331,9 @@ public class tcas {
 	}
 
 	public static void main(String[] argv) {
-		mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1); //,
+		int maxSteps = 2;
+		for (int i=0; i < maxSteps; i++)
+			mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1); //,
 				//601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
 	}
 }
