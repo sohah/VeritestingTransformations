@@ -278,7 +278,7 @@ public class tcas {
 //		alt_sep_test();
 
 		int result = alt_sep_test();
-		int alim = ALIM();
+//		int alim = ALIM();
 
 		// MWW assertions.  These come from ACSL safety property paper: http://people.rennes.inria.fr/Arnaud.Gotlieb/CT_ATM_gotlieb.pdf
 		// fails
@@ -288,9 +288,9 @@ public class tcas {
 //				result != DOWNWARD_RA : true);
 
 		// passes
-		assert((Up_Separation < alim &&
-				Down_Separation < alim) ?
-				result != DOWNWARD_RA : true);
+//		assert((Up_Separation < alim &&
+//				Down_Separation < alim) ?
+//				result != DOWNWARD_RA : true);
 
 		//passes
 //		assert((Up_Separation < alim &&
@@ -331,7 +331,7 @@ public class tcas {
 	}
 
 	public static void main(String[] argv) {
-		int maxSteps = 2;
+		int maxSteps = 1;
 		for (int i=0; i < maxSteps; i++)
 			mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1); //,
 				//601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
