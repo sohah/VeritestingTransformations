@@ -144,7 +144,7 @@ public class ExprUtil {
 
     public enum SatResult { TRUE, FALSE, DONTKNOW };
 
-    private static SatResult isSatExpression(Expression expression) {
+    public static SatResult isSatExpression(Expression expression) {
         if (expression instanceof Operation) {
             Operation operation = (Operation) expression;
             if (operation.getArity() == 2) {

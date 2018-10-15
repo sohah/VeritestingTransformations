@@ -49,6 +49,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.ConstPropVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubstituteGetOutput;
@@ -290,6 +291,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
         dynRegion = UniqueRegion.execute(dynRegion);
 
+        dynRegion = ConstPropVisitor.execute(dynRegion);
+
+
         if(runMode == VeritestingMode.SPFCASES) {
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
             dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
@@ -479,6 +483,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("SPFCaseSolverTime = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.SPFCaseSolverTime) + " msec");
         pw.println("Constant Propagation Time for PC sat. checks = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.constPropTime));
         pw.println("Array SPF Case count = " + StatisticManager.ArraySPFCaseCount);
+        pw.println("If-removed count = " + StatisticManager.ifRemovedCount);
+
 
         pw.println(statisticManager.printAccumulativeStatistics());
 
