@@ -14,12 +14,12 @@ import static java.lang.Math.*;
 import static za.ac.sun.cs.green.expr.Operation.FALSE;
 import static za.ac.sun.cs.green.expr.Operation.TRUE;
 
-public class ExprConstPropVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
+public class SimplifyExprVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 
     private DynamicTable<Expression> constantsTable;
     public StaticRegionException sre = null;
 
-    public ExprConstPropVisitor(DynamicTable<Expression> constantsTable) {
+    public SimplifyExprVisitor(DynamicTable<Expression> constantsTable) {
         super();
         eva = super.eva;
         this.constantsTable = constantsTable;

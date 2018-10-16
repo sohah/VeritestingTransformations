@@ -147,7 +147,7 @@ public class ExprUtil {
     public static SatResult isSatExpression(Expression expression) {
         if (expression instanceof Operation) {
             Operation operation = (Operation) expression;
-            SatResult val1 = getBooleanResult(operation);
+            SatResult val1 = foldBooleanOp(operation);
             if (val1 != null) return val1;
             if (operation.getArity() == 2) {
                 SatResult operand1Sat = isSatExpression(operation.getOperand(0));
@@ -177,7 +177,7 @@ public class ExprUtil {
         return DONTKNOW;
     }
 
-    public static SatResult getBooleanResult(Operation operation) {
+    public static SatResult foldBooleanOp(Operation operation) {
         if (operation.getArity() == 2) {
             Expression operand1 = operation.getOperand(0);
             Expression operand2 = operation.getOperand(1);

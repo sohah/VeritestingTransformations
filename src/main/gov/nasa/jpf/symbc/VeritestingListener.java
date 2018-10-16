@@ -36,12 +36,9 @@ import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticSummaryChoiceGenerat
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
-import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRef;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.FieldRefTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
@@ -49,9 +46,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.ConstPropVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.SimplifyStmtVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubstituteGetOutput;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
@@ -291,7 +287,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
         dynRegion = UniqueRegion.execute(dynRegion);
 
-//        dynRegion = ConstPropVisitor.execute(dynRegion);
+        dynRegion = SimplifyStmtVisitor.execute(dynRegion);
 
 
         if(runMode == VeritestingMode.SPFCASES) {
