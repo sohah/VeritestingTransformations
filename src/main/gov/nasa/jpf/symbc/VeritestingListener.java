@@ -291,7 +291,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
         dynRegion = UniqueRegion.execute(dynRegion);
 
-        dynRegion = ConstPropVisitor.execute(dynRegion);
+//        dynRegion = ConstPropVisitor.execute(dynRegion);
 
 
         if(runMode == VeritestingMode.SPFCASES) {

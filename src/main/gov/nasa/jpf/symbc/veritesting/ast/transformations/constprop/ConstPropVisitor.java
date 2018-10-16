@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.AssignmentStmt;
@@ -16,7 +17,7 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatExpression;
 
 public class ConstPropVisitor extends AstMapVisitor {
-    private ExprVisitorAdapter<Expression> eva;
+    public ExprVisitorAdapter<Expression> eva;
     private DynamicTable<Expression> constantsTable;
 
     private ConstPropVisitor(DynamicTable<Expression> constantsTable) {
@@ -48,10 +49,13 @@ public class ConstPropVisitor extends AstMapVisitor {
         }
     }
 
-    public static DynamicRegion execute(DynamicRegion dynRegion) {
+    public static DynamicRegion execute(DynamicRegion dynRegion) throws StaticRegionException {
         DynamicTable<Expression> constantsTable = new DynamicTable<Expression>("Constants Table", "Expression", "Constant Value");
         ConstPropVisitor visitor = new ConstPropVisitor(constantsTable);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
+        if (((ExprConstPropVisitor)visitor.exprVisitor).sre != null) {
+            throw ((ExprConstPropVisitor)visitor.exprVisitor).sre;
+        }
         return new DynamicRegion(dynRegion, stmt, dynRegion.spfCaseList, dynRegion.regionSummary, dynRegion.spfPredicateSummary);
     }
 }

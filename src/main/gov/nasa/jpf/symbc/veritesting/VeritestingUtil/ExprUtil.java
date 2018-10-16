@@ -147,36 +147,8 @@ public class ExprUtil {
     public static SatResult isSatExpression(Expression expression) {
         if (expression instanceof Operation) {
             Operation operation = (Operation) expression;
-            if (operation.getArity() == 2) {
-                Expression operand1 = operation.getOperand(0);
-                Expression operand2 = operation.getOperand(1);
-                if (operand1 instanceof IntConstant && operand2 instanceof IntConstant) {
-                    int val1 = ((IntConstant)operand1).getValue();
-                    int val2 = ((IntConstant)operand2).getValue();
-                    switch(operation.getOperator()) {
-                        case EQ: return val1 == val2 ? TRUE: FALSE;
-                        case NE: return val1 != val2 ? TRUE: FALSE;
-                        case LT: return val1 < val2 ? TRUE: FALSE;
-                        case LE: return val1 <= val2 ? TRUE: FALSE;
-                        case GT: return val1 > val2 ? TRUE: FALSE;
-                        case GE: return val1 >= val2 ? TRUE: FALSE;
-                        case BIT_AND: return (val1 & val2) != 0 ? TRUE: FALSE;
-                        case BIT_OR: return (val1 | val2) != 0 ? TRUE: FALSE;
-                        case BIT_XOR: return (val1 ^ val2) != 0 ? TRUE: FALSE;
-                        default: return DONTKNOW;
-                    }
-                }
-            } else if (operation.getArity() == 1) {
-                Expression operand1 = operation.getOperand(0);
-                if (operand1 instanceof IntConstant) {
-                    int val1 = ((IntConstant) operand1).getValue();
-                    switch (operation.getOperator()) {
-                        case BIT_NOT: return (~val1) != 0 ? TRUE: FALSE;
-                        case NOT: return val1 == 0 ? TRUE: FALSE;
-                        default: return DONTKNOW;
-                    }
-                }
-            }
+            SatResult val1 = getBooleanResult(operation);
+            if (val1 != null) return val1;
             if (operation.getArity() == 2) {
                 SatResult operand1Sat = isSatExpression(operation.getOperand(0));
                 SatResult operand2Sat = isSatExpression(operation.getOperand(1));
@@ -203,6 +175,36 @@ public class ExprUtil {
             }
         }
         return DONTKNOW;
+    }
+
+    public static SatResult getBooleanResult(Operation operation) {
+        if (operation.getArity() == 2) {
+            Expression operand1 = operation.getOperand(0);
+            Expression operand2 = operation.getOperand(1);
+            if (operand1 instanceof IntConstant && operand2 instanceof IntConstant) {
+                int val1 = ((IntConstant)operand1).getValue();
+                int val2 = ((IntConstant)operand2).getValue();
+                switch(operation.getOperator()) {
+                    case EQ: return val1 == val2 ? TRUE: FALSE;
+                    case NE: return val1 != val2 ? TRUE: FALSE;
+                    case LT: return val1 < val2 ? TRUE: FALSE;
+                    case LE: return val1 <= val2 ? TRUE: FALSE;
+                    case GT: return val1 > val2 ? TRUE: FALSE;
+                    case GE: return val1 >= val2 ? TRUE: FALSE;
+                    default: return DONTKNOW;
+                }
+            }
+        } else if (operation.getArity() == 1) {
+            Expression operand1 = operation.getOperand(0);
+            if (operand1 instanceof IntConstant) {
+                int val1 = ((IntConstant) operand1).getValue();
+                switch (operation.getOperator()) {
+                    case NOT: return val1 == 0 ? TRUE: FALSE;
+                    default: return DONTKNOW;
+                }
+            }
+        }
+        return null;
     }
 
 
