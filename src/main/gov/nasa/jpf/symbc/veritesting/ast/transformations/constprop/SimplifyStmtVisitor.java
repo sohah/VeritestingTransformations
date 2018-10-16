@@ -17,15 +17,16 @@ import za.ac.sun.cs.green.expr.Operation;
 import za.ac.sun.cs.green.expr.Variable;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatExpression;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatGreenExpression;
 import static za.ac.sun.cs.green.expr.Operation.Operator.EQ;
 
 public class SimplifyStmtVisitor extends AstMapVisitor {
     public ExprVisitorAdapter<Expression> eva;
     private DynamicTable<Expression> constantsTable;
+    public StaticRegionException sre = null;
 
     private SimplifyStmtVisitor(DynamicTable<Expression> constantsTable) {
-        super(new SimplifyExprVisitor(constantsTable));
+        super(new SimplifyRangerExprVisitor(constantsTable));
         eva = super.eva;
         this.constantsTable = constantsTable;
     }
@@ -37,14 +38,16 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
             constantsTable.add((Variable) a.lhs, rhs);
         }
         Expression lhs = eva.accept(a.lhs);
-        if (isSatExpression(new Operation(EQ, lhs, rhs)) == ExprUtil.SatResult.TRUE) return SkipStmt.skip;
-        else return new AssignmentStmt(lhs, rhs);
+        if (isSatGreenExpression(new Operation(EQ, lhs, rhs)) == ExprUtil.SatResult.TRUE) return SkipStmt.skip;
+        return new AssignmentStmt(lhs, rhs);
+
     }
 
     @Override
     public Stmt visit(IfThenElseStmt c) {
         Expression cond = eva.accept(c.condition);
-        ExprUtil.SatResult satResult = isSatExpression(cond);
+        ExprUtil.SatResult satResult;
+        satResult = isSatGreenExpression(cond);
         if (satResult == ExprUtil.SatResult.FALSE) {
             StatisticManager.ifRemovedCount++;
             return c.elseStmt.accept(this);
@@ -57,11 +60,13 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
     }
 
     public static DynamicRegion execute(DynamicRegion dynRegion) throws StaticRegionException {
-        DynamicTable<Expression> constantsTable = new DynamicTable<Expression>("Constants Table", "Expression", "Constant Value");
+        DynamicTable<Expression> constantsTable = new DynamicTable<>("Constants Table", "Expression", "Constant Value");
         SimplifyStmtVisitor visitor = new SimplifyStmtVisitor(constantsTable);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
-        if (((SimplifyExprVisitor)visitor.exprVisitor).sre != null) {
-            throw ((SimplifyExprVisitor)visitor.exprVisitor).sre;
+        if (visitor.sre != null)
+            throw visitor.sre;
+        if (((SimplifyRangerExprVisitor)visitor.exprVisitor).sre != null) {
+            throw ((SimplifyRangerExprVisitor)visitor.exprVisitor).sre;
         }
         DynamicRegion ret = new DynamicRegion(dynRegion, stmt, dynRegion.spfCaseList, dynRegion.regionSummary,
                 dynRegion.spfPredicateSummary);

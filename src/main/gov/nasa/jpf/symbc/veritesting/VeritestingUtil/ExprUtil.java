@@ -127,7 +127,7 @@ public class ExprUtil {
         while (constraint != null) {
             if (GreenConstraint.class.isInstance(constraint)) {
                 Expression greenExpression = ((GreenConstraint) constraint).getExp();
-                if (isSatExpression(greenExpression) == FALSE) {
+                if (isSatGreenExpression(greenExpression) == FALSE) {
                     System.out.println("found an unsat pc");
                     return false;
                 }
@@ -144,14 +144,14 @@ public class ExprUtil {
 
     public enum SatResult { TRUE, FALSE, DONTKNOW };
 
-    public static SatResult isSatExpression(Expression expression) {
+    public static SatResult isSatGreenExpression(Expression expression) {
         if (expression instanceof Operation) {
             Operation operation = (Operation) expression;
             SatResult val1 = foldBooleanOp(operation);
             if (val1 != null) return val1;
             if (operation.getArity() == 2) {
-                SatResult operand1Sat = isSatExpression(operation.getOperand(0));
-                SatResult operand2Sat = isSatExpression(operation.getOperand(1));
+                SatResult operand1Sat = isSatGreenExpression(operation.getOperand(0));
+                SatResult operand2Sat = isSatGreenExpression(operation.getOperand(1));
                 SatResult result;
                 switch(operation.getOperator()) {
                     case AND:
@@ -166,7 +166,7 @@ public class ExprUtil {
                 }
             }
             else if (operation.getArity() == 1) {
-                SatResult operand1Sat = isSatExpression(operation.getOperand(0));
+                SatResult operand1Sat = isSatGreenExpression(operation.getOperand(0));
                 if (operand1Sat == DONTKNOW) return DONTKNOW;
                 switch(operation.getOperator()) {
                     case NOT: return operand1Sat == FALSE ? TRUE : FALSE;
@@ -207,5 +207,27 @@ public class ExprUtil {
         return null;
     }
 
+    public static Expression translateNotExpr(Operation op) {
+        if (op.getOperator() != Operation.Operator.NOT) return op;
+        Expression e1 = op.getOperand(0);
+        Expression returnExp;
+        if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.NOT))
+            returnExp = ((Operation) e1).getOperand(0);
+        else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.EQ))
+            returnExp = new Operation(Operation.Operator.NE, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
+        else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.NE))
+            returnExp = new Operation(Operation.Operator.EQ, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
+        else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.GT))
+            returnExp = new Operation(Operation.Operator.LE, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
+        else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.GE))
+            returnExp = new Operation(Operation.Operator.LT, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
+        else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.LE))
+            returnExp = new Operation(Operation.Operator.GT, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
+        else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.LT))
+            returnExp = new Operation(Operation.Operator.GE, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
+        else
+            returnExp = new Operation(Operation.Operator.NOT, e1);
+        return returnExp;
+    }
 
 }

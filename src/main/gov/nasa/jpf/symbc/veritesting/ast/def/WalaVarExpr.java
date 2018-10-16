@@ -93,4 +93,9 @@ public final class WalaVarExpr extends Variable {
         varId = varId.concat(Integer.toString(uniqueNum));
         return new WalaVarExpr(expr.number, varId);
     }
+
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
+    }
 }

@@ -8,20 +8,19 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.*;
 
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatExpression;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatGreenExpression;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.translateNotExpr;
 import static java.lang.Math.*;
 import static za.ac.sun.cs.green.expr.Operation.FALSE;
 import static za.ac.sun.cs.green.expr.Operation.TRUE;
 
-public class SimplifyExprVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
+public class SimplifyRangerExprVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 
     private DynamicTable<Expression> constantsTable;
     public StaticRegionException sre = null;
 
-    public SimplifyExprVisitor(DynamicTable<Expression> constantsTable) {
+    SimplifyRangerExprVisitor(DynamicTable<Expression> constantsTable) {
         super();
-        eva = super.eva;
         this.constantsTable = constantsTable;
     }
 
@@ -72,7 +71,11 @@ public class SimplifyExprVisitor extends ExprMapVisitor implements ExprVisitor<E
             op2 = eva.accept(expr.getOperand(1));
             ret = new Operation(expr.getOperator(), op1, op2);
         }
-        //constant-fold these in when possible by first extracting a method out of ExprUtil.isSatExpression and use the extracted method
+        if (ret == null) {
+            sre = new StaticRegionException("Cannot simplify operator with unknown arity");
+            return expr;
+        }
+        //constant-fold these in when possible by first extracting a method out of ExprUtil.isSatGreenExpression and use the extracted method
         switch (expr.getOperator()) {
             case EQ:
             case NE:
@@ -83,9 +86,10 @@ public class SimplifyExprVisitor extends ExprMapVisitor implements ExprVisitor<E
             case AND:
             case OR:
             case NOT:
-                ExprUtil.SatResult result = isSatExpression(expr);
+                ExprUtil.SatResult result;
+                result = isSatGreenExpression(ret);
                 ret =  result == ExprUtil.SatResult.TRUE ? TRUE:
-                        (result == ExprUtil.SatResult.FALSE ? FALSE: ret);
+                        (result == ExprUtil.SatResult.FALSE ? FALSE: translateNotExpr((Operation) ret));
                 break;
             case ADD:
                 if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
@@ -180,7 +184,8 @@ public class SimplifyExprVisitor extends ExprMapVisitor implements ExprVisitor<E
                 break;
             case BIT_CONCAT:
                 if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
-                    ret = new IntConstant((((IntConstant) op1).getValue() << 32) | ((IntConstant) op2).getValue());
+//                    ret = new IntConstant((((IntConstant) op1).getValue() << 32) | ((IntConstant) op2).getValue());
+                    sre = new StaticRegionException("Dont know how to apply BIT_CONCAT to IntConstant operands");
                 } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
                     sre = new StaticRegionException("Cannot apply BIT_CONCAT to RealConstant operands");
                 }
@@ -270,7 +275,8 @@ public class SimplifyExprVisitor extends ExprMapVisitor implements ExprVisitor<E
     public Expression visit(GammaVarExpr expr) {
         // constant-fold gammas when possible
         Expression cond = eva.accept(expr.condition);
-        ExprUtil.SatResult result = isSatExpression(cond);
+        ExprUtil.SatResult result;
+        result = isSatGreenExpression(cond);
         if (result == ExprUtil.SatResult.TRUE) return eva.accept(expr.thenExpr);
         else if (result == ExprUtil.SatResult.FALSE) return eva.accept(expr.elseExpr);
         else return new GammaVarExpr(cond, eva.accept(expr.thenExpr), eva.accept(expr.elseExpr));
