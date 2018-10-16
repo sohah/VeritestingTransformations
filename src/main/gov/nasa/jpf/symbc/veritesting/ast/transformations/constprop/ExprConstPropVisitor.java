@@ -10,6 +10,9 @@ import za.ac.sun.cs.green.expr.*;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatExpression;
+import static java.lang.Math.*;
+import static za.ac.sun.cs.green.expr.Operation.FALSE;
+import static za.ac.sun.cs.green.expr.Operation.TRUE;
 
 public class ExprConstPropVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 
@@ -58,16 +61,18 @@ public class ExprConstPropVisitor extends ExprMapVisitor implements ExprVisitor<
     public Expression visit(Operation expr) {
         Expression ret = null;
         Expression op1 = null, op2 = null;
-        //TODO: visit operands to populate ret, get op1 and op2 from ret at this point
+        //visit operands to populate ret, get op1 and op2 from ret at this point
 
         if (expr.getArity() == 1) {
-            op1 = expr.getOperand(0);
+            op1 = eva.accept(expr.getOperand(0));
+            ret = new Operation(expr.getOperator(), op1);
         }
         if (expr.getArity() == 2) {
-            op1 = expr.getOperand(0);
-            op2 = expr.getOperand(1);
+            op1 = eva.accept(expr.getOperand(0));
+            op2 = eva.accept(expr.getOperand(1));
+            ret = new Operation(expr.getOperator(), op1, op2);
         }
-        //TODO: constant-fold these in when possible by first extracting a method out of ExprUtil.isSatExpression and use the extracted method
+        //constant-fold these in when possible by first extracting a method out of ExprUtil.isSatExpression and use the extracted method
         switch (expr.getOperator()) {
             case EQ:
             case NE:
@@ -79,8 +84,8 @@ public class ExprConstPropVisitor extends ExprMapVisitor implements ExprVisitor<
             case OR:
             case NOT:
                 ExprUtil.SatResult result = isSatExpression(expr);
-                ret =  result == ExprUtil.SatResult.TRUE ? new IntConstant(1) :
-                        (result == ExprUtil.SatResult.FALSE ? new IntConstant(0): null);
+                ret =  result == ExprUtil.SatResult.TRUE ? TRUE:
+                        (result == ExprUtil.SatResult.FALSE ? FALSE: ret);
                 break;
             case ADD:
                 if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
@@ -132,53 +137,142 @@ public class ExprConstPropVisitor extends ExprMapVisitor implements ExprVisitor<
                 }
                 break;
             case BIT_OR:
+                if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
+                    ret = new IntConstant(((IntConstant) op1).getValue() | ((IntConstant) op2).getValue());
+                } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
+                    sre = new StaticRegionException("Cannot apply BIT_OR to RealConstant operands");
+                }
                 break;
             case BIT_XOR:
+                if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
+                    ret = new IntConstant(((IntConstant) op1).getValue() ^ ((IntConstant) op2).getValue());
+                } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
+                    sre = new StaticRegionException("Cannot apply BIT_XOR to RealConstant operands");
+                }
                 break;
             case BIT_NOT:
+                if (op1 instanceof IntConstant) {
+                    ret = new IntConstant(~((IntConstant) op1).getValue());
+                } else if (op1 instanceof RealConstant) {
+                    sre = new StaticRegionException("Cannot apply BIT_NOT to RealConstant operands");
+                }
                 break;
             case SHIFTL:
+                if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
+                    ret = new IntConstant(((IntConstant) op1).getValue() << ((IntConstant) op2).getValue());
+                } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
+                    sre = new StaticRegionException("Cannot apply SHIFTL to RealConstant operands");
+                }
                 break;
             case SHIFTR:
+                if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
+                    ret = new IntConstant(((IntConstant) op1).getValue() >> ((IntConstant) op2).getValue());
+                } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
+                    sre = new StaticRegionException("Cannot apply SHIFTR to RealConstant operands");
+                }
                 break;
             case SHIFTUR:
+                if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
+                    ret = new IntConstant(((IntConstant) op1).getValue() >>> ((IntConstant) op2).getValue());
+                } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
+                    sre = new StaticRegionException("Cannot apply SHIFTUR to RealConstant operands");
+                }
                 break;
             case BIT_CONCAT:
+                if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
+                    ret = new IntConstant((((IntConstant) op1).getValue() << 32) | ((IntConstant) op2).getValue());
+                } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
+                    sre = new StaticRegionException("Cannot apply BIT_CONCAT to RealConstant operands");
+                }
                 break;
             case SIN:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply SIN to IntConstant operands");
+                } else if (op1 instanceof RealConstant) {
+                    ret = new RealConstant(sin(((RealConstant) op1).getValue()));
+                }
                 break;
             case COS:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply COS to IntConstant operands");
+                } else if (op1 instanceof RealConstant) {
+                    ret = new RealConstant(cos(((RealConstant) op1).getValue()));
+                }
                 break;
             case TAN:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply TAN to IntConstant operands");
+                } else if (op1 instanceof RealConstant) {
+                    ret = new RealConstant(tan(((RealConstant) op1).getValue()));
+                }
                 break;
             case ASIN:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply ASIN to IntConstant operands");
+                } else if (op1 instanceof RealConstant) {
+                    ret = new RealConstant(asin(((RealConstant) op1).getValue()));
+                }
                 break;
             case ACOS:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply ACOS to IntConstant operands");
+                } else if (op1 instanceof RealConstant) {
+                    ret = new RealConstant(acos(((RealConstant) op1).getValue()));
+                }
                 break;
             case ATAN:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply ATAN to IntConstant operands");
+                } else if (op1 instanceof RealConstant) {
+                    ret = new RealConstant(atan(((RealConstant) op1).getValue()));
+                }
                 break;
             case ATAN2:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply ATAN2 to IntConstant operands");
+                } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
+                    ret = new RealConstant(atan2(((RealConstant) op1).getValue(), ((RealConstant) op2).getValue()));
+                }
                 break;
             case ROUND:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply ROUND to IntConstant operands");
+                } else if (op1 instanceof RealConstant) {
+                    ret = new RealConstant(round(((RealConstant) op1).getValue()));
+                }
                 break;
             case LOG:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply LOG to IntConstant operands");
+                } else if (op1 instanceof RealConstant) {
+                    ret = new RealConstant(log(((RealConstant) op1).getValue()));
+                }
                 break;
             case EXP:
-                break;
-            case POWER:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply EXP to IntConstant operands");
+                } else if (op1 instanceof RealConstant) {
+                    ret = new RealConstant(exp(((RealConstant) op1).getValue()));
+                }
                 break;
             case SQRT:
+                if (op1 instanceof IntConstant) {
+                    sre = new StaticRegionException("Cannot apply SQRT to IntConstant operands");
+                } else if (op1 instanceof RealConstant) {
+                    ret = new RealConstant(sqrt(((RealConstant) op1).getValue()));
+                }
                 break;
-            default:
-                ret = null;
         }
         return ret;
     }
 
     @Override
     public Expression visit(GammaVarExpr expr) {
-        // TODO: constant-fold gammas when possible
-//        return super.visit(expr);
-        return expr;
+        // constant-fold gammas when possible
+        Expression cond = eva.accept(expr.condition);
+        ExprUtil.SatResult result = isSatExpression(cond);
+        if (result == ExprUtil.SatResult.TRUE) return eva.accept(expr.thenExpr);
+        else if (result == ExprUtil.SatResult.FALSE) return eva.accept(expr.elseExpr);
+        else return new GammaVarExpr(cond, eva.accept(expr.thenExpr), eva.accept(expr.elseExpr));
     }
 }

@@ -5,16 +5,20 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.AssignmentStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.SkipStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.Operation;
 import za.ac.sun.cs.green.expr.Variable;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatExpression;
+import static za.ac.sun.cs.green.expr.Operation.Operator.EQ;
 
 public class ConstPropVisitor extends AstMapVisitor {
     public ExprVisitorAdapter<Expression> eva;
@@ -28,10 +32,13 @@ public class ConstPropVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(AssignmentStmt a) {
-        if (isConstant(a.rhs)) {
-            constantsTable.add((Variable) a.lhs, a.rhs);
+        Expression rhs = eva.accept(a.rhs);
+        if (isConstant(rhs)) {
+            constantsTable.add((Variable) a.lhs, rhs);
         }
-        return new AssignmentStmt(eva.accept(a.lhs), eva.accept(a.rhs));
+        Expression lhs = eva.accept(a.lhs);
+        if (isSatExpression(new Operation(EQ, lhs, rhs)) == ExprUtil.SatResult.TRUE) return SkipStmt.skip;
+        else return new AssignmentStmt(lhs, rhs);
     }
 
     @Override
@@ -56,6 +63,10 @@ public class ConstPropVisitor extends AstMapVisitor {
         if (((ExprConstPropVisitor)visitor.exprVisitor).sre != null) {
             throw ((ExprConstPropVisitor)visitor.exprVisitor).sre;
         }
-        return new DynamicRegion(dynRegion, stmt, dynRegion.spfCaseList, dynRegion.regionSummary, dynRegion.spfPredicateSummary);
+        DynamicRegion ret = new DynamicRegion(dynRegion, stmt, dynRegion.spfCaseList, dynRegion.regionSummary,
+                dynRegion.spfPredicateSummary);
+        System.out.println("\n--------------- AFTER SIMPLIFICATION ---------------\n");
+        System.out.println(StmtPrintVisitor.print(ret.dynStmt));
+        return ret;
     }
 }
