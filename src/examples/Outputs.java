@@ -7,6 +7,12 @@ class Outputs {
             intOutputs[i] = outputs[i];
     }
 
+    public Outputs(char [] outputs) {
+        intOutputs = new int[outputs.length];
+        for (int i=0; i<outputs.length; i++)
+            intOutputs[i] = outputs[i];
+    }
+
     public Outputs() { intOutputs = new int[0]; }
 
     @Override
