@@ -103,16 +103,16 @@ public class ExprUtil {
         // in performanceMode, ask the solver for satisfiability only if we didn't find the PC to be unsat.
         if (performanceMode) {
             if (isPCSat) {
-                StatisticManager.SPFCaseSolverCount++;
+                StatisticManager.PCSatSolverCount++;
                 startTime = System.nanoTime();
                 isPCSat = pc.simplify();
-                StatisticManager.SPFCaseSolverTime += (System.nanoTime() - startTime);
+                StatisticManager.PCSatSolverTime += (System.nanoTime() - startTime);
             }
         } else {
-            StatisticManager.SPFCaseSolverCount++;
+            StatisticManager.PCSatSolverCount++;
             startTime = System.nanoTime();
             isPCSat = pc.simplify();
-            StatisticManager.SPFCaseSolverTime += (System.nanoTime() - startTime);
+            StatisticManager.PCSatSolverTime += (System.nanoTime() - startTime);
         }
         return isPCSat;
     }
