@@ -35,17 +35,23 @@ public class replace {
 	public static final int NEWLINE = 10;
 	public static final int CLOSIZE = 1;
 
+	static char[] printBuf = new char[2000];
+	static int printBufIdx = 0;
+
 	public static void reset() {
-		System.out.println("resetting replace");
 		patParaIndex = 0;
 		patIndex = 0;
 		subParaIndex = 0;
 		subIndex = 0;
 		strIndex = 0;
 		tempIndex = 0;
+		printBuf = new char[2000];
+		printBufIdx = 0;
 	}
 
 	public static char[] mainProcess(char i0, char i1, char i2, char i3, char i4){
+
+
 		//
 		char[] patPara = new char[patParaLen];
 		patPara[0] = i0;
@@ -53,11 +59,11 @@ public class replace {
 //		patPara[2] = i2;
 		patPara[2] = '\0';
 		char[] pat = new char[patLen];
-//		int patResult = makepat(patPara, pat);
-//		if(patResult <= 0){
-//			System.out.println("Challege: illegal pattern!");
-//			return new char[]{};
-//		}
+		int patResult = makepat(patPara, pat);
+		if(patResult <= 0){
+			System.out.println("Challege: illegal pattern!");
+			return new char[]{};
+		}
 		//
 		char[] subPara = new char[subParaLen];
 		subPara[0] = i2;
@@ -67,24 +73,30 @@ public class replace {
 		subPara[2] = '\0';
 		char[] sub = new char[subLen];
 		int subResult = makesub(subPara, sub);
-//		if(subResult <= 0){
-//			System.out.println("Challege: illegal sub");
-//		}
+		if(subResult <= 0){
+			System.out.println("Challege: illegal sub");
+		}
 		//
-//		char[] str = new char[strLen];
-//		str[0] = i4;
+		char[] str = new char[strLen];
+		str[0] = i4;
 		/*
 //		str[1] = i4;
 //		str[2] = i8;
 */
-//		str[1] = '\0';
+		str[1] = '\0';
 		//
-//		change(str, pat, sub);
-		char[] retChar = new char[pat.length + sub.length];
-//		for (int i = 0; i < pat.length; i++)
-//			retChar[i] = pat[i];
+		change(str, pat, sub);
+		char[] retChar = new char[pat.length + sub.length + str.length + printBufIdx];
+		int outIndex = 0;
+		for (int i = 0; i < pat.length; i++)
+			retChar[outIndex++] = pat[i];
 		for (int i = 0; i < sub.length; i++)
-			retChar[i] = sub[i];
+			retChar[outIndex++] = sub[i];
+		for (int i = 0; i < str.length; i++)
+			retChar[outIndex++] = str[i];
+		for (int i = 0; i < printBufIdx; i++)
+			retChar[outIndex++] = printBuf[i];
+
 		return retChar;
 	}
 	/*
@@ -111,11 +123,13 @@ public class replace {
 				//
 				System.out.print(lin[i]);
 				i = i + 1;
+				printBuf[printBufIdx++] = lin[i];
 			}
 			else if(m == i){
 				//TODO 
 				System.out.print(lin[i]);
 				i = i + 1;
+				printBuf[printBufIdx++] = lin[i];
 			}
 			else{
 				i = m;
@@ -129,9 +143,11 @@ public class replace {
 			char ch = (char)DITTO;
 			if(sub[i] == ch){
 				System.out.print(lin[i]);
+				printBuf[printBufIdx++] = lin[i];
 			}
 			else{
 				System.out.print(sub[i]);
+				printBuf[printBufIdx++] = sub[i];
 			}
 			i = i + 1;
 		}
