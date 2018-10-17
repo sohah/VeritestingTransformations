@@ -94,8 +94,8 @@ public final class WalaVarExpr extends Variable {
         return new WalaVarExpr(expr.number, varId);
     }
 
-    @Override
-    public int hashCode() {
-        return getName().hashCode();
-    }
+//    @Override
+//    public int hashCode() {
+//        return getName().hashCode();
+//    }
 }
