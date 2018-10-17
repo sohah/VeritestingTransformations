@@ -12,5 +12,5 @@ listener = .symbc.VeritestingListener
 symbolic.dp=z3bitvector
 #listener = .listener.ChoiceTracker
 #symbolic.debug=on
-veritestingMode=4
+veritestingMode=3
 performanceMode = true

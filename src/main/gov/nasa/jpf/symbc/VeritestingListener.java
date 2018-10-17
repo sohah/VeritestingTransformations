@@ -475,8 +475,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Total Solver Time = " + TimeUnit.NANOSECONDS.toMillis(totalSolverTime) + " msec");
         pw.println("Total Solver Parse Time = " + TimeUnit.NANOSECONDS.toMillis(parseTime) + " msec");
         pw.println("Total Solver Clean up Time = " + TimeUnit.NANOSECONDS.toMillis(cleanupTime) + " msec");
-        pw.println("PCSatSolverCount = " + StatisticManager.PCSatSolverCount);
-        pw.println("PCSatSolverTime = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.PCSatSolverTime) + " msec");
+        pw.println("PCSatSolverCount = " + StatisticManager.PCSatSolverCount + " (makes sense only in SPFCases mode)");
+        pw.println("PCSatSolverTime = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.PCSatSolverTime) + " msec" + " (makes sense only in SPFCases mode)");
         pw.println("Constant Propagation Time for PC sat. checks = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.constPropTime));
         pw.println("Array SPF Case count = " + StatisticManager.ArraySPFCaseCount);
         pw.println("If-removed count = " + StatisticManager.ifRemovedCount);

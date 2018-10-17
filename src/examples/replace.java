@@ -415,33 +415,33 @@ public class replace {
 	 */
 	private static int makesub(char[] arg, char[] sub) {
 		boolean continueIndex = false;
-//		if(arg[subParaIndex] != ENDSTR){
-//			continueIndex = true;
-//		}
-//		while(continueIndex){
+		if(arg[subParaIndex] != ENDSTR){
+			continueIndex = true;
+		}
+		while(continueIndex){
 			if(arg[subParaIndex] == '&'){
 				//
 				char ch = (char)DITTO;
 				if(subIndex < subLen){
 					sub[subIndex] = ch;
-//					subIndex = subIndex + 1;
+					subIndex = subIndex + 1;
 				}
 			}
-//			else{
-//				char escjunk = '0'; //escSub(arg);
-//				if(subIndex < subLen){
-//					sub[subIndex] = escjunk;
-//					subIndex = subIndex + 1;
-//				}
-//			}
+			else{
+				char escjunk = escSub(arg);
+				if(subIndex < subLen){
+					sub[subIndex] = escjunk;
+					subIndex = subIndex + 1;
+				}
+			}
 			subParaIndex = subParaIndex + 1;
 			continueIndex = false;
-//			if(arg[subParaIndex] != ENDSTR){
-//				continueIndex = true;
-//			}
-//		}
+			if(arg[subParaIndex] != ENDSTR){
+				continueIndex = true;
+			}
+		}
 		int result = 0;
-		/*if(arg[subParaIndex] != ENDSTR){
+		if(arg[subParaIndex] != ENDSTR){
 			result = 0;
 		}
 		else{
@@ -452,7 +452,7 @@ public class replace {
 			else{
 				result = 0;
 			}
-		}*/
+		}
 		return result;
 	}
 	
