@@ -1,10 +1,5 @@
 public class ArrayTest3 extends TestRegionBaseClass {
 
-    Outputs testFunction(int in0, int in1, int in2, int in3, int in4, int in5,
-                         boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5) {
-        return arrayLoadStore0(in0, in1);
-    }
-
     public Outputs arrayLoadStore0(int index, int length) {
         int[] x = {300, 400};
         int temp = 1;
@@ -35,5 +30,10 @@ public class ArrayTest3 extends TestRegionBaseClass {
         TestVeritesting t = new TestVeritesting();
         ArrayTest3 s = new ArrayTest3();
         t.runTest(s);
+    }
+
+    @Override
+    Outputs testFunction(int in0, int in1, int in2, int in3, int in4, int in5, boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5, char c0, char c1, char c2, char c3, char c4, char c5) {
+        return arrayLoadStore0(in0, in1);
     }
 }

@@ -36,6 +36,7 @@ public class replace {
 	public static final int CLOSIZE = 1;
 
 	public static void reset() {
+		System.out.println("resetting replace");
 		patParaIndex = 0;
 		patIndex = 0;
 		subParaIndex = 0;
@@ -52,11 +53,11 @@ public class replace {
 //		patPara[2] = i2;
 		patPara[2] = '\0';
 		char[] pat = new char[patLen];
-		int patResult = makepat(patPara, pat);
-		if(patResult <= 0){
-			System.out.println("Challege: illegal pattern!");
-			return new char[]{};
-		}
+//		int patResult = makepat(patPara, pat);
+//		if(patResult <= 0){
+//			System.out.println("Challege: illegal pattern!");
+//			return new char[]{};
+//		}
 		//
 		char[] subPara = new char[subParaLen];
 		subPara[0] = i2;
@@ -66,17 +67,19 @@ public class replace {
 		subPara[2] = '\0';
 		char[] sub = new char[subLen];
 		int subResult = makesub(subPara, sub);
-		if(subResult <= 0){
-			System.out.println("Challege: illegal sub");
-		}
+//		if(subResult <= 0){
+//			System.out.println("Challege: illegal sub");
+//		}
 		//
-		char[] str = new char[strLen];
-		str[0] = i4;
+//		char[] str = new char[strLen];
+//		str[0] = i4;
+		/*
 //		str[1] = i4;
 //		str[2] = i8;
-		str[1] = '\0';
+*/
+//		str[1] = '\0';
 		//
-		change(str, pat, sub);
+//		change(str, pat, sub);
 		char[] retChar = new char[pat.length + sub.length];
 //		for (int i = 0; i < pat.length; i++)
 //			retChar[i] = pat[i];
@@ -396,33 +399,33 @@ public class replace {
 	 */
 	private static int makesub(char[] arg, char[] sub) {
 		boolean continueIndex = false;
-		if(arg[subParaIndex] != ENDSTR){
-			continueIndex = true;
-		}
-		while(continueIndex){
+//		if(arg[subParaIndex] != ENDSTR){
+//			continueIndex = true;
+//		}
+//		while(continueIndex){
 			if(arg[subParaIndex] == '&'){
 				//
 				char ch = (char)DITTO;
 				if(subIndex < subLen){
 					sub[subIndex] = ch;
-					subIndex = subIndex + 1;
+//					subIndex = subIndex + 1;
 				}
 			}
-			else{
-				char escjunk = escSub(arg);
-				if(subIndex < subLen){
-					sub[subIndex] = escjunk;
-					subIndex = subIndex + 1;
-				}
-			}
+//			else{
+//				char escjunk = '0'; //escSub(arg);
+//				if(subIndex < subLen){
+//					sub[subIndex] = escjunk;
+//					subIndex = subIndex + 1;
+//				}
+//			}
 			subParaIndex = subParaIndex + 1;
 			continueIndex = false;
-			if(arg[subParaIndex] != ENDSTR){
-				continueIndex = true;
-			}
-		}
-		int result;
-		if(arg[subParaIndex] != ENDSTR){
+//			if(arg[subParaIndex] != ENDSTR){
+//				continueIndex = true;
+//			}
+//		}
+		int result = 0;
+		/*if(arg[subParaIndex] != ENDSTR){
 			result = 0;
 		}
 		else{
@@ -433,7 +436,7 @@ public class replace {
 			else{
 				result = 0;
 			}
-		}
+		}*/
 		return result;
 	}
 	
@@ -803,7 +806,7 @@ public class replace {
 	
 
 	public static void main(String[] args) {
-		mainProcess('a', '2', '&', 'a', 'a');
+		mainProcess('2', '&', 'a', 'a', '0');
 	}
 
 }

@@ -1,50 +1,13 @@
-public class TestVeritestingReplace {
+public class TestVeritestingReplace extends TestVeritesting {
 
 
-    void testHarness(ReplaceEqCheck v,
-                     char in0, char in1, char in2, char in3, char in4, char in5,
-                     char in6, char in7, char in8, char in9, char in10, char in11) {
-        Outputs outSPF = SPFWrapper(new ReplaceEqCheck(), in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
+    void testHarness(TestRegionBaseClass v,
+                     int in0, int in1, int in2, int in3, int in4, int in5,
+                     boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5,
+                     char c0, char c1, char c2, char c3, char c4, char c5) {
+        Outputs outSPF = SPFWrapper(v, in0, in1, in2, in3, in4, in5, b0, b1, b2, b3, b4, b5, c0, c1, c2, c3, c4, c5);
         replace.reset();
-        Outputs outJR = JRWrapper(new ReplaceEqCheck(), in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
+        Outputs outJR = JRWrapper(v, in0, in1, in2, in3, in4, in5, b0, b1, b2, b3, b4, b5, c0, c1, c2, c3, c4, c5);
         checkEquality(v, outSPF, outJR);
-    }
-
-    private void checkEquality(ReplaceEqCheck v, Outputs outSPF, Outputs outJR) {
-        if (outSPF.equals(outJR)) System.out.println("Match");
-        else {
-            System.out.println("Mismatch");
-            assert(false);
-        }
-//        assert(outSPF == outJR);
-    }
-
-    private Outputs SPFWrapper(ReplaceEqCheck v, char in0, char in1, char in2, char in3, char in4, char in5,
-                               char in6, char in7, char in8, char in9, char in10, char in11) {
-        return NoVeritest(v, in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
-    }
-
-    // This is a special method. Call this method to prevent SPF from veritesting any regions that appear in any
-    // function or method call higher up in the stack. In the future, this call to SPFWrapperInner can be changed to
-    // be a generic method call if other no-veritesting methods need to be invoked.
-    private Outputs NoVeritest(ReplaceEqCheck v, char in0, char in1, char in2, char in3, char in4, char in5,
-                               char in6, char in7, char in8, char in9, char in10, char in11) {
-        return SPFWrapperInner(v, in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
-    }
-
-    private Outputs SPFWrapperInner(ReplaceEqCheck v, char in0, char in1, char in2, char in3, char in4, char in5,
-                                    char in6, char in7, char in8, char in9, char in10, char in11) {
-        Outputs ret = v.testFunction(in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
-        return ret;
-    }
-
-    private Outputs JRWrapper(ReplaceEqCheck v, char in0, char in1, char in2, char in3, char in4, char in5,
-                              char in6, char in7, char in8, char in9, char in10, char in11) {
-        return v.testFunction(in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
-    }
-
-    public void runTest(ReplaceEqCheck t) {
-        testHarness(t, '1', '2', '3', '4', '5', '6',
-                '6', '7', '8', '9', '0', '1');
     }
 };

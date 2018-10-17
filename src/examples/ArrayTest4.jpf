@@ -1,5 +1,5 @@
-target=FieldTest1
-veritestRegionExpectedCount = 4
+target=ArrayTest4
+veritestRegionExpectedCount = 2
 
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
@@ -10,12 +10,11 @@ symbolic.debug=false
 symbolic.method=TestVeritesting.testHarness(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 symbolic.dp=z3bitvector
 
-
-symbolic.min_int=-2147483648
-symbolic.max_int=2147483647
+#symbolic.min_int=-2147483648
+#symbolic.max_int=2147483647
 symbolic.min_double=-100.0
 symbolic.max_double=100.0
 listener = .symbc.VeritestingListener
 #listener = .symbc.SymbolicListener
-veritestingMode = 3
+veritestingMode = 4
 symbolic.lazy = true

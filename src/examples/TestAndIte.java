@@ -1,11 +1,5 @@
 public class TestAndIte extends TestRegionBaseClass {
 
-    Outputs testFunction(int in0, int in1, int in2, int in3, int in4, int in5,
-                     boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5) {
-        return mwwTestAndIte(b0, b1, in0);
-//        return mwwTestAndIte(b0, b1);
-    }
-
 //    public static int mwwTestAndIte(boolean x, boolean y) {
     public static Outputs mwwTestAndIte(boolean x, boolean y, int a) {
 //        int a = 0;
@@ -24,5 +18,10 @@ public class TestAndIte extends TestRegionBaseClass {
         TestVeritesting t = new TestVeritesting();
         TestAndIte s = new TestAndIte();
         t.runTest(s);
+    }
+
+    @Override
+    Outputs testFunction(int in0, int in1, int in2, int in3, int in4, int in5, boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5, char c0, char c1, char c2, char c3, char c4, char c5) {
+        return mwwTestAndIte(b0, b1, in0);
     }
 }

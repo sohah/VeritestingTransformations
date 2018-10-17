@@ -1,14 +1,10 @@
-public class ReplaceEqCheck {
+public class ReplaceEqCheck extends TestRegionBaseClass {
 
-    Outputs testFunction(char in0, char in1, char in2, char in3, char in4, char in5,
-                         char in6, char in7, char in8, char in9, char in10, char in11) {
-        return runReplace(in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
-    }
-
-    Outputs runReplace(char in0, char in1, char in2, char in3, char in4, char in5,
-                       char in6, char in7, char in8, char in9, char in10, char in11) {
+    Outputs runReplace(int in0, int in1, int in2, int in3, int in4, int in5,
+                       boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5,
+                       char c0, char c1, char c2, char c3, char c4, char c5) {
         replace t = new replace();
-        char[] ret = t.mainProcess(in0, in1, in2, in3, in4);
+        char[] ret = t.mainProcess(c0, c1, c2, c3, c4);
         Outputs outputs = new Outputs(ret);
         return outputs;
     }
@@ -18,5 +14,12 @@ public class ReplaceEqCheck {
         TestVeritestingReplace t = new TestVeritestingReplace();
         ReplaceEqCheck s = new ReplaceEqCheck();
         t.runTest(s);
+    }
+
+    @Override
+    Outputs testFunction(int in0, int in1, int in2, int in3, int in4, int in5,
+                         boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5,
+                         char c0, char c1, char c2, char c3, char c4, char c5) {
+        return runReplace(in0, in1, in2, in3, in4, in5, b0, b1, b2, b3, b4, b5, c0, c1, c2, c3, c4, c5);
     }
 }

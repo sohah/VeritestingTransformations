@@ -1,10 +1,5 @@
 public class FieldTest4 extends TestRegionBaseClass {
 
-    Outputs testFunction(int in0, int in1, int in2, int in3, int in4, int in5,
-                     boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5) {
-        return fieldTest4(in0);
-    }
-
     int count = 0;
 
     public Outputs fieldTest4(int x) {
@@ -25,6 +20,11 @@ public class FieldTest4 extends TestRegionBaseClass {
         TestVeritesting t = new TestVeritesting();
         FieldTest4 s = new FieldTest4();
         t.runTest(s);
+    }
+
+    @Override
+    Outputs testFunction(int in0, int in1, int in2, int in3, int in4, int in5, boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5, char c0, char c1, char c2, char c3, char c4, char c5) {
+        return fieldTest4(in0);
     }
 }
 

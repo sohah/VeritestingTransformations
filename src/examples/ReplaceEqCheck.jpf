@@ -7,7 +7,7 @@ vm.storage.class=nil
 symbolic.debug=false
 
 ######## testing equivalence ######
-symbolic.method=TestVeritestingReplace.testHarness(con#sym#sym#sym#con#con#con#con#con#con#con#con#con)
+symbolic.method=TestVeritestingReplace.testHarness(con#con#con#con#con#con#con#con#con#con#con#con#con#sym#sym#sym#con#con#con)
 symbolic.dp=z3bitvector
 
 #symbolic.min_int=-2147483648

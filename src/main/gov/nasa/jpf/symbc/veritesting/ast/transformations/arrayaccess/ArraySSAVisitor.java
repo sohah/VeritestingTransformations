@@ -118,7 +118,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         }
     }
 
-    public static Pair getArrayElement(ElementInfo ei, int index) {
+    public static Pair<Expression, String> getArrayElement(ElementInfo ei, int index) {
         // copied from Soha's implementation of FillArrayLoadHoles in the previous veritesting implementation
         if(ei.getArrayType().equals("B")){
             return new Pair(getArrayExpression(ei, index, "byte"), "byte"); //elements of the array are concrete
@@ -294,9 +294,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         Expression elseExpr = elseSubscript.pathSubscript != ARRAY_SUBSCRIPT_BASE ?
                 new ArrayRefVarExpr(arrayRef, elseSubscript) : pair.getFirst();
         Expression assignExpr = new GammaVarExpr(condition, thenExpr, elseExpr);
-        AssignmentStmt assignmentStmt = new AssignmentStmt(arrayRefVarExpr, assignExpr);
-        Stmt retStmt = assignmentStmt;
-
+        Stmt retStmt = new AssignmentStmt(arrayRefVarExpr, assignExpr);
         retStmt = makeAssignStmts(arrayRefVarExpr, assignExpr, retStmt);
         return retStmt;
     }
@@ -313,7 +311,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             ArrayRef ref = new ArrayRef(arrayRefVarExpr.arrayRef.ref, new IntConstant(i));
             ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript);
             AssignmentStmt stmt = new AssignmentStmt(createGreenVar(p.getSecond(), newExpr.getSymName()), value);
-            retStmt = new CompositionStmt(retStmt, stmt);
+            retStmt = retStmt != null ? new CompositionStmt(retStmt, stmt) : stmt;
         }
         return retStmt;
     }

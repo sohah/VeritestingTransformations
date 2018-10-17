@@ -37,9 +37,7 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
         if (isConstant(rhs)) {
             constantsTable.add((Variable) a.lhs, rhs);
         }
-        Expression lhs = eva.accept(a.lhs);
-        if (isSatGreenExpression(new Operation(EQ, lhs, rhs)) == ExprUtil.SatResult.TRUE) return SkipStmt.skip;
-        return new AssignmentStmt(lhs, rhs);
+        return new AssignmentStmt(a.lhs, rhs);
 
     }
 
