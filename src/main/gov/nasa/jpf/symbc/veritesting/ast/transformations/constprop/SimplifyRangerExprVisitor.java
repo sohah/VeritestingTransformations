@@ -25,8 +25,8 @@ public class SimplifyRangerExprVisitor extends ExprMapVisitor implements ExprVis
     }
 
     private Expression lookup(Expression expr) {
-        if (constantsTable.lookup((Variable) expr) != null)
-            return constantsTable.lookup((Variable) expr);
+        if (constantsTable.lookup((CloneableVariable) expr) != null)
+            return constantsTable.lookup((CloneableVariable) expr);
         else return expr;
     }
 
