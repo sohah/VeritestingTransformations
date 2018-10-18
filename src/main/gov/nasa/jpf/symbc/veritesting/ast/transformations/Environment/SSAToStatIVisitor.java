@@ -130,7 +130,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
         // Handle leaf-level assignment
         if (conds.get(0).isEmpty()) {
-            assert (conds.size() == 1);
+            if (conds.size() != 1) throw sre;
             return values.get(0);
         }
 
