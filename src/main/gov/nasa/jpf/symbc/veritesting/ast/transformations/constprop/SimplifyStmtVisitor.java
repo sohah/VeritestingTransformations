@@ -3,7 +3,10 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
-import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.def.AssignmentStmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.SkipStmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
@@ -32,7 +35,7 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
     public Stmt visit(AssignmentStmt a) {
         Expression rhs = eva.accept(a.rhs);
         if (isConstant(rhs)) {
-            constantsTable.add((CloneableVariable) a.lhs, rhs);
+            constantsTable.add((Variable) a.lhs, rhs);
         }
         return new AssignmentStmt(a.lhs, rhs);
 

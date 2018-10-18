@@ -8,14 +8,14 @@ import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.*;
 
-public class DynamicTable<V> extends Table<CloneableVariable, V> {
+public class DynamicTable<V> extends Table<Variable, V> {
 
     public DynamicTable(String tableName, String label1, String label2) {
         super(tableName, label1, label2);
     }
 
 
-    public DynamicTable(String tableName, String label1, String label2, ArrayList<CloneableVariable> keys, ArrayList<V> values) {
+    public DynamicTable(String tableName, String label1, String label2, ArrayList<Variable> keys, ArrayList<V> values) {
         super(tableName, label1, label2);
         for(int i= 0; i < keys.size(); i++){
             this.add(keys.get(i), values.get(i));
@@ -42,7 +42,7 @@ public class DynamicTable<V> extends Table<CloneableVariable, V> {
      * Returns all keys of the table.
      */
 
-    public ArrayList<CloneableVariable> getKeys() {
+    public ArrayList<Variable> getKeys() {
         return new ArrayList<>(table.keySet());
     }
 
@@ -51,15 +51,17 @@ public class DynamicTable<V> extends Table<CloneableVariable, V> {
      * Appends a postfix to each key in the table.
      * @param unique A unique postfix.
      */
-    public void makeUniqueKey(int unique) throws CloneNotSupportedException, StaticRegionException {
+    public void makeClonableVarUniqueKey(int unique) throws CloneNotSupportedException, StaticRegionException {
         List keys = new ArrayList(table.keySet());
         Collections.sort(keys);
         Collections.reverse(keys);
         Iterator itr = keys.iterator();
         while(itr.hasNext()){
-            CloneableVariable oldKey = (CloneableVariable) itr.next();
-            CloneableVariable newKey = oldKey.clone();
-            newKey = newKey.makeUnique(unique);
+            Variable oldKey = (Variable) itr.next();
+            assert(oldKey instanceof CloneableVariable);
+            Variable newKey = ((CloneableVariable)oldKey).clone();
+            assert(newKey instanceof CloneableVariable);
+            newKey = ((CloneableVariable)newKey).makeUnique(unique);
             table.put(newKey, table.get(oldKey));
             table.remove(oldKey);
         }
