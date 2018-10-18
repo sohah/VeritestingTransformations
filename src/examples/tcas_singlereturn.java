@@ -306,7 +306,7 @@ public class tcas_singlereturn {
 		//alt_sep_test();
 
 		result_alt_sep_test = alt_sep_test();
-		result_alim = ALIM();
+//		result_alim = ALIM();
 
 		// MWW assertions.  These come from ACSL safety property paper: http://people.rennes.inria.fr/Arnaud.Gotlieb/CT_ATM_gotlieb.pdf
 		// fails
@@ -353,7 +353,8 @@ Down_Separation < Positive_RA_Alt_Tresh; ensures \result != need_Downward_RA;
 	public static void main(String[] argv) {
 //		tcas_singlereturn t = new tcas_singlereturn();
 //		t.mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
-		mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
-//		mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		int maxSteps = 1;
+		for (int i=0; i < maxSteps; i++)
+			mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
 	}
 }

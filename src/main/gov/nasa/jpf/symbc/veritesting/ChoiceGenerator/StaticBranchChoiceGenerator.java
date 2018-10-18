@@ -15,10 +15,8 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
-import static gov.nasa.jpf.symbc.VeritestingListener.performanceMode;
 import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatisfiable;
 
 
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {

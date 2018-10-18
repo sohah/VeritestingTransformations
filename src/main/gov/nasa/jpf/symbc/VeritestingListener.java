@@ -36,9 +36,10 @@ import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticSummaryChoiceGenerat
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
-import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.FieldRefTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
@@ -46,8 +47,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.SimplifyStmtVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubstituteGetOutput;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
@@ -288,6 +289,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
         dynRegion = UniqueRegion.execute(dynRegion);
 
+        dynRegion = SimplifyStmtVisitor.execute(dynRegion);
+
+
         if(runMode == VeritestingMode.SPFCASES) {
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
             dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
@@ -474,10 +478,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Total Solver Time = " + TimeUnit.NANOSECONDS.toMillis(totalSolverTime) + " msec");
         pw.println("Total Solver Parse Time = " + TimeUnit.NANOSECONDS.toMillis(parseTime) + " msec");
         pw.println("Total Solver Clean up Time = " + TimeUnit.NANOSECONDS.toMillis(cleanupTime) + " msec");
-        pw.println("SPFCaseSolverCount = " + StatisticManager.SPFCaseSolverCount);
-        pw.println("SPFCaseSolverTime = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.SPFCaseSolverTime) + " msec");
+        pw.println("PCSatSolverCount = " + StatisticManager.PCSatSolverCount + " (makes sense only in SPFCases mode)");
+        pw.println("PCSatSolverTime = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.PCSatSolverTime) + " msec" + " (makes sense only in SPFCases mode)");
         pw.println("Constant Propagation Time for PC sat. checks = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.constPropTime));
         pw.println("Array SPF Case count = " + StatisticManager.ArraySPFCaseCount);
+        pw.println("If-removed count = " + StatisticManager.ifRemovedCount);
+
 
         pw.println(statisticManager.printAccumulativeStatistics());
 

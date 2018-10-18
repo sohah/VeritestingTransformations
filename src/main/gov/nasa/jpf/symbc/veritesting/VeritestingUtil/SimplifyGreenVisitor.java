@@ -2,6 +2,14 @@ package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
 import za.ac.sun.cs.green.expr.*;
 
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.translateNotExpr;
+
+
+/*
+Vaibhav: The functionality currently implemented by this class is made redundant by the SimplifyRangerExprVisitor.
+Since we're doing simplification at the Ranger IR level, this class can be removed unless we need a simplification
+visitor for Green expressions.
+ */
 public class SimplifyGreenVisitor extends Visitor {
 
     public Expression returnExp;
@@ -49,24 +57,7 @@ public class SimplifyGreenVisitor extends Visitor {
 
                 if (e1 == Operation.TRUE)
                     returnExp = Operation.FALSE;
-                else if (e1 == Operation.FALSE)
-                    returnExp = Operation.TRUE;
-                else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.NOT))
-                    returnExp = ((Operation) e1).getOperand(0);
-                else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.EQ))
-                    returnExp = new Operation(Operation.Operator.NE, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
-                else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.NE))
-                    returnExp = new Operation(Operation.Operator.EQ, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
-                else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.GT))
-                    returnExp = new Operation(Operation.Operator.LE, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
-                else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.GE))
-                    returnExp = new Operation(Operation.Operator.LT, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
-                else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.LE))
-                    returnExp = new Operation(Operation.Operator.GT, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
-                else if ((e1 instanceof Operation) && (((Operation) e1).getOperator() == Operation.Operator.LT))
-                    returnExp = new Operation(Operation.Operator.GE, ((Operation) e1).getOperand(0), ((Operation) e1).getOperand(1));
-                else
-                    returnExp = new Operation(Operation.Operator.NOT, e1);
+                else returnExp = translateNotExpr(operation);
                 break;
             default:
                 returnExp = operation;

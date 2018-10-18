@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrikeBT.IConditionalBranchInstruction;
+import com.ibm.wala.shrikeBT.IShiftInstruction;
 import com.ibm.wala.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
@@ -128,6 +129,24 @@ public class SSAUtil {
             case AND: return Operation.Operator.BIT_AND;
             case OR: return Operation.Operator.BIT_OR;
             case XOR: return Operation.Operator.BIT_XOR;
+        }
+        throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
+    }
+
+    /**
+     * Translate a binary shift operation to the appropriate Green operator.
+     * @param op Wala operation
+     * @return Equivalent Green operator
+     */
+
+    public static Operation.Operator translateBinaryOp(IShiftInstruction.Operator op) {
+        switch (op) {
+            case SHL:
+                return Operation.Operator.SHIFTL;
+            case SHR:
+                return Operation.Operator.SHIFTR;
+            case USHR:
+                return Operation.Operator.SHIFTUR;
         }
         throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
     }

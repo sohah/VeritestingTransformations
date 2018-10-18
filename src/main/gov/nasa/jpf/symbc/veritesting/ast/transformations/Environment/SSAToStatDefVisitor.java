@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrikeBT.IComparisonInstruction;
+import com.ibm.wala.shrikeBT.IShiftInstruction;
 import com.ibm.wala.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
@@ -67,7 +68,13 @@ public class SSAToStatDefVisitor implements SSAInstruction.IVisitor {
     @Override
     public void visitBinaryOp(SSABinaryOpInstruction ssa) {
         Expression lhs = new WalaVarExpr(ssa.getDef());
-        Operation.Operator op = translateBinaryOp((IBinaryOpInstruction.Operator)ssa.getOperator());
+        Operation.Operator op = null;
+        if (ssa.getOperator() instanceof IBinaryOpInstruction.Operator)
+            op = translateBinaryOp((IBinaryOpInstruction.Operator) ssa.getOperator());
+        else if (ssa.getOperator() instanceof IShiftInstruction.Operator)
+            op = translateBinaryOp((IShiftInstruction.Operator) ssa.getOperator());
+        else
+            throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
         Expression op1 = convertWalaVar(ir, ssa.getUse(0));
         Expression op2 = convertWalaVar(ir, ssa.getUse(1));
         Expression rhs = new Operation(op, op1, op2);
