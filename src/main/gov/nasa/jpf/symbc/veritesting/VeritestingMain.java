@@ -37,6 +37,8 @@ import x10.wala.util.NatLoopSolver;
 
 import za.ac.sun.cs.green.expr.Operation;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.exclusionsFile;
+
 /**
  * Main class file for veritesting static analysis exploration.
  */
@@ -58,9 +60,10 @@ public class VeritestingMain {
 
     public VeritestingMain(ThreadInfo ti, String appJar) {
         try {
+            Map map = System.getenv();
             appJar = System.getenv("TARGET_CLASSPATH_WALA");// + appJar;
             AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
-                    (new FileProvider()).getFile("../MyJava60RegressionExclusions.txt"));
+                    (new FileProvider()).getFile(exclusionsFile));
 //                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
             methodSummaryClassNames = new HashSet<String>();

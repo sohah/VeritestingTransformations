@@ -99,6 +99,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static VeritestingMode runMode;
     public static boolean performanceMode = false;
 
+    // reads in a exclusionsFile configuration option, set to ${jpf-symbc}/MyJava60RegressionExclusions.txt by default
+    public static String exclusionsFile;
+
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
             veritestingMode = conf.getInt("veritestingMode");
@@ -126,6 +129,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
             if (conf.hasValue("performanceMode"))
                 performanceMode = conf.getBoolean("performanceMode");
+            if (conf.hasValue("jpf-symbc")) {
+                exclusionsFile = conf.getString("jpf-symbc") + "/MyJava60RegressionExclusions.txt";
+            }
+            if (conf.hasValue("exclusionsFile")) {
+                exclusionsFile = conf.getString("exclusionsFile");
+            }
 
             if (conf.hasValue("veritestRegionExpectedCount"))
                 veritestRegionExpectedCount = conf.getInt("veritestRegionExpectedCount");
