@@ -6,11 +6,10 @@ import com.ibm.wala.shrikeBT.IShiftInstruction;
 import com.ibm.wala.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import x10.wala.util.NatLoop;
 import za.ac.sun.cs.green.expr.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /**
  * Some utility methods used during construction of the StaticRegion.
@@ -160,6 +159,19 @@ public class SSAUtil {
             case NEG: return Operation.Operator.NEG;
         }
         throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateUnaryOp");
+    }
+
+    /*
+    * Returns true if this the basic block b is the start of a loop in loops
+     */
+    public static boolean isLoopStart(HashSet<NatLoop> loops, ISSABasicBlock b) {
+        Iterator var1 = loops.iterator();
+
+        while (var1.hasNext()) {
+            NatLoop var3 = (NatLoop) var1.next();
+            if (b == var3.getStart()) return true;
+        }
+        return false;
     }
 
 }

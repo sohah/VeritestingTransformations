@@ -11,9 +11,13 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SSAToStatIVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
+import x10.wala.util.NatLoop;
 import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
+
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.isConditionalBranch;
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.isLoopStart;
 
 //    TODO: In examining the debug output, it appears that the same classes and methods are visited multiple times.  Why?
 
@@ -130,6 +134,10 @@ public class CreateStaticRegions {
         return constructMethodIdentifier(blk.getMethod().getSignature());
     }
 
+    /*
+    Contains a set of all the loops in the IR maintained as NatLoop objects
+     */
+    private final HashSet<NatLoop> loops;
     private IR ir;
     private Graph<ISSABasicBlock> domTree;
 
@@ -158,13 +166,14 @@ public class CreateStaticRegions {
     // TODO: so we store *unsuccessful* regions.  This would allow us to do region
     // TODO: construction "on the fly" without revisiting unsuccessful regions multiple times.
 
-    public CreateStaticRegions(IR ir) {
+    public CreateStaticRegions(IR ir, HashSet<NatLoop> loops) {
         blockConditionMap = new HashMap<>();
         currentCondition = new LinkedList<>();
         thenCondition = new HashMap<>();
         thenSuccessor = new HashMap<>();
         elseSuccessor = new HashMap<>();
         visitedBlocks = new HashSet<>();
+        this.loops = loops;
 
         this.ir = ir;
 
@@ -363,7 +372,7 @@ public class CreateStaticRegions {
                 // throw new StaticRegionException("createComplexIfCondition: funky non-self-contained region");
             }
 
-            if (!SSAUtil.isConditionalBranch(parent)) {
+            if (!isConditionalBranch(parent)) {
                 throw new StaticRegionException("createComplexIfCondition: unconditional branch (continue or break)");
             }
             else if (parent != entry && SSAUtil.statefulBlock(parent)) {
@@ -462,7 +471,7 @@ public class CreateStaticRegions {
     private Stmt conditionalBranch(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock terminus)
             throws StaticRegionException {
 
-        if (!SSAUtil.isConditionalBranch(currentBlock)) {
+        if (!isConditionalBranch(currentBlock)) {
             throw new StaticRegionException("conditionalBranch: no conditional branch!");
         }
 
@@ -511,6 +520,7 @@ public class CreateStaticRegions {
      * @throws StaticRegionException
      */
     public Stmt attemptSubregionRec(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
+        System.out.println("attemptSubregionRec: " + ir.getMethod().getDeclaringClass().toString() + "." + ir.getMethod().getName());
 
         if (currentBlock == endingBlock) {
             return SkipStmt.skip;
@@ -529,7 +539,9 @@ public class CreateStaticRegions {
             this.blockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
 
             if (nextBlock.getNumber() < endingBlock.getNumber()) {
-                stmt = conjoin(stmt, attemptSubregionRec(cfg, nextBlock, endingBlock));
+                if (isLoopStart(loops, nextBlock) && !isConditionalBranch(nextBlock))
+                    throw new StaticRegionException(currentBlock.toString() + " is the beginning of an infinite loop");
+                else stmt = conjoin(stmt, attemptSubregionRec(cfg, nextBlock, endingBlock));
             }
         }
         return stmt;

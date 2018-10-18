@@ -284,7 +284,7 @@ public class VeritestingMain {
             HashSet<Integer> visited = new HashSet<>();
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             // Here is where the magic happens.
-            CreateStaticRegions regionCreator = new CreateStaticRegions(ir);
+            CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
             if (!methodAnalysis) {
                 //regionCreator.createStructuredConditionalRegions(cfg, veritestingRegions);
                 regionCreator.createStructuredConditionalRegions(veriRegions);
@@ -306,16 +306,6 @@ public class VeritestingMain {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public boolean isLoopStart(ISSABasicBlock b) {
-        Iterator var1 = loops.iterator();
-
-        while (var1.hasNext()) {
-            NatLoop var3 = (NatLoop) var1.next();
-            if (b == var3.getStart()) return true;
-        }
-        return false;
     }
 
 
