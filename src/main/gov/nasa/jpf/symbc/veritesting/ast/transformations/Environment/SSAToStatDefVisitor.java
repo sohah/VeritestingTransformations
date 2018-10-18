@@ -49,9 +49,7 @@ public class SSAToStatDefVisitor implements SSAInstruction.IVisitor {
     }
 
     @Override
-    public void visitGoto(SSAGotoInstruction ssaGotoInstruction) {
-        throw new IllegalArgumentException("Goto seen in SSAToStatDefVisitor.  This should not occur.");
-    }
+    public void visitGoto(SSAGotoInstruction ssaGotoInstruction) { foundStoppingInsn = true; }
 
     @Override
     public void visitArrayLoad(SSAArrayLoadInstruction ssaArrayLoadInstruction) {
