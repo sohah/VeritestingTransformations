@@ -72,7 +72,7 @@ public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
     public Expression visit(WalaVarExpr expr) {
         String type = (String) varTypeTable.lookup(expr);
         if (type != null)
-            return createGreenVar(type, expr.getName());
+            return createGreenVar(type, expr.getSymName());
         else
             throw new IllegalArgumentException("Failed to infer type of Wala var, " + expr);
     }

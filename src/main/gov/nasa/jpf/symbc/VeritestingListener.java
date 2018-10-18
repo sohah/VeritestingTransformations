@@ -36,10 +36,7 @@ import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticSummaryChoiceGenerat
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
-import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
-import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRef;
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.FieldRefTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
@@ -62,6 +59,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePr
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
+import gov.nasa.jpf.vm.Instruction;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 import za.ac.sun.cs.green.expr.Variable;
@@ -395,7 +393,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         while (slotItr.hasNext()) {
             Integer slot = (Integer) slotItr.next();
             Variable var = dynOutputTable.lookup(slot);
-            Expression symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), var.getName());
+            assert(var instanceof WalaVarExpr);
+            Expression symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), ((WalaVarExpr) var).getSymName());
             sf.setSlotAttr(slot, greenToSPFExpression(symVar));
         }
     }

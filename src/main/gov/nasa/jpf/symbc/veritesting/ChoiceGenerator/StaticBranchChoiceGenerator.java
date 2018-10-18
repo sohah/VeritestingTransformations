@@ -233,8 +233,6 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             pc = new PathCondition();
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
-
-
         setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
         setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
         setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
