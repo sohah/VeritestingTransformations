@@ -56,7 +56,8 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             statisticManager.updateVeriSuccForRegion(key);
             ++VeritestingListener.veritestRegionCount;
         } else if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
-            restoreSpfStackFrame();
+           // ti.getTopFrame().defreeze();
+            //restoreSpfStackFrame();
             System.out.println("\n=========Executing" + (choice == THEN_CHOICE ? " then " : " else ") + ".  Instruction: ");
             switch (getKind(instructionToExecute)) {
                 case UNARYIF:
@@ -83,7 +84,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         int slotSize = spfSlotAttr.length;
 
         for (int i = 0; i < slotSize; i++) {
-            ti.getTopFrame().setSlotAttr(i,spfSlotAttr[i]);
+            ti.getTopFrame().setSlotAttr(i, spfSlotAttr[i]);
         }
     }
 
@@ -106,7 +107,6 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             ti.setTopFrame(currentTopFrame); //retoring the stackframe for SPFCase
 */
         StackFrame sf = ti.getModifiableTopFrame();
-
 
         IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1);
         IntegerExpression sym_v2 = (IntegerExpression) sf.getOperandAttr(0);
@@ -162,30 +162,28 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
     }
 
     public Instruction executeNullIf(Instruction instruction) {
+
         StackFrame sf = ti.getModifiableTopFrame();
         Expression sym_v = (Expression) sf.getOperandAttr();
         if (sym_v == null) { // the condition is concrete
             //System.out.println("Execute IFEQ: The condition is concrete");
             return ((IFNONNULL) instruction).execute(ti);
         } else {
-            // MWW: I do not understand this code, I am asserting false!
-            // MWW: I think SPF code may be wrong.
             sf.pop();
-            assert (false);
             return ((IfInstruction) instruction).getTarget();
         }
     }
 
 
     public Instruction executeUnaryIf(Instruction instruction, int choice) throws StaticRegionException {
+
         StackFrame sf = ti.getModifiableTopFrame();
         IntegerExpression sym_v = (IntegerExpression) sf.getOperandAttr();
 
+        ti.getModifiableTopFrame().pop();
         if (sym_v == null) { // the condition is concrete
             return instruction.execute(ti);
         }
-
-        sf.pop();
         PathCondition pc = this.getCurrentPC();
         if (choice == ELSE_CHOICE) {
             pc._addDet(SpfUtil.getComparator(instruction), sym_v, 0);

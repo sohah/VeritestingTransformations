@@ -49,7 +49,6 @@ public class IFEQ extends gov.nasa.jpf.jvm.bytecode.IFEQ {
 			String[] dp = SymbolicInstructionFactory.dp;
 
 
-
 			ChoiceGenerator<?> cg;
 
 			if (!ti.isFirstStepInsn()) { // first time around

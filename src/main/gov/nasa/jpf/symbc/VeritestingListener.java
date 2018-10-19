@@ -228,6 +228,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             StaticPCChoiceGenerator newCG;
             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
             dynRegion = greenTranformationForSPFCases(dynRegion);
+
             if (StaticPCChoiceGenerator.getKind(instructionToExecute) == StaticPCChoiceGenerator.Kind.OTHER) {
                 newCG = new StaticSummaryChoiceGenerator(dynRegion, instructionToExecute);
             } else {
@@ -324,7 +325,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             populateSlots(ti, dynRegion);
             populateFieldOutputs(ti, dynRegion);
             populateArrayOutputs(ti, dynRegion);
-            clearStack(ti.getModifiableTopFrame(), ins);
+            clearStack(ti.getTopFrame(), ins);
             return advanceSpf(ti, ins, dynRegion);
         }
         return null;
@@ -388,7 +389,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      * @param dynRegion Dynamic region that has been successfully transformed and summarized.
      */
     private static void populateSlots(ThreadInfo ti, DynamicRegion dynRegion) {
-        StackFrame sf = ti.getTopFrame();
+        StackFrame sf = ti.getModifiableTopFrame();
         DynamicOutputTable dynOutputTable = dynRegion.outputTable;
         List<Integer> slots = dynOutputTable.getKeys();
 
