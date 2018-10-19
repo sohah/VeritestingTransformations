@@ -6,6 +6,7 @@ import com.ibm.wala.ssa.SSACFG;
 import com.ibm.wala.ssa.SSAInstruction;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionMetricsVisitor;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SymbCondVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
@@ -60,6 +61,11 @@ public class StaticRegion implements Region {
      * An environment table that holds the types of local variables defined inside the region.
      */
     public final VarTypeTable varTypeTable;
+
+    /*
+    * Holds the total number of IfThenElseStmts present in this static region
+     */
+    public int maxDepth = 0;
 
     /**
      * @param staticStmt: Ranger IR statement that summarizes this static region
@@ -158,6 +164,7 @@ public class StaticRegion implements Region {
             }
         }
         LocalOutputInvariantVisitor.execute(this);
+        RegionMetricsVisitor.execute(this);
     }
 
     /**

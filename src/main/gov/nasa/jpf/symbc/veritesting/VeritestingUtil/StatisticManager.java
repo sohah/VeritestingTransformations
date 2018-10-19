@@ -1,9 +1,9 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
+import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
+
+import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.SREMap;
 
@@ -19,6 +19,8 @@ public class StatisticManager {
     public static long constPropTime = 0;
     public static int ArraySPFCaseCount = 0;
     public static int ifRemovedCount = 0;
+    private int maxBranchDepth = -1;
+    private int numMethodSummaries = 0;
 
 
     public void updateVeriSuccForRegion(String key) {
@@ -105,6 +107,14 @@ public class StatisticManager {
         return out;
     }
 
+    public String printStaticAnalysisStatistics(){
+        String out="\n/************************ Printing Static Analysis statistics *****************\n" +
+                "Number of summarized regions = " + VeritestingMain.veriRegions.size()
+                + "\nNumber of summarized methods = " + numMethodSummaries
+                + "\nMaximum branch depth = "+ maxBranchDepth;
+        return out;
+    }
+
     public int getDistinctVeriRegionNum(){
         int count = 0;
         Set<String> keys = regionsStatisticsMap.keySet();
@@ -167,5 +177,15 @@ public class StatisticManager {
 
     public int regionCount(){
         return regionsStatisticsMap.size();
+    }
+
+    public void collectStaticAnalysisMetrics(HashMap<String, StaticRegion> veriRegions) {
+        Iterator<Map.Entry<String, StaticRegion>> itr = veriRegions.entrySet().iterator();
+        while(itr.hasNext()) {
+            StaticRegion region = (StaticRegion) ((Map.Entry)itr.next()).getValue();
+            if (region.maxDepth > this.maxBranchDepth)
+                maxBranchDepth = region.maxDepth;
+            numMethodSummaries += (region.isMethodRegion ? 1 : 0);
+        }
     }
 }

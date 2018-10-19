@@ -466,6 +466,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         veritestingMain.analyzeForVeritesting(classPath, className);
         long endTime = System.nanoTime();
         staticAnalysisDur = endTime - startTime;
+        statisticManager.collectStaticAnalysisMetrics(VeritestingMain.veriRegions);
     }
 
 
@@ -493,7 +494,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Array SPF Case count = " + StatisticManager.ArraySPFCaseCount);
         pw.println("If-removed count = " + StatisticManager.ifRemovedCount);
 
-
+        pw.println(statisticManager.printStaticAnalysisStatistics());
         pw.println(statisticManager.printAccumulativeStatistics());
 
         pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
@@ -506,7 +507,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         /* End added for equivalence checking */
 
 
-        pw.println(TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur)+","+
+        pw.println((TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur)+ TimeUnit.NANOSECONDS.toMillis(dynRunTime)) + "," +
+                TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur)+","+
                 TimeUnit.NANOSECONDS.toMillis(dynRunTime) + "," +
                 solverCount + "," +
                 TimeUnit.NANOSECONDS.toMillis(totalSolverTime) + "," +
