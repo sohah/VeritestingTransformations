@@ -16,10 +16,13 @@ import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.isConditionalBranch;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.isLoopStart;
 
-//    TODO: In examining the debug output, it appears that the same classes and methods are visited multiple times.  Why?
+// TODO: MWW: In examining the debug output, it appears that the same classes and methods are visited multiple times.  Why?
+// Vaibhav: In part, this happens because we visit every method three times, once for finding conditional regions, and
+// twice again when we're running with VeritestingMain.methodAnalysis set to true. This is done by VeritestingMain.startAnalysis().
 
 /**
  * This class creates our structure IR from the WALA SSA form, this is basically done by decompiling DAGs within a Java program.
@@ -94,6 +97,8 @@ Here we are essentially decompiling DAGs within a Java program.  The goals
 
 public class CreateStaticRegions {
 
+    private HashMap<ISSABasicBlock, Integer> seenLoopStartSet;
+
     public static String constructRegionIdentifier(String methodSignature, int offset) {
         return methodSignature + "#" + offset;
     }
@@ -113,7 +118,7 @@ public class CreateStaticRegions {
         }
         if(offset == -100)
             try {
-                throw new StaticRegionException("Cannot find the index of the first instruction in the region.");
+                throwException(new StaticRegionException("Cannot find the index of the first instruction in the region."));
             } catch (StaticRegionException e) {
                 e.printStackTrace();
             }
@@ -174,6 +179,7 @@ public class CreateStaticRegions {
         elseSuccessor = new HashMap<>();
         visitedBlocks = new HashSet<>();
         this.loops = loops;
+        seenLoopStartSet = new HashMap<>();
 
         this.ir = ir;
 
@@ -289,7 +295,7 @@ public class CreateStaticRegions {
                     // because of priority queue, a non-empty queue means we have
                     // successor nodes beyond the terminus node, so error out.
                     if (!toVisit.isEmpty()) {
-                        throw new StaticRegionException("isSelfContainedSubgraph: non-empty queue at return");
+                        throwException(new StaticRegionException("isSelfContainedSubgraph: non-empty queue at return"));
                     }
                     return true;
                 } else if (!visited.contains(immediatePreDom)) {
@@ -332,7 +338,7 @@ public class CreateStaticRegions {
 
         MWW: I make several assumptions here about the structure of the nodes between
             currentBlock and entry; if they are violated then I have misunderstood something
-            about the structure of the region, so I throw a 'severe' exception.
+            about the structure of the region, so I throwException(a 'severe' exception.
 
         If there are stateful operations in the if/then/else, then the internal
         conditions will have >1 statement.  For now we will abort with a SRE, but
@@ -369,14 +375,14 @@ public class CreateStaticRegions {
             // Vaibhav finishes his equivalence checker.
             if (parent.getNumber() < entry.getNumber()) {
                 continue;
-                // throw new StaticRegionException("createComplexIfCondition: funky non-self-contained region");
+                // throwException(new StaticRegionException("createComplexIfCondition: funky non-self-contained region");
             }
 
             if (!isConditionalBranch(parent)) {
-                throw new StaticRegionException("createComplexIfCondition: unconditional branch (continue or break)");
+                throwException(new StaticRegionException("createComplexIfCondition: unconditional branch (continue or break)"));
             }
             else if (parent != entry && SSAUtil.statefulBlock(parent)) {
-                throw new StaticRegionException("createComplexIfCondition: stateful condition");
+                throwException(new StaticRegionException("createComplexIfCondition: stateful condition"));
             }
 
             assert(child == Util.getTakenSuccessor(cfg, parent) ||
@@ -428,7 +434,7 @@ public class CreateStaticRegions {
         SSACFG cfg = ir.getControlFlowGraph();
         ISSABasicBlock initialThenBlock = Util.getTakenSuccessor(cfg, entry);
         ISSABasicBlock initialElseBlock = Util.getNotTakenSuccessor(cfg, entry);
-        ISSABasicBlock thenBlock, elseBlock;
+        ISSABasicBlock thenBlock = null, elseBlock = null;
 
         findSelfContainedSubgraphs(entry, initialThenBlock, terminus, subgraphs);
         findSelfContainedSubgraphs(entry, initialElseBlock, terminus, subgraphs);
@@ -450,7 +456,7 @@ public class CreateStaticRegions {
             String errorText = "Unexpected number (" + subgraphs.size() +
                     ") of self-contained regions in findConditionalSuccessors";
             System.out.println(errorText);
-            throw new StaticRegionException(errorText);
+            throwException(new StaticRegionException(errorText));
         }
         this.thenSuccessor.put(entry, thenBlock);
         this.elseSuccessor.put(entry, elseBlock);
@@ -472,7 +478,7 @@ public class CreateStaticRegions {
             throws StaticRegionException {
 
         if (!isConditionalBranch(currentBlock)) {
-            throw new StaticRegionException("conditionalBranch: no conditional branch!");
+            throwException(new StaticRegionException("conditionalBranch: no conditional branch!"));
         }
 
         findConditionalSuccessors(currentBlock, terminus);
@@ -520,7 +526,6 @@ public class CreateStaticRegions {
      * @throws StaticRegionException
      */
     public Stmt attemptSubregionRec(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
-        System.out.println("attemptSubregionRec: " + ir.getMethod().getDeclaringClass().toString() + "." + ir.getMethod().getName());
 
         if (currentBlock == endingBlock) {
             return SkipStmt.skip;
@@ -539,9 +544,19 @@ public class CreateStaticRegions {
             this.blockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
 
             if (nextBlock.getNumber() < endingBlock.getNumber()) {
-                if (isLoopStart(loops, nextBlock) && !isConditionalBranch(nextBlock))
-                    throw new StaticRegionException(currentBlock.toString() + " is the beginning of an infinite loop");
-                else stmt = conjoin(stmt, attemptSubregionRec(cfg, nextBlock, endingBlock));
+                if (isLoopStart(loops, nextBlock)) {
+                    // Not sure why, but if we see the beginning of a loop more than twice, we're seeing a infinite loop.
+                    // This check correctly detects infinite loops in Pad.main() and
+                    // java.lang.ref.Reference$ReferenceHandler.run() while not classifying any other loops as infinite loops.
+                    if (seenLoopStartSet.containsKey(nextBlock) && seenLoopStartSet.get(nextBlock) > 2)
+                        throwException(new StaticRegionException(currentBlock.toString() + " is the beginning of an infinite loop"));
+                    else {
+                        if (seenLoopStartSet.containsKey(nextBlock))
+                            seenLoopStartSet.put(nextBlock, seenLoopStartSet.get(nextBlock)+1);
+                        else seenLoopStartSet.put(nextBlock, 1);
+                    }
+                }
+                stmt = conjoin(stmt, attemptSubregionRec(cfg, nextBlock, endingBlock));
             }
         }
         return stmt;
@@ -618,7 +633,7 @@ public class CreateStaticRegions {
                 System.out.println("Unable to create subregion.  Reason: " + e.toString());
             } catch (IllegalArgumentException e) {
                 System.out.println("Unable to create subregion.  Serious error. Reason: " + e.toString());
-                throw e;
+                throwException(e);
             }
         }
         for (ISSABasicBlock nextBlock: cfg.getNormalSuccessors(currentBlock)) {

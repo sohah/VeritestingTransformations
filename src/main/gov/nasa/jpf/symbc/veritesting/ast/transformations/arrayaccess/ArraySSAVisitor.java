@@ -14,9 +14,9 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.*;
 
-import java.util.HashSet;
 import java.util.Map;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
 import static za.ac.sun.cs.green.expr.Operation.Operator.*;
 
@@ -168,7 +168,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
                 else if (type.equals("float")) eiArray.setFloatElement(i, 0);
                 else if (type.equals("double")) eiArray.setDoubleElement(i, 0);
                 else if (type.equals("byte")) eiArray.setByteElement(i, (byte)0);
-                else throw new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore");
+                else throwException(new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore"));
 
                 eiArray.setElementAttrNoClone(i, greenToSPFExpression(createGreenVar(type, newExpr.getSymName())));
             }

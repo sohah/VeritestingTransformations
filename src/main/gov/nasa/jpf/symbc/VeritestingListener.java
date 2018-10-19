@@ -474,6 +474,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         long dynRunTime = (runEndTime - runStartTime) - staticAnalysisDur;
 
         pw.println(statisticManager.printAllRegionStatistics());
+        pw.println(statisticManager.printAllExceptionStatistics());
 
         pw.println("\n/************************ Printing Time Decomposition Statistics *****************");
         pw.println("static analysis time = " + TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + " msec");

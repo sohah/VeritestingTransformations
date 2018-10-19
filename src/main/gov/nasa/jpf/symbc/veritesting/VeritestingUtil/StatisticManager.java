@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.SREMap;
+
 public class StatisticManager {
     public static HashMap<String, RegionStatistics> regionsStatisticsMap = new HashMap<>();
     public static String instructionToExec;
@@ -76,6 +78,19 @@ public class StatisticManager {
 
         while(keysItr.hasNext())
             out += regionsStatisticsMap.get(keysItr.next()).print();
+        return out;
+    }
+
+    public String printAllExceptionStatistics(){
+        String out="\n/************************ Printing Exception Statistics *****************\n";
+
+        Set<String> keys = SREMap.keySet();
+        Iterator<String> keysItr = keys.iterator();
+
+        while(keysItr.hasNext()) {
+            String message = keysItr.next();
+            out += message + ": " + SREMap.get(message) + "\n";
+        }
         return out;
     }
 
