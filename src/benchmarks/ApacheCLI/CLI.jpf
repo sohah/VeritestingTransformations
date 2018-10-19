@@ -1,8 +1,8 @@
 target=ApacheCLI.CLI
 classpath = ${jpf-symbc}/build/benchmarks
 sourcepath = ${jpf-symbc}/src/benchmarks
-#symbolic.method = CLI.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym)
-symbolic.method = CLI.mainProcess(sym#con#con#con#con#con#con#con#con)
+symbolic.method = ApacheCLI.CLI.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym)
+#symbolic.method = ApacheCLI.CLI.mainProcess(sym#con#con#con#con#con#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100
 vm.storage.class=nil
@@ -12,3 +12,4 @@ symbolic.dp=z3bitvector
 #symbolic.debug=on
 veritestingMode = 3
 performanceMode = true
+symbolic.strings = true

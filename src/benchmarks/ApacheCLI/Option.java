@@ -46,7 +46,7 @@ public class Option implements Cloneable, Serializable
     private boolean required = false;
 
     /** specifies whether the argument value of this Option is optional */
-    private boolean optionalArg = false;
+    private boolean optionalArg = true;
 
     /** the number of argument values this option can have */
     private int numberOfArgs = UNINITIALIZED;
