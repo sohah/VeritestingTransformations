@@ -69,7 +69,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             if (type != null) dynRegion.varTypeTable.add(((WalaVarExpr) c.def).number, type);
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
-        if (exceptionalMessage != null) throw new IllegalArgumentException(exceptionalMessage);
+        if (exceptionalMessage != null) throwException(new IllegalArgumentException(exceptionalMessage));
         assignStmt = new AssignmentStmt(c.def, rhs);
         return getIfThenElseStmt(arrayRef, assignStmt);
     }
@@ -99,7 +99,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         if (IntConstant.class.isInstance(c.index)) {
             int index = ((IntConstant)c.index).getValue();
             if (index >= len) //TODO make this a SPF case in the future
-                throw new IllegalArgumentException("Array index greater than or equal to array length");
+                throwException(new IllegalArgumentException("Array index greater than or equal to array length"));
             rhs = getArrayElement(eiArray, index);
         } else { // the index is symbolic
             rhs = constructArrayITE(eiArray, c.index, 0, len);
@@ -130,8 +130,10 @@ public class ArraySSAVisitor extends AstMapVisitor {
             return new Pair(getArrayExpression(ei, index, "double"), "double"); //elements of the array are concrete
         } else if (ei.getArrayType().equals("C")) {
             return new Pair(getArrayExpression(ei, index, "char"), "char"); //elements of the array are concrete
-        } else
-            throw new IllegalArgumentException("Unsupported element type in array");
+        } else {
+            throwException(new IllegalArgumentException("Unsupported element type in array"));
+            return null;
+        }
     }
 
     private static Expression getArrayExpression(ElementInfo ei, int index, String type) {
@@ -153,7 +155,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         if (IntConstant.class.isInstance(indexExp)) {
             int index = ((IntConstant)indexExp).getValue();
             if (index >= len) //TODO make this a SPF case in the future
-                throw new IllegalArgumentException("Array index greater than or equal to array length");
+                throwException(new IllegalArgumentException("Array index greater than or equal to array length"));
             eiArray.checkArrayBounds(index);
             eiArray.setIntElement(index, 0);
             eiArray.setElementAttrNoClone(index, greenToSPFExpression(assignExpr));
@@ -177,8 +179,10 @@ public class ArraySSAVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(ArrayStoreInstruction putIns) {
-        if (!IntConstant.class.isInstance(putIns.arrayref))
-            throw new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor");
+        if (!IntConstant.class.isInstance(putIns.arrayref)) {
+            throwException(new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor"));
+            return null;
+        }
         else {
             ArrayRef arrayRef = ArrayRef.makeArrayRef(putIns);
             if (isUnsupportedArrayRef(arrayRef)) return getThrowInstruction();
@@ -261,7 +265,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             ArrayRef elseFieldRef = entry.getKey();
             SubscriptPair elseSubscript = entry.getValue();
             if (thenMap.lookup(elseFieldRef) != null) {
-                throw new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point");
+                throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"));
             } else {
                 compStmt = compose(compStmt, createGammaStmt(condition, elseFieldRef,
                         new SubscriptPair(ARRAY_SUBSCRIPT_BASE, gsm.createSubscript(elseFieldRef)), elseSubscript));
@@ -273,16 +277,17 @@ public class ArraySSAVisitor extends AstMapVisitor {
 
     private Stmt compose(Stmt s1, Stmt s2) {
         if (s1 == null && s2 == null)
-            throw new IllegalArgumentException("trying to compose with two null statements");
+            throwException(new IllegalArgumentException("trying to compose with two null statements"));
         else if (s1 == null) return s2;
         else if (s2 == null) return s1;
         else return new CompositionStmt(s1, s2);
+        return null;
     }
 
     private Stmt createGammaStmt(Expression condition, ArrayRef arrayRef, SubscriptPair thenSubscript,
                                  SubscriptPair elseSubscript) {
         if (thenSubscript.pathSubscript == ARRAY_SUBSCRIPT_BASE && elseSubscript.pathSubscript == ARRAY_SUBSCRIPT_BASE) {
-            throw new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts");
+            throwException(new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts"));
         }
         Pair<Expression, String> pair = getExpression(arrayRef);
         ArrayRefVarExpr arrayRefVarExpr = new ArrayRefVarExpr(arrayRef, createSubscript(arrayRef));

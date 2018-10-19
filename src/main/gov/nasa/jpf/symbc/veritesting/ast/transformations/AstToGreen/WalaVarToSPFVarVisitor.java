@@ -8,6 +8,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 
 /**
@@ -74,7 +75,8 @@ public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
         if (type != null)
             return createGreenVar(type, expr.getName());
         else
-            throw new IllegalArgumentException("Failed to infer type of Wala var, " + expr);
+            throwException(new IllegalArgumentException("Failed to infer type of Wala var, " + expr));
+        return expr;
     }
 
     @Override

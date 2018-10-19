@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.getConstantType;
@@ -63,8 +64,10 @@ public class FieldSSAVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(PutInstruction putIns) {
-        if (!IntConstant.class.isInstance(putIns.def) && !putIns.getOriginal().isStatic())
-            throw new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor");
+        if (!IntConstant.class.isInstance(putIns.def) && !putIns.getOriginal().isStatic()) {
+            throwException(new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor"));
+            return null;
+        }
         else {
             FieldRef fieldRef;
             try {
@@ -151,7 +154,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
             FieldRef elseFieldRef = entry.getKey();
             SubscriptPair elseSubscript = entry.getValue();
             if (thenMap.lookup(elseFieldRef) != null) {
-                throw new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point");
+                throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"));
             } else {
                 compStmt = compose(compStmt, createGammaStmt(condition, elseFieldRef,
                         new SubscriptPair(FIELD_SUBSCRIPT_BASE, gsm.createSubscript(elseFieldRef)), elseSubscript));
@@ -162,8 +165,10 @@ public class FieldSSAVisitor extends AstMapVisitor {
     }
 
     private Stmt compose(Stmt s1, Stmt s2) {
-        if (s1 == null && s2 == null)
-            throw new IllegalArgumentException("trying to compose with two null statements");
+        if (s1 == null && s2 == null) {
+            throwException(new IllegalArgumentException("trying to compose with two null statements"));
+            return null;
+        }
         else if (s1 == null) return s2;
         else if (s2 == null) return s1;
         else return new CompositionStmt(s1, s2);
@@ -172,10 +177,10 @@ public class FieldSSAVisitor extends AstMapVisitor {
     private Stmt createGammaStmt(Expression condition, FieldRef fieldRef, SubscriptPair thenSubscript,
                                  SubscriptPair elseSubscript) {
         if (thenSubscript.pathSubscript == FIELD_SUBSCRIPT_BASE && elseSubscript.pathSubscript == FIELD_SUBSCRIPT_BASE) {
-            throw new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts");
+            throwException(new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts"));
         }
         SubstituteGetOutput output = new SubstituteGetOutput(ti, fieldRef, true, null).invoke();
-        if (output.exceptionalMessage != null) throw new IllegalArgumentException(output.exceptionalMessage);
+        if (output.exceptionalMessage != null) throwException(new IllegalArgumentException(output.exceptionalMessage));
         FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
         if (output.type != null) {
             dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(), output.type);
@@ -229,7 +234,10 @@ public class FieldSSAVisitor extends AstMapVisitor {
             if (type != null) dynRegion.varTypeTable.add(((WalaVarExpr) c.def).number, type);
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
-        if (exceptionalMessage != null) throw new IllegalArgumentException(exceptionalMessage);
+        if (exceptionalMessage != null) {
+            throwException(new IllegalArgumentException(exceptionalMessage));
+            return null;
+        }
         else return new AssignmentStmt(c.def, rhs);
     }
 
@@ -241,7 +249,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
         Expression def = substituteGetOutput.getDef();
         // only one of def and exceptionalMessage should be non-null
         assert (def == null) ^ (exceptionalMessage == null);
-        if (exceptionalMessage != null) throw new StaticRegionException(exceptionalMessage);
+        if (exceptionalMessage != null) throwException(new StaticRegionException(exceptionalMessage));
         return substituteGetOutput;
     }
 }

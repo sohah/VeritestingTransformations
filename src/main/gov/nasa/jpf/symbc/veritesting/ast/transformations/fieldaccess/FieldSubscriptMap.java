@@ -6,6 +6,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+
 public final class FieldSubscriptMap {
     public final HashMap<FieldRef, SubscriptPair> table;
     protected final String tableName = "Path Subscript Map";
@@ -27,7 +29,7 @@ public final class FieldSubscriptMap {
             }
         }
         else {
-            throw new IllegalArgumentException("Cannot lookup the value of a null " + label1 + ".");
+            throwException(new IllegalArgumentException("Cannot lookup the value of a null " + label1 + "."));
         }
         return ret;
     }
@@ -90,7 +92,7 @@ public final class FieldSubscriptMap {
 
     public ArrayList<FieldRefVarExpr> getUniqueFieldAccess() throws StaticRegionException {
         ArrayList<FieldRefVarExpr> retList = new ArrayList();
-        if (uniqueNum == -1) throw new StaticRegionException("uniqueNum not set before getting unique field accesses");
+        if (uniqueNum == -1) throwException(new StaticRegionException("uniqueNum not set before getting unique field accesses"));
         Iterator itr = this.table.entrySet().iterator();
         while (itr.hasNext()) {
             Map.Entry pair = (Map.Entry) itr.next();

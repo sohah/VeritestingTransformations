@@ -6,6 +6,8 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+
 
 /**
  * Base class for all environment tables that use a Expression object as the key.
@@ -37,7 +39,7 @@ public class CloneableVarTable<T> {
             return table.get(v);
         else
             try {
-                throw new StaticRegionException("Cannot lookup the value of a null " + label1 + ".");
+                throwException(new StaticRegionException("Cannot lookup the value of a null " + label1 + "."));
             } catch (StaticRegionException e) {
                 System.out.println(e.getMessage());
             }

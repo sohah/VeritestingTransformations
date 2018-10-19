@@ -16,6 +16,7 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 import za.ac.sun.cs.green.expr.Variable;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatGreenExpression;
 import static za.ac.sun.cs.green.expr.Operation.Operator.EQ;
@@ -62,9 +63,9 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
         SimplifyStmtVisitor visitor = new SimplifyStmtVisitor(constantsTable);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
         if (visitor.sre != null)
-            throw visitor.sre;
+            throwException(visitor.sre);
         if (((SimplifyRangerExprVisitor)visitor.exprVisitor).sre != null) {
-            throw ((SimplifyRangerExprVisitor)visitor.exprVisitor).sre;
+            throwException(((SimplifyRangerExprVisitor)visitor.exprVisitor).sre);
         }
         DynamicRegion ret = new DynamicRegion(dynRegion, stmt, dynRegion.spfCaseList, dynRegion.regionSummary,
                 dynRegion.spfPredicateSummary);

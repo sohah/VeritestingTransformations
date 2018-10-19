@@ -68,6 +68,7 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
@@ -194,7 +195,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
                             Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
                             if (regionEndInsn != null) {
-                                throw new StaticRegionException("Unsupported region end instruction: " + regionEndInsn);
+                                throwException(new StaticRegionException("Unsupported region end instruction: " + regionEndInsn));
                             }
                             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
                             Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
@@ -365,7 +366,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         } else {
             if (runMode == VeritestingMode.SPFCASES)
                 ti.getVM().getSystemState().setIgnored(true); //to ignore counting of the current choice generator.
-            throw new StaticRegionException("Path condition is unsat, no region is created.");
+            throwException(new StaticRegionException("Path condition is unsat, no region is created."));
+            return false;
         }
     }
 

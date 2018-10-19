@@ -6,6 +6,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 
 
@@ -74,8 +75,10 @@ public class FieldArrayVarToSPFVarVisitor implements ExprVisitor<Expression> {
         String type = fieldRefTypeTable.lookup(expr);
         if (type != null)
             return createGreenVar(type, expr.getSymName());
-        else
-            throw new IllegalArgumentException("Failed to infer type of field reference, " + expr);
+        else {
+            throwException(new IllegalArgumentException("Failed to infer type of field reference, " + expr));
+            return expr;
+        }
     }
 
     @Override
@@ -84,7 +87,8 @@ public class FieldArrayVarToSPFVarVisitor implements ExprVisitor<Expression> {
         if (type != null)
             return createGreenVar(type, expr.getSymName());
         else
-            throw new IllegalArgumentException("Failed to infer type of field reference, " + expr);
+            throwException(new IllegalArgumentException("Failed to infer type of field reference, " + expr));
+        return expr;
     }
 
     @Override
