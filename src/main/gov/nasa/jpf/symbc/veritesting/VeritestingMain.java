@@ -49,7 +49,7 @@ public class VeritestingMain {
     HashSet<String> methodSummaryClassNames, methodSummarySubClassNames;
     private boolean methodAnalysis = false;
     private String currentPackageName;
-    public static HashMap<String, StaticRegion> veriRegions;
+    public static HashMap<String, StaticRegion> veriRegions = new HashMap<>();
     private ThreadInfo ti;
 
     SSACFG cfg;

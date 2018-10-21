@@ -67,6 +67,11 @@ public class StaticRegion implements Region {
      */
     public int maxDepth = 0;
 
+    /*
+     * Holds the total number of execution paths that can be taken through this region
+     */
+    public long totalNumPaths = 0;
+
     /**
      * @param staticStmt: Ranger IR statement that summarizes this static region
      * @param ir: Wala IR for the method which contains this StaticRegion

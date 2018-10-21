@@ -471,9 +471,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
     public void publishFinished(Publisher publisher) {
+        long runEndTime = System.nanoTime();
         PrintWriter pw = publisher.getOut();
         publisher.publishTopicStart("VeritestingListener report:");
-        long runEndTime = System.nanoTime();
+        pw.println(statisticManager.printStaticAnalysisStatistics());
         long dynRunTime = (runEndTime - runStartTime) - staticAnalysisDur;
 
         pw.println(statisticManager.printAllRegionStatistics());
@@ -494,7 +495,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Array SPF Case count = " + StatisticManager.ArraySPFCaseCount);
         pw.println("If-removed count = " + StatisticManager.ifRemovedCount);
 
-        pw.println(statisticManager.printStaticAnalysisStatistics());
         pw.println(statisticManager.printAccumulativeStatistics());
 
         pw.println("Total number of Distinct regions = " + statisticManager.regionCount());

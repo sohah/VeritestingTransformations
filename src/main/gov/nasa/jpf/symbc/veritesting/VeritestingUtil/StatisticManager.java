@@ -108,11 +108,25 @@ public class StatisticManager {
     }
 
     public String printStaticAnalysisStatistics(){
-        String out="\n/************************ Printing Static Analysis statistics *****************\n" +
+        ArrayList<String> out= new ArrayList<>();
+        StringBuilder ret = new StringBuilder();
+        String first = "\n/************************ Printing Static Analysis statistics *****************\n" +
                 "Number of summarized regions = " + VeritestingMain.veriRegions.size()
                 + "\nNumber of summarized methods = " + numMethodSummaries
-                + "\nMaximum branch depth = "+ maxBranchDepth;
-        return out;
+                + "\nOverall maximum branch depth = " + maxBranchDepth + "\n";
+        Iterator<Map.Entry<String, StaticRegion>> itr = VeritestingMain.veriRegions.entrySet().iterator();
+        while(itr.hasNext()) {
+            Map.Entry<String, StaticRegion> entry = itr.next();
+            String key = entry.getKey();
+            StaticRegion region = entry.getValue();
+            out.add(key + ": maxDepth = " + region.maxDepth + ", execution path count = " + region.totalNumPaths + "\n");
+        }
+        Collections.sort(out);
+        out.add(0, first);
+        for (String s: out) {
+            ret.append(s);
+        }
+        return ret.toString();
     }
 
     public int getDistinctVeriRegionNum(){
