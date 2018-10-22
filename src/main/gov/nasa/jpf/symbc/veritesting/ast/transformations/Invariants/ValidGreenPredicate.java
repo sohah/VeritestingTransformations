@@ -8,6 +8,9 @@ import za.ac.sun.cs.green.expr.*;
 
 import java.util.Map;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+
 /* MWW: Not strictly speaking an AST Invariant because it operates over an
     expression rather than a statement.
  */
@@ -23,7 +26,7 @@ public class ValidGreenPredicate extends ForallExprVisitor {
         try {
             eva.accept(expr);
         } catch (IllegalArgumentException e) {
-            throw new StaticRegionException(e.toString());
+            throwException(new StaticRegionException(e.toString()), INSTANTIATION);
         }
     }
 
@@ -36,7 +39,8 @@ public class ValidGreenPredicate extends ForallExprVisitor {
                 failures.put(c, 1);
             }
         }
-        throw new IllegalArgumentException(expr.getClass().toString() + " seen in ValidGreenPredicate!");
+        throwException(new IllegalArgumentException(expr.getClass().toString() + " seen in ValidGreenPredicate!"), INSTANTIATION);
+        return null;
     }
 
     @Override public Boolean visit(IfThenElseExpr expr) { return incrementFailure(expr); }

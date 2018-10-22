@@ -4,6 +4,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.ast.def.SkipStmt.skip;
 
 
@@ -111,7 +113,8 @@ public class NoSkipVisitor implements AstVisitor<Stmt> {
 
     public Stmt bad(Object obj) {
         String name = obj.getClass().getCanonicalName();
-        throw new IllegalArgumentException("Unsupported class: " + name +
-                " value: " + obj.toString() + " seen in NoSkipVisitor");
+        throwException(new IllegalArgumentException("Unsupported class: " + name +
+                " value: " + obj.toString() + " seen in NoSkipVisitor"), INSTANTIATION);
+        return (Stmt)obj;
     }
 }

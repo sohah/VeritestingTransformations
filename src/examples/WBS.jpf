@@ -14,3 +14,4 @@ testingMode = true
 #,gov.nasa.jpf.listener.CoverageAnalyzer
 #listener = .listener.ChoiceTracker
 symbolic.dp=z3bitvector
+interestingClassNames = WBS

@@ -14,6 +14,9 @@ import za.ac.sun.cs.green.expr.Variable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+
 /**
  * Unique region creator, of both conditional regions and method regions.
  */
@@ -55,7 +58,7 @@ public class UniqueRegion {
     public static DynamicRegion execute(DynamicRegion oldDynRegion) throws StaticRegionException, CloneNotSupportedException {
         int uniqueNum = DynamicRegion.uniqueCounter;
         ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum);
-        if (expUniqueVisitor.sre != null) throw expUniqueVisitor.sre;
+        if (expUniqueVisitor.sre != null) throwException(expUniqueVisitor.sre, INSTANTIATION);
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
 
         Stmt dynStmt = oldDynRegion.dynStmt.accept(stmtVisitor);

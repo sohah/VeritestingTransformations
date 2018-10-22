@@ -68,12 +68,13 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isUnsupportedRegionEnd;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.hgOrdRegionInstance;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.*;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor.doArrayStore;
 
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
@@ -102,6 +103,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     // reads in a exclusionsFile configuration option, set to ${jpf-symbc}/MyJava60RegressionExclusions.txt by default
     public static String exclusionsFile;
+
+    // reads in an array of Strings, each of which is the name of a method whose regions we wish to report metrics for
+    public static String[] interestingClassNames;
 
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
@@ -135,6 +139,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             }
             if (conf.hasValue("exclusionsFile")) {
                 exclusionsFile = conf.getString("exclusionsFile");
+            }
+            if (conf.hasValue("interestingClassNames")) {
+                interestingClassNames = conf.getStringArray("interestingClassNames", new char[]{','});
             }
 
             if (conf.hasValue("veritestRegionExpectedCount"))
@@ -195,7 +202,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
                             Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
                             if (regionEndInsn != null) {
-                                throwException(new StaticRegionException("Unsupported region end instruction: " + regionEndInsn));
+                                throwException(new StaticRegionException("Unsupported region end instruction: " + regionEndInsn), INSTANTIATION);
                             }
                             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
                             Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
@@ -366,7 +373,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         } else {
             if (runMode == VeritestingMode.SPFCASES)
                 ti.getVM().getSystemState().setIgnored(true); //to ignore counting of the current choice generator.
-            throwException(new StaticRegionException("Path condition is unsat, no region is created."));
+            throwException(new StaticRegionException("Path condition is unsat, no region is created."), INSTANTIATION);
             return false;
         }
     }
@@ -467,6 +474,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         long endTime = System.nanoTime();
         staticAnalysisDur = endTime - startTime;
         statisticManager.collectStaticAnalysisMetrics(VeritestingMain.veriRegions);
+        StaticRegionException.staticAnalysisComplete();
     }
 
 
@@ -522,7 +530,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 statisticManager.getFailNum(FailEntry.FailReason.OTHER) + "," +
                 hgOrdRegionInstance + "," +
                 statisticManager.regionCount() + "," +
-                veritestRegionCount);
+                veritestRegionCount + "," +
+                // static analysis metrics
+                interestingRegionCount + "," + numMethodSummaries + "," + maxBranchDepth + "," + maxExecPathCount + "," + avgExecPathCount + "," +
+                // exception metrics
+                staticPhaseEx + "," + instPhaseEx + "," + unknownPhaseEx);
 
     }
 }

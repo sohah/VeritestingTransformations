@@ -1,7 +1,9 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import za.ac.sun.cs.green.expr.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 
 public class ArrayRef {
@@ -15,7 +17,7 @@ public class ArrayRef {
 
     public static ArrayRef makeArrayRef(ArrayLoadInstruction getIns) {
         if (!(getIns.arrayref instanceof IntConstant))
-            throwException(new IllegalArgumentException("cannot make ArrayRef for symbolic array reference"));
+            throwException(new IllegalArgumentException("cannot make ArrayRef for symbolic array reference"), INSTANTIATION);
         int ref = ((IntConstant)getIns.arrayref).getValue();
         Expression indexName = getIns.index;
         return new ArrayRef(ref, indexName);
@@ -23,7 +25,7 @@ public class ArrayRef {
 
     public static ArrayRef makeArrayRef(ArrayStoreInstruction getIns) {
         if (!(getIns.arrayref instanceof IntConstant))
-            throwException(new IllegalArgumentException("cannot make ArrayRef for symbolic array reference"));
+            throwException(new IllegalArgumentException("cannot make ArrayRef for symbolic array reference"), INSTANTIATION);
         int ref = ((IntConstant)getIns.arrayref).getValue();
         Expression indexName = getIns.index;
         return new ArrayRef(ref, indexName);
@@ -62,7 +64,7 @@ public class ArrayRef {
         } else if (index instanceof WalaVarExpr) {
             return new ArrayRef(ref, ((WalaVarExpr)index).clone());
         }  else {
-            throwException(new IllegalArgumentException("Unsupported index type found when cloning ArrayRef"));
+            throwException(new IllegalArgumentException("Unsupported index type found when cloning ArrayRef"), INSTANTIATION);
             return null;
         }
     }

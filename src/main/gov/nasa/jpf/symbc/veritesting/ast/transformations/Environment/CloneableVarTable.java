@@ -2,10 +2,10 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
-import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.DONTKNOW;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 
 
@@ -39,7 +39,7 @@ public class CloneableVarTable<T> {
             return table.get(v);
         else
             try {
-                throwException(new StaticRegionException("Cannot lookup the value of a null " + label1 + "."));
+                throwException(new StaticRegionException("Cannot lookup the value of a null " + label1 + "."), DONTKNOW);
             } catch (StaticRegionException e) {
                 System.out.println(e.getMessage());
             }

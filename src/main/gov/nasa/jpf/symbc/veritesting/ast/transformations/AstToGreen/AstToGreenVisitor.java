@@ -15,6 +15,9 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.ArrayList;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+
 
 /*
     Preconditions:
@@ -48,8 +51,9 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
 
     public Expression bad(Object obj) {
         String name = obj.getClass().getCanonicalName();
-        throw new IllegalArgumentException("Unsupported class: " + name +
-                " value: " + obj.toString() + " seen in AstToGreenVisitor");
+        throwException(new IllegalArgumentException("Unsupported class: " + name +
+                " value: " + obj.toString() + " seen in AstToGreenVisitor"), INSTANTIATION);
+        return (Expression)obj;
     }
 
 

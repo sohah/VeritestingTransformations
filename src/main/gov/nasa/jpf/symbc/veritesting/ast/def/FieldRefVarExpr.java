@@ -10,6 +10,7 @@ import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 
 /**
@@ -100,7 +101,7 @@ public final class FieldRefVarExpr extends CloneableVariable {
 
     @Override
     public FieldRefVarExpr makeUnique(int unique) throws StaticRegionException {
-        if (uniqueNum != -1 && unique != uniqueNum) throwException(new StaticRegionException("Attempting to make a already-unique FieldRefVarExpr unique"));
+        if (uniqueNum != -1 && unique != uniqueNum) throwException(new StaticRegionException("Attempting to make a already-unique FieldRefVarExpr unique"), INSTANTIATION);
         uniqueNum = unique;
         return this.clone();
     }

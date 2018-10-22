@@ -17,6 +17,8 @@ import za.ac.sun.cs.green.expr.Operation;
 
 import java.io.File;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 
 /**
@@ -53,7 +55,7 @@ public class SpfUtil {
                 operandNum = 2;
                 break;
             default:
-                throw new StaticRegionException("Problem finding number of operands for the condition for " + instruction);
+                throwException(new StaticRegionException("Problem finding number of operands for the condition for " + instruction), INSTANTIATION);
         }
         return operandNum;
 

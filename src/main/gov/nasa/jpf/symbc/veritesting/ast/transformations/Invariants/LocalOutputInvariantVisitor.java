@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.STATIC;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 
 public class LocalOutputInvariantVisitor extends AstMapVisitor {
@@ -101,7 +102,7 @@ public class LocalOutputInvariantVisitor extends AstMapVisitor {
                     if (((Integer) staticRegion.outputTable.lookup(slot)) == lhs.number) outputFound = true;
                 }
                 if (!outputFound)
-                    throwException(new StaticRegionException("static region with gamma expression has non-local output in lhs"));
+                    throwException(new StaticRegionException("static region with gamma expression has non-local output in lhs"), STATIC);
             }
         }
         return true;

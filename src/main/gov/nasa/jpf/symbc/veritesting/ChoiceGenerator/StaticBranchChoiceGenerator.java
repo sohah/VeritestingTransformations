@@ -16,6 +16,8 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
 import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
 
 
@@ -69,7 +71,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                     nextInstruction = executeNullIf(instructionToExecute);
                     break;
                 case OTHER:
-                    throw new StaticRegionException("Error: Branch choice generator instantiated on non-branch instruction!");
+                    throwException(new StaticRegionException("Error: Branch choice generator instantiated on non-branch instruction!"), INSTANTIATION);
             }
         } else {
             // should never get here (until we make early returns)

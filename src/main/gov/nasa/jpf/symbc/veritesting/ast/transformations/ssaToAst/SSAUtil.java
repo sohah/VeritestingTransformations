@@ -11,6 +11,9 @@ import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.STATIC;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+
 /**
  * Some utility methods used during construction of the StaticRegion.
  */
@@ -82,7 +85,8 @@ public class SSAUtil {
             case GT: return Operation.Operator.GT;
             case LE: return Operation.Operator.LE;
         }
-        throw new IllegalArgumentException("convertOperator does not understand operator: " + operator);
+        throwException(new IllegalArgumentException("convertOperator does not understand operator: " + operator), STATIC);
+        return null;
     }
 
     public static Expression convertWalaVar(IR ir, int ssaVar) {
@@ -129,7 +133,8 @@ public class SSAUtil {
             case OR: return Operation.Operator.BIT_OR;
             case XOR: return Operation.Operator.BIT_XOR;
         }
-        throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
+        throwException(new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp"), STATIC);
+        return null;
     }
 
     /**
@@ -147,7 +152,8 @@ public class SSAUtil {
             case USHR:
                 return Operation.Operator.SHIFTUR;
         }
-        throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
+        throwException(new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp"), STATIC);
+        return null;
     }
 
     /**
@@ -158,7 +164,8 @@ public class SSAUtil {
         switch(op) {
             case NEG: return Operation.Operator.NEG;
         }
-        throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateUnaryOp");
+        throwException(new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateUnaryOp"), STATIC);
+        return null;
     }
 
     /*

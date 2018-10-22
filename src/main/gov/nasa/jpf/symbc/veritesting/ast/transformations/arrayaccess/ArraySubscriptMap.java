@@ -7,6 +7,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptP
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 
 public class ArraySubscriptMap {
@@ -30,7 +31,7 @@ public class ArraySubscriptMap {
             }
         }
         else {
-            throwException(new IllegalArgumentException("Cannot lookup the value of a null " + label1 + "."));
+            throwException(new IllegalArgumentException("Cannot lookup the value of a null " + label1 + "."), INSTANTIATION);
         }
         return ret;
     }
@@ -90,7 +91,7 @@ public class ArraySubscriptMap {
 
     public ArrayList<ArrayRefVarExpr> getUniqueArrayAccess() throws StaticRegionException {
         ArrayList<ArrayRefVarExpr> retList = new ArrayList();
-        if (uniqueNum == -1) throwException( new StaticRegionException("uniqueNum not set before getting unique array accesses"));
+        if (uniqueNum == -1) throwException( new StaticRegionException("uniqueNum not set before getting unique array accesses"), INSTANTIATION);
         Iterator itr = this.table.entrySet().iterator();
         while (itr.hasNext()) {
             Map.Entry pair = (Map.Entry) itr.next();

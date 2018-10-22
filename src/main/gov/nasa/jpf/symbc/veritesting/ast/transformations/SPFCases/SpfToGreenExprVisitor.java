@@ -18,6 +18,7 @@ import za.ac.sun.cs.green.expr.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 
 //TODO: Remove this SOHA
@@ -38,7 +39,7 @@ public class SpfToGreenExprVisitor implements ExprVisitor<Expression> {
 
     public static Expression bad(Object obj) {
         String name = obj.getClass().getCanonicalName();
-        throwException(new IllegalArgumentException("Unsupported class: " + name + " value: " + obj.toString() + " seen in AstToGreenExprVisitor"));
+        throwException(new IllegalArgumentException("Unsupported class: " + name + " value: " + obj.toString() + " seen in AstToGreenExprVisitor"), INSTANTIATION);
         return null;
     }
 

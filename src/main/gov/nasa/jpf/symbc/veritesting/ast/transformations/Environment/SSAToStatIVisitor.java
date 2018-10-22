@@ -14,6 +14,8 @@ import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.STATIC;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.convertWalaVar;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.translateBinaryOp;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.translateUnaryOp;
@@ -91,7 +93,8 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
             } else if (val instanceof String) {
                 return new StringConstantGreen((String)val);
             } else {
-                throw new StaticRegionException("translateTruncatedFinalBlock: unsupported constant type");
+                throwException(new StaticRegionException("translateTruncatedFinalBlock: unsupported constant type"));
+                return null;
             }
         } else {
 */
@@ -112,7 +115,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         Expression cond = conds.get(0).getFirst().condition;
         for (int i = 1; i < conds.size(); i++) {
             if (conds.get(i).getFirst().condition != cond) {
-                throw new IllegalArgumentException("Error in getAndCheckCondition: conditions did not match!!!");
+                throwException(new IllegalArgumentException("Error in getAndCheckCondition: conditions did not match!!!"), STATIC);
             }
         }
         return cond;
@@ -126,11 +129,11 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
         //assert(!conds.isEmpty());
         if(conds.isEmpty())
-            throw sre;
+            throwException(sre, STATIC);
 
         // Handle leaf-level assignment
         if (conds.get(0).isEmpty()) {
-            if (conds.size() != 1) throw sre;
+            if (conds.size() != 1) throwException(sre, STATIC);
             return values.get(0);
         }
 
@@ -188,7 +191,8 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         Collection<ISSABasicBlock> preds = cfg.getNormalPredecessors(currentBlock);
         Iterator<ISSABasicBlock> it = preds.iterator();
         if (ssaphi.getNumberOfUses() != preds.size()) {
-            throw new StaticRegionException("translateTruncatedFinalBlock: normal predecessors size does not match number of phi branches");
+            throwException(new StaticRegionException("translateTruncatedFinalBlock: normal predecessors size does not match number of phi branches"), STATIC);
+            return null;
         }
         else {
             List<LinkedList<PhiCondition>> conds = new ArrayList<LinkedList<PhiCondition>>();
@@ -228,7 +232,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
      */
     @Override
     public void visitGoto(SSAGotoInstruction ssaGotoInstruction) {
-        throw new IllegalArgumentException("Goto seen in SSAToStatIVisitor.  This should not occur.");
+        throwException(new IllegalArgumentException("Goto seen in SSAToStatIVisitor.  This should not occur."), STATIC);
     }
 
     /**
@@ -262,7 +266,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
         else if (ssa.getOperator() instanceof IShiftInstruction.Operator)
             op = translateBinaryOp((IShiftInstruction.Operator) ssa.getOperator());
         else
-            throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
+            throwException(new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp"), STATIC);
         Expression op1 = convertWalaVar(ir, ssa.getUse(0));
         Expression op2 = convertWalaVar(ir, ssa.getUse(1));
         Expression rhs = new Operation(op, op1, op2);
@@ -328,7 +332,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
 
     @Override
     public void visitConditionalBranch(SSAConditionalBranchInstruction ssa) {
-        throw new IllegalArgumentException("Reached conditional branch in SSAToStatIVisitor: why?");
+        throwException(new IllegalArgumentException("Reached conditional branch in SSAToStatIVisitor: why?"), STATIC);
     }
 
     /**
@@ -478,8 +482,9 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public Stmt convert(SSAInstruction ssa) throws StaticRegionException {
         ssa.visit(this);
         if (!this.canVeritest) {
-            if (pending != null) throw pending;
-            throw sre;
+            if (pending != null) throwException(pending, STATIC);
+            throwException(sre, STATIC);
+            return null;
         }
         else return this.veriStatement;
     }
@@ -488,7 +493,7 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
     public static Stmt convert(SSAInstruction ssa) throws StaticRegionException {
         SSAToStatIVisitor visitor = new SSAToStatIVisitor();
         ssa.visit(visitor);
-        if (!visitor.canVeritest) { throw sre; }
+        if (!visitor.canVeritest) { throwException(sre); return null; }
         else return visitor.veriStatement;
     }
     */

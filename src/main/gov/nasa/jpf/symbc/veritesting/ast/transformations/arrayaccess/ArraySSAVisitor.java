@@ -16,6 +16,7 @@ import za.ac.sun.cs.green.expr.*;
 
 import java.util.Map;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
 import static za.ac.sun.cs.green.expr.Operation.Operator.*;
@@ -69,7 +70,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             if (type != null) dynRegion.varTypeTable.add(((WalaVarExpr) c.def).number, type);
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
-        if (exceptionalMessage != null) throwException(new IllegalArgumentException(exceptionalMessage));
+        if (exceptionalMessage != null) throwException(new IllegalArgumentException(exceptionalMessage), INSTANTIATION);
         assignStmt = new AssignmentStmt(c.def, rhs);
         return getIfThenElseStmt(arrayRef, assignStmt);
     }
@@ -99,7 +100,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         if (IntConstant.class.isInstance(c.index)) {
             int index = ((IntConstant)c.index).getValue();
             if (index >= len) //TODO make this a SPF case in the future
-                throwException(new IllegalArgumentException("Array index greater than or equal to array length"));
+                throwException(new IllegalArgumentException("Array index greater than or equal to array length"), INSTANTIATION);
             rhs = getArrayElement(eiArray, index);
         } else { // the index is symbolic
             rhs = constructArrayITE(eiArray, c.index, 0, len);
@@ -131,7 +132,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         } else if (ei.getArrayType().equals("C")) {
             return new Pair(getArrayExpression(ei, index, "char"), "char"); //elements of the array are concrete
         } else {
-            throwException(new IllegalArgumentException("Unsupported element type in array"));
+            throwException(new IllegalArgumentException("Unsupported element type in array"), INSTANTIATION);
             return null;
         }
     }
@@ -155,7 +156,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         if (IntConstant.class.isInstance(indexExp)) {
             int index = ((IntConstant)indexExp).getValue();
             if (index >= len) //TODO make this a SPF case in the future
-                throwException(new IllegalArgumentException("Array index greater than or equal to array length"));
+                throwException(new IllegalArgumentException("Array index greater than or equal to array length"), INSTANTIATION);
             eiArray.checkArrayBounds(index);
             eiArray.setIntElement(index, 0);
             eiArray.setElementAttrNoClone(index, greenToSPFExpression(assignExpr));
@@ -170,7 +171,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
                 else if (type.equals("float")) eiArray.setFloatElement(i, 0);
                 else if (type.equals("double")) eiArray.setDoubleElement(i, 0);
                 else if (type.equals("byte")) eiArray.setByteElement(i, (byte)0);
-                else throwException(new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore"));
+                else throwException(new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore"), INSTANTIATION);
 
                 eiArray.setElementAttrNoClone(i, greenToSPFExpression(createGreenVar(type, newExpr.getSymName())));
             }
@@ -180,7 +181,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(ArrayStoreInstruction putIns) {
         if (!IntConstant.class.isInstance(putIns.arrayref)) {
-            throwException(new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor"));
+            throwException(new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor"), INSTANTIATION);
             return null;
         }
         else {
@@ -265,7 +266,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             ArrayRef elseFieldRef = entry.getKey();
             SubscriptPair elseSubscript = entry.getValue();
             if (thenMap.lookup(elseFieldRef) != null) {
-                throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"));
+                throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"), INSTANTIATION);
             } else {
                 compStmt = compose(compStmt, createGammaStmt(condition, elseFieldRef,
                         new SubscriptPair(ARRAY_SUBSCRIPT_BASE, gsm.createSubscript(elseFieldRef)), elseSubscript));
@@ -277,7 +278,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
 
     private Stmt compose(Stmt s1, Stmt s2) {
         if (s1 == null && s2 == null)
-            throwException(new IllegalArgumentException("trying to compose with two null statements"));
+            throwException(new IllegalArgumentException("trying to compose with two null statements"), INSTANTIATION);
         else if (s1 == null) return s2;
         else if (s2 == null) return s1;
         else return new CompositionStmt(s1, s2);
@@ -287,7 +288,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
     private Stmt createGammaStmt(Expression condition, ArrayRef arrayRef, SubscriptPair thenSubscript,
                                  SubscriptPair elseSubscript) {
         if (thenSubscript.pathSubscript == ARRAY_SUBSCRIPT_BASE && elseSubscript.pathSubscript == ARRAY_SUBSCRIPT_BASE) {
-            throwException(new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts"));
+            throwException(new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts"), INSTANTIATION);
         }
         Pair<Expression, String> pair = getExpression(arrayRef);
         ArrayRefVarExpr arrayRefVarExpr = new ArrayRefVarExpr(arrayRef, createSubscript(arrayRef));

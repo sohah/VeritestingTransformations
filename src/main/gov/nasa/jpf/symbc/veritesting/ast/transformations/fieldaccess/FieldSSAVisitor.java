@@ -8,17 +8,18 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicReg
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
-import gov.nasa.jpf.vm.*;
-import za.ac.sun.cs.green.expr.*;
+import gov.nasa.jpf.vm.ThreadInfo;
+import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
+import za.ac.sun.cs.green.expr.IntVariable;
+import za.ac.sun.cs.green.expr.RealVariable;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.getConstantType;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
 
 /*
 A Path Subscript Map needs to be passed on from one statement to the other. Each statement updates or uses its PSM.
@@ -65,7 +66,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(PutInstruction putIns) {
         if (!IntConstant.class.isInstance(putIns.def) && !putIns.getOriginal().isStatic()) {
-            throwException(new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor"));
+            throwException(new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor"), INSTANTIATION);
             return null;
         }
         else {
@@ -154,7 +155,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
             FieldRef elseFieldRef = entry.getKey();
             SubscriptPair elseSubscript = entry.getValue();
             if (thenMap.lookup(elseFieldRef) != null) {
-                throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"));
+                throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"), INSTANTIATION);
             } else {
                 compStmt = compose(compStmt, createGammaStmt(condition, elseFieldRef,
                         new SubscriptPair(FIELD_SUBSCRIPT_BASE, gsm.createSubscript(elseFieldRef)), elseSubscript));
@@ -166,7 +167,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
 
     private Stmt compose(Stmt s1, Stmt s2) {
         if (s1 == null && s2 == null) {
-            throwException(new IllegalArgumentException("trying to compose with two null statements"));
+            throwException(new IllegalArgumentException("trying to compose with two null statements"), INSTANTIATION);
             return null;
         }
         else if (s1 == null) return s2;
@@ -177,10 +178,10 @@ public class FieldSSAVisitor extends AstMapVisitor {
     private Stmt createGammaStmt(Expression condition, FieldRef fieldRef, SubscriptPair thenSubscript,
                                  SubscriptPair elseSubscript) {
         if (thenSubscript.pathSubscript == FIELD_SUBSCRIPT_BASE && elseSubscript.pathSubscript == FIELD_SUBSCRIPT_BASE) {
-            throwException(new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts"));
+            throwException(new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts"), INSTANTIATION);
         }
         SubstituteGetOutput output = new SubstituteGetOutput(ti, fieldRef, true, null).invoke();
-        if (output.exceptionalMessage != null) throwException(new IllegalArgumentException(output.exceptionalMessage));
+        if (output.exceptionalMessage != null) throwException(new IllegalArgumentException(output.exceptionalMessage), INSTANTIATION);
         FieldRefVarExpr fieldRefVarExpr = new FieldRefVarExpr(fieldRef, createSubscript(fieldRef));
         if (output.type != null) {
             dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(), output.type);
@@ -235,7 +236,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
         if (exceptionalMessage != null) {
-            throwException(new IllegalArgumentException(exceptionalMessage));
+            throwException(new IllegalArgumentException(exceptionalMessage), INSTANTIATION);
             return null;
         }
         else return new AssignmentStmt(c.def, rhs);
@@ -249,7 +250,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
         Expression def = substituteGetOutput.getDef();
         // only one of def and exceptionalMessage should be non-null
         assert (def == null) ^ (exceptionalMessage == null);
-        if (exceptionalMessage != null) throwException(new StaticRegionException(exceptionalMessage));
+        if (exceptionalMessage != null) throwException(new StaticRegionException(exceptionalMessage), INSTANTIATION);
         return substituteGetOutput;
     }
 }

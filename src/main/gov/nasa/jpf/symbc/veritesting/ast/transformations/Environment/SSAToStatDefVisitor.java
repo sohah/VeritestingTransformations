@@ -13,6 +13,8 @@ import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.ArrayList;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.STATIC;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.convertWalaVar;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.translateBinaryOp;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.translateUnaryOp;
@@ -72,7 +74,7 @@ public class SSAToStatDefVisitor implements SSAInstruction.IVisitor {
         else if (ssa.getOperator() instanceof IShiftInstruction.Operator)
             op = translateBinaryOp((IShiftInstruction.Operator) ssa.getOperator());
         else
-            throw new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp");
+            throwException(new IllegalArgumentException("Unknown Operator: " + op.toString() + " in translateBinaryOp"), STATIC);
         Expression op1 = convertWalaVar(ir, ssa.getUse(0));
         Expression op2 = convertWalaVar(ir, ssa.getUse(1));
         Expression rhs = new Operation(op, op1, op2);

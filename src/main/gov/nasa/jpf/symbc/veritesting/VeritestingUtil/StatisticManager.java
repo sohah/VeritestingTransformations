@@ -1,11 +1,13 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 
 import java.util.*;
 
-import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.SREMap;
+import static gov.nasa.jpf.symbc.VeritestingListener.interestingClassNames;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionMap;
 
 public class StatisticManager {
     public static HashMap<String, RegionStatistics> regionsStatisticsMap = new HashMap<>();
@@ -19,8 +21,12 @@ public class StatisticManager {
     public static long constPropTime = 0;
     public static int ArraySPFCaseCount = 0;
     public static int ifRemovedCount = 0;
-    private int maxBranchDepth = -1;
-    private int numMethodSummaries = 0;
+    public static int maxBranchDepth = -1;
+    public static long maxExecPathCount = -1;
+    public static double avgExecPathCount = 0.0;
+    public static int numMethodSummaries = 0;
+    public static int interestingRegionCount = 0;
+    public static int staticPhaseEx = 0, instPhaseEx = 0, unknownPhaseEx = 0;
 
 
     public void updateVeriSuccForRegion(String key) {
@@ -84,16 +90,27 @@ public class StatisticManager {
     }
 
     public String printAllExceptionStatistics(){
-        String out="\n/************************ Printing Exception Statistics *****************\n";
+        String first="\n/************************ Printing Exception Statistics *****************\n";
 
-        Set<String> keys = SREMap.keySet();
+        Set<String> keys = ExceptionMap.keySet();
         Iterator<String> keysItr = keys.iterator();
 
+        String out = new String();
         while(keysItr.hasNext()) {
             String message = keysItr.next();
-            out += message + ": " + SREMap.get(message) + "\n";
+            Pair<Integer, StaticRegionException.ExceptionPhase> p = ExceptionMap.get(message);
+            out += message + ": (" + p.getFirst() + ", " + p.getSecond() + ")" + "\n";
+            switch(p.getSecond()) {
+                case STATIC: staticPhaseEx += p.getFirst(); break;
+                case INSTANTIATION: instPhaseEx += p.getFirst(); break;
+                case DONTKNOW: unknownPhaseEx += p.getFirst(); break;
+                default: throw new IllegalArgumentException("cannot have exceptions that aren't static or instantiation-time");
+            }
         }
-        return out;
+        String ret = first + "Static Analysis exceptions count = " + staticPhaseEx +
+                "\nInstantiation Time exceptions count = " + instPhaseEx +
+                "\nUnknown phases exception count = " + unknownPhaseEx + "\n" + out;
+        return ret;
     }
 
     public String printAccumulativeStatistics(){
@@ -110,18 +127,22 @@ public class StatisticManager {
     public String printStaticAnalysisStatistics(){
         ArrayList<String> out= new ArrayList<>();
         StringBuilder ret = new StringBuilder();
-        String first = "\n/************************ Printing Static Analysis statistics *****************\n" +
-                "Number of summarized regions = " + VeritestingMain.veriRegions.size()
-                + "\nNumber of summarized methods = " + numMethodSummaries
-                + "\nOverall maximum branch depth = " + maxBranchDepth + "\n";
         Iterator<Map.Entry<String, StaticRegion>> itr = VeritestingMain.veriRegions.entrySet().iterator();
         while(itr.hasNext()) {
             Map.Entry<String, StaticRegion> entry = itr.next();
             String key = entry.getKey();
+            if (!isInterestingRegion(key)) continue;
             StaticRegion region = entry.getValue();
             out.add(key + ": maxDepth = " + region.maxDepth + ", execution path count = " + region.totalNumPaths + "\n");
         }
         Collections.sort(out);
+        String first = "\n/************************ Printing Static Analysis statistics *****************\n" +
+                "Total Number of summarized regions = " + VeritestingMain.veriRegions.size()
+                + "\nNumber of interesting regions = " + interestingRegionCount + " (uses interestingClassNames JPF config. option)"
+                + "\nNumber of summarized interesting methods = " + numMethodSummaries
+                + "\nOverall maximum branch depth for interesting regions = " + maxBranchDepth
+                + "\nMaximum execution path count for interesting regions = " + maxExecPathCount
+                + "\nAvg. execution path count for interesting regions = " + avgExecPathCount + "\n";
         out.add(0, first);
         for (String s: out) {
             ret.append(s);
@@ -196,10 +217,25 @@ public class StatisticManager {
     public void collectStaticAnalysisMetrics(HashMap<String, StaticRegion> veriRegions) {
         Iterator<Map.Entry<String, StaticRegion>> itr = veriRegions.entrySet().iterator();
         while(itr.hasNext()) {
-            StaticRegion region = (StaticRegion) ((Map.Entry)itr.next()).getValue();
+            Map.Entry<String, StaticRegion> entry = itr.next();
+            String key = entry.getKey();
+            if (!isInterestingRegion(key)) continue;
+            interestingRegionCount++;
+            StaticRegion region = entry.getValue();
             if (region.maxDepth > this.maxBranchDepth)
                 maxBranchDepth = region.maxDepth;
+            if (region.totalNumPaths > maxExecPathCount)
+                maxExecPathCount = region.totalNumPaths;
+            avgExecPathCount += region.totalNumPaths;
             numMethodSummaries += (region.isMethodRegion ? 1 : 0);
         }
+        avgExecPathCount /= veriRegions.size();
+    }
+
+    private boolean isInterestingRegion(String key) {
+        if (interestingClassNames == null) return true;
+        for (String className: interestingClassNames)
+            if (key.startsWith(className + ".")) return true;
+        return false;
     }
 }
