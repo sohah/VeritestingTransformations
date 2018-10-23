@@ -27,9 +27,11 @@ public class StatisticManager {
     public static int numMethodSummaries = 0;
     public static int interestingRegionCount = 0;
     public static int staticPhaseEx = 0, instPhaseEx = 0, unknownPhaseEx = 0;
+    public static int thisHighOrdCount = 0;
 
 
     public void updateVeriSuccForRegion(String key) {
+        hgOrdRegionInstance += thisHighOrdCount;
         if (regionsStatisticsMap.get(key) != null) {
             RegionStatistics regionStatistics = regionsStatisticsMap.get(key);
             regionStatistics.veriHitNumber++;
@@ -114,13 +116,24 @@ public class StatisticManager {
     }
 
     public String printAccumulativeStatistics(){
-        String out="\n/************************ Printing Accumulative Statistics *****************\n" +
+        String out="\n/************************ Printing Region Statistics *****************\n" +
                 "Number of Distinct Veritested Regions = " + getDistinctVeriRegionNum() + "\nNumber of Distinct Un-Veritested Symbolic Regions = "+ getDistinctSpfRegionNum()
                 + "\nNumber of Distinct Un-Veritested Concrete Regions = "+ getConcreteRegionNum()
                 + "\nNumber of Distinct Failed Regions for Field Reference = " + getFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION)
                 + "\nNumber of Distinct Failed Regions for SPFCases = " + getFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION)
                 + "\nNumber of Distinct Failed Regions for Other Reasons = " + getFailNum(FailEntry.FailReason.OTHER)
-                + "\nNumber of High Order Regions Attempted = " + hgOrdRegionInstance;
+                + "\nNumber of High Order Regions Used = " + hgOrdRegionInstance;
+        return out;
+    }
+
+    public String printInstantiationStatistics(){
+        String out="\n/************************ Printing Instantiation Statistics *****************\n" +
+                "Number of successful instantiations = " + getSuccInstantiations() +
+                "\nTotal Number of unsuccessful instantiations = "+ getFailedInstantiations()
+                + "\nNumber of failed instantiations due to concrete condition = "+ getConcreteInstNum()
+                + "\nNumber of failed instantiations due to Field Reference = " + getInstFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION)
+                + "\nNumber of failed instantiations due to SPFCases = " + getInstFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION)
+                + "\nNumber of failed instantiations due to Other Reasons = " + getInstFailNum(FailEntry.FailReason.OTHER) + "\n\n";
         return out;
     }
 
@@ -161,6 +174,16 @@ public class StatisticManager {
         return count;
     }
 
+    public int getSuccInstantiations(){
+        int count = 0;
+        Set<String> keys = regionsStatisticsMap.keySet();
+        Iterator<String> keysItr = keys.iterator();
+
+        while(keysItr.hasNext())
+            count += regionsStatisticsMap.get(keysItr.next()).veriHitNumber;
+        return count;
+    }
+
     public int getDistinctSpfRegionNum(){
         int count = 0;
         Set<String> keys = regionsStatisticsMap.keySet();
@@ -169,6 +192,16 @@ public class StatisticManager {
         while(keysItr.hasNext())
             if (regionsStatisticsMap.get(keysItr.next()).spfHitNumber !=0)
                 ++count;
+        return count;
+    }
+
+    public int getFailedInstantiations(){
+        int count = 0;
+        Set<String> keys = regionsStatisticsMap.keySet();
+        Iterator<String> keysItr = keys.iterator();
+
+        while(keysItr.hasNext())
+            count += regionsStatisticsMap.get(keysItr.next()).spfHitNumber;
         return count;
     }
 
@@ -183,7 +216,15 @@ public class StatisticManager {
         return count;
     }
 
+    public int getConcreteInstNum(){
+        int count = 0;
+        Set<String> keys = regionsStatisticsMap.keySet();
+        Iterator<String> keysItr = keys.iterator();
 
+        while(keysItr.hasNext())
+            count += regionsStatisticsMap.get(keysItr.next()).concreteNumber;
+        return count;
+    }
 
     public int getFailNum(FailEntry.FailReason failReason){
         int count = 0;
@@ -203,11 +244,27 @@ public class StatisticManager {
                 }
             }
         }
-
-
         return count;
     }
 
+    public int getInstFailNum(FailEntry.FailReason failReason){
+        int count = 0;
+        Set<String> keys = regionsStatisticsMap.keySet();
+        Iterator<String> keysItr = keys.iterator();
+
+        ArrayList<FailEntry> failReasonList;
+        while(keysItr.hasNext()){
+            failReasonList = regionsStatisticsMap.get(keysItr.next()).failReasonList;
+            Iterator<FailEntry> failItr = failReasonList.iterator();
+            while(failItr.hasNext()){
+                FailEntry entry = failItr.next();
+                if (entry.failReason == failReason){
+                    ++count;
+                }
+            }
+        }
+        return count;
+    }
 
 
     public int regionCount(){

@@ -196,6 +196,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
                 StaticRegion staticRegion = regionsMap.get(key);
                 if ((staticRegion != null) && !(staticRegion.isMethodRegion)) {
+                    thisHighOrdCount = 0;
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                     if (SpfUtil.isSymCond(ti.getTopFrame(), staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
                         if (runMode != VeritestingMode.SPFCASES) {
@@ -209,6 +210,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             ++veritestRegionCount;
                             ti.setNextPC(nextInstruction);
                             statisticManager.updateVeriSuccForRegion(key);
+                            hgOrdRegionInstance += thisHighOrdCount;
 
                             System.out.println("------------- Region was successfully veritested --------------- ");
                         } else {
@@ -253,6 +255,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             SystemState systemState = vm.getSystemState();
             systemState.setNextChoiceGenerator(newCG);
             ti.setNextPC(instructionToExecute);
+            hgOrdRegionInstance += thisHighOrdCount;
         } else {
             ChoiceGenerator<?> cg = ti.getVM().getSystemState().getChoiceGenerator();
             if (cg instanceof StaticPCChoiceGenerator) {
@@ -504,6 +507,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("If-removed count = " + StatisticManager.ifRemovedCount);
 
         pw.println(statisticManager.printAccumulativeStatistics());
+        pw.println(statisticManager.printInstantiationStatistics());
 
         pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
         pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
@@ -515,6 +519,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         /* End added for equivalence checking */
 
 
+        assert veritestRegionCount == statisticManager.getSuccInstantiations();
         pw.println((TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur)+ TimeUnit.NANOSECONDS.toMillis(dynRunTime)) + "," +
                 TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur)+","+
                 TimeUnit.NANOSECONDS.toMillis(dynRunTime) + "," +
@@ -530,7 +535,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 statisticManager.getFailNum(FailEntry.FailReason.OTHER) + "," +
                 hgOrdRegionInstance + "," +
                 statisticManager.regionCount() + "," +
-                veritestRegionCount + "," +
+//                veritestRegionCount + "," + // this number also reports the total number of successful instantiations
+                // instantiation metrics
+                statisticManager.getSuccInstantiations() + "," + statisticManager.getFailedInstantiations() + "," +
+                statisticManager.getConcreteInstNum() + "," +
+                statisticManager.getInstFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION) + "," +
+                statisticManager.getInstFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION) + "," +
+                statisticManager.getInstFailNum(FailEntry.FailReason.OTHER) + "," +
                 // static analysis metrics
                 interestingRegionCount + "," + numMethodSummaries + "," + maxBranchDepth + "," + maxExecPathCount + "," + avgExecPathCount + "," +
                 // exception metrics
