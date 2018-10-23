@@ -13,7 +13,7 @@ public class ReplaceEqCheck extends TestRegionBaseClass {
     public static void main(String[] args) {
         TestVeritestingReplace t = new TestVeritestingReplace();
         ReplaceEqCheck s = new ReplaceEqCheck();
-        t.runTest(s);
+        t.runRevTest(s);
     }
 
     @Override
