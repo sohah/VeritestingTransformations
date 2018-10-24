@@ -46,5 +46,6 @@ org\/w3c\/.*
 org\/xml\/.*
 org\/omg\/.*
 com\/ibm\/crypto\/.*
+com\/ibm\/wala\/.*
 com\/ibm\/security\/.*
 org\/apache\/xerces\/.*

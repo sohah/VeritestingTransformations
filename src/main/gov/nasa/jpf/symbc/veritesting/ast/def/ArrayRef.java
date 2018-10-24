@@ -1,6 +1,10 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import za.ac.sun.cs.green.expr.*;
+
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 
 public class ArrayRef {
     public final int ref;
@@ -13,7 +17,7 @@ public class ArrayRef {
 
     public static ArrayRef makeArrayRef(ArrayLoadInstruction getIns) {
         if (!(getIns.arrayref instanceof IntConstant))
-            throw new IllegalArgumentException("cannot make ArrayRef for symbolic array reference");
+            throwException(new IllegalArgumentException("cannot make ArrayRef for symbolic array reference"), INSTANTIATION);
         int ref = ((IntConstant)getIns.arrayref).getValue();
         Expression indexName = getIns.index;
         return new ArrayRef(ref, indexName);
@@ -21,7 +25,7 @@ public class ArrayRef {
 
     public static ArrayRef makeArrayRef(ArrayStoreInstruction getIns) {
         if (!(getIns.arrayref instanceof IntConstant))
-            throw new IllegalArgumentException("cannot make ArrayRef for symbolic array reference");
+            throwException(new IllegalArgumentException("cannot make ArrayRef for symbolic array reference"), INSTANTIATION);
         int ref = ((IntConstant)getIns.arrayref).getValue();
         Expression indexName = getIns.index;
         return new ArrayRef(ref, indexName);
@@ -59,6 +63,9 @@ public class ArrayRef {
             return new ArrayRef(ref, new IntConstant(((IntConstant) index).getValue()));
         } else if (index instanceof WalaVarExpr) {
             return new ArrayRef(ref, ((WalaVarExpr)index).clone());
-        }  else throw new IllegalArgumentException("Unsupported index type found when cloning ArrayRef");
+        }  else {
+            throwException(new IllegalArgumentException("Unsupported index type found when cloning ArrayRef"), INSTANTIATION);
+            return null;
+        }
     }
 }

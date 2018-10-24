@@ -5,6 +5,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
 import java.util.HashMap;
 import java.util.Set;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor.ARRAY_SUBSCRIPT_BASE;
 
 public class GlobalArraySubscriptMap {
@@ -27,7 +29,7 @@ public class GlobalArraySubscriptMap {
             }
         }
         else {
-            throw new IllegalArgumentException("Cannot lookup the value of a null " + label1 + ".");
+            throwException(new IllegalArgumentException("Cannot lookup the value of a null " + label1 + "."), INSTANTIATION);
         }
         return ret;
     }

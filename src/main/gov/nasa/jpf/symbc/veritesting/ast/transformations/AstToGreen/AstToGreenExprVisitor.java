@@ -7,6 +7,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 
 /*
@@ -50,7 +52,8 @@ public class    AstToGreenExprVisitor implements ExprVisitor<Expression> {
 
     public static Expression bad(Object obj) {
         String name = obj.getClass().getCanonicalName();
-        throw new IllegalArgumentException("Unsupported class: " + name + " value: " + obj.toString() + " seen in AstToGreenExprVisitor");
+        throwException(new IllegalArgumentException("Unsupported class: " + name + " value: " + obj.toString() + " seen in AstToGreenExprVisitor"), INSTANTIATION);
+        return null;
     }
 
     public Expression assign(Expression e) {

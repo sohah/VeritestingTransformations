@@ -178,10 +178,10 @@ public class SubstitutionVisitor extends AstMapVisitor {
             if ((invokeCode == IInvokeInstruction.Dispatch.STATIC)
                     || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)
                     ) {
-                ++StatisticManager.hgOrdRegionInstance;
                 Pair<String, StaticRegion> keyRegionPair = findMethodRegion(c);
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
                 if (hgOrdStaticRegion != null) {
+                    ++StatisticManager.thisHighOrdCount;
                     String key = keyRegionPair.getFirst();
 
                     System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");

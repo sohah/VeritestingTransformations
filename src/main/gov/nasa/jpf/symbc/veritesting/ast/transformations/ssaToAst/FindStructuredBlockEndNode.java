@@ -5,6 +5,9 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.STATIC;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+
     /* MWW: Relatively simple traversal that aborts on non-local jumps *other than for early
        returns and exceptions*.  It attempts to find the minimal convergent node
        for all non-exceptional and non-early-return paths.
@@ -50,12 +53,12 @@ public class FindStructuredBlockEndNode {
     void checkRanges(ISSABasicBlock parent, ISSABasicBlock b) throws StaticRegionException {
         // abort on "internal loop" case
         if (b.getNumber() <= parent.getNumber()) {
-            throw staticRegionException;
+            throwException(staticRegionException, STATIC);
         }
 
         // handle "forward out of bounds" case
         if (b.getNumber() > maxLimit.getNumber()) {
-            throw staticRegionException;
+            throwException(staticRegionException, STATIC);
         }
     }
 
@@ -97,7 +100,8 @@ public class FindStructuredBlockEndNode {
 
         List<ISSABasicBlock> succs = new ArrayList<>(cfg.getNormalSuccessors(minLimit));
         if (succs.size() == 0) {
-            throw staticRegionException;
+            throwException(staticRegionException, STATIC);
+            return null;
         }
         else if (succs.size() == 1) {
             return succs.get(0);

@@ -6,6 +6,7 @@ import com.ibm.wala.ssa.SSACFG;
 import com.ibm.wala.ssa.SSAInstruction;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionMetricsVisitor;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SymbCondVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
@@ -15,6 +16,8 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.STATIC;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static java.util.Collections.reverse;
 
 /**
@@ -61,6 +64,16 @@ public class StaticRegion implements Region {
      */
     public final VarTypeTable varTypeTable;
 
+    /*
+    * Holds the total number of IfThenElseStmts present in this static region
+     */
+    public int maxDepth = 0;
+
+    /*
+     * Holds the total number of execution paths that can be taken through this region
+     */
+    public long totalNumPaths = 0;
+
     /**
      * @param staticStmt: Ranger IR statement that summarizes this static region
      * @param ir: Wala IR for the method which contains this StaticRegion
@@ -101,7 +114,7 @@ public class StaticRegion implements Region {
             if (symbCondVisitor.stackSlotNotFound) {
                 StaticRegionException sre = new StaticRegionException("region contains condition that cannot be instantiated");
                 SSACFG cfg = ir.getControlFlowGraph();
-                if (startingBlock == null) throw sre;
+                if (startingBlock == null) throwException(sre, STATIC);
                 ISSABasicBlock bb = startingBlock;
                 boolean foundStoppingInsn = false;
                 while (symbCondVisitor.noStackSlotVars.size() > 0 && !foundStoppingInsn) {
@@ -121,7 +134,7 @@ public class StaticRegion implements Region {
                     else bb = (ISSABasicBlock) itr.next();
                 }
                 if (symbCondVisitor.noStackSlotVars.size() > 0) {
-                    throw sre;
+                    throwException(sre, STATIC);
                 }
             }
             Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> regionBoundary = computeRegionBoundary(staticStmt);
@@ -154,10 +167,11 @@ public class StaticRegion implements Region {
         if (staticStmt instanceof CompositionStmt && ((CompositionStmt) staticStmt).s2 instanceof AssignmentStmt) {
             AssignmentStmt assignmentStmt = (AssignmentStmt) ((CompositionStmt) staticStmt).s2;
             if ((assignmentStmt.rhs instanceof GammaVarExpr) && (outputTable.table.size() == 0)) {
-                throw new StaticRegionException("static region with gamma expression cannot have no local outputs");
+                throwException(new StaticRegionException("static region with gamma expression cannot have no local outputs"), STATIC);
             }
         }
         LocalOutputInvariantVisitor.execute(this);
+        RegionMetricsVisitor.execute(this);
     }
 
     /**

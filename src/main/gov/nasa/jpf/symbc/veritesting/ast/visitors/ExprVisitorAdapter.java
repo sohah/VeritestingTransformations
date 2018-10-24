@@ -1,7 +1,11 @@
 package gov.nasa.jpf.symbc.veritesting.ast.visitors;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
+
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.DONTKNOW;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 
 /**
  * An adaptor that pushes the visitor to the right visit for a Green expression.
@@ -46,7 +50,8 @@ public class ExprVisitorAdapter<T>  {
             return theVisitor.visit((AstVarExpr)e);
         }
         else {
-            throw new IllegalArgumentException("Unknown class in ExprVisitorAdapter!");
+            throwException(new IllegalArgumentException("Unknown class in ExprVisitorAdapter!"), DONTKNOW);
+            return (T) e;
         }
     }
 

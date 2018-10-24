@@ -22,6 +22,9 @@ import org.apache.bcel.classfile.Utility;
 
 import java.lang.reflect.Method;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.STATIC;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+
 public class ReflectUtil
 {
     public static String getSignature ( Method method ) throws StaticRegionException {
@@ -37,7 +40,7 @@ public class ReflectUtil
         for ( int i = 0 ; i < parameterTypes.length ; i++ )
         {
             if (parameterTypes[i].getCanonicalName() == null)
-                throw new StaticRegionException("failed to construct method signature for " + method.getName());
+                throwException(new StaticRegionException("failed to construct method signature for " + method.getName()), STATIC);
             paramString.append(Utility.getSignature(parameterTypes[i].getCanonicalName()));
             /*String correct = Utility.getSignature(parameterTypes[i].getCanonicalName());
             String y = Utility.getSignature(parameterTypes[i].getSimpleName());

@@ -12,6 +12,9 @@ import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
 import za.ac.sun.cs.green.expr.RealConstant;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+
 public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
     private DynamicTable varTypeTable;
 
@@ -80,7 +83,7 @@ public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expre
                     int dstNum = ((WalaVarExpr) dstOp).number;
                     if (varTypeTable.lookup(dstNum) == null) return true;
                     else if (!varTypeTable.lookup(srcNum).equals(varTypeTable.lookup(dstNum)))
-                        throw new IllegalArgumentException("unequal types set for Wala vars used in a binop");
+                        throwException(new IllegalArgumentException("unequal types set for Wala vars used in a binop"), INSTANTIATION);
                 }
             }
         }
@@ -91,7 +94,8 @@ public class ExprTypeVisitor extends ExprMapVisitor implements ExprVisitor<Expre
     private String getConstantType(Expression op1) {
         if (op1 instanceof IntConstant) return "int";
         else if (op1 instanceof RealConstant) return "double";
-        throw new IllegalArgumentException("trying to getConstantType for non-constant op, op = " + op1);
+        throwException(new IllegalArgumentException("trying to getConstantType for non-constant op, op = " + op1), INSTANTIATION);
+        return null;
     }
 
     public ExprTypeVisitor(DynamicTable varTypeTable) {

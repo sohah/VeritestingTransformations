@@ -37,6 +37,8 @@ import x10.wala.util.NatLoopSolver;
 
 import za.ac.sun.cs.green.expr.Operation;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.exclusionsFile;
+
 /**
  * Main class file for veritesting static analysis exploration.
  */
@@ -47,7 +49,7 @@ public class VeritestingMain {
     HashSet<String> methodSummaryClassNames, methodSummarySubClassNames;
     private boolean methodAnalysis = false;
     private String currentPackageName;
-    public static HashMap<String, StaticRegion> veriRegions;
+    public static HashMap<String, StaticRegion> veriRegions = new HashMap<>();
     private ThreadInfo ti;
 
     SSACFG cfg;
@@ -58,9 +60,10 @@ public class VeritestingMain {
 
     public VeritestingMain(ThreadInfo ti, String appJar) {
         try {
+            Map map = System.getenv();
             appJar = System.getenv("TARGET_CLASSPATH_WALA");// + appJar;
             AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
-                    (new FileProvider()).getFile("../MyJava60RegressionExclusions.txt"));
+                    (new FileProvider()).getFile(exclusionsFile));
 //                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             cha = ClassHierarchyFactory.make(scope);
             methodSummaryClassNames = new HashSet<String>();
@@ -281,7 +284,7 @@ public class VeritestingMain {
             HashSet<Integer> visited = new HashSet<>();
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             // Here is where the magic happens.
-            CreateStaticRegions regionCreator = new CreateStaticRegions(ir);
+            CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
             if (!methodAnalysis) {
                 //regionCreator.createStructuredConditionalRegions(cfg, veritestingRegions);
                 regionCreator.createStructuredConditionalRegions(veriRegions);
@@ -303,16 +306,6 @@ public class VeritestingMain {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public boolean isLoopStart(ISSABasicBlock b) {
-        Iterator var1 = loops.iterator();
-
-        while (var1.hasNext()) {
-            NatLoop var3 = (NatLoop) var1.next();
-            if (b == var3.getStart()) return true;
-        }
-        return false;
     }
 
 

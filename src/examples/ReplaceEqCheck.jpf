@@ -8,6 +8,7 @@ symbolic.debug=false
 
 ######## testing equivalence ######
 symbolic.method=TestVeritestingReplace.testHarness(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+#symbolic.method=TestVeritestingReplace.revTestHarness(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 symbolic.dp=z3bitvector
 
 #symbolic.min_int=-2147483648
