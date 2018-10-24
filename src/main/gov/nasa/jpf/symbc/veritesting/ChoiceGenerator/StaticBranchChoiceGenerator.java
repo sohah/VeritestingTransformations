@@ -44,7 +44,6 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
         Instruction nextInstruction = null;
         if (choice == STATIC_CHOICE) {
-            collectSpfStackFrame();
             System.out.println("\n=========Executing static region choice in BranchCG");
             nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion());
             MethodInfo methodInfo = instructionToExecute.getMethodInfo();
@@ -56,8 +55,6 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             statisticManager.updateVeriSuccForRegion(key);
             ++VeritestingListener.veritestRegionCount;
         } else if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
-           // ti.getTopFrame().defreeze();
-            //restoreSpfStackFrame();
             System.out.println("\n=========Executing" + (choice == THEN_CHOICE ? " then " : " else ") + ".  Instruction: ");
             switch (getKind(instructionToExecute)) {
                 case UNARYIF:
@@ -79,22 +76,6 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         return nextInstruction;
     }
 
-    private void restoreSpfStackFrame() {
-
-        int slotSize = spfSlotAttr.length;
-
-        for (int i = 0; i < slotSize; i++) {
-            ti.getTopFrame().setSlotAttr(i, spfSlotAttr[i]);
-        }
-    }
-
-    /**
-     * The puprose of this function is to collect the stack slot state before running veritesting choice, so that if veritesting changed the slots attributes by populating its outputs, we would be able to restore the slots back to their original states when running the SPF then, and else choices.
-     */
-    private void collectSpfStackFrame() {
-        spfSlotAttr = ti.getTopFrame().getSlotAttrs().clone();
-    }
-
     /*
         So: here is what should happen.
         We have the PC constructed for choices 0, 1, and 2.
@@ -103,9 +84,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         We unpack the instruction, add it to the PC, and execute.
      */
     private Instruction executeBinaryIf(Instruction instruction, int choice) throws StaticRegionException {
-        /*if(currentTopFrame != null)
-            ti.setTopFrame(currentTopFrame); //retoring the stackframe for SPFCase
-*/
+
         StackFrame sf = ti.getModifiableTopFrame();
 
         IntegerExpression sym_v1 = (IntegerExpression) sf.getOperandAttr(1);
