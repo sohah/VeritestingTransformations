@@ -52,7 +52,7 @@ public final class WalaVarExpr extends CloneableVariable {
      * @return retrunds symbolic name, which is the name of the WalaVarExpr, without the @ sign
      */
     public String getSymName() {
-        String ret = "w" + Integer.toString(number);
+        String ret = getName(); //"w" + Integer.toString(number);
         if (uniqueNum != -1)
             ret += "$" + uniqueNum;
         return ret;
