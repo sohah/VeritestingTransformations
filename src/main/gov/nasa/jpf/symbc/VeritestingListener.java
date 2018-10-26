@@ -20,6 +20,8 @@
 package gov.nasa.jpf.symbc;
 
 
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Solver;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
@@ -29,6 +31,7 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3BitVector;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator;
@@ -209,6 +212,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             }
                             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
                             Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
+                            discoverContract();
                             ++veritestRegionCount;
                             ti.setNextPC(nextInstruction);
                             statisticManager.updateVeriSuccForRegion(key);
@@ -240,6 +244,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 return;
             }
         }
+    }
+
+    private void discoverContract() {
+        Solver solver = ProblemZ3BitVector.solver;
+        Context ctx = ProblemZ3BitVector.ctx;
+        System.out.println("the solver is: " + solver);
+        System.out.println("the context of the solver is:" + ctx);
     }
 
     private void runVeritestingWithSPF(ThreadInfo ti, VM vm, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws StaticRegionException, CloneNotSupportedException, VisitorException {

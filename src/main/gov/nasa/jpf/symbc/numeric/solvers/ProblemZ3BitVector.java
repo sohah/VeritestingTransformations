@@ -56,6 +56,7 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     //not on the ld_library_path. If the
     //Z3 solver object and context were class fields,
     //we would likely encounter a linker error
+
     private static class Z3Wrapper {
         private Context ctx;
         private Solver solver;
@@ -86,8 +87,10 @@ public class ProblemZ3BitVector extends ProblemGeneral {
         }
     }
 
-    private Solver solver;
-    private Context ctx;
+
+    //SOHA: Exposing the solver and the context for later mainpulation of contract discovery.
+    public static Solver solver = Z3Wrapper.getInstance().solver;
+    public static Context ctx = Z3Wrapper.getInstance().ctx;
 
     // Do we use the floating point theory or linear arithmetic over reals
     private boolean useFpForReals;
@@ -102,7 +105,7 @@ public class ProblemZ3BitVector extends ProblemGeneral {
         solver = z3.getSolver();
         ctx = z3.getCtx();
         solver.push();
-        
+
         // load bitvector length (default = 32 bit), then calculate allowed min-max values
         bitVectorLength = SymbolicInstructionFactory.bvlength;
         minAllowed = (long) -(Math.pow(2, bitVectorLength - 1));
