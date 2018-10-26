@@ -353,9 +353,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public static Instruction setupSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion) throws StaticRegionException {
         if (canSetPC(ti, dynRegion.regionSummary)) {
-            populateSlots(ti, dynRegion);
             populateFieldOutputs(ti, dynRegion);
             populateArrayOutputs(ti, dynRegion);
+            populateSlots(ti, dynRegion);
             clearStack(ti.getTopFrame(), ins);
             return advanceSpf(ti, ins, dynRegion);
         }
