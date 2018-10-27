@@ -30,7 +30,7 @@ public class ReflectUtil
     public static String getSignature ( Method method ) throws StaticRegionException {
         return method.getName() + "("
                 + parametersAsString(method) + ")"
-                + Utility.getSignature(method.getReturnType().getSimpleName());
+                + Utility.getSignature(method.getReturnType().getCanonicalName());
     }
     public static String parametersAsString ( Method method ) throws StaticRegionException {
         Class<?>[] parameterTypes = method.getParameterTypes();
