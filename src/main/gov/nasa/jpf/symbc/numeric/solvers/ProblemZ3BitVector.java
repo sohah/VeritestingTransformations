@@ -87,10 +87,8 @@ public class ProblemZ3BitVector extends ProblemGeneral {
         }
     }
 
-
-    //SOHA: Exposing the solver and the context for later mainpulation of contract discovery.
-    public static Solver solver = Z3Wrapper.getInstance().solver;
-    public static Context ctx = Z3Wrapper.getInstance().ctx;
+    public static Solver solver;
+    public static Context ctx;
 
     // Do we use the floating point theory or linear arithmetic over reals
     private boolean useFpForReals;
