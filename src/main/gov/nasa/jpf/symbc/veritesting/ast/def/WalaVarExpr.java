@@ -18,13 +18,13 @@ public final class WalaVarExpr extends CloneableVariable {
     private int uniqueNum = -1;
 
     public WalaVarExpr(int var) {
-        super("@w" + var);
+        super("w" + var);
         this.number = var;
     }
 
 
     private WalaVarExpr(int var, int uniqueNum) {
-        super("@w" + var);
+        super("w" + var);
         this.number = var;
         this.uniqueNum = uniqueNum;
     }

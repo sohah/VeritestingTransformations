@@ -1,14 +1,10 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.Operation;
-
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 
 public class SPFCaseList {
     public final HashSet<SPFCaseStmt> casesList = new HashSet<>();
@@ -38,5 +34,16 @@ public class SPFCaseList {
 
     public void addAll(SPFCaseList cl) {
         casesList.addAll(cl.casesList);
+    }
+
+    public void print(){
+        Iterator<SPFCaseStmt> itr = casesList.iterator();
+        int i =0;
+        while(itr.hasNext()){
+            SPFCaseStmt aCase = itr.next();
+            System.out.println("Case(" + i + "): ");
+            System.out.println(ExprUtil.AstToString(aCase.spfCondition) + "--------- reason:" + aCase.reason);
+            ++i;
+        }
     }
 }
