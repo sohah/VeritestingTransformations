@@ -180,9 +180,10 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
 
         System.out.println("--------------- SPFCases TRANSFORMATION 2ND PASS ---------------");
         System.out.println(StmtPrintVisitor.print(dynStmt));
-
+        SPFCaseList detectedCases = new SPFCaseList(visitor.spfCaseSet);
+        detectedCases.print();
         return new DynamicRegion(dynRegion,
                 dynStmt,
-                new SPFCaseList(visitor.spfCaseSet), null, null);
+                detectedCases, null, null);
     }
 }
