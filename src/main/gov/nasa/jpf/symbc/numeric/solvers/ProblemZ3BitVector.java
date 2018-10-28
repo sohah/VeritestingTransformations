@@ -46,6 +46,8 @@ import com.microsoft.z3.*;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.VeritestingListener;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 
@@ -88,7 +90,10 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     }
 
     public static Solver solver;
-    public static Context ctx;
+    public Solver shadowSolver;
+    public static Context shadowCntx;
+    public Context ctx;
+
 
     // Do we use the floating point theory or linear arithmetic over reals
     private boolean useFpForReals;
@@ -99,10 +104,17 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     private long maxAllowed;
 
     public ProblemZ3BitVector() {
+
+        Pair<Context, Solver> cntxSolver = DiscoverContract.makeCtxt();
+        shadowCntx = cntxSolver.getFirst();
+        shadowSolver = cntxSolver.getSecond();
+
+
         Z3Wrapper z3 = Z3Wrapper.getInstance();
         solver = z3.getSolver();
         ctx = z3.getCtx();
         solver.push();
+        shadowSolver.push();;
 
         // load bitvector length (default = 32 bit), then calculate allowed min-max values
         bitVectorLength = SymbolicInstructionFactory.bvlength;
@@ -233,6 +245,8 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     public void post(Object constraint) {
         try{
             solver.add((BoolExpr)constraint);
+
+            shadowSolver.add((BoolExpr)constraint);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("## Error Z3: post(Object) failed.\n" + e);
@@ -248,6 +262,12 @@ public class ProblemZ3BitVector extends ProblemGeneral {
             BitVecExpr bv = ctx.mkBVConst(name, this.bitVectorLength);
             solver.add(ctx.mkBVSGE(bv, ctx.mkBV(min, this.bitVectorLength)));
             solver.add(ctx.mkBVSLE(bv, ctx.mkBV(max, this.bitVectorLength)));
+
+            //shadow contract logging
+            BitVecExpr shadowBv = shadowCntx.mkBVConst(name, this.bitVectorLength);
+            shadowSolver.add(shadowCntx.mkBVSGE(shadowBv, shadowCntx.mkBV(min, this.bitVectorLength)));
+            shadowSolver.add(shadowCntx.mkBVSLE(shadowBv, shadowCntx.mkBV(max, this.bitVectorLength)));
+
             return bv;
         } catch (Exception e) {
             e.printStackTrace();
@@ -275,17 +295,33 @@ public class ProblemZ3BitVector extends ProblemGeneral {
 					Expr expr = ctx.mkConst(name, ctx.mkFPSort32());
 					solver.add(ctx.mkFPGt((FPExpr) expr, ctx.mkFP(min, ctx.mkFPSort32())));
 					solver.add(ctx.mkFPLt((FPExpr) expr, ctx.mkFP(max, ctx.mkFPSort32())));
-					return expr;
+
+                    //shadow solver
+                    Expr shadowExpr = shadowCntx.mkConst(name, shadowCntx.mkFPSort32());
+                    shadowSolver.add(shadowCntx.mkFPGt((FPExpr) shadowExpr, shadowCntx.mkFP(min, shadowCntx.mkFPSort32())));
+                    shadowSolver.add(shadowCntx.mkFPLt((FPExpr) shadowExpr, shadowCntx.mkFP(max, shadowCntx.mkFPSort32())));
+
+                    return expr;
             	} else {
             		Expr expr = ctx.mkConst(name, ctx.mkFPSortDouble());
 					solver.add(ctx.mkFPGt((FPExpr) expr, ctx.mkFP(min, ctx.mkFPSortDouble())));
 					solver.add(ctx.mkFPLt((FPExpr) expr, ctx.mkFP(max, ctx.mkFPSortDouble())));
-					return expr;
+
+					//shadow solver
+                    Expr shadowExpr = shadowCntx.mkConst(name, shadowCntx.mkFPSortDouble());
+                    shadowSolver.add(shadowCntx.mkFPGt((FPExpr) shadowExpr, shadowCntx.mkFP(min, shadowCntx.mkFPSortDouble())));
+                    shadowSolver.add(shadowCntx.mkFPLt((FPExpr) shadowExpr, shadowCntx.mkFP(max, shadowCntx.mkFPSortDouble())));
+                    return expr;
             	}
             } else {
                 RealExpr expr = ctx.mkRealConst(name);
                 solver.add(ctx.mkGe(expr, ctx.mkReal("" + min)));
                 solver.add(ctx.mkLe(expr, ctx.mkReal("" + max)));
+
+                //shadow solver
+                RealExpr shadowExpr = shadowCntx.mkRealConst(name);
+                shadowSolver.add(shadowCntx.mkGe(shadowExpr, shadowCntx.mkReal("" + min)));
+                shadowSolver.add(shadowCntx.mkLe(shadowExpr, shadowCntx.mkReal("" + max)));
                 return expr;
             }
         } catch (Exception e) {
@@ -299,8 +335,14 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
+                //shadow solver
+                shadowCntx.mkEq(shadowCntx.mkBV(value, this.bitVectorLength), (Expr) exp);
+
                 return ctx.mkEq(ctx.mkBV(value, this.bitVectorLength), (Expr) exp);
             } else if (exp instanceof IntExpr) {
+                //shadow solver
+                shadowCntx.mkEq(shadowCntx.mkInt(value), (Expr) exp);
+
                 return ctx.mkEq(ctx.mkInt(value), (Expr) exp);
             } else {
                 throw new RuntimeException();
@@ -316,8 +358,14 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
+                //shadow solver
+                shadowCntx.mkEq((Expr) exp, shadowCntx.mkBV(value, this.bitVectorLength));
+
                 return ctx.mkEq((Expr) exp, ctx.mkBV(value, this.bitVectorLength));
             } else if (exp instanceof IntExpr) {
+                //shadow solver
+                shadowCntx.mkEq((Expr) exp, shadowCntx.mkInt(value));
+
                 return ctx.mkEq((Expr) exp, ctx.mkInt(value));
             } else {
                 throw new RuntimeException();
@@ -331,6 +379,9 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     @Override
     public Object eq(Object exp1, Object exp2){
         try{
+            //shadow solver
+            shadowCntx.mkEq((Expr) exp1, (Expr) exp2);
+
             return ctx.mkEq((Expr) exp1, (Expr) exp2);
         } catch (Exception e) {
             e.printStackTrace();
@@ -343,8 +394,14 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
+                //shadow solver
+                shadowCntx.mkNot(shadowCntx.mkEq(shadowCntx.mkBV(value, this.bitVectorLength), (Expr) exp));
+
                 return ctx.mkNot(ctx.mkEq(ctx.mkBV(value, this.bitVectorLength), (Expr) exp));
             } else if (exp instanceof IntExpr) {
+                //shadow solver
+                shadowCntx.mkNot(shadowCntx.mkEq(shadowCntx.mkInt(value), (Expr) exp));
+
                 return ctx.mkNot(ctx.mkEq(ctx.mkInt(value), (Expr) exp));
             } else {
                 throw new RuntimeException();
@@ -360,8 +417,14 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
+                //shadow solver
+                shadowCntx.mkNot(shadowCntx.mkEq((Expr) exp, shadowCntx.mkBV(value, this.bitVectorLength)));
+
                 return ctx.mkNot(ctx.mkEq((Expr) exp, ctx.mkBV(value, this.bitVectorLength)));
             } else if (exp instanceof IntExpr) {
+                //shadow solver
+                shadowCntx.mkNot(shadowCntx.mkEq((Expr) exp, shadowCntx.mkInt(value)));
+
                 return ctx.mkNot(ctx.mkEq((Expr) exp, ctx.mkInt(value)));
             } else {
                 throw new RuntimeException();
@@ -375,6 +438,9 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     @Override
     public Object neq(Object exp1, Object exp2){
         try{
+            //shadow solver
+            shadowCntx.mkNot(shadowCntx.mkEq((Expr) exp1, (Expr) exp2));
+
             return ctx.mkNot(ctx.mkEq((Expr) exp1, (Expr) exp2));
         } catch (Exception e) {
             e.printStackTrace();
@@ -384,8 +450,11 @@ public class ProblemZ3BitVector extends ProblemGeneral {
 
     public Object logical_not(Object exp){
         try{
-            if(exp instanceof BoolExpr)
-                return ctx.mkNot((BoolExpr)exp);
+            if(exp instanceof BoolExpr){
+                //shadow solver
+                shadowCntx.mkNot((BoolExpr)exp);
+
+                return ctx.mkNot((BoolExpr)exp);}
             else throw new RuntimeException("## Error Z3: logical_not(Object) expected a BoolExpr.\n");
         } catch (Exception e) {
             e.printStackTrace();
@@ -398,8 +467,14 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
+                //shadow solver
+                shadowCntx.mkBVSLE(shadowCntx.mkBV(value, this.bitVectorLength), (BitVecExpr) exp);
+
                 return ctx.mkBVSLE(ctx.mkBV(value, this.bitVectorLength), (BitVecExpr) exp);
             } else if (exp instanceof IntExpr) {
+                //shadow solver
+                shadowCntx.mkLe(shadowCntx.mkInt(value), (IntExpr) exp);
+
                 return ctx.mkLe(ctx.mkInt(value), (IntExpr) exp);
             } else {
                 throw new RuntimeException();
@@ -415,8 +490,13 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
+                //shadow solver
+                shadowCntx.mkBVSLE((BitVecExpr) exp, shadowCntx.mkBV(value, this.bitVectorLength));
+
                 return ctx.mkBVSLE((BitVecExpr) exp, ctx.mkBV(value, this.bitVectorLength));
             } else if (exp instanceof IntExpr) {
+                shadowCntx.mkLe((IntExpr) exp, shadowCntx.mkInt(value));
+
                 return ctx.mkLe((IntExpr) exp, ctx.mkInt(value));
             } else {
                 throw new RuntimeException();
@@ -431,8 +511,11 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     public Object leq(Object exp1, Object exp2){
         try {
             if (exp1 instanceof BitVecExpr && exp2 instanceof  BitVecExpr) {
+                shadowCntx.mkBVSLE((BitVecExpr) exp1, (BitVecExpr) exp2);
+
                 return ctx.mkBVSLE((BitVecExpr) exp1, (BitVecExpr) exp2);
             } else if (exp1 instanceof IntExpr && exp2 instanceof  IntExpr) {
+                shadowCntx.mkLe((IntExpr) exp1, (IntExpr) exp2);
                 return ctx.mkLe((IntExpr) exp1, (IntExpr) exp2);
             } else {
                 throw new RuntimeException();
@@ -448,8 +531,13 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
-                return ctx.mkBVSGE(ctx.mkBV(value, this.bitVectorLength), (BitVecExpr) exp);
+                shadowCntx.mkBVSGE(ctx.mkBV(value, this.bitVectorLength), (BitVecExpr) exp);
+
+                return ctx.mkBVSGE(shadowCntx.mkBV(value, this.bitVectorLength), (BitVecExpr) exp);
             } else if (exp instanceof IntExpr) {
+
+                shadowCntx.mkGe(shadowCntx.mkInt(value), (IntExpr) exp);
+
                 return ctx.mkGe(ctx.mkInt(value), (IntExpr) exp);
             } else {
                 throw new RuntimeException();
@@ -465,8 +553,11 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
+                shadowCntx.mkBVSGE((BitVecExpr) exp, shadowCntx.mkBV(value, this.bitVectorLength));
+
                 return ctx.mkBVSGE((BitVecExpr) exp, ctx.mkBV(value, this.bitVectorLength));
             } else if (exp instanceof IntExpr) {
+                shadowCntx.mkGe((IntExpr) exp, shadowCntx.mkInt(value));
                 return ctx.mkGe((IntExpr) exp, ctx.mkInt(value));
             } else {
                 throw new RuntimeException();
@@ -481,8 +572,11 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     public Object geq(Object exp1, Object exp2){
         try {
             if (exp1 instanceof BitVecExpr && exp2 instanceof  BitVecExpr) {
+                shadowCntx.mkBVSGE((BitVecExpr) exp1, (BitVecExpr) exp2);
+
                 return ctx.mkBVSGE((BitVecExpr) exp1, (BitVecExpr) exp2);
             } else if (exp1 instanceof IntExpr && exp2 instanceof  IntExpr) {
+                shadowCntx.mkGe((IntExpr) exp1, (IntExpr) exp2);
                 return ctx.mkGe((IntExpr) exp1, (IntExpr) exp2);
             } else {
                 throw new RuntimeException();
@@ -498,8 +592,10 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
+                shadowCntx.mkBVSLT(shadowCntx.mkBV(value, this.bitVectorLength), (BitVecExpr) exp);
                 return ctx.mkBVSLT(ctx.mkBV(value, this.bitVectorLength), (BitVecExpr) exp);
             } else if (exp instanceof IntExpr) {
+                shadowCntx.mkLt(shadowCntx.mkInt(value), (IntExpr) exp);
                 return ctx.mkLt(ctx.mkInt(value), (IntExpr) exp);
             } else {
                 throw new RuntimeException();
@@ -515,8 +611,10 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
+                shadowCntx.mkBVSLT((BitVecExpr) exp, shadowCntx.mkBV(value, this.bitVectorLength));
                 return ctx.mkBVSLT((BitVecExpr) exp, ctx.mkBV(value, this.bitVectorLength));
             } else if (exp instanceof IntExpr) {
+                shadowCntx.mkLt((IntExpr) exp, shadowCntx.mkInt(value));
                 return ctx.mkLt((IntExpr) exp, ctx.mkInt(value));
             } else {
                 throw new RuntimeException();
@@ -531,10 +629,13 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     public Object lt(Object exp1, Object exp2){
         try {
             if (exp1 instanceof BitVecExpr && exp2 instanceof  BitVecExpr) {
+                shadowCntx.mkBVSLT((BitVecExpr) exp1, (BitVecExpr) exp2);
                 return ctx.mkBVSLT((BitVecExpr) exp1, (BitVecExpr) exp2);
             } else if (exp1 instanceof ArithExpr && exp2 instanceof ArithExpr) {
+                shadowCntx.mkLt((ArithExpr) exp1, (ArithExpr) exp2);
             	return ctx.mkLt((ArithExpr) exp1, (ArithExpr) exp2);
             } else if (exp1 instanceof FPExpr && exp2 instanceof FPExpr) {
+                shadowCntx.mkFPLt((FPExpr) exp1, (FPExpr) exp2);
             	return ctx.mkFPLt((FPExpr) exp1, (FPExpr) exp2);
             } else {
                 throw new RuntimeException("## Error in Z3: operator lt expected 2 ArithExpr. Received: " +
@@ -551,8 +652,10 @@ public class ProblemZ3BitVector extends ProblemGeneral {
     	checkBounds(value);
         try {
             if (exp instanceof BitVecExpr) {
+                shadowCntx.mkBVSGT(shadowCntx.mkBV(value, this.bitVectorLength), (BitVecExpr) exp);
                 return ctx.mkBVSGT(ctx.mkBV(value, this.bitVectorLength), (BitVecExpr) exp);
             } else if (exp instanceof IntExpr) {
+                shadowCntx.mkGt(shadowCntx.mkInt(value), (IntExpr) exp);
                 return ctx.mkGt(ctx.mkInt(value), (IntExpr) exp);
             } else {
                 throw new RuntimeException();
