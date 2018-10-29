@@ -1,6 +1,8 @@
 package ApacheCLI;
 
 
+import java.util.Arrays;
+
 /**
  * Contains useful helper methods for classes within this package.
  *
@@ -17,23 +19,25 @@ class Util
      *
      * @return the new String.
      */
-    static String stripLeadingHyphens(String str)
+    static char[] stripLeadingHyphens(char[] str)
     {
     	boolean temp_Boolean = false;
         if (str == null)
         {
             return null;
         }
-        temp_Boolean = str.startsWith("--");
+        temp_Boolean = (str[0] == '-' && str[1] == '-');
         if(temp_Boolean)
 //        if (str.startsWith("--"))
         {
-            return str.substring(2, str.length());
+//            return str.substring(2, str.length);
+            return Arrays.copyOfRange(str, 2, str.length);
         }
         else{
-        	temp_Boolean = str.startsWith("-");
+        	temp_Boolean = str[0] == '-';
         	if(temp_Boolean){
-        		return str.substring(1, str.length());
+//        		return str.substring(1, str.length());
+        		return Arrays.copyOfRange(str, 1, str.length);
         	}
         }
 //        else if (str.startsWith("-"))

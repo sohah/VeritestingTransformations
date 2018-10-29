@@ -5,11 +5,14 @@ import ApacheCLI.Options;
 import ApacheCLI.Parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.apache.commons.lang.ArrayUtils.indexOf;
 
 /**
  * The class GnuParser provides an implementation of the
- * {@link Parser#flatten(Options, String[], boolean) flatten} method.
+ * {@link Parser#flatten(Options, char[][], boolean) flatten} method.
  *
  * @author John Keyes (john at integralsource.com)
  * @version $Revision: 680644 $, $Date: 2008-07-29 01:13:48 -0700 (Tue, 29 Jul 2008) $
@@ -33,7 +36,7 @@ public class GnuParser extends Parser
      *                        a non option has been encountered
      * @return a String array of the flattened arguments
      */
-    protected String[] flatten(Options options, String[] arguments, boolean stopAtNonOption)
+    protected char[][] flatten(Options options, char[][] arguments, boolean stopAtNonOption)
     {
         List tokens = new ArrayList();
 
@@ -41,7 +44,7 @@ public class GnuParser extends Parser
 
         for (int i = 0; i < arguments.length; i++)
         {
-            String arg = arguments[i];
+            char[] arg = arguments[i];
 
             if ("--".equals(arg))
             {
@@ -52,27 +55,29 @@ public class GnuParser extends Parser
             {
                 tokens.add("-");
             }
-            else if (arg.startsWith("-"))
+            else if (arg[0] == '-')
             {
-                String opt = Util.stripLeadingHyphens(arg);
-                char _opt = opt.charAt(0);
+                char[] opt = Util.stripLeadingHyphens(arg);
+                char _opt = opt[0];
                 if (options.hasOption(_opt))
                 {
                     tokens.add(arg);
                 }
                 else
                 {
-                    if (opt.indexOf('=') != -1 && options.hasOption(_opt))
+                    if (indexOf(opt, '=') != -1 && options.hasOption(_opt))
                     {
                         // the format is --foo=value or -foo=value
-                        tokens.add(arg.substring(0, arg.indexOf('='))); // --foo
-                        tokens.add(arg.substring(arg.indexOf('=') + 1)); // value
+                        tokens.add(Arrays.copyOfRange(arg, 0, indexOf(arg, '='))); // --foo
+                        tokens.add(Arrays.copyOfRange(arg, indexOf(arg, '=') + 1, arg.length)); // value
                     }
-                    else if (options.hasOption(arg.charAt(0)))
+                    else if (options.hasOption(arg[0]))
                     {
                         // the format is a special properties option (-Dproperty=value)
-                        tokens.add(arg.substring(0, 2)); // -D
-                        tokens.add(arg.substring(2)); // property=value
+//                        tokens.add(arg.substring(0, 2)); // -D
+                        tokens.add(Arrays.copyOfRange(arg, 0, 2)); // -D
+//                        tokens.add(arg.substring(2)); // property=value
+                        tokens.add(Arrays.copyOfRange(arg, 2, arg.length)); // property=value
                     }
                     else
                     {
@@ -95,6 +100,7 @@ public class GnuParser extends Parser
             }
         }
 
-        return (String[]) tokens.toArray(new String[tokens.size()]);
+//        return (String[]) tokens.toArray(new String[tokens.size()]);
+        return (char[][]) tokens.toArray(new char[tokens.size()][]);
     }
 }

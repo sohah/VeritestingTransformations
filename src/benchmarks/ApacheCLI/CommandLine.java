@@ -43,7 +43,7 @@ public class CommandLine implements Serializable
         // nothing to do
     }
 
-    /** 
+    /**
      * Query to see if an option has been set.
      *
      * @param opt Short name of the option
@@ -66,7 +66,7 @@ public class CommandLine implements Serializable
      * @deprecated due to System.err message. Instead use getParsedOptionValue(String)
      */
     /**
-     * Return a version of this <code>Option</code> converted to a particular type. 
+     * Return a version of this <code>Option</code> converted to a particular type.
      *
      * @param opt the name of the option
      * @return the value parsed into a particluar object
@@ -106,7 +106,7 @@ public class CommandLine implements Serializable
         return _object;
     }
 
-    /** 
+    /**
      * Retrieve the argument, if any, of this option.
      *
      * @param opt the name of the option
@@ -126,7 +126,7 @@ public class CommandLine implements Serializable
 //        return (values == null) ? null : values[0];
     }
 
-    /** 
+    /**
      * Retrieve the argument, if any, of this option.
      *
      * @param opt the character name of the option
@@ -135,7 +135,7 @@ public class CommandLine implements Serializable
      */
 
 
-    /** 
+    /**
      * Retrieves the array of values, if any, of an option.
      *
      * @param opt string name of the option
@@ -177,7 +177,7 @@ public class CommandLine implements Serializable
 
     /**
      * Retrieves the option object given the long or short option as a String
-     * 
+     *
      * @param opt short or long name of the option
      * @return Canonicalized option
      */
@@ -206,7 +206,7 @@ public class CommandLine implements Serializable
     }
 
 
-    /** 
+    /**
      * Retrieve the argument, if any, of an option.
      *
      * @param opt name of the option
@@ -264,7 +264,7 @@ public class CommandLine implements Serializable
                         // no explicit value, handle it as a boolean
                         props.put(values.get(0), "true");
                 	}
-                } 
+                }
             }
             else{
             	char _longOpt = option.getLongOpt();
@@ -287,13 +287,13 @@ public class CommandLine implements Serializable
             }
         	_next = it.hasNext();
         }
-        
+
 
 //        for (Iterator it = options.iterator(); it.hasNext();)
 //        {
 //            Option option = (Option) it.next();
-//            
-//            
+//
+//
 //
 //            if (opt.equals(option.getOpt()) || opt.equals(option.getLongOpt()))
 //            {
@@ -314,7 +314,7 @@ public class CommandLine implements Serializable
         return props;
     }
 
-    /** 
+    /**
      * Retrieve any left-over non-recognized options and arguments
      *
      * @return remaining items passed in but not parsed as an array
@@ -329,7 +329,7 @@ public class CommandLine implements Serializable
         return answer;
     }
 
-    /** 
+    /**
      * Retrieve any left-over non-recognized options and arguments
      *
      * @return remaining items passed in but not parsed as a <code>List</code>.
@@ -339,7 +339,7 @@ public class CommandLine implements Serializable
         return args;
     }
 
-    /** 
+    /**
      * jkeyes
      * - commented out until it is implemented properly
      * <p>Dump state, suitable for debugging.</p>
@@ -350,13 +350,13 @@ public class CommandLine implements Serializable
     /*
     public String toString() {
         StringBuffer buf = new StringBuffer();
-            
+
         buf.append("[ CommandLine: [ options: ");
         buf.append(options.toString());
         buf.append(" ] [ args: ");
         buf.append(args.toString());
         buf.append(" ] ]");
-            
+
         return buf.toString();
     }
     */
@@ -366,7 +366,7 @@ public class CommandLine implements Serializable
      *
      * @param arg the unrecognised option/argument.
      */
-    void addArg(String arg)
+    void addArg(char[] arg)
     {
         args.add(arg);
     }

@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * The class PosixParser provides an implementation of the
- * {@link Parser#flatten(Options,String[],boolean) flatten} method.
+ * {@link Parser#flatten(Options,char[][],boolean) flatten} method.
  *
  * @author John Keyes (john at integralsource.com)
  * @version $Revision: 695760 $, $Date: 2008-09-16 01:05:03 -0700 (Tue, 16 Sep 2008) $
@@ -44,7 +44,7 @@ public class PosixParser extends Parser
 
     /**
      * <p>An implementation of {@link Parser}'s abstract
-     * {@link Parser#flatten(Options,String[],boolean) flatten} method.</p>
+     * {@link Parser#flatten(Options,char[][],boolean) flatten} method.</p>
      *
      * <p>The following are the rules used by this flatten method.
      * <ol>
@@ -80,7 +80,7 @@ public class PosixParser extends Parser
      * when an non option is found.
      * @return The flattened <code>arguments</code> String array.
      */
-    protected String[] flatten(Options options, String[] arguments, boolean stopAtNonOption)
+    protected char[][] flatten(Options options, char[][] arguments, boolean stopAtNonOption)
     {
         init();
         this.options = options;
@@ -141,7 +141,8 @@ public class PosixParser extends Parser
             gobble(iter);
         }
 
-        return (String[]) tokens.toArray(new String[tokens.size()]);
+//        return (String[]) tokens.toArray(new String[tokens.size()]);
+        return (char[][]) tokens.toArray(new char[tokens.size()][]);
     }
 
     /**
