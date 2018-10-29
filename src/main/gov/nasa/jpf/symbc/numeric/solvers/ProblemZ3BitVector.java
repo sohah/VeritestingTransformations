@@ -40,6 +40,7 @@ package gov.nasa.jpf.symbc.numeric.solvers;
 import java.io.*;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 import com.microsoft.z3.*;
@@ -47,10 +48,13 @@ import com.microsoft.z3.*;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 
 public class ProblemZ3BitVector extends ProblemGeneral {
+    /*SH: used to collect all function declarations (query variables) while constructing the solver and the context. */
+    private HashSet<String> z3FunDecSet = new HashSet();
 
     //This class acts as a safeguard to prevent
     //issues when referencing ProblemZ3 in case the z3 libs are
@@ -198,7 +202,10 @@ public class ProblemZ3BitVector extends ProblemGeneral {
                     ++StatisticManager.solverQueriesUnique;
                     try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                             new FileOutputStream(fileName), "utf-8"))) {
-                        writer.write(DiscoverContract.toSMT(solver.toString()));
+
+                        DiscoverContract.z3QuerySet.add(new Pair(solver.toString(), z3FunDecSet));
+
+                        writer.write(DiscoverContract.toSMT(solver.toString(), z3FunDecSet));
                     }
                 }
                 else
@@ -249,6 +256,7 @@ public class ProblemZ3BitVector extends ProblemGeneral {
             BitVecExpr bv = ctx.mkBVConst(name, this.bitVectorLength);
             solver.add(ctx.mkBVSGE(bv, ctx.mkBV(min, this.bitVectorLength)));
             solver.add(ctx.mkBVSLE(bv, ctx.mkBV(max, this.bitVectorLength)));
+            z3FunDecSet.add(name);
             return bv;
         } catch (Exception e) {
             e.printStackTrace();

@@ -2,12 +2,16 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 public class DiscoverContract {
-    public static LinkedHashSet<Pair> z3QueryMap = new LinkedHashSet();
 
-    public static String toSMT(String query) {
+    /* This map is used to populate the spfQuery for z3, for later mainpulation. */
+    public static LinkedHashSet<Pair> z3QuerySet = new LinkedHashSet();
+
+
+    public static String toSMT(String query, HashSet z3FunDecSet) {
         assert (query.length() > 0);
 
         String newQuery = new String();
@@ -16,20 +20,22 @@ public class DiscoverContract {
 
         int startingIndex = 0;
         int endingIndex = query.length();
-        while(startingIndex<endingIndex) {
+        while (startingIndex < endingIndex) {
             Pair startEndIndecies = findAssertion(query, startingIndex);
 
             startingIndex = (int) startEndIndecies.getFirst();
             int assertionEndIndex = (int) startEndIndecies.getSecond();
 
-            String assertion = query.substring(startingIndex, assertionEndIndex);
+            String assertion = query.substring(startingIndex, assertionEndIndex + 1); //+1 because substring is not inclusive for the endIndex.
             newQuery += "(assert " + assertion + ")\n";
             startingIndex = assertionEndIndex + 1;
         }
 
         newQuery = "  (set-logic QF_BV)\n" +
                 "  (set-info :smt-lib-version 2.0)\n" +
-                "  (set-option :produce-unsat-cores true)\n" + newQuery
+                "  (set-option :produce-unsat-cores true)\n" +
+                generateFunDec(z3FunDecSet) +
+                newQuery
                 + "(check-sat)\n" +
                 "(get-unsat-core)\n" +
                 "(exit)\n";
@@ -37,8 +43,17 @@ public class DiscoverContract {
         return newQuery;
     }
 
+    private static String generateFunDec(HashSet<String> z3FunDecSet) {
+        String funDec = "";
+        for (String varName : z3FunDecSet) {
+            funDec = funDec + "(declare-fun " + varName + " () (_ BitVec 32))\n";
+        }
+        return funDec;
+    }
+
     /**
      * This takes the starting index of an opening bracket for which we want to find a matching closing bracket. It returns the index of the closing bracket.
+     *
      * @param query
      * @param startingIndex
      * @return
@@ -51,24 +66,24 @@ public class DiscoverContract {
         int walkingIndex = startingIndex;
 
         /*This loop tries to find the index of the first opening bracket. At the end of the loop, the walkingIndex will have this index number.*/
-        while(!firstOpenBracketEncountered){
+        while (!firstOpenBracketEncountered) {
             char c = query.charAt(walkingIndex);
-            if(c == '(')
+            if (c == '(')
                 firstOpenBracketEncountered = true;
-            else{
+            else {
                 ++walkingIndex;
             }
         }
 
         startingIndex = walkingIndex;
-        while(!closingBracketFound) {
+        while (!closingBracketFound) {
             char c = query.charAt(walkingIndex);
             if (c == '(')
                 ++bracket;
             else if (c == ')')
                 --bracket;
 
-            if (bracket == 0){
+            if (bracket == 0) {
                 closingBracketFound = true;
                 closingIndex = walkingIndex;
             }
