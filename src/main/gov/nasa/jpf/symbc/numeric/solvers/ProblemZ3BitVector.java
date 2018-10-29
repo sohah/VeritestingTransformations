@@ -46,6 +46,7 @@ import com.microsoft.z3.*;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.VeritestingListener;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 
@@ -197,7 +198,7 @@ public class ProblemZ3BitVector extends ProblemGeneral {
                     ++StatisticManager.solverQueriesUnique;
                     try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                             new FileOutputStream(fileName), "utf-8"))) {
-                        writer.write(solver.toString());
+                        writer.write(DiscoverContract.toSMT(solver.toString()));
                     }
                 }
                 else
