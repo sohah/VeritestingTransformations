@@ -412,6 +412,7 @@ public class SymbolicStringConstraintsGeneral {
 		} else {
 			/* No solver, return true */
 			//println ("[isSatisfiable] No Solver");
+			assert pc.header == null;
 			return true;
 		}
 		

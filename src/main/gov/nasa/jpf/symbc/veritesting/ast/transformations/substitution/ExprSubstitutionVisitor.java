@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
+import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.ValueSymbolTable;
@@ -39,9 +40,27 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
     @Override
     public Expression visit(WalaVarExpr expr) {
         Expression varValue = (Expression) valueSymbolTable.lookup(expr);
-        if (varValue != null)
+        if (varValue instanceof IntConstant) {
+            if (dynRegion.inputTable.lookup(expr) != null &&
+                    sf.isReferenceSlot(((Integer)dynRegion.inputTable.lookup(expr)))) {
+                int objRef = ((IntConstant) varValue).getValue();
+                dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
+            }
+        }
+        if (dynRegion.outputTable.reverseLookup(expr) != null &&
+                sf.isReferenceSlot(dynRegion.outputTable.reverseLookup(expr))) {
+            int slot = dynRegion.outputTable.reverseLookup(expr);
+            gov.nasa.jpf.symbc.numeric.Expression useForTypeOnly =
+                    (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
+            int objRef;
+            if (useForTypeOnly == null)
+                objRef = sf.getLocalVariable(slot);
+            else objRef = (useForTypeOnly instanceof IntegerConstant) ? (int) ((IntegerConstant) useForTypeOnly).value : -1;
+            if (objRef != -1) dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
+        }
+        if (varValue != null) {
             return varValue;
-        else
+        } else
             return expr;
     }
 

@@ -28,6 +28,8 @@ import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwExceptio
 public class ReflectUtil
 {
     public static String getSignature ( Method method ) throws StaticRegionException {
+        if (method.getReturnType() == null || method.getReturnType().getCanonicalName() == null)
+            throwException(new StaticRegionException("cannot construct method signature"), STATIC);
         return method.getName() + "("
                 + parametersAsString(method) + ")"
                 + Utility.getSignature(method.getReturnType().getCanonicalName());
