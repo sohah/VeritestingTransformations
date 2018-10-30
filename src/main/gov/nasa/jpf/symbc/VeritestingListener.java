@@ -101,7 +101,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static StatisticManager statisticManager = new StatisticManager();
     private static int veritestRegionExpectedCount = -1;
 
-    public enum VeritestingMode { VANILLASPF, VERITESTING, HIGHORDER, SPFCASES }
+    public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES}
 
     private static VeritestingMode runMode;
     public static boolean performanceMode = false;
@@ -232,8 +232,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 statisticManager.updateSPFHitForRegion(key, sre.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
                 return;
-            }
-            catch (VisitorException greenEx) {
+            } catch (VisitorException greenEx) {
                 statisticManager.updateSPFHitForRegion(key, greenEx.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + greenEx.getMessage() + "\n");
                 return;
@@ -317,7 +316,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         dynRegion = SimplifyStmtVisitor.execute(dynRegion);
 
 
-        if(runMode == VeritestingMode.SPFCASES) {
+        if (runMode == VeritestingMode.SPFCASES) {
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
             dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
 
@@ -366,15 +365,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static boolean canSetPC(ThreadInfo ti, Expression regionSummary) throws StaticRegionException {
         PathCondition pc;
 
-
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator) {
             pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
-        }
-        else {
+        } else {
             pc = new PathCondition();
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
-        pc._addDet(new GreenConstraint(regionSummary));
+        if (runMode.ordinal() < VeritestingMode.SPFCASES.ordinal()) //only add region summary in non spfcases mode.
+            pc._addDet(new GreenConstraint(regionSummary));
+
         // if we're trying to run fast, then assume that the region summary is satisfiable in any non-SPFCASES mode
         if ((performanceMode && (runMode == VeritestingMode.VERITESTING || runMode == VeritestingMode.HIGHORDER)) ||
                 isPCSat(pc)) {
@@ -423,7 +422,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         while (slotItr.hasNext()) {
             Integer slot = (Integer) slotItr.next();
             Variable var = dynOutputTable.lookup(slot);
-            assert(var instanceof WalaVarExpr);
+            assert (var instanceof WalaVarExpr);
             Expression symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), ((WalaVarExpr) var).getSymName());
             sf.setSlotAttr(slot, greenToSPFExpression(symVar));
         }
@@ -528,8 +527,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
         assert veritestRegionCount == statisticManager.getSuccInstantiations();
-        pw.println((TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur)+ TimeUnit.NANOSECONDS.toMillis(dynRunTime)) + "," +
-                TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur)+","+
+        pw.println((TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + TimeUnit.NANOSECONDS.toMillis(dynRunTime)) + "," +
+                TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + "," +
                 TimeUnit.NANOSECONDS.toMillis(dynRunTime) + "," +
                 solverCount + "," +
                 TimeUnit.NANOSECONDS.toMillis(totalSolverTime) + "," +
