@@ -56,19 +56,21 @@ public class CLI {
 		options.addOption('J', 6, "display hui");	
 		options.addOption('K', 7, "display yang");
 		options.addOption('L', 6, "display hui");
-		String[] string = new String[8];
-		string[0] = "" + a;
-		string[1] = "" + b;
-		string[2] = "" + c;
-		string[3] = "" + d;
-		string[4] = "" + e;
-		string[5] = "" + f;
-		string[6] = "" + g;
-		string[7] = "" + h;
+		char[][] string = new char[8][1];
+		string[0][0] =  a;
+		string[1][0] =  b;
+		string[2][0] = c;
+		string[3][0] = d;
+		string[4][0] = e;
+		string[5][0] = f;
+		string[6][0] = g;
+		string[7][0] = h;
   		execute(options, string, stop);
 	}
 	
-	private static void execute(Options options, String[] string, boolean stop) {
+	private static void execute(Options options, char[][] string, boolean stop) {
+//		char c = string[0][0];
+//		if ( c == '*') stop = true;
 		// create the parser
 	    CommandLineParser commandParser = new BasicParser();
 		try {

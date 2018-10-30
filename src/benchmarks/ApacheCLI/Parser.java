@@ -58,7 +58,7 @@ public abstract class Parser implements CommandLineParser
      * flattening when a non option has been encountered
      * @return a String array of the flattened arguments
      */
-    protected abstract String[] flatten(Options opts, String[] arguments, boolean stopAtNonOption);
+    protected abstract char[][] flatten(Options opts, char[][] arguments, boolean stopAtNonOption);
 
     /**
      * Parses the specified <code>arguments</code> based
@@ -70,7 +70,7 @@ public abstract class Parser implements CommandLineParser
      * @throws ParseException if an error occurs when parsing the
      * arguments.
      */
-    public CommandLine parse(Options _options, String[] arguments) throws ParseException
+    public CommandLine parse(Options _options, char[][] arguments) throws ParseException
     {
     	CommandLine _cmd = parse(_options, arguments, null, false);
         return _cmd;
@@ -88,7 +88,7 @@ public abstract class Parser implements CommandLineParser
      *
      * @since 1.1
      */
-    public CommandLine parse(Options _options, String[] arguments, Properties properties) throws ParseException
+    public CommandLine parse(Options _options, char[][] arguments, Properties properties) throws ParseException
     {
         CommandLine _cmd = parse(_options, arguments, properties, false);
         return _cmd;
@@ -106,8 +106,11 @@ public abstract class Parser implements CommandLineParser
      * @return the <code>CommandLine</code>
      * @throws ParseException if an error occurs when parsing the arguments.
      */
-    public CommandLine parse(Options _options, String[] arguments, boolean stopAtNonOption) throws ParseException
+    public CommandLine parse(Options _options, char[][] arguments, boolean stopAtNonOption) throws ParseException
     {
+//        char c = arguments[0][0];
+//        if ( c == '*') stopAtNonOption = true;
+//        else stopAtNonOption = false;
         CommandLine _cmd = parse(_options, arguments, null, stopAtNonOption);
         return _cmd;
     }
@@ -129,8 +132,10 @@ public abstract class Parser implements CommandLineParser
      *
      * @since 1.1
      */
-    public CommandLine parse(Options _options, String[] arguments, Properties properties, boolean stopAtNonOption) throws ParseException
+    public CommandLine parse(Options _options, char[][] arguments, Properties properties, boolean stopAtNonOption) throws ParseException
     {
+//        char c = arguments[0][0];
+//        if ( c == '*') stopAtNonOption = true;
     	//
     	boolean temp_Boolean = false;
         // clear out the data in options in case it's been used before (CLI-71)
@@ -158,7 +163,8 @@ public abstract class Parser implements CommandLineParser
 //        {
 //            arguments = new String[0];
 //        }
-        String[] _flatten = flatten(_options, arguments, stopAtNonOption);
+        char[][] _flatten = flatten(_options, arguments, stopAtNonOption);
+
         List tokenList = Arrays.asList(_flatten);
 //        List tokenList = Arrays.asList(flatten(getOptions(), arguments, stopAtNonOption));
 
@@ -168,14 +174,14 @@ public abstract class Parser implements CommandLineParser
         while(_next)
         {
         	boolean eatTheRest = false;
-            String t = (String) iterator.next();
-            char arg = t.charAt(0);
+            char[] t = (char[]) iterator.next();
+            char arg = t[0];
             
             if(arg == '-'){
             	_next = iterator.hasNext();
             	if(_next){
-		        	t = (String) iterator.next();
-		        	arg = t.charAt(0);
+		        	t = (char[]) iterator.next();
+		        	arg = t[0];
 		        	if(arg == '-'){
 		        		eatTheRest = true;
 		        	}
@@ -232,8 +238,8 @@ public abstract class Parser implements CommandLineParser
             	_next = iterator.hasNext();
             	while(_next)
                 {
-                    String str = (String) iterator.next();
-                    char _str = str.charAt(0);
+                    char[] str = (char[]) iterator.next();
+                    char _str = str[0];
                     if(_str != '-'){
                     	cmd.addArg(str);
                     }
@@ -384,8 +390,8 @@ public abstract class Parser implements CommandLineParser
 		boolean _next = iter.hasNext();
     	while(_next)
         {
-    		String str = (String) iter.next();
-            char arg = str.charAt(0);
+    		char[] str = (char[]) iter.next();
+            char arg = str[0];
             if(arg == '-'){
             	iter.previous();
             	break;
