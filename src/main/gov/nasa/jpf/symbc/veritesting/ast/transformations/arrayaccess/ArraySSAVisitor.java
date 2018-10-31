@@ -164,7 +164,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             for (int i=0; i<len; i++) {
                 Pair<Expression, String> p = getArrayElement(eiArray, i);
                 ArrayRef ref = new ArrayRef(arrayRefVarExpr.arrayRef.ref, new IntConstant(i));
-                ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript);
+                ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript, arrayRefVarExpr.uniqueNum);
                 eiArray.checkArrayBounds(i);
                 if (type.equals("int")) eiArray.setIntElement(i, 0);
                 else if (type.equals("char")) eiArray.setCharElement(i, '0');
@@ -316,8 +316,11 @@ public class ArraySSAVisitor extends AstMapVisitor {
             Expression value = new GammaVarExpr(cond, assignExpr, oldValue);
             ArrayRef ref = new ArrayRef(arrayRefVarExpr.arrayRef.ref, new IntConstant(i));
             ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript);
-            AssignmentStmt stmt = new AssignmentStmt(createGreenVar(p.getSecond(), newExpr.getSymName()), value);
+            AssignmentStmt stmt = new AssignmentStmt(newExpr, value);
             retStmt = retStmt != null ? new CompositionStmt(retStmt, stmt) : stmt;
+            if (p.getSecond() != null) {
+                dynRegion.fieldRefTypeTable.add(newExpr, p.getSecond());
+            }
         }
         return retStmt;
     }

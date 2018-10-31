@@ -89,7 +89,7 @@ public class FieldArrayVarToSPFVarVisitor implements ExprVisitor<Expression> {
         if (type != null)
             return createGreenVar(type, expr.getSymName());
         else
-            throwException(new IllegalArgumentException("Failed to infer type of field reference, " + expr), INSTANTIATION);
+            throwException(new IllegalArgumentException("Failed to infer type of array reference, " + expr), INSTANTIATION);
         return expr;
     }
 
