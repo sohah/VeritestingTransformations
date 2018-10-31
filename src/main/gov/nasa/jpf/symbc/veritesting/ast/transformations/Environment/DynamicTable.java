@@ -15,10 +15,10 @@ public class DynamicTable<V> extends Table<Variable, V> {
     }
 
 
-    public DynamicTable(String tableName, String label1, String label2, ArrayList<Variable> keys, ArrayList<V> values) {
+    public DynamicTable(String tableName, String label1, String label2, DynamicTable slotParamTable, ArrayList<V> values) {
         super(tableName, label1, label2);
-        for(int i= 0; i < keys.size(); i++){
-            this.add(keys.get(i), values.get(i));
+        for(int i= 0; i < values.size(); i++){
+            this.add(slotParamTable.reverseLookup(new int[]{i}), values.get(i));
         }
     }
 
@@ -65,5 +65,15 @@ public class DynamicTable<V> extends Table<Variable, V> {
             table.put(newKey, table.get(oldKey));
             table.remove(oldKey);
         }
+    }
+
+    public Variable reverseLookup(int[] var) {
+        if (var.length != 1) return null;
+        Iterator itr = table.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry<Variable, int[]> entry = (Map.Entry) itr.next();
+            if (entry.getValue()[0] == var[0]) return entry.getKey();
+        }
+        return null;
     }
 }

@@ -228,7 +228,8 @@ public class FieldSSAVisitor extends AstMapVisitor {
                 }
 
             }
-        } else exceptionalMessage = "encountered obj-ref in GetInstruction that is not a constant";
+        } else
+            exceptionalMessage = "encountered obj-ref in GetInstruction that is not a constant";
         // only one of rhs and exceptionalMessage should be non-null
         assert (rhs == null) ^ (exceptionalMessage == null);
         if (c.def instanceof WalaVarExpr) {
