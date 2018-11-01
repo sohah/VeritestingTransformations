@@ -198,7 +198,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
                     DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
                             "var",
                             "value",
-                            uniqueHgOrdDynRegion.slotParamTable,
+                            uniqueHgOrdDynRegion.slotParamTable.getKeys(),
                             values);
 
                     Pair<Stmt, DynamicTable> hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdDynRegion, hgOrdValueSymbolTable);

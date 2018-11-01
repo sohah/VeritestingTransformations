@@ -42,13 +42,13 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
         Expression varValue = (Expression) valueSymbolTable.lookup(expr);
         if (varValue instanceof IntConstant) {
             if (dynRegion.inputTable.lookup(expr) != null &&
-                    sf.isReferenceSlot(((Integer)dynRegion.inputTable.lookup(expr)))) {
+                    sf.isReferenceSlot(((Integer)dynRegion.inputTable.lookup(expr))) && !dynRegion.isMethodRegion) {
                 int objRef = ((IntConstant) varValue).getValue();
                 dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
             }
         }
         if (dynRegion.outputTable.reverseLookup(expr) != null &&
-                sf.isReferenceSlot(dynRegion.outputTable.reverseLookup(expr))) {
+                sf.isReferenceSlot(dynRegion.outputTable.reverseLookup(expr)) && !dynRegion.isMethodRegion) {
             int slot = dynRegion.outputTable.reverseLookup(expr);
             gov.nasa.jpf.symbc.numeric.Expression useForTypeOnly =
                     (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
