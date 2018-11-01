@@ -54,6 +54,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.SimplifyStmt
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubstituteGetOutput;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -298,6 +299,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         staticRegion.inputTable.print();
         staticRegion.outputTable.print();
         staticRegion.varTypeTable.print();
+
+        /*-------------- EARLY RETURN TRANSFORMATION ---------------*/
+        if(runMode == VeritestingMode.SPFCASES){
+            staticRegion = RemoveEarlyReturns.removeEarlyReturns(staticRegion);
+        }
+
         /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
         DynamicRegion dynRegion = UniqueRegion.execute(staticRegion);
 
@@ -317,6 +324,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
         if (runMode == VeritestingMode.SPFCASES) {
+
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
             dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
 
