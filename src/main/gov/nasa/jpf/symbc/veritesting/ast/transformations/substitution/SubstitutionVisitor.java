@@ -273,14 +273,18 @@ public class SubstitutionVisitor extends AstMapVisitor {
         MethodReference methodReference = instruction.getDeclaredTarget();
         CallSiteReference site = instruction.getCallSite();
 
-        //SH: restricting high order regions to static until we have field references in place.
-//        String currClassName = methodReference.getDeclaringClass().getName().getClassName().toString();
-        String currClassName = methodReference.getSignature().substring(0, methodReference.getSignature().lastIndexOf('.'));
+
+        String currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
+
+        String dynamicClassName = currClassName;
+        if(!Character.isLetterOrDigit(dynamicClassName.charAt(dynamicClassName.length()-1))){
+            dynamicClassName = dynamicClassName.substring(0, dynamicClassName.length()-2);
+        }
         ArrayList<String> classList = getSuperClassList(ti, currClassName);
         Atom methodName = methodReference.getName();
         String methodSignature = methodReference.getSignature();
         methodSignature = methodSignature.substring(methodSignature.indexOf('('));
-        String key = CreateStaticRegions.constructMethodIdentifier(currClassName + "." + methodName + methodSignature);
+        String key = CreateStaticRegions.constructMethodIdentifier(dynamicClassName + "." + methodName + methodSignature);
         for (String className: classList) {
             key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
             StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
