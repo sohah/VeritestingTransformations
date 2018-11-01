@@ -16,6 +16,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassInfoException;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.File;
@@ -172,7 +173,13 @@ public class ClassUtils {
 
     public static ArrayList<String> getSuperClassList(ThreadInfo ti, String className) {
         ArrayList<String> ret = new ArrayList();
-        ClassInfo ci = ti.resolveReferencedClass(className);
+        ClassInfo ci = null;
+        try {
+            ti.resolveReferencedClass(className);
+        } catch(ClassInfoException c) {
+            ret.add(className);
+            return ret;
+        }
         while (ci != null) {
             ret.add(ci.getName());
             ci = ci.getSuperClass();
