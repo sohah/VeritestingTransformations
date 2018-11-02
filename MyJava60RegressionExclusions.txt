@@ -2,8 +2,8 @@ java\/awt\/.*
 java\/net\/.*
 java\/security\/.*
 java\/rmi\/.*
-java\/util\/.*
 java\/time\/.*
+java\/util\/.*
 java\/math\/.*
 apple\/.*
 java\/text\/.*

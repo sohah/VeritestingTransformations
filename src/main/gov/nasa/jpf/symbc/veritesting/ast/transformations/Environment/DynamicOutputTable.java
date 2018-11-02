@@ -39,4 +39,13 @@ public class DynamicOutputTable extends Table<Integer, CloneableVariable> {
         return new ArrayList<Integer>(this.table.keySet());
     }
 
+    public Integer reverseLookup(CloneableVariable var) {
+        Iterator itr = table.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry<Integer, CloneableVariable> entry = (Map.Entry) itr.next();
+            if (entry.getValue().equals(var)) return entry.getKey();
+        }
+        return null;
+    }
+
 }

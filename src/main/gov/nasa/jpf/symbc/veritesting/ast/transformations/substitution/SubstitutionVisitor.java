@@ -26,6 +26,7 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils.getSuperClassList;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.createSPFVariableForType;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.WalaUtil.makeConstantFromWala;
@@ -176,9 +177,9 @@ public class SubstitutionVisitor extends AstMapVisitor {
             SSAInvokeInstruction instruction = c.getOriginal();
             IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
             if ((invokeCode == IInvokeInstruction.Dispatch.STATIC)
-                    || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL)
+                    || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL || (invokeCode == IInvokeInstruction.Dispatch.INTERFACE))
                     ) {
-                Pair<String, StaticRegion> keyRegionPair = findMethodRegion(c);
+                Pair<String, StaticRegion> keyRegionPair = findMethodRegion(ti, c);
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
                 if (hgOrdStaticRegion != null) {
                     ++StatisticManager.thisHighOrdCount;
@@ -266,19 +267,31 @@ public class SubstitutionVisitor extends AstMapVisitor {
      * @param c Current invoke instruction.
      * @return A pair of the key and the methodRegion if a matching could be found.
      */
-    private Pair<String, StaticRegion> findMethodRegion(InvokeInstruction c) {
+    private Pair<String, StaticRegion> findMethodRegion(ThreadInfo ti, InvokeInstruction c) {
 
         SSAInvokeInstruction instruction = c.getOriginal();
         MethodReference methodReference = instruction.getDeclaredTarget();
         CallSiteReference site = instruction.getCallSite();
 
-        //SH: restricting high order regions to static until we have field references in place.
-        String className = methodReference.getDeclaringClass().getName().getClassName().toString();
+
+        String currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
+
+        String dynamicClassName = currClassName;
+        if(!Character.isLetterOrDigit(dynamicClassName.charAt(dynamicClassName.length()-1))){
+            dynamicClassName = dynamicClassName.substring(0, dynamicClassName.length()-2);
+        }
+        ArrayList<String> classList = getSuperClassList(ti, currClassName);
         Atom methodName = methodReference.getName();
         String methodSignature = methodReference.getSignature();
         methodSignature = methodSignature.substring(methodSignature.indexOf('('));
-        String key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
-        return new Pair<String, StaticRegion>(key, VeritestingMain.veriRegions.get(key));
+        String key = CreateStaticRegions.constructMethodIdentifier(dynamicClassName + "." + methodName + methodSignature);
+        for (String className: classList) {
+            key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
+            StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
+            if (staticRegion != null)
+                return new Pair<String, StaticRegion>(key, staticRegion);
+        }
+        return new Pair<String, StaticRegion>(key, null);
     }
 
 

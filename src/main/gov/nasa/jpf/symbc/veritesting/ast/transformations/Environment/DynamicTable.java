@@ -15,9 +15,10 @@ public class DynamicTable<V> extends Table<Variable, V> {
     }
 
 
+//    public DynamicTable(String tableName, String label1, String label2, DynamicTable slotParamTable, ArrayList<V> values) {
     public DynamicTable(String tableName, String label1, String label2, ArrayList<Variable> keys, ArrayList<V> values) {
         super(tableName, label1, label2);
-        for(int i= 0; i < keys.size(); i++){
+        for(int i= 0; i < values.size(); i++){
             this.add(keys.get(i), values.get(i));
         }
     }
@@ -28,7 +29,7 @@ public class DynamicTable<V> extends Table<Variable, V> {
 
         List keys = new ArrayList(staticTable.table.keySet());
         Collections.sort(keys);
-        Collections.reverse(keys);
+//        Collections.reverse(keys);
         Iterator itr = keys.iterator();
         while(itr.hasNext()){
             Integer oldWalaId = (Integer) itr.next();
@@ -43,7 +44,9 @@ public class DynamicTable<V> extends Table<Variable, V> {
      */
 
     public ArrayList<Variable> getKeys() {
-        return new ArrayList<>(table.keySet());
+        Set keySet = table.keySet();
+        ArrayList ret = new ArrayList<>(keySet);
+        return ret;
     }
 
 
@@ -65,5 +68,15 @@ public class DynamicTable<V> extends Table<Variable, V> {
             table.put(newKey, table.get(oldKey));
             table.remove(oldKey);
         }
+    }
+
+    public Variable reverseLookup(int[] var) {
+        if (var.length != 1) return null;
+        Iterator itr = table.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry<Variable, int[]> entry = (Map.Entry) itr.next();
+            if (entry.getValue()[0] == var[0]) return entry.getKey();
+        }
+        return null;
     }
 }

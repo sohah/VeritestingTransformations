@@ -52,6 +52,7 @@ public class SpfUtil {
             case "if_icmpge":
             case "if_icmple":
             case "if_icmplt":
+            case "if_acmpne":
                 operandNum = 2;
                 break;
             default:
