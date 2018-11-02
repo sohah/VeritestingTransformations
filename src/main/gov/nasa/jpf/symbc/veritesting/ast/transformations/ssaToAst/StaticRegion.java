@@ -11,6 +11,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SymbCondVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Invariants.LocalOutputInvariantVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.Expression;
 
@@ -74,6 +75,8 @@ public class StaticRegion implements Region {
      */
     public long totalNumPaths = 0;
 
+    public RemoveEarlyReturns.ReturnResult earlyReturnResult;
+
     /**
      * @param staticStmt: Ranger IR statement that summarizes this static region
      * @param ir: Wala IR for the method which contains this StaticRegion
@@ -85,7 +88,7 @@ public class StaticRegion implements Region {
      *                     If unavailable, it can be given a null value.
      * @throws StaticRegionException
      */
-    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock startingBlock) throws StaticRegionException {
+    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock startingBlock, RemoveEarlyReturns.ReturnResult returnResult) throws StaticRegionException {
 
         this.ir = ir;
         this.isMethodRegion = isMethodRegion;
@@ -96,7 +99,7 @@ public class StaticRegion implements Region {
         Integer firstDef = null;
         Integer lastDef = null;
         Integer lastVar;
-
+        this.earlyReturnResult = returnResult;
 
         if (isMethodRegion) {
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt);

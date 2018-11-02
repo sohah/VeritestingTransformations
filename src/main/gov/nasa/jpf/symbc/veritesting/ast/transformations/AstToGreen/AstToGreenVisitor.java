@@ -225,7 +225,8 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
                 dynRegion.dynStmt,
                 dynRegion.spfCaseList,
                 regionSummary,
-                null);
+                null,
+                dynRegion.earlyReturnResult);
 
         return greenDynRegion;
     }

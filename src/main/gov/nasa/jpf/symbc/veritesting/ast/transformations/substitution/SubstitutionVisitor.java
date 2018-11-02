@@ -211,7 +211,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
                         Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
                         returnStmt = new AssignmentStmt(c.result[0], stmtRetPair.getSecond());
                         return new CompositionStmt(stmtRetPair.getFirst(), returnStmt);
-                    } else{
+                    } else {
                         return getStmtRetExp(hgOrdStmt).getFirst();
                     }
                 } else
@@ -277,15 +277,15 @@ public class SubstitutionVisitor extends AstMapVisitor {
         String currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
 
         String dynamicClassName = currClassName;
-        if(!Character.isLetterOrDigit(dynamicClassName.charAt(dynamicClassName.length()-1))){
-            dynamicClassName = dynamicClassName.substring(0, dynamicClassName.length()-2);
+        if ((dynamicClassName.charAt(dynamicClassName.length() - 1)) == ';') {
+            dynamicClassName = dynamicClassName.substring(0, dynamicClassName.length() - 2);
         }
         ArrayList<String> classList = getSuperClassList(ti, currClassName);
         Atom methodName = methodReference.getName();
         String methodSignature = methodReference.getSignature();
         methodSignature = methodSignature.substring(methodSignature.indexOf('('));
         String key = CreateStaticRegions.constructMethodIdentifier(dynamicClassName + "." + methodName + methodSignature);
-        for (String className: classList) {
+        for (String className : classList) {
             key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
             StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
             if (staticRegion != null)
@@ -307,29 +307,31 @@ public class SubstitutionVisitor extends AstMapVisitor {
         StackFrame sf = ti.getTopFrame();
 
         DynamicTable valueSymbolTable = new DynamicTable("var-value table", "var", "value");
-        List<WalaVarExpr> regionVarSet = dynRegion.varTypeTable.getKeys();
+        List<CloneableVariable> regionVarSet = dynRegion.varTypeTable.getKeys();
 
-        for (WalaVarExpr var : regionVarSet) {
-            Integer slot = (Integer) dynRegion.inputTable.lookup(var);
-            if ((slot != null) && (!dynRegion.isMethodRegion)) {
-                String varType = sf.getLocalVariableType(slot);
-                gov.nasa.jpf.symbc.numeric.Expression varValueExp;
-                varValueExp = (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
-                if (varValueExp == null)
-                    try {
-                        int varValue = sf.getLocalVariable(slot);
-                        varValueExp = createSPFVariableForType(sf, varValue, varType);
-                    } catch (StaticRegionException e) {
-                        System.out.println(e.getMessage());
-                    }
-                Expression greenValue = SPFToGreenExpr(varValueExp);
-                valueSymbolTable.add(var, greenValue);
-
-            } else { //not a stack slot var, try to check if it is a constant from wala
-                SymbolTable symbolTable = dynRegion.ir.getSymbolTable();
-                if ((var.number > -1) && (symbolTable.isConstant(var.number))) {
-                    Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), var.number);
+        for (CloneableVariable var : regionVarSet) {
+            if (var instanceof WalaVarExpr) { //type table can contain local that we have created for early return, we need to exclude those.
+                Integer slot = (Integer) dynRegion.inputTable.lookup(var);
+                if ((slot != null) && (!dynRegion.isMethodRegion)) {
+                    String varType = sf.getLocalVariableType(slot);
+                    gov.nasa.jpf.symbc.numeric.Expression varValueExp;
+                    varValueExp = (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
+                    if (varValueExp == null)
+                        try {
+                            int varValue = sf.getLocalVariable(slot);
+                            varValueExp = createSPFVariableForType(sf, varValue, varType);
+                        } catch (StaticRegionException e) {
+                            System.out.println(e.getMessage());
+                        }
+                    Expression greenValue = SPFToGreenExpr(varValueExp);
                     valueSymbolTable.add(var, greenValue);
+
+                } else { //not a stack slot var, try to check if it is a constant from wala
+                    SymbolTable symbolTable = dynRegion.ir.getSymbolTable();
+                    if ((((WalaVarExpr) var).number > -1) && (symbolTable.isConstant(((WalaVarExpr) var).number))) {
+                        Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr) var).number);
+                        valueSymbolTable.add(var, greenValue);
+                    }
                 }
             }
         }
@@ -355,7 +357,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
         if (visitor.sre != null) throw visitor.sre;
         if (visitor.cne != null) throw visitor.cne;
-        DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null);
+        DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null, dynRegion.earlyReturnResult);
 
 
         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");

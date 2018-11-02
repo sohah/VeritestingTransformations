@@ -184,6 +184,6 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
         detectedCases.print();
         return new DynamicRegion(dynRegion,
                 dynStmt,
-                detectedCases, null, null);
+                detectedCases, null, null, dynRegion.earlyReturnResult);
     }
 }

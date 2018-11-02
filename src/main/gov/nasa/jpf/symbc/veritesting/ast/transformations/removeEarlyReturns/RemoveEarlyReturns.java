@@ -1,10 +1,11 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns;
 
+import com.ibm.wala.classLoader.IBytecodeMethod;
+import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.VarTypeTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprIdVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
@@ -23,27 +24,34 @@ import java.util.LinkedList;
  */
 public class RemoveEarlyReturns  {
 
+    StaticRegion region;
     public class ReturnResult {
         public final Stmt stmt;
         public final Expression assign;
         public final Expression condition;
+        public final Pair<Integer,String> retPosAndType;
 
-        public ReturnResult(Stmt stmt, Expression assign, Expression condition) {
+        public ReturnResult(Stmt stmt, Expression assign, Expression condition, Pair<Integer, String> retPosAndType) {
             this.stmt = stmt;
             this.assign = assign;
             this.condition = condition;
+            this.retPosAndType = retPosAndType;
+
         }
 
         public ReturnResult(Stmt stmt) {
             this.stmt = stmt;
             this.assign = null;
             this.condition = null;
+            this.retPosAndType = null;
         }
 
         public ReturnResult(Stmt stmt, ReturnResult res) {
             this.stmt = stmt;
             this.assign = res.assign;
             this.condition = res.condition;
+            this.retPosAndType = res.retPosAndType;
+
         }
 
         public final boolean isNull() {
@@ -64,11 +72,13 @@ public class RemoveEarlyReturns  {
     private static final ExprIdVisitor exprVisitor = new ExprIdVisitor();
     private Deque<Expression> conditionList = new LinkedList<>();
 
-
-    private RemoveEarlyReturns() { }
+    public RemoveEarlyReturns(){}
+    public RemoveEarlyReturns(StaticRegion region) {
+        this.region = region;
+    }
 
     // Unfortunately this is like 10x longer than in ML or probably Scala.
-    public ReturnResult doStmt(ReturnResult init) {
+    public ReturnResult doStmt(ReturnResult init) throws InvalidClassFileException {
 
         ReturnResult newResult;
         if (init.isTrue()) {
@@ -78,6 +88,8 @@ public class RemoveEarlyReturns  {
 
         else if (init.stmt instanceof ReturnInstruction) {
             ReturnInstruction returnInstruction = (ReturnInstruction)init.stmt;
+            int returnPosition = ((IBytecodeMethod) (region.ir.getMethod())).getBytecodeIndex(returnInstruction.original.iindex);
+            String returnType = region.varTypeTable.lookup(returnInstruction.original.getUse(0));
             Expression assign;
             if (init.hasER()) {
                 assign = new IfThenElseExpr(init.condition, init.assign,
@@ -86,7 +98,7 @@ public class RemoveEarlyReturns  {
                 assign = returnInstruction.rhs;
             }
             newResult = new ReturnResult(SkipStmt.skip, assign,
-                    Operation.TRUE);
+                    Operation.TRUE, new Pair(returnPosition, returnType));
             return newResult;
         }
 
@@ -94,6 +106,7 @@ public class RemoveEarlyReturns  {
             Expression innerAssign;
             Expression innerCondition;
             Stmt resultStmt;
+            Pair<Integer, String> retPosAndType;
 
             IfThenElseStmt ifThenElseStmt = (IfThenElseStmt)init.stmt;
             ReturnResult thenResult = doStmt(
@@ -122,6 +135,7 @@ public class RemoveEarlyReturns  {
                             thenResult.stmt,
                             elseResult.stmt);
                 }
+                retPosAndType = thenResult.retPosAndType;
             } else if (thenResult.hasER()) {
                 innerAssign = thenResult.assign;
                 innerCondition = new Operation(Operation.Operator.AND,
@@ -132,6 +146,7 @@ public class RemoveEarlyReturns  {
                         ifThenElseStmt.condition,
                         thenResult.stmt,
                         elseResult.stmt);
+                retPosAndType = thenResult.retPosAndType;
             } else if (elseResult.hasER()) {
                 innerAssign = elseResult.assign;
                 innerCondition = new Operation(Operation.Operator.AND,
@@ -142,10 +157,12 @@ public class RemoveEarlyReturns  {
                         ifThenElseStmt.condition,
                         thenResult.stmt,
                         elseResult.stmt);
+                retPosAndType = elseResult.retPosAndType;
             } else {
                 resultStmt = init.stmt;
                 innerAssign = null;
                 innerCondition = null;
+                retPosAndType = null;
             }
 
             if (init.hasER() && innerAssign != null) {
@@ -153,11 +170,11 @@ public class RemoveEarlyReturns  {
                         resultStmt,
                         new IfThenElseExpr(init.condition, init.assign, innerAssign),
                         new Operation(Operation.Operator.OR,
-                                init.condition, innerCondition));
+                                init.condition, innerCondition), init.retPosAndType);
             } else if (init.hasER()) {
                 newResult = new ReturnResult(resultStmt, init);
             } else if (innerAssign != null) {
-                newResult = new ReturnResult(resultStmt, innerAssign, innerCondition);
+                newResult = new ReturnResult(resultStmt, innerAssign, innerCondition, retPosAndType);
             } else {
                 newResult = new ReturnResult(resultStmt);
             }
@@ -250,30 +267,36 @@ Similar things can be done for SPF Cases.
 
  */
 
-    public StaticRegion analyze(StaticRegion region) throws StaticRegionException {
+    public StaticRegion analyze(StaticRegion region) throws StaticRegionException, InvalidClassFileException {
         System.out.println("Region prior to removeEarlyReturns: " +
                 PrettyPrintVisitor.print(region.staticStmt));
         ReturnResult stmtResult = doStmt(new ReturnResult(region.staticStmt));
-        AstVarExpr assignVarExpr = new AstVarExpr("~earlyReturnResult", "UNKNOWN");
+        AstVarExpr assignVarExpr = new AstVarExpr("~earlyReturnResult", stmtResult.retPosAndType.getSecond());
         AstVarExpr erOccurredExpr = new AstVarExpr("~earlyReturnOccurred", "BOOL");
+/*
         Stmt resultStmt =
                 new CompositionStmt(stmtResult.stmt,
                     new CompositionStmt(
                             new AssignmentStmt(assignVarExpr, stmtResult.assign),
                             new AssignmentStmt(erOccurredExpr, stmtResult.condition)));
+*/
+
+        Stmt resultStmt =
+                new CompositionStmt(stmtResult.stmt,
+                                new AssignmentStmt(assignVarExpr, stmtResult.assign));
+
         System.out.println("Region after removeEarlyReturns: " +
                 PrettyPrintVisitor.print(resultStmt));
         // VarTypeTable varTypeTable = new VarTypeTable(region.varTypeTable);
 
         // MWW TODO: need to add in types and new vars somewhere.
         // MWW TODO: Current type table is from integers; this is not the way to do it.
-        StaticRegion resultRegion = new StaticRegion(resultStmt, region.ir, region.isMethodRegion, region.endIns, null);
-
+        StaticRegion resultRegion = new StaticRegion(resultStmt, region.ir, region.isMethodRegion, region.endIns, null, stmtResult);
         return resultRegion;
     }
 
-    public static StaticRegion removeEarlyReturns(StaticRegion region) throws StaticRegionException {
-        RemoveEarlyReturns rer = new RemoveEarlyReturns();
+    public static StaticRegion removeEarlyReturns(StaticRegion region) throws StaticRegionException, InvalidClassFileException {
+        RemoveEarlyReturns rer = new RemoveEarlyReturns(region);
         StaticRegion result = rer.analyze(region);
         return result;
     }

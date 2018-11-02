@@ -2,11 +2,13 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.ssa.IR;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.ast.def.AstVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import za.ac.sun.cs.green.expr.Expression;
 
@@ -92,6 +94,8 @@ public class DynamicRegion implements Region {
      */
     public ArraySubscriptMap arrayPSM;
 
+
+    public RemoveEarlyReturns.ReturnResult earlyReturnResult;
     /*
 
 */
@@ -100,7 +104,8 @@ public class DynamicRegion implements Region {
                          Stmt dynStmt,
                          SPFCaseList spfCaseList,
                          Expression regionSummary,
-                         Expression spfRegionSummary) {
+                         Expression spfRegionSummary,
+                         RemoveEarlyReturns.ReturnResult earlyReturnResult) {
         this.ir = oldDynRegion.ir;
         this.dynStmt = dynStmt;
         this.inputTable = new DynamicTable(
@@ -119,6 +124,7 @@ public class DynamicRegion implements Region {
         this.fieldRefTypeTable = oldDynRegion.fieldRefTypeTable;
         this.psm = oldDynRegion.psm;
         this.arrayPSM = oldDynRegion.arrayPSM;
+        this.earlyReturnResult = earlyReturnResult;
     }
 
 
@@ -138,6 +144,7 @@ public class DynamicRegion implements Region {
         this.spfCaseList = new SPFCaseList();
         this.regionSummary = null;
         this.spfPredicateSummary = null;
+        this.earlyReturnResult = staticRegion.earlyReturnResult;
 
         this.slotParamTable = new DynamicTable(
                 (StaticTable) staticRegion.slotParamTable, uniqueNum);
@@ -149,7 +156,10 @@ public class DynamicRegion implements Region {
         this.varTypeTable = new DynamicTable(
                 (StaticTable) staticRegion.varTypeTable,
                 uniqueNum);
-
+        if(earlyReturnResult.hasER()){
+            AstVarExpr earlyReturnVar = new AstVarExpr("~earlyReturnResult", earlyReturnResult.retPosAndType.getSecond());
+            this.varTypeTable.add(earlyReturnVar.makeUnique(uniqueNum), earlyReturnResult.retPosAndType.getSecond());
+        }
         this.outputTable = new DynamicOutputTable(
                 (OutputTable) staticRegion.outputTable, uniqueNum);
         this.fieldRefTypeTable = new FieldRefTypeTable();

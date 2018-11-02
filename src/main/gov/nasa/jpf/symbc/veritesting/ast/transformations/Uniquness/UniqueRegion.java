@@ -1,13 +1,17 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
+import cvc3.Expr;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
+import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Variable;
 
@@ -25,6 +29,7 @@ public class UniqueRegion {
 
     /**
      * Used to create a unique conditional region.
+     *
      * @param staticRegion Dynamic region that needs to be unique.
      * @return A new static region that is unique.
      */
@@ -60,10 +65,24 @@ public class UniqueRegion {
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
 
         Stmt dynStmt = oldDynRegion.dynStmt.accept(stmtVisitor);
+        RemoveEarlyReturns.ReturnResult oldEarlyReturn = oldDynRegion.earlyReturnResult;
+        DynamicRegion newDynRegion;
+        if (oldEarlyReturn.hasER()) { //make early return result (assign and condition) unique as well.
+            ExprVisitorAdapter eva = new ExprVisitorAdapter(expUniqueVisitor);
+            Expression newAssign = (Expression) eva.accept(oldEarlyReturn.assign);
+            Expression newCondition = (Expression) eva.accept(oldEarlyReturn.condition);
 
-        DynamicRegion newDynRegion = new DynamicRegion(oldDynRegion,
-                dynStmt,
-                oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary);
+            RemoveEarlyReturns o = new RemoveEarlyReturns();
+            RemoveEarlyReturns.ReturnResult newReturnResult = o.new ReturnResult(oldEarlyReturn.stmt, newAssign, newCondition, oldEarlyReturn.retPosAndType);
+            newDynRegion = new DynamicRegion(oldDynRegion,
+                    dynStmt,
+                    oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary, newReturnResult);
+        } else {
+            newDynRegion = new DynamicRegion(oldDynRegion,
+                    dynStmt,
+                    oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary, oldDynRegion.earlyReturnResult);
+        }
+
         newDynRegion.fieldRefTypeTable.makeUniqueKey(uniqueNum);
         newDynRegion.psm.setUniqueNum(uniqueNum);
         newDynRegion.arrayPSM.setUniqueNum(uniqueNum);

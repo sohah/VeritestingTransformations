@@ -47,7 +47,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         Instruction nextInstruction = null;
         if (choice == STATIC_CHOICE) {
             System.out.println("\n=========Executing static region choice in BranchCG");
-            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion());
+            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion(), false);
             MethodInfo methodInfo = instructionToExecute.getMethodInfo();
             String className = methodInfo.getClassName();
             String methodName = methodInfo.getName();
@@ -71,9 +71,17 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                 case OTHER:
                     throwException(new StaticRegionException("Error: Branch choice generator instantiated on non-branch instruction!"), INSTANTIATION);
             }
-        } else {
-            // should never get here (until we make early returns)
-            assert (false);
+        } else { //early returns choice happened
+            System.out.println("\n=========Executing early retrun choice in BranchCG");
+            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion(), true);
+            MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+            String className = methodInfo.getClassName();
+            String methodName = methodInfo.getName();
+            String methodSignature = methodInfo.getSignature();
+            int offset = instructionToExecute.getPosition();
+            String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+            statisticManager.updateVeriSuccForRegion(key);
+            ++VeritestingListener.veritestRegionCount;
         }
         return nextInstruction;
     }
@@ -210,10 +218,10 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             pc = new PathCondition();
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
-        setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
+        setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, new Operation(Operation.Operator.NOT, region.spfPredicateSummary), new Operation(Operation.Operator.NOT, region.earlyReturnResult.condition)))), STATIC_CHOICE);
         setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
         setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
-        // TODO: create the path predicate for the 'return' case.
+        setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, new Operation(Operation.Operator.NOT, region.spfPredicateSummary), region.earlyReturnResult.condition))), RETURN_CHOICE);
     }
 
 }

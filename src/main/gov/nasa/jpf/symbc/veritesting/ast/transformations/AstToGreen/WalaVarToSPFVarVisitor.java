@@ -100,6 +100,6 @@ public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
 
     @Override
     public Expression visit(AstVarExpr expr) {
-        return createGreenVar(expr.type, expr.getName());
+        return createGreenVar(expr.type, expr.getSymName());
     }
 }

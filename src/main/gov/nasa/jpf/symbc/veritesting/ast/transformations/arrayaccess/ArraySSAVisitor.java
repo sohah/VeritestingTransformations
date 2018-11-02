@@ -41,7 +41,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         ArraySSAVisitor visitor = new ArraySSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
         dynRegion.arrayPSM = visitor.psm;
-        return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
+        return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null, dynRegion.earlyReturnResult);
     }
 
     @Override
