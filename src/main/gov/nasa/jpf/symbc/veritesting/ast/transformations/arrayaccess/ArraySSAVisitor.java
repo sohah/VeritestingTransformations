@@ -14,11 +14,14 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
+import static gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef.mergeArrayRefs;
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayExpressions.getInitialArrayValues;
 import static za.ac.sun.cs.green.expr.Operation.Operator.*;
 
 public class ArraySSAVisitor extends AstMapVisitor {
@@ -28,6 +31,9 @@ public class ArraySSAVisitor extends AstMapVisitor {
     private ThreadInfo ti;
     static final int ARRAY_SUBSCRIPT_BASE = 0;
     private GlobalArraySubscriptMap gsm;
+    private StaticRegionException sre = null;
+    // maps each array to its array of expressions on a path
+    private ArrayExpressions arrayExpressions;
 
     private ArraySSAVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
         super(new ExprMapVisitor());
@@ -35,11 +41,13 @@ public class ArraySSAVisitor extends AstMapVisitor {
         this.ti = ti;
         this.psm = new ArraySubscriptMap();
         this.gsm = new GlobalArraySubscriptMap();
+        this.arrayExpressions = new ArrayExpressions(ti);
     }
 
-    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
+    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException {
         ArraySSAVisitor visitor = new ArraySSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
+        if (visitor.sre != null) throw visitor.sre;
         dynRegion.arrayPSM = visitor.psm;
         return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
     }
@@ -49,7 +57,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         String exceptionalMessage = null;
         Expression rhs = null;
         String type = null;
-        Stmt assignStmt = null;
+        Stmt assignStmt;
         ArrayRef arrayRef = ArrayRef.makeArrayRef(c);
         if (c.arrayref instanceof IntConstant) {
             if (isUnsupportedArrayRef(arrayRef)) return getThrowInstruction();
@@ -59,7 +67,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
                     type = dynRegion.fieldRefTypeTable.lookup(rhs);
             }
             else {
-                Pair<Expression, String> p = getExpression(arrayRef);
+                Pair<Expression, String> p = getExpression(ti, arrayRef);
                 rhs = p.getFirst();
                 type = p.getSecond();
             }
@@ -93,7 +101,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         return arrayExceptionNumber;
     }
 
-    private Pair getExpression(ArrayRef c) {
+    public static Pair<Expression, String> getExpression(ThreadInfo ti, ArrayRef c) {
         Pair rhs;
         ElementInfo eiArray = ti.getElementInfo(c.ref);
         int len=(eiArray.getArrayFields()).arrayLength(); // assumed concrete
@@ -109,7 +117,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
     }
 
 
-    private Pair constructArrayITE(ElementInfo eiArray, Expression indexExpression, int index, int len) {
+    public static Pair constructArrayITE(ElementInfo eiArray, Expression indexExpression, int index, int len) {
         if (index == len-1) return getArrayElement(eiArray, index);
         else {
             Expression cond = new Operation(EQ, indexExpression, new IntConstant(index));
@@ -158,8 +166,13 @@ public class ArraySSAVisitor extends AstMapVisitor {
             if (index >= len) //TODO make this a SPF case in the future
                 throwException(new IllegalArgumentException("Array index greater than or equal to array length"), INSTANTIATION);
             eiArray.checkArrayBounds(index);
-            eiArray.setIntElement(index, 0);
-            eiArray.setElementAttrNoClone(index, greenToSPFExpression(assignExpr));
+            if (type.equals("int")) eiArray.setIntElement(index, 0);
+            else if (type.equals("char")) eiArray.setCharElement(index, '1');
+            else if (type.equals("float")) eiArray.setFloatElement(index, 0);
+            else if (type.equals("double")) eiArray.setDoubleElement(index, 0);
+            else if (type.equals("byte")) eiArray.setByteElement(index, (byte)0);
+            else throwException(new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore"), INSTANTIATION);
+            eiArray.setElementAttr(index, greenToSPFExpression(assignExpr));
         } else { // the index is symbolic
             for (int i=0; i<len; i++) {
                 Pair<Expression, String> p = getArrayElement(eiArray, i);
@@ -167,13 +180,13 @@ public class ArraySSAVisitor extends AstMapVisitor {
                 ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript, arrayRefVarExpr.uniqueNum);
                 eiArray.checkArrayBounds(i);
                 if (type.equals("int")) eiArray.setIntElement(i, 0);
-                else if (type.equals("char")) eiArray.setCharElement(i, '0');
+                else if (type.equals("char")) eiArray.setCharElement(i, (char)0);
                 else if (type.equals("float")) eiArray.setFloatElement(i, 0);
                 else if (type.equals("double")) eiArray.setDoubleElement(i, 0);
                 else if (type.equals("byte")) eiArray.setByteElement(i, (byte)0);
                 else throwException(new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore"), INSTANTIATION);
 
-                eiArray.setElementAttrNoClone(i, greenToSPFExpression(createGreenVar(type, newExpr.getSymName())));
+                eiArray.setElementAttr(i, greenToSPFExpression(createGreenVar(type, newExpr.getSymName())));
             }
         }
     }
@@ -187,6 +200,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         else {
             ArrayRef arrayRef = ArrayRef.makeArrayRef(putIns);
             if (isUnsupportedArrayRef(arrayRef)) return getThrowInstruction();
+            arrayExpressions.update(arrayRef, putIns.assignExpr);
             ArrayRefVarExpr arrayRefVarExpr = new ArrayRefVarExpr(arrayRef, createSubscript(arrayRef));
             Stmt assignStmt = new AssignmentStmt(arrayRefVarExpr, putIns.assignExpr);
             String type = null;
@@ -194,7 +208,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
                 if (dynRegion.varTypeTable.lookup(putIns.assignExpr) != null) {
                     type = (String)dynRegion.varTypeTable.lookup(putIns.assignExpr);
                 } else {
-                    type = (String) getExpression(arrayRef).getSecond();
+                    type = (String) getExpression(ti, arrayRef).getSecond();
                 }
             } else if (isConstant(putIns.assignExpr)) {
                 type = getConstantType(putIns.assignExpr);
@@ -235,41 +249,95 @@ public class ArraySSAVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(IfThenElseStmt stmt) {
         ArraySubscriptMap oldMap = psm.clone();
+        ArrayExpressions oldExps = arrayExpressions.clone();
         Stmt newThen = stmt.thenStmt.accept(this);
         ArraySubscriptMap thenMap = psm.clone();
+        ArrayExpressions thenExps = arrayExpressions.clone();
         psm = oldMap.clone();
+        arrayExpressions = oldExps.clone();
         Stmt newElse = stmt.elseStmt.accept(this);
         ArraySubscriptMap elseMap = psm.clone();
+        ArrayExpressions elseExps = arrayExpressions.clone();
         psm = oldMap.clone();
-        Stmt gammaStmt = mergePSM(stmt.condition, thenMap, elseMap);
+        arrayExpressions = oldExps.clone();
+        Stmt gammaStmt;
+//        try {
+//            gammaStmt = mergePSM(stmt.condition, thenMap, elseMap);
+            gammaStmt = mergeArrayExpressions(stmt.condition, thenExps, elseExps);
+//        } catch (StaticRegionException e) {
+//            sre = e;
+//            return stmt;
+//        }
         if (gammaStmt != null)
             return new CompositionStmt(new IfThenElseStmt(stmt.original, stmt.condition, newThen, newElse), gammaStmt);
         else return new IfThenElseStmt(stmt.original, stmt.condition, newThen, newElse);
     }
 
-    private Stmt mergePSM(Expression condition, ArraySubscriptMap thenMap, ArraySubscriptMap elseMap) {
+    private Stmt mergeArrayExpressions(Expression condition, ArrayExpressions thenExps, ArrayExpressions elseExps) {
+        Stmt compStmt = null;
+        for (Map.Entry<Integer, Expression[]> entry : thenExps.table.entrySet()) {
+            Integer thenArrayRef = entry.getKey();
+            Expression[] thenExpArr = entry.getValue();
+            Expression[] elseExpArr = elseExps.lookup(thenArrayRef);
+            if (elseExpArr != null) {
+                compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr, elseExpArr));
+                elseExps.remove(thenArrayRef);
+            } else {
+                compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr, getInitialArrayValues(ti, thenArrayRef)));
+            }
+        }
+
+        for (Map.Entry<Integer, Expression[]> entry : elseExps.table.entrySet()) {
+            Integer elseArrayRef = entry.getKey();
+            Expression[] elseExpArr = entry.getValue();
+            if (thenExps.lookup(elseArrayRef) != null) {
+                throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"), INSTANTIATION);
+            } else {
+                compStmt = compose(compStmt, createGammaStmtArray(elseArrayRef, condition, getInitialArrayValues(ti, elseArrayRef), elseExpArr));
+            }
+        }
+
+        return compStmt;
+    }
+
+    private Stmt createGammaStmtArray(int ref, Expression condition, Expression[] thenExpArr, Expression[] elseExpArr) {
+        Stmt compStmt = null;
+        assert thenExpArr.length == elseExpArr.length;
+        for (int i=0; i < thenExpArr.length; i++){
+            Expression lhs = new ArrayRefVarExpr(new ArrayRef(ref, new IntConstant(i)));
+            Stmt assignStmt = new AssignmentStmt(lhs, new GammaVarExpr(condition, thenExpArr[i], elseExpArr[i]));
+            compStmt = new CompositionStmt(compStmt, assignStmt);
+        }
+        return compStmt;
+    }
+
+    private Stmt mergePSM(Expression condition, ArraySubscriptMap thenMap, ArraySubscriptMap elseMap) throws StaticRegionException {
         Stmt compStmt = null;
         for (Map.Entry<ArrayRef, SubscriptPair> entry : thenMap.table.entrySet()) {
-            ArrayRef thenFieldRef = entry.getKey();
+            ArrayRef thenArrayRef = entry.getKey();
             SubscriptPair thenSubscript = entry.getValue();
-            if (elseMap.lookup(thenFieldRef) != null) {
-                compStmt = compose(compStmt, createGammaStmt(condition, thenFieldRef, thenSubscript,
-                        elseMap.lookup(thenFieldRef)));
-                elseMap.remove(thenFieldRef);
+            SubscriptPair elseSubscript = elseMap.lookup(thenArrayRef);
+            ArrayRef elseArrayRef = elseMap.lookupKey(thenArrayRef);
+            if (elseSubscript != null) {
+                assert elseArrayRef != null;
+                compStmt = compose(compStmt, createGammaStmt(condition, thenArrayRef, elseArrayRef, thenSubscript,
+                        elseSubscript));
+                elseMap.remove(thenArrayRef);
             } else {
-                compStmt = compose(compStmt, createGammaStmt(condition, thenFieldRef, thenSubscript,
-                        new SubscriptPair(ARRAY_SUBSCRIPT_BASE, gsm.createSubscript(thenFieldRef))));
+                assert elseArrayRef == null;
+                compStmt = compose(compStmt, createGammaStmt(condition, thenArrayRef, null, thenSubscript,
+                        new SubscriptPair(ARRAY_SUBSCRIPT_BASE, gsm.createSubscript(thenArrayRef))));
             }
         }
 
         for (Map.Entry<ArrayRef, SubscriptPair> entry : elseMap.table.entrySet()) {
-            ArrayRef elseFieldRef = entry.getKey();
+            ArrayRef elseArrayRef = entry.getKey();
             SubscriptPair elseSubscript = entry.getValue();
-            if (thenMap.lookup(elseFieldRef) != null) {
+            if (thenMap.lookup(elseArrayRef) != null) {
                 throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"), INSTANTIATION);
             } else {
-                compStmt = compose(compStmt, createGammaStmt(condition, elseFieldRef,
-                        new SubscriptPair(ARRAY_SUBSCRIPT_BASE, gsm.createSubscript(elseFieldRef)), elseSubscript));
+                compStmt = compose(compStmt, createGammaStmt(condition, null, elseArrayRef,
+                        new SubscriptPair(ARRAY_SUBSCRIPT_BASE, gsm.createSubscript(elseArrayRef)), elseSubscript));
             }
         }
 
@@ -285,37 +353,46 @@ public class ArraySSAVisitor extends AstMapVisitor {
         return null;
     }
 
-    private Stmt createGammaStmt(Expression condition, ArrayRef arrayRef, SubscriptPair thenSubscript,
-                                 SubscriptPair elseSubscript) {
+    private Stmt createGammaStmt(Expression condition, ArrayRef thenArrayRef, ArrayRef elseArrayRef, SubscriptPair thenSubscript,
+                                 SubscriptPair elseSubscript) throws StaticRegionException {
         if (thenSubscript.pathSubscript == ARRAY_SUBSCRIPT_BASE && elseSubscript.pathSubscript == ARRAY_SUBSCRIPT_BASE) {
             throwException(new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts"), INSTANTIATION);
         }
-        Pair<Expression, String> pair = getExpression(arrayRef);
-        ArrayRefVarExpr arrayRefVarExpr = new ArrayRefVarExpr(arrayRef, createSubscript(arrayRef));
-        if (pair.getSecond() != null) {
-            dynRegion.fieldRefTypeTable.add(arrayRefVarExpr.clone(), pair.getSecond());
-        }
+        Pair<Expression, String> oldvalTypePair = getExpression(ti, thenArrayRef);
+        //TODO: if the indices were really merged, then construct a ITE to indicate that the new index is conditionally set to one of the two indices
+        Pair<ArrayRef, Stmt> mergedrefStmtPair = mergeArrayRefs(condition, thenArrayRef, elseArrayRef);
+//        ArrayRefVarExpr arrayRefVarExpr = new ArrayRefVarExpr(mergedrefStmtPair.getFirst(), createSubscript(thenArrayRef));
+//        if (oldvalTypePair.getSecond() != null)
+//            dynRegion.fieldRefTypeTable.add(arrayRefVarExpr.clone(), oldvalTypePair.getSecond());
+        if (mergedrefStmtPair.getFirst().index instanceof WalaVarExpr)
+            dynRegion.varTypeTable.add(mergedrefStmtPair.getFirst().index, "int");
         Expression thenExpr = thenSubscript.pathSubscript != ARRAY_SUBSCRIPT_BASE ?
-                new ArrayRefVarExpr(arrayRef, thenSubscript) : pair.getFirst();
+                new ArrayRefVarExpr(thenArrayRef, thenSubscript) : oldvalTypePair.getFirst();
         Expression elseExpr = elseSubscript.pathSubscript != ARRAY_SUBSCRIPT_BASE ?
-                new ArrayRefVarExpr(arrayRef, elseSubscript) : pair.getFirst();
+                new ArrayRefVarExpr(elseArrayRef, elseSubscript) : oldvalTypePair.getFirst();
         Expression assignExpr = new GammaVarExpr(condition, thenExpr, elseExpr);
-        Stmt retStmt = new AssignmentStmt(arrayRefVarExpr, assignExpr);
-        retStmt = makeAssignStmts(arrayRefVarExpr, assignExpr, retStmt);
+        //TODO: get rid of this assignment statement. There should only be assignments to array entries. The left-hand side of each array entry should have a concrete index. These are generated by the makeAssignStmts() method.
+        //TODO: Create equivalence-checks to test if array loads that appear after such assignment statements use the values assigned to by makeAssignStmts(). For this you will need to populate the concrete index ArrayRefVarExpr's into the PSM.
+        Stmt retStmt = null; //new AssignmentStmt(arrayRefVarExpr, assignExpr);
+        if (mergedrefStmtPair.getSecond() != null)
+            retStmt = mergedrefStmtPair.getSecond();
+        retStmt = makeAssignStmts(mergedrefStmtPair.getFirst(), assignExpr, retStmt, oldvalTypePair.getSecond());
         return retStmt;
     }
 
-    private Stmt makeAssignStmts(ArrayRefVarExpr arrayRefVarExpr, Expression assignExpr, Stmt retStmt) {
-        ElementInfo eiArray = ti.getElementInfo(arrayRefVarExpr.arrayRef.ref);
-        Expression indexExp = arrayRefVarExpr.arrayRef.index;
+    private Stmt makeAssignStmts(ArrayRef mergedRef, Expression assignExpr, Stmt retStmt, String type) {
+        ElementInfo eiArray = ti.getElementInfo(mergedRef.ref);
+        Expression indexExp = mergedRef.index;
         int len=(eiArray.getArrayFields()).arrayLength(); // assumed concrete
         for (int i=0; i<len; i++) {
             Pair<Expression, String> p = getArrayElement(eiArray, i);
             Expression oldValue = p.getFirst();
             Expression cond = new Operation(EQ, indexExp, new IntConstant(i));
             Expression value = new GammaVarExpr(cond, assignExpr, oldValue);
-            ArrayRef ref = new ArrayRef(arrayRefVarExpr.arrayRef.ref, new IntConstant(i));
-            ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, arrayRefVarExpr.subscript);
+            ArrayRef ref = new ArrayRef(mergedRef.ref, new IntConstant(i));
+            ArrayRefVarExpr newExpr = new ArrayRefVarExpr(ref, createSubscript(ref));
+            if (type != null)
+                dynRegion.fieldRefTypeTable.add(newExpr, type);
             AssignmentStmt stmt = new AssignmentStmt(newExpr, value);
             retStmt = retStmt != null ? new CompositionStmt(retStmt, stmt) : stmt;
             if (p.getSecond() != null) {

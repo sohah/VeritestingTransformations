@@ -4,11 +4,14 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
+import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
 
 import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef.looseArrayRefEquals;
 
 public class ArraySubscriptMap {
     public final HashMap<ArrayRef, SubscriptPair> table;
@@ -26,8 +29,27 @@ public class ArraySubscriptMap {
         SubscriptPair ret = null;
         if (key != null) {
             for (ArrayRef arrayRef: table.keySet()) {
-                if (arrayRef.ref == key.ref && arrayRef.index.equals(key.index))
+                if (looseArrayRefEquals(arrayRef, key)) {
                     ret = table.get(arrayRef);
+                }
+            }
+        }
+        else {
+            throwException(new IllegalArgumentException("Cannot lookup the value of a null " + label1 + "."), INSTANTIATION);
+        }
+        return ret;
+    }
+
+    // returns -1 if the key isn't found
+    // Because we do a loose lookup, its possible that both ArrayRefs write to the same array without being exactly the same
+    // This can happen if the reference value in both ArrayRefs is the same but one or both use a non-IntConstant for the index
+    public ArrayRef lookupKey(ArrayRef key) {
+        ArrayRef ret = null;
+        if (key != null) {
+            for (ArrayRef arrayRef: table.keySet()) {
+                if (looseArrayRefEquals(arrayRef, key)) {
+                    ret = arrayRef;
+                }
             }
         }
         else {
@@ -43,9 +65,11 @@ public class ArraySubscriptMap {
 
     public void remove(ArrayRef key) {
         if (lookup(key) != null)
-            for (ArrayRef field: table.keySet()) {
-                if (field.ref == key.ref && field.index.equals(key.index))
-                    table.remove(field);
+            for (ArrayRef arrayRef: table.keySet()) {
+//                if (arrayRef.ref == key.ref && arrayRef.index.equals(key.index))
+//                    table.remove(arrayRef);
+                if (looseArrayRefEquals(arrayRef, key))
+                    table.remove(arrayRef);
             }
     }
 
@@ -57,7 +81,7 @@ public class ArraySubscriptMap {
     public void updateKeys(ArrayRef oldKey, ArrayRef newKey){
         for(ArrayRef key: table.keySet()) {
             SubscriptPair value = table.get(key);
-            if(key.equals(oldKey)) {
+            if (looseArrayRefEquals(oldKey, newKey)) {
                 table.put(newKey, value);
                 table.remove(oldKey);
             }
@@ -79,7 +103,7 @@ public class ArraySubscriptMap {
 
     public void updateValue(ArrayRef arrayRef, SubscriptPair p) {
         for(ArrayRef key: table.keySet()) {
-            if(key.equals(arrayRef)) {
+            if(looseArrayRefEquals(arrayRef, key)) {
                 table.put(key, p);
             }
         }

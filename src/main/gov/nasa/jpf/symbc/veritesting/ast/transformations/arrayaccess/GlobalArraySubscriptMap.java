@@ -1,12 +1,14 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
+import za.ac.sun.cs.green.expr.IntConstant;
 
 import java.util.HashMap;
 import java.util.Set;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef.looseArrayRefEquals;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor.ARRAY_SUBSCRIPT_BASE;
 
 public class GlobalArraySubscriptMap {
@@ -20,12 +22,27 @@ public class GlobalArraySubscriptMap {
     }
 
     // returns -1 if the key isn't found
-    public int lookup(ArrayRef key) {
+    /*public int lookup(ArrayRef key) {
         int ret = -1;
         if (key != null) {
             for (ArrayRef array: table.keySet()) {
                 if (array.ref == key.ref && array.index.equals(key.index))
                     ret = table.get(array);
+            }
+        }
+        else {
+            throwException(new IllegalArgumentException("Cannot lookup the value of a null " + label1 + "."), INSTANTIATION);
+        }
+        return ret;
+    }*/
+
+    // returns -1 if the key isn't found
+    public int lookup(ArrayRef key) {
+        int ret = -1;
+        if (key != null) {
+            for (ArrayRef arrayRef: table.keySet()) {
+                if (looseArrayRefEquals(arrayRef, key))
+                    ret = table.get(arrayRef);
             }
         }
         else {
@@ -41,9 +58,11 @@ public class GlobalArraySubscriptMap {
 
     public void remove(ArrayRef key) {
         if (lookup(key) != -1)
-            for (ArrayRef array: table.keySet()) {
-                if (array.ref == key.ref && array.index.equals(key.index))
-                    table.remove(array);
+            for (ArrayRef arrayRef: table.keySet()) {
+//                if (arrayRef.ref == key.ref && arrayRef.index.equals(key.index))
+//                    table.remove(arrayRef);
+                if (looseArrayRefEquals(arrayRef, key))
+                    table.remove(arrayRef);
             }
     }
 
@@ -65,7 +84,7 @@ public class GlobalArraySubscriptMap {
 
     public void updateValue(ArrayRef arrayRef, Integer p) {
         for(ArrayRef key: table.keySet()) {
-            if(key.equals(arrayRef)) {
+            if(looseArrayRefEquals(arrayRef, key)) {
                 table.put(key, p);
             }
         }

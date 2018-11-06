@@ -29,6 +29,12 @@ public class ArrayRefVarExpr extends CloneableVariable {
         this.uniqueNum = uniqueNum;
     }
 
+    public ArrayRefVarExpr(ArrayRef arrayRef) {
+        super("@r"+arrayRef.ref + "[" + arrayRef.index + "].-1.-1" );
+        this.arrayRef = arrayRef;
+        this.subscript = new SubscriptPair(-1, -1);
+    }
+
     @Override
     public void accept(Visitor visitor) throws VisitorException {
         // will call the Variable entry.

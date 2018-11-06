@@ -1,10 +1,13 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import za.ac.sun.cs.green.expr.*;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr.makeNewWalaVarExpr;
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion.uniqueCounter;
 
 public class ArrayRef {
     public final int ref;
@@ -68,4 +71,35 @@ public class ArrayRef {
             return null;
         }
     }
+
+    public static boolean looseArrayRefEquals(ArrayRef arrayRef, ArrayRef key) {
+        if (arrayRef.ref == key.ref) {
+            boolean bothIntConst = arrayRef.index instanceof IntConstant && key.index instanceof IntConstant;
+            if (!bothIntConst || ((IntConstant) arrayRef.index).getValue() == ((IntConstant) key.index).getValue()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static Pair<ArrayRef, Stmt> mergeArrayRefs(Expression condition, ArrayRef thenRef, ArrayRef elseRef) throws StaticRegionException {
+        ArrayRef ret = (thenRef == null) ^ (elseRef == null) ? (thenRef != null ? thenRef : elseRef) : null;
+        if (thenRef == null && elseRef == null) throwException(new StaticRegionException("Cannot merge two null array references"), INSTANTIATION);
+        if (thenRef.ref != elseRef.ref) throwException(new StaticRegionException("Cannot merge ArrayRefs for two different arrays"), INSTANTIATION);
+        if (ret != null) return new Pair(ret, null);
+        // If both refer to the same array location then return one of them
+        // Else we need to merge these two refs into one
+        if (thenRef.index instanceof IntConstant && elseRef.index instanceof IntConstant) {
+            if (((IntConstant) thenRef.index).getValue() == ((IntConstant) elseRef.index).getValue())
+                return new Pair(thenRef, null);
+        }
+        if (thenRef.index instanceof WalaVarExpr && elseRef.index instanceof WalaVarExpr &&
+                thenRef.index.equals(elseRef.index)) {
+            return new Pair(thenRef, null);
+        }
+        WalaVarExpr walaVarExpr = makeNewWalaVarExpr(uniqueCounter);
+        Stmt assignStmt = new AssignmentStmt(walaVarExpr, new GammaVarExpr(condition, thenRef.index, elseRef.index));
+        return new Pair(new ArrayRef(thenRef.ref, walaVarExpr), assignStmt);
+    }
+
 }
