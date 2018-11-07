@@ -1,7 +1,9 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
+import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -10,9 +12,14 @@ import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
 import za.ac.sun.cs.green.expr.RealConstant;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
 import static za.ac.sun.cs.green.expr.Operation.Operator.EQ;
 
 public class ArrayUtil {
@@ -91,5 +98,32 @@ public class ArrayUtil {
             type = p.getSecond();
         }
         return new Pair(ret, type);
+    }
+
+    public static void doArrayStore(ThreadInfo ti, ArrayExpressions arrayExpressions) throws StaticRegionException {
+        Iterator itr = arrayExpressions.table.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry<Integer, Expression[]> entry = (Map.Entry) itr.next();
+            int ref = entry.getKey();
+            Expression[] exps = entry.getValue();
+            ElementInfo eiArray = ti.getModifiableElementInfo(ref);
+            int len = exps.length;
+            String type = arrayExpressions.arrayTypesTable.get(ref);
+            for (int i = 0; i < len; i++) {
+                Expression newExpr = exps[i];
+                eiArray.checkArrayBounds(i);
+                if (type.equals("int")) eiArray.setIntElement(i, 0);
+                else if (type.equals("char")) eiArray.setCharElement(i, (char) 0);
+                else if (type.equals("float")) eiArray.setFloatElement(i, 0);
+                else if (type.equals("double")) eiArray.setDoubleElement(i, 0);
+                else if (type.equals("byte")) eiArray.setByteElement(i, (byte) 0);
+                else
+                    throwException(new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore"), INSTANTIATION);
+                if (newExpr instanceof ArrayRefVarExpr)
+                    newExpr = createGreenVar(type, ((ArrayRefVarExpr) newExpr).getSymName());
+
+                eiArray.setElementAttr(i, greenToSPFExpression(newExpr));
+            }
+        }
     }
 }

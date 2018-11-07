@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayExpressions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
@@ -88,9 +89,9 @@ public class DynamicRegion implements Region {
     public final Expression spfPredicateSummary;
 
     /**
-     * Holds path subscript map for array references in the region
+     * Holds output expressions to be written into arrays
      */
-    public ArraySubscriptMap arrayPSM;
+    public ArrayExpressions arrayOutputs;
 
     /*
 
@@ -118,7 +119,7 @@ public class DynamicRegion implements Region {
         this.spfPredicateSummary = spfRegionSummary;
         this.fieldRefTypeTable = oldDynRegion.fieldRefTypeTable;
         this.psm = oldDynRegion.psm;
-        this.arrayPSM = oldDynRegion.arrayPSM;
+        this.arrayOutputs = oldDynRegion.arrayOutputs;
     }
 
 
@@ -154,6 +155,6 @@ public class DynamicRegion implements Region {
                 (OutputTable) staticRegion.outputTable, uniqueNum);
         this.fieldRefTypeTable = new FieldRefTypeTable();
         this.psm = new FieldSubscriptMap();
-        this.arrayPSM = new ArraySubscriptMap();
+        this.arrayOutputs = new ArrayExpressions(null);
     }
 }

@@ -12,7 +12,7 @@ import static gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef.looseArrayRefEqual
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor.ARRAY_SUBSCRIPT_BASE;
 
 public class GlobalArraySubscriptMap {
-    public final HashMap<ArrayRef, Integer> table;
+    public final HashMap<Integer, Integer> table;
     protected final String tableName = "Global Subscript Map";
     protected final String label1 = "ArrayRef";
     protected final String label2 = "subscript";
@@ -37,12 +37,12 @@ public class GlobalArraySubscriptMap {
     }*/
 
     // returns -1 if the key isn't found
-    public int lookup(ArrayRef key) {
+    public int lookup(Integer key) {
         int ret = -1;
         if (key != null) {
-            for (ArrayRef arrayRef: table.keySet()) {
-                if (looseArrayRefEquals(arrayRef, key))
-                    ret = table.get(arrayRef);
+            for (Integer ref: table.keySet()) {
+                if (ref.equals(key))
+                    ret = table.get(ref);
             }
         }
         else {
@@ -51,18 +51,18 @@ public class GlobalArraySubscriptMap {
         return ret;
     }
 
-    public void add(ArrayRef v1, Integer v2) {
+    public void add(Integer v1, Integer v2) {
         if ((v1 != null) && (v2 != null))
             table.put(v1, v2);
     }
 
-    public void remove(ArrayRef key) {
+    public void remove(Integer key) {
         if (lookup(key) != -1)
-            for (ArrayRef arrayRef: table.keySet()) {
+            for (Integer ref: table.keySet()) {
 //                if (arrayRef.ref == key.ref && arrayRef.index.equals(key.index))
 //                    table.remove(arrayRef);
-                if (looseArrayRefEquals(arrayRef, key))
-                    table.remove(arrayRef);
+                if (ref.equals(key))
+                    table.remove(ref);
             }
     }
 
@@ -71,7 +71,7 @@ public class GlobalArraySubscriptMap {
         table.forEach((v1, v2) -> System.out.println("!w"+v1 + " --------- " + v2));
     }
 
-    public Set<ArrayRef> getKeys(){
+    public Set<Integer> getKeys(){
         return table.keySet();
     }
 
@@ -82,22 +82,22 @@ public class GlobalArraySubscriptMap {
         return map;
     }
 
-    public void updateValue(ArrayRef arrayRef, Integer p) {
-        for(ArrayRef key: table.keySet()) {
-            if(looseArrayRefEquals(arrayRef, key)) {
+    public void updateValue(Integer ref, Integer p) {
+        for(Integer key: table.keySet()) {
+            if(ref.equals(key)) {
                 table.put(key, p);
             }
         }
     }
 
-    public Integer createSubscript(ArrayRef arrayRef) {
-        if (lookup(arrayRef) != -1) {
-            int ret = lookup(arrayRef);
-            updateValue(arrayRef, ret+1);
+    public Integer createSubscript(Integer ref) {
+        if (lookup(ref) != -1) {
+            int ret = lookup(ref);
+            updateValue(ref, ret+1);
             return ret+1;
         }
         else {
-            add(arrayRef, ARRAY_SUBSCRIPT_BASE + 1);
+            add(ref, ARRAY_SUBSCRIPT_BASE + 1);
             return ARRAY_SUBSCRIPT_BASE + 1;
         }
     }

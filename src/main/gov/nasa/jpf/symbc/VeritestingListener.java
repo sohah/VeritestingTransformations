@@ -80,7 +80,7 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPF
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isUnsupportedRegionEnd;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.*;
-import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor.doArrayStore;
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayUtil.doArrayStore;
 
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
 
@@ -438,12 +438,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     private static void populateArrayOutputs(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException {
-        Iterator itr = dynRegion.arrayPSM.getUniqueArrayAccess().iterator();
-        while (itr.hasNext()) {
-            ArrayRefVarExpr expr = (ArrayRefVarExpr) itr.next();
-            Expression symVar = createGreenVar(dynRegion.fieldRefTypeTable.lookup(expr), expr.getSymName());
-            doArrayStore(ti, expr, symVar, dynRegion.fieldRefTypeTable.lookup(expr));
-        }
+//        Iterator itr = dynRegion.arrayPSM.getUniqueArrayAccess().iterator();
+//        while (itr.hasNext()) {
+//            ArrayRefVarExpr expr = (ArrayRefVarExpr) itr.next();
+//            Expression symVar = createGreenVar(dynRegion.fieldRefTypeTable.lookup(expr), expr.getSymName());
+//            doArrayStore(ti, expr, symVar, dynRegion.fieldRefTypeTable.lookup(expr));
+//        }
+        doArrayStore(ti, dynRegion.arrayOutputs);
     }
 
     /**
