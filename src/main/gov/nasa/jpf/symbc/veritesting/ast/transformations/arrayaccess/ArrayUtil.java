@@ -119,8 +119,11 @@ public class ArrayUtil {
                 else if (type.equals("byte")) eiArray.setByteElement(i, (byte) 0);
                 else
                     throwException(new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore"), INSTANTIATION);
-                if (newExpr instanceof ArrayRefVarExpr)
+                if (newExpr instanceof ArrayRefVarExpr) {
+                    assert arrayExpressions.uniqueNum != -1;
+                    newExpr = ((ArrayRefVarExpr) newExpr).makeUnique(arrayExpressions.uniqueNum);
                     newExpr = createGreenVar(type, ((ArrayRefVarExpr) newExpr).getSymName());
+                }
 
                 eiArray.setElementAttr(i, greenToSPFExpression(newExpr));
             }

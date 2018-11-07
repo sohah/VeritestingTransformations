@@ -192,38 +192,45 @@ public class ArraySSAVisitor extends AstMapVisitor {
         for (Map.Entry<Integer, Expression[]> entry : thenExps.table.entrySet()) {
             Integer thenArrayRef = entry.getKey();
             assert elseExps.arrayTypesTable.get(thenArrayRef).equals(thenExps.arrayTypesTable.get(thenArrayRef));
+            String type = thenExps.arrayTypesTable.get(thenArrayRef);
             Expression[] thenExpArr = entry.getValue();
             Expression[] elseExpArr = elseExps.lookup(thenArrayRef);
             if (elseExpArr != null) {
-                compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr, elseExpArr));
+                compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr, elseExpArr, type));
                 elseExps.remove(thenArrayRef);
             } else {
-                compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr, getInitialArrayValues(ti, thenArrayRef).getFirst()));
+                compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr,
+                        getInitialArrayValues(ti, thenArrayRef).getFirst(), type));
             }
         }
 
         for (Map.Entry<Integer, Expression[]> entry : elseExps.table.entrySet()) {
             Integer elseArrayRef = entry.getKey();
             Expression[] elseExpArr = entry.getValue();
+            assert elseExps.arrayTypesTable.get(elseArrayRef).equals(thenExps.arrayTypesTable.get(elseArrayRef));
+            String type = thenExps.arrayTypesTable.get(elseArrayRef);
             if (thenExps.lookup(elseArrayRef) != null) {
                 throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"), INSTANTIATION);
             } else {
-                compStmt = compose(compStmt, createGammaStmtArray(elseArrayRef, condition, getInitialArrayValues(ti, elseArrayRef).getFirst(), elseExpArr));
+                compStmt = compose(compStmt, createGammaStmtArray(elseArrayRef, condition,
+                        getInitialArrayValues(ti, elseArrayRef).getFirst(), elseExpArr, type));
             }
         }
 
         return compStmt;
     }
 
-    private Stmt createGammaStmtArray(int ref, Expression condition, Expression[] thenExpArr, Expression[] elseExpArr) {
+    private Stmt createGammaStmtArray(int ref, Expression condition, Expression[] thenExpArr, Expression[] elseExpArr,
+                                      String type) {
         Stmt compStmt = null;
         assert thenExpArr.length == elseExpArr.length;
         for (int i=0; i < thenExpArr.length; i++){
             ArrayRef arrayRef = new ArrayRef(ref, new IntConstant(i));
-            Expression lhs = new ArrayRefVarExpr(arrayRef,
+            ArrayRefVarExpr lhs = new ArrayRefVarExpr(arrayRef,
                     new SubscriptPair(-1, gsm.createSubscript(ref)));
+            dynRegion.fieldRefTypeTable.add(lhs, type);
             Stmt assignStmt = new AssignmentStmt(lhs, new GammaVarExpr(condition, thenExpArr[i], elseExpArr[i]));
-            compStmt = new CompositionStmt(compStmt, assignStmt);
+            compStmt = compose(compStmt, assignStmt);
             arrayExpressions.update(arrayRef, lhs);
         }
         return compStmt;

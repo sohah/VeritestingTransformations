@@ -22,6 +22,7 @@ public class ArrayExpressions {
     public final HashMap<Integer, Expression[]> table;
     public final HashMap<Integer, String> arrayTypesTable;
     private ThreadInfo ti;
+    public int uniqueNum = -1;
 
     public ArrayExpressions(ThreadInfo ti) {
         table = new HashMap();
@@ -93,5 +94,9 @@ public class ArrayExpressions {
             Pair<Expression, String> p = getExpression(ti, arrayRef, new Pair(table.get(ref), arrayTypesTable.get(ref)));
             return p.getFirst();
         }
+    }
+
+    public void setUniqueNum(int uniqueNum) {
+        this.uniqueNum = uniqueNum;
     }
 }
