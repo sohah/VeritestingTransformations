@@ -191,11 +191,11 @@ public class ArraySSAVisitor extends AstMapVisitor {
         Stmt compStmt = null;
         for (Map.Entry<Integer, Expression[]> entry : thenExps.table.entrySet()) {
             Integer thenArrayRef = entry.getKey();
-            assert elseExps.arrayTypesTable.get(thenArrayRef).equals(thenExps.arrayTypesTable.get(thenArrayRef));
             String type = thenExps.arrayTypesTable.get(thenArrayRef);
             Expression[] thenExpArr = entry.getValue();
             Expression[] elseExpArr = elseExps.lookup(thenArrayRef);
             if (elseExpArr != null) {
+                assert elseExps.arrayTypesTable.get(thenArrayRef).equals(thenExps.arrayTypesTable.get(thenArrayRef));
                 compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr, elseExpArr, type));
                 elseExps.remove(thenArrayRef);
             } else {
@@ -207,8 +207,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
         for (Map.Entry<Integer, Expression[]> entry : elseExps.table.entrySet()) {
             Integer elseArrayRef = entry.getKey();
             Expression[] elseExpArr = entry.getValue();
-            assert elseExps.arrayTypesTable.get(elseArrayRef).equals(thenExps.arrayTypesTable.get(elseArrayRef));
-            String type = thenExps.arrayTypesTable.get(elseArrayRef);
+            String type = elseExps.arrayTypesTable.get(elseArrayRef);
             if (thenExps.lookup(elseArrayRef) != null) {
                 throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"), INSTANTIATION);
             } else {
