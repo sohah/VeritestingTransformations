@@ -12,6 +12,8 @@ import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayUtil.getArrayLength;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayUtil.getExpression;
@@ -98,5 +100,20 @@ public class ArrayExpressions {
 
     public void setUniqueNum(int uniqueNum) {
         this.uniqueNum = uniqueNum;
+    }
+
+    public String toString() {
+        String ret = new String();
+        ret += "Array Outputs Table\n";
+        Iterator itr = table.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry<Integer, Expression[]> entry = (Map.Entry) itr.next();
+            int ref = entry.getKey();
+            Expression[] exps = entry.getValue();
+            ret += "for array reference: " + ref +", expressions = \n";
+            for (int i=0; i<exps.length; i++)
+                ret += "" + i + ": " + exps[i].toString() + "\n";
+        }
+        return ret;
     }
 }

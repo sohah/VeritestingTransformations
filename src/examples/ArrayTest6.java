@@ -4,35 +4,33 @@ public class ArrayTest6 extends TestRegionBaseClass {
     static int patIndex = 0;
     static int patLen = 1;
 
-    // taken from replace.getccl
+    // taken from replace.getccl and modified to have local, field, and an array with outputs
     public Outputs replace_GetCCL(char c0, char c1, int i0, int i1) {
         patParaIndex = 0;
-//        patIndex = i0;
-        patIndex = 0;
-        patLen = 1;
+        patIndex = i1;
+//        patIndex = 0;
+        patLen = 2;
         char arg[] = {c0, c1};
         char pat[] = new char[2];
-//        if (i0 >= 0 && i0 < 2) {
-//        patIndex = i0;
+        char local = ' ';
 
-//        if(arg[patParaIndex] == '^'){
-            if (c0 == '^') {
-//            if(patIndex < patLen){
+        if(arg[patParaIndex] == '^') {
+            if(patIndex >= 0 && patIndex < patLen) {
+                local = pat[patIndex];
                 pat[patIndex] = '!';
-                pat[patIndex+1] = '!';
-//            pat[0] = '!';
-//                patIndex = patIndex + 1;
-//            }
-//            patParaIndex = patParaIndex + 1;
-            } else {
-//            if(patIndex < patLen){
-                pat[patIndex] = '[';
-//            pat[0] = '[';
-//                patIndex = patIndex + 1;
-//            }
+                local = pat[patIndex];
+                patIndex = patIndex + 1;
             }
-//        }
-        return new Outputs(new int[]{patIndex, patParaIndex, pat[0], pat[1]});
+            patParaIndex = patParaIndex + 1;
+        } else {
+            if(patIndex >= 0 && patIndex < patLen){
+                local = pat[patIndex];
+                pat[patIndex] = '[';
+                local = pat[patIndex];
+                patIndex = patIndex + 1;
+            }
+        }
+        return new Outputs(new int[]{patIndex, patParaIndex, pat[0], pat[1], local, arg[0], arg[1]});
     }
 
     public static void main(String[] args) {

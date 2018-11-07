@@ -311,6 +311,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
         dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+        System.out.println(dynRegion.arrayOutputs);
         dynRegion = UniqueRegion.execute(dynRegion);
 
         dynRegion = SimplifyStmtVisitor.execute(dynRegion);
