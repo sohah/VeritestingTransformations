@@ -274,7 +274,13 @@ public class SubstitutionVisitor extends AstMapVisitor {
         CallSiteReference site = instruction.getCallSite();
 
 
-        String currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
+        String currClassName = null;
+        if (!instruction.isStatic()) {
+            currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
+        } else {
+            Atom packageName = methodReference.getDeclaringClass().getName().getPackage();
+            currClassName = (packageName != null ? packageName.toString() : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
+        }
 
         String dynamicClassName = currClassName;
         if(!Character.isLetterOrDigit(dynamicClassName.charAt(dynamicClassName.length()-1))){
