@@ -55,12 +55,22 @@ public class FieldSSAVisitor extends AstMapVisitor {
         this.gsm = new GlobalSubscriptMap();
     }
 
+    public Stmt bad(Object obj) {
+        String name = obj.getClass().getCanonicalName();
+        throwException(new IllegalArgumentException("Unsupported class: " + name +
+                " value: " + obj.toString() + " seen in FieldSSAVisitor"), INSTANTIATION);
+        return (Stmt)obj;
+    }
+
     public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
         FieldSSAVisitor visitor = new FieldSSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
         dynRegion.psm = visitor.psm;
         return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
     }
+
+    @Override
+    public Stmt visit(ReturnInstruction ret) { bad(ret); return ret; }
 
 
     @Override
