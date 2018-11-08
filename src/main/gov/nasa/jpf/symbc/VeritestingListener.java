@@ -32,11 +32,9 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3BitVector;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator;
-import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticSummaryChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
@@ -257,11 +255,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             StaticPCChoiceGenerator newCG;
             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
 
-            if (StaticPCChoiceGenerator.getKind(instructionToExecute) == StaticPCChoiceGenerator.Kind.OTHER) {
-                newCG = new StaticSummaryChoiceGenerator(dynRegion, instructionToExecute);
-            } else {
-                newCG = new StaticBranchChoiceGenerator(dynRegion, instructionToExecute);
-            }
+            newCG = new StaticBranchChoiceGenerator(dynRegion, instructionToExecute);
             newCG.makeVeritestingCG(ti);
 
             SystemState systemState = vm.getSystemState();
@@ -334,7 +328,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         /*--------------- TO GREEN TRANSFORMATION ---------------*/
         dynRegion = AstToGreenVisitor.execute(dynRegion);
 
-        if(runMode == VeritestingMode.SPFCASES){
+        if (runMode == VeritestingMode.SPFCASES) {
             SpfToGreenVisitor visitor = new SpfToGreenVisitor();
             dynRegion = visitor.execute(dynRegion);
         }

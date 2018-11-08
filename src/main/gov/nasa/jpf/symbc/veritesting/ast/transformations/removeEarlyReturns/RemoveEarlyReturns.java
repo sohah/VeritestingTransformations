@@ -271,19 +271,28 @@ Similar things can be done for SPF Cases.
         System.out.println("Region prior to removeEarlyReturns: " +
                 PrettyPrintVisitor.print(region.staticStmt));
         ReturnResult stmtResult = doStmt(new ReturnResult(region.staticStmt));
-        AstVarExpr assignVarExpr = new AstVarExpr("~earlyReturnResult", stmtResult.retPosAndType.getSecond());
-        AstVarExpr erOccurredExpr = new AstVarExpr("~earlyReturnOccurred", "BOOL");
+        Stmt resultStmt;
+        if(stmtResult.hasER()) { // if the region has a early return
+            AstVarExpr assignVarExpr = new AstVarExpr("~earlyReturnResult", stmtResult.retPosAndType.getSecond());
+            AstVarExpr erOccurredExpr = new AstVarExpr("~earlyReturnOccurred", "BOOL");
+
+
+            resultStmt =
+                    new CompositionStmt(stmtResult.stmt,
+                            new CompositionStmt(
+                                    new AssignmentStmt(assignVarExpr, stmtResult.assign),
+                                    new AssignmentStmt(erOccurredExpr, stmtResult.condition)));
+
+        }
+        else // if no early return was found, then just propagate the stmt.
+            resultStmt = stmtResult.stmt;
 /*
-        Stmt resultStmt =
-                new CompositionStmt(stmtResult.stmt,
-                    new CompositionStmt(
-                            new AssignmentStmt(assignVarExpr, stmtResult.assign),
-                            new AssignmentStmt(erOccurredExpr, stmtResult.condition)));
-*/
 
         Stmt resultStmt =
                 new CompositionStmt(stmtResult.stmt,
                                 new AssignmentStmt(assignVarExpr, stmtResult.assign));
+
+*/
 
         System.out.println("Region after removeEarlyReturns: " +
                 PrettyPrintVisitor.print(resultStmt));
