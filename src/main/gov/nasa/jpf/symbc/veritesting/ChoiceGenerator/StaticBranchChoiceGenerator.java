@@ -23,7 +23,6 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
 
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
-    Object[] spfSlotAttr;
 
     public static final int STATIC_CHOICE = 0;
     public static final int THEN_CHOICE = 1;
@@ -31,7 +30,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
     public static final int RETURN_CHOICE = 3;
 
     public StaticBranchChoiceGenerator(DynamicRegion region, Instruction instruction) {
-        super(2, region, instruction);
+        super(3, region, instruction);
         Kind kind = getKind(instruction);
 
         assert (kind == Kind.BINARYIF ||
@@ -42,7 +41,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
     // MWW: make choice 0 and choice 4 also the responsibility of the CG
     public Instruction execute(ThreadInfo ti, Instruction instructionToExecute, int choice) throws StaticRegionException {
         // if/else conditions.
-        assert (choice == STATIC_CHOICE || choice == THEN_CHOICE || choice == ELSE_CHOICE);
+        assert (choice == STATIC_CHOICE || choice == THEN_CHOICE || choice == ELSE_CHOICE || choice == RETURN_CHOICE);
 
         Instruction nextInstruction = null;
         if (choice == STATIC_CHOICE) {
