@@ -26,6 +26,8 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils.getSuperClassList;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.createSPFVariableForType;
@@ -214,8 +216,10 @@ public class SubstitutionVisitor extends AstMapVisitor {
                     } else{
                         return getStmtRetExp(hgOrdStmt).getFirst();
                     }
-                } else
+                } else {
+                    sre = new StaticRegionException("Cannot summarize invoke in " + instruction.toString());
                     return new InvokeInstruction(c.getOriginal(), c.result, params);
+                }
             } else
                 return new InvokeInstruction(c.getOriginal(), c.result, params);
         } else
@@ -359,8 +363,8 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
-        if (visitor.sre != null) throw visitor.sre;
-        if (visitor.cne != null) throw visitor.cne;
+        if (visitor.sre != null) throwException(visitor.sre, INSTANTIATION);
+        if (visitor.cne != null) throwException(new StaticRegionException(visitor.cne.getMessage()), INSTANTIATION);
         DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null);
 
 
