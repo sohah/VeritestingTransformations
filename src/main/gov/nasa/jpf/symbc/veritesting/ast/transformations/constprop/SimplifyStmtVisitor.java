@@ -20,6 +20,7 @@ import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhas
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatGreenExpression;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isVariable;
 import static za.ac.sun.cs.green.expr.Operation.Operator.EQ;
 
 public class SimplifyStmtVisitor extends AstMapVisitor {
@@ -36,11 +37,10 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(AssignmentStmt a) {
         Expression rhs = eva.accept(a.rhs);
-        if (isConstant(rhs)) {
+        if (isConstant(rhs) || isVariable(rhs)) {
             constantsTable.add((Variable) a.lhs, rhs);
         }
         return new AssignmentStmt(a.lhs, rhs);
-
     }
 
     @Override

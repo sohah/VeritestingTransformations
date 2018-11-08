@@ -281,6 +281,11 @@ public class SimplifyRangerExprVisitor extends ExprMapVisitor implements ExprVis
         // return one of those two expressions
         if (result == ExprUtil.SatResult.TRUE) return eva.accept(expr.thenExpr);
         else if (result == ExprUtil.SatResult.FALSE) return eva.accept(expr.elseExpr);
-        else return new GammaVarExpr(cond, eva.accept(expr.thenExpr), eva.accept(expr.elseExpr));
+        else {
+            Expression thenExpr = eva.accept(expr.thenExpr);
+            Expression elseExpr = eva.accept(expr.elseExpr);
+            if (thenExpr.equals(elseExpr)) return thenExpr;
+            else return new GammaVarExpr(cond, thenExpr, elseExpr);
+        }
     }
 }
