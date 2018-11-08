@@ -21,7 +21,8 @@ public class SSAUtil {
 
     public static Collection<ISSABasicBlock> getNonReturnSuccessors(SSACFG cfg, ISSABasicBlock current) {
         SSAInstruction last = current.getLastInstruction();
-        if (!(last instanceof SSAReturnInstruction) && !(last instanceof SSAThrowInstruction)) {
+        //if (!(last instanceof SSAReturnInstruction) && !(last instanceof SSAThrowInstruction)) {
+        if (!(last instanceof SSAThrowInstruction)) {
             return cfg.getNormalSuccessors(current);
         }
         else {

@@ -64,12 +64,13 @@ public class FindStructuredBlockEndNode {
 
     /**
      * This attempts to walk all successors of a block to try to find the end block node.
+     *
      * @param b The block which we need to find the common successor for all its successors.
      * @throws StaticRegionException An exception that indicates that something has went wrong during computation.
      */
     void findCommonSuccessor(ISSABasicBlock b) throws StaticRegionException {
 
-        for (ISSABasicBlock succ: cfg.getNormalSuccessors(b)) {
+        for (ISSABasicBlock succ : cfg.getNormalSuccessors(b)) {
             checkRanges(b, succ);
             SSAUtil.enqueue(remaining, succ);
         }
@@ -88,6 +89,7 @@ public class FindStructuredBlockEndNode {
 
     /**
      * Finds the end block of a region.
+     *
      * @return End block of a region.
      * @throws StaticRegionException An exception that indicates that something has went wrong during computation.
      */
@@ -95,20 +97,30 @@ public class FindStructuredBlockEndNode {
 
         // we have already computed it.
         if (minConvergingNode != null) {
-           return minConvergingNode;
+            return minConvergingNode;
         }
 
         List<ISSABasicBlock> succs = new ArrayList<>(cfg.getNormalSuccessors(minLimit));
         if (succs.size() == 0) {
             throwException(staticRegionException, STATIC);
             return null;
-        }
-        else if (succs.size() == 1) {
+        } else if (succs.size() == 1) {
             return succs.get(0);
-        }
-        else {
+        } else {
             findCommonSuccessor(minLimit);
             return minConvergingNode;
         }
+    }
+
+    public boolean predIsReturn(ISSABasicBlock terminus) {
+        List<ISSABasicBlock> preds = new ArrayList<>(cfg.getNormalPredecessors(terminus));
+
+        Iterator<ISSABasicBlock> prdItr = preds.iterator();
+
+        boolean isReturn = true;
+        while (prdItr.hasNext() && isReturn)
+            if (!(prdItr.next().getLastInstruction() instanceof SSAReturnInstruction))
+                isReturn = false;
+        return isReturn;
     }
 }
