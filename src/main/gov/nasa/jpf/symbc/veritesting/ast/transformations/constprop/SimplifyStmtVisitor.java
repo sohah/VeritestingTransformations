@@ -37,7 +37,7 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(AssignmentStmt a) {
         Expression rhs = eva.accept(a.rhs);
-        if (isConstant(rhs) || isVariable(rhs)) {
+        if (isConstant(rhs)) {// || isVariable(rhs)) {
             constantsTable.add((Variable) a.lhs, rhs);
         }
         return new AssignmentStmt(a.lhs, rhs);
