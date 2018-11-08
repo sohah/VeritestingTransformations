@@ -16,20 +16,20 @@ import java.util.LinkedList;
 
 /**
  * This class removes early return statements.
- *
+ * <p>
  * Algorithm: moving from innermost to outermost.
- *
+ * <p>
  * If
- *
  */
-public class RemoveEarlyReturns  {
+public class RemoveEarlyReturns {
 
     StaticRegion region;
+
     public class ReturnResult {
         public final Stmt stmt;
         public final Expression assign;
         public final Expression condition;
-        public final Pair<Integer,String> retPosAndType;
+        public final Pair<Integer, String> retPosAndType;
 
         public ReturnResult(Stmt stmt, Expression assign, Expression condition, Pair<Integer, String> retPosAndType) {
             this.stmt = stmt;
@@ -72,7 +72,9 @@ public class RemoveEarlyReturns  {
     private static final ExprIdVisitor exprVisitor = new ExprIdVisitor();
     private Deque<Expression> conditionList = new LinkedList<>();
 
-    public RemoveEarlyReturns(){}
+    public RemoveEarlyReturns() {
+    }
+
     public RemoveEarlyReturns(StaticRegion region) {
         this.region = region;
     }
@@ -84,10 +86,8 @@ public class RemoveEarlyReturns  {
         if (init.isTrue()) {
             newResult = new ReturnResult(SkipStmt.skip, init);
             return newResult;
-        }
-
-        else if (init.stmt instanceof ReturnInstruction) {
-            ReturnInstruction returnInstruction = (ReturnInstruction)init.stmt;
+        } else if (init.stmt instanceof ReturnInstruction) {
+            ReturnInstruction returnInstruction = (ReturnInstruction) init.stmt;
             int returnPosition = ((IBytecodeMethod) (region.ir.getMethod())).getBytecodeIndex(returnInstruction.original.iindex);
             String returnType = region.varTypeTable.lookup(returnInstruction.original.getUse(0));
             Expression assign;
@@ -100,15 +100,13 @@ public class RemoveEarlyReturns  {
             newResult = new ReturnResult(SkipStmt.skip, assign,
                     Operation.TRUE, new Pair(returnPosition, returnType));
             return newResult;
-        }
-
-        else if (init.stmt instanceof IfThenElseStmt) {
+        } else if (init.stmt instanceof IfThenElseStmt) {
             Expression innerAssign;
             Expression innerCondition;
             Stmt resultStmt;
             Pair<Integer, String> retPosAndType;
 
-            IfThenElseStmt ifThenElseStmt = (IfThenElseStmt)init.stmt;
+            IfThenElseStmt ifThenElseStmt = (IfThenElseStmt) init.stmt;
             ReturnResult thenResult = doStmt(
                     new ReturnResult(ifThenElseStmt.thenStmt));
             ReturnResult elseResult = doStmt(
@@ -122,7 +120,7 @@ public class RemoveEarlyReturns  {
                         thenResult.assign,
                         elseResult.assign);
                 if (thenResult.isTrue() && elseResult.isTrue()) {
-                    innerCondition =  Operation.TRUE;
+                    innerCondition = Operation.TRUE;
                     resultStmt = SkipStmt.skip;
                 } else {
                     innerCondition = new IfThenElseExpr(
@@ -179,9 +177,8 @@ public class RemoveEarlyReturns  {
                 newResult = new ReturnResult(resultStmt);
             }
             return newResult;
-        }
-        else if (init.stmt instanceof CompositionStmt) {
-            CompositionStmt cStmt = (CompositionStmt)init.stmt;
+        } else if (init.stmt instanceof CompositionStmt) {
+            CompositionStmt cStmt = (CompositionStmt) init.stmt;
             ReturnResult newResult1 = doStmt(new ReturnResult(cStmt.s1, init));
             ReturnResult newResult2 = doStmt(new ReturnResult(cStmt.s2, newResult1));
             Stmt stmt;
@@ -194,8 +191,7 @@ public class RemoveEarlyReturns  {
             }
             newResult = new ReturnResult(stmt, newResult2);
             return newResult;
-        }
-        else {
+        } else {
             // do nothing!
             return init;
         }
@@ -268,33 +264,34 @@ Similar things can be done for SPF Cases.
  */
 
     public StaticRegion analyze(StaticRegion region) throws StaticRegionException, InvalidClassFileException {
-        System.out.println("Region prior to removeEarlyReturns: " +
+        System.out.println("\nRegion prior to removeEarlyReturns: " +
                 PrettyPrintVisitor.print(region.staticStmt));
         ReturnResult stmtResult = doStmt(new ReturnResult(region.staticStmt));
         Stmt resultStmt;
-        if(stmtResult.hasER()) { // if the region has a early return
+        if (stmtResult.hasER()) { // if the region has a early return
             AstVarExpr assignVarExpr = new AstVarExpr("~earlyReturnResult", stmtResult.retPosAndType.getSecond());
             AstVarExpr erOccurredExpr = new AstVarExpr("~earlyReturnOccurred", "BOOL");
 
+            ReturnLessVisitor returnLessVisitor = new ReturnLessVisitor();
+            Stmt returnLessStmt = region.staticStmt.accept(returnLessVisitor);
 
             resultStmt =
-                    new CompositionStmt(stmtResult.stmt,
+                    new CompositionStmt(returnLessStmt,
+                            new AssignmentStmt(assignVarExpr, stmtResult.assign));
+
+            /*
+            resultStmt =
+                    new CompositionStmt(returnLessStmt,
                             new CompositionStmt(
                                     new AssignmentStmt(assignVarExpr, stmtResult.assign),
-                                    new AssignmentStmt(erOccurredExpr, stmtResult.condition)));
+                                    new AssignmentStmt(erOccurredExpr, stmtResult.condition)));*/
 
-        }
-        else // if no early return was found, then just propagate the stmt.
+        } else // if no early return was found, then just propagate the stmt.
             resultStmt = stmtResult.stmt;
-/*
 
-        Stmt resultStmt =
-                new CompositionStmt(stmtResult.stmt,
-                                new AssignmentStmt(assignVarExpr, stmtResult.assign));
 
-*/
 
-        System.out.println("Region after removeEarlyReturns: " +
+        System.out.println("\nRegion after removeEarlyReturns: " +
                 PrettyPrintVisitor.print(resultStmt));
         // VarTypeTable varTypeTable = new VarTypeTable(region.varTypeTable);
 

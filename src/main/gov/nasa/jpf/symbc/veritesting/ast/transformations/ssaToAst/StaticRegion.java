@@ -148,7 +148,8 @@ public class StaticRegion implements Region {
             firstDef = regionBoundary.getSecond().getFirst();
             lastDef = regionBoundary.getSecond().getSecond();
 
-            lastVar = (lastDef != null) && (lastUse == null) ? lastDef : ((lastDef == null) && (lastUse != null) ? lastUse : (lastDef > lastUse ? lastDef: lastUse));
+            lastVar = findLastVar(firstDef, firstUse, lastDef, lastUse);
+            //lastVar = (lastDef != null) && (lastUse == null) ? lastDef : ((lastDef == null) && (lastUse != null) ? lastUse : (lastDef > lastUse ? lastDef: lastUse));
             ((SlotParamTable) slotParamTable).filterTableForBoundary(staticStmt, new Pair<>(firstUse, lastVar));
             varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastVar));
         }
@@ -175,6 +176,20 @@ public class StaticRegion implements Region {
         }
         LocalOutputInvariantVisitor.execute(this);
         RegionMetricsVisitor.execute(this);
+    }
+
+    private Integer findLastVar(Integer firstDef, Integer firstUse, Integer lastDef, Integer lastUse) {
+        ArrayList<Integer> vars = new ArrayList();
+        if(firstDef != null)
+            vars.add(firstDef);
+        if(lastDef != null)
+            vars.add(lastDef);
+        if(firstUse != null)
+            vars.add(firstUse);
+        if(lastUse != null)
+            vars.add(lastUse);
+
+        return Collections.max(vars);
     }
 
     /**
