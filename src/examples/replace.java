@@ -124,14 +124,14 @@ public class replace {
 			if(m == -1){
 				//
 				System.out.print(lin[i]);
-				i = i + 1;
 				if (printBufIdx < printBufLen) printBuf[printBufIdx++] = lin[i];
+				i = i + 1;
 			}
 			else if(m == i){
 				//TODO 
 				System.out.print(lin[i]);
-				i = i + 1;
 				if (printBufIdx < printBufLen) printBuf[printBufIdx++] = lin[i];
+				i = i + 1;
 			}
 			else{
 				i = m;
