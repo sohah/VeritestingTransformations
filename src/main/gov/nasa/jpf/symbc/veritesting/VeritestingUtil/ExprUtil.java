@@ -98,6 +98,12 @@ public class ExprUtil {
         return null;
     }
 
+    public static String getGreenVariableType(Expression expr) {
+        if (IntVariable.class.isInstance(expr)) return "int";
+        if (RealVariable.class.isInstance(expr)) return "real";
+        return null;
+    }
+
     /*
     This method tries to avoid a solver call to check satisfiability of the path condition if running in
     performance mode. It avoids the solver call if the isSatisfiable method returns false.

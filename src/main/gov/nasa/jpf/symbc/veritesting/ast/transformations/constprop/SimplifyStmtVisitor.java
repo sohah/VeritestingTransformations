@@ -3,10 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
-import gov.nasa.jpf.symbc.veritesting.ast.def.AssignmentStmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.SkipStmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
@@ -18,27 +15,38 @@ import za.ac.sun.cs.green.expr.Variable;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatGreenExpression;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isVariable;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
 import static za.ac.sun.cs.green.expr.Operation.Operator.EQ;
 
 public class SimplifyStmtVisitor extends AstMapVisitor {
     public ExprVisitorAdapter<Expression> eva;
     private DynamicTable<Expression> constantsTable;
     public StaticRegionException sre = null;
+    private DynamicRegion dynRegion;
 
-    private SimplifyStmtVisitor(DynamicTable<Expression> constantsTable) {
+    private SimplifyStmtVisitor(DynamicRegion dynRegion, DynamicTable<Expression> constantsTable) {
         super(new SimplifyRangerExprVisitor(constantsTable));
         eva = super.eva;
         this.constantsTable = constantsTable;
+        this.dynRegion = dynRegion;
     }
 
     @Override
     public Stmt visit(AssignmentStmt a) {
         Expression rhs = eva.accept(a.rhs);
-        if (isConstant(rhs)) {// || isVariable(rhs)) {
+        if (isConstant(rhs) || isVariable(rhs)) {
             constantsTable.add((Variable) a.lhs, rhs);
+            if (isVariable(rhs)) {
+                String type = getGreenVariableType(rhs);
+                if (type == null) type = (String) dynRegion.varTypeTable.lookup(rhs);
+                if (type == null) type = dynRegion.fieldRefTypeTable.lookup(rhs);
+                if (type != null) {
+                    if (a.lhs instanceof WalaVarExpr)
+                        dynRegion.varTypeTable.add(a.lhs, type);
+                    else if (a.lhs instanceof FieldRefVarExpr || a.lhs instanceof ArrayRefVarExpr)
+                        dynRegion.fieldRefTypeTable.add((CloneableVariable) a.lhs, type);
+                }
+            }
             return SkipStmt.skip;
         }
         return new AssignmentStmt(a.lhs, rhs);
@@ -62,7 +70,7 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
 
     public static DynamicRegion execute(DynamicRegion dynRegion) throws StaticRegionException {
         DynamicTable<Expression> constantsTable = new DynamicTable<>("Constants Table", "Expression", "Constant Value");
-        SimplifyStmtVisitor visitor = new SimplifyStmtVisitor(constantsTable);
+        SimplifyStmtVisitor visitor = new SimplifyStmtVisitor(dynRegion, constantsTable);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
         if (visitor.sre != null)
             throwException(visitor.sre, INSTANTIATION);
