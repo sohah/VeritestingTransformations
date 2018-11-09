@@ -383,7 +383,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     sf.push(0);
                     break;
             }
-            sf.setOperandAttr(dynRegion.earlyReturnResult.retVar);
+            sf.setOperandAttr(greenToSPFExpression(dynRegion.earlyReturnResult.retVar));
         } else {
             System.out.println("SPF does not know the type, type is assumed int.");
             throw new StaticRegionException("Cannot push operand on stack for early return, operand type is unknown.!");

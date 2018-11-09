@@ -157,8 +157,9 @@ public class DynamicRegion implements Region {
                 (StaticTable) staticRegion.varTypeTable,
                 uniqueNum);
         if(earlyReturnResult.hasER()){
-            //AstVarExpr earlyReturnVar = new AstVarExpr("~earlyReturnResult", earlyReturnResult.retPosAndType.getSecond());
-            this.varTypeTable.add(earlyReturnResult.retVar.makeUnique(uniqueNum), earlyReturnResult.retPosAndType.getSecond());
+            //AstVarExpr earlyReturnVar = new AstVarExpr( "~earlyReturnResult", earlyReturnResult.retPosAndType.getSecond());
+            assert(earlyReturnResult.retVar instanceof AstVarExpr);
+            this.varTypeTable.add(((AstVarExpr)earlyReturnResult.retVar).makeUnique(uniqueNum), earlyReturnResult.retPosAndType.getSecond());
         }
         this.outputTable = new DynamicOutputTable(
                 (OutputTable) staticRegion.outputTable, uniqueNum);

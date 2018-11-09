@@ -8,6 +8,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprIdVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
+import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
@@ -30,14 +31,14 @@ public class RemoveEarlyReturns {
         public final Expression assign;
         public final Expression condition;
         public final Pair<Integer, String> retPosAndType;
-        public AstVarExpr retVar;
+        public Expression retVar;
 
-        public ReturnResult(Stmt stmt, Expression assign, Expression condition, Pair<Integer, String> retPosAndType) {
+        public ReturnResult(Stmt stmt, Expression assign, Expression condition, Pair<Integer, String> retPosAndType, Expression retVar) {
             this.stmt = stmt;
             this.assign = assign;
             this.condition = condition;
             this.retPosAndType = retPosAndType;
-
+            this.retVar = retVar;
         }
 
         public ReturnResult(Stmt stmt) {
@@ -100,7 +101,7 @@ public class RemoveEarlyReturns {
                 assign = returnInstruction.rhs;
             }
             newResult = new ReturnResult(SkipStmt.skip, assign,
-                    Operation.TRUE, new Pair(returnPosition, returnType));
+                    Operation.TRUE, new Pair(returnPosition, returnType), null);
             return newResult;
         } else if (init.stmt instanceof IfThenElseStmt) {
             Expression innerAssign;
@@ -170,11 +171,11 @@ public class RemoveEarlyReturns {
                         resultStmt,
                         new IfThenElseExpr(init.condition, init.assign, innerAssign),
                         new Operation(Operation.Operator.OR,
-                                init.condition, innerCondition), init.retPosAndType);
+                                init.condition, innerCondition), init.retPosAndType, null);
             } else if (init.hasER()) {
                 newResult = new ReturnResult(resultStmt, init);
             } else if (innerAssign != null) {
-                newResult = new ReturnResult(resultStmt, innerAssign, innerCondition, retPosAndType);
+                newResult = new ReturnResult(resultStmt, innerAssign, innerCondition, retPosAndType, null);
             } else {
                 newResult = new ReturnResult(resultStmt);
             }
@@ -271,7 +272,7 @@ Similar things can be done for SPF Cases.
         ReturnResult stmtResult = doStmt(new ReturnResult(region.staticStmt));
         Stmt resultStmt;
         if (stmtResult.hasER()) { // if the region has a early return
-            AstVarExpr assignVarExpr = new AstVarExpr("~earlyReturnResult", stmtResult.retPosAndType.getSecond());
+            Expression assignVarExpr = new AstVarExpr("~earlyReturnResult", stmtResult.retPosAndType.getSecond());
             AstVarExpr erOccurredExpr = new AstVarExpr("~earlyReturnOccurred", "BOOL");
 
             stmtResult.retVar = assignVarExpr;
