@@ -39,6 +39,7 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
         Expression rhs = eva.accept(a.rhs);
         if (isConstant(rhs)) {// || isVariable(rhs)) {
             constantsTable.add((Variable) a.lhs, rhs);
+            return SkipStmt.skip;
         }
         return new AssignmentStmt(a.lhs, rhs);
     }
@@ -68,6 +69,7 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
         if (((SimplifyRangerExprVisitor)visitor.exprVisitor).sre != null) {
             throwException(((SimplifyRangerExprVisitor)visitor.exprVisitor).sre, INSTANTIATION);
         }
+        dynRegion.constantsTable = visitor.constantsTable;
         DynamicRegion ret = new DynamicRegion(dynRegion, stmt, dynRegion.spfCaseList, dynRegion.regionSummary,
                 dynRegion.spfPredicateSummary);
         System.out.println("\n--------------- AFTER SIMPLIFICATION ---------------\n");

@@ -67,8 +67,9 @@ public class ArrayRef {
         } else if (index instanceof WalaVarExpr) {
             return new ArrayRef(ref, ((WalaVarExpr)index).clone());
         }  else {
-            throwException(new IllegalArgumentException("Unsupported index type found when cloning ArrayRef"), INSTANTIATION);
-            return null;
+//            throwException(new IllegalArgumentException("Unsupported index type found when cloning ArrayRef"), INSTANTIATION);
+//            return null;
+            return new ArrayRef(ref, index);
         }
     }
 
@@ -80,26 +81,6 @@ public class ArrayRef {
             }
         }
         return false;
-    }
-
-    public static Pair<ArrayRef, Stmt> mergeArrayRefs(Expression condition, ArrayRef thenRef, ArrayRef elseRef) throws StaticRegionException {
-        ArrayRef ret = (thenRef == null) ^ (elseRef == null) ? (thenRef != null ? thenRef : elseRef) : null;
-        if (thenRef == null && elseRef == null) throwException(new StaticRegionException("Cannot merge two null array references"), INSTANTIATION);
-        if (thenRef.ref != elseRef.ref) throwException(new StaticRegionException("Cannot merge ArrayRefs for two different arrays"), INSTANTIATION);
-        if (ret != null) return new Pair(ret, null);
-        // If both refer to the same array location then return one of them
-        // Else we need to merge these two refs into one
-        if (thenRef.index instanceof IntConstant && elseRef.index instanceof IntConstant) {
-            if (((IntConstant) thenRef.index).getValue() == ((IntConstant) elseRef.index).getValue())
-                return new Pair(thenRef, null);
-        }
-        if (thenRef.index instanceof WalaVarExpr && elseRef.index instanceof WalaVarExpr &&
-                thenRef.index.equals(elseRef.index)) {
-            return new Pair(thenRef, null);
-        }
-        WalaVarExpr walaVarExpr = makeNewWalaVarExpr(uniqueCounter);
-        Stmt assignStmt = new AssignmentStmt(walaVarExpr, new GammaVarExpr(condition, thenRef.index, elseRef.index));
-        return new Pair(new ArrayRef(thenRef.ref, walaVarExpr), assignStmt);
     }
 
 }

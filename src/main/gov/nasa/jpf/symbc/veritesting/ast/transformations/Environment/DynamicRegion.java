@@ -94,6 +94,11 @@ public class DynamicRegion implements Region {
     public ArrayExpressions arrayOutputs;
 
     /*
+    * Holds all variables in the region summary that were found to be constants
+     */
+    public DynamicTable<Expression> constantsTable;
+
+    /*
 
 */
 
@@ -120,6 +125,7 @@ public class DynamicRegion implements Region {
         this.fieldRefTypeTable = oldDynRegion.fieldRefTypeTable;
         this.psm = oldDynRegion.psm;
         this.arrayOutputs = oldDynRegion.arrayOutputs;
+        this.constantsTable = oldDynRegion.constantsTable;
     }
 
 
@@ -156,5 +162,6 @@ public class DynamicRegion implements Region {
         this.fieldRefTypeTable = new FieldRefTypeTable();
         this.psm = new FieldSubscriptMap();
         this.arrayOutputs = new ArrayExpressions(null);
+        this.constantsTable = null;
     }
 }

@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
@@ -100,7 +101,8 @@ public class ArrayUtil {
         return new Pair(ret, type);
     }
 
-    public static void doArrayStore(ThreadInfo ti, ArrayExpressions arrayExpressions) throws StaticRegionException {
+    public static void doArrayStore(ThreadInfo ti, ArrayExpressions arrayExpressions,
+                                    DynamicTable<Expression> constantsTable) throws StaticRegionException {
         Iterator itr = arrayExpressions.table.entrySet().iterator();
         while (itr.hasNext()) {
             Map.Entry<Integer, Expression[]> entry = (Map.Entry) itr.next();
@@ -122,9 +124,10 @@ public class ArrayUtil {
                 if (newExpr instanceof ArrayRefVarExpr) {
                     assert arrayExpressions.uniqueNum != -1;
                     newExpr = ((ArrayRefVarExpr) newExpr).makeUnique(arrayExpressions.uniqueNum);
-                    newExpr = createGreenVar(type, ((ArrayRefVarExpr) newExpr).getSymName());
+                    if (constantsTable.lookup((ArrayRefVarExpr)newExpr) != null)
+                        newExpr = constantsTable.lookup((ArrayRefVarExpr)newExpr);
+                    else newExpr = createGreenVar(type, ((ArrayRefVarExpr) newExpr).getSymName());
                 }
-
                 eiArray.setElementAttr(i, greenToSPFExpression(newExpr));
             }
         }

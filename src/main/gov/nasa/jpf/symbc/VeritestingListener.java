@@ -424,7 +424,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             Integer slot = (Integer) slotItr.next();
             Variable var = dynOutputTable.lookup(slot);
             assert (var instanceof WalaVarExpr);
-            Expression symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), ((WalaVarExpr) var).getSymName());
+            Expression symVar;
+            if (dynRegion.constantsTable.lookup(var) != null)
+                symVar = dynRegion.constantsTable.lookup(var);
+            else symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), ((WalaVarExpr) var).getSymName());
             sf.setSlotAttr(slot, greenToSPFExpression(symVar));
         }
     }
@@ -433,7 +436,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         Iterator itr = dynRegion.psm.getUniqueFieldAccess().iterator();
         while (itr.hasNext()) {
             FieldRefVarExpr expr = (FieldRefVarExpr) itr.next();
-            Expression symVar = createGreenVar(dynRegion.fieldRefTypeTable.lookup(expr), expr.getSymName());
+            String type = dynRegion.fieldRefTypeTable.lookup(expr);
+            Expression symVar;
+            if (dynRegion.constantsTable.lookup(expr) != null)
+                symVar = dynRegion.constantsTable.lookup(expr);
+            else symVar = createGreenVar(type, expr.getSymName());
             new SubstituteGetOutput(ti, expr.fieldRef, false, greenToSPFExpression(symVar)).invoke();
         }
     }
@@ -445,7 +452,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 //            Expression symVar = createGreenVar(dynRegion.fieldRefTypeTable.lookup(expr), expr.getSymName());
 //            doArrayStore(ti, expr, symVar, dynRegion.fieldRefTypeTable.lookup(expr));
 //        }
-        doArrayStore(ti, dynRegion.arrayOutputs);
+        doArrayStore(ti, dynRegion.arrayOutputs, dynRegion.constantsTable);
     }
 
     /**
