@@ -88,7 +88,7 @@ public class replace {
 		//
 		change(str, pat, sub);
 		for (int i=0; i < printBuf.length; i++) printBuf[i] = '0';
-		char[] retChar = new char[pat.length + sub.length + str.length + printBufLen];
+		char[] retChar = new char[pat.length + sub.length + str.length + printBuf.length];
 		int outIndex = 0;
 		for (int i = 0; i < pat.length; i++)
 			retChar[outIndex++] = pat[i];
