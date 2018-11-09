@@ -74,6 +74,7 @@ public class UniqueRegion {
 
             RemoveEarlyReturns o = new RemoveEarlyReturns();
             RemoveEarlyReturns.ReturnResult newReturnResult = o.new ReturnResult(oldEarlyReturn.stmt, newAssign, newCondition, oldEarlyReturn.retPosAndType);
+            newReturnResult.retVar = oldEarlyReturn.retVar;
             newDynRegion = new DynamicRegion(oldDynRegion,
                     dynStmt,
                     oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary, newReturnResult);

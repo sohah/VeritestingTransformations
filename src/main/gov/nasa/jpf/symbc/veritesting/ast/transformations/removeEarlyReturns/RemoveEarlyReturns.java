@@ -30,6 +30,7 @@ public class RemoveEarlyReturns {
         public final Expression assign;
         public final Expression condition;
         public final Pair<Integer, String> retPosAndType;
+        public AstVarExpr retVar;
 
         public ReturnResult(Stmt stmt, Expression assign, Expression condition, Pair<Integer, String> retPosAndType) {
             this.stmt = stmt;
@@ -51,6 +52,7 @@ public class RemoveEarlyReturns {
             this.assign = res.assign;
             this.condition = res.condition;
             this.retPosAndType = res.retPosAndType;
+            this.retVar = res.retVar;
 
         }
 
@@ -272,6 +274,7 @@ Similar things can be done for SPF Cases.
             AstVarExpr assignVarExpr = new AstVarExpr("~earlyReturnResult", stmtResult.retPosAndType.getSecond());
             AstVarExpr erOccurredExpr = new AstVarExpr("~earlyReturnOccurred", "BOOL");
 
+            stmtResult.retVar = assignVarExpr;
             ReturnLessVisitor returnLessVisitor = new ReturnLessVisitor();
             Stmt returnLessStmt = region.staticStmt.accept(returnLessVisitor);
 
