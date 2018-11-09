@@ -5,14 +5,16 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.ExprBoundaryVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 /**
  * The visitor explores the boundaries of the region by identifying: first def, last def and first use vars. This information is later used to identify beginning and ending of vars for which the tables should be populated.
  */
 
 public class RegionBoundaryVisitor extends AstMapVisitor {
-    private Integer lastDef;
-    private boolean firstDefFound = false;
-    private Integer firstDef;
+
+    private ArrayList<Integer> allDefs = new ArrayList<>();
 
 
     public RegionBoundaryVisitor(ExprBoundaryVisitor exprBoundaryVisitor) {
@@ -20,11 +22,17 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
     }
 
     public Integer getLastDef() {
-        return lastDef;
+        if (allDefs.size() > 0)
+            return Collections.max(allDefs);
+        else
+            return null;
     }
 
     public Integer getFirstDef() {
-        return firstDef;
+        if (allDefs.size() > 0)
+            return Collections.min(allDefs);
+        else
+            return null;
     }
 
     public Integer getFirstUse() {
@@ -38,11 +46,7 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(AssignmentStmt a) {
         if (a.lhs instanceof WalaVarExpr) {
-            lastDef = ((WalaVarExpr) a.lhs).number;
-            if (!firstDefFound) {
-                firstDef = ((WalaVarExpr) a.lhs).number;
-                firstDefFound = true;
-            }
+            allDefs.add(((WalaVarExpr) a.lhs).number);
             eva.accept(a.rhs);
         }
         return null;
@@ -75,11 +79,7 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(ArrayLoadInstruction c) {
-        lastDef = ((WalaVarExpr) c.def).number;
-        if (!firstDefFound) {
-            firstDef = ((WalaVarExpr) c.def).number;
-            firstDefFound = true;
-        }
+        allDefs.add(((WalaVarExpr) c.def).number);
         eva.accept(c.arrayref);
         eva.accept(c.index);
         return null;
@@ -101,11 +101,7 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(ReturnInstruction c) {
         if (c.getOriginal().hasDef()) {
-            lastDef = c.getOriginal().getDef();
-            if (!firstDefFound) {
-                firstDef = c.getOriginal().getDef();
-                firstDefFound = true;
-            }
+            allDefs.add(c.getOriginal().getDef());
         }
         eva.accept(c.rhs);
         return null;
@@ -113,12 +109,7 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(GetInstruction c) {
-        lastDef = ((WalaVarExpr) c.def).number;
-        if (!firstDefFound) {
-            firstDef = ((WalaVarExpr) c.def).number;
-            firstDefFound = true;
-        }
-
+        allDefs.add(((WalaVarExpr) c.def).number);
         eva.accept(c.ref);
         return null;
     }
@@ -138,11 +129,7 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(InvokeInstruction c) {
         if ((c.getOriginal()).getNumberOfReturnValues() != 0) {
-            lastDef = c.getOriginal().getDef();
-            if (!firstDefFound) {
-                firstDef = c.getOriginal().getDef();
-                firstDefFound = true;
-            }
+            allDefs.add(c.getOriginal().getDef());
         }
         for (int i = 0; i < c.params.length; i++) {
             eva.accept(c.params[i]);
@@ -152,11 +139,7 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(ArrayLengthInstruction c) {
-        lastDef = ((WalaVarExpr) c.def).number;
-        if (!firstDefFound) {
-            firstDef = ((WalaVarExpr) c.def).number;
-            firstDefFound = true;
-        }
+        allDefs.add(((WalaVarExpr) c.def).number);
         eva.accept(c.arrayref);
         return null;
     }
@@ -168,22 +151,14 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(CheckCastInstruction c) {
-        lastDef = c.getOriginal().getDef();
-        if (!firstDefFound) {
-            firstDef = c.getOriginal().getDef();
-            firstDefFound = true;
-        }
+        allDefs.add(c.getOriginal().getDef());
         eva.accept(c.val);
         return null;
     }
 
     @Override
     public Stmt visit(InstanceOfInstruction c) {
-        lastDef = ((WalaVarExpr) c.result).number;
-        if (!firstDefFound) {
-            firstDef = ((WalaVarExpr) c.result).number;
-            firstDefFound = true;
-        }
+        allDefs.add(((WalaVarExpr) c.result).number);
         eva.accept(c.val);
 
         return null;
@@ -191,11 +166,7 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(PhiInstruction c) {
-        lastDef = ((WalaVarExpr) c.def).number;
-        if (!firstDefFound) {
-            firstDef = ((WalaVarExpr) c.def).number;
-            firstDefFound = true;
-        }
+        allDefs.add(((WalaVarExpr) c.def).number);
         for (int i = 0; i < c.rhs.length; i++) {
             eva.accept(c.rhs[i]);
         }
