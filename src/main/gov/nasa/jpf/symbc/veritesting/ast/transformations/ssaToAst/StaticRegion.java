@@ -99,7 +99,12 @@ public class StaticRegion implements Region {
         Integer firstDef = null;
         Integer lastDef = null;
         Integer lastVar;
-        this.earlyReturnResult = returnResult;
+        if(returnResult == null){
+            RemoveEarlyReturns o = new RemoveEarlyReturns();
+            this.earlyReturnResult = o. new ReturnResult(staticStmt);
+        }
+        else
+            this.earlyReturnResult = returnResult;
 
         if (isMethodRegion) {
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt);
