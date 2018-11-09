@@ -50,6 +50,8 @@ public class VeritestingMain {
     private boolean methodAnalysis = false;
     private String currentPackageName;
     public static HashMap<String, StaticRegion> veriRegions = new HashMap<>();
+    public static HashSet<String> skipVeriRegions = new HashSet<>();
+    public static final HashSet<String> skipRegionStrings = new HashSet<>();
     private ThreadInfo ti;
 
     SSACFG cfg;

@@ -75,6 +75,8 @@ import java.util.concurrent.TimeUnit;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipVeriRegions;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
@@ -200,7 +202,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             try {
                 HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
                 StaticRegion staticRegion = regionsMap.get(key);
-                if ((staticRegion != null) && !(staticRegion.isMethodRegion)) {
+                if ((staticRegion != null) && !(staticRegion.isMethodRegion) && !skipVeriRegions.contains(key)) {
                     thisHighOrdCount = 0;
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                     if (SpfUtil.isSymCond(ti.getTopFrame(), staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
@@ -227,23 +229,33 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             } catch (IllegalArgumentException e) {
                 statisticManager.updateSPFHitForRegion(key, e.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+                updateSkipRegions(e.getMessage(), key);
                 return;
             } catch (StaticRegionException sre) {
                 statisticManager.updateSPFHitForRegion(key, sre.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
+                updateSkipRegions(sre.getMessage(), key);
                 return;
             } catch (VisitorException greenEx) {
                 statisticManager.updateSPFHitForRegion(key, greenEx.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + greenEx.getMessage() + "\n");
+                updateSkipRegions(greenEx.getMessage(), key);
                 return;
             } catch (CloneNotSupportedException e) {
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
                 e.printStackTrace();
+                updateSkipRegions(e.getMessage(), key);
                 return;
             }
         }
     }
 
+    private void updateSkipRegions(String message, String key) {
+        for (String skipString: skipRegionStrings) {
+            if (message.toLowerCase().contains(skipString.toLowerCase()))
+                skipVeriRegions.add(key);
+        }
+    }
 
     private void runVeritestingWithSPF(ThreadInfo ti, VM vm, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws StaticRegionException, CloneNotSupportedException, VisitorException {
         if (!ti.isFirstStepInsn()) { // first time around

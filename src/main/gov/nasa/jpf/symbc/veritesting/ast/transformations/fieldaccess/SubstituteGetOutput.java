@@ -8,6 +8,7 @@ import za.ac.sun.cs.green.expr.RealConstant;
 
 import java.util.Objects;
 
+import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 
 public class SubstituteGetOutput {
@@ -58,6 +59,7 @@ public class SubstituteGetOutput {
             } catch (ClassInfoException e) {
                 exceptionalMessage = "fillFieldInputHole: class loader failed to resolve class name " +
                         className;
+                skipRegionStrings.add("fillFieldInputHole: class loader failed to resolve");
             }
             if (ci != null) {
                 ElementInfo eiFieldOwner;
@@ -69,7 +71,10 @@ public class SubstituteGetOutput {
                     if(isRead) eiFieldOwner = ci.getStaticElementInfo();
                     else eiFieldOwner = ci.getModifiableStaticElementInfo();
                 }
-                if (eiFieldOwner == null) exceptionalMessage = "failed to resolve eiFieldOwner for field";
+                if (eiFieldOwner == null) {
+                    exceptionalMessage = "failed to resolve eiFieldOwner for field";
+                    skipRegionStrings.add(exceptionalMessage);
+                }
                 else {
                     FieldInfo fieldInfo;
                     if (!isStatic) fieldInfo = ci.getInstanceField(fieldName);
@@ -77,6 +82,7 @@ public class SubstituteGetOutput {
                     if (fieldInfo == null) {
                         exceptionalMessage = "java.lang.NoSuchFieldError" + "referencing field '" + fieldName
                                 + "' in " + eiFieldOwner;
+                        skipRegionStrings.add("java.lang.NoSuchFieldError");
                     } else {
                         if (isRead) executeRead(eiFieldOwner, fieldInfo);
                         else executeWrite(eiFieldOwner, fieldInfo);

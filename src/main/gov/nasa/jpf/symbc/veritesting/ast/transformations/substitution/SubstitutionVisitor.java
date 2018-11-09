@@ -28,6 +28,7 @@ import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils.getSuperClassList;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.createSPFVariableForType;
@@ -218,6 +219,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
                     }
                 } else {
                     sre = new StaticRegionException("Cannot summarize invoke in " + instruction.toString());
+                    skipRegionStrings.add("Cannot summarize invoke");
                     return new InvokeInstruction(c.getOriginal(), c.result, params);
                 }
             } else
