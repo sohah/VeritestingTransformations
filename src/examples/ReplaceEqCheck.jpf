@@ -7,7 +7,7 @@ vm.storage.class=nil
 symbolic.debug=false
 
 ######## testing equivalence ######
-symbolic.method=TestVeritestingReplace.testHarness(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+symbolic.method=TestVeritestingReplace.testHarness(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#con#con#con#con#con)
 #symbolic.method=TestVeritestingReplace.revTestHarness(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 symbolic.dp=z3bitvector
 
@@ -17,6 +17,6 @@ symbolic.min_double=-100.0
 symbolic.max_double=100.0
 listener = .symbc.VeritestingListener
 #listener = .symbc.SymbolicListener
-veritestingMode = 3
-performanceMode = false
+veritestingMode = 4
+performanceMode = true
 symbolic.lazy = true
