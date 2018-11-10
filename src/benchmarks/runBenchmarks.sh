@@ -13,7 +13,8 @@ runSPF $VERIDIR/src/examples/tcas_singlereturn.mode2.jpf >& $VERIDIR/logs/tcas_s
 runSPF $VERIDIR/src/examples/tcas_singlereturn.mode3.jpf >& $VERIDIR/logs/tcas_singlereturn.mode3.log
 runSPF $VERIDIR/src/examples/tcas_singlereturn.mode4.jpf >& $VERIDIR/logs/tcas_singlereturn.mode4.log
 
-runSPF $VERIDIR/src/examples/replace.mode1.jpf >& $VERIDIR/logs/replace.mode1.log
-runSPF $VERIDIR/src/examples/replace.mode2.jpf >& $VERIDIR/logs/replace.mode2.log
-runSPF $VERIDIR/src/examples/replace.mode3.jpf >& $VERIDIR/logs/replace.mode3.log
-runSPF $VERIDIR/src/examples/replace.mode4.jpf >& $VERIDIR/logs/replace.mode4.log
+# runSPF $VERIDIR/src/examples/replace.mode1.jpf >& $VERIDIR/logs/replace.mode1.log
+# runSPF $VERIDIR/src/examples/replace.mode2.jpf >& $VERIDIR/logs/replace.mode2.log
+# runSPF $VERIDIR/src/examples/replace.mode3.jpf >& $VERIDIR/logs/replace.mode3.log
+# runSPF $VERIDIR/src/examples/replace.mode4.jpf >& $VERIDIR/logs/replace.mode4.log
+
