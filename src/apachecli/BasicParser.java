@@ -1,7 +1,4 @@
-package ApacheCLI;
 
-import ApacheCLI.Options;
-import ApacheCLI.Parser;
 
 /**
  * The class BasicParser provides a very simple implementation of

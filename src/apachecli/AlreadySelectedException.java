@@ -1,7 +1,4 @@
-package ApacheCLI;
 
-import ApacheCLI.Option;
-import ApacheCLI.OptionGroup;
 
 import java.text.ParseException;
 

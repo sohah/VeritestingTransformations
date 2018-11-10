@@ -1,9 +1,5 @@
-package ApacheCLI;
 
 
-import ApacheCLI.CommandLine;
-import ApacheCLI.CommandLineParser;
-import ApacheCLI.Options;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -176,12 +172,13 @@ public abstract class Parser implements CommandLineParser
         	boolean eatTheRest = false;
             char[] t = (char[]) iterator.next();
             char arg = t[0];
-            
+
             if(arg == '-'){
             	_next = iterator.hasNext();
             	if(_next){
 		        	t = (char[]) iterator.next();
 		        	arg = t[0];
+//                    if (arg == '-') stopAtNonOption = true; // only gets veritested twice, other times the condition is concrete, how ?
 		        	if(arg == '-'){
 		        		eatTheRest = true;
 		        	}

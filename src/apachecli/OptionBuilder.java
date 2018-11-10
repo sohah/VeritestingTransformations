@@ -1,6 +1,4 @@
-package ApacheCLI;
 
-import ApacheCLI.Option;
 
 /**
  * OptionBuilder allows the user to create Options using descriptive methods.
