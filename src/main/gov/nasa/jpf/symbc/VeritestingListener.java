@@ -73,6 +73,7 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator.getKind;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
@@ -207,7 +208,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 if ((staticRegion != null) && !(staticRegion.isMethodRegion) && !skipVeriRegions.contains(key)) {
                     thisHighOrdCount = 0;
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
-                    if (SpfUtil.isSymCond(ti.getTopFrame(), staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
+                    if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
                         if (runMode != VeritestingMode.SPFCASES) {
                             // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
                             Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
@@ -265,7 +266,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
             dynRegion = greenTranformationForSPFCases(dynRegion);
 
-            if (StaticPCChoiceGenerator.getKind(instructionToExecute) == StaticPCChoiceGenerator.Kind.OTHER) {
+            if (getKind(instructionToExecute) == StaticPCChoiceGenerator.Kind.OTHER) {
                 newCG = new StaticSummaryChoiceGenerator(dynRegion, instructionToExecute);
             } else {
                 newCG = new StaticBranchChoiceGenerator(dynRegion, instructionToExecute);
@@ -401,6 +402,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             return false;
         }
     }
+
+
 
     /**
      * This pop up operands of the if instruction that begins the region.

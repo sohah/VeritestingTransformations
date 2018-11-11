@@ -28,4 +28,5 @@ symbolic.max_double=100.0
 listener = .symbc.VeritestingListener
 #listener = .symbc.SymbolicListener
 veritestingMode = 3
+performanceMode = false
 symbolic.lazy = true

@@ -26,7 +26,8 @@ public class EqSPFCasesTest2 extends TestRegionBaseClass {
         assert(!y & !x ? a==5: true);
 */
         Outputs o = new Outputs();
-        o.intOutputs = new int[a];
+        o.intOutputs = new int[1];
+        o.intOutputs[0] = a;
         return o;
     }
 
