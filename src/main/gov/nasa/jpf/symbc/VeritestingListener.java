@@ -102,6 +102,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private final long runStartTime = System.nanoTime();
     public static StatisticManager statisticManager = new StatisticManager();
     private static int veritestRegionExpectedCount = -1;
+    private static final int instantiationLimit = -1;
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES}
 
@@ -173,6 +174,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
         if (runMode == VeritestingMode.VANILLASPF) return;
+        if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
         boolean noVeritestingFlag = false;
         StackFrame curr = ti.getTopFrame();
         // Begin equivalence checking code
