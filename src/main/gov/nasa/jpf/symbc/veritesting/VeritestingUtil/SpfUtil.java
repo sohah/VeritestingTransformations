@@ -78,14 +78,14 @@ public class SpfUtil {
                     sf.getOperandAttr();
             if (operand1 != null)
                 isSymCondition = true;
-            if (isSymCondition && VeritestingListener.performanceMode) {
+            /*if (isSymCondition && VeritestingListener.performanceMode) {
                 if (operand1 instanceof IntegerExpression) operand2 = new IntegerConstant(0);
                 else if (operand1 instanceof RealExpression) operand2 = new RealConstant(0.0);
                 else
                     return false; // we cannot figure this condition out
                 isSymCondition = isBothSidesFeasible(ti, getComparator(ins), getNegComparator(ins), operand1,
                         operand2);
-            }
+            }*/
         }
         if (operandNum == 2) {
             operand1 = (gov.nasa.jpf.symbc.numeric.Expression)
@@ -96,7 +96,7 @@ public class SpfUtil {
                     sf.getOperandAttr(0);
             if (operand2 != null)
                 isSymCondition = true;
-            if (isSymCondition && VeritestingListener.performanceMode) {
+            /*if (isSymCondition && VeritestingListener.performanceMode) {
                 if (operand1 == null) {
                     if (operand2 instanceof IntegerExpression) operand1 = new IntegerConstant(sf.peek(1));
                     else if (operand2 instanceof RealExpression) operand1 = new RealConstant(sf.peekDouble(1));
@@ -109,7 +109,7 @@ public class SpfUtil {
                         return false; // we cannot figure this condition out
                 }
                 isSymCondition = isBothSidesFeasible(ti, getComparator(ins), getNegComparator(ins), operand1, operand2);
-            }
+            }*/
         }
         return isSymCondition;
     }
