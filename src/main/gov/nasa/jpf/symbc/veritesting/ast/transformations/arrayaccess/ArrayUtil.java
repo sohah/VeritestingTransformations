@@ -129,6 +129,7 @@ public class ArrayUtil {
                     else newExpr = createGreenVar(type, ((ArrayRefVarExpr) newExpr).getSymName());
                 }
                 eiArray.setElementAttr(i, greenToSPFExpression(newExpr));
+                assert(greenToSPFExpression(newExpr) != null);
             }
         }
     }

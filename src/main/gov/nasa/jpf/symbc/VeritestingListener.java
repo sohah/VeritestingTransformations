@@ -308,10 +308,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         staticRegion.varTypeTable.print();
 
         /*-------------- EARLY RETURN TRANSFORMATION ---------------*/
-        if (runMode == VeritestingMode.SPFCASES) {
+   /*     if (runMode == VeritestingMode.SPFCASES) {
             staticRegion = RemoveEarlyReturns.removeEarlyReturns(staticRegion);
         }
-
+*/
         /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
         DynamicRegion dynRegion = UniqueRegion.execute(staticRegion);
 
@@ -481,9 +481,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             Variable var = dynOutputTable.lookup(slot);
             assert (var instanceof WalaVarExpr);
             Expression symVar;
-            if (dynRegion.constantsTable.lookup(var) != null)
+            /*if (dynRegion.constantsTable.lookup(var) != null)
                 symVar = dynRegion.constantsTable.lookup(var);
-            else symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), ((WalaVarExpr) var).getSymName());
+            else */symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), ((WalaVarExpr) var).getSymName());
+            assert(greenToSPFExpression((symVar)) != null);
             sf.setSlotAttr(slot, greenToSPFExpression(symVar));
         }
     }
@@ -497,6 +498,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (dynRegion.constantsTable.lookup(expr) != null)
                 symVar = dynRegion.constantsTable.lookup(expr);
             else symVar = createGreenVar(type, expr.getSymName());
+            assert(symVar != null);
             new SubstituteGetOutput(ti, expr.fieldRef, false, greenToSPFExpression(symVar)).invoke();
         }
     }

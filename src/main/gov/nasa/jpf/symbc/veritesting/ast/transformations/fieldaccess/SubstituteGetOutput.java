@@ -95,6 +95,7 @@ public class SubstituteGetOutput {
 
     private void executeWrite(ElementInfo eiFieldOwner, FieldInfo fieldInfo) {
         int fieldSize = fieldInfo.getStorageSize();
+        assert(finalValue != null);
         if (fieldSize == 1) {
             eiFieldOwner.set1SlotField(fieldInfo, 0); // field value should not matter (I, Vaibhav, think)
             eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
