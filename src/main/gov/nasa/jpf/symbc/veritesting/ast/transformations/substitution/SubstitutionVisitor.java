@@ -210,12 +210,19 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
                     dynRegion.varTypeTable.mergeTable(hgOrdTypeTable);
                     Stmt returnStmt;
-                    if (c.result.length == 1) {
-                        Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
-                        returnStmt = new AssignmentStmt(c.result[0], stmtRetPair.getSecond());
-                        return new CompositionStmt(stmtRetPair.getFirst(), returnStmt);
+                    if (getStmtRetExp(hgOrdStmt) != null) { //cases where return instruction was not the last instruction in a compsitional statement, then we have something wrong in our summary that we can't handle.
+                        if (c.result.length == 1) {
+                            Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
+                            assert (stmtRetPair != null);
+                            returnStmt = new AssignmentStmt(c.result[0], stmtRetPair.getSecond());
+                            return new CompositionStmt(stmtRetPair.getFirst(), returnStmt);
+                        } else {
+                            return getStmtRetExp(hgOrdStmt).getFirst();
+                        }
                     } else {
-                        return getStmtRetExp(hgOrdStmt).getFirst();
+                        sre = new StaticRegionException("Cannot summarize invoke in " + instruction.toString());
+                        skipRegionStrings.add("Cannot summarize invoke");
+                        return new InvokeInstruction(c.getOriginal(), c.result, params);
                     }
                 } else {
                     sre = new StaticRegionException("Cannot summarize invoke in " + instruction.toString());
