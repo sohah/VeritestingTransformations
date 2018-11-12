@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.FieldRefTypeTable;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.*;
@@ -16,7 +17,7 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGree
  * A visitor that visits all FieldRefVarExpr and generates the appropriate SPF symbolic variable based on its type.
  */
 
-public class FieldArrayVarToSPFVarVisitor implements ExprVisitor<Expression> {
+public class FieldArrayVarToSPFVarVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 
     private final FieldRefTypeTable fieldRefTypeTable;
 
@@ -26,44 +27,6 @@ public class FieldArrayVarToSPFVarVisitor implements ExprVisitor<Expression> {
     public FieldArrayVarToSPFVarVisitor(FieldRefTypeTable fieldRefTypeTable) {
         this.fieldRefTypeTable = fieldRefTypeTable;
     }
-
-    @Override
-    public Expression visit(IntConstant expr) {
-        return expr;
-    }
-
-    @Override
-    public Expression visit(IntVariable expr) {
-        return expr;
-    }
-
-    @Override
-    public Expression visit(Operation expr) {
-        return expr;
-    }
-
-    @Override
-    public Expression visit(RealConstant expr) {
-        return expr;
-    }
-
-    @Override
-    public Expression visit(RealVariable expr) {
-        return expr;
-    }
-
-    @Override
-    public Expression visit(StringConstantGreen expr) {
-        return expr;
-    }
-
-    @Override
-    public Expression visit(StringVariable expr) {
-        return expr;
-    }
-
-    @Override
-    public Expression visit(AstVarExpr expr) { return expr; }
 
     @Override
     public Expression visit(IfThenElseExpr expr) {

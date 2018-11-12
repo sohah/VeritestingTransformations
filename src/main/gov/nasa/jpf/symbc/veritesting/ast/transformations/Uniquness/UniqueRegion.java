@@ -85,7 +85,7 @@ public class UniqueRegion {
 
         newDynRegion.fieldRefTypeTable.makeUniqueKey(uniqueNum);
         newDynRegion.psm.setUniqueNum(uniqueNum);
-        newDynRegion.arrayPSM.setUniqueNum(uniqueNum);
+        newDynRegion.arrayOutputs.setUniqueNum(uniqueNum);
         return newDynRegion;
     }
 

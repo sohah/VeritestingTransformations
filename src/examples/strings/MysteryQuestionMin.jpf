@@ -1,7 +1,6 @@
 target=strings.MysteryQuestionMin
 
 classpath=${jpf-symbc}/build/examples
-
 sourcepath=${jpf-symbc}/src/examples
 
 # To specify a mix of concrete and symbolic values
@@ -15,24 +14,34 @@ sourcepath=${jpf-symbc}/src/examples
 
 # in this particular configuration all the input
 # parameters to methods test2 and test are symbolic
-symbolic.dp=z3str2
+#symbolic.strings=true
+#symbolic.string_dp=z3str2
+
+#symbolic.debug=true
+symbolic.dp=z3bitvector
 
 # settings for the symbolic string support, either
 # "none" (default), "cvc", "automata" (recommended) or
 # "sat". At the moment symbolic.dp must be equal to
 # "choco" for it to work.
-symbolic.string_dp=automata
+#symbolic.string_dp=automata
 #symbolic.string_dp_timeout_ms=0
-symbolic.string_dp_timeout_ms=3000
+#symbolic.string_dp_timeout_ms=3000
 # As a side note for eclipse users, to run cvc3
 # enabled programs, the eclipse plugin which allows
 # you to right click on a .jpf test file and click
 # "Verify..." does not work. In order to run cvc3
 # you need to go through "Run Configuration"
 
-symbolic.method= strings.MysteryQuestionMin.preserveSomeHtmlTagsAndRemoveWhitespaces(sym)
-search.depth_limit = 30
+
+#symbolic.method=strings.MysteryQuestionMin.preserveSomeHtmlTagsAndRemoveWhitespaces(sym)
+search.depth_limit = 50
 #listener = gov.nasa.jpf.symbc.SymbolicListenerClean
-listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
+#listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
+listener = .symbc.VeritestingListener
+cg.randomize_choices = FIXED_SEED
 
 vm.storage.class=nil
+veritestingMode=3
+performanceMode = true
+interestingClassNames = Mystery

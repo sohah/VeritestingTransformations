@@ -1,5 +1,5 @@
 
-public class replace {
+public class replace_sr {
 	
 	public static final int patParaLen = 3;
 	public static int patParaIndex = 0;
@@ -35,7 +35,7 @@ public class replace {
 	public static final int NEWLINE = 10;
 	public static final int CLOSIZE = 1;
 
-	public static final int printBufLen = 0;
+	public static final int printBufLen = 10;
 	static int printBufIdx = 0;
 	static char[] printBuf;
 
@@ -385,30 +385,32 @@ public class replace {
 	}
 
 	private static boolean in_pat_set(char ch) {
+		boolean ret;
 		if(ch == LITCHAR){
-			return true;
+			ret = true;
 		}
 		else if(ch == BOL){
-			return true;
+			ret = true;
 		}
 		else if(ch == EOL){
-			return true;
+			ret = true;
 		}
 		else if(ch == ANY){
-			return true;
+			ret = true;
 		}
 		else if(ch == CCL){
-			return true;
+			ret = true;
 		}
 		else if(ch == NCCL){
-			return true;
+			ret = true;
 		}
 		else if(ch == CLOSURE){
-			return true;
+			ret = true;
 		}
 		else{
-			return false;
+			ret = false;
 		}
+		return ret;
 	}
 	
 	/*
@@ -613,18 +615,20 @@ public class replace {
 		pat[lastj] = CLOSURE;
 	}
 	private static boolean in_set_2(char ch) {
+		boolean ret;
 		if(ch == BOL){
-			return true;
+			ret = true;
 		}
 		else if(ch == EOL){
-			return true;
+			ret = true;
 		}
 		else if(ch == CLOSURE){
-			return true;
+			ret = true;
 		}
 		else{
-			return false;
+			ret = false;
 		}
+		return ret;
 	}
 	
 	/*
@@ -710,12 +714,14 @@ public class replace {
 		char _jstart = (char)(patIndex - jstart - 1);
 		//
 		pat[jstart] = _jstart;
+		boolean ret;
 		if(arg[patParaIndex] == CCLEND){
-			return true;
+			ret = true;
 		}
 		else{
-			return false;
+			ret = false;
 		}
+		return ret;
 	}
 	/*
 	 * 
@@ -804,22 +810,23 @@ public class replace {
 	 * 
 	 */
 	private static boolean isalnum(char ch) {
+		boolean ret = false;
 		if(ch >= '0'){
 			if(ch <= '9'){
-				return true;
+				ret = true;
 			}
 			else if (ch >= 'A'){
 				if(ch <= 'Z'){
-					return true;
+					ret = true;
 				}
 				else if(ch >= 'a'){
 					if(ch <= 'z'){
-						return true;
+						ret = true;
 					}
 				}
 			}
 		}
-		return false;
+		return ret;
 	}
 	
 

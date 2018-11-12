@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
 import gov.nasa.jpf.jvm.bytecode.GOTO;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
@@ -8,18 +9,16 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.io.File;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 
 /**
  * This class provides some utility methods for SPF.
@@ -64,41 +63,86 @@ public class SpfUtil {
 
     /**
      * Checks if the "if" condition is symbolic based on the the operands of the "if" bytecode instruction.
-     * @param sf Current stackfram.
+     * @param ti Current ThreadInfo object
      * @param ins Current "if" bytecode instruction.
      * @return True if the operand(s) of "if" condition is symbolic and false if it was concerete.
      * @throws StaticRegionException
      */
-    public static boolean isSymCond(StackFrame sf, Instruction ins) throws StaticRegionException {
+    public static boolean isSymCond(ThreadInfo ti, Instruction ins) throws StaticRegionException {
+        StackFrame sf = ti.getTopFrame();
         boolean isSymCondition = false;
         SpfUtil.getOperandNumber(ins.getMnemonic());
+        gov.nasa.jpf.symbc.numeric.Expression operand1, operand2;
         if (operandNum == 1) {
-            gov.nasa.jpf.symbc.numeric.Expression operand1 = (gov.nasa.jpf.symbc.numeric.Expression)
+            operand1 = (gov.nasa.jpf.symbc.numeric.Expression)
                     sf.getOperandAttr();
             if (operand1 != null)
                 isSymCondition = true;
+            /*if (isSymCondition && VeritestingListener.performanceMode) {
+                if (operand1 instanceof IntegerExpression) operand2 = new IntegerConstant(0);
+                else if (operand1 instanceof RealExpression) operand2 = new RealConstant(0.0);
+                else
+                    return false; // we cannot figure this condition out
+                isSymCondition = isBothSidesFeasible(ti, getComparator(ins), getNegComparator(ins), operand1,
+                        operand2);
+            }*/
         }
         if (operandNum == 2) {
-            gov.nasa.jpf.symbc.numeric.Expression operand1 = (gov.nasa.jpf.symbc.numeric.Expression)
+            operand1 = (gov.nasa.jpf.symbc.numeric.Expression)
                     sf.getOperandAttr(1);
             if (operand1 != null)
                 isSymCondition = true;
-            gov.nasa.jpf.symbc.numeric.Expression operand2 = (gov.nasa.jpf.symbc.numeric.Expression)
+            operand2 = (gov.nasa.jpf.symbc.numeric.Expression)
                     sf.getOperandAttr(0);
             if (operand2 != null)
                 isSymCondition = true;
+            /*if (isSymCondition && VeritestingListener.performanceMode) {
+                if (operand1 == null) {
+                    if (operand2 instanceof IntegerExpression) operand1 = new IntegerConstant(sf.peek(1));
+                    else if (operand2 instanceof RealExpression) operand1 = new RealConstant(sf.peekDouble(1));
+                    else
+                        return false; // we cannot figure this condition out
+                } else if (operand2 == null) {
+                    if (operand1 instanceof IntegerExpression) operand2 = new IntegerConstant(sf.peek(0));
+                    else if (operand1 instanceof RealExpression) operand2 = new RealConstant(sf.peekDouble(0));
+                    else
+                        return false; // we cannot figure this condition out
+                }
+                isSymCondition = isBothSidesFeasible(ti, getComparator(ins), getNegComparator(ins), operand1, operand2);
+            }*/
         }
         return isSymCondition;
     }
 
+    private static boolean isBothSidesFeasible(ThreadInfo ti, Comparator cmp, Comparator negCmp,
+                                               gov.nasa.jpf.symbc.numeric.Expression op1, gov.nasa.jpf.symbc.numeric.Expression op2) {
+        PathCondition pc;
+
+        if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator) {
+            pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
+        } else {
+            pc = new PathCondition();
+            pc._addDet(new GreenConstraint(Operation.TRUE));
+        }
+        PathCondition eqPC = pc.make_copy();
+        PathCondition nePC = pc.make_copy();
+        eqPC._addDet(cmp, op1, op2);
+        nePC._addDet(negCmp, op1, op2);
+        boolean eqSat = eqPC.simplify();
+        boolean neSat = nePC.simplify();
+        // both should never be unsat
+        assert !((!eqSat) && (!neSat));
+        return eqSat && neSat;
+    }
+
     /**
      * Checks if the "if" condition is symbolic by visiting the condition expression of the statement of the staticRegion
-     * @param sf Current stack frame.
+     * @param ti Current ThreadInfo object
      * @param stmt Statement of the static region.
      * @return True if the operand(s) of "if" condition is symbolic and false if it was concerete.
      * @throws StaticRegionException
      */
-    public static boolean isSymCond(StackFrame sf, Stmt stmt, SlotParamTable slotParamTable, Instruction ins)
+    public static boolean isSymCond(ThreadInfo ti, Stmt stmt, SlotParamTable slotParamTable, Instruction ins)
             throws StaticRegionException {
         /*Expression condition = getFirstCond(stmt);
         SymbCondVisitor symbCondVisitor = new SymbCondVisitor(sf, slotParamTable, false);
@@ -110,7 +154,7 @@ public class SpfUtil {
             if (!isSymCond) return false;
             else throw new StaticRegionException("Failed to instantiate symbolic condition");
         } else return true;*/
-        return isSymCond(sf, ins);
+        return isSymCond(ti, ins);
 
     }
 

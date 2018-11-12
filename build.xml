@@ -74,6 +74,7 @@
 	  <available file="src/tests"       type="dir" property="have_tests"/>
 	  <available file="src/examples"    type="dir" property="have_examples"/>
 	  <available file="src/benchmarks"    type="dir" property="have_benchmarks"/>
+	  <available file="src/ApacheCLI"    type="dir" property="have_apachecli"/>
 
 	  <condition property="have_jvm_code">
 		  <or>
@@ -105,7 +106,7 @@
   <!-- ======================= COMPILE SECTION ============================= -->
 
   <!-- public compile -->
-  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-examples,-compile-benchmarks"
+  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-examples,-compile-benchmarks,-compile-apachecli"
 	  description="compile all JPF core sources" >
   </target>
 
@@ -182,6 +183,21 @@
 		  </classpath>
 	  </javac>
   </target>
+
+  <target name="-compile-apachecli" if="have_apachecli" depends="-compile-examples">
+	  <mkdir dir="build/apachecli" />
+	  <javac srcdir="src/apachecli" destdir="build/apachecli"
+		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+		  includeantruntime="false">
+		  <classpath>
+			  <path refid="lib.path"/>
+			  <pathelement location="build/classes"/>
+			  <pathelement location="build/annotations"/>
+			  <pathelement location="build/apachecli"/>
+		  </classpath>
+	  </javac>
+  </target>
+
 
 
 

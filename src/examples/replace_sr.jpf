@@ -1,9 +1,7 @@
-target=replace
+target=replace_sr
 classpath=${jpf-symbc}/build/examples
 sourcepath=${jpf-symbc}/src/examples
-#symbolic.method = replace.mainProcess(sym#sym#sym#sym#sym)
-#symbolic.method = replace.mainProcess(sym#sym#sym#con#con)
-symbolic.method = replace.mainProcess(sym#sym#sym#con#con)
+symbolic.method = replace_sr.mainProcess(sym#sym#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100
 vm.storage.class=nil
@@ -15,4 +13,4 @@ symbolic.dp=z3bitvector
 #symbolic.debug=on
 veritestingMode=3
 performanceMode = true
-interestingClassNames = replace
+interestingClassNames = replace_sr

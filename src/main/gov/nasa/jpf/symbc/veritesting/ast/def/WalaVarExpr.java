@@ -111,4 +111,11 @@ public final class WalaVarExpr extends CloneableVariable {
         varId = varId.concat(Integer.toString(uniqueNum));
         return new WalaVarExpr(expr.number, varId);
     }*/
+
+    private static int NEXTWALAVARNUM = Integer.MAX_VALUE - 1;
+    public static WalaVarExpr makeNewWalaVarExpr(int uniqueNum) {
+        WalaVarExpr ret = new WalaVarExpr(NEXTWALAVARNUM, uniqueNum);
+        NEXTWALAVARNUM--;
+        return ret;
     }
+}

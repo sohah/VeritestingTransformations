@@ -173,9 +173,9 @@ public class ClassUtils {
 
     public static ArrayList<String> getSuperClassList(ThreadInfo ti, String className) {
         ArrayList<String> ret = new ArrayList();
-        ClassInfo ci = null;
+        ClassInfo ci;
         try {
-            ti.resolveReferencedClass(className);
+            ci = ti.resolveReferencedClass(className);
         } catch(ClassInfoException c) {
             ret.add(className);
             return ret;

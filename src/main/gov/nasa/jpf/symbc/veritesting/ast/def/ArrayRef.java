@@ -1,10 +1,13 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import za.ac.sun.cs.green.expr.*;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr.makeNewWalaVarExpr;
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion.uniqueCounter;
 
 public class ArrayRef {
     public final int ref;
@@ -64,8 +67,20 @@ public class ArrayRef {
         } else if (index instanceof WalaVarExpr) {
             return new ArrayRef(ref, ((WalaVarExpr)index).clone());
         }  else {
-            throwException(new IllegalArgumentException("Unsupported index type found when cloning ArrayRef"), INSTANTIATION);
-            return null;
+//            throwException(new IllegalArgumentException("Unsupported index type found when cloning ArrayRef"), INSTANTIATION);
+//            return null;
+            return new ArrayRef(ref, index);
         }
     }
+
+    public static boolean looseArrayRefEquals(ArrayRef arrayRef, ArrayRef key) {
+        if (arrayRef.ref == key.ref) {
+            boolean bothIntConst = arrayRef.index instanceof IntConstant && key.index instanceof IntConstant;
+            if (!bothIntConst || ((IntConstant) arrayRef.index).getValue() == ((IntConstant) key.index).getValue()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

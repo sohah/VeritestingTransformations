@@ -6,6 +6,9 @@ import gov.nasa.jpf.symbc.numeric.GreenToSPFTranslator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import za.ac.sun.cs.green.expr.*;
 
 import static gov.nasa.jpf.symbc.VeritestingListener.performanceMode;
@@ -79,13 +82,25 @@ public class ExprUtil {
     }
 
     public static boolean isConstant(Expression expr) {
-        return  IntConstant.class.isInstance(expr) || RealConstant.class.isInstance(expr);
+        return IntConstant.class.isInstance(expr) || RealConstant.class.isInstance(expr);
+    }
+
+    public static boolean isVariable(Expression expr) {
+        return WalaVarExpr.class.isInstance(expr) || FieldRefVarExpr.class.isInstance(expr) ||
+                ArrayRefVarExpr.class.isInstance(expr) ||
+                IntVariable.class.isInstance(expr) || RealVariable.class.isInstance(expr);
     }
 
     public static String getConstantType(Expression expr) {
         assert isConstant(expr);
         if (IntConstant.class.isInstance(expr)) return "int";
         if (RealConstant.class.isInstance(expr)) return "real";
+        return null;
+    }
+
+    public static String getGreenVariableType(Expression expr) {
+        if (IntVariable.class.isInstance(expr)) return "int";
+        if (RealVariable.class.isInstance(expr)) return "real";
         return null;
     }
 

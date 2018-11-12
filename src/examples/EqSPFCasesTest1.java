@@ -32,3 +32,39 @@ public class EqSPFCasesTest1 extends TestRegionBaseClass {
         return createObjectTC8(b0, b1);
     }
 }
+
+class TempClass {
+
+    public static int tempInt = 1;
+
+    public static int myInt = 1;
+
+    public TempClass() {
+        this.tempClass2 = new TempClass2();
+    }
+
+    public int getTempInt() {
+        return tempInt;
+    }
+
+    public int getOne(int a) {
+        System.out.println("called TempClass.getOne");
+        tempInt = a;
+        return tempInt;
+    }
+
+    TempClass2 tempClass2;
+
+    public int nestedRegion(int a) {
+        return 0;
+    }
+}
+
+class TempClass2 {
+
+    public int tempInt2 = 1;
+
+    public int tempMethod() {
+        return 0;
+    }
+}
