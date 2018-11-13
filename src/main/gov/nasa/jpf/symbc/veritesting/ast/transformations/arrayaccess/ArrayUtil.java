@@ -65,6 +65,8 @@ public class ArrayUtil {
             return new Pair(getArrayElementInner(ei, index, "double"), "double"); //elements of the array are concrete
         } else if (ei.getArrayType().equals("C")) {
             return new Pair(getArrayElementInner(ei, index, "char"), "char"); //elements of the array are concrete
+        } else if (ei.getClassInfo().isReferenceArray()) {
+            return new Pair(getArrayElementInner(ei, index, "reference"), "int"); // elements of the array are concrete
         } else {
             throwException(new IllegalArgumentException("Unsupported element type in array"), INSTANTIATION);
             return null;
@@ -79,7 +81,8 @@ public class ArrayUtil {
                     type.equals("double") ? new RealConstant(ei.getDoubleElement(index)) :
                             type.equals("byte") ? new IntConstant(ei.getByteElement(index)) :
                                     type.equals("char") ? new IntConstant(ei.getCharElement(index)) :
-                                            new IntConstant(ei.getIntElement(index)) ;
+                                            type.equals("int") ? new IntConstant(ei.getIntElement(index)) :
+                                                    new IntConstant(ei.getReferenceElement(index));
     }
 
     public static int getArrayLength(ThreadInfo ti, int ref) {
@@ -114,7 +117,24 @@ public class ArrayUtil {
             for (int i = 0; i < len; i++) {
                 Expression newExpr = exps[i];
                 eiArray.checkArrayBounds(i);
-                if (type.equals("int")) eiArray.setIntElement(i, 0);
+                //TODO: support "reference" as an array element type in the future
+                if (eiArray.getClassInfo().isReferenceArray()) {
+                    if (newExpr instanceof ArrayRefVarExpr) {
+                        assert arrayExpressions.uniqueNum != -1;
+                        newExpr = ((ArrayRefVarExpr) newExpr).makeUnique(arrayExpressions.uniqueNum);
+                        if (constantsTable.lookup((ArrayRefVarExpr)newExpr) != null) {
+                            newExpr = constantsTable.lookup((ArrayRefVarExpr) newExpr);
+                            if (newExpr instanceof IntConstant)
+                                eiArray.setReferenceElement(i, ((IntConstant) newExpr).getValue());
+                            else throwException(new StaticRegionException("unknown constant type given to reference array in ArraySSAVisitor.doArrayStore"), INSTANTIATION);
+                        }
+                        else
+                            throwException(new StaticRegionException("cannot write symbolic array reference in ArraySSAVisitor.doArrayStore"), INSTANTIATION);
+                    } else if (newExpr instanceof IntConstant) {
+                        eiArray.setReferenceElement(i, ((IntConstant) newExpr).getValue());
+                    } else throwException(new StaticRegionException("unknown array type given to reference array in ArraySSAVisitor.doArrayStore"), INSTANTIATION);
+                }
+                else if (type.equals("int")) eiArray.setIntElement(i, 0);
                 else if (type.equals("char")) eiArray.setCharElement(i, (char) 0);
                 else if (type.equals("float")) eiArray.setFloatElement(i, 0);
                 else if (type.equals("double")) eiArray.setDoubleElement(i, 0);

@@ -180,8 +180,9 @@ public class SubstitutionVisitor extends AstMapVisitor {
             SSAInvokeInstruction instruction = c.getOriginal();
             IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
             if ((invokeCode == IInvokeInstruction.Dispatch.STATIC)
-                    || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL || (invokeCode == IInvokeInstruction.Dispatch.INTERFACE))
-                    ) {
+                    || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL
+                    || (invokeCode == IInvokeInstruction.Dispatch.INTERFACE)
+                    || (invokeCode == IInvokeInstruction.Dispatch.SPECIAL))) {
                 Pair<String, StaticRegion> keyRegionPair = findMethodRegion(ti, c);
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
                 if (hgOrdStaticRegion != null) {
@@ -285,7 +286,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
             currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
         } else {
             Atom packageName = methodReference.getDeclaringClass().getName().getPackage();
-            currClassName = (packageName != null ? packageName.toString() : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
+            currClassName = (packageName != null ? packageName.toString() +".": "") + methodReference.getDeclaringClass().getName().getClassName().toString();
         }
 
         String dynamicClassName = currClassName;

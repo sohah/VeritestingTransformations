@@ -33,7 +33,7 @@ public class ArrayExpressions {
     }
 
     @Override
-    protected ArrayExpressions clone() {
+    public ArrayExpressions clone() {
         ArrayExpressions map = new ArrayExpressions(this.ti);
         this.table.forEach((key, value) -> {
             Expression[] newValue = new Expression[value.length];
@@ -41,6 +41,7 @@ public class ArrayExpressions {
                 newValue[i] = value[i];
             map.add(key, new Pair<>(newValue, arrayTypesTable.get(key)));
         });
+        map.uniqueNum = uniqueNum;
         return map;
     }
 
