@@ -4,6 +4,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.*;
@@ -78,5 +79,13 @@ public class DynamicTable<V> extends Table<Variable, V> {
             if (entry.getValue()[0] == var[0]) return entry.getKey();
         }
         return null;
+    }
+
+    public void addAll(DynamicTable<V> constantsTable) {
+        Iterator itr = constantsTable.table.entrySet().iterator();
+        while (itr.hasNext()) {
+            Map.Entry<Variable, V> entry = (Map.Entry) itr.next();
+            add(entry.getKey(), entry.getValue());
+        }
     }
 }

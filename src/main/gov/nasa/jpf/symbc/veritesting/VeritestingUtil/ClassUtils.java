@@ -11,6 +11,7 @@ import com.ibm.wala.ipa.cha.ClassHierarchy;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.types.MethodReference;
+import com.ibm.wala.types.TypeName;
 import com.ibm.wala.util.strings.StringStuff;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.VeritestingListener;
@@ -185,5 +186,9 @@ public class ClassUtils {
             ci = ci.getSuperClass();
         }
         return ret;
+    }
+
+    public static String getType(TypeName typeName) {
+        return typeName.getPackage() != null ? (typeName.getPackage().toString().replace('/', '.') + "." + typeName.getClassName()) : typeName.getClassName().toString();
     }
 }

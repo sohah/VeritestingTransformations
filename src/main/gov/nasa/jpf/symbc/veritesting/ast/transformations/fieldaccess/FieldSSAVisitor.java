@@ -46,6 +46,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
     private ThreadInfo ti;
     static final int FIELD_SUBSCRIPT_BASE = 0;
     private GlobalSubscriptMap gsm;
+    private IllegalArgumentException exception = null;
 
     private FieldSSAVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
         super(new ExprMapVisitor());
@@ -55,6 +56,10 @@ public class FieldSSAVisitor extends AstMapVisitor {
         this.gsm = new GlobalSubscriptMap();
     }
 
+    private void populateException(IllegalArgumentException e) {
+        this.exception = e;
+    }
+
     public Stmt bad(Object obj) {
         String name = obj.getClass().getCanonicalName();
         throwException(new IllegalArgumentException("Unsupported class: " + name +
@@ -62,9 +67,10 @@ public class FieldSSAVisitor extends AstMapVisitor {
         return (Stmt)obj;
     }
 
-    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
+    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion, boolean isFinal) {
         FieldSSAVisitor visitor = new FieldSSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
+        if (isFinal && visitor.exception != null) throwException(visitor.exception, INSTANTIATION);
         dynRegion.psm = visitor.psm;
         return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null, dynRegion.earlyReturnResult);
     }
@@ -76,8 +82,8 @@ public class FieldSSAVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(PutInstruction putIns) {
         if (!IntConstant.class.isInstance(putIns.def) && !putIns.getOriginal().isStatic()) {
-            throwException(new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor"), INSTANTIATION);
-            return null;
+            populateException(new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor"));
+            return putIns;
         }
         else {
             FieldRef fieldRef;
@@ -247,8 +253,8 @@ public class FieldSSAVisitor extends AstMapVisitor {
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
         if (exceptionalMessage != null) {
-            throwException(new IllegalArgumentException(exceptionalMessage), INSTANTIATION);
-            return null;
+            populateException(new IllegalArgumentException(exceptionalMessage));
+            return c;
         }
         else return new AssignmentStmt(c.def, rhs);
     }

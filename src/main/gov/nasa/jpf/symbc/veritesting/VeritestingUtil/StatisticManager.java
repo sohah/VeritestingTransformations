@@ -292,7 +292,7 @@ public class StatisticManager {
     private boolean isInterestingRegion(String key) {
         if (interestingClassNames == null) return true;
         for (String className: interestingClassNames)
-            if (key.startsWith(className + ".")) return true;
+            if (key.toLowerCase().contains(className.toLowerCase())) return true;
         return false;
     }
 }

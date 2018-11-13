@@ -224,7 +224,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             ++veritestRegionCount;
                             ti.setNextPC(nextInstruction);
                             statisticManager.updateVeriSuccForRegion(key);
-                            hgOrdRegionInstance += thisHighOrdCount;
 
                             System.out.println("------------- Region was successfully veritested --------------- ");
                         } else {
@@ -319,11 +318,21 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         dynRegion = SubstitutionVisitor.execute(ti, dynRegion);
 
         System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
-        dynRegion = FieldSSAVisitor.execute(ti, dynRegion);
+        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, true);
+//        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, false); // added for example
         TypePropagationVisitor.propagateTypes(dynRegion);
+        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+
+//        dynRegion = SimplifyStmtVisitor.execute(dynRegion); // added for example
+
 
         System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
         dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
+//        added for example
+//        dynRegion = SimplifyStmtVisitor.execute(dynRegion);
+//        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+//        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, true);
+//        end added for example
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
         System.out.println(dynRegion.arrayOutputs);
         dynRegion = UniqueRegion.execute(dynRegion);
