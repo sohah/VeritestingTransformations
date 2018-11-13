@@ -39,6 +39,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
@@ -506,7 +507,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             Expression symVar;
             /*if (dynRegion.constantsTable.lookup(expr) != null)
                 symVar = dynRegion.constantsTable.lookup(expr);
-            else */symVar = createGreenVar(type, expr.getSymName());
+            else*/ symVar = createGreenVar(type, expr.getSymName());
             assert(symVar != null);
             new SubstituteGetOutput(ti, expr.fieldRef, false, greenToSPFExpression(symVar)).invoke();
         }

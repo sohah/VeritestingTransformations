@@ -637,14 +637,8 @@ public class CreateStaticRegions {
                 ISSABasicBlock terminus = finder.findMinConvergingNode();
                 Stmt s = attemptConditionalSubregion(cfg, currentBlock, terminus);
                 int endIns;
-                if (terminus.isExitBlock()){
-                    //SH: this should happen only in case where we have returns on both sides of the branch, our terminus then is exit block.
-                    //here asserting that our expectations is correct by asserting that the predecessors must be return instruction in this case.
-                    assert(finder.predIsReturn(terminus));
-                    endIns = -1;
-                }
-                else
-                    endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
+
+                endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
                 veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns, currentBlock, null));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
