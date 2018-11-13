@@ -328,7 +328,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         System.out.println(dynRegion.arrayOutputs);
         dynRegion = UniqueRegion.execute(dynRegion);
 
-        dynRegion = SimplifyStmtVisitor.execute(dynRegion);
+      //  dynRegion = SimplifyStmtVisitor.execute(dynRegion);
 
 
         if (runMode == VeritestingMode.SPFCASES) {
@@ -495,9 +495,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             FieldRefVarExpr expr = (FieldRefVarExpr) itr.next();
             String type = dynRegion.fieldRefTypeTable.lookup(expr);
             Expression symVar;
-            if (dynRegion.constantsTable.lookup(expr) != null)
+            /*if (dynRegion.constantsTable.lookup(expr) != null)
                 symVar = dynRegion.constantsTable.lookup(expr);
-            else symVar = createGreenVar(type, expr.getSymName());
+            else */symVar = createGreenVar(type, expr.getSymName());
             assert(symVar != null);
             new SubstituteGetOutput(ti, expr.fieldRef, false, greenToSPFExpression(symVar)).invoke();
         }

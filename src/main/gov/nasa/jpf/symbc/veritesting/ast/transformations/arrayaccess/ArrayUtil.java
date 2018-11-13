@@ -124,9 +124,9 @@ public class ArrayUtil {
                 if (newExpr instanceof ArrayRefVarExpr) {
                     assert arrayExpressions.uniqueNum != -1;
                     newExpr = ((ArrayRefVarExpr) newExpr).makeUnique(arrayExpressions.uniqueNum);
-                    if (constantsTable.lookup((ArrayRefVarExpr)newExpr) != null)
+                    /*if (constantsTable.lookup((ArrayRefVarExpr)newExpr) != null)
                         newExpr = constantsTable.lookup((ArrayRefVarExpr)newExpr);
-                    else newExpr = createGreenVar(type, ((ArrayRefVarExpr) newExpr).getSymName());
+                    else*/ newExpr = createGreenVar(type, ((ArrayRefVarExpr) newExpr).getSymName());
                 }
                 eiArray.setElementAttr(i, greenToSPFExpression(newExpr));
                 assert(greenToSPFExpression(newExpr) != null);
