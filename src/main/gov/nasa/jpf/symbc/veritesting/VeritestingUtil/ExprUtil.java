@@ -58,7 +58,9 @@ public class ExprUtil {
      */
     public static gov.nasa.jpf.symbc.numeric.Expression greenToSPFExpression(Expression greenExpression) {
         GreenToSPFTranslator toSPFTranslator = new GreenToSPFTranslator();
-        return toSPFTranslator.translate(greenExpression);
+        gov.nasa.jpf.symbc.numeric.Expression retExp =  toSPFTranslator.translate(greenExpression);
+        assert retExp != null;
+        return retExp;
     }
 
     /**

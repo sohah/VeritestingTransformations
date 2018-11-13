@@ -4,6 +4,7 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -148,6 +149,8 @@ public class ArrayUtil {
                         newExpr = constantsTable.lookup((ArrayRefVarExpr)newExpr);
                     else newExpr = createGreenVar(type, ((ArrayRefVarExpr) newExpr).getSymName());
                 }
+                if (newExpr instanceof CloneableVariable)
+                    newExpr = createGreenVar(type, newExpr.toString());
                 eiArray.setElementAttr(i, greenToSPFExpression(newExpr));
             }
         }

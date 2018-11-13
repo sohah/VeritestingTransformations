@@ -40,6 +40,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
@@ -64,10 +65,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
 import gov.nasa.jpf.vm.Instruction;
+import za.ac.sun.cs.green.expr.*;
 import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.Operation;
-import za.ac.sun.cs.green.expr.Variable;
-import za.ac.sun.cs.green.expr.VisitorException;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -78,9 +77,7 @@ import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhas
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipVeriRegions;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.createGreenVar;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.greenToSPFExpression;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isUnsupportedRegionEnd;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.*;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayUtil.doArrayStore;
@@ -454,8 +451,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             Variable var = dynOutputTable.lookup(slot);
             assert (var instanceof WalaVarExpr);
             Expression symVar;
-            if (dynRegion.constantsTable.lookup(var) != null)
+            if (dynRegion.constantsTable.lookup(var) != null) {
                 symVar = dynRegion.constantsTable.lookup(var);
+                if (symVar instanceof CloneableVariable)
+                    symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), symVar.toString()); // assumes toString() would return the same string as getSymName()
+            }
             else symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), ((WalaVarExpr) var).getSymName());
             sf.setSlotAttr(slot, greenToSPFExpression(symVar));
         }
@@ -467,8 +467,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             FieldRefVarExpr expr = (FieldRefVarExpr) itr.next();
             String type = dynRegion.fieldRefTypeTable.lookup(expr);
             Expression symVar;
-            if (dynRegion.constantsTable.lookup(expr) != null)
+            if (dynRegion.constantsTable.lookup(expr) != null) {
                 symVar = dynRegion.constantsTable.lookup(expr);
+                if (symVar instanceof CloneableVariable)
+                    symVar = createGreenVar(type, symVar.toString()); // assumes toString() would return the same string as getSymName()
+            }
             else symVar = createGreenVar(type, expr.getSymName());
             new SubstituteGetOutput(ti, expr.fieldRef, false, greenToSPFExpression(symVar)).invoke();
         }
