@@ -18,9 +18,14 @@ runSPF-wbs $VERIDIR/src/wbs/WBS.mode4.jpf >& $VERIDIR/logs/WBS.mode4.log
 # runSPF $VERIDIR/src/examples/replace.mode3.jpf >& $VERIDIR/logs/replace.mode3.log
 # runSPF $VERIDIR/src/examples/replace.mode4.jpf >& $VERIDIR/logs/replace.mode4.log
 
-MAX_STEPS=1 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& logs/RunWBS.mode4.$(($MAX_STEPS))step.log
-MAX_STEPS=2 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& logs/RunWBS.mode4.$(($MAX_STEPS))step.log
-MAX_STEPS=3 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& logs/RunWBS.mode4.$(($MAX_STEPS))step.log
-MAX_STEPS=4 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& logs/RunWBS.mode4.$(($MAX_STEPS))step.log
-MAX_STEPS=5 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+MAX_STEPS=1 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& $VERIDIR/logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+MAX_STEPS=2 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& $VERIDIR/logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+MAX_STEPS=3 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& $VERIDIR/logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+MAX_STEPS=4 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& $VERIDIR/logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+MAX_STEPS=5 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& $VERIDIR/logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+MAX_STEPS=6 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& $VERIDIR/logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+MAX_STEPS=7 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& $VERIDIR/logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+MAX_STEPS=8 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& $VERIDIR/logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+MAX_STEPS=9 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& $VERIDIR/logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+MAX_STEPS=10 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& $VERIDIR/logs/RunWBS.mode4.$(($MAX_STEPS))step.log
 
