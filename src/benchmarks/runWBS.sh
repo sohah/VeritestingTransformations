@@ -23,3 +23,4 @@ MAX_STEPS=2 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf 
 MAX_STEPS=3 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& logs/RunWBS.mode4.$(($MAX_STEPS))step.log
 MAX_STEPS=4 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& logs/RunWBS.mode4.$(($MAX_STEPS))step.log
 MAX_STEPS=5 && export MAX_STEPS && runSPF-wbs $VERIDIR/src/wbs/RunWBS.mode4.jpf >& logs/RunWBS.mode4.$(($MAX_STEPS))step.log
+
