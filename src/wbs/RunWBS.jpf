@@ -1,6 +1,6 @@
 target=RunWBS
-classpath=${jpf-symbc}/build/examples
-sourcepath=${jpf-symbc}/src/examples
+classpath=${jpf-symbc}/build/wbs
+sourcepath=${jpf-symbc}/src/wbs
 symbolic.method = WBS.update(sym#sym#sym)
 #symbolic.minint=-100
 #symbolic.maxint=100

@@ -75,6 +75,7 @@
 	  <available file="src/examples"    type="dir" property="have_examples"/>
 	  <available file="src/benchmarks"    type="dir" property="have_benchmarks"/>
 	  <available file="src/ApacheCLI"    type="dir" property="have_apachecli"/>
+	  <available file="src/wbs"    type="dir" property="have_wbs"/>
 
 	  <condition property="have_jvm_code">
 		  <or>
@@ -106,7 +107,7 @@
   <!-- ======================= COMPILE SECTION ============================= -->
 
   <!-- public compile -->
-  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-examples,-compile-benchmarks,-compile-apachecli"
+  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-examples"
 	  description="compile all JPF core sources" >
   </target>
 
@@ -157,7 +158,7 @@
 	  </javac>
   </target>
 
-  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main">
+  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs">
 	  <mkdir dir="build/examples" />
 	  <javac srcdir="src/examples" destdir="build/examples"
 		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -165,6 +166,7 @@
 		  <classpath>
 			  <path refid="lib.path"/>
 			  <pathelement location="build/classes"/>
+			  <pathelement location="build/wbs"/>
 			  <pathelement location="build/annotations"/>
 		  </classpath>
 	  </javac>
@@ -196,7 +198,23 @@
 			  <pathelement location="build/apachecli"/>
 		  </classpath>
 	  </javac>
+	</target>
+
+  <target name="-compile-wbs" if="have_wbs" depends="-compile-classes">
+	  <mkdir dir="build/wbs" />
+		<javac srcdir="src/wbs" destdir="build/wbs" 
+		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+		  includeantruntime="false">
+		  <classpath>
+			  <path refid="lib.path"/>
+			  <pathelement location="build/classes"/>
+			  <pathelement location="build/annotations"/>
+			  <pathelement location="build/wbs"/>
+			</classpath>
+	  </javac>
+		<copy file="build/wbs/WBS.class" tofile="build/examples/WBS.class"/>
   </target>
+
 
 
 

@@ -353,7 +353,7 @@ Down_Separation < Positive_RA_Alt_Tresh; ensures \result != need_Downward_RA;
 	public static void main(String[] argv) {
 //		tcas_singlereturn t = new tcas_singlereturn();
 //		t.mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
-		int maxSteps = 1;
+		int maxSteps = Integer.parseInt(System.getenv("MAX_STEPS"));
 		for (int i=0; i < maxSteps; i++)
 			mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
 	}

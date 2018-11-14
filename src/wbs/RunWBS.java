@@ -25,7 +25,7 @@ public class RunWBS {
 
     public static void main(String[] args) {
         WBS wbs = new WBS();
-        int maxSteps = 3;
+        int maxSteps = Integer.parseInt(System.getenv("MAX_STEPS"));
         for (int i = 0; i < maxSteps; i++) {
             int pedal = 0; //Debug.makeSymbolicInteger("pedal" + i);
             boolean auto = false; //Debug.makeSymbolicBoolean("auto" + i);

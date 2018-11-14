@@ -518,6 +518,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private void discoverRegions(ThreadInfo ti) {
         Config conf = ti.getVM().getConfig();
         String classPath = conf.getStringArray("classpath")[0] + "/";
+//        classPath = String.join(":", conf.getStringArray("classpath"));
         String className = conf.getString("target");
         VeritestingMain veritestingMain = new VeritestingMain(ti, className + ".class");
         long startTime = System.nanoTime();
