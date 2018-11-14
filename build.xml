@@ -76,6 +76,7 @@
 	  <available file="src/benchmarks"    type="dir" property="have_benchmarks"/>
 	  <available file="src/ApacheCLI"    type="dir" property="have_apachecli"/>
 	  <available file="src/wbs"    type="dir" property="have_wbs"/>
+	  <available file="src/tcas_sr"    type="dir" property="have_tcas_sr"/>
 
 	  <condition property="have_jvm_code">
 		  <or>
@@ -107,7 +108,7 @@
   <!-- ======================= COMPILE SECTION ============================= -->
 
   <!-- public compile -->
-  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-examples"
+  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-tcas-sr,-compile-examples"
 	  description="compile all JPF core sources" >
   </target>
 
@@ -158,7 +159,7 @@
 	  </javac>
   </target>
 
-  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs">
+  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs,-compile-tcas-sr">
 	  <mkdir dir="build/examples" />
 	  <javac srcdir="src/examples" destdir="build/examples"
 		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -167,6 +168,7 @@
 			  <path refid="lib.path"/>
 			  <pathelement location="build/classes"/>
 			  <pathelement location="build/wbs"/>
+			  <pathelement location="build/tcas-sr"/>
 			  <pathelement location="build/annotations"/>
 		  </classpath>
 	  </javac>
@@ -215,6 +217,20 @@
 		<copy file="build/wbs/WBS.class" tofile="build/examples/WBS.class"/>
   </target>
 
+  <target name="-compile-tcas-sr" if="have_tcas_sr" depends="-compile-classes">
+	  <mkdir dir="build/tcas_sr" />
+		<javac srcdir="src/tcas_sr" destdir="build/tcas_sr" 
+		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+		  includeantruntime="false">
+		  <classpath>
+			  <path refid="lib.path"/>
+			  <pathelement location="build/classes"/>
+			  <pathelement location="build/annotations"/>
+			  <pathelement location="build/tcas_sr"/>
+			</classpath>
+	  </javac>
+		<copy file="build/tcas_sr/tcas_singlereturn.class" tofile="build/examples/tcas_singlereturn.class"/>
+  </target>
 
 
 
