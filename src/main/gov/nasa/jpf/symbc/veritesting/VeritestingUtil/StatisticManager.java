@@ -181,9 +181,11 @@ public class StatisticManager {
         Iterator<String> keysItr = keys.iterator();
         ArrayList<String> out= new ArrayList<>();
 
-        while(keysItr.hasNext())
-            if (regionsStatisticsMap.get(keysItr.next()).veriHitNumber !=0)
-                out.add(regionsStatisticsMap.get(keysItr.next()).regionKey + "\n");
+        while(keysItr.hasNext()) {
+            String key = keysItr.next();
+            if (regionsStatisticsMap.get(key).veriHitNumber != 0)
+                out.add(regionsStatisticsMap.get(key).regionKey + "\n");
+        }
         Collections.sort(out);
         out.add(0, "Printing keys of regions that were instantiated at least once\n");
         for (String s: out) {

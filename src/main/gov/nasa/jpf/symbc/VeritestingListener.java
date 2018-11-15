@@ -113,20 +113,22 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     // reads in an array of Strings, each of which is the name of a method whose regions we wish to report metrics for
     public static String[] interestingClassNames;
 
-    public String[] regionKeys = {"replace.amatch([C[CI)I#77",
-            "replace.change([C[C[C)V#27",
-            "replace.in_pat_set(C)Z#27",
-            "replace.in_pat_set(C)Z#3",
-            "replace.in_pat_set(C)Z#51",
-            "replace.mainProcess(CCCCC)[C#95",
-            "replace.makepat([C[C)I#117",
-            "replace.makepat([C[C)I#172",
-            "replace.makepat([C[C)I#323",
-            "replace.makesub([C[C)I#64",
-            "replace.omatch([C[CI)Z#132",
+    public String[] regionKeys = {"replace.amatch([C[CI)I#160",
+            "replace.amatch([C[CI)I#77",
+            "replace.dodash(C[C[C)V#112",
+            "replace.dodash(C[C[C)V#8",
+            "replace.esc([C)C#7",
+            "replace.getccl([C[C)Z#15",
+            "replace.getccl([C[C)Z#84",
+            "replace.makepat([C[C)I#305",
+            "replace.makepat([C[C)I#458",
+            "replace.makepat([C[C)I#474",
+            "replace.makepat([C[C)I#491",
+            "replace.makepat([C[C)I#507",
+            "replace.makepat([C[C)I#521",
             "replace.omatch([C[CI)Z#241",
-            "replace.putsub([CII[C)V#80",
-            "replace.stclose([CI)V#18"};
+            "replace.omatch([C[CI)Z#64",
+            "replace.patsize([CI)I#32"};
 
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
@@ -220,7 +222,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             try {
                 HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
                 StaticRegion staticRegion = regionsMap.get(key);
-                if ((staticRegion != null) && !(staticRegion.isMethodRegion) && !skipVeriRegions.contains(key)) {
+                if ((staticRegion != null) && !(staticRegion.isMethodRegion) && !skipVeriRegions.contains(key) &&
+                isAllowedRegion(key)) {
                     thisHighOrdCount = 0;
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                     if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
@@ -265,6 +268,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 return;
             }
         }
+    }
+
+    private boolean isAllowedRegion(String key) {
+//        return true;
+        int allowed_regions_bv = Integer.parseInt(System.getenv("REGION_BV"));
+        for (int i = 0; i < regionKeys.length; i++) {
+            if ((allowed_regions_bv & (1 << i)) != 0) {
+                if (key.equals(regionKeys[i]))
+                    return true;
+            }
+        }
+        return false;
     }
 
     private void updateSkipRegions(String message, String key) {
