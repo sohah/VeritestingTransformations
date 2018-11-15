@@ -113,6 +113,21 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     // reads in an array of Strings, each of which is the name of a method whose regions we wish to report metrics for
     public static String[] interestingClassNames;
 
+    public String[] regionKeys = {"replace.amatch([C[CI)I#77",
+            "replace.change([C[C[C)V#27",
+            "replace.in_pat_set(C)Z#27",
+            "replace.in_pat_set(C)Z#3",
+            "replace.in_pat_set(C)Z#51",
+            "replace.mainProcess(CCCCC)[C#95",
+            "replace.makepat([C[C)I#117",
+            "replace.makepat([C[C)I#172",
+            "replace.makepat([C[C)I#323",
+            "replace.makesub([C[C)I#64",
+            "replace.omatch([C[CI)Z#132",
+            "replace.omatch([C[CI)Z#241",
+            "replace.putsub([CII[C)V#80",
+            "replace.stclose([CI)V#18"};
+
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
             veritestingMode = conf.getInt("veritestingMode");
