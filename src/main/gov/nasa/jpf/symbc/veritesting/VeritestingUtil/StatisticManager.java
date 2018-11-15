@@ -144,7 +144,7 @@ public class StatisticManager {
         while(itr.hasNext()) {
             Map.Entry<String, StaticRegion> entry = itr.next();
             String key = entry.getKey();
-            if (!isInterestingRegion(key)) continue;
+//            if (!isInterestingRegion(key)) continue;
             StaticRegion region = entry.getValue();
             out.add(key + ": maxDepth = " + region.maxDepth + ", execution path count = " + region.totalNumPaths + "\n");
         }

@@ -76,6 +76,7 @@
 	  <available file="src/benchmarks"    type="dir" property="have_benchmarks"/>
 	  <available file="src/ApacheCLI"    type="dir" property="have_apachecli"/>
 	  <available file="src/wbs"    type="dir" property="have_wbs"/>
+	  <available file="src/tcas"    type="dir" property="have_tcas"/>
 	  <available file="src/tcas_sr"    type="dir" property="have_tcas_sr"/>
 
 	  <condition property="have_jvm_code">
@@ -108,7 +109,7 @@
   <!-- ======================= COMPILE SECTION ============================= -->
 
   <!-- public compile -->
-  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-tcas-sr,-compile-examples"
+  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-tcas,-compile-tcas-sr,-compile-examples"
 	  description="compile all JPF core sources" >
   </target>
 
@@ -168,6 +169,7 @@
 			  <path refid="lib.path"/>
 			  <pathelement location="build/classes"/>
 			  <pathelement location="build/wbs"/>
+			  <pathelement location="build/tcas"/>
 			  <pathelement location="build/tcas-sr"/>
 			  <pathelement location="build/annotations"/>
 		  </classpath>
@@ -216,6 +218,22 @@
 	  </javac>
 		<copy file="build/wbs/WBS.class" tofile="build/examples/WBS.class"/>
   </target>
+
+  <target name="-compile-tcas" if="have_tcas" depends="-compile-classes">
+	  <mkdir dir="build/tcas" />
+		<javac srcdir="src/tcas" destdir="build/tcas" 
+		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+		  includeantruntime="false">
+		  <classpath>
+			  <path refid="lib.path"/>
+			  <pathelement location="build/classes"/>
+			  <pathelement location="build/annotations"/>
+			  <pathelement location="build/tcas"/>
+			</classpath>
+	  </javac>
+		<copy file="build/tcas/tcas.class" tofile="build/examples/tcas.class"/>
+  </target>
+
 
   <target name="-compile-tcas-sr" if="have_tcas_sr" depends="-compile-classes">
 	  <mkdir dir="build/tcas_sr" />

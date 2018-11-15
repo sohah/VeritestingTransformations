@@ -1,6 +1,6 @@
 target=tcas
-classpath=${jpf-symbc}/build/examples
-sourcepath=${jpf-symbc}/src/examples
+classpath=${jpf-symbc}/build/tcas
+sourcepath=${jpf-symbc}/src/tcas
 symbolic.method = tcas.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 #symbolic.method = tcas.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 #symbolic.minint=-100

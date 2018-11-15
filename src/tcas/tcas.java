@@ -331,7 +331,7 @@ public class tcas {
 	}
 
 	public static void main(String[] argv) {
-		int maxSteps = 1;
+		int maxSteps = Integer.parseInt(System.getenv("MAX_STEPS"));
 		for (int i=0; i < maxSteps; i++)
 			mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1); //,
 				//601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
