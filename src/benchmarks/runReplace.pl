@@ -93,8 +93,10 @@ for my $ind (0 .. $#shuffled_array)
     if ($region_instances <= 0) {
       print "didn't veritest, ";
     }
-    print "this_time = $this_time, this instances = $region_instances, this_path_count = $this_path_count, this_regions = $this_regions\n";
-    print "min time = $min_time, min region index = $min_region_index, min instances = $min_instances, min path count = $min_path_count, min regions = $min_regions\n\n";
+    my $this_region_count= $this_regions =~ tr/,//;
+    my $min_region_count= $min_regions =~ tr/,//;
+    print "this_time = $this_time, this instances = $region_instances, this_path_count = $this_path_count, this region count = $this_region_count, this regions = $this_regions\n";
+    print "min time = $min_time, min region index = $min_region_index, min instances = $min_instances, min path count = $min_path_count, min region count = $min_region_count, min regions = $min_regions\n\n";
 }
 close(STDOUT);
 close(STDERR);
