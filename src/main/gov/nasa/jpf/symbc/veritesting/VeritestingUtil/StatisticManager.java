@@ -188,6 +188,7 @@ public class StatisticManager {
         }
         Collections.sort(out);
         out.add(0, "Printing keys of regions that were instantiated at least once\n");
+        out.add(out.size(), "Finished printing keys of regions that were instantiated at least once\n");
         for (String s: out) {
             ret += s;
         }
