@@ -306,36 +306,36 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
     private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws CloneNotSupportedException, StaticRegionException, VisitorException {
-        System.out.println("\n---------- STARTING Transformations for conditional region: " + key +
-                "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
-        staticRegion.slotParamTable.print();
-        staticRegion.inputTable.print();
-        staticRegion.outputTable.print();
-        staticRegion.varTypeTable.print();
+//        System.out.println("\n---------- STARTING Transformations for conditional region: " + key +
+//                "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
+//        staticRegion.slotParamTable.print();
+//        staticRegion.inputTable.print();
+//        staticRegion.outputTable.print();
+//        staticRegion.varTypeTable.print();
         /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
         DynamicRegion dynRegion = UniqueRegion.execute(staticRegion);
 
         /*--------------- SUBSTITUTION TRANSFORMATION ---------------*/
         dynRegion = SubstitutionVisitor.execute(ti, dynRegion);
 
-        System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
+//        System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
         dynRegion = FieldSSAVisitor.execute(ti, dynRegion, true);
 //        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, false); // added for example
         TypePropagationVisitor.propagateTypes(dynRegion);
-        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+//        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 
 //        dynRegion = SimplifyStmtVisitor.execute(dynRegion); // added for example
 
 
-        System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
+//        System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
         dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
 //        added for example
 //        dynRegion = SimplifyStmtVisitor.execute(dynRegion);
 //        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 //        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, true);
 //        end added for example
-        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-        System.out.println(dynRegion.arrayOutputs);
+//        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+//        System.out.println(dynRegion.arrayOutputs);
         dynRegion = UniqueRegion.execute(dynRegion);
 
         dynRegion = SimplifyStmtVisitor.execute(dynRegion);
@@ -536,9 +536,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         publisher.publishTopicStart("VeritestingListener report:");
         long dynRunTime = (runEndTime - runStartTime) - staticAnalysisDur;
 
-        pw.println(statisticManager.printAllRegionStatistics());
-        pw.println(statisticManager.printStaticAnalysisStatistics());
-        pw.println(statisticManager.printAllExceptionStatistics());
+//        pw.println(statisticManager.printAllRegionStatistics());
+//        pw.println(statisticManager.printStaticAnalysisStatistics());
+//        pw.println(statisticManager.printAllExceptionStatistics());
 
         pw.println("\n/************************ Printing Time Decomposition Statistics *****************");
         pw.println("static analysis time = " + TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + " msec");
@@ -555,8 +555,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Array SPF Case count = " + StatisticManager.ArraySPFCaseCount);
         pw.println("If-removed count = " + StatisticManager.ifRemovedCount);
 
-        pw.println(statisticManager.printAccumulativeStatistics());
-        pw.println(statisticManager.printInstantiationStatistics());
+//        pw.println(statisticManager.printAccumulativeStatistics());
+//        pw.println(statisticManager.printInstantiationStatistics());
 
         pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
         pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
@@ -565,6 +565,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             pw.println("Expected Number of Veritested Regions Instances = " + veritestRegionExpectedCount);
             assert (veritestRegionCount == veritestRegionExpectedCount);
         }
+        pw.println(statisticManager.getDistinctVeriRegionKeys());
         /* End added for equivalence checking */
 
 
