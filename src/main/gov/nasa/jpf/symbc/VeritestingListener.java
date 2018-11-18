@@ -279,15 +279,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     private boolean isAllowedRegion(String key) {
-//        return true;
-        int allowed_regions_bv = Integer.parseInt(System.getenv("REGION_BV"));
+        return true;
+        /*int allowed_regions_bv = Integer.parseInt(System.getenv("REGION_BV"));
         for (int i = 0; i < regionKeys.length; i++) {
             if ((allowed_regions_bv & (1 << i)) != 0) {
                 if (key.equals(regionKeys[i]))
                     return true;
             }
         }
-        return false;
+        return false;*/
     }
 
     private void updateSkipRegions(String message, String key) {
