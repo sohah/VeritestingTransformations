@@ -39,13 +39,11 @@ import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticSummaryChoiceGenerat
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
-import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenVisitor;
@@ -343,7 +341,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
 
-    private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws CloneNotSupportedException, StaticRegionException, VisitorException {
+    private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, StaticRegion staticRegion,
+                                         String key) throws CloneNotSupportedException, StaticRegionException, VisitorException {
+        Exception thisException = null;
         System.out.println("\n---------- STARTING Transformations for conditional region: " + key +
                 "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
         staticRegion.slotParamTable.print();
@@ -357,7 +357,17 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         dynRegion = SubstitutionVisitor.execute(ti, dynRegion);
 
         System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
-        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, true);
+
+        boolean somethingChanged = true;
+        while (somethingChanged) {
+            FieldSSAVisitor visitor = new FieldSSAVisitor(ti, dynRegion);
+            Stmt stmt = dynRegion.dynStmt.accept(visitor);
+            if (visitor.exception != null && thisException == null) thisException = visitor.exception;
+            dynRegion.psm = visitor.psm;
+            dynRegion = new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
+            somethingChanged = visitor.somethingChanged;
+        }
+        if (thisException != null) throw (IllegalArgumentException) thisException;
 //        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, false); // added for example
         TypePropagationVisitor.propagateTypes(dynRegion);
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
