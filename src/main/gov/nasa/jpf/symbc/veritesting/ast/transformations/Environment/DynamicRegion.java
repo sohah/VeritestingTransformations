@@ -161,7 +161,7 @@ public class DynamicRegion implements Region {
                 (OutputTable) staticRegion.outputTable, uniqueNum);
         this.fieldRefTypeTable = new FieldRefTypeTable();
         this.psm = new FieldSubscriptMap();
-        this.arrayOutputs = new ArrayExpressions(null);
+        this.arrayOutputs = null;
         this.constantsTable = null;
     }
 }

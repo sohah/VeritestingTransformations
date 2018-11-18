@@ -343,7 +343,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, StaticRegion staticRegion,
                                          String key) throws CloneNotSupportedException, StaticRegionException, VisitorException {
-        Exception thisException = null;
+        IllegalArgumentException thisException = null;
         System.out.println("\n---------- STARTING Transformations for conditional region: " + key +
                 "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
         staticRegion.slotParamTable.print();
@@ -360,14 +360,24 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         boolean somethingChanged = true;
         while (somethingChanged) {
-            FieldSSAVisitor visitor = new FieldSSAVisitor(ti, dynRegion);
-            Stmt stmt = dynRegion.dynStmt.accept(visitor);
-            if (visitor.exception != null && thisException == null) thisException = visitor.exception;
-            dynRegion.psm = visitor.psm;
-            dynRegion = new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
-            somethingChanged = visitor.somethingChanged;
+            /* Field substitution iteration */
+            FieldSSAVisitor fieldSSAVisitor = new FieldSSAVisitor(ti, dynRegion);
+            Stmt fieldStmt = dynRegion.dynStmt.accept(fieldSSAVisitor);
+            if (fieldSSAVisitor.exception != null && thisException == null) thisException = fieldSSAVisitor.exception;
+            dynRegion.psm = fieldSSAVisitor.psm;
+            dynRegion = new DynamicRegion(dynRegion, fieldStmt, new SPFCaseList(), null, null);
+
+            /* Array substitution iteration */
+            ArraySSAVisitor arraySSAVisitor = new ArraySSAVisitor(ti, dynRegion);
+            Stmt arrayStmt = dynRegion.dynStmt.accept(arraySSAVisitor);
+            if (arraySSAVisitor.exception != null) throw arraySSAVisitor.exception;
+            dynRegion.arrayOutputs = arraySSAVisitor.arrayExpressions;
+            dynRegion = new DynamicRegion(dynRegion, arrayStmt, new SPFCaseList(), null, null);
+
+            somethingChanged = fieldSSAVisitor.somethingChanged || arraySSAVisitor.somethingChanged;
+
         }
-        if (thisException != null) throw (IllegalArgumentException) thisException;
+        if (thisException != null) throw thisException;
 //        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, false); // added for example
         TypePropagationVisitor.propagateTypes(dynRegion);
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
@@ -376,7 +386,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
         System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
-        dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
+//        dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
 //        added for example
 //        dynRegion = SimplifyStmtVisitor.execute(dynRegion);
 //        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
