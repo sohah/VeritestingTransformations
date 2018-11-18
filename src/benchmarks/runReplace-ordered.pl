@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 
-use List::Util 'shuffle';
 use strict;
 $| = 1;
 
 # run this script with args 0 16 <log-file> <rand-seed>
 my ($this_bucket, $num_buckets, $log_file, $rand_seed) = @ARGV;
+my $max_ind = (1 << 24);
 srand($rand_seed);
 my $error_log_file = $log_file . ".error";
 open (STDOUT, "| tee -ai $log_file");
@@ -28,7 +28,6 @@ my $min_time = 86400000;
 my $min_region_index = -1;
 my $min_instances = 0;
 my $min_regions = "";
-my $max_ind = (1 << 17);
 my $min_path_count = 0;
 my $bucket_size = int(($max_ind / ($num_buckets - 0.0)) + 0.99); # computes ceiling fn
 
@@ -37,16 +36,30 @@ my $i_to = ($this_bucket + 1) * $bucket_size;
 $i_to = $i_to > $max_ind ? $max_ind : $i_to;
 
 print "i_from = $i_from, i_to = $i_to\n";
-my @array = [];
+
+sub countbitsset {
+    my($bin_vec) = (@_);
+    my $arg = $bin_vec;
+    my $counter = 0;
+    while ($bin_vec > 0) {
+        $counter++ if $bin_vec & 1;
+        $bin_vec = $bin_vec >> 1;
+    }
+    #print "countbitsset($arg) = $counter\n";
+    return $counter; 
+}
+
+my @array;
 for (my $i = $i_from; $i < $i_to; $i++) {
   push @array, $i;	
 }
-
-my @shuffled_array = shuffle(@array);
-
-for my $ind (0 .. $#shuffled_array)
+print "starting sorting\n";
+my @sorted_array = sort {countbitsset($a) <=> countbitsset($b)} @array;
+print "finished sorting\n";
+for my $ind (0 .. $#sorted_array)
 {
-    my $i = $shuffled_array[$ind];
+    my $i = $sorted_array[$ind];
+    #print "$i\n";
     $ENV{'REGION_BV'} = $i;
     open(LOG, "-|", @args);
     my $region_instances = -1;
