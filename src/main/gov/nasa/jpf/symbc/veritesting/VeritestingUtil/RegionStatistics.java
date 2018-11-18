@@ -3,7 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 import java.util.ArrayList;
 
 public class RegionStatistics {
-    private final String regionKey;
+    public final String regionKey;
     ArrayList<FailEntry> failReasonList = new ArrayList<>();
 
     /**
