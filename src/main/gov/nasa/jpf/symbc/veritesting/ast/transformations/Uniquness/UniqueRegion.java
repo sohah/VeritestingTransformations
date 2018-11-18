@@ -43,12 +43,12 @@ public class UniqueRegion {
                 dynStmt, uniqueNum);
 
 
-//        System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
-//        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-//        dynRegion.slotParamTable.print();
-//        dynRegion.inputTable.print();
-//        dynRegion.varTypeTable.print();
-//        dynRegion.outputTable.print();
+        System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
+        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+        dynRegion.slotParamTable.print();
+        dynRegion.inputTable.print();
+        dynRegion.varTypeTable.print();
+        dynRegion.outputTable.print();
 
         return dynRegion;
     }

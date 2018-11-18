@@ -189,8 +189,8 @@ public class SubstitutionVisitor extends AstMapVisitor {
                     ++StatisticManager.thisHighOrdCount;
                     String key = keyRegionPair.getFirst();
 
-//                    System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
-//                    System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
+                    System.out.println("\n********** High Order Region Discovered for region: " + key + "\n");
+                    System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
                     DynamicRegion uniqueHgOrdDynRegion = null;
                     try {
                         uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
@@ -371,17 +371,17 @@ public class SubstitutionVisitor extends AstMapVisitor {
         DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null);
 
 
-//        System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
-//        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-//        dynRegion.slotParamTable.print();
-//        dynRegion.outputTable.print();
-//        dynRegion.varTypeTable.print();
+        System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
+        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+        dynRegion.slotParamTable.print();
+        dynRegion.outputTable.print();
+        dynRegion.varTypeTable.print();
 
-//        System.out.println("\n--------------- AFTER SUBSTITUTION TRANSFORMATION ---------------\n");
-//        System.out.println(StmtPrintVisitor.print(instantiatedDynRegion.dynStmt));
-//        instantiatedDynRegion.slotParamTable.print();
-//        instantiatedDynRegion.outputTable.print();
-//        instantiatedDynRegion.varTypeTable.print();
+        System.out.println("\n--------------- AFTER SUBSTITUTION TRANSFORMATION ---------------\n");
+        System.out.println(StmtPrintVisitor.print(instantiatedDynRegion.dynStmt));
+        instantiatedDynRegion.slotParamTable.print();
+        instantiatedDynRegion.outputTable.print();
+        instantiatedDynRegion.varTypeTable.print();
 
         return instantiatedDynRegion;
     }

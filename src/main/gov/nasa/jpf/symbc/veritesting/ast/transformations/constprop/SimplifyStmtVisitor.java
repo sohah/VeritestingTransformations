@@ -108,8 +108,8 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
 
         DynamicRegion ret = new DynamicRegion(dynRegion, stmt, dynRegion.spfCaseList, dynRegion.regionSummary,
                 dynRegion.spfPredicateSummary);
-//        System.out.println("\n--------------- AFTER SIMPLIFICATION ---------------\n");
-//        System.out.println(StmtPrintVisitor.print(ret.dynStmt));
+        System.out.println("\n--------------- AFTER SIMPLIFICATION ---------------\n");
+        System.out.println(StmtPrintVisitor.print(ret.dynStmt));
         return ret;
     }
 
