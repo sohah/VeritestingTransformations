@@ -44,6 +44,12 @@ public class UnbeliveablySimplePad {
         launchBtn = false;
     }
 
+    /**
+     * It takes the input signal n, which either can be start, launch or empty, it has no reset. So basically, it must go fom "IDLE" to
+     * "READY" to "LAUNCH", but it might stay indefinitely in any of the first two states. While it can only stay in the "LAUNCH" state for only one time slot.
+     * @param n
+     * @return
+     */
     public boolean runPad(int n) {
         boolean startSignal;
         boolean launchSignal;
