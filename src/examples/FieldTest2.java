@@ -1,8 +1,9 @@
 public class FieldTest2 extends TestRegionBaseClass {
 
-    int count = 0;
+    int count;
 
     public Outputs fieldTest2(int x) {
+        count = 0;
         if (x != 0) count = 2;
         else x = 1;
 //        assert( x != 0 ? count == 1 : count == 2);

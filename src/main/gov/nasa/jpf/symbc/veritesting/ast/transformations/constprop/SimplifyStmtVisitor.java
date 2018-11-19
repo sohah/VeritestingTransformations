@@ -26,15 +26,26 @@ import static za.ac.sun.cs.green.expr.Operation.Operator.EQ;
 
 public class SimplifyStmtVisitor extends AstMapVisitor {
     public ExprVisitorAdapter<Expression> eva;
-    private DynamicTable<Expression> constantsTable;
-    public StaticRegionException sre = null;
+    public DynamicTable<Expression> constantsTable;
     private DynamicRegion dynRegion;
 
-    private SimplifyStmtVisitor(DynamicRegion dynRegion, DynamicTable<Expression> constantsTable) {
+    public SimplifyStmtVisitor(DynamicRegion dynRegion, DynamicTable<Expression> constantsTable) {
         super(new SimplifyRangerExprVisitor(constantsTable));
         eva = super.eva;
         this.constantsTable = constantsTable;
         this.dynRegion = dynRegion;
+    }
+
+    public boolean getSomethingChanged() {
+        return ((SimplifyRangerExprVisitor)exprVisitor).somethingChanged;
+    }
+
+    public IllegalArgumentException getExprException() {
+        IllegalArgumentException ret = null;
+        if (((SimplifyRangerExprVisitor)exprVisitor).exception != null) {
+            ret = (((SimplifyRangerExprVisitor)exprVisitor).exception);
+        }
+        return ret;
     }
 
     @Override
@@ -92,39 +103,27 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
         return new AssignmentStmt(lhs, rhs);
     }
 
-    public static DynamicRegion execute(DynamicRegion dynRegion) throws StaticRegionException {
-        DynamicTable<Expression> constantsTable = new DynamicTable<>("Constants Table", "Expression", "Constant Value");
-        SimplifyStmtVisitor visitor = new SimplifyStmtVisitor(dynRegion, constantsTable);
-        Stmt stmt = dynRegion.dynStmt.accept(visitor);
-        if (visitor.sre != null)
-            throwException(visitor.sre, INSTANTIATION);
-        if (((SimplifyRangerExprVisitor)visitor.exprVisitor).sre != null) {
-            throwException(((SimplifyRangerExprVisitor)visitor.exprVisitor).sre, INSTANTIATION);
+    public static DynamicTable<Expression> makeConstantsTableUnique(DynamicTable<Expression> constantsTable, int uniqueNum) throws StaticRegionException {
+        // Alpha-renaming on the constants table
+        Iterator<Map.Entry<Variable, Expression>> itr = constantsTable.table.entrySet().iterator();
+        DynamicTable<Expression> newConstantsTable = new DynamicTable<>("Constants Table", "Expression", "Constant Value");
+        while (itr.hasNext()) {
+            Map.Entry<Variable, Expression> entry = itr.next();
+            Variable newVar;
+            if (entry.getKey() instanceof FieldRefVarExpr) {
+                FieldRefVarExpr newExpr = ((FieldRefVarExpr) entry.getKey()).clone();
+                newExpr = newExpr.makeUnique(uniqueNum);
+                newVar = newExpr;
+            } else if (entry.getKey() instanceof ArrayRefVarExpr) {
+                ArrayRefVarExpr newExpr = ((ArrayRefVarExpr) entry.getKey()).clone();
+                newExpr = newExpr.makeUnique(uniqueNum);
+                newVar = newExpr;
+            } else if (entry.getKey() instanceof WalaVarExpr) {
+                assert ((WalaVarExpr) entry.getKey()).getUniqueNum() != -1;
+                newVar = entry.getKey(); // WalaVarExpr are assumed to be alpha-renamed by this point
+            } else newVar = entry.getKey();
+            newConstantsTable.add(newVar, entry.getValue());
         }
-        if (dynRegion.constantsTable == null)
-            dynRegion.constantsTable = visitor.constantsTable;
-        else dynRegion.constantsTable.addAll(visitor.constantsTable);
-        simplifyArrayOutputs(dynRegion);
-
-        DynamicRegion ret = new DynamicRegion(dynRegion, stmt, dynRegion.spfCaseList, dynRegion.regionSummary,
-                dynRegion.spfPredicateSummary);
-        System.out.println("\n--------------- AFTER SIMPLIFICATION ---------------\n");
-        System.out.println(StmtPrintVisitor.print(ret.dynStmt));
-        return ret;
-    }
-
-    private static void simplifyArrayOutputs(DynamicRegion dynRegion) {
-        ArrayExpressions newOutputs = dynRegion.arrayOutputs.clone();
-        Iterator refItr = newOutputs.table.entrySet().iterator();
-        while(refItr.hasNext()) {
-            Map.Entry<Integer, Expression[]> entry = (Map.Entry<Integer, Expression[]>) refItr.next();
-            Expression[] values = entry.getValue();
-            for (int i = 0; i < values.length; i++) {
-                if (values[i] instanceof Variable && dynRegion.constantsTable.lookup((Variable) values[i]) != null) {
-                    values[i] = dynRegion.constantsTable.lookup((Variable) values[i]);
-                }
-            }
-        }
-        dynRegion.arrayOutputs = newOutputs;
+        return newConstantsTable;
     }
 }

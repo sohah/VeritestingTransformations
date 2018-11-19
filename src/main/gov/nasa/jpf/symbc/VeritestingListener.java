@@ -42,6 +42,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
@@ -356,11 +357,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         /*--------------- SUBSTITUTION TRANSFORMATION ---------------*/
         dynRegion = SubstitutionVisitor.execute(ti, dynRegion);
 
-        System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
-
         boolean somethingChanged = true;
         while (somethingChanged) {
+            thisException = null;
             /* Field substitution iteration */
+            System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
             FieldSSAVisitor fieldSSAVisitor = new FieldSSAVisitor(ti, dynRegion);
             Stmt fieldStmt = dynRegion.dynStmt.accept(fieldSSAVisitor);
             if (fieldSSAVisitor.exception != null && thisException == null) thisException = fieldSSAVisitor.exception;
@@ -368,35 +369,68 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             dynRegion = new DynamicRegion(dynRegion, fieldStmt, new SPFCaseList(), null, null);
 
             /* Array substitution iteration */
+            System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
             ArraySSAVisitor arraySSAVisitor = new ArraySSAVisitor(ti, dynRegion);
             Stmt arrayStmt = dynRegion.dynStmt.accept(arraySSAVisitor);
-            if (arraySSAVisitor.exception != null) throw arraySSAVisitor.exception;
+            if (arraySSAVisitor.exception != null && thisException == null) thisException = arraySSAVisitor.exception;
             dynRegion.arrayOutputs = arraySSAVisitor.arrayExpressions;
             dynRegion = new DynamicRegion(dynRegion, arrayStmt, new SPFCaseList(), null, null);
+            System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+            System.out.println(dynRegion.arrayOutputs);
 
-            somethingChanged = fieldSSAVisitor.somethingChanged || arraySSAVisitor.somethingChanged;
+            /* Simplification iteration */
+            DynamicTable<Expression> constantsTable = new DynamicTable<>("Constants Table", "Expression", "Constant Value");
+            SimplifyStmtVisitor simplifyVisitor = new SimplifyStmtVisitor(dynRegion, constantsTable);
+            Stmt simplifiedStmt = dynRegion.dynStmt.accept(simplifyVisitor);
+            if (simplifyVisitor.getExprException() != null && thisException == null)
+                thisException = simplifyVisitor.getExprException();
+            if (dynRegion.constantsTable == null)
+                dynRegion.constantsTable = simplifyVisitor.constantsTable;
+            else dynRegion.constantsTable.addAll(simplifyVisitor.constantsTable);
+//            simplifyArrayOutputs(dynRegion);
+            dynRegion = new DynamicRegion(dynRegion, simplifiedStmt, dynRegion.spfCaseList, dynRegion.regionSummary,
+                    dynRegion.spfPredicateSummary);
+            System.out.println("\n--------------- AFTER SIMPLIFICATION ---------------\n");
+            System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+            Iterator<Map.Entry<Variable, Expression>> itr = dynRegion.constantsTable.table.entrySet().iterator();
+            System.out.println("Constants Table:");
+            while (itr.hasNext()) {
+                Map.Entry<Variable, Expression> entry = itr.next();
+                System.out.println(entry.getKey() + ": " + entry.getValue());
+            }
+
+            somethingChanged = fieldSSAVisitor.somethingChanged || arraySSAVisitor.somethingChanged ||
+                    simplifyVisitor.getSomethingChanged();
 
         }
         if (thisException != null) throw thisException;
 //        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, false); // added for example
         TypePropagationVisitor.propagateTypes(dynRegion);
-        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
+//        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 
 //        dynRegion = SimplifyStmtVisitor.execute(dynRegion); // added for example
 
 
-        System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
 //        dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
 //        added for example
 //        dynRegion = SimplifyStmtVisitor.execute(dynRegion);
 //        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 //        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, true);
 //        end added for example
-        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-        System.out.println(dynRegion.arrayOutputs);
         dynRegion = UniqueRegion.execute(dynRegion);
+        Iterator<Map.Entry<Variable, Expression>> itr = dynRegion.constantsTable.table.entrySet().iterator();
+        /*
+        ArrayRefVarExpr, FieldRefVarExpr, WalaVarExpr should be unique at this point because UniqueRegion should have
+        handled it
+         */
+        while (itr.hasNext()) {
+            Map.Entry<Variable, Expression> entry = itr.next();
+            if (entry.getKey() instanceof FieldRefVarExpr) assert ((FieldRefVarExpr) entry.getKey()).uniqueNum != -1;
+            if (entry.getKey() instanceof WalaVarExpr) assert ((WalaVarExpr) entry.getKey()).getUniqueNum() != -1;
+            if (entry.getKey() instanceof ArrayRefVarExpr) assert ((ArrayRefVarExpr) entry.getKey()).uniqueNum != -1;
+        }
 
-        dynRegion = SimplifyStmtVisitor.execute(dynRegion);
+//        dynRegion = SimplifyStmtVisitor.execute(dynRegion);
 
 
         if (runMode == VeritestingMode.SPFCASES) {
@@ -613,8 +647,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Array SPF Case count = " + StatisticManager.ArraySPFCaseCount);
         pw.println("If-removed count = " + StatisticManager.ifRemovedCount);
 
-//        pw.println(statisticManager.printAccumulativeStatistics());
-//        pw.println(statisticManager.printInstantiationStatistics());
+        pw.println(statisticManager.printAccumulativeStatistics());
+        pw.println(statisticManager.printInstantiationStatistics());
 
         pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
         pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);

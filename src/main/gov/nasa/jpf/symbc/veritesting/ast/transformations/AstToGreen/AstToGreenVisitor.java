@@ -189,11 +189,11 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
         Stmt noRangerVarStmt = noWalaVarStmt.accept(astMapVisitor);
         NoSkipVisitor noSkipVisitor = new NoSkipVisitor();
 
-//        System.out.println("\n--------------- NO-SKIP OPTIMIZATION ---------------");
+        System.out.println("\n--------------- NO-SKIP OPTIMIZATION ---------------");
         Stmt noSkipStmt = noRangerVarStmt.accept(noSkipVisitor);
 //        if (noSkipStmt instanceof SkipStmt)
 //            throwException(new IllegalArgumentException("concrete region"), INSTANTIATION);
-//        System.out.println(PrettyPrintVisitor.print(noSkipStmt));
+        System.out.println(PrettyPrintVisitor.print(noSkipStmt));
 
 //        System.out.println("\n--------------- TO GREEN TRANSFORMATION ---------------");
         AstToGreenVisitor toGreenVisitor = new AstToGreenVisitor();

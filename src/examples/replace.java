@@ -35,7 +35,7 @@ public class replace {
 	public static final int NEWLINE = 10;
 	public static final int CLOSIZE = 1;
 
-	public static final int printBufLen = 0;
+	public static final int printBufLen = 50;
 	static int printBufIdx = 0;
 	static char[] printBuf;
 
@@ -88,7 +88,7 @@ public class replace {
 		//
 		change(str, pat, sub);
 		char[] retChar = new char[pat.length + sub.length + str.length + printBuf.length];
-		/*for (int i=0; i < printBuf.length; i++) printBuf[i] = '0';
+		for (int i=0; i < printBuf.length; i++) printBuf[i] = '0';
 		int outIndex = 0;
 		for (int i = 0; i < pat.length; i++)
 			retChar[outIndex++] = pat[i];
@@ -97,7 +97,7 @@ public class replace {
 		for (int i = 0; i < str.length; i++)
 			retChar[outIndex++] = str[i];
 		for (int i = 0; i < printBufLen; i++)
-			retChar[outIndex++] = printBuf[i];*/
+			retChar[outIndex++] = printBuf[i];
 
 		return retChar;
 	}
