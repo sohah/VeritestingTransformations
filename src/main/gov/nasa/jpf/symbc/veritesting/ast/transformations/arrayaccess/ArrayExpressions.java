@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
+import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -30,6 +31,12 @@ public class ArrayExpressions {
         table = new HashMap();
         this.ti = ti;
         arrayTypesTable = new HashMap<>();
+    }
+
+    public ArrayExpressions(ThreadInfo ti, HashMap newTable, HashMap newTypesTable) {
+        table = newTable;
+        this.ti = ti;
+        arrayTypesTable = newTypesTable;
     }
 
     @Override
@@ -99,8 +106,22 @@ public class ArrayExpressions {
         }
     }
 
-    public void setUniqueNum(int uniqueNum) {
+    public ArrayExpressions makeUnique(int uniqueNum) throws StaticRegionException {
         this.uniqueNum = uniqueNum;
+        Iterator itr = table.entrySet().iterator();
+        HashMap<Integer, Expression[]> newTable = new HashMap<>();
+        while (itr.hasNext()) {
+            Map.Entry<Integer, Expression[]> entry = (Map.Entry) itr.next();
+            int ref = entry.getKey();
+            Expression[] exps = entry.getValue();
+            Expression[] newExps = new Expression[exps.length];
+            for (int i=0; i<exps.length; i++)
+                if (exps[i] instanceof CloneableVariable)
+                    newExps[i] = ((CloneableVariable)exps[i]).makeUnique(uniqueNum);
+                else newExps[i] = exps[i];
+            newTable.put(ref, newExps);
+        }
+        return new ArrayExpressions(ti, newTable, arrayTypesTable);
     }
 
     public String toString() {

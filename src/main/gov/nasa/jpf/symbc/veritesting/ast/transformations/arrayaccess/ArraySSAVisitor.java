@@ -12,6 +12,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.*;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
@@ -25,25 +26,27 @@ public class ArraySSAVisitor extends AstMapVisitor {
     private ThreadInfo ti;
     static final int ARRAY_SUBSCRIPT_BASE = 0;
     private GlobalArraySubscriptMap gsm;
-    private StaticRegionException sre = null;
     // maps each array to its array of expressions on a path
-    private ArrayExpressions arrayExpressions;
+    public ArrayExpressions arrayExpressions;
+    public boolean somethingChanged;
+    public IllegalArgumentException exception = null;
 
-    private ArraySSAVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
+    public ArraySSAVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
         super(new ExprMapVisitor());
         this.dynRegion = dynRegion;
         this.ti = ti;
         this.gsm = new GlobalArraySubscriptMap();
-        this.arrayExpressions = new ArrayExpressions(ti);
+        this.arrayExpressions = dynRegion.arrayOutputs != null ? dynRegion.arrayOutputs : new ArrayExpressions(ti);
+        somethingChanged = false;
     }
 
-    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException {
+    /*public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException {
         ArraySSAVisitor visitor = new ArraySSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
         if (visitor.sre != null) throw visitor.sre;
         dynRegion.arrayOutputs = visitor.arrayExpressions;
         return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
-    }
+    }*/
 
     @Override
     public Stmt visit(ArrayLoadInstruction c) {
@@ -63,9 +66,15 @@ public class ArraySSAVisitor extends AstMapVisitor {
             if (type != null) dynRegion.varTypeTable.add(((WalaVarExpr) c.def).number, type);
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
-        if (exceptionalMessage != null) throwException(new IllegalArgumentException(exceptionalMessage), INSTANTIATION);
-        assignStmt = new AssignmentStmt(c.def, rhs);
-        return getIfThenElseStmt(arrayRef, assignStmt);
+        if (exceptionalMessage != null)  {
+            exception = new IllegalArgumentException(exceptionalMessage);
+            return c;
+        }
+        else {
+            assignStmt = new AssignmentStmt(c.def, rhs);
+            somethingChanged = true;
+            return getIfThenElseStmt(arrayRef, assignStmt);
+        }
     }
 
     private Stmt getIfThenElseStmt(ArrayRef arrayRef, Stmt assignStmt) {
@@ -89,8 +98,8 @@ public class ArraySSAVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(ArrayStoreInstruction putIns) {
         if (!IntConstant.class.isInstance(putIns.arrayref)) {
-            throwException(new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor"), INSTANTIATION);
-            return null;
+            exception = new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor");
+            return putIns;
         }
         else {
             ArrayRef arrayRef = ArrayRef.makeArrayRef(putIns);
@@ -100,6 +109,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             arrayExpressions.update(arrayRef, arrayRefVarExpr);
             Stmt assignStmt = new AssignmentStmt(arrayRefVarExpr, putIns.assignExpr);
             dynRegion.fieldRefTypeTable.add(arrayRefVarExpr.clone(), arrayExpressions.getType(arrayRef.ref));
+            somethingChanged = true;
             return getIfThenElseStmt(arrayRef, assignStmt);
         }
     }
@@ -125,8 +135,10 @@ public class ArraySSAVisitor extends AstMapVisitor {
         arrayExpressions = oldExps.clone();
         Stmt gammaStmt;
         gammaStmt = mergeArrayExpressions(stmt.condition, thenExps, elseExps);
-        if (gammaStmt != null)
+        if (gammaStmt != null) {
+            somethingChanged = true;
             return new CompositionStmt(new IfThenElseStmt(stmt.original, stmt.condition, newThen, newElse), gammaStmt);
+        }
         else return new IfThenElseStmt(stmt.original, stmt.condition, newThen, newElse);
     }
 
@@ -139,7 +151,9 @@ public class ArraySSAVisitor extends AstMapVisitor {
             Expression[] elseExpArr = elseExps.lookup(thenArrayRef);
             if (elseExpArr != null) {
                 assert elseExps.arrayTypesTable.get(thenArrayRef).equals(thenExps.arrayTypesTable.get(thenArrayRef));
-                compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr, elseExpArr, type));
+                assert thenExpArr.length == elseExpArr.length;
+                if (!Arrays.equals(thenExpArr, elseExpArr))
+                    compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr, elseExpArr, type));
                 elseExps.remove(thenArrayRef);
             } else {
                 compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr,
@@ -152,7 +166,8 @@ public class ArraySSAVisitor extends AstMapVisitor {
             Expression[] elseExpArr = entry.getValue();
             String type = elseExps.arrayTypesTable.get(elseArrayRef);
             if (thenExps.lookup(elseArrayRef) != null) {
-                throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"), INSTANTIATION);
+                exception = new IllegalArgumentException("invariant failure: something in elseMap should not be in " +
+                        "thenMap at this point");
             } else {
                 compStmt = compose(compStmt, createGammaStmtArray(elseArrayRef, condition,
                         getInitialArrayValues(ti, elseArrayRef).getFirst(), elseExpArr, type));
@@ -165,7 +180,6 @@ public class ArraySSAVisitor extends AstMapVisitor {
     private Stmt createGammaStmtArray(int ref, Expression condition, Expression[] thenExpArr, Expression[] elseExpArr,
                                       String type) {
         Stmt compStmt = null;
-        assert thenExpArr.length == elseExpArr.length;
         for (int i=0; i < thenExpArr.length; i++){
             ArrayRef arrayRef = new ArrayRef(ref, new IntConstant(i));
             ArrayRefVarExpr lhs = new ArrayRefVarExpr(arrayRef,

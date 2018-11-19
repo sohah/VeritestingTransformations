@@ -6,13 +6,11 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.GammaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.IntConstant;
-import za.ac.sun.cs.green.expr.Operation;
-import za.ac.sun.cs.green.expr.RealConstant;
+import za.ac.sun.cs.green.expr.*;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -118,22 +116,13 @@ public class ArrayUtil {
             for (int i = 0; i < len; i++) {
                 Expression newExpr = exps[i];
                 eiArray.checkArrayBounds(i);
+                if (newExpr instanceof Variable && constantsTable.lookup((Variable) newExpr) != null)
+                    newExpr = constantsTable.lookup((Variable) newExpr);
                 //TODO: support "reference" as an array element type in the future
                 if (eiArray.getClassInfo().isReferenceArray()) {
-                    if (newExpr instanceof ArrayRefVarExpr) {
-                        assert arrayExpressions.uniqueNum != -1;
-                        newExpr = ((ArrayRefVarExpr) newExpr).makeUnique(arrayExpressions.uniqueNum);
-                        if (constantsTable.lookup((ArrayRefVarExpr)newExpr) != null) {
-                            newExpr = constantsTable.lookup((ArrayRefVarExpr) newExpr);
-                            if (newExpr instanceof IntConstant)
-                                eiArray.setReferenceElement(i, ((IntConstant) newExpr).getValue());
-                            else throwException(new StaticRegionException("unknown constant type given to reference array in ArraySSAVisitor.doArrayStore"), INSTANTIATION);
-                        }
-                        else
-                            throwException(new StaticRegionException("cannot write symbolic array reference in ArraySSAVisitor.doArrayStore"), INSTANTIATION);
-                    } else if (newExpr instanceof IntConstant) {
+                    if (newExpr instanceof IntConstant) {
                         eiArray.setReferenceElement(i, ((IntConstant) newExpr).getValue());
-                    } else throwException(new StaticRegionException("unknown array type given to reference array in ArraySSAVisitor.doArrayStore"), INSTANTIATION);
+                    } else throwException(new StaticRegionException("non-constant element-type given to reference array in ArraySSAVisitor.doArrayStore"), INSTANTIATION);
                 }
                 else if (type.equals("int")) eiArray.setIntElement(i, 0);
                 else if (type.equals("char")) eiArray.setCharElement(i, (char) 0);
@@ -142,17 +131,11 @@ public class ArrayUtil {
                 else if (type.equals("byte")) eiArray.setByteElement(i, (byte) 0);
                 else
                     throwException(new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore"), INSTANTIATION);
-                if (newExpr instanceof ArrayRefVarExpr) {
-                    assert arrayExpressions.uniqueNum != -1;
-                    newExpr = ((ArrayRefVarExpr) newExpr).makeUnique(arrayExpressions.uniqueNum);
-                    if (constantsTable.lookup((ArrayRefVarExpr)newExpr) != null)
-                        newExpr = constantsTable.lookup((ArrayRefVarExpr)newExpr);
-                    else newExpr = createGreenVar(type, ((ArrayRefVarExpr) newExpr).getSymName());
-                }
                 if (newExpr instanceof CloneableVariable)
                     newExpr = createGreenVar(type, newExpr.toString());
                 eiArray.setElementAttr(i, greenToSPFExpression(newExpr));
             }
         }
     }
+
 }
