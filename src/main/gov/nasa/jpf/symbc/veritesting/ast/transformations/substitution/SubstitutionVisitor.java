@@ -99,9 +99,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(ArrayLengthInstruction c) {
-        return new ArrayLengthInstruction(c.getOriginal(),
-                c.def,
-                eva.accept(c.arrayref));
+        return new ArrayLengthInstruction(c.getOriginal(), eva.accept(c.arrayref), c.def);
     }
 
     @Override

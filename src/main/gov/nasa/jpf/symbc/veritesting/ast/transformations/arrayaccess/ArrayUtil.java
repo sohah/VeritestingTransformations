@@ -118,6 +118,7 @@ public class ArrayUtil {
                 eiArray.checkArrayBounds(i);
                 if (newExpr instanceof Variable && constantsTable.lookup((Variable) newExpr) != null)
                     newExpr = constantsTable.lookup((Variable) newExpr);
+                //TODO: Dont write an array output as a symbolic expression attribute if it is a constant
                 //TODO: support "reference" as an array element type in the future
                 if (eiArray.getClassInfo().isReferenceArray()) {
                     if (newExpr instanceof IntConstant) {

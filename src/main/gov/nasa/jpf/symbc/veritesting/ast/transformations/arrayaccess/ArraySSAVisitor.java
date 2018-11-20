@@ -40,13 +40,21 @@ public class ArraySSAVisitor extends AstMapVisitor {
         somethingChanged = false;
     }
 
-    /*public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException {
-        ArraySSAVisitor visitor = new ArraySSAVisitor(ti, dynRegion);
-        Stmt stmt = dynRegion.dynStmt.accept(visitor);
-        if (visitor.sre != null) throw visitor.sre;
-        dynRegion.arrayOutputs = visitor.arrayExpressions;
-        return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
-    }*/
+    @Override
+    public Stmt visit(ArrayLengthInstruction c) {
+        if (c.arrayref instanceof IntConstant) {
+            int ref = ((IntConstant) c.arrayref).getValue();
+            int len = ti.getElementInfo(ref).getArrayFields().arrayLength();
+            somethingChanged = true;
+            return new AssignmentStmt(c.def, new IntConstant(len));
+        } else if (dynRegion.constantsTable != null && c.arrayref instanceof Variable &&
+                dynRegion.constantsTable.lookup((Variable) c.arrayref) instanceof IntConstant) {
+            int ref = ((IntConstant)dynRegion.constantsTable.lookup((Variable) c.arrayref)).getValue();
+            int len = ti.getElementInfo(ref).getArrayFields().arrayLength();
+            somethingChanged = true;
+            return new AssignmentStmt(c.def, new IntConstant(len));
+        } else return c;
+    }
 
     @Override
     public Stmt visit(ArrayLoadInstruction c) {
