@@ -485,6 +485,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator) {
             pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
         } else {
+            if (runMode.ordinal() < VeritestingMode.SPFCASES.ordinal())
+                throwException(new IllegalArgumentException("cannot create new PCChoiceGenerator in non-SPFCases mode"), INSTANTIATION);
             pc = new PathCondition();
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
@@ -549,6 +551,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), symVar.toString()); // assumes toString() would return the same string as getSymName()
             }
             else symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), ((WalaVarExpr) var).getSymName());
+            //TODO: Dont write a local output as a symbolic expression attribute if it is a constant
             sf.setSlotAttr(slot, greenToSPFExpression(symVar));
         }
     }
@@ -655,7 +658,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         /* Begin added for equivalence checking */
         if (veritestRegionExpectedCount != -1) {
             pw.println("Expected Number of Veritested Regions Instances = " + veritestRegionExpectedCount);
-            assert (veritestRegionCount == veritestRegionExpectedCount);
+            assert (veritestRegionCount >= veritestRegionExpectedCount);
         }
         pw.println(statisticManager.getDistinctVeriRegionKeys());
         /* End added for equivalence checking */

@@ -40,13 +40,21 @@ public class ArraySSAVisitor extends AstMapVisitor {
         somethingChanged = false;
     }
 
-    /*public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException {
-        ArraySSAVisitor visitor = new ArraySSAVisitor(ti, dynRegion);
-        Stmt stmt = dynRegion.dynStmt.accept(visitor);
-        if (visitor.sre != null) throw visitor.sre;
-        dynRegion.arrayOutputs = visitor.arrayExpressions;
-        return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
-    }*/
+    @Override
+    public Stmt visit(ArrayLengthInstruction c) {
+        if (c.arrayref instanceof IntConstant) {
+            int ref = ((IntConstant) c.arrayref).getValue();
+            int len = ti.getElementInfo(ref).getArrayFields().arrayLength();
+            somethingChanged = true;
+            return new AssignmentStmt(c.def, new IntConstant(len));
+        } else if (dynRegion.constantsTable != null && c.arrayref instanceof Variable &&
+                dynRegion.constantsTable.lookup((Variable) c.arrayref) instanceof IntConstant) {
+            int ref = ((IntConstant)dynRegion.constantsTable.lookup((Variable) c.arrayref)).getValue();
+            int len = ti.getElementInfo(ref).getArrayFields().arrayLength();
+            somethingChanged = true;
+            return new AssignmentStmt(c.def, new IntConstant(len));
+        } else return c;
+    }
 
     @Override
     public Stmt visit(ArrayLoadInstruction c) {
@@ -54,26 +62,30 @@ public class ArraySSAVisitor extends AstMapVisitor {
         Expression rhs = null;
         String type = null;
         Stmt assignStmt;
-        ArrayRef arrayRef = ArrayRef.makeArrayRef(c);
-        if (c.arrayref instanceof IntConstant) {
-            if (isUnsupportedArrayRef(arrayRef)) return getThrowInstruction();
-            rhs = arrayExpressions.get(arrayRef);
-            type = arrayExpressions.getType(arrayRef.ref);
-        } else exceptionalMessage = "encountered obj-ref in ArrayLoadInstruction that is not a constant";
-        // only one of rhs and exceptionalMessage should be non-null
-        assert (rhs == null) ^ (exceptionalMessage == null);
-        if (c.def instanceof WalaVarExpr) {
-            if (type != null) dynRegion.varTypeTable.add(((WalaVarExpr) c.def).number, type);
-        }
-        else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
-        if (exceptionalMessage != null)  {
-            exception = new IllegalArgumentException(exceptionalMessage);
+        try {
+            ArrayRef arrayRef = ArrayRef.makeArrayRef(c);
+            if (c.arrayref instanceof IntConstant) {
+                if (isUnsupportedArrayRef(arrayRef)) return getThrowInstruction();
+                rhs = arrayExpressions.get(arrayRef);
+                type = arrayExpressions.getType(arrayRef.ref);
+            } else exceptionalMessage = "encountered obj-ref in ArrayLoadInstruction that is not a constant";
+            // only one of rhs and exceptionalMessage should be non-null
+            assert (rhs == null) ^ (exceptionalMessage == null);
+            if (c.def instanceof WalaVarExpr) {
+                if (type != null) dynRegion.varTypeTable.add(((WalaVarExpr) c.def).number, type);
+            } else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
+            if (exceptionalMessage != null) {
+                exception = new IllegalArgumentException(exceptionalMessage);
+                return c;
+            } else {
+                assignStmt = new AssignmentStmt(c.def, rhs);
+                somethingChanged = true;
+                return getIfThenElseStmt(arrayRef, assignStmt);
+            }
+        } catch (IllegalArgumentException e) {
+            somethingChanged = false;
+            exception = e;
             return c;
-        }
-        else {
-            assignStmt = new AssignmentStmt(c.def, rhs);
-            somethingChanged = true;
-            return getIfThenElseStmt(arrayRef, assignStmt);
         }
     }
 
@@ -102,15 +114,21 @@ public class ArraySSAVisitor extends AstMapVisitor {
             return putIns;
         }
         else {
-            ArrayRef arrayRef = ArrayRef.makeArrayRef(putIns);
-            if (isUnsupportedArrayRef(arrayRef)) return getThrowInstruction();
-            ArrayRefVarExpr arrayRefVarExpr = new ArrayRefVarExpr(arrayRef,
-                    new SubscriptPair(-1, gsm.createSubscript(arrayRef.ref)));
-            arrayExpressions.update(arrayRef, arrayRefVarExpr);
-            Stmt assignStmt = new AssignmentStmt(arrayRefVarExpr, putIns.assignExpr);
-            dynRegion.fieldRefTypeTable.add(arrayRefVarExpr.clone(), arrayExpressions.getType(arrayRef.ref));
-            somethingChanged = true;
-            return getIfThenElseStmt(arrayRef, assignStmt);
+            try {
+                ArrayRef arrayRef = ArrayRef.makeArrayRef(putIns);
+                if (isUnsupportedArrayRef(arrayRef)) return getThrowInstruction();
+                ArrayRefVarExpr arrayRefVarExpr = new ArrayRefVarExpr(arrayRef,
+                        new SubscriptPair(-1, gsm.createSubscript(arrayRef.ref)));
+                arrayExpressions.update(arrayRef, arrayRefVarExpr);
+                Stmt assignStmt = new AssignmentStmt(arrayRefVarExpr, putIns.assignExpr);
+                dynRegion.fieldRefTypeTable.add(arrayRefVarExpr.clone(), arrayExpressions.getType(arrayRef.ref));
+                somethingChanged = true;
+                return getIfThenElseStmt(arrayRef, assignStmt);
+            } catch (IllegalArgumentException e) {
+                somethingChanged = false;
+                exception = e;
+                return putIns;
+            }
         }
     }
 
