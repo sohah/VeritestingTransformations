@@ -44,4 +44,21 @@ public class CheckCastInstruction extends Instruction {
     public String toString() {
         return "\n"+ result + " = checkCast("+ val + "," + Arrays.toString(declaredResultTypes) + ")";
     }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof CheckCastInstruction))
+            return false;
+        else{
+            String result2 = ((CheckCastInstruction) stmt2).result.toString();
+            String val2 = ((CheckCastInstruction) stmt2).val.toString();
+            String type2;
+            for(int i =0; i< declaredResultTypes.length; i++){
+                type2 = ((CheckCastInstruction) stmt2).declaredResultTypes[i].toString();
+                if(!this.declaredResultTypes[i].toString().equals(type2))
+                    return false;
+            }
+            return((this.result.toString().equals(result2)) && (this.val.toString().equals(val2)));
+        }
+    }
 }

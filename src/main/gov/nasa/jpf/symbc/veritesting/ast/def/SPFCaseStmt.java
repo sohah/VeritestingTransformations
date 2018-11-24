@@ -15,7 +15,7 @@ public class SPFCaseStmt implements Stmt {
     /**
      * These are the different reasons that requires SPF exploration.
      */
-    public enum SPFReason{
+    public enum SPFReason {
         OBJECT_CREATION, THROW,
         MULTIPLE, OUT_OF_BOUND_EXCEPTION, INVOKE; //used when the two sides of the ifStmt have SPFCases
     }
@@ -33,6 +33,18 @@ public class SPFCaseStmt implements Stmt {
     @Override
     public String toString() {
         return "SPFCaseStmt( " + reason + "," + spfCondition.toString() + ")";
+    }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof SPFCaseStmt))
+            return false;
+        else {
+            String spfCondition2 = ((SPFCaseStmt) stmt2).spfCondition.toString();
+            String reason = ((SPFCaseStmt) stmt2).reason.toString();
+            return (this.spfCondition.toString().equals(spfCondition2)
+                    && this.reason.toString().equals(reason));
+        }
     }
 
 }

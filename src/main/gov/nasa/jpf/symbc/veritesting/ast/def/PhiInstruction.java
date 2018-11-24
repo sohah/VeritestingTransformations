@@ -47,4 +47,17 @@ public class PhiInstruction extends Instruction {
         }
         return "\n"+ def + " = phi("+ rhsStr + ")";
     }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if(!(stmt2 instanceof PhiInstruction))
+            return false;
+        else{
+            for(int i =0; i<rhs.length; i++){
+                if(!(((PhiInstruction) stmt2).rhs[i].toString().equals(this.rhs[i].toString())))
+                    return false;
+            }
+            return (((PhiInstruction) stmt2).def.toString().equals(this.def.toString()));
+        }
+    }
 }

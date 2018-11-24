@@ -11,20 +11,18 @@ import java.util.Arrays;
  */
 
 public class InvokeInstruction extends Instruction {
-    public final Expression [] result;
-    public final Expression [] params;
+    public final Expression[] result;
+    public final Expression[] params;
 
-    public InvokeInstruction(SSAInvokeInstruction ins, Expression [] result, Expression[] params)
-    {
+    public InvokeInstruction(SSAInvokeInstruction ins, Expression[] result, Expression[] params) {
         super(ins);
         this.result = result;
         this.params = params;
     }
 
-    public InvokeInstruction(SSAInvokeInstruction ins)
-    {
+    public InvokeInstruction(SSAInvokeInstruction ins) {
         super(ins);
-        result = new Expression [ins.getNumberOfReturnValues()];
+        result = new Expression[ins.getNumberOfReturnValues()];
         for (int i = 0; i < ins.getNumberOfReturnValues(); i++) {
             result[i] = new WalaVarExpr(ins.getReturnValue(i));
         }
@@ -35,7 +33,7 @@ public class InvokeInstruction extends Instruction {
     }
 
     public SSAInvokeInstruction getOriginal() {
-        return (SSAInvokeInstruction)original;
+        return (SSAInvokeInstruction) original;
     }
 
 
@@ -48,5 +46,22 @@ public class InvokeInstruction extends Instruction {
     @Override
     public String toString() {
         return "\n" + Arrays.toString(result) + " = invoke " + Arrays.toString(params);
+    }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof InvokeInstruction))
+            return false;
+        else {
+                for(int i = 0; i<result.length; i++){
+                    if(!((InvokeInstruction) stmt2).result[i].toString().equals(this.result[i].toString()))
+                        return false;
+                }
+            for(int i = 0; i<params.length; i++){
+                if(!((InvokeInstruction) stmt2).params[i].toString().equals(this.params[i].toString()))
+                    return false;
+            }
+            return true;
+        }
     }
 }

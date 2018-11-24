@@ -29,4 +29,16 @@ public class IfThenElseStmt implements Stmt {
     public String toString() {
         return " if (" + this.condition + ") then (" + thenStmt.toString() + ") else (" + elseStmt.toString() + ")";
     }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof IfThenElseStmt))
+            return false;
+        else {
+            String condition2 = this.condition.toString();
+            return (this.condition.toString().equals(condition2)
+                    && this.thenStmt.equals(((IfThenElseStmt) stmt2).thenStmt)
+                    && this.elseStmt.equals(((IfThenElseStmt) stmt2).elseStmt));
+        }
+    }
 }
