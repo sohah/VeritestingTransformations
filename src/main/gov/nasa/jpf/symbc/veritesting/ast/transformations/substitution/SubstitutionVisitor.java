@@ -213,7 +213,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
                         Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
                         returnStmt = new AssignmentStmt(c.result[0], stmtRetPair.getSecond());
                         return new CompositionStmt(stmtRetPair.getFirst(), returnStmt);
-                    } else{
+                    } else {
                         return getStmtRetExp(hgOrdStmt).getFirst();
                     }
                 } else {
@@ -284,19 +284,19 @@ public class SubstitutionVisitor extends AstMapVisitor {
             currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
         } else {
             Atom packageName = methodReference.getDeclaringClass().getName().getPackage();
-            currClassName = (packageName != null ? packageName.toString() +".": "") + methodReference.getDeclaringClass().getName().getClassName().toString();
+            currClassName = (packageName != null ? packageName.toString() + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
         }
 
         String dynamicClassName = currClassName;
-        if(!Character.isLetterOrDigit(dynamicClassName.charAt(dynamicClassName.length()-1))){
-            dynamicClassName = dynamicClassName.substring(0, dynamicClassName.length()-2);
+        if (!Character.isLetterOrDigit(dynamicClassName.charAt(dynamicClassName.length() - 1))) {
+            dynamicClassName = dynamicClassName.substring(0, dynamicClassName.length() - 2);
         }
         ArrayList<String> classList = getSuperClassList(ti, currClassName);
         Atom methodName = methodReference.getName();
         String methodSignature = methodReference.getSignature();
         methodSignature = methodSignature.substring(methodSignature.indexOf('('));
         String key = CreateStaticRegions.constructMethodIdentifier(dynamicClassName + "." + methodName + methodSignature);
-        for (String className: classList) {
+        for (String className : classList) {
             key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
             StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
             if (staticRegion != null)
@@ -355,19 +355,21 @@ public class SubstitutionVisitor extends AstMapVisitor {
      * @return A Dynamic Region that has been substituted by symbolic or concerete values for inputs as well as constants being substituted.
      */
 
-    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException, CloneNotSupportedException {
+    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion, boolean fixedPointIteration) throws StaticRegionException, CloneNotSupportedException {
 
         DynamicTable valueSymbolTable;
 
         assert (!dynRegion.isMethodRegion);
-        valueSymbolTable = fillValueSymbolTable(ti, dynRegion);
+        if (fixedPointIteration)
+            valueSymbolTable = new DynamicTable("var-value table", "var", "value");
+        else
+            valueSymbolTable = fillValueSymbolTable(ti, dynRegion);
 
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
         if (visitor.sre != null) throwException(visitor.sre, INSTANTIATION);
         if (visitor.cne != null) throwException(new StaticRegionException(visitor.cne.getMessage()), INSTANTIATION);
         DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null);
-
 
         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
