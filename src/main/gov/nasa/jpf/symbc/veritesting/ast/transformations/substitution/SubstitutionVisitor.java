@@ -17,8 +17,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.FixedPointAstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -26,7 +26,6 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
-import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils.getSuperClassList;
@@ -39,13 +38,12 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.WalaUtil.makeConsta
  * Substitution Transformation is done in a general way depending on the type of the StaticRegion. Mainly by allowing the substitution to replace variables with values by looking up the ValueSymbolTable, where the ValueSymbolTable is filled depending on the type of the region. If the region is not a method region, the ValueSymbolTable is filled by a priori pass where all "input" var values are discovered by inquiring SPF for their stack slot attribute. If the region is a method region then the ValueSymbolTable is filled up by the caller by filling up vars/values of the parameters.
  * In this transformation, constants are also discovered as part of the process.
  */
-public class SubstitutionVisitor extends AstMapVisitor {
-    ExprVisitorAdapter<Expression> eva;
-    public final DynamicTable valueSymbolTable;
+public class SubstitutionVisitor extends FixedPointAstMapVisitor {
+    private ExprVisitorAdapter<Expression> eva;
     public final DynamicRegion dynRegion;
     public final ThreadInfo ti;
-    public StaticRegionException sre = null;
-    public CloneNotSupportedException cne = null;
+    private StaticRegionException sre = null;
+    private CloneNotSupportedException cne = null;
 
     /**
      * This is used to identify if a path had spfCase instruction that requires prouning the path. The flag is used
@@ -54,13 +52,17 @@ public class SubstitutionVisitor extends AstMapVisitor {
     private boolean spfCasePath = false;
 
 
+    public void setSomethingChanged(boolean change) {
+        this.somethingChanged = change;
+    }
+
+    public boolean getChange(){return somethingChanged;}
+
     private SubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
                                 DynamicTable valueSymbolTable) {
-
         super(new ExprSubstitutionVisitor(ti, dynRegion, valueSymbolTable));
         this.ti = ti;
         this.dynRegion = dynRegion;
-        this.valueSymbolTable = valueSymbolTable;
         eva = super.eva;
 
     }
@@ -144,7 +146,6 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
     @Override
     public Stmt visit(PhiInstruction c) {
-
         Expression[] rhs = new Expression[c.rhs.length];
         for (int i = 0; i < rhs.length; i++) {
             rhs[i] = eva.accept(c.rhs[i]);
@@ -193,9 +194,11 @@ public class SubstitutionVisitor extends AstMapVisitor {
                     try {
                         uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
                     } catch (CloneNotSupportedException e) {
-                        cne = e;
+                        if (firstException == null)
+                            cne = e;
                     } catch (StaticRegionException e) {
-                        sre = e;
+                        if (firstException == null)
+                            sre = e;
                     }
                     DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
                             "var",
@@ -209,6 +212,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
 
                     dynRegion.varTypeTable.mergeTable(hgOrdTypeTable);
                     Stmt returnStmt;
+                    somethingChanged = true;
                     if (c.result.length == 1) {
                         Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
                         returnStmt = new AssignmentStmt(c.result[0], stmtRetPair.getSecond());
@@ -218,6 +222,8 @@ public class SubstitutionVisitor extends AstMapVisitor {
                     }
                 } else {
                     sre = new StaticRegionException("Cannot summarize invoke in " + instruction.toString());
+                    if(firstException == null)
+                        firstException = sre;
                     skipRegionStrings.add("Cannot summarize invoke");
                     return new InvokeInstruction(c.getOriginal(), c.result, params);
                 }
@@ -242,7 +248,11 @@ public class SubstitutionVisitor extends AstMapVisitor {
         assert (methodRegion.isMethodRegion);
         hgOrdValueSymbolTable.mergeTable(fillValueSymbolTable(ti, methodRegion));
         SubstitutionVisitor visitor = new SubstitutionVisitor(ti, methodRegion, hgOrdValueSymbolTable);
-        return new Pair<Stmt, DynamicTable>((Stmt) methodRegion.dynStmt.accept(visitor), methodRegion.varTypeTable);
+        Pair highOrderPair = new Pair (methodRegion.dynStmt.accept(visitor), methodRegion.varTypeTable);
+        if(!this.somethingChanged)
+            this.somethingChanged = visitor.somethingChanged || (((ExprSubstitutionVisitor)visitor.eva.theVisitor).isSomethingChanged());
+
+        return highOrderPair;
     }
 
 
@@ -260,7 +270,7 @@ public class SubstitutionVisitor extends AstMapVisitor {
             return new Pair(new CompositionStmt(((CompositionStmt) stmt).s1, stmtRetPair.getFirst()), stmtRetPair.getSecond());
         } else {
             if (stmt instanceof ReturnInstruction)
-                return new Pair<Stmt, Expression>(SkipStmt.skip, (((ReturnInstruction) stmt).rhs));
+                return new Pair (SkipStmt.skip, (((ReturnInstruction) stmt).rhs));
             else
                 return null;
         }
@@ -300,9 +310,9 @@ public class SubstitutionVisitor extends AstMapVisitor {
             key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
             StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
             if (staticRegion != null)
-                return new Pair<String, StaticRegion>(key, staticRegion);
+                return new Pair(key, staticRegion);
         }
-        return new Pair<String, StaticRegion>(key, null);
+        return new Pair(key, null);
     }
 
 
@@ -347,29 +357,21 @@ public class SubstitutionVisitor extends AstMapVisitor {
         return valueSymbolTable;
     }
 
+
     /**
      * Executes substitution over a non-method region.
      *
-     * @param ti        Thread Information currently running by JPF.
-     * @param dynRegion A non-method region that was statically summarized.
      * @return A Dynamic Region that has been substituted by symbolic or concerete values for inputs as well as constants being substituted.
      */
 
-    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion, boolean fixedPointIteration) throws StaticRegionException, CloneNotSupportedException {
 
-        DynamicTable valueSymbolTable;
+    public DynamicRegion execute() throws StaticRegionException, CloneNotSupportedException {
 
-        assert (!dynRegion.isMethodRegion);
-        if (fixedPointIteration)
-            valueSymbolTable = new DynamicTable("var-value table", "var", "value");
-        else
-            valueSymbolTable = fillValueSymbolTable(ti, dynRegion);
-
-        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
-        Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
-        if (visitor.sre != null) throwException(visitor.sre, INSTANTIATION);
-        if (visitor.cne != null) throwException(new StaticRegionException(visitor.cne.getMessage()), INSTANTIATION);
-        DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null);
+        Stmt dynStmt = dynRegion.dynStmt.accept(this);
+        /*if (this.sre != null) throwException(this.sre, INSTANTIATION);
+        if (this.cne != null) throwException(new StaticRegionException(this.cne.getMessage()), INSTANTIATION);
+        */
+        this.instantiatedRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null);
 
         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
@@ -378,12 +380,30 @@ public class SubstitutionVisitor extends AstMapVisitor {
         dynRegion.varTypeTable.print();
 
         System.out.println("\n--------------- AFTER SUBSTITUTION TRANSFORMATION ---------------\n");
-        System.out.println(StmtPrintVisitor.print(instantiatedDynRegion.dynStmt));
-        instantiatedDynRegion.slotParamTable.print();
-        instantiatedDynRegion.outputTable.print();
-        instantiatedDynRegion.varTypeTable.print();
+        System.out.println(StmtPrintVisitor.print(instantiatedRegion.dynStmt));
+        instantiatedRegion.slotParamTable.print();
+        instantiatedRegion.outputTable.print();
+        instantiatedRegion.varTypeTable.print();
 
-        return instantiatedDynRegion;
+        if (!this.somethingChanged)
+            this.somethingChanged= ((ExprSubstitutionVisitor) eva.theVisitor).isSomethingChanged();
+        return instantiatedRegion;
     }
+
+
+    public static SubstitutionVisitor create(ThreadInfo ti, DynamicRegion dynRegion, int iterationNumber) throws StaticRegionException, CloneNotSupportedException {
+
+        DynamicTable valueSymbolTable;
+
+        assert (!dynRegion.isMethodRegion);
+        if (iterationNumber > 1) // create an empty valueSymbolTable because really we are using substitution here as an entry to the high order region.
+            valueSymbolTable = new DynamicTable("var-value table", "var", "value");
+        else
+            valueSymbolTable = fillValueSymbolTable(ti, dynRegion);
+
+        return new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
+
+    }
+
 
 }
