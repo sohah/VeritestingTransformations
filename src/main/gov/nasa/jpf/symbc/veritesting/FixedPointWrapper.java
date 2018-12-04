@@ -27,30 +27,34 @@ import java.util.Map;
 public class FixedPointWrapper {
 
 
+    public static DynamicRegion getRegionAfter() {
+        return regionAfter;
+    }
+
     enum Transformation {SUBSTITUTION, FIELD, ARRAY};
 
     /**
      * Tells if there has been a change
      */
-    private static boolean changed;
+    private static boolean changed = false;
 
     /**
      * Tells which transformation is responsible for the change, thi carries the first transformation that has happened.
      */
-    private static Transformation changedTransformation;
+    private static Transformation changedTransformation = null;
 
     /**
      * Keeps the first exception that has been encountered in all the transformations.
      */
-    private static Exception firstException;
+    private static Exception firstException = null;
 
-    private static ThreadInfo ti;
+    private static ThreadInfo ti = null;
 
-    private static StackFrame topStackFrame;
+    private static StackFrame topStackFrame = null;
 
-    private static DynamicRegion regionBefore;
+    private static DynamicRegion regionBefore = null;
 
-    private static DynamicRegion regionAfter;
+    private static DynamicRegion regionAfter = null;
 
     private static int iterationNumber = 0;
 
@@ -58,8 +62,12 @@ public class FixedPointWrapper {
      * Returns if change has happened
      * @return
      */
-    public static boolean isChanged() {
+    public static boolean isChangedFlag() {
         return changed;
+    }
+
+    public static boolean isEqualRegion(){
+        return regionBefore.dynStmt.equals(regionAfter.dynStmt);
     }
 
     public static Exception getFirstException() {
@@ -81,7 +89,7 @@ public class FixedPointWrapper {
      */
     private static void collectTransformationState(FixedPointAstMapVisitor currentTransformation) {
         boolean transformationChange = currentTransformation.getChange();
-        if(!isChanged()){
+        if(!isChangedFlag()){
             FixedPointWrapper.changed = transformationChange;
 
             if(currentTransformation instanceof SubstitutionVisitor)
@@ -106,18 +114,19 @@ public class FixedPointWrapper {
         firstException = null;
     }
 
-    public static DynamicRegion executeFixedIter(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException, CloneNotSupportedException{
+    public static DynamicRegion executeFixedPointTransformations(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException, CloneNotSupportedException {
         FixedPointWrapper.ti = ti;
         FixedPointWrapper.topStackFrame = ti.getTopFrame();
         FixedPointWrapper.regionBefore = dynRegion;
         DynamicRegion intermediateRegion;
         ++FixedPointWrapper.iterationNumber;
-        if(FixedPointWrapper.iterationNumber > 1)
+        if (FixedPointWrapper.iterationNumber > 1)
             FixedPointWrapper.reset();
 
         SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, iterationNumber);
         intermediateRegion = substitutionVisitor.execute();
         collectTransformationState(substitutionVisitor);
+
 
         System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
         FieldSSAVisitor fieldSSAVisitor = new FieldSSAVisitor(ti, dynRegion);
@@ -158,12 +167,8 @@ public class FixedPointWrapper {
         }
 
 
-        intermediateRegion =
-
-        FixedPointWrapper.setChanged();
-
-
-
+        regionAfter = intermediateRegion;
+        return regionAfter;
     }
 
 

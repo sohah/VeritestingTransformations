@@ -60,6 +60,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicReg
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
 
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePropagationVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.FixedPointAstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
@@ -273,6 +274,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 e.printStackTrace();
                 updateSkipRegions(e.getMessage(), key);
                 return;
+            } catch (Exception e) {
+                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+                e.printStackTrace();
+                updateSkipRegions(e.getMessage(), key);
             }
         }
     }
@@ -296,7 +301,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
     }
 
-    private void runVeritestingWithSPF(ThreadInfo ti, VM vm, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws StaticRegionException, CloneNotSupportedException, VisitorException {
+    private void runVeritestingWithSPF(ThreadInfo ti, VM vm, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws Exception {
         if (!ti.isFirstStepInsn()) { // first time around
             StaticPCChoiceGenerator newCG;
             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
@@ -343,8 +348,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
     private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, StaticRegion staticRegion,
-                                         String key) throws CloneNotSupportedException, StaticRegionException, VisitorException {
-        IllegalArgumentException thisException = null;
+                                         String key) throws Exception {
+        Exception transformationException = null;
         System.out.println("\n---------- STARTING Transformations for conditional region: " + key +
                 "\n" + PrettyPrintVisitor.print(staticRegion.staticStmt) + "\n");
         staticRegion.slotParamTable.print();
@@ -354,13 +359,23 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
         DynamicRegion dynRegion = UniqueRegion.execute(staticRegion);
 
-        /*--------------- SUBSTITUTION TRANSFORMATION ---------------*/
-        dynRegion = SubstitutionVisitor.execute(ti, dynRegion);
-
         boolean somethingChanged = true;
         while (somethingChanged) {
-            thisException = null;
-            /* Field substitution iteration */
+
+            /*-------------- SUBSTITUTION & HIGH ORDER TRANSFORMATION ---------------*/
+            /*--------------  FIELD TRANSFORMATION ---------------*/
+            /*-------------- ARRAY TRANSFORMATION TRANSFORMATION ---------------*/
+            dynRegion = FixedPointWrapper.executeFixedPointTransformations(ti, dynRegion);
+            somethingChanged = FixedPointWrapper.isChangedFlag();
+            transformationException = FixedPointWrapper.getFirstException();
+
+            assert (FixedPointWrapper.isChangedFlag() == FixedPointWrapper.isEqualRegion());
+        }
+
+        if (transformationException != null) throw transformationException;
+
+/* Field substitution iteration *//*
+
             System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
             FieldSSAVisitor fieldSSAVisitor = new FieldSSAVisitor(ti, dynRegion);
             Stmt fieldStmt = dynRegion.dynStmt.accept(fieldSSAVisitor);
@@ -368,7 +383,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             dynRegion.psm = fieldSSAVisitor.psm;
             dynRegion = new DynamicRegion(dynRegion, fieldStmt, new SPFCaseList(), null, null);
 
-            /* Array substitution iteration */
+            */
+/* Array substitution iteration *//*
+
             System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
             ArraySSAVisitor arraySSAVisitor = new ArraySSAVisitor(ti, dynRegion);
             Stmt arrayStmt = dynRegion.dynStmt.accept(arraySSAVisitor);
@@ -378,7 +395,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
             System.out.println(dynRegion.arrayOutputs);
 
-            /* Simplification iteration */
+            */
+/* Simplification iteration *//*
+
             DynamicTable<Expression> constantsTable = new DynamicTable<>("Constants Table", "Expression", "Constant Value");
             SimplifyStmtVisitor simplifyVisitor = new SimplifyStmtVisitor(dynRegion, constantsTable);
             Stmt simplifiedStmt = dynRegion.dynStmt.accept(simplifyVisitor);
@@ -403,21 +422,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     simplifyVisitor.getSomethingChanged();
 
         }
-        if (thisException != null) throw thisException;
-//        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, false); // added for example
+*/
+
         TypePropagationVisitor.propagateTypes(dynRegion);
-//        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
 
-//        dynRegion = SimplifyStmtVisitor.execute(dynRegion); // added for example
-
-
-//        dynRegion = ArraySSAVisitor.execute(ti, dynRegion);
-//        added for example
-//        dynRegion = SimplifyStmtVisitor.execute(dynRegion);
-//        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-//        dynRegion = FieldSSAVisitor.execute(ti, dynRegion, true);
-//        end added for example
+        //TODO: why do we have unique region being called here?
         dynRegion = UniqueRegion.execute(dynRegion);
+        //TODO: this this internal check to constant table really, should happen there
         Iterator<Map.Entry<Variable, Expression>> itr = dynRegion.constantsTable.table.entrySet().iterator();
         /*
         ArrayRefVarExpr, FieldRefVarExpr, WalaVarExpr should be unique at this point because UniqueRegion should have
