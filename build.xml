@@ -160,7 +160,7 @@
 	  </javac>
   </target>
 
-  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs,-compile-tcas-sr">
+  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs">
 	  <mkdir dir="build/examples" />
 	  <javac srcdir="src/examples" destdir="build/examples"
 		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -170,7 +170,6 @@
 			  <pathelement location="build/classes"/>
 			  <pathelement location="build/wbs"/>
 			  <pathelement location="build/tcas"/>
-			  <pathelement location="build/tcas-sr"/>
 			  <pathelement location="build/annotations"/>
 		  </classpath>
 	  </javac>
@@ -235,7 +234,7 @@
   </target>
 
 
-  <target name="-compile-tcas-sr" if="have_tcas_sr" depends="-compile-classes">
+  <target name="-compile-tcas-sr" if="have_tcas_sr" depends="-compile-examples">
 	  <mkdir dir="build/tcas_sr" />
 		<javac srcdir="src/tcas_sr" destdir="build/tcas_sr" 
 		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -243,6 +242,7 @@
 		  <classpath>
 			  <path refid="lib.path"/>
 			  <pathelement location="build/classes"/>
+			  <pathelement location="build/examples"/>
 			  <pathelement location="build/annotations"/>
 			  <pathelement location="build/tcas_sr"/>
 			</classpath>
