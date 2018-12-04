@@ -10,6 +10,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTab
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayExpressions;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.FixedPointAstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
@@ -24,7 +25,7 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils.getType;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
 import static za.ac.sun.cs.green.expr.Operation.Operator.EQ;
 
-public class SimplifyStmtVisitor extends AstMapVisitor {
+public class SimplifyStmtVisitor extends FixedPointAstMapVisitor {
     public ExprVisitorAdapter<Expression> eva;
     public DynamicTable<Expression> constantsTable;
     private DynamicRegion dynRegion;
@@ -125,5 +126,31 @@ public class SimplifyStmtVisitor extends AstMapVisitor {
             newConstantsTable.add(newVar, entry.getValue());
         }
         return newConstantsTable;
+    }
+
+    public static SimplifyStmtVisitor create(DynamicRegion dynRegion){
+        DynamicTable<Expression> constantsTable = new DynamicTable<>("Constants Table", "Expression", "Constant Value");
+        SimplifyStmtVisitor simplifyVisitor = new SimplifyStmtVisitor(dynRegion, constantsTable);
+        return simplifyVisitor;
+    }
+
+    public DynamicRegion execute(){
+        Stmt simplifiedStmt = dynRegion.dynStmt.accept(this);
+        this.instantiatedRegion = new DynamicRegion(dynRegion, simplifiedStmt, dynRegion.spfCaseList, dynRegion.regionSummary,
+                dynRegion.spfPredicateSummary);
+
+        if (instantiatedRegion.constantsTable == null)
+            instantiatedRegion.constantsTable = this.constantsTable;
+        else dynRegion.constantsTable.addAll(this.constantsTable);
+//            simplifyArrayOutputs(dynRegion);
+        System.out.println("\n--------------- AFTER SIMPLIFICATION ---------------\n");
+        System.out.println(StmtPrintVisitor.print(instantiatedRegion.dynStmt));
+        Iterator<Map.Entry<Variable, Expression>> itr = instantiatedRegion.constantsTable.table.entrySet().iterator();
+        System.out.println("Constants Table:");
+        while (itr.hasNext()) {
+            Map.Entry<Variable, Expression> entry = itr.next();
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
+        return instantiatedRegion;
     }
 }

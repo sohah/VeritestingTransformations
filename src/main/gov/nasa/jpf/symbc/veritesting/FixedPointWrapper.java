@@ -129,43 +129,21 @@ public class FixedPointWrapper {
 
 
         System.out.println("\n--------------- FIELD REFERENCE TRANSFORMATION ---------------\n");
-        FieldSSAVisitor fieldSSAVisitor = new FieldSSAVisitor(ti, dynRegion);
-        Stmt fieldStmt = dynRegion.dynStmt.accept(fieldSSAVisitor);
-        if (fieldSSAVisitor.exception != null && thisException == null) thisException = fieldSSAVisitor.exception;
-        dynRegion.psm = fieldSSAVisitor.psm;
-        dynRegion = new DynamicRegion(dynRegion, fieldStmt, new SPFCaseList(), null, null);
+        FieldSSAVisitor fieldSSAVisitor = new FieldSSAVisitor(ti, intermediateRegion);
+        intermediateRegion = fieldSSAVisitor.execute();
+        collectTransformationState(fieldSSAVisitor);
 
-            /* Array substitution iteration */
+
+        /* Array substitution iteration */
         System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
         ArraySSAVisitor arraySSAVisitor = new ArraySSAVisitor(ti, dynRegion);
-        Stmt arrayStmt = dynRegion.dynStmt.accept(arraySSAVisitor);
-        if (arraySSAVisitor.exception != null && thisException == null) thisException = arraySSAVisitor.exception;
-        dynRegion.arrayOutputs = arraySSAVisitor.arrayExpressions;
-        dynRegion = new DynamicRegion(dynRegion, arrayStmt, new SPFCaseList(), null, null);
-        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-        System.out.println(dynRegion.arrayOutputs);
+        intermediateRegion = arraySSAVisitor.execute();
+        collectTransformationState(arraySSAVisitor);
 
-            /* Simplification iteration */
-        DynamicTable<Expression> constantsTable = new DynamicTable<>("Constants Table", "Expression", "Constant Value");
-        SimplifyStmtVisitor simplifyVisitor = new SimplifyStmtVisitor(dynRegion, constantsTable);
-        Stmt simplifiedStmt = dynRegion.dynStmt.accept(simplifyVisitor);
-        if (simplifyVisitor.getExprException() != null && thisException == null)
-            thisException = simplifyVisitor.getExprException();
-        if (dynRegion.constantsTable == null)
-            dynRegion.constantsTable = simplifyVisitor.constantsTable;
-        else dynRegion.constantsTable.addAll(simplifyVisitor.constantsTable);
-//            simplifyArrayOutputs(dynRegion);
-        dynRegion = new DynamicRegion(dynRegion, simplifiedStmt, dynRegion.spfCaseList, dynRegion.regionSummary,
-                dynRegion.spfPredicateSummary);
-        System.out.println("\n--------------- AFTER SIMPLIFICATION ---------------\n");
-        System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
-        Iterator<Map.Entry<Variable, Expression>> itr = dynRegion.constantsTable.table.entrySet().iterator();
-        System.out.println("Constants Table:");
-        while (itr.hasNext()) {
-            Map.Entry<Variable, Expression> entry = itr.next();
-            System.out.println(entry.getKey() + ": " + entry.getValue());
-        }
-
+        /* Simplification iteration */
+        SimplifyStmtVisitor simplifyStmtVisitor = SimplifyStmtVisitor.create(intermediateRegion);
+        intermediateRegion = simplifyStmtVisitor.execute();
+        collectTransformationState(simplifyStmtVisitor);
 
         regionAfter = intermediateRegion;
         return regionAfter;

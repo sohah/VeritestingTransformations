@@ -27,4 +27,6 @@ public abstract class FixedPointAstMapVisitor extends AstMapVisitor{
     public FixedPointAstMapVisitor(ExprVisitor<Expression> exprVisitor) {
         super(exprVisitor);
     }
+
+    public abstract DynamicRegion execute();
 }
