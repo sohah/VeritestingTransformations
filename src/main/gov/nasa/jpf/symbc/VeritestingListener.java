@@ -71,6 +71,7 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static gov.nasa.jpf.symbc.veritesting.AdapterSynth.AdapterSynthUtil.runAdapterSynth;
 import static gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator.getKind;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
@@ -202,6 +203,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
         boolean noVeritestingFlag = false;
         StackFrame curr = ti.getTopFrame();
+//        runAdapterSynth(ti, curr);
         // Begin equivalence checking code
         while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
             if (curr.getMethodInfo().getName().equals("NoVeritest")) {
@@ -233,7 +235,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 isAllowedRegion(key)) {
                     thisHighOrdCount = 0;
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
-                    if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
+//                    if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
                         if (runMode != VeritestingMode.SPFCASES) {
                             // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
                             Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
@@ -250,8 +252,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         } else {
                             runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
                         }
-                    } else
-                        statisticManager.updateConcreteHitStatForRegion(key);
+//                    } else
+//                        statisticManager.updateConcreteHitStatForRegion(key);
                 }
             } catch (IllegalArgumentException e) {
                 statisticManager.updateSPFHitForRegion(key, e.getMessage());

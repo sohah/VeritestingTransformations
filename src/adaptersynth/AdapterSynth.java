@@ -1,3 +1,6 @@
+import gov.nasa.jpf.symbc.Debug;
+import gov.nasa.jpf.symbc.veritesting.AdapterSynth.ArgSubAdapter;
+
 import java.util.ArrayList;
 
 public class AdapterSynth {
@@ -6,21 +9,50 @@ public class AdapterSynth {
     boolean isAdapterSearch;
 
     public AdapterSynth() {
-        argSub = new ArgSubAdapter();
+        int[] i_val = new int[6];
+        int[] b_val = new int[6];
+        int[] c_val = new int[6];
+        boolean[] i_is_const = new boolean[6];
+        boolean[] b_is_const = new boolean[6];
+        boolean[] c_is_const = new boolean[6];
+        for (int i=0; i < 6; i++) {
+            i_is_const[i] = Debug.makeSymbolicBoolean("i_is_const" + i);
+            i_val[i] = Debug.makeSymbolicInteger("i_val" + i);
+            b_is_const[i] = Debug.makeSymbolicBoolean("b_is_const" + i);
+            b_val[i] = Debug.makeSymbolicInteger("b_val" + i);
+            c_is_const[i] = Debug.makeSymbolicBoolean("c_is_const" + i);
+            c_val[i] = Debug.makeSymbolicInteger("c_val" + i);
+        }
+        argSub = new ArgSubAdapter(i_is_const, i_val, b_is_const, b_val, c_is_const, c_val);
     }
 
-    void testHarness(TestRegionBaseClass v, TestInput input) {
+    void testHarness(TestRegionBaseClass v, TestInput input, boolean isLastTest) {
         Outputs targetOutput = v.testFunction(input);
         Outputs referenceOutput = adaptedTestFunction(v, input);
         if (targetOutput.equals(referenceOutput)) {
             System.out.println("Match");
-            // TODO: If this is the last test, then concretize the adapter to give to the next CE search
+            // concretize the adapter to give to the next CE search and stop executing this adapter search step
+            if (isAdapterSearch && isLastTest) {
+                //TODO: 1. concretize the adapter, 2. run the next counterexample search step, 3. get the test from it and add it as a new test case
+                concretizeAdapter();
+            }
         }
         else {
             System.out.println("Mismatch");
-            // TODO: print model if !isAdapterSearch and exit
+            // TODO: save the model if !isAdapterSearch and stop executing this counterexample search step
             // TODO: if isAdapterSearch, ask SPF to abort this execution path
+            if (isAdapterSearch) abortExecutionPath();
+            else saveModelAndStopSearch();
         }
+    }
+
+    private void abortExecutionPath() {
+    }
+
+    private void concretizeAdapter() {
+    }
+
+    private void saveModelAndStopSearch() {
     }
 
     public Outputs adaptedTestFunction(TestRegionBaseClass v, TestInput input) {
@@ -45,8 +77,9 @@ public class AdapterSynth {
     }
 
     public void runAdapterSynth(TestRegionBaseClass t) {
-        for(TestInput input: tests)
-            testHarness(t, input);
+        for(int i = 0; i < tests.size(); i++) {
+            testHarness(t, tests.get(i), i == tests.size()-1);
+        }
     }
 
     public static void main(String[] args) {
