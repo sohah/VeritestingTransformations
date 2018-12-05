@@ -21,4 +21,5 @@ veritestingMode = 3
 performanceMode = false
 symbolic.lazy = true
 
-target_args=AdapterSearch
+target_args=writeRandomTest,args
+#target_args=args
