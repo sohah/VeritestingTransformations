@@ -7,7 +7,6 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 public class AdapterSynthUtil {
-    public static ArgSubAdapter argSubAdapter = null;
     public static void runAdapterSynth(ThreadInfo ti, StackFrame curr) {
         while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
             if (curr.getMethodInfo().getName().equals("concretizeAdapter")) {
@@ -16,7 +15,10 @@ public class AdapterSynthUtil {
                     pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
                 } else return;
                 pc.solve();
+            } else if (curr.getMethodInfo().getName().equals("abortExecutionPath")) {
+                ti.getVM().getSystemState().setIgnored(true);
             }
+            curr = curr.getPrevious();
         }
     }
 }

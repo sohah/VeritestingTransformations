@@ -614,8 +614,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      */
     private void discoverRegions(ThreadInfo ti) {
         Config conf = ti.getVM().getConfig();
-        String classPath = conf.getStringArray("classpath")[0] + "/";
-//        classPath = String.join(":", conf.getStringArray("classpath"));
+        String[] allClassPaths = conf.getStringArray("classpath");
+        ArrayList<String> classPath = new ArrayList<>();
+        for (String s: allClassPaths) {
+            classPath.add(s);
+            // These classpaths are (1) classpath in .jpf file, (2) SPF class paths, (3) JPF-core class paths, so we
+            // want to run static analysis only on class paths in the .jpf file
+//            if (!s.contains("jpf-symbc")) classPath.add(s);
+//            else break;
+        }
         String className = conf.getString("target");
         VeritestingMain veritestingMain = new VeritestingMain(ti, className + ".class");
         long startTime = System.nanoTime();

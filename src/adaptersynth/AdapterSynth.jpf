@@ -1,13 +1,13 @@
 target=AdapterSynth
 veritestRegionExpectedCount = -1
 
-classpath=${jpf-symbc}/build/examples,${jpf-symbc}/build/adaptersynth
+classpath=${jpf-symbc}/build/adaptersynth,${jpf-symbc}/build/examples,${jpf-symbc}/build/jpf-symbc.jar
 sourcepath=${jpf-symbc}/src/examples,${jpf-symbc}/src/adaptersynth
 vm.storage.class=nil
 symbolic.debug=false
 
 ######## testing equivalence ######
-#symbolic.method=TestVeritesting.testHarness(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+symbolic.method=AdapterSynth.testHarness(con#con#con)
 symbolic.dp=z3bitvector
 
 
@@ -21,5 +21,4 @@ veritestingMode = 3
 performanceMode = false
 symbolic.lazy = true
 
-target_args=writeRandomTest,args
-#target_args=args
+exclusionsFile=${jpf-symbc}/UtilExclusions.txt

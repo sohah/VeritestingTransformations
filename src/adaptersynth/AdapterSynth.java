@@ -9,7 +9,7 @@ import static java.lang.System.exit;
 public class AdapterSynth {
     ArgSubAdapter argSub;
     ArrayList<TestInput> tests;
-    boolean isAdapterSearch;
+    Boolean isAdapterSearch = null;
 
     public AdapterSynth() {
         int[] i_val = new int[]{0,0,0,0,0,0};
@@ -43,7 +43,7 @@ public class AdapterSynth {
         else {
             System.out.println("Mismatch");
             // TODO: save the model if !isAdapterSearch and stop executing this counterexample search step
-            // TODO: if isAdapterSearch, ask SPF to abort this execution path
+            // if isAdapterSearch, ask SPF to abort this execution path
             if (isAdapterSearch) abortExecutionPath();
             else saveModelAndStopSearch();
         }
@@ -88,40 +88,77 @@ public class AdapterSynth {
     public static void main(String[] args) {
         AdapterSynth adapterSynth = new AdapterSynth();
         if (args.length == 0) {
-            System.out.println("Cannot run adapter synthesis without a input file");
-            exit(1);
+            args = new String[]{"args"};
         }
         if (args[0].equals("writeRandomTest")) {
-            // Serialization
-            try {
-                TestInput input = null;
-                FileInputStream fileInputStream = new FileInputStream(args[1]);
-                ObjectInputStream in = new ObjectInputStream(fileInputStream);
-                Character c = in.readChar();
-                input = (TestInput)in.readObject();
-                System.out.println("c = " + c + ", input = " + input);
-                fileInputStream.close();
-                input = new TestInput();
-                FileOutputStream file = new FileOutputStream(args[1]);
-                ObjectOutputStream out = new ObjectOutputStream(file);
-                out.writeChar('C');
-                out.writeObject(input);
-                out.close();
-                file.close();
-                System.out.println("New Test written :" + input);
-            }
-            catch (IOException ex) {
-                ex.printStackTrace();
-                System.out.println("failed to write random test");
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
+            writeRandomTest(args[1]);
             exit(0);
         }
         try {
-            FileReader fileReader = new FileReader(args[0]);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            String line;
+            GetInputsFromFile getInputsFromFile = new GetInputsFromFile(args[0]).invoke();
+            adapterSynth.tests = getInputsFromFile.getTestInputs();
+            adapterSynth.isAdapterSearch = getInputsFromFile.getC().equals('A');
+            adapterSynth.argSub = getInputsFromFile.getAdapter();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            System.exit(2);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(3);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            System.exit(4);
+        }
+        adapterSynth.runAdapterSynth(new TestAndIte());
+    }
+
+    private static void writeRandomTest(String arg) {
+        try {
+            TestInput input = null;
+            GetInputsFromFile getInputsFromFile = new GetInputsFromFile(arg).invoke();
+            input = getInputsFromFile.getTestInputs().get(0);
+            Character c = getInputsFromFile.getC();
+            System.out.println("Previous test: c = " + c + ", input = " + input);
+            input = new TestInput();
+            FileOutputStream file = new FileOutputStream(arg);
+            ObjectOutputStream out = new ObjectOutputStream(file);
+            out.writeChar('A');
+            out.writeObject(input);
+            out.close();
+            file.close();
+            System.out.println("New test written: " + input);
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("failed to write random test");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static class GetInputsFromFile {
+        private String arg;
+        private ArrayList<TestInput> testInputs = null;
+        private ArgSubAdapter adapter = null;
+        private FileInputStream fileInputStream;
+        private Character c;
+
+        public GetInputsFromFile(String arg) {
+            this.arg = arg;
+        }
+
+        public ArrayList<TestInput> getTestInputs() {
+            return testInputs;
+        }
+
+        public Character getC() {
+            return c;
+        }
+
+        public ArgSubAdapter getAdapter() { return adapter; }
+
+        public GetInputsFromFile invoke() throws IOException, ClassNotFoundException {
             /*
             Assume that the file has the format
             A
@@ -132,42 +169,32 @@ public class AdapterSynth {
             Serialized TestInput object 2
             ...
              */
-            while ((line = bufferedReader.readLine()) != null) {
-                if (line.equals("A")) adapterSynth.isAdapterSearch = true;
-                else if (line.equals("C")) adapterSynth.isAdapterSearch = false;
-                else {
-
-                }
+            fileInputStream = new FileInputStream(arg);
+            ObjectInputStream in = new ObjectInputStream(fileInputStream);
+            c = in.readChar();
+            switch(c) {
+                case 'A':
+                    testInputs = new ArrayList<>();
+                    TestInput input = (TestInput)in.readObject();
+                    while (input != null) {
+                        testInputs.add(input);
+                        try {
+                            input = (TestInput) in.readObject();
+                        } catch (EOFException e) { input = null; }
+                    }
+                    adapter = null;
+                    break;
+                case 'C':
+                    adapter = (ArgSubAdapter) in.readObject();
+                    // Nothing should exist in the input file after the adapter
+                    assert in.readObject() == null;
+                    testInputs = null;
+                    break;
+                default: throw new IllegalArgumentException("Input file does not have the right format");
             }
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            System.exit(2);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(3);
-        }
-        TestRegionBaseClass testClass = new TestAndIte();
-        if(args[0].equals("A")) {
-
-            adapterSynth.isAdapterSearch = true;
-            adapterSynth.runAdapterSynth(testClass);
-        } else if (args[0].equals("C")) {
-            adapterSynth.isAdapterSearch = false;
-            int argsIndex = 1;
-            for (int i=0; i<6; i++) {
-                adapterSynth.argSub.i_is_const[i] = Boolean.parseBoolean(args[argsIndex++]);
-                adapterSynth.argSub.i_val[i] = Integer.parseInt(args[argsIndex++]);
-            }
-            for (int i=0; i<6; i++) {
-                adapterSynth.argSub.b_is_const[i] = Boolean.parseBoolean(args[argsIndex++]);
-                adapterSynth.argSub.b_val[i] = Integer.parseInt(args[argsIndex++]);
-            }
-            for (int i=0; i<6; i++) {
-                adapterSynth.argSub.c_is_const[i] = Boolean.parseBoolean(args[argsIndex++]);
-                adapterSynth.argSub.c_val[i] = Integer.parseInt(args[argsIndex++]);
-            }
-            adapterSynth.runAdapterSynth(testClass);
+            fileInputStream.close();
+            return this;
         }
     }
 }
