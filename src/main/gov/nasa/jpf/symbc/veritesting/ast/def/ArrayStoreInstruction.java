@@ -46,4 +46,22 @@ public class ArrayStoreInstruction extends Instruction {
     public String toString() {
         return "" + arrayref + "[" + index+":"+elementType +"] = " + assignExpr;
     }
+
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof ArrayStoreInstruction))
+            return false;
+        else {
+            String arrayref2 = ((ArrayStoreInstruction) stmt2).arrayref.toString();
+            String index2 = ((ArrayStoreInstruction) stmt2).index.toString();
+            String elementType2 = ((ArrayStoreInstruction) stmt2).elementType.toString();
+            String assignExpr = ((ArrayStoreInstruction) stmt2).assignExpr.toString();
+
+            return ((this.arrayref.toString().equals(arrayref2))
+                    && (this.index.toString().equals(index2))
+                    && (this.elementType.toString().equals(elementType2))
+                    && (this.assignExpr.toString().equals(assignExpr)));
+        }
+    }
 }
