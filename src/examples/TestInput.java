@@ -1,3 +1,6 @@
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Random;
 
@@ -14,5 +17,19 @@ public class TestInput implements Serializable{
         for (int i = 0; i < 5; i++) ret.append(Character.toString(c[i])).append(",");
         ret.append(Character.toString(c[5]));
         return ret.toString();
+    }
+
+    public static TestInput readTestInput(ObjectInputStream in) throws IOException {
+        TestInput ret = new TestInput();
+        for (int i = 0; i < 6; i++) ret.in[i] = in.readInt();
+        for (int i = 0; i < 6; i++) ret.b[i] = in.readBoolean();
+        for (int i = 0; i < 6; i++) ret.c[i] = in.readChar();
+        return ret;
+    }
+
+    public static void writeTestInput(ObjectOutputStream out, TestInput input) throws IOException {
+        for (int i = 0; i < 6; i++) out.writeInt(input.in[i]);
+        for (int i = 0; i < 6; i++) out.writeBoolean(input.b[i]);
+        for (int i = 0; i < 6; i++) out.writeChar(input.c[i]);
     }
 }

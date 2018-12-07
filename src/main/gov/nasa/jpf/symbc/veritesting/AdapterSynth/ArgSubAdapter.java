@@ -1,5 +1,9 @@
 package gov.nasa.jpf.symbc.veritesting.AdapterSynth;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 public class ArgSubAdapter {
     public boolean[] i_is_const;
     public int[] i_val;
@@ -18,6 +22,20 @@ public class ArgSubAdapter {
         this.b_val = b_val;
         this.c_is_const = c_is_const;
         this.c_val = c_val;
+    }
+
+    public static void writeAdapter(ObjectOutputStream out, ArgSubAdapter argSub) throws IOException {
+        for (int i = 0; i < 6; i++) { out.writeBoolean(argSub.i_is_const[i]); out.writeInt(argSub.i_val[i]); }
+        for (int i = 0; i < 6; i++) { out.writeBoolean(argSub.b_is_const[i]); out.writeInt(argSub.b_val[i]); }
+        for (int i = 0; i < 6; i++) { out.writeBoolean(argSub.c_is_const[i]); out.writeInt(argSub.c_val[i]); }
+    }
+
+    public static ArgSubAdapter readAdapter(ObjectInputStream in) throws IOException {
+        ArgSubAdapter argSub = new ArgSubAdapter(new boolean[6], new int[6], new boolean[6], new int[6], new boolean[6], new int[6]);
+        for (int i = 0; i < 6; i++) { argSub.i_is_const[i] = in.readBoolean(); argSub.i_val[i] = in.readInt(); }
+        for (int i = 0; i < 6; i++) { argSub.b_is_const[i] = in.readBoolean(); argSub.b_val[i] = in.readInt(); }
+        for (int i = 0; i < 6; i++) { argSub.c_is_const[i] = in.readBoolean(); argSub.c_val[i] = in.readInt(); }
+        return argSub;
     }
 
     @Override

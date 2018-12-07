@@ -1,13 +1,13 @@
 target=AdapterSynth
 veritestRegionExpectedCount = -1
 
-classpath=${jpf-symbc}/build/adaptersynth,${jpf-symbc}/build/examples,${jpf-symbc}/build/jpf-symbc.jar
+classpath=${jpf-symbc}/build/examples,${jpf-symbc}/build/adaptersynth,${jpf-symbc}/build/jpf-symbc.jar
 sourcepath=${jpf-symbc}/src/examples,${jpf-symbc}/src/adaptersynth
 vm.storage.class=nil
 symbolic.debug=false
 
 ######## testing equivalence ######
-symbolic.method=AdapterSynth.testHarness(con#con#con)
+symbolic.method=AdapterSynth.symbolicArgSubAdapter(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym),AdapterSynth.symbolicTestInput(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 symbolic.dp=z3bitvector
 
 
