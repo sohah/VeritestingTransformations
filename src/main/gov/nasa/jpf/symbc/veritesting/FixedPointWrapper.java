@@ -21,7 +21,9 @@ public class FixedPointWrapper {
         return regionAfter;
     }
 
-    enum Transformation {SUBSTITUTION, FIELD, ARRAY};
+    enum Transformation {SUBSTITUTION, FIELD, ARRAY, SIMPLIFICATION}
+
+    ;
 
     /**
      * Tells if there has been a change
@@ -50,13 +52,14 @@ public class FixedPointWrapper {
 
     /**
      * Returns if change has happened
+     *
      * @return
      */
     public static boolean isChangedFlag() {
         return changed;
     }
 
-    public static boolean isEqualRegion(){
+    public static boolean isEqualRegion() {
         return regionBefore.dynStmt.equals(regionAfter.dynStmt);
     }
 
@@ -68,37 +71,38 @@ public class FixedPointWrapper {
         return iterationNumber;
     }
 
-    public static Transformation getChangedTransformation(){
+    public static Transformation getChangedTransformation() {
         return changedTransformation;
     }
 
 
     /**
      * sets if change has happened and also sets up the transformation responsible for the change;
-     *
      */
     private static void collectTransformationState(FixedPointAstMapVisitor currentTransformation) {
         boolean transformationChange = currentTransformation.getChange();
-        if(!isChangedFlag()){
+        if (!isChangedFlag()) {
             FixedPointWrapper.changed = transformationChange;
 
-            if(currentTransformation instanceof SubstitutionVisitor)
-            changedTransformation = Transformation.SUBSTITUTION;
-        else if(currentTransformation instanceof FieldSSAVisitor)
-            changedTransformation = Transformation.FIELD;
-        else if(currentTransformation instanceof ArraySSAVisitor)
-            changedTransformation = Transformation.ARRAY;
-        else
-            assert false;
+            if (currentTransformation instanceof SubstitutionVisitor)
+                changedTransformation = Transformation.SUBSTITUTION;
+            else if (currentTransformation instanceof FieldSSAVisitor)
+                changedTransformation = Transformation.FIELD;
+            else if (currentTransformation instanceof ArraySSAVisitor)
+                changedTransformation = Transformation.ARRAY;
+            else if (currentTransformation instanceof SimplifyStmtVisitor)
+                changedTransformation = Transformation.SIMPLIFICATION;
+            else
+                assert false;
         }
 
         Exception transformationException = currentTransformation.getFirstException();
-        if(firstException == null)
-            if(currentTransformation instanceof SubstitutionVisitor)
+        if (firstException == null)
+            if (currentTransformation instanceof SubstitutionVisitor)
                 firstException = transformationException;
     }
 
-    public static void reset(){
+    public static void reset() {
         changed = false;
         changedTransformation = null;
         firstException = null;
@@ -126,7 +130,7 @@ public class FixedPointWrapper {
 
         /* Array substitution iteration */
         System.out.println("\n--------------- ARRAY TRANSFORMATION ---------------\n");
-        ArraySSAVisitor arraySSAVisitor = new ArraySSAVisitor(ti, dynRegion);
+        ArraySSAVisitor arraySSAVisitor = new ArraySSAVisitor(ti, intermediateRegion);
         intermediateRegion = arraySSAVisitor.execute();
         collectTransformationState(arraySSAVisitor);
 

@@ -23,6 +23,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
 
 import java.util.*;
 
@@ -305,7 +306,10 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
         String currClassName = null;
         if (!instruction.isStatic()) {
-            currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
+            if (c.params[0] instanceof IntConstant) //if the first param is a constant, then it is already a reference and it isn't in the varTypeTable, instead we need to ask SPF for it.
+                currClassName = ti.getHeap().get(((IntConstant)c.params[0]).getValue()).getClassInfo().getName();
+            else
+                currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
         } else {
             Atom packageName = methodReference.getDeclaringClass().getName().getPackage();
             currClassName = (packageName != null ? packageName.toString() + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
@@ -415,12 +419,14 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             try {
                 valueSymbolTable = SubstitutionVisitor.fillValueSymbolTable(ti, dynRegion);
             } catch (StaticRegionException e) {
-                visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);;
+                visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
+                ;
                 visitor.firstException = e;
                 return visitor;
             }
 
-            visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);;
+        visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
+        ;
         return visitor;
 
     }
