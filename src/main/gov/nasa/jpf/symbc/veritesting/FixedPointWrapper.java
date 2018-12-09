@@ -102,10 +102,17 @@ public class FixedPointWrapper {
                 firstException = transformationException;
     }
 
-    public static void reset() {
+    public static void resetIteration() {
         changed = false;
         changedTransformation = null;
         firstException = null;
+    }
+
+    public static void resetWrapper() {
+        changed = false;
+        changedTransformation = null;
+        firstException = null;
+        iterationNumber = 0;
     }
 
     public static DynamicRegion executeFixedPointTransformations(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException, CloneNotSupportedException {
@@ -114,8 +121,10 @@ public class FixedPointWrapper {
         FixedPointWrapper.regionBefore = dynRegion;
         DynamicRegion intermediateRegion;
         ++FixedPointWrapper.iterationNumber;
+
+        System.out.println("========================================= RUNNING FIXED POINT ITERATION # " + FixedPointWrapper.iterationNumber + "=========================================");
         if (FixedPointWrapper.iterationNumber > 1)
-            FixedPointWrapper.reset();
+            FixedPointWrapper.resetIteration();
 
         SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, iterationNumber);
         intermediateRegion = substitutionVisitor.execute();

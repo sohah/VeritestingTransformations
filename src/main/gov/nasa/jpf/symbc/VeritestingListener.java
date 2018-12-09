@@ -241,6 +241,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                             if (regionEndInsn != null) {
                                 throwException(new StaticRegionException("Unsupported region end instruction: " + regionEndInsn), INSTANTIATION);
                             }
+
                             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
                             Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
                             ++veritestRegionCount;
@@ -360,6 +361,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         DynamicRegion dynRegion = UniqueRegion.execute(staticRegion);
 
         boolean somethingChanged = true;
+        FixedPointWrapper.resetWrapper();
         while (somethingChanged) {
 
             /*-------------- SUBSTITUTION & HIGH ORDER TRANSFORMATION ---------------*/
