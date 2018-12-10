@@ -186,6 +186,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     || (invokeCode == IInvokeInstruction.Dispatch.INTERFACE)
                     || (invokeCode == IInvokeInstruction.Dispatch.SPECIAL))) {
                 Pair<String, StaticRegion> keyRegionPair = findMethodRegion(ti, c);
+                if(keyRegionPair == null) //case where we couldn't grap the method region, usually because a concrete reference does not exists.
+                    return c;
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
                 if (hgOrdStaticRegion != null) {
                     ++StatisticManager.thisHighOrdCount;
@@ -309,7 +311,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             if (c.params[0] instanceof IntConstant) //if the first param is a constant, then it is already a reference and it isn't in the varTypeTable, instead we need to ask SPF for it.
                 currClassName = ti.getHeap().get(((IntConstant)c.params[0]).getValue()).getClassInfo().getName();
             else
-                currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
+                return null;
+                //currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
         } else {
             Atom packageName = methodReference.getDeclaringClass().getName().getPackage();
             currClassName = (packageName != null ? packageName.toString() + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();

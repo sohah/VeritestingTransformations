@@ -9,6 +9,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.FixedPointAstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
@@ -287,6 +288,8 @@ public class FieldSSAVisitor extends FixedPointAstMapVisitor {
 
         instantiatedRegion = new DynamicRegion(dynRegion, fieldStmt, new SPFCaseList(), null, null);
         instantiatedRegion.psm = this.psm;
+
+        System.out.println(StmtPrintVisitor.print(instantiatedRegion.dynStmt));
 
         return instantiatedRegion;
     }
