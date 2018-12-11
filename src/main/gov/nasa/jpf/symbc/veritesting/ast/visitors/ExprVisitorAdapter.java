@@ -13,7 +13,7 @@ import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwExceptio
  */
 public class ExprVisitorAdapter<T>  {
 
-    private ExprVisitor<T> theVisitor;
+    public ExprVisitor<T> theVisitor;
 
     public ExprVisitorAdapter(ExprVisitor<T> theVisitor) {
         this.theVisitor = theVisitor;

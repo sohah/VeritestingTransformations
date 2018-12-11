@@ -8,6 +8,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicReg
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.FixedPointAstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
@@ -39,15 +41,13 @@ expression visitor that replaces FieldRefVarExpr objects that have subscript 1 w
  */
 
 
-public class FieldSSAVisitor extends AstMapVisitor {
+public class FieldSSAVisitor extends FixedPointAstMapVisitor {
     private static int fieldExceptionNumber=42424242;
     private DynamicRegion dynRegion;
     public FieldSubscriptMap psm;
     private ThreadInfo ti;
     static final int FIELD_SUBSCRIPT_BASE = 0;
     private GlobalSubscriptMap gsm;
-    public IllegalArgumentException exception = null;
-    public boolean somethingChanged;
 
     public FieldSSAVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
         super(new ExprMapVisitor());
@@ -59,14 +59,14 @@ public class FieldSSAVisitor extends AstMapVisitor {
     }
 
     private void populateException(IllegalArgumentException e) {
-        this.exception = e;
+        this.firstException = e;
     }
 
     public Stmt bad(Object obj) {
         String name = obj.getClass().getCanonicalName();
 //        throwException(new IllegalArgumentException("Unsupported class: " + name +
 //                " value: " + obj.toString() + " seen in FieldSSAVisitor"), INSTANTIATION);
-        exception = new IllegalArgumentException("Unsupported class: " + name +
+        firstException = new IllegalArgumentException("Unsupported class: " + name +
                 " value: " + obj.toString() + " seen in FieldSSAVisitor");
         return (Stmt)obj;
     }
@@ -282,4 +282,17 @@ public class FieldSSAVisitor extends AstMapVisitor {
         if (exceptionalMessage != null) throwException(new StaticRegionException(exceptionalMessage), INSTANTIATION);
         return substituteGetOutput;
     }
+
+    public DynamicRegion execute(){
+        Stmt fieldStmt = dynRegion.dynStmt.accept(this);
+
+        instantiatedRegion = new DynamicRegion(dynRegion, fieldStmt, new SPFCaseList(), null, null);
+        instantiatedRegion.psm = this.psm;
+
+        System.out.println(StmtPrintVisitor.print(instantiatedRegion.dynStmt));
+
+        return instantiatedRegion;
+    }
+
+
 }

@@ -9,6 +9,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.FixedPointAstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.*;
 
@@ -20,7 +22,7 @@ import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwExceptio
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayUtil.getInitialArrayValues;
 import static za.ac.sun.cs.green.expr.Operation.Operator.*;
 
-public class ArraySSAVisitor extends AstMapVisitor {
+public class ArraySSAVisitor extends FixedPointAstMapVisitor {
     private static int arrayExceptionNumber = 4242  ;
     private DynamicRegion dynRegion;
     private ThreadInfo ti;
@@ -28,8 +30,6 @@ public class ArraySSAVisitor extends AstMapVisitor {
     private GlobalArraySubscriptMap gsm;
     // maps each array to its array of expressions on a path
     public ArrayExpressions arrayExpressions;
-    public boolean somethingChanged;
-    public IllegalArgumentException exception = null;
 
     public ArraySSAVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
         super(new ExprMapVisitor());
@@ -75,7 +75,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
                 if (type != null) dynRegion.varTypeTable.add(((WalaVarExpr) c.def).number, type);
             } else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
             if (exceptionalMessage != null) {
-                exception = new IllegalArgumentException(exceptionalMessage);
+                firstException = new IllegalArgumentException(exceptionalMessage);
                 return c;
             } else {
                 assignStmt = new AssignmentStmt(c.def, rhs);
@@ -84,7 +84,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             }
         } catch (IllegalArgumentException e) {
             somethingChanged = false;
-            exception = e;
+            firstException = e;
             return c;
         }
     }
@@ -110,7 +110,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
     @Override
     public Stmt visit(ArrayStoreInstruction putIns) {
         if (!IntConstant.class.isInstance(putIns.arrayref)) {
-            exception = new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor");
+            firstException = new IllegalArgumentException("Cannot handle symbolic object references in ArraySSAVisitor");
             return putIns;
         }
         else {
@@ -126,7 +126,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
                 return getIfThenElseStmt(arrayRef, assignStmt);
             } catch (IllegalArgumentException e) {
                 somethingChanged = false;
-                exception = e;
+                firstException = e;
                 return putIns;
             }
         }
@@ -184,7 +184,7 @@ public class ArraySSAVisitor extends AstMapVisitor {
             Expression[] elseExpArr = entry.getValue();
             String type = elseExps.arrayTypesTable.get(elseArrayRef);
             if (thenExps.lookup(elseArrayRef) != null) {
-                exception = new IllegalArgumentException("invariant failure: something in elseMap should not be in " +
+                firstException = new IllegalArgumentException("invariant failure: something in elseMap should not be in " +
                         "thenMap at this point");
             } else {
                 compStmt = compose(compStmt, createGammaStmtArray(elseArrayRef, condition,
@@ -217,5 +217,15 @@ public class ArraySSAVisitor extends AstMapVisitor {
         else if (s2 == null) return s1;
         else return new CompositionStmt(s1, s2);
         return null;
+    }
+
+    public DynamicRegion execute(){
+        Stmt arrayStmt = dynRegion.dynStmt.accept(this);
+        instantiatedRegion = new DynamicRegion(dynRegion, arrayStmt, new SPFCaseList(), null, null);
+        instantiatedRegion.arrayOutputs = this.arrayExpressions;
+        System.out.println(StmtPrintVisitor.print(instantiatedRegion.dynStmt));
+        System.out.println(instantiatedRegion.arrayOutputs);
+
+        return instantiatedRegion;
     }
 }

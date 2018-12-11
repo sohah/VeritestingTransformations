@@ -10,6 +10,10 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySubsc
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.Variable;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * This class represents a DynamicRegion, that is, a StaticRegion that has been processed dynamically, this is done initially through uniquness transformation then later with the substitution and other transformations.
@@ -164,4 +168,5 @@ public class DynamicRegion implements Region {
         this.arrayOutputs = null;
         this.constantsTable = null;
     }
+
 }
