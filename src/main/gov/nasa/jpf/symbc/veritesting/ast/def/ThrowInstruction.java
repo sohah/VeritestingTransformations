@@ -26,4 +26,9 @@ public class ThrowInstruction extends Instruction {
     public String toString() {
         return "Throw Instruction";
     }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        return (stmt2 instanceof ThrowInstruction);
+    }
 }

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import gov.nasa.jpf.symbc.numeric.*;
 import za.ac.sun.cs.green.Instance;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
@@ -47,14 +48,6 @@ import za.ac.sun.cs.green.expr.LastIndexOfChar2Variable;
 
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
-import gov.nasa.jpf.symbc.numeric.BinaryLinearIntegerExpression;
-import gov.nasa.jpf.symbc.numeric.Constraint;
-import gov.nasa.jpf.symbc.numeric.ConstraintExpressionVisitor;
-import gov.nasa.jpf.symbc.numeric.IntegerConstant;
-import gov.nasa.jpf.symbc.numeric.Operator;
-import gov.nasa.jpf.symbc.numeric.IntegerExpression;
-
-import gov.nasa.jpf.symbc.numeric.SymbolicInteger;
 
 import gov.nasa.jpf.symbc.string.StringConstraint;
 import gov.nasa.jpf.symbc.string.StringConstant;
@@ -472,6 +465,11 @@ public class SolverTranslator {
 		@Override
 		public void postVisit(IntegerConstant constant) {
 			stack.push(new IntConstant((int)constant.value));
+		}
+
+		@Override
+		public void postVisit(RealConstant constant) {
+			stack.push(new za.ac.sun.cs.green.expr.RealConstant(constant.value));
 		}
 
 		@Override

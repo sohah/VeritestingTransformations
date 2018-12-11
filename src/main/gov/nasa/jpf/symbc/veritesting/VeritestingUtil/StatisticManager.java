@@ -88,6 +88,7 @@ public class StatisticManager {
 
         while(keysItr.hasNext())
             out += regionsStatisticsMap.get(keysItr.next()).print();
+        out += "\n" + getDistinctVeriRegionKeys();
         return out;
     }
 
@@ -144,7 +145,7 @@ public class StatisticManager {
         while(itr.hasNext()) {
             Map.Entry<String, StaticRegion> entry = itr.next();
             String key = entry.getKey();
-            if (!isInterestingRegion(key)) continue;
+//            if (!isInterestingRegion(key)) continue;
             StaticRegion region = entry.getValue();
             out.add(key + ": maxDepth = " + region.maxDepth + ", execution path count = " + region.totalNumPaths + "\n");
         }
@@ -172,6 +173,26 @@ public class StatisticManager {
             if (regionsStatisticsMap.get(keysItr.next()).veriHitNumber !=0)
                 ++count;
         return count;
+    }
+
+    public String getDistinctVeriRegionKeys() {
+        String ret = "";
+        Set<String> keys = regionsStatisticsMap.keySet();
+        Iterator<String> keysItr = keys.iterator();
+        ArrayList<String> out= new ArrayList<>();
+
+        while(keysItr.hasNext()) {
+            String key = keysItr.next();
+            if (regionsStatisticsMap.get(key).veriHitNumber != 0)
+                out.add(regionsStatisticsMap.get(key).regionKey + "\n");
+        }
+        Collections.sort(out);
+        out.add(0, "Printing keys of regions that were instantiated at least once\n");
+        out.add(out.size(), "Finished printing keys of regions that were instantiated at least once\n");
+        for (String s: out) {
+            ret += s;
+        }
+        return ret;
     }
 
     public int getSuccInstantiations(){
@@ -292,7 +313,7 @@ public class StatisticManager {
     private boolean isInterestingRegion(String key) {
         if (interestingClassNames == null) return true;
         for (String className: interestingClassNames)
-            if (key.startsWith(className + ".")) return true;
+            if (key.toLowerCase().contains(className.toLowerCase())) return true;
         return false;
     }
 }

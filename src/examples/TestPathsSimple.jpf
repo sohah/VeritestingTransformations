@@ -13,6 +13,7 @@ symbolic.dp=z3bitvector
 
 listener = .symbc.VeritestingListener
 veritestingMode = 3
+performanceMode = false
 
 # listener = .symbc.SymbolicListener
 

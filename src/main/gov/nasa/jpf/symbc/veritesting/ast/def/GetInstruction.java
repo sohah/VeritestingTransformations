@@ -31,7 +31,7 @@ public class GetInstruction extends Instruction {
     }
 
     public SSAGetInstruction getOriginal() {
-        return (SSAGetInstruction)original;
+        return (SSAGetInstruction) original;
     }
 
     @Override
@@ -41,6 +41,30 @@ public class GetInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return "\n"+ def + " = get("+ ref + "."+field + ")";
+        return "\n" + def + " = get(" + ref + "." + field + ")";
+    }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof GetInstruction))
+            return false;
+        else {
+            String ref2 = ((GetInstruction) stmt2).ref.toString();
+            String field2 = ((GetInstruction) stmt2).field.toString();
+            String def2 = ((GetInstruction) stmt2).def.toString();
+
+            boolean psmEqual;
+            if ((psm == null) && (((GetInstruction) stmt2).psm == null))
+                psmEqual = true;
+            else {
+                String psm2 = ((GetInstruction) stmt2).psm.toString();
+                psmEqual = this.psm.toString().equals(psm2);
+            }
+            return (psmEqual
+                    && (this.ref.toString().equals(ref2))
+                    && (this.field.toString().equals(field2))
+                    && (this.def.toString().equals(def2))
+            );
+        }
     }
 }

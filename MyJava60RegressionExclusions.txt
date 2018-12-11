@@ -3,8 +3,8 @@ java\/net\/.*
 java\/security\/.*
 java\/rmi\/.*
 java\/time\/.*
-java\/util\/.*
 java\/math\/.*
+java\/util\/.*
 apple\/.*
 java\/text\/.*
 java\/lang\/management\/.*

@@ -2,6 +2,8 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
@@ -13,9 +15,12 @@ import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.SimplifyStmtVisitor.makeConstantsTableUnique;
 
 /**
  * Unique region creator, of both conditional regions and method regions.
@@ -66,7 +71,10 @@ public class UniqueRegion {
                 oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary);
         newDynRegion.fieldRefTypeTable.makeUniqueKey(uniqueNum);
         newDynRegion.psm.setUniqueNum(uniqueNum);
-        newDynRegion.arrayPSM.setUniqueNum(uniqueNum);
+        newDynRegion.arrayOutputs = newDynRegion.arrayOutputs.makeUnique(uniqueNum);
+
+
+        newDynRegion.constantsTable = makeConstantsTableUnique(newDynRegion.constantsTable, uniqueNum);
         return newDynRegion;
     }
 

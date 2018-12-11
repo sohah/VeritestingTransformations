@@ -104,6 +104,8 @@ public final class WalaVarExpr extends CloneableVariable {
     public int hashCode() {
         return getSymName().hashCode();
     }
+
+    public int getUniqueNum() { return uniqueNum; }
 /*
     public static WalaVarExpr getUniqueWalaVarExpr(WalaVarExpr expr, int uniqueNum) {
         String varId = Integer.toString(expr.number);
@@ -111,4 +113,5 @@ public final class WalaVarExpr extends CloneableVariable {
         varId = varId.concat(Integer.toString(uniqueNum));
         return new WalaVarExpr(expr.number, varId);
     }*/
-    }
+
+}

@@ -1,8 +1,8 @@
 target=WBSEqCheck
 veritestRegionExpectedCount = -1
 
-classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
-sourcepath=${jpf-symbc}/src/examples
+classpath=${jpf-symbc}/build/examples,${jpf-symbc}/build/wbs
+sourcepath=${jpf-symbc}/src/wbs
 vm.storage.class=nil
 symbolic.debug=false
 
@@ -16,6 +16,6 @@ symbolic.min_double=-100.0
 symbolic.max_double=100.0
 listener = .symbc.VeritestingListener
 #listener = .symbc.SymbolicListener
-veritestingMode = 3
-performanceMode = true
+veritestingMode = 4
+performanceMode = false
 symbolic.lazy = true

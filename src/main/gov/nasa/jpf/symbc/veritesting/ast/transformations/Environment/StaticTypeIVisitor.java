@@ -2,7 +2,12 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 
 import com.ibm.wala.analysis.typeInference.TypeInference;
 import com.ibm.wala.ssa.*;
+import com.ibm.wala.types.TypeName;
+import com.ibm.wala.types.TypeReference;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import org.apache.bcel.classfile.Utility;
+
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils.getType;
 
 /**
  * This visitor fills types for wala vars, by using Wala Type inference.
@@ -171,8 +176,19 @@ public class StaticTypeIVisitor implements SSAInstruction.IVisitor {
                 && (var != -1)
                 && (((firstUse == null || var >= firstUse) && (lastDef == null || var <= lastDef))
                 //SH: case of a method region where there aren't really boundaries.
-                    || ((firstUse != null && firstUse == -100) && (lastDef != null && lastDef == -100))))
-       varTypeTable.add(var, (TypeInference.make(ir, true)).getType(var).toString());
+                    || ((firstUse != null && firstUse == -100) && (lastDef != null && lastDef == -100)))) {
+            String type;
+            TypeName typeName = null;
+            TypeReference typeRef = (TypeInference.make(ir, true)).getType(var).getTypeReference();
+            if (typeRef != null) typeName = typeRef.getName();
+            if (typeName == null) return;
+            if (typeName.isPrimitiveType()) type = Utility.signatureToString(typeName.toString());
+            else {
+                type = getType(typeName);
+            }
+//            varTypeTable.add(var, (TypeInference.make(ir, true)).getType(var).toString());
+            varTypeTable.add(var, type);
+        }
     }
 }
 

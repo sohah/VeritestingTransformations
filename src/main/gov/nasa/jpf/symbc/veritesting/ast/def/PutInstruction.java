@@ -31,7 +31,7 @@ public class PutInstruction extends Instruction {
     }
 
     public SSAPutInstruction getOriginal() {
-        return (SSAPutInstruction)original;
+        return (SSAPutInstruction) original;
     }
 
     @Override
@@ -41,6 +41,20 @@ public class PutInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return "\n put("+ def +"."+field + ") = " + assignExpr;
+        return "\n put(" + def + "." + field + ") = " + assignExpr;
+    }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof PutInstruction))
+            return false;
+        else {
+            String def2 = ((PutInstruction) stmt2).def.toString();
+            String field2 = ((PutInstruction) stmt2).field.toString();
+            String assignExp2 = ((PutInstruction) stmt2).assignExpr.toString();
+            return (this.def.toString().equals(def2)
+                    && this.field.toString().equals(field2)
+                    && this.assignExpr.toString().equals(assignExp2));
+        }
     }
 }

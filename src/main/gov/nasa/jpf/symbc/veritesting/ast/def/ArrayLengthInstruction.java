@@ -38,4 +38,16 @@ public final class ArrayLengthInstruction extends Instruction {
     public String toString() {
         return "\n"+ def + " = arrayLength (" +arrayref +")";
     }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof ArrayLengthInstruction))
+        return false;
+        else{
+            String arrayref2 = ((ArrayLengthInstruction) stmt2).arrayref.toString();
+            String def2 = ((ArrayLengthInstruction) stmt2).def.toString();
+
+            return((this.arrayref.toString().equals(arrayref2)) && (this.def.toString().equals(def2)));
+        }
+    }
 }

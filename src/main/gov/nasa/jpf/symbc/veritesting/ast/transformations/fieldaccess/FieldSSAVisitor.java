@@ -8,6 +8,8 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicReg
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.FixedPointAstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
@@ -39,35 +41,53 @@ expression visitor that replaces FieldRefVarExpr objects that have subscript 1 w
  */
 
 
-public class FieldSSAVisitor extends AstMapVisitor {
+public class FieldSSAVisitor extends FixedPointAstMapVisitor {
     private static int fieldExceptionNumber=42424242;
     private DynamicRegion dynRegion;
-    private FieldSubscriptMap psm;
+    public FieldSubscriptMap psm;
     private ThreadInfo ti;
     static final int FIELD_SUBSCRIPT_BASE = 0;
     private GlobalSubscriptMap gsm;
 
-    private FieldSSAVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
+    public FieldSSAVisitor(ThreadInfo ti, DynamicRegion dynRegion) {
         super(new ExprMapVisitor());
         this.dynRegion = dynRegion;
-        this.psm = new FieldSubscriptMap();
+        this.psm = dynRegion.psm != null ? dynRegion.psm : new FieldSubscriptMap();
         this.ti = ti;
         this.gsm = new GlobalSubscriptMap();
+        this.somethingChanged = false;
     }
 
-    public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
+    private void populateException(IllegalArgumentException e) {
+        this.firstException = e;
+    }
+
+    public Stmt bad(Object obj) {
+        String name = obj.getClass().getCanonicalName();
+//        throwException(new IllegalArgumentException("Unsupported class: " + name +
+//                " value: " + obj.toString() + " seen in FieldSSAVisitor"), INSTANTIATION);
+        firstException = new IllegalArgumentException("Unsupported class: " + name +
+                " value: " + obj.toString() + " seen in FieldSSAVisitor");
+        return (Stmt)obj;
+    }
+
+    /*public static DynamicRegion execute(ThreadInfo ti, DynamicRegion dynRegion) {
         FieldSSAVisitor visitor = new FieldSSAVisitor(ti, dynRegion);
         Stmt stmt = dynRegion.dynStmt.accept(visitor);
+        if (visitor.exception != null) throwException(visitor.exception, INSTANTIATION);
         dynRegion.psm = visitor.psm;
         return new DynamicRegion(dynRegion, stmt, new SPFCaseList(), null, null);
-    }
+    }*/
+
+    @Override
+    public Stmt visit(ReturnInstruction ret) { bad(ret); return ret; }
 
 
     @Override
     public Stmt visit(PutInstruction putIns) {
         if (!IntConstant.class.isInstance(putIns.def) && !putIns.getOriginal().isStatic()) {
-            throwException(new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor"), INSTANTIATION);
-            return null;
+            populateException(new IllegalArgumentException("Cannot handle symbolic object references in FieldSSAVisitor"));
+            return putIns;
         }
         else {
             FieldRef fieldRef;
@@ -94,6 +114,7 @@ public class FieldSSAVisitor extends AstMapVisitor {
             }
             if (type != null)
                 dynRegion.fieldRefTypeTable.add(fieldRefVarExpr.clone(), type);
+            somethingChanged = true;
             return assignStmt;
         }
     }
@@ -131,8 +152,10 @@ public class FieldSSAVisitor extends AstMapVisitor {
         FieldSubscriptMap elseMap = psm.clone();
         psm = oldMap.clone();
         Stmt gammaStmt = mergePSM(stmt.condition, thenMap, elseMap);
-        if (gammaStmt != null)
+        if (gammaStmt != null) {
+            somethingChanged = true;
             return new CompositionStmt(new IfThenElseStmt(stmt.original, stmt.condition, newThen, newElse), gammaStmt);
+        }
         else return new IfThenElseStmt(stmt.original, stmt.condition, newThen, newElse);
     }
 
@@ -141,9 +164,11 @@ public class FieldSSAVisitor extends AstMapVisitor {
         for (Map.Entry<FieldRef, SubscriptPair> entry : thenMap.table.entrySet()) {
             FieldRef thenFieldRef = entry.getKey();
             SubscriptPair thenSubscript = entry.getValue();
-            if (elseMap.lookup(thenFieldRef) != null) {
-                compStmt = compose(compStmt, createGammaStmt(condition, thenFieldRef, thenSubscript,
-                        elseMap.lookup(thenFieldRef)));
+            SubscriptPair elseSubscript = elseMap.lookup(thenFieldRef);
+            if (elseSubscript != null ) {
+                if (!thenSubscript.equals(elseSubscript))
+                    compStmt = compose(compStmt, createGammaStmt(condition, thenFieldRef, thenSubscript,
+                            elseMap.lookup(thenFieldRef)));
                 elseMap.remove(thenFieldRef);
             } else {
                 compStmt = compose(compStmt, createGammaStmt(condition, thenFieldRef, thenSubscript,
@@ -237,10 +262,13 @@ public class FieldSSAVisitor extends AstMapVisitor {
         }
         else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
         if (exceptionalMessage != null) {
-            throwException(new IllegalArgumentException(exceptionalMessage), INSTANTIATION);
-            return null;
+            populateException(new IllegalArgumentException(exceptionalMessage));
+            return c;
         }
-        else return new AssignmentStmt(c.def, rhs);
+        else {
+            somethingChanged = true;
+            return new AssignmentStmt(c.def, rhs);
+        }
     }
 
     private SubstituteGetOutput substituteGet(GetInstruction getIns, FieldRef fieldRef)
@@ -254,4 +282,17 @@ public class FieldSSAVisitor extends AstMapVisitor {
         if (exceptionalMessage != null) throwException(new StaticRegionException(exceptionalMessage), INSTANTIATION);
         return substituteGetOutput;
     }
+
+    public DynamicRegion execute(){
+        Stmt fieldStmt = dynRegion.dynStmt.accept(this);
+
+        instantiatedRegion = new DynamicRegion(dynRegion, fieldStmt, new SPFCaseList(), null, null);
+        instantiatedRegion.psm = this.psm;
+
+        System.out.println(StmtPrintVisitor.print(instantiatedRegion.dynStmt));
+
+        return instantiatedRegion;
+    }
+
+
 }

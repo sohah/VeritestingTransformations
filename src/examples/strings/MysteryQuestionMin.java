@@ -18,15 +18,84 @@
 
 package strings;
 
+import gov.nasa.jpf.symbc.Debug;
+
 public class MysteryQuestionMin {
 	
+	public class SString {
+		char[] str = null;
+		public SString(String s) {
+			str = s.toCharArray();
+		}
+		
+		public SString(char[] chars) {
+			str = chars;
+		}
+		
+		private boolean matchSub(int idx, char[] s2) {
+			int s2i = idx;		
+			if (idx < 0 || s2.length + idx >= length())
+				return false;
+			for (int i = 0; i < s2.length; i++) {
+				if (s2[i] != str[s2i])
+					return false;
+				s2i++;
+			}
+			return true;
+		}
+		
+		public int indexOf(String s, int idx) {
+			char[] s2 = s.toCharArray();
+			for (int i = idx; i < str.length; i++) {
+				if (matchSub(i,s2)) 
+					return i;
+			}
+			return -1;
+		}
+		
+		public int indexOf(char c, int idx) {
+			return indexOf(""+c,idx);
+		}
+		
+		public char[] get() {
+			return str;
+		}
+		
+		public int length() {
+			return str.length;
+		}
+		
+		public char charAt(int i) {
+			return str[i];
+		}
+		
+		
+	}
+	
+	
 	public static void main (String[] args) {
+		MysteryQuestionMin mqm = new MysteryQuestionMin();
 		System.out.println("start");
-		preserveSomeHtmlTagsAndRemoveWhitespaces("<<<<<a href=\">    @");
+		
+		char[] input = buildInput(5);
+		
+		preserveSomeHtmlTagsAndRemoveWhitespaces(mqm.new SString(input));
+				
+		//preserveSomeHtmlTagsAndRemoveWhitespaces(mqm.new SString("<<<<<a href=\">    @"));
+		//preserveSomeHtmlTagsAndRemoveWhitespaces(mqm.new SString("blah"));
 		System.out.println ("end");
 	}
 	
-	public static String preserveSomeHtmlTagsAndRemoveWhitespaces(String body) {
+	private static char[] buildInput(int size) {
+		char[] in = new char[size];
+		for (int i=0;i<size;i++) {
+			in[i]=Debug.makeSymbolicChar("in"+i);		
+		}
+		return in;
+	}
+	
+	
+	public static SString preserveSomeHtmlTagsAndRemoveWhitespaces(SString body) {
 		if (body == null)
 			return body;
 		int len = body.length();
@@ -70,6 +139,6 @@ public class MysteryQuestionMin {
 			
 
 		}
-		return "";
+		return body;
 	}
 }

@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess;
 
+import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRef;
 import gov.nasa.jpf.vm.*;
 import za.ac.sun.cs.green.expr.Expression;
@@ -8,6 +9,7 @@ import za.ac.sun.cs.green.expr.RealConstant;
 
 import java.util.Objects;
 
+import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SPFToGreenExpr;
 
 public class SubstituteGetOutput {
@@ -58,6 +60,7 @@ public class SubstituteGetOutput {
             } catch (ClassInfoException e) {
                 exceptionalMessage = "fillFieldInputHole: class loader failed to resolve class name " +
                         className;
+                skipRegionStrings.add("fillFieldInputHole: class loader failed to resolve");
             }
             if (ci != null) {
                 ElementInfo eiFieldOwner;
@@ -69,7 +72,10 @@ public class SubstituteGetOutput {
                     if(isRead) eiFieldOwner = ci.getStaticElementInfo();
                     else eiFieldOwner = ci.getModifiableStaticElementInfo();
                 }
-                if (eiFieldOwner == null) exceptionalMessage = "failed to resolve eiFieldOwner for field";
+                if (eiFieldOwner == null) {
+                    exceptionalMessage = "failed to resolve eiFieldOwner for field";
+                    skipRegionStrings.add(exceptionalMessage);
+                }
                 else {
                     FieldInfo fieldInfo;
                     if (!isStatic) fieldInfo = ci.getInstanceField(fieldName);
@@ -77,6 +83,7 @@ public class SubstituteGetOutput {
                     if (fieldInfo == null) {
                         exceptionalMessage = "java.lang.NoSuchFieldError" + "referencing field '" + fieldName
                                 + "' in " + eiFieldOwner;
+                        skipRegionStrings.add("java.lang.NoSuchFieldError");
                     } else {
                         if (isRead) executeRead(eiFieldOwner, fieldInfo);
                         else executeWrite(eiFieldOwner, fieldInfo);
@@ -90,11 +97,23 @@ public class SubstituteGetOutput {
     private void executeWrite(ElementInfo eiFieldOwner, FieldInfo fieldInfo) {
         int fieldSize = fieldInfo.getStorageSize();
         if (fieldSize == 1) {
-            eiFieldOwner.set1SlotField(fieldInfo, 0); // field value should not matter (I, Vaibhav, think)
-            eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+            if (finalValue instanceof IntegerConstant) {
+                eiFieldOwner.set1SlotField(fieldInfo, (int) ((IntegerConstant) finalValue).value);
+            } else if (finalValue instanceof gov.nasa.jpf.symbc.numeric.RealConstant) {
+                eiFieldOwner.setFloatField(fieldInfo, (float) ((gov.nasa.jpf.symbc.numeric.RealConstant) finalValue).value);
+            } else {
+                eiFieldOwner.set1SlotField(fieldInfo, 0); // Vaibhav: field value should not matter
+                eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+            }
         } else {
-            eiFieldOwner.set2SlotField(fieldInfo, 0); // field value should not matter (I, Vaibhav, think)
-            eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+            if (finalValue instanceof IntegerConstant) {
+                eiFieldOwner.set2SlotField(fieldInfo, ((IntegerConstant) finalValue).value);
+            } else if (finalValue instanceof gov.nasa.jpf.symbc.numeric.RealConstant) {
+                eiFieldOwner.setDoubleField(fieldInfo, ((gov.nasa.jpf.symbc.numeric.RealConstant) finalValue).value);
+            } else {
+                eiFieldOwner.set2SlotField(fieldInfo, 0); // Vaibhav: field value should not matter
+                eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+            }
         }
     }
 

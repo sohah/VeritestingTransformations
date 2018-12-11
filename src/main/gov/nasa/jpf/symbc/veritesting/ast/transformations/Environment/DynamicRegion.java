@@ -5,10 +5,15 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayExpressions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.Variable;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * This class represents a DynamicRegion, that is, a StaticRegion that has been processed dynamically, this is done initially through uniquness transformation then later with the substitution and other transformations.
@@ -88,9 +93,14 @@ public class DynamicRegion implements Region {
     public final Expression spfPredicateSummary;
 
     /**
-     * Holds path subscript map for array references in the region
+     * Holds output expressions to be written into arrays
      */
-    public ArraySubscriptMap arrayPSM;
+    public ArrayExpressions arrayOutputs;
+
+    /*
+    * Holds all variables in the region summary that were found to be constants
+     */
+    public DynamicTable<Expression> constantsTable;
 
     /*
 
@@ -118,7 +128,8 @@ public class DynamicRegion implements Region {
         this.spfPredicateSummary = spfRegionSummary;
         this.fieldRefTypeTable = oldDynRegion.fieldRefTypeTable;
         this.psm = oldDynRegion.psm;
-        this.arrayPSM = oldDynRegion.arrayPSM;
+        this.arrayOutputs = oldDynRegion.arrayOutputs;
+        this.constantsTable = oldDynRegion.constantsTable;
     }
 
 
@@ -154,6 +165,8 @@ public class DynamicRegion implements Region {
                 (OutputTable) staticRegion.outputTable, uniqueNum);
         this.fieldRefTypeTable = new FieldRefTypeTable();
         this.psm = new FieldSubscriptMap();
-        this.arrayPSM = new ArraySubscriptMap();
+        this.arrayOutputs = null;
+        this.constantsTable = null;
     }
+
 }

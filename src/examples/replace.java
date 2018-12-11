@@ -35,8 +35,9 @@ public class replace {
 	public static final int NEWLINE = 10;
 	public static final int CLOSIZE = 1;
 
-	static char[] printBuf = new char[2000];
+	public static final int printBufLen = 50;
 	static int printBufIdx = 0;
+	static char[] printBuf;
 
 	public static void reset() {
 		patParaIndex = 0;
@@ -45,11 +46,11 @@ public class replace {
 		subIndex = 0;
 		strIndex = 0;
 		tempIndex = 0;
-		printBuf = new char[2000];
 		printBufIdx = 0;
 	}
 
 	public static char[] mainProcess(char i0, char i1, char i2, char i3, char i4){
+		printBuf = new char[printBufLen];
 
 
 		//
@@ -86,7 +87,8 @@ public class replace {
 		str[1] = '\0';
 		//
 		change(str, pat, sub);
-		char[] retChar = new char[pat.length + sub.length + str.length + printBufIdx];
+		char[] retChar = new char[pat.length + sub.length + str.length + printBuf.length];
+		for (int i=0; i < printBuf.length; i++) printBuf[i] = '0';
 		int outIndex = 0;
 		for (int i = 0; i < pat.length; i++)
 			retChar[outIndex++] = pat[i];
@@ -94,13 +96,13 @@ public class replace {
 			retChar[outIndex++] = sub[i];
 		for (int i = 0; i < str.length; i++)
 			retChar[outIndex++] = str[i];
-		for (int i = 0; i < printBufIdx; i++)
+		for (int i = 0; i < printBufLen; i++)
 			retChar[outIndex++] = printBuf[i];
 
 		return retChar;
 	}
 	/*
-	 * 
+	 *
 	 */
 	private static void change(char[] lin, char[] pat, char[] sub) {
 		//
@@ -122,14 +124,14 @@ public class replace {
 			if(m == -1){
 				//
 				System.out.print(lin[i]);
+				if (printBufIdx < printBuf.length) printBuf[printBufIdx++] = lin[i];
 				i = i + 1;
-				printBuf[printBufIdx++] = lin[i];
 			}
 			else if(m == i){
 				//TODO 
 				System.out.print(lin[i]);
+				if (printBufIdx < printBuf.length) printBuf[printBufIdx++] = lin[i];
 				i = i + 1;
-				printBuf[printBufIdx++] = lin[i];
 			}
 			else{
 				i = m;
@@ -143,11 +145,11 @@ public class replace {
 			char ch = (char)DITTO;
 			if(sub[i] == ch){
 				System.out.print(lin[i]);
-				printBuf[printBufIdx++] = lin[i];
+				if (printBufIdx < printBuf.length) printBuf[printBufIdx++] = lin[i];
 			}
 			else{
 				System.out.print(sub[i]);
-				printBuf[printBufIdx++] = sub[i];
+				if (printBufIdx < printBuf.length) printBuf[printBufIdx++] = sub[i];
 			}
 			i = i + 1;
 		}

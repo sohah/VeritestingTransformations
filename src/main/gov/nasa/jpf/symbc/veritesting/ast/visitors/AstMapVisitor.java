@@ -11,6 +11,7 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
     protected final ExprVisitor<Expression> exprVisitor;
     protected final ExprVisitorAdapter<Expression> eva;
 
+
     public AstMapVisitor(ExprVisitor<Expression> exprVisitor) {
         this.eva = new ExprVisitorAdapter<Expression>(exprVisitor);
         this.exprVisitor = exprVisitor;
@@ -109,9 +110,7 @@ public class AstMapVisitor extends ExprMapVisitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(ArrayLengthInstruction c) {
-        return new ArrayLengthInstruction(c.getOriginal(),
-                eva.accept(c.def),
-                eva.accept(c.arrayref));
+        return new ArrayLengthInstruction(c.getOriginal(), eva.accept(c.arrayref), eva.accept(c.def));
     }
 
     @Override

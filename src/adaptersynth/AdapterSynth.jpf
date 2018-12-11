@@ -1,0 +1,25 @@
+target=AdapterSynth
+veritestRegionExpectedCount = -1
+
+classpath=${jpf-symbc}/build/examples,${jpf-symbc}/build/adaptersynth,${jpf-symbc}/build/jpf-symbc.jar
+sourcepath=${jpf-symbc}/src/examples,${jpf-symbc}/src/adaptersynth
+vm.storage.class=nil
+symbolic.debug=false
+
+######## testing equivalence ######
+#symbolic.method=AdapterSynth.symbolicArgSubAdapter(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym),AdapterSynth.symbolicTestInput(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+symbolic.dp=z3bitvector
+
+
+symbolic.min_int=-2147483648
+symbolic.max_int=2147483647
+symbolic.min_double=-100.0
+symbolic.max_double=100.0
+listener = .symbc.VeritestingListener
+#listener = .symbc.SymbolicListener
+veritestingMode = 3
+performanceMode = false
+symbolic.lazy = true
+
+exclusionsFile=${jpf-symbc}/UtilExclusions.txt
+symbolic.debug=false

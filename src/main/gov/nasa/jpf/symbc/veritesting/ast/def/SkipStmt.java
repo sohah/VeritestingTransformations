@@ -9,7 +9,8 @@ public class SkipStmt implements Stmt {
 
     public static SkipStmt skip = new SkipStmt();
 
-    private SkipStmt() {}
+    private SkipStmt() {
+    }
 
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
@@ -19,6 +20,11 @@ public class SkipStmt implements Stmt {
     @Override
     public String toString() {
         return "skip ";
+    }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        return (stmt2 instanceof SkipStmt);
     }
 
 }

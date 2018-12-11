@@ -1,16 +1,18 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess;
 
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef;
+import za.ac.sun.cs.green.expr.IntConstant;
 
 import java.util.HashMap;
 import java.util.Set;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRef.looseArrayRefEquals;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor.ARRAY_SUBSCRIPT_BASE;
 
 public class GlobalArraySubscriptMap {
-    public final HashMap<ArrayRef, Integer> table;
+    public final HashMap<Integer, Integer> table;
     protected final String tableName = "Global Subscript Map";
     protected final String label1 = "ArrayRef";
     protected final String label2 = "subscript";
@@ -20,7 +22,7 @@ public class GlobalArraySubscriptMap {
     }
 
     // returns -1 if the key isn't found
-    public int lookup(ArrayRef key) {
+    /*public int lookup(ArrayRef key) {
         int ret = -1;
         if (key != null) {
             for (ArrayRef array: table.keySet()) {
@@ -32,18 +34,35 @@ public class GlobalArraySubscriptMap {
             throwException(new IllegalArgumentException("Cannot lookup the value of a null " + label1 + "."), INSTANTIATION);
         }
         return ret;
+    }*/
+
+    // returns -1 if the key isn't found
+    public int lookup(Integer key) {
+        int ret = -1;
+        if (key != null) {
+            for (Integer ref: table.keySet()) {
+                if (ref.equals(key))
+                    ret = table.get(ref);
+            }
+        }
+        else {
+            throwException(new IllegalArgumentException("Cannot lookup the value of a null " + label1 + "."), INSTANTIATION);
+        }
+        return ret;
     }
 
-    public void add(ArrayRef v1, Integer v2) {
+    public void add(Integer v1, Integer v2) {
         if ((v1 != null) && (v2 != null))
             table.put(v1, v2);
     }
 
-    public void remove(ArrayRef key) {
+    public void remove(Integer key) {
         if (lookup(key) != -1)
-            for (ArrayRef array: table.keySet()) {
-                if (array.ref == key.ref && array.index.equals(key.index))
-                    table.remove(array);
+            for (Integer ref: table.keySet()) {
+//                if (arrayRef.ref == key.ref && arrayRef.index.equals(key.index))
+//                    table.remove(arrayRef);
+                if (ref.equals(key))
+                    table.remove(ref);
             }
     }
 
@@ -52,7 +71,7 @@ public class GlobalArraySubscriptMap {
         table.forEach((v1, v2) -> System.out.println("!w"+v1 + " --------- " + v2));
     }
 
-    public Set<ArrayRef> getKeys(){
+    public Set<Integer> getKeys(){
         return table.keySet();
     }
 
@@ -63,22 +82,22 @@ public class GlobalArraySubscriptMap {
         return map;
     }
 
-    public void updateValue(ArrayRef arrayRef, Integer p) {
-        for(ArrayRef key: table.keySet()) {
-            if(key.equals(arrayRef)) {
+    public void updateValue(Integer ref, Integer p) {
+        for(Integer key: table.keySet()) {
+            if(ref.equals(key)) {
                 table.put(key, p);
             }
         }
     }
 
-    public Integer createSubscript(ArrayRef arrayRef) {
-        if (lookup(arrayRef) != -1) {
-            int ret = lookup(arrayRef);
-            updateValue(arrayRef, ret+1);
+    public Integer createSubscript(Integer ref) {
+        if (lookup(ref) != -1) {
+            int ret = lookup(ref);
+            updateValue(ref, ret+1);
             return ret+1;
         }
         else {
-            add(arrayRef, ARRAY_SUBSCRIPT_BASE + 1);
+            add(ref, ARRAY_SUBSCRIPT_BASE + 1);
             return ARRAY_SUBSCRIPT_BASE + 1;
         }
     }

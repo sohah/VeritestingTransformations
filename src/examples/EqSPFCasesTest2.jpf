@@ -1,5 +1,5 @@
 target=EqSPFCasesTest2
-veritestRegionExpectedCount = 1
+veritestRegionExpectedCount = 2
 
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
@@ -18,4 +18,5 @@ symbolic.max_double=100.0
 listener = .symbc.VeritestingListener
 #listener = .symbc.SymbolicListener
 veritestingMode = 4
+performanceMode = false
 symbolic.lazy = true

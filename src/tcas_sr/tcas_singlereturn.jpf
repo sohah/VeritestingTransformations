@@ -1,0 +1,17 @@
+target=tcas_singlereturn
+classpath=${jpf-symbc}/build/tcas_sr
+sourcepath=${jpf-symbc}/src/tcas_sr
+symbolic.method = tcas_singlereturn.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+#symbolic.method = tcas_singlereturn.mainProcess(sym#con#con#con#con#con#con#con#con#con#con#con)
+#symbolic.minint=-100
+#symbolic.maxint=100
+vm.storage.class=nil
+
+#coverage.include=tcas_singlereturn
+listener = .symbc.VeritestingListener
+#listener = .symbc.SymbolicListener
+veritestingMode = 4
+performanceMode = true
+#,gov.nasa.jpf.listener.CoverageAnalyzer
+#listener = .listener.ChoiceTracker
+symbolic.dp=z3bitvector

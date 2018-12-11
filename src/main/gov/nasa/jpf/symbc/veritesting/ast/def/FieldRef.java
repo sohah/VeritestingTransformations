@@ -1,11 +1,15 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
+import com.ibm.wala.analysis.typeInference.TypeInference;
+import com.ibm.wala.types.TypeName;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.vm.ThreadInfo;
+import org.apache.bcel.classfile.Utility;
 import za.ac.sun.cs.green.expr.IntConstant;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils.getType;
 
 /**
  * This class is used to represent field-reference pair that is used in RangerIR to provide SSA for fields.
@@ -35,6 +39,11 @@ public class FieldRef {
         String className = getIns.getOriginal().isStatic() ?
                 getIns.field.getDeclaringClass().getName().getClassName().toString():
                 ti.getClassInfo(ref).getName();
+        TypeName typeName = getIns.field.getDeclaringClass().getName();
+        if (typeName.isPrimitiveType()) throwException(new IllegalArgumentException("cannot make FieldRef for primitive object type in FieldRef.makeGetFieldRef"), INSTANTIATION);
+        else {
+            className = getType(typeName);
+        }
         return new FieldRef(ref, className, fieldName, getIns.getOriginal().isStatic());
     }
 
@@ -47,6 +56,11 @@ public class FieldRef {
         String className = putIns.getOriginal().isStatic() ?
                 putIns.field.getDeclaringClass().getName().getClassName().toString():
                 ti.getClassInfo(ref).getName();
+        TypeName typeName = putIns.field.getDeclaringClass().getName();
+        if (typeName.isPrimitiveType()) throwException(new IllegalArgumentException("cannot make FieldRef for primitive object type in FieldRef.makePutFieldRef"), INSTANTIATION);
+        else {
+            className = getType(typeName);
+        }
         return new FieldRef(ref, className, fieldName, putIns.getOriginal().isStatic());
     }
 

@@ -17,7 +17,8 @@ import static za.ac.sun.cs.green.expr.Operation.TRUE;
 public class SimplifyRangerExprVisitor extends ExprMapVisitor implements ExprVisitor<Expression> {
 
     private DynamicTable<Expression> constantsTable;
-    public StaticRegionException sre = null;
+    public IllegalArgumentException exception = null;
+    public boolean somethingChanged = false;
 
     SimplifyRangerExprVisitor(DynamicTable<Expression> constantsTable) {
         super();
@@ -25,8 +26,10 @@ public class SimplifyRangerExprVisitor extends ExprMapVisitor implements ExprVis
     }
 
     private Expression lookup(Expression expr) {
-        if (constantsTable.lookup((Variable) expr) != null)
+        if (constantsTable.lookup((Variable) expr) != null) {
+            somethingChanged = true;
             return constantsTable.lookup((Variable) expr);
+        }
         else return expr;
     }
 
@@ -72,7 +75,7 @@ public class SimplifyRangerExprVisitor extends ExprMapVisitor implements ExprVis
             ret = new Operation(expr.getOperator(), op1, op2);
         }
         if (ret == null) {
-            sre = new StaticRegionException("Cannot simplify operator with unknown arity");
+            exception = new IllegalArgumentException("Cannot simplify operator with unknown arity");
             return expr;
         }
         //constant-fold these in when possible by first extracting a method out of ExprUtil.isSatGreenExpression and use the extracted method
@@ -137,132 +140,132 @@ public class SimplifyRangerExprVisitor extends ExprMapVisitor implements ExprVis
                 if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
                     ret = new IntConstant(((IntConstant) op1).getValue() & ((IntConstant) op2).getValue());
                 } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
-                    sre = new StaticRegionException("Cannot apply BIT_AND to RealConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply BIT_AND to RealConstant operands");
                 }
                 break;
             case BIT_OR:
                 if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
                     ret = new IntConstant(((IntConstant) op1).getValue() | ((IntConstant) op2).getValue());
                 } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
-                    sre = new StaticRegionException("Cannot apply BIT_OR to RealConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply BIT_OR to RealConstant operands");
                 }
                 break;
             case BIT_XOR:
                 if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
                     ret = new IntConstant(((IntConstant) op1).getValue() ^ ((IntConstant) op2).getValue());
                 } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
-                    sre = new StaticRegionException("Cannot apply BIT_XOR to RealConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply BIT_XOR to RealConstant operands");
                 }
                 break;
             case BIT_NOT:
                 if (op1 instanceof IntConstant) {
                     ret = new IntConstant(~((IntConstant) op1).getValue());
                 } else if (op1 instanceof RealConstant) {
-                    sre = new StaticRegionException("Cannot apply BIT_NOT to RealConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply BIT_NOT to RealConstant operands");
                 }
                 break;
             case SHIFTL:
                 if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
                     ret = new IntConstant(((IntConstant) op1).getValue() << ((IntConstant) op2).getValue());
                 } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
-                    sre = new StaticRegionException("Cannot apply SHIFTL to RealConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply SHIFTL to RealConstant operands");
                 }
                 break;
             case SHIFTR:
                 if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
                     ret = new IntConstant(((IntConstant) op1).getValue() >> ((IntConstant) op2).getValue());
                 } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
-                    sre = new StaticRegionException("Cannot apply SHIFTR to RealConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply SHIFTR to RealConstant operands");
                 }
                 break;
             case SHIFTUR:
                 if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
                     ret = new IntConstant(((IntConstant) op1).getValue() >>> ((IntConstant) op2).getValue());
                 } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
-                    sre = new StaticRegionException("Cannot apply SHIFTUR to RealConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply SHIFTUR to RealConstant operands");
                 }
                 break;
             case BIT_CONCAT:
                 if (op1 instanceof IntConstant && op2 instanceof IntConstant) {
 //                    ret = new IntConstant((((IntConstant) op1).getValue() << 32) | ((IntConstant) op2).getValue());
-                    sre = new StaticRegionException("Dont know how to apply BIT_CONCAT to IntConstant operands");
+                    exception = new IllegalArgumentException("Dont know how to apply BIT_CONCAT to IntConstant operands");
                 } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
-                    sre = new StaticRegionException("Cannot apply BIT_CONCAT to RealConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply BIT_CONCAT to RealConstant operands");
                 }
                 break;
             case SIN:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply SIN to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply SIN to IntConstant operands");
                 } else if (op1 instanceof RealConstant) {
                     ret = new RealConstant(sin(((RealConstant) op1).getValue()));
                 }
                 break;
             case COS:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply COS to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply COS to IntConstant operands");
                 } else if (op1 instanceof RealConstant) {
                     ret = new RealConstant(cos(((RealConstant) op1).getValue()));
                 }
                 break;
             case TAN:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply TAN to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply TAN to IntConstant operands");
                 } else if (op1 instanceof RealConstant) {
                     ret = new RealConstant(tan(((RealConstant) op1).getValue()));
                 }
                 break;
             case ASIN:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply ASIN to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply ASIN to IntConstant operands");
                 } else if (op1 instanceof RealConstant) {
                     ret = new RealConstant(asin(((RealConstant) op1).getValue()));
                 }
                 break;
             case ACOS:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply ACOS to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply ACOS to IntConstant operands");
                 } else if (op1 instanceof RealConstant) {
                     ret = new RealConstant(acos(((RealConstant) op1).getValue()));
                 }
                 break;
             case ATAN:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply ATAN to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply ATAN to IntConstant operands");
                 } else if (op1 instanceof RealConstant) {
                     ret = new RealConstant(atan(((RealConstant) op1).getValue()));
                 }
                 break;
             case ATAN2:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply ATAN2 to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply ATAN2 to IntConstant operands");
                 } else if (op1 instanceof RealConstant && op2 instanceof RealConstant) {
                     ret = new RealConstant(atan2(((RealConstant) op1).getValue(), ((RealConstant) op2).getValue()));
                 }
                 break;
             case ROUND:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply ROUND to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply ROUND to IntConstant operands");
                 } else if (op1 instanceof RealConstant) {
                     ret = new RealConstant(round(((RealConstant) op1).getValue()));
                 }
                 break;
             case LOG:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply LOG to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply LOG to IntConstant operands");
                 } else if (op1 instanceof RealConstant) {
                     ret = new RealConstant(log(((RealConstant) op1).getValue()));
                 }
                 break;
             case EXP:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply EXP to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply EXP to IntConstant operands");
                 } else if (op1 instanceof RealConstant) {
                     ret = new RealConstant(exp(((RealConstant) op1).getValue()));
                 }
                 break;
             case SQRT:
                 if (op1 instanceof IntConstant) {
-                    sre = new StaticRegionException("Cannot apply SQRT to IntConstant operands");
+                    exception = new IllegalArgumentException("Cannot apply SQRT to IntConstant operands");
                 } else if (op1 instanceof RealConstant) {
                     ret = new RealConstant(sqrt(((RealConstant) op1).getValue()));
                 }
@@ -281,6 +284,11 @@ public class SimplifyRangerExprVisitor extends ExprMapVisitor implements ExprVis
         // return one of those two expressions
         if (result == ExprUtil.SatResult.TRUE) return eva.accept(expr.thenExpr);
         else if (result == ExprUtil.SatResult.FALSE) return eva.accept(expr.elseExpr);
-        else return new GammaVarExpr(cond, eva.accept(expr.thenExpr), eva.accept(expr.elseExpr));
+        else {
+            Expression thenExpr = eva.accept(expr.thenExpr);
+            Expression elseExpr = eva.accept(expr.elseExpr);
+            if (thenExpr.equals(elseExpr)) return thenExpr;
+            else return new GammaVarExpr(cond, thenExpr, elseExpr);
+        }
     }
 }
