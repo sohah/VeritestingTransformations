@@ -35,6 +35,7 @@ public class SimplifyStmtVisitor extends FixedPointAstMapVisitor {
         eva = super.eva;
         this.constantsTable = constantsTable;
         this.dynRegion = dynRegion;
+        this.somethingChanged = false;
     }
 
     public boolean getSomethingChanged() {
@@ -65,6 +66,7 @@ public class SimplifyStmtVisitor extends FixedPointAstMapVisitor {
                         dynRegion.fieldRefTypeTable.add((CloneableVariable) a.lhs, type);
                 }
             }
+            this.somethingChanged = true;
             return SkipStmt.skip;
         }
         return new AssignmentStmt(a.lhs, rhs);
@@ -77,8 +79,10 @@ public class SimplifyStmtVisitor extends FixedPointAstMapVisitor {
         satResult = isSatGreenExpression(cond);
         if (satResult == ExprUtil.SatResult.FALSE) {
             StatisticManager.ifRemovedCount++;
+            this.somethingChanged = true;
             return c.elseStmt.accept(this);
         } else if (satResult == ExprUtil.SatResult.TRUE) {
+            this.somethingChanged = true;
             StatisticManager.ifRemovedCount++;
             return c.thenStmt.accept(this);
         } else {
