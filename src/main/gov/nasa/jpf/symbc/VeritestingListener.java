@@ -203,7 +203,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
         boolean noVeritestingFlag = false;
         StackFrame curr = ti.getTopFrame();
-//        runAdapterSynth(ti, curr);
+        runAdapterSynth(ti, curr);
         // Begin equivalence checking code
         while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
             if (curr.getMethodInfo().getName().equals("NoVeritest")) {
@@ -225,7 +225,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         StatisticManager.instructionToExec = key;
 
         if (initializeTime) {
-            discoverRegions(ti); // static analysis to discover regions
+//            discoverRegions(ti); // static analysis to discover regions
             initializeTime = false;
         } else {
             try {
