@@ -7,7 +7,7 @@ vm.storage.class=nil
 symbolic.debug=false
 
 ######## testing equivalence ######
-symbolic.method=AdapterSynth.symbolicArgSubAdapter(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym),AdapterSynth.symbolicTestInput(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+#symbolic.method=AdapterSynth.symbolicArgSubAdapter(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym),AdapterSynth.symbolicTestInput(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 symbolic.dp=z3bitvector
 
 
@@ -22,3 +22,4 @@ performanceMode = false
 symbolic.lazy = true
 
 exclusionsFile=${jpf-symbc}/UtilExclusions.txt
+symbolic.debug=false

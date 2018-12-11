@@ -47,6 +47,8 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.numeric.solvers.*;
+import za.ac.sun.cs.green.expr.IntVariable;
+import za.ac.sun.cs.green.expr.RealVariable;
 //import gov.nasa.jpf.symbc.numeric.solvers.ProblemChoco2;
 
 import java.util.ArrayList;
@@ -251,6 +253,7 @@ public class SymbolicConstraintsGeneral {
                 e.getKey().solution = pb.getIntValue(e.getValue());
 
             }
+
             //}
                 /*
             catch (Exception exp) {
@@ -333,6 +336,23 @@ public class SymbolicConstraintsGeneral {
                 e.getKey().solution = e_value;
                 result.put(e.getKey().getName(), e_value);
 
+            }
+
+            // compute solutions for IntVariable objects in the model
+            final Set<Entry<IntVariable, Object>> intVariableSet = PCParser.intVariableMap.entrySet();
+            final Iterator<Entry<IntVariable, Object>> intVariableItr = intVariableSet.iterator();
+            while (intVariableItr.hasNext()) {
+                final Entry<IntVariable, Object> e = intVariableItr.next();
+                long e_value = pb.getIntValue(e.getValue());
+                result.put(e.getKey().getName(), e_value);
+            }
+            // compute solutions for RealVariable objects in the model
+            final Set<Entry<RealVariable, Object>> realVariableSet = PCParser.realVariableMap.entrySet();
+            final Iterator<Entry<RealVariable, Object>> realVariableItr = realVariableSet.iterator();
+            while (realVariableItr.hasNext()) {
+                final Entry<RealVariable, Object> e = realVariableItr.next();
+                double e_value = pb.getRealValue(e.getValue());
+                result.put(e.getKey().getName(), e_value);
             }
             //}
 				/*

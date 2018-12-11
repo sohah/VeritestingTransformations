@@ -80,6 +80,7 @@ class GreenPbTranslator extends Visitor {
                 Expr low  = (Expr) context.geq(v,context.makeIntConst(lower));
                 Expr high = (Expr) context.leq(v,context.makeIntConst(upper));
                 domains.add((Expr) context.logical_and(low,high));
+                PCParser.intVariableMap.put(variable, v);
             } catch (Z3Exception e) {
                 e.printStackTrace();
             }
@@ -100,6 +101,7 @@ class GreenPbTranslator extends Visitor {
                 Expr low  = (Expr) context.geq(v,context.makeRealConst((double)lower));
                 Expr high = (Expr) context.leq(v,context.makeRealConst((double) upper));
                 domains.add((Expr) context.logical_and(low,high));
+                PCParser.realVariableMap.put(variable, v);
             } catch (Z3Exception e) {
                 e.printStackTrace();
             }

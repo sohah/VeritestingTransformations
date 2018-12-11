@@ -1,14 +1,16 @@
+import gov.nasa.jpf.symbc.Debug;
 import gov.nasa.jpf.symbc.veritesting.AdapterSynth.ArgSubAdapter;
+import gov.nasa.jpf.symbc.veritesting.AdapterSynth.TestInput;
 
 import java.io.*;
-import java.util.ArrayList;
 
 import static java.lang.System.exit;
 
 public class AdapterSynth {
     ArgSubAdapter argSub;
-    ArrayList<TestInput> tests;
+    TestInput testInput = null;
     Boolean isAdapterSearch = null;
+    private static int symIntCount = 0, symBooleanCount = 0, symCharCount = 0;
 
     public AdapterSynth() {
         int[] i_val = new int[]{0,0,0,0,0,0};
@@ -20,7 +22,7 @@ public class AdapterSynth {
         argSub = new ArgSubAdapter(i_is_const, i_val, b_is_const, b_val, c_is_const, c_val);
     }
 
-    public ArgSubAdapter symbolicArgSubAdapter(ArgSubAdapter argSubAdapter,
+    public ArgSubAdapter symbolicArgSubAdapter(ArgSubAdapter argSubAdapter/*,
                                                boolean i_is_const0, int i_val0,
                                                boolean i_is_const1, int i_val1,
                                                boolean i_is_const2, int i_val2,
@@ -38,71 +40,147 @@ public class AdapterSynth {
                                                boolean c_is_const2, int c_val2,
                                                boolean c_is_const3, int c_val3,
                                                boolean c_is_const4, int c_val4,
-                                               boolean c_is_const5, int c_val5) {
+                                               boolean c_is_const5, int c_val5*/) {
         ArgSubAdapter ret = argSubAdapter;
-        ret.i_is_const[0] = i_is_const0; ret.i_val[0] = i_val0;
-        ret.i_is_const[1] = i_is_const1; ret.i_val[1] = i_val1;
-        ret.i_is_const[2] = i_is_const2; ret.i_val[2] = i_val2;
-        ret.i_is_const[3] = i_is_const3; ret.i_val[3] = i_val3;
-        ret.i_is_const[4] = i_is_const4; ret.i_val[4] = i_val4;
-        ret.i_is_const[5] = i_is_const5; ret.i_val[5] = i_val5;
-        ret.b_is_const[0] = b_is_const0; ret.b_val[0] = b_val0;
-        ret.b_is_const[1] = b_is_const1; ret.b_val[1] = b_val1;
-        ret.b_is_const[2] = b_is_const2; ret.b_val[2] = b_val2;
-        ret.b_is_const[3] = b_is_const3; ret.b_val[3] = b_val3;
-        ret.b_is_const[4] = b_is_const4; ret.b_val[4] = b_val4;
-        ret.b_is_const[5] = b_is_const5; ret.b_val[5] = b_val5;
-        ret.c_is_const[0] = c_is_const0; ret.c_val[0] = c_val0;
-        ret.c_is_const[1] = c_is_const1; ret.c_val[1] = c_val1;
-        ret.c_is_const[2] = c_is_const2; ret.c_val[2] = c_val2;
-        ret.c_is_const[3] = c_is_const3; ret.c_val[3] = c_val3;
-        ret.c_is_const[4] = c_is_const4; ret.c_val[4] = c_val4;
-        ret.c_is_const[5] = c_is_const5; ret.c_val[5] = c_val5;
+        ret.i_is_const[0] = getSymBool("i_is_const0"); ret.i_val[0] = getSymInt("i_val0");
+        ret.i_is_const[1] = getSymBool("i_is_const1"); ret.i_val[1] = getSymInt("i_val1");
+        ret.i_is_const[2] = getSymBool("i_is_const2"); ret.i_val[2] = getSymInt("i_val2");
+        ret.i_is_const[3] = getSymBool("i_is_const3"); ret.i_val[3] = getSymInt("i_val3");
+        ret.i_is_const[4] = getSymBool("i_is_const4"); ret.i_val[4] = getSymInt("i_val4");
+        ret.i_is_const[5] = getSymBool("i_is_const5"); ret.i_val[5] = getSymInt("i_val5");
+        ret.b_is_const[0] = getSymBool("b_is_const0"); ret.b_val[0] = getSymInt("b_val0");
+        ret.b_is_const[1] = getSymBool("b_is_const1"); ret.b_val[1] = getSymInt("b_val1");
+        ret.b_is_const[2] = getSymBool("b_is_const2"); ret.b_val[2] = getSymInt("b_val2");
+        ret.b_is_const[3] = getSymBool("b_is_const3"); ret.b_val[3] = getSymInt("b_val3");
+        ret.b_is_const[4] = getSymBool("b_is_const4"); ret.b_val[4] = getSymInt("b_val4");
+        ret.b_is_const[5] = getSymBool("b_is_const5"); ret.b_val[5] = getSymInt("b_val5");
+        ret.c_is_const[0] = getSymBool("c_is_const0"); ret.c_val[0] = getSymInt("c_val0");
+        ret.c_is_const[1] = getSymBool("c_is_const1"); ret.c_val[1] = getSymInt("c_val1");
+        ret.c_is_const[2] = getSymBool("c_is_const2"); ret.c_val[2] = getSymInt("c_val2");
+        ret.c_is_const[3] = getSymBool("c_is_const3"); ret.c_val[3] = getSymInt("c_val3");
+        ret.c_is_const[4] = getSymBool("c_is_const4"); ret.c_val[4] = getSymInt("c_val4");
+        ret.c_is_const[5] = getSymBool("c_is_const5"); ret.c_val[5] = getSymInt("c_val5");
         return ret;
     }
 
-    public TestInput symbolicTestInput(int i0, int i1, int i2, int i3, int i4, int i5,
+    public TestInput symbolicTestInput(/*int i0, int i1, int i2, int i3, int i4, int i5,
                                        boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5,
-                                       char c0, char c1, char c2, char c3, char c4, char c5) {
+                                       char c0, char c1, char c2, char c3, char c4, char c5*/) {
         TestInput ret = new TestInput();
-        ret.in = new int[]{i0, i1, i2, i3, i4, i5};
-        ret.b = new boolean[]{b0, b1, b2, b3, b4, b5};
-        ret.c = new char[]{c0, c1, c2, c3, c4, c5};
+        ret.in = new int[]{getSymInt("i0"), getSymInt("i1"), getSymInt("i2"), getSymInt("i3"), getSymInt("i4"), getSymInt("i5")};
+        ret.b = new boolean[]{getSymBool("b0"), getSymBool("b1"), getSymBool("b2"), getSymBool("b3"), getSymBool("b4"), getSymBool("b5")};
+        ret.c = new char[]{getSymChar("c0"), getSymChar("c1"), getSymChar("c2"), getSymChar("c3"), getSymChar("c4"), getSymChar("c5")};
         return ret;
     }
 
-    void testHarness(TestRegionBaseClass v, TestInput input, boolean isLastTest) {
-        Outputs targetOutput = v.testFunction(input);
+    private char getSymChar(String c0) {
+        symCharCount++;
+        return Debug.makeSymbolicChar(c0 );//+ symCharCount);
+    }
+
+    private boolean getSymBool(String b0) {
+        symBooleanCount++;
+        return Debug.makeSymbolicBoolean(b0 );//+ symBooleanCount);
+    }
+
+    private int getSymInt(String i0) {
+        symIntCount++;
+        return Debug.makeSymbolicInteger(i0 );//+ symIntCount);
+    }
+
+    boolean testHarness(AdapterRegionBase v, TestInput input) {
+        boolean isMatch;
+        Outputs targetOutput = v.testFunction1(input);
         Outputs referenceOutput = adaptedTestFunction(v, input);
         if (targetOutput.equals(referenceOutput)) {
             System.out.println("Match");
-            // concretize the adapter to give to the next CE search and stop executing this adapter search step
-            if (isAdapterSearch && isLastTest) {
-                //TODO: 1. concretize the adapter, 2. run the next counterexample search step, 3. get the test from it and add it as a new test case
-                concretizeAdapter(); // SPF will concretize the adapter and write it to the "args" file
-            }
+            isMatch = true;
         }
         else {
             System.out.println("Mismatch");
-            // TODO: save the model if !isAdapterSearch and stop executing this counterexample search step
-            // if isAdapterSearch, ask SPF to abort this execution path
-            if (isAdapterSearch) abortExecutionPath();
-            else concretizeCounterExample();
+            isMatch = false;
+        }
+        return isMatch;
+    }
+
+    public void runTests(AdapterRegionBase t) {
+        boolean isMatch;
+        while (testInput != null) {
+            System.out.println("running tests on argSub: " + argSub);
+            isMatch = testHarness(t, testInput);
+            if (isMatch) {
+                if (isAdapterSearch) {
+                    concretizeAdapter(); // SPF will concretize the adapter and write it to the "args" file
+                    testInput = runNextCE(); //run the next counterexample search step, get the test from it and use it as "testInput"
+                } else break;
+            } else {
+                // save the model if !isAdapterSearch and stop executing this counterexample search step
+                // if isAdapterSearch, ask SPF to abort this execution path
+                if (isAdapterSearch) abortExecutionPath();
+                else {
+                    concretizeCounterExample();
+                    exit(0);
+                }
+            }
+            System.out.println("Starting new adapter search for test inputs: " + testInput);
+        }
+
+        // Finished counter-example run, failed to find a single counterexample
+        if (!isAdapterSearch) {
+            FileOutputStream file;
+            try {
+                file = new FileOutputStream("args");
+                ObjectOutputStream out = new ObjectOutputStream(file);
+                out.writeChar('F');
+                ArgSubAdapter.writeAdapter(out, argSub);
+                System.out.println("failed to find counter-example, wrote adapter: " + argSub);
+                out.close();
+//                file.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // this code should never be reached because, in adapter search, we abort any execution path that runs
+            // into a "Mismatch"
+            assert false;
         }
     }
 
-    private void concretizeCounterExample() {
+    // Runs next counter-example search step, sets the new counter-example as the test we want to adapt on
+    private TestInput runNextCE() {
+        TestInput ret = null;
+        AdapterSynth nextAS = new AdapterSynth();
+        runOneStep("args", nextAS);
+        try {
+            GetInputsFromFile getInputsFromFile = new GetInputsFromFile("args").invoke();
+            if (getInputsFromFile.isFinalAdapter()) {
+                System.out.println("No counter-example found during this step");
+                assert argSub.equals(getInputsFromFile.adapter); // this assertion fails because the query for this does not have the previous PC included in for some weird reason
+                printFinalAdapter();
+                throw new IllegalArgumentException("Found an adapter");
+            } else if (getInputsFromFile.testInput == null) {
+                System.out.println("Expected a single test input from next counter-example search");
+                throw new IOException();
+            }
+            ret = getInputsFromFile.testInput;
+        } catch (IOException|ClassNotFoundException e) {
+            System.out.println("Failed to load next counterexample");
+            exit(-1);
+        }
+        return ret;
     }
 
-    private void abortExecutionPath() {
-    }
+    // Methods that instruction SPF to do something in AdapterSynthUtil.java
+    private void concretizeCounterExample() {}
+    private void abortExecutionPath() {}
+    private void concretizeAdapter() {}
+    private void printFinalAdapter() {  }
 
-    private void concretizeAdapter() {
-    }
-
-    public Outputs adaptedTestFunction(TestRegionBaseClass v, TestInput input) {
+    public Outputs adaptedTestFunction(AdapterRegionBase v, TestInput input) {
         TestInput inputAdapted = adapt(argSub, input);
-        return v.testFunction(inputAdapted);
+        return v.testFunction2(inputAdapted);
     }
 
     private TestInput adapt(ArgSubAdapter argSub, TestInput input) {
@@ -122,12 +200,6 @@ public class AdapterSynth {
         return ret;
     }
 
-    public void runAdapterSynth(TestRegionBaseClass t) {
-        for(int i = 0; i < tests.size(); i++) {
-            testHarness(t, tests.get(i), i == tests.size()-1);
-        }
-    }
-
     public static void main(String[] args) {
         AdapterSynth adapterSynth = new AdapterSynth();
         if (args.length == 0) {
@@ -136,22 +208,32 @@ public class AdapterSynth {
         if (args[0].equals("writeRandomTest")) {
             writeRandomTest(args[1]);
             exit(0);
+        } else if (args[0].equals("writeIdentityAdapter")) {
+            writeIdentityAdapter(args[1]);
+            exit(0);
         }
+        runOneStep(args[0], adapterSynth);
+    }
+
+
+    private static void runOneStep(String arg, AdapterSynth adapterSynth) {
         try {
-            GetInputsFromFile getInputsFromFile = new GetInputsFromFile(args[0]).invoke();
+            GetInputsFromFile getInputsFromFile = new GetInputsFromFile(arg).invoke();
             adapterSynth.isAdapterSearch = getInputsFromFile.getC().equals('A');
             if (!adapterSynth.isAdapterSearch) {
                 adapterSynth.argSub = getInputsFromFile.getAdapter();
-                adapterSynth.tests = new ArrayList<>();
-                adapterSynth.tests.add(adapterSynth.symbolicTestInput(0,0,0,0,0,0,
+                System.out.println("Starting new counterexample search for adapter: " + adapterSynth.argSub);
+                adapterSynth.testInput = adapterSynth.symbolicTestInput(/*0,0,0,0,0,0,
                         false,false,false,false,false,false,
-                        '0','0','0','0','0','0'));
+                        '0','0','0','0','0','0'*/);
             } else {
-                adapterSynth.argSub = adapterSynth.symbolicArgSubAdapter(adapterSynth.argSub,
+                adapterSynth.argSub = adapterSynth.symbolicArgSubAdapter(adapterSynth.argSub/*,
                         false, 0, false, 0,false, 0,false, 0,false, 0,false, 0,
                         false, 0, false, 0,false, 0,false, 0,false, 0,false, 0,
-                        false, 0, false, 0,false, 0,false, 0,false, 0,false, 0);
-                adapterSynth.tests = getInputsFromFile.getTestInputs();
+                        false, 0, false, 0,false, 0,false, 0,false, 0,false, 0*/);
+//                if (!isIdentityAdapter(adapterSynth.argSub)) exit(0); // hack to check if identity adapter works
+                adapterSynth.testInput = getInputsFromFile.getTestInput();
+                System.out.println("Starting new adapter search for test inputs: " + adapterSynth.testInput);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -173,7 +255,11 @@ public class AdapterSynth {
             if (!argSub.c_is_const[i]) feasibleAdaptation = feasibleAdaptation &&
                     (argSub.c_val[i] >= 0 && argSub.c_val[i] <= 5);
         }
-        if (feasibleAdaptation) adapterSynth.runAdapterSynth(new TestAndIte());
+        if (feasibleAdaptation) adapterSynth.runTests(new TestFunctions());
+    }
+
+    private static boolean isIdentityAdapter(ArgSubAdapter argSub) {
+        return argSub.equals(ArgSubAdapter.identityAdapter());
     }
 
     private static void writeRandomTest(String arg) {
@@ -188,7 +274,6 @@ public class AdapterSynth {
             ObjectOutputStream out = new ObjectOutputStream(file);
             out.writeChar('A');
             TestInput.writeTestInput(out, input);
-//            out.writeObject(input);
             out.close();
             file.close();
             System.out.println("New test written: " + input);
@@ -199,19 +284,39 @@ public class AdapterSynth {
         }
     }
 
+    private static void writeIdentityAdapter(String arg) {
+        try {
+            ArgSubAdapter a = ArgSubAdapter.identityAdapter();
+            FileOutputStream file = new FileOutputStream(arg);
+            ObjectOutputStream out = new ObjectOutputStream(file);
+            out.writeChar('C');
+            ArgSubAdapter.writeAdapter(out, a);
+            out.close();
+            file.close();
+            System.out.println("New adapter written: " + a);
+        }
+        catch (IOException ex) {
+            ex.printStackTrace();
+            System.out.println("failed to write random test");
+        }
+    }
+
     private static class GetInputsFromFile {
         private String arg;
-        private ArrayList<TestInput> testInputs = null;
+        private TestInput testInput = null;
         private ArgSubAdapter adapter = null;
         private FileInputStream fileInputStream;
         private Character c;
+        private boolean isFinalAdapter = false;
 
         public GetInputsFromFile(String arg) {
             this.arg = arg;
         }
 
-        public ArrayList<TestInput> getTestInputs() {
-            return testInputs;
+        private boolean isFinalAdapter() { return isFinalAdapter; }
+
+        public TestInput getTestInput() {
+            return testInput;
         }
 
         public Character getC() {
@@ -236,27 +341,33 @@ public class AdapterSynth {
             c = in.readChar();
             switch(c) {
                 case 'A':
-                    testInputs = new ArrayList<>();
-                    TestInput input = TestInput.readTestInput(in);
-                    while (input != null) {
-                        testInputs.add(input);
-                        try {
-                            input = (TestInput) in.readObject();
-                        } catch (EOFException e) { input = null; }
-                    }
+                    testInput = TestInput.readTestInput(in);
+                    try {
+                        in.readObject();
+                        assert false; // there should only ever be a single test input that we want to adapt for
+                    } catch (EOFException e) { }
                     adapter = null;
                     break;
                 case 'C':
                     adapter = ArgSubAdapter.readAdapter(in);
                     // Nothing should exist in the input file after the adapter
-                    assert in.readObject() == null;
-                    testInputs = null;
+                    try {
+                        in.readObject();
+                        assert false;
+                    } catch(EOFException e) { }
+                    testInput = null;
+                    break;
+                case 'F': //written by runTests to indicate no counterexample was found for a given adapter
+                    testInput = null;
+                    adapter = ArgSubAdapter.readAdapter(in);
+                    isFinalAdapter = true;
+                    System.out.println("read final adapter");
                     break;
                 default: throw new IllegalArgumentException("Input file does not have the right format");
             }
 
             in.close();
-            fileInputStream.close();
+//            fileInputStream.close();
             return this;
         }
     }

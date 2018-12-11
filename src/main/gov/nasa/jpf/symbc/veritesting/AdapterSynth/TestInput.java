@@ -1,3 +1,5 @@
+package gov.nasa.jpf.symbc.veritesting.AdapterSynth;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -5,10 +7,10 @@ import java.io.Serializable;
 import java.util.Random;
 
 public class TestInput implements Serializable{
-    Random rand = new Random();
-    int in[] = new int[]{rand.nextInt(),rand.nextInt(),rand.nextInt(),rand.nextInt(),rand.nextInt(),rand.nextInt()};
-    boolean b[] = new boolean[]{rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean()};
-    char c[] = new char[]{(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt()};
+    public static Random rand = new Random();
+    public int[] in = new int[]{rand.nextInt(),rand.nextInt(),rand.nextInt(),rand.nextInt(),rand.nextInt(),rand.nextInt()};
+    public boolean[] b = new boolean[]{rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean()};
+    public char[] c = new char[]{(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt()};
     @Override
     public String toString() {
         StringBuilder ret = new StringBuilder();
