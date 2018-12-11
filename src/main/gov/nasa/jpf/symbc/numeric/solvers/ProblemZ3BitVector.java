@@ -177,7 +177,7 @@ public class ProblemZ3BitVector extends ProblemGeneral {
 
         try {
         	boolean result = false;
-        	if(SymbolicInstructionFactory.debugMode == true){
+        	if(SymbolicInstructionFactory.debugMode){
         	    /****** SH: logging to files *******************/
                 String folderName;
                 if(StatisticManager.veritestingRunning)

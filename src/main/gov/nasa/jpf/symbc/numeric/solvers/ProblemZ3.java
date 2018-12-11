@@ -37,6 +37,7 @@
 
 package gov.nasa.jpf.symbc.numeric.solvers;
 
+import java.io.*;
 import java.util.*;
 
 //TODO: problem: we do not distinguish between ints and reals?
@@ -46,11 +47,18 @@ import java.util.*;
 import com.microsoft.z3.*;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import symlib.Util;
 
 public class ProblemZ3 extends ProblemGeneral {
 
-  //This class acts as a safeguard to prevent
+	/*SH: used to collect all function declarations (query variables) while constructing the solver and the context. */
+	private HashSet<String> z3FunDecSet = new HashSet();
+
+	//This class acts as a safeguard to prevent
   //issues when referencing ProblemZ3 in case the z3 libs are
   //not on the ld_library_path. If the
   //Z3 solver object and context were class fields,
@@ -122,6 +130,7 @@ public class ProblemZ3 extends ProblemGeneral {
 			IntExpr intConst = ctx.mkIntConst(name);
 			solver.add(ctx.mkGe(intConst, ctx.mkInt(min)));
 			solver.add(ctx.mkLe(intConst, ctx.mkInt(max)));
+			z3FunDecSet.add(name);
 			return intConst;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -696,7 +705,47 @@ public class ProblemZ3 extends ProblemGeneral {
         try {
         	/* find model for the constraints above */
             Model model = null;                
-            
+
+            if(SymbolicInstructionFactory.debugMode){
+				/****** SH: logging to files *******************/
+				String folderName;
+				if(StatisticManager.veritestingRunning)
+					folderName = "../SolverQueriesVeritesting";
+				else
+					folderName = "../SolverQueriesSPF";
+				File dir = new File(folderName);
+				boolean success;
+
+				if(!dir.exists())
+					success = dir.mkdir();
+				else{
+					if(StatisticManager.inializeQueriesFile){
+						SpfUtil.emptyFolder(dir);
+						StatisticManager.inializeQueriesFile = false;
+					}
+					success = true;
+				}
+
+				if(success){
+					String fileName = folderName + "/" + StatisticManager.instructionToExec+"$" + StatisticManager.solverQueriesUnique + ".txt";
+					++StatisticManager.solverQueriesUnique;
+					try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+							new FileOutputStream(fileName), "utf-8"))) {
+
+						DiscoverContract.z3QuerySet.add(new Pair(solver.toString(), z3FunDecSet));
+
+						writer.write(DiscoverContract.toSMT(solver.toString(), z3FunDecSet));
+					}
+				}
+				else
+					System.out.println("Encountered a problem while creating Solver Queries directory.");
+
+
+				/*********** SH: end logging *******************/
+
+			}
+
+
             if (Status.SATISFIABLE == solver.check()) {   
                 return true;
             } else {       

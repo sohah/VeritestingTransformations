@@ -226,7 +226,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         StatisticManager.instructionToExec = key;
 
         if (initializeTime) {
-//            discoverRegions(ti); // static analysis to discover regions
+            discoverRegions(ti); // static analysis to discover regions
             initializeTime = false;
         } else {
             try {

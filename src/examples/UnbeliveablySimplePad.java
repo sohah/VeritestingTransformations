@@ -27,13 +27,15 @@ public class UnbeliveablySimplePad {
         int s1 = 1;
         int s2 = 2;
         int s3 = 3;
-        pad.runPadSteps(s1, s2, s3);
+        boolean z1 = true;
+        boolean z2 = true;
+        pad.runPadSteps(s1, s2, s3, z1, z2);
     }
 
-    public void runPadSteps(int s1, int s2, int s3) {
+    public void runPadSteps(int s1, int s2, int s3, boolean z1, boolean z2) {
         boolean ignition;
-        runPad(s1);
-        ignition = runPad(s2);
+        runPad(s1, z1, z2);
+        ignition = runPad(s2, z1, z2);
         if (ignition)
             launchRocket();
     }
@@ -50,7 +52,7 @@ public class UnbeliveablySimplePad {
      * @param n
      * @return
      */
-    public boolean runPad(int n) {
+    public boolean runPad(int n, boolean startBtn, boolean launchBtn) {
         boolean startSignal;
         boolean launchSignal;
         boolean emptySignal;
@@ -58,6 +60,8 @@ public class UnbeliveablySimplePad {
         startSignal = (n == 1);
         launchSignal = (n == 2);
         emptySignal = (!startSignal && !launchSignal);
+        this.startBtn = startBtn;
+        this.launchBtn = launchBtn;
         int currentState = getCurrentState();
 
         boolean ignitionSignal = false;
