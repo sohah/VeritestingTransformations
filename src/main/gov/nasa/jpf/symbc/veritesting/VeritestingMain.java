@@ -77,14 +77,23 @@ public class VeritestingMain {
         }
     }
 
-    public void analyzeForVeritesting(String classPath, String _className) {
+    public void analyzeForVeritesting(ArrayList<String> classPaths, String _className) {
         endingInsnsHash = new HashSet();
-        findClasses(ti, cha, classPath, _className, methodSummaryClassNames);
+        findClasses(ti, cha, classPaths, _className, methodSummaryClassNames);
         startingPointsHistory = new HashSet();
+        URL[] cp = new URL[classPaths.size()];
+        int cp_index = 0;
+        for (String classPath: classPaths) {
+            File f = new File(classPath);
+            try {
+                cp[cp_index++] = f.toURI().toURL();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                continue;
+            }
+        }
 
         try {
-            File f = new File(classPath);
-            URL[] cp = new URL[]{f.toURI().toURL()};
             URLClassLoader urlcl = new URLClassLoader(cp);
             Class c = urlcl.loadClass(_className);
             Method[] allMethods;
@@ -105,7 +114,7 @@ public class VeritestingMain {
                 startAnalysis(getPackageName(_className), _className, signature);
             }
             //Return if not in highOrder mode or higher
-            if ( VeritestingListener.veritestingMode <= 2) return;
+            if (VeritestingListener.veritestingMode <= 2) return;
             for (String methodSummaryClassName : methodSummaryClassNames) {
                 Class cAdditional;
                 try {
@@ -159,7 +168,7 @@ public class VeritestingMain {
                     startAnalysis(getPackageName(methodSummaryClassName), methodSummaryClassName, signature);
                 }
             }
-        } catch (MalformedURLException | ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -171,23 +180,26 @@ public class VeritestingMain {
         else return null;
     }
 
-    public static void findClasses(ThreadInfo ti, ClassHierarchy cha, String classPath, String startingClassName,
+    public static void findClasses(ThreadInfo ti, ClassHierarchy cha, ArrayList<String> classPaths, String startingClassName,
                                    HashSet<String> methodSummaryClassNames) {
 
         methodSummaryClassNames.add(startingClassName);
         HashSet<String> newClassNames;
         int iteration = 0;
+        URL[] cp = new URL[classPaths.size()];
+        int cp_index = 0;
+        for (String classPath: classPaths) {
+            File f = new File(classPath);
+            try {
+                cp[cp_index++] = f.toURI().toURL();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                continue;
+            }
+        }
         do {
             newClassNames = new HashSet<>();
             for (String className : methodSummaryClassNames) {
-
-                File f = new File(classPath);
-                URL[] cp = new URL[0];
-                try {
-                    cp = new URL[]{f.toURI().toURL()};
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
                 URLClassLoader urlcl = new URLClassLoader(cp);
                 Class c;
                 try {
@@ -195,7 +207,7 @@ public class VeritestingMain {
                 } catch (ClassNotFoundException e) {
                     continue;
                 }
-                if(c == null) continue;
+                if (c == null) continue;
                 Method[] allMethods;
                 try {
                     allMethods = c.getDeclaredMethods();
@@ -213,14 +225,14 @@ public class VeritestingMain {
                     }
                     MethodReference mr = StringStuff.makeMethodReference(className + "." + signature);
                     IMethod iMethod = cha.resolveMethod(mr);
-                    if(iMethod == null)
+                    if (iMethod == null)
                         continue;
                     AnalysisOptions options = new AnalysisOptions();
                     options.getSSAOptions().setPiNodePolicy(SSAOptions.getAllBuiltInPiNodes());
                     IAnalysisCacheView cache = new AnalysisCacheImpl(options.getSSAOptions());
                     IR ir = cache.getIR(iMethod, Everywhere.EVERYWHERE);
-                    if(ir == null) {
-                        System.out.println("failed to get WALA IR for method: " + className +"." + signature);
+                    if (ir == null) {
+                        System.out.println("failed to get WALA IR for method: " + className + "." + signature);
                         continue;
                     }
                     Iterator<CallSiteReference> iterator = ir.iterateCallSites();
@@ -229,7 +241,7 @@ public class VeritestingMain {
                         MethodReference methodReference = reference.getDeclaredTarget();
                         String declaringClass = methodReference.getDeclaringClass().getName().getClassName().toString();
                         String newClassName = declaringClass;
-                        if(methodReference.getDeclaringClass().getName().getPackage() != null) {
+                        if (methodReference.getDeclaringClass().getName().getPackage() != null) {
                             String packageName =
                                     methodReference.getDeclaringClass().getName().getPackage().toString().replace("/", ".");
                             newClassName = packageName + "." + newClassName;
@@ -241,7 +253,7 @@ public class VeritestingMain {
                 }
             }
             methodSummaryClassNames.addAll(newClassNames);
-            for(Iterator it = methodSummaryClassNames.iterator(); it.hasNext();) {
+            for (Iterator it = methodSummaryClassNames.iterator(); it.hasNext(); ) {
                 String methodSummaryClassName = (String) it.next();
                 ClassUtils.addSubClassNames(ti, cha, newClassNames, methodSummaryClassName);
             }
@@ -251,7 +263,7 @@ public class VeritestingMain {
             ++iteration;
             if (iteration == VeritestingListener.maxStaticExplorationDepth)
                 break;
-        } while(newClassNames.size() != 0);
+        } while (newClassNames.size() != 0);
     }
 
 

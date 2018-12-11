@@ -76,6 +76,7 @@
 	  <available file="src/benchmarks"    type="dir" property="have_benchmarks"/>
 	  <available file="src/ApacheCLI"    type="dir" property="have_apachecli"/>
 	  <available file="src/wbs"    type="dir" property="have_wbs"/>
+	  <available file="src/adaptersynth"    type="dir" property="have_adaptersynth"/>
 	  <available file="src/tcas"    type="dir" property="have_tcas"/>
 	  <available file="src/tcas_sr"    type="dir" property="have_tcas_sr"/>
 
@@ -109,7 +110,7 @@
   <!-- ======================= COMPILE SECTION ============================= -->
 
   <!-- public compile -->
-  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-tcas,-compile-tcas-sr,-compile-examples"
+  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-tcas,-compile-tcas-sr,-compile-examples,-compile-adaptersynth"
 	  description="compile all JPF core sources" >
   </target>
 
@@ -160,7 +161,7 @@
 	  </javac>
   </target>
 
-  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs,-compile-tcas-sr">
+  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs">
 	  <mkdir dir="build/examples" />
 	  <javac srcdir="src/examples" destdir="build/examples"
 		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -170,7 +171,6 @@
 			  <pathelement location="build/classes"/>
 			  <pathelement location="build/wbs"/>
 			  <pathelement location="build/tcas"/>
-			  <pathelement location="build/tcas-sr"/>
 			  <pathelement location="build/annotations"/>
 		  </classpath>
 	  </javac>
@@ -219,6 +219,21 @@
 		<copy file="build/wbs/WBS.class" tofile="build/examples/WBS.class"/>
   </target>
 
+	<target name="-compile-adaptersynth" if="have_adaptersynth" depends="-compile-examples">
+		<mkdir dir="build/adaptersynth" />
+		<javac srcdir="src/adaptersynth" destdir="build/adaptersynth"
+			   debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+			   includeantruntime="false">
+			<classpath>
+				<path refid="lib.path"/>
+				<pathelement location="build/classes"/>
+				<pathelement location="build/examples"/>
+				<pathelement location="build/annotations"/>
+				<pathelement location="build/adaptersynth"/>
+			</classpath>
+		</javac>
+	</target>
+
   <target name="-compile-tcas" if="have_tcas" depends="-compile-classes">
 	  <mkdir dir="build/tcas" />
 		<javac srcdir="src/tcas" destdir="build/tcas" 
@@ -235,7 +250,7 @@
   </target>
 
 
-  <target name="-compile-tcas-sr" if="have_tcas_sr" depends="-compile-classes">
+  <target name="-compile-tcas-sr" if="have_tcas_sr" depends="-compile-examples">
 	  <mkdir dir="build/tcas_sr" />
 		<javac srcdir="src/tcas_sr" destdir="build/tcas_sr" 
 		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -243,6 +258,7 @@
 		  <classpath>
 			  <path refid="lib.path"/>
 			  <pathelement location="build/classes"/>
+			  <pathelement location="build/examples"/>
 			  <pathelement location="build/annotations"/>
 			  <pathelement location="build/tcas_sr"/>
 			</classpath>
