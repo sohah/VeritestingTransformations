@@ -60,6 +60,8 @@ import java.util.Map;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemGeneral;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3;
+import za.ac.sun.cs.green.expr.IntVariable;
+import za.ac.sun.cs.green.expr.RealVariable;
 import za.ac.sun.cs.green.expr.VisitorException;
 import com.microsoft.z3.Expr;
 
@@ -70,6 +72,8 @@ public class PCParser {
   static ProblemGeneral pb;
   static public Map<SymbolicReal, Object>	symRealVar; // a map between symbolic real variables and DP variables
   static Map<SymbolicInteger,Object>	symIntegerVar; // a map between symbolic variables and DP variables
+  static Map<IntVariable,Object>	intVariableMap; // a map between symbolic variables and DP variables
+  static Map<RealVariable,Object>	realVariableMap; // a map between symbolic variables and DP variables
   //static Boolean result; // tells whether result is satisfiable or not
   static int tempVars = 0; //Used to construct "or" clauses
 
@@ -1032,6 +1036,8 @@ public class PCParser {
 
     symRealVar = new HashMap<SymbolicReal,Object>();
     symIntegerVar = new HashMap<SymbolicInteger,Object>();
+    intVariableMap = new HashMap<IntVariable,Object>();
+    realVariableMap = new HashMap<RealVariable,Object>();
     //result = null;
     tempVars = 0;
 
