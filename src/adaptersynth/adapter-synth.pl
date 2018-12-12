@@ -23,6 +23,21 @@ for my $a (@args) {
 }
 print "@printable\n";
 
+sub recompileSPF() {
+	# my @args = ("ant", "clean", "-buildfile", $spf_dir_path . "/build.xml");
+	# open(LOG, "-|", @args);
+	# while (<LOG>) {
+	# 	print "  $_";
+	# }
+	# close LOG;
+	my @args = ("ant", "-buildfile", $spf_dir_path . "/build.xml");
+	open(LOG, "-|", @args);
+	while (<LOG>) {
+		print "  $_";
+	}
+	close LOG;
+}
+
 sub createInitialAdapter() {
 	my @args = ("java", "-cp",
 		$spf_dir_path . "/build/examples:" . $spf_dir_path . "/build/adaptersynth:" . $spf_dir_path . "/build/jpf-symbc.jar",
@@ -76,6 +91,7 @@ my $start_time = time();
 my $reset_time = time();
 my $diff;
 my $diff1;
+recompileSPF();
 createInitialAdapter();
 while (!$done) {
 	printf "Running counterexample search";

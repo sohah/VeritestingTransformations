@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import static java.lang.System.exit;
 
 public class AdapterSynth {
-    long const_lb = 0, const_ub = 2;
+    long const_lb = 0, const_ub = 3;
 
     ArgSubAdapter argSub;
     ArrayList<TestInput> testInputs = null;
