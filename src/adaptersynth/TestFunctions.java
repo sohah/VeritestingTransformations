@@ -15,16 +15,18 @@ public class TestFunctions extends AdapterRegionBase {
     }
 
     public static Outputs f1(int a) {
+        int ret = (a<<1);
         Outputs o = new Outputs();
         o.intOutputs = new int[1];
-        o.intOutputs[0] = (a<<1);
+        o.intOutputs[0] = ret;
         return o;
     }
 
     public static Outputs f2(int a, int b) {
+        int ret = (a<<b);
         Outputs o = new Outputs();
         o.intOutputs = new int[1];
-        o.intOutputs[0] = (a<<b);
+        o.intOutputs[0] = ret;
         return o;
     }
 

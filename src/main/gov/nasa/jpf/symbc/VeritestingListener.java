@@ -72,7 +72,7 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static gov.nasa.jpf.symbc.veritesting.AdapterSynth.AdapterSynthUtil.runAdapterSynth;
+import static gov.nasa.jpf.symbc.veritesting.AdapterSynth.SPFAdapterSynth.runAdapterSynth;
 import static gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator.getKind;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
@@ -204,7 +204,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
         boolean noVeritestingFlag = false;
         StackFrame curr = ti.getTopFrame();
-        runAdapterSynth(ti, curr);
+//        runAdapterSynth(ti, curr);
         // Begin equivalence checking code
         while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
             if (curr.getMethodInfo().getName().equals("NoVeritest")) {

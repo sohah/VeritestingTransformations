@@ -12,11 +12,11 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Map;
 
-public class AdapterSynthUtil {
+public class SPFAdapterSynth {
     public static void runAdapterSynth(ThreadInfo ti, StackFrame curr) {
         Map<String, Object> map = null;
-        while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
-            if (curr.getMethodInfo().getName().equals("concretizeAdapter") || curr.getMethodInfo().getName().equals("printFinalAdapter")) {
+//        while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
+            if (curr.getMethodInfo().getName().equals("concretizeAdapter")) {
                 PathCondition pc;
                 if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator) {
                     pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
@@ -24,12 +24,12 @@ public class AdapterSynthUtil {
                 map = pc.solveWithValuation();
                 ArgSubAdapter argSubAdapter = ArgSubAdapter.randomAdapter();
                 for (int i = 0; i < 6; i++) {
-                    argSubAdapter.i_is_const[i] = (((Long)map.get("i_is_const" + i)) != 0);
-                    argSubAdapter.i_val[i] = Math.toIntExact((Long)map.get("i_val" + i));
-                    argSubAdapter.b_is_const[i] = (((Long)map.get("b_is_const" + i)) != 0);
-                    argSubAdapter.b_val[i] = Math.toIntExact((Long)map.get("b_val" + i));
-                    argSubAdapter.c_is_const[i] = (((Long)map.get("c_is_const" + i)) != 0);
-                    argSubAdapter.c_val[i] = Math.toIntExact((Long)map.get("c_val" + i));
+                    argSubAdapter.i_is_const[i] = (getVal(map, "i_is_const" + i) != 0);
+                    argSubAdapter.i_val[i] = Math.toIntExact(getVal(map, "i_val" + i));
+                    argSubAdapter.b_is_const[i] = ((getVal(map, "b_is_const" + i)) != 0);
+                    argSubAdapter.b_val[i] = Math.toIntExact(getVal(map,"b_val" + i));
+                    argSubAdapter.c_is_const[i] = ((getVal(map, "c_is_const" + i)) != 0);
+                    argSubAdapter.c_val[i] = Math.toIntExact(getVal(map, "c_val" + i));
                 }
                 FileOutputStream file = null;
                 ObjectOutputStream out = null;
@@ -45,7 +45,7 @@ public class AdapterSynthUtil {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                System.out.println(curr.getMethodInfo().getName() + " wrote adapter: " + argSubAdapter);
+                System.out.println("concretizeAdapter wrote adapter: " + argSubAdapter);
             } else if (curr.getMethodInfo().getName().equals("abortExecutionPath")) {
                 ti.getVM().getSystemState().setIgnored(true);
             } else if (curr.getMethodInfo().getName().equals("concretizeCounterExample")) {
@@ -80,8 +80,15 @@ public class AdapterSynthUtil {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                System.out.println("concretizeCounterExample wrote counterExample: " + input);
             }
-            curr = curr.getPrevious();
-        }
+//            curr = curr.getPrevious();
+//        }
+    }
+
+    private static Long getVal(Map<String, Object> map, String s) {
+        if (map.containsKey(s))
+            return (Long)map.get(s);
+        else return 0L;
     }
 }

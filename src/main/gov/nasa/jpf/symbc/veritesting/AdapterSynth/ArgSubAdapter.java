@@ -50,6 +50,16 @@ public class ArgSubAdapter {
         return a;
     }
 
+    public static ArgSubAdapter zeroAdapter() {
+        ArgSubAdapter a = new ArgSubAdapter(new boolean[6], new int[6], new boolean[6], new int[6], new boolean[6], new int[6]);
+        a.i_is_const[0] = a.i_is_const[1] = a.i_is_const[2] = a.i_is_const[3] = a.i_is_const[4] = a.i_is_const[5] = false;
+        a.b_is_const[0] = a.b_is_const[1] = a.b_is_const[2] = a.b_is_const[3] = a.b_is_const[4] = a.b_is_const[5] = false;
+        a.c_is_const[0] = a.c_is_const[1] = a.c_is_const[2] = a.c_is_const[3] = a.c_is_const[4] = a.c_is_const[5] = false;
+        for (int i = 0; i < 6; i++)
+            a.i_val[i] = a.b_val[i] = a.c_val[i] = 0;
+        return a;
+    }
+
     public static void writeAdapter(ObjectOutputStream out, ArgSubAdapter argSub) throws IOException {
         for (int i = 0; i < 6; i++) { out.writeBoolean(argSub.i_is_const[i]); out.writeInt(argSub.i_val[i]); }
         for (int i = 0; i < 6; i++) { out.writeBoolean(argSub.b_is_const[i]); out.writeInt(argSub.b_val[i]); }
