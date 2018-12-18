@@ -13,6 +13,8 @@ public class AdapterSynthUtil {
         for (int i = 0; i < 6; i++) {
             feasibleAdaptation = feasibleAdaptation && ((!argSub.i_is_const[i] && (argSub.i_val[i] >= 0 && argSub.i_val[i] <= 2)) ||
                     (argSub.i_is_const[i] && (argSub.i_val[i] >= adapterSynth.const_lb && argSub.i_val[i] <= adapterSynth.const_ub)));
+            feasibleAdaptation = feasibleAdaptation && ((!argSub.b_is_const[i] && (argSub.b_val[i] >= 0 && argSub.b_val[i] <= 2)) ||
+                    (argSub.b_is_const[i] && (argSub.b_val[i] >= 0 && argSub.b_val[i] <= 1)));
         }
 //        feasibleAdaptation = feasibleAdaptation && !argSub.i_is_const[0] && (argSub.i_val[0] == 0) && argSub.i_is_const[1] && (argSub.i_val[1] == 1);
         return feasibleAdaptation;

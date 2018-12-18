@@ -4,15 +4,15 @@ use strict;
 
 $| = 1;
 
-die "Usage: adapter-synth.pl <SPF directory path> <RunJPF.jar path> <seed> <default adaptor(0=zero,1=identity)"
-	unless @ARGV == 4;
-my($spf_dir_path, $runjpf_jar_path, $rand_seed, $default_adaptor_pref) = @ARGV;
+die "Usage: adapter-synth.pl <SPF directory path> <RunJPF.jar path> <seed> <default adaptor(0=zero,1=identity) <noveritesting or veritesting>"
+	unless @ARGV == 5;
+my($spf_dir_path, $runjpf_jar_path, $rand_seed, $default_adaptor_pref, $veritesting_pref) = @ARGV;
 
 srand($rand_seed);
 print "start time = " . localtime() . "\n";
 
 my @args = ("java", "-Djava.library.path=" . $spf_dir_path . "/lib/", "-Xmx1024m", "-ea", "-Dfile.encoding=UTF-8",
-	"-jar", $runjpf_jar_path, $spf_dir_path . "/src/adaptersynth/AdapterSynth.jpf");
+	"-jar", $runjpf_jar_path, $spf_dir_path . "/src/adaptersynth/AdapterSynth_$veritesting_pref.jpf");
 my @printable;
 for my $a (@args) {
 	if ($a =~ /[\s|<>]/) {
@@ -61,6 +61,7 @@ sub check_adaptor {
 		if (/^concretizeCounterExample wrote counterExample: (.*)$/) {
 			$found_ce = 1;
 			push @test_inputs, $1;
+		} elsif (/^.*search finished: .*/) {
 			last;
 		}
 	}
@@ -79,6 +80,7 @@ sub try_synth {
 		if (/^concretizeAdapter wrote adapter: (.*)$/) {
 			$last_adapter = $1;
 			$found_adapter = 1;
+		} elsif (/^.*search finished: .*/) {
 			last;
 		}
 	}
@@ -112,6 +114,7 @@ while (!$done) {
 	} else {
 		print "Mismatch found\n";
 	}
+	printf "Running adapter search";
 	if (try_synth() != 1) {
 		print "Failure!\n";
 		$done = 1;

@@ -200,17 +200,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      * @param instructionToExecute instruction to be executed.
      */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+        StackFrame curr = ti.getTopFrame();
+//        runAdapterSynth(ti, curr);
         if (runMode == VeritestingMode.VANILLASPF) return;
         if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
         boolean noVeritestingFlag = false;
-        StackFrame curr = ti.getTopFrame();
-//        runAdapterSynth(ti, curr);
         // Begin equivalence checking code
         while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
-            if (curr.getMethodInfo().getName().equals("NoVeritest")) {
+            if (curr.getMethodInfo().getName().contains("NoVeritest")) {
                 noVeritestingFlag = true;
                 break;
-            } else curr = curr.getPrevious();
+            }
+            else curr = curr.getPrevious();
         }
         if (noVeritestingFlag)
             return;

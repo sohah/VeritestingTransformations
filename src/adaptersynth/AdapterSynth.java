@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import static java.lang.System.exit;
 
 public class AdapterSynth {
-    long const_lb = 0, const_ub = 3;
+    long const_lb = 0, const_ub = 10;
 
     ArgSubAdapter argSub;
     ArrayList<TestInput> testInputs = null;
@@ -82,12 +82,22 @@ public class AdapterSynth {
 
     private TestInput adapt(ArgSubAdapter argSub, TestInput input) {
         TestInput ret = new TestInput();
+        int i_val1, i_val2, i_val3;
+        boolean b_val1, b_val2, b_val3;
         for(int i=0; i < 6; i++) {
-            ret.in[i] = argSub.i_is_const[i] ? argSub.i_val[i] : input.in[argSub.i_val[i]];
+            i_val1 = argSub.i_val[i];
+            i_val2 = input.in[i_val1];
+            i_val3 = argSub.i_is_const[i] ? i_val1 : i_val2;
+            ret.in[i] = i_val3;
+            System.out.print("");
         }
-//        for(int i=0; i < 6; i++) {
-//            ret.b[i] = argSub.b_is_const[i] ? (argSub.b_val[i] != 0): input.b[argSub.b_val[i]];
-//        }
+        for(int i=0; i < 6; i++) {
+            b_val1 = (argSub.b_val[i] != 0);
+            b_val2 = input.b[argSub.b_val[i]];
+            b_val3 = argSub.b_is_const[i] ? b_val1: b_val2;
+            ret.b[i] = b_val3;
+            System.out.print("");
+        }
 //        for(int i=0; i < 6; i++) {
 //            ret.c[i] = argSub.c_is_const[i] ? (char) argSub.c_val[i] : input.c[argSub.c_val[i]];
 //        }

@@ -77,10 +77,14 @@ public class ArgSubAdapter {
     @Override
     public String toString() {
         StringBuilder ret = new StringBuilder();
+        ret.append("(");
         for (int i = 0; i < 6; i++) ret.append(i_is_const[i]).append(",").append(i_val[i]).append(",");
+        ret.append("), (");
         for (int i = 0; i < 6; i++) ret.append(b_is_const[i]).append(",").append(b_val[i]).append(",");
+        ret.append("), (");
         for (int i = 0; i < 5; i++) ret.append(c_is_const[i]).append(",").append(c_val[i]).append(",");
-        ret.append(c_is_const[5]).append(",").append(c_val[5]).append(",");
+        ret.append(c_is_const[5]).append(",").append(c_val[5]);
+        ret.append(")");
         return ret.toString();
     }
 
