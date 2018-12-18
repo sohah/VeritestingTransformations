@@ -6,46 +6,12 @@ import java.util.stream.Collectors;
 public class ISSTAExample {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
 
-        String string = "test the example in the paper ";
-        List<Character> textList = string.chars().mapToObj((i) -> Character.valueOf((char)i)).collect(Collectors.toList());
+        ArrayList<Integer> numberList = new ArrayList<Integer>();
 
-        //(new Main()).paperExample(textList);
-
-        ArrayList<Integer> numberList = new ArrayList<Integer>(Arrays.asList(0,1,1,1,0, 1,1, 0,0, 1,1,1,1,1,1,0));
-
-        (new ISSTAExample()).paperExampleNum(numberList);
+        (new ISSTAExample()).paperExampleNum(1,1, 1,1,1,1);
 
 
-    }
-
-
-    public int paperExampleNum(List<Integer> numList) {
-        int wordCount = 0;
-        boolean inWord;
-
-        if (numList.size() > 0) { //would be nice if we have early return here.
-            if(numList.get(0) == 0)
-                inWord = false;
-            else
-                inWord = true;
-
-            for (int i = 0; i < numList.size(); i++) {
-                if (inWord) {
-                    if (numList.get(i) == 0) { //0 means there is a whitespace
-                        ++wordCount;
-                        inWord = false;
-                    }
-                } else {
-                    if (numList.get(i) != 0) { // non whitespace.
-                        inWord = true;
-                    }
-                }
-            }
-        }
-        System.out.println("Number of words is:" + wordCount);
-        return wordCount;
     }
 
 

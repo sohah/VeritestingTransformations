@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.Random;
 
 public class TestInput implements Serializable{
-    public static Random rand = new Random();
+    public static Random rand = new Random(0);
     public int[] in = new int[]{rand.nextInt(),rand.nextInt(),rand.nextInt(),rand.nextInt(),rand.nextInt(),rand.nextInt()};
     public boolean[] b = new boolean[]{rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean(),rand.nextBoolean()};
     public char[] c = new char[]{(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt(),(char) rand.nextInt()};

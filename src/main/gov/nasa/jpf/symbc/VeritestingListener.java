@@ -72,7 +72,7 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static gov.nasa.jpf.symbc.veritesting.AdapterSynth.AdapterSynthUtil.runAdapterSynth;
+import static gov.nasa.jpf.symbc.veritesting.AdapterSynth.SPFAdapterSynth.runAdapterSynth;
 import static gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator.getKind;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
@@ -200,17 +200,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      * @param instructionToExecute instruction to be executed.
      */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+        StackFrame curr = ti.getTopFrame();
+//        runAdapterSynth(ti, curr);
         if (runMode == VeritestingMode.VANILLASPF) return;
         if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
         boolean noVeritestingFlag = false;
-        StackFrame curr = ti.getTopFrame();
-        runAdapterSynth(ti, curr);
         // Begin equivalence checking code
         while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
-            if (curr.getMethodInfo().getName().equals("NoVeritest")) {
+            if (curr.getMethodInfo().getName().contains("NoVeritest")) {
                 noVeritestingFlag = true;
                 break;
-            } else curr = curr.getPrevious();
+            }
+            else curr = curr.getPrevious();
         }
         if (noVeritestingFlag)
             return;
@@ -226,8 +227,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         StatisticManager.instructionToExec = key;
 
         if (initializeTime) {
-//            discoverRegions(ti); // static analysis to discover regions
-            initializeTime = false;
+           discoverRegions(ti); // static analysis to discover regions
+           initializeTime = false;
         } else {
             try {
                 HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
@@ -236,7 +237,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 isAllowedRegion(key)) {
                     thisHighOrdCount = 0;
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
-//                    if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
+                    if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
                         if (runMode != VeritestingMode.SPFCASES) {
                             // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
                             Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
@@ -254,8 +255,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         } else {
                             runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
                         }
-//                    } else
-//                        statisticManager.updateConcreteHitStatForRegion(key);
+                    } else
+                        statisticManager.updateConcreteHitStatForRegion(key);
                 }
             } catch (IllegalArgumentException e) {
                 statisticManager.updateSPFHitForRegion(key, e.getMessage());

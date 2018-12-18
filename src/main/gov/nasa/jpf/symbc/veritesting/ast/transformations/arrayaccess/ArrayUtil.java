@@ -66,6 +66,8 @@ public class ArrayUtil {
             return new Pair(getArrayElementInner(ei, index, "char"), "char"); //elements of the array are concrete
         } else if (ei.getClassInfo().isReferenceArray()) {
             return new Pair(getArrayElementInner(ei, index, "reference"), "int"); // elements of the array are concrete
+        } else if (ei.getArrayType().equals("Z")) {
+            return new Pair(getArrayElementInner(ei, index, "boolean"), "boolean"); // elements of the array are concrete
         } else {
             throwException(new IllegalArgumentException("Unsupported element type in array"), INSTANTIATION);
             return null;
@@ -81,6 +83,7 @@ public class ArrayUtil {
                             type.equals("byte") ? new IntConstant(ei.getByteElement(index)) :
                                     type.equals("char") ? new IntConstant(ei.getCharElement(index)) :
                                             type.equals("int") ? new IntConstant(ei.getIntElement(index)) :
+                                                    type.equals("boolean") ? new IntConstant(ei.getBooleanElement(index) ? 1 : 0) :
                                                     new IntConstant(ei.getReferenceElement(index));
     }
 
@@ -130,6 +133,7 @@ public class ArrayUtil {
                 else if (type.equals("float")) eiArray.setFloatElement(i, 0);
                 else if (type.equals("double")) eiArray.setDoubleElement(i, 0);
                 else if (type.equals("byte")) eiArray.setByteElement(i, (byte) 0);
+                else if (type.equals("boolean")) eiArray.setBooleanElement(i, false);
                 else
                     throwException(new StaticRegionException("unknown array type given to ArraySSAVisitor.doArrayStore"), INSTANTIATION);
                 if (newExpr instanceof CloneableVariable)
