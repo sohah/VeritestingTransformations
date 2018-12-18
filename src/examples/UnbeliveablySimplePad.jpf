@@ -6,9 +6,9 @@ symbolic.debug=true
 
 
 ######## miscellaneous  ######
-symbolic.method=UnbeliveablySimplePad.runPad(sym)
+symbolic.method=UnbeliveablySimplePad.runPadSteps(sym#sym#sym)
 
-symbolic.dp=z3bitvector
+symbolic.dp=z3
 
 #symbolic.min_int=-1
 #symbolic.max_int=2

@@ -25,15 +25,16 @@ public class UnbeliveablySimplePad {
     public static void main(String[] args) {
         UnbeliveablySimplePad pad = new UnbeliveablySimplePad();
         int s1 = 1;
-        int s2 = 2;
-        int s3 = 3;
-        pad.runPadSteps(s1, s2, s3);
+        boolean startBtn = false;
+        boolean launchBtn = false;
+        pad.runPadSteps(s1, startBtn, launchBtn);
     }
 
-    public void runPadSteps(int s1, int s2, int s3) {
+    public void runPadSteps(int s, boolean startBtn, boolean launchBtn) {
         boolean ignition;
-        runPad(s1);
-        ignition = runPad(s2);
+        this.startBtn = startBtn;
+        this.launchBtn = launchBtn;
+        ignition = runPad(s);
         if (ignition)
             launchRocket();
     }
@@ -51,24 +52,27 @@ public class UnbeliveablySimplePad {
      * @return
      */
     public boolean runPad(int n) {
-        boolean startSignal;
-        boolean launchSignal;
-        boolean emptySignal;
 
-        startSignal = (n == 1);
-        launchSignal = (n == 2);
-        emptySignal = (!startSignal && !launchSignal);
+        // getting rid of definitions so that we can summarize the whole function
+//        boolean startSignal;
+//        boolean launchSignal;
+//        boolean emptySignal;
+
+        //startSignal = (n == 1);
+        //launchSignal = (n == 2);
+        //emptySignal = (!startSignal && !launchSignal);
+
         int currentState = getCurrentState();
 
         boolean ignitionSignal = false;
-        if (!emptySignal) { //only proceed if a non-empty signal was received.
+        if (!((!(n == 1) && !(n == 2)))) { //only proceed if a non-empty signal was received.
             if (currentState == IDLE) { // this condition is unbounded by time, so it is not part of the switch statement below.
-                if (startSignal) {
+                if ((n == 1)) {
                     startBtn = true;
                 }
             } else { // !(currentState == PadState.IDLE)  && (!emptySignal)
                 if (currentState == READY) {
-                    if (launchSignal) {
+                    if ((n == 2)) {
                         launchBtn = true;
                         ignitionSignal = true;
                     }
