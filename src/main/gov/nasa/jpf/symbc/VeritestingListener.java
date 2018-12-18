@@ -237,7 +237,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 isAllowedRegion(key)) {
                     thisHighOrdCount = 0;
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
-//                    if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
+                    if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
                         if (runMode != VeritestingMode.SPFCASES) {
                             // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
                             Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
@@ -255,8 +255,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         } else {
                             runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
                         }
-//                    } else
-//                        statisticManager.updateConcreteHitStatForRegion(key);
+                    } else
+                        statisticManager.updateConcreteHitStatForRegion(key);
                 }
             } catch (IllegalArgumentException e) {
                 statisticManager.updateSPFHitForRegion(key, e.getMessage());
