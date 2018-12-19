@@ -24,17 +24,17 @@ public class UnbeliveablySimplePad {
 
     public static void main(String[] args) {
         UnbeliveablySimplePad pad = new UnbeliveablySimplePad();
-        int s1 = 1;
+        int n = 1;
         boolean startBtn = false;
         boolean launchBtn = false;
-        pad.runPadSteps(s1, startBtn, launchBtn);
+        pad.runPadSteps(n, startBtn, launchBtn);
     }
 
-    public void runPadSteps(int s, boolean startBtn, boolean launchBtn) {
+    public void runPadSteps(int n, boolean startBtn, boolean launchBtn) {
         boolean ignition;
         this.startBtn = startBtn;
         this.launchBtn = launchBtn;
-        ignition = runPad(s);
+        ignition = runPad(n);
         if (ignition)
             launchRocket();
     }
@@ -65,7 +65,7 @@ public class UnbeliveablySimplePad {
         int currentState = getCurrentState();
 
         boolean ignitionSignal = false;
-        if (!((!(n == 1) && !(n == 2)))) { //only proceed if a non-empty signal was received.
+        if ((n == 1) || (n == 2)) { //only proceed if a non-empty signal was received.
             if (currentState == IDLE) { // this condition is unbounded by time, so it is not part of the switch statement below.
                 if ((n == 1)) {
                     startBtn = true;
@@ -84,7 +84,7 @@ public class UnbeliveablySimplePad {
 
     public int getCurrentState() {
         int padState;
-        if (!startBtn && !launchBtn) //Start State
+        if (!startBtn && !launchBtn) //IDLE State
             padState = IDLE;
         else if (startBtn && !launchBtn) //Ready State
             padState = READY;

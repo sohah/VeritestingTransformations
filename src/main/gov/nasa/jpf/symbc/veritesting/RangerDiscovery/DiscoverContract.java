@@ -31,8 +31,8 @@ public class DiscoverContract {
             startingIndex = assertionEndIndex + 1;
         }
 
-        newQuery = "  (set-logic QF_BV)\n" +
-                "  (set-info :smt-lib-version 2.0)\n" +
+        newQuery = //"  (set-logic QF_BV)\n" +
+                "  (set-logic QF_UFLIRA)\n" +
                 "  (set-option :produce-unsat-cores true)\n" +
                 generateFunDec(z3FunDecSet) +
                 newQuery
@@ -46,7 +46,7 @@ public class DiscoverContract {
     private static String generateFunDec(HashSet<String> z3FunDecSet) {
         String funDec = "";
         for (String varName : z3FunDecSet) {
-            funDec = funDec + "(declare-fun " + varName + " () (_ BitVec 32))\n";
+            funDec = funDec + "(declare-fun " + varName + " () Int)\n";
         }
         return funDec;
     }
