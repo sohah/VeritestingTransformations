@@ -6,7 +6,7 @@ symbolic.debug=true
 
 
 ######## miscellaneous  ######
-symbolic.method=UnbeliveablySimplePad.runPadSteps(sym#sym#sym)
+symbolic.method=UnbeliveablySimplePad.runPadSteps(sym#sym#sym#sym#sym)
 
 symbolic.dp=z3
 
@@ -18,7 +18,7 @@ symbolic.dp=z3
 
 #symbolic.min_int=-2147483648
 #symbolic.max_int=2147483647
-listener = .symbc.VeritestingListener
-#listener = .symbc.SymbolicListener
+#listener = .symbc.VeritestingListener
+listener = .symbc.SymbolicListener
 veritestingMode = 3
 symbolic.lazy = true
