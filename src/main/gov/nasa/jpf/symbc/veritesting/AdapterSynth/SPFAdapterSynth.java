@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class SPFAdapterSynth {
@@ -34,9 +35,9 @@ public class SPFAdapterSynth {
                 FileOutputStream file = null;
                 ObjectOutputStream out = null;
                 try {
-                    file = new FileOutputStream("args");
+                    file = new FileOutputStream("adapter");
                     out = new ObjectOutputStream(file);
-                    out.writeChar('C');
+//                    out.writeChar('C');
                     ArgSubAdapter.writeAdapter(out, argSubAdapter);
                     out.close();
                     file.close();
@@ -54,25 +55,37 @@ public class SPFAdapterSynth {
                     pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
                 } else return;
                 map = pc.solveWithValuation();
-                TestInput input = new TestInput();
+                TestInput newInput = new TestInput();
                 for (int i = 0; i < 6; i++) {
                     if (map.containsKey("i" + i))
-                        input.in[i] = Math.toIntExact(((Long) map.get("i" + i)));
-                    else input.in[i] = 0;
+                        newInput.in[i] = Math.toIntExact(((Long) map.get("i" + i)));
+                    else newInput.in[i] = 0;
                     if (map.containsKey("b" + i))
-                        input.b[i] = (((Long) map.get("b" + i)) != 0);
-                    else input.b[i] = true;
+                        newInput.b[i] = (((Long) map.get("b" + i)) != 0);
+                    else newInput.b[i] = true;
                     if (map.containsKey("c" + i))
-                        input.c[i] = (char)Math.toIntExact(((Long) map.get("c" + i)));
-                    else input.c[i] = 0;
+                        newInput.c[i] = (char)Math.toIntExact(((Long) map.get("c" + i)));
+                    else newInput.c[i] = 0;
                 }
+                ArrayList<TestInput> tests = new ArrayList<>();
+                try {
+                    GetInputsFromFile getInputsFromFile = new GetInputsFromFile("tests", true).invoke();
+                    tests = getInputsFromFile.getTestInputs();
+                    System.out.println("Read " + tests.size() + " previous tests");
+                } catch (IOException | ClassNotFoundException e) {
+                    System.out.println("Read no previous tests");
+                }
+                tests.add(newInput);
                 FileOutputStream file;
                 ObjectOutputStream out;
                 try {
-                    file = new FileOutputStream("args");
+                    file = new FileOutputStream("tests", false);
                     out = new ObjectOutputStream(file);
-                    out.writeChar('A');
-                    TestInput.writeTestInput(out, input);
+//                    out.writeChar('A');
+                    for (TestInput input: tests) {
+                        System.out.println("wrote test: " + input);
+                        TestInput.writeTestInput(out, input);
+                    }
                     out.close();
                     file.close();
                 } catch (FileNotFoundException e) {
@@ -80,7 +93,7 @@ public class SPFAdapterSynth {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                System.out.println("concretizeCounterExample wrote counterExample: " + input);
+                System.out.println("concretizeCounterExample wrote counterExample: " + newInput);
             }
 //            curr = curr.getPrevious();
 //        }

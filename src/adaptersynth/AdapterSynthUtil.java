@@ -9,15 +9,18 @@ import java.io.ObjectOutputStream;
 public class AdapterSynthUtil {
     public static boolean isFeasibleAdaptation(AdapterSynth adapterSynth) {
         ArgSubAdapter argSub = adapterSynth.argSub;
-        boolean feasibleAdaptation = true;
-        for (int i = 0; i < 6; i++) {
-            feasibleAdaptation = feasibleAdaptation && ((!argSub.i_is_const[i] && (argSub.i_val[i] >= 0 && argSub.i_val[i] <= 2)) ||
-                    (argSub.i_is_const[i] && (argSub.i_val[i] >= adapterSynth.const_lb && argSub.i_val[i] <= adapterSynth.const_ub)));
-            feasibleAdaptation = feasibleAdaptation && ((!argSub.b_is_const[i] && (argSub.b_val[i] >= 0 && argSub.b_val[i] <= 2)) ||
-                    (argSub.b_is_const[i] && (argSub.b_val[i] >= 0 && argSub.b_val[i] <= 1)));
+        boolean feasibleAdaptation;
+        for (int i = 0; i < 2; i++) {
+            feasibleAdaptation = (!argSub.i_is_const[i] && (argSub.i_val[i] >= 0 && argSub.i_val[i] < 2)) ||
+                    (argSub.i_is_const[i] && (argSub.i_val[i] >= adapterSynth.const_lb && argSub.i_val[i] <= adapterSynth.const_ub));
+            if (!feasibleAdaptation) return false;
+//            feasibleAdaptation = (!argSub.b_is_const[i] && (argSub.b_val[i] >= 0 && argSub.b_val[i] < 2)) ||
+//                    (argSub.b_is_const[i] && (argSub.b_val[i] >= 0 && argSub.b_val[i] <= 1));
+//            if (!feasibleAdaptation) return false;
+            System.out.println("after feasibility check");
         }
 //        feasibleAdaptation = feasibleAdaptation && !argSub.i_is_const[0] && (argSub.i_val[0] == 0) && argSub.i_is_const[1] && (argSub.i_val[1] == 1);
-        return feasibleAdaptation;
+        return true;
     }
 
     public static boolean isIdentityAdapter(ArgSubAdapter argSub) {
@@ -27,14 +30,14 @@ public class AdapterSynthUtil {
     public static void writeRandomTest(String arg) {
         try {
             TestInput input = null;
-            /*GetInputsFromFile getInputsFromFile = new GetInputsFromFile(arg).invoke();
+            /*gov.nasa.jpf.symbc.veritesting.AdapterSynth.GetInputsFromFile getInputsFromFile = new gov.nasa.jpf.symbc.veritesting.AdapterSynth.GetInputsFromFile(arg).invoke();
             input = getInputsFromFile.getTestInputs().get(0);
             Character c = getInputsFromFile.getC();
             System.out.println("Previous test: c = " + c + ", input = " + input);*/
             input = new TestInput();
             FileOutputStream file = new FileOutputStream(arg);
             ObjectOutputStream out = new ObjectOutputStream(file);
-            out.writeChar('A');
+//            out.writeChar('A');
             TestInput.writeTestInput(out, input);
             out.close();
             file.close();
@@ -50,7 +53,7 @@ public class AdapterSynthUtil {
         try {
             FileOutputStream file = new FileOutputStream(arg);
             ObjectOutputStream out = new ObjectOutputStream(file);
-            out.writeChar('C');
+//            out.writeChar('C');
             ArgSubAdapter.writeAdapter(out, a);
             out.close();
             file.close();

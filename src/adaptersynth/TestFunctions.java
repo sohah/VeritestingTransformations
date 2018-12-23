@@ -14,27 +14,28 @@ public class TestFunctions extends AdapterRegionBase {
         return o;
     }
 
-    public static Outputs f1(boolean x, boolean y, int a) {
-        if (x && y) {
-            a = a + 1;
-        } else {
-            a = a - 1;
-        }
+//    public static Outputs f1(boolean x, boolean y, int a) {
+    public Outputs f1(int a) {
+//        if (x && y) {
+//            a = a + 1;
+//        } else {
+//            a = a - 1;
+//        }
         Outputs o = new Outputs();
         o.intOutputs = new int[1];
-        o.intOutputs[0] = a;
+        o.intOutputs[0] = (a<<1);
         return o;
     }
 
-    public static Outputs f2(int a, boolean x, boolean y) {
-        if (x && y) {
-            a = a + 1;
-        } else {
-            a = a - 1;
-        }
+    public Outputs f2(int a, int b) {//, boolean x, boolean y) {
+//        if (x && y) {
+//            a = a + 1;
+//        } else {
+//            a = a - 1;
+//        }
         Outputs o = new Outputs();
         o.intOutputs = new int[1];
-        o.intOutputs[0] = a;
+        o.intOutputs[0] = (a << b);
         return o;
     }
 
@@ -51,11 +52,11 @@ public class TestFunctions extends AdapterRegionBase {
 
     @Override
     Outputs testFunction1(int in0, int in1, int in2, int in3, int in4, int in5, boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5, char c0, char c1, char c2, char c3, char c4, char c5) {
-        return f1(b0, b1, in5);
+        return f1(in0);
     }
 
     @Override
     Outputs testFunction2(int in0, int in1, int in2, int in3, int in4, int in5, boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5, char c0, char c1, char c2, char c3, char c4, char c5) {
-        return f2(in1, b0, b1);
+        return f2(in0, in1);
     }
 }
