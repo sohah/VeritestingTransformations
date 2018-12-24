@@ -10,6 +10,7 @@ import static java.lang.System.exit;
 public class AdapterSynth {
     final long const_lb = 0;
     final long const_ub = 2;
+    final int n_args_target = 3;
 
     ArgSubAdapter argSub;
     ArrayList<TestInput> testInputs = null;
@@ -90,8 +91,9 @@ public class AdapterSynth {
         boolean b_val1, b_val2, b_val3;
         int in0 = input.in[0];
         int in1 = input.in[1];
-        input.in = new int[]{in0, in1};
-        for(int i=0; i < 2; i++) {
+        int in2 = input.in[2];
+        input.in = new int[]{in0, in1, in2};
+        for(int i=0; i < n_args_target; i++) {
             i_val1 = argSub.i_val[i];
             i_val2 = input.in[i_val1];
 //            i_val3 = argSub.i_is_const[i] || i_val1 >= 2 ? i_val1 : i_val2;

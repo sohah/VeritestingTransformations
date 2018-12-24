@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.AdapterSynth;
 
+import choco.util.Arithm;
 import gov.nasa.jpf.jvm.JVMDirectCallStackFrame;
 import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
@@ -57,8 +58,15 @@ public class SPFAdapterSynth {
                 map = pc.solveWithValuation();
                 TestInput newInput = new TestInput();
                 for (int i = 0; i < 6; i++) {
-                    if (map.containsKey("i" + i))
-                        newInput.in[i] = Math.toIntExact(((Long) map.get("i" + i)));
+                    if (map.containsKey("i" + i)) {
+                        try {
+                            newInput.in[i] = Math.toIntExact(((Long) map.get("i" + i)));
+                        } catch(ArithmeticException e) {
+                            if (map.get("i" + i).equals(2147483648L)) {
+                                newInput.in[i] = -2147483648;
+                            } else throw new IllegalArgumentException("Cannot construct value for counterexample input: i" + i);
+                        }
+                    }
                     else newInput.in[i] = 0;
                     if (map.containsKey("b" + i))
                         newInput.b[i] = (((Long) map.get("b" + i)) != 0);
