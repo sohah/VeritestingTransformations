@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-
+# Sample usage: where $SPFDir is set to the root directory of SPF
+# TARGET_CLASSPATH_WALA=$SPFDIR/build/adaptersynth  perl $SPFDIR/src/adaptersynth/adapter-synth.pl $SPFDIR /Users/vaibhav/git_repos/jpf-core/build/RunJPF.jar 1 0 noveritesting | tee ../logs/noveritesting.2.log | grep -i "wrote"
 use strict;
 
 $| = 1;

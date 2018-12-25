@@ -95,9 +95,13 @@ public class AdapterSynth {
         input.in = new int[]{in0, in1, in2};
         for(int i=0; i < n_args_target; i++) {
             i_val1 = argSub.i_val[i];
-            i_val2 = input.in[i_val1];
-//            i_val3 = argSub.i_is_const[i] || i_val1 >= 2 ? i_val1 : i_val2;
-            i_val3 = argSub.i_is_const[i]? i_val1 : i_val2;
+//            i_val2 = input.in[i_val1];
+            // The commented-out version prevents summary instantiation because our simplification cannot discard the
+            // possibility of a out-of-bounds access by i_val1
+//            i_val3 = argSub.i_is_const[i]? i_val1 : input.in[i_val1];
+            // Hence, I used a hard-coded ITE to allow veritesting to summarize without involving the array access.
+            // This ITE still forces branching by SPF
+            i_val3 = argSub.i_is_const[i]? i_val1 : (i_val1 == 0 ? in0 : (i_val1 == 1 ? in1 : in2));
             ret.in[i] = i_val3;
             System.out.println("after adapt branch");
         }

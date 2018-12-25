@@ -205,14 +205,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (runMode == VeritestingMode.VANILLASPF) return;
         if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
         boolean noVeritestingFlag = false;
-        // Begin equivalence checking code
-        while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
-            if (curr.getMethodInfo().getName().contains("NoVeritest")) {
-                noVeritestingFlag = true;
-                break;
-            }
-            else curr = curr.getPrevious();
-        }
+        noVeritestingFlag = isNoVeritesting(curr, noVeritestingFlag);
         if (noVeritestingFlag)
             return;
         // End equivalence checking code
@@ -284,6 +277,20 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 updateSkipRegions(e.getMessage(), key);
             }
         }
+    }
+
+    private boolean isNoVeritesting(StackFrame curr, boolean noVeritestingFlag) {
+        String[] allowedFunctions = new String[]{"adapt", "f1", "f2"};
+        for (String s: allowedFunctions)
+            if (curr.getMethodInfo().getName().equals(s)) return false;
+        while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
+            if (curr.getMethodInfo().getName().contains("NoVeritest")) {
+                noVeritestingFlag = true;
+                break;
+            }
+            else curr = curr.getPrevious();
+        }
+        return noVeritestingFlag;
     }
 
     private boolean isAllowedRegion(String key) {
