@@ -41,7 +41,7 @@ public class TestFunctions extends AdapterRegionBase {
         return o;
     }
 
-    public Outputs f2(int a, int y, int x) {
+    public Outputs f2(int x, int a, int y) {
         if (x > 0 && y < 0) {
             a = a + 1;
         } else {
