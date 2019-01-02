@@ -6,8 +6,7 @@ symbolic.debug=false
 
 
 ######## paper Example ######
-#symbolic.method=VeritestingPerf.paperExample(con)
-symbolic.method=VeritestingPerf.paperExampleNum(sym#sym#sym#sym#sym#sym)
+symbolic.method=ISSTAExample.paperExampleNum(sym#sym#sym#sym#sym#sym)
 
 symbolic.dp=z3bitvector
 
