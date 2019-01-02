@@ -1,5 +1,3 @@
-import gov.nasa.jpf.symbc.Debug;
-
 public class UnbeliveablySimplePad {
     private boolean startBtn;
     private boolean launchBtn;
@@ -19,7 +17,6 @@ public class UnbeliveablySimplePad {
     final int LAUNCH = 3;
     final int IGNITION = 4;
     final int INVALIDSTATE = 5;
-
 
 
     public UnbeliveablySimplePad() {
@@ -46,21 +43,20 @@ public class UnbeliveablySimplePad {
         this.launchBtn = launchBtn;
         this.ignition = ignition;
 
-        boolean rockedLaunched = false;
+        boolean rocketLaunched = false;
 
-        if (n < 40) {
+        if (n < 4) {
             for (int i = 0; i < n; i++) {
-                if (symVar) {
-                    rockedLaunched = runPad(i); //running it here one step, but should be enclosed in a loop in real program.
+                if (symVar) { // used to make this a veritesting region
+                    rocketLaunched = runPad(i); //running it here one step, but should be enclosed in a loop in real program.
+                }
+                    assert (rocketLaunched ? getState() == IGNITION : true);
 
-                    assert (rockedLaunched ? getCurrentState()==IGNITION : true);
-
-                    if (rockedLaunched) {
-                        resetPad();
+                    if (rocketLaunched) {
+                        // resetPad(); this is another variant of resetting the pad, for now let's reset the pad in the next step.
                         System.out.println("Rocket launched successfully.");
                     } else
                         System.out.println("Rocket still not launched.");
-                }
             }
         }
     }
@@ -79,11 +75,13 @@ public class UnbeliveablySimplePad {
      * @return
      */
     public boolean runPad(int n) {
-        int currentState = getCurrentState();
+        int perivousState = getState();
 
-        if (currentState == LAUNCH) {
-            launchBtn = false; //adding this to allow direct mapping to the jkind model that defines the iginition to be on in the following step where launchBtn was on.
+        if (perivousState == LAUNCH) { //state needs to change regardless of the signal.
+            launchBtn = false; //adding this to allow ignition to be on a separate step than launch.
             ignition = true;
+        } else if (perivousState == IGNITION || perivousState == INVALIDSTATE) { //state needs to change regardless of the signal.
+            resetPad();
         } else {
             boolean startSignal;
             boolean launchSignal;
@@ -96,17 +94,13 @@ public class UnbeliveablySimplePad {
 
             //emptySignal = (!startSignal && !launchSignal);
 
-            if(currentState == INVALIDSTATE){
-                resetPad();
-            }
-
-            if (startOrLaunch) { //only proceed if a non-empty signal was received, otherwise remain in the same state.
-                if (currentState == IDLE) { // this condition is unbounded by time, so it is not part of the switch statement below.
+            if (startOrLaunch) { //only proceed if a non-empty signal was received, otherwise remain in the same state, ignoring incoming signal
+                if (perivousState == IDLE) {
                     if (startSignal) {
                         startBtn = true;
                     }
-                } else { // !(currentState == PadState.IDLE)  && (!emptySignal)
-                    if (currentState == READY) {
+                } else {
+                    if (perivousState == READY) {
                         if (launchSignal) {
                             launchBtn = true;
                         }
@@ -117,7 +111,7 @@ public class UnbeliveablySimplePad {
         return ignition;
     }
 
-    public int getCurrentState() {
+    public int getState() {
         int padState;
         boolean mystartBtn = this.startBtn;
         boolean myLaunchBtn = this.launchBtn;
@@ -129,7 +123,7 @@ public class UnbeliveablySimplePad {
             padState = READY;
         else if (!mystartBtn && myLaunchBtn && !myIgnition) // Launch State
             padState = LAUNCH;
-        else if(!mystartBtn && !myLaunchBtn && myIgnition)
+        else if (!mystartBtn && !myLaunchBtn && myIgnition)
             padState = IGNITION;
         else
             padState = INVALIDSTATE; // Invalid State

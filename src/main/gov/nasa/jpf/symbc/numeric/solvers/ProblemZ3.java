@@ -732,7 +732,7 @@ public class ProblemZ3 extends ProblemGeneral {
                 }
 
                 if (success) {
-                    String fileName = folderName + "/" + StatisticManager.instructionToExec + "$" + StatisticManager.solverQueriesUnique + ".txt";
+                    String fileName = folderName + "/" + StatisticManager.instructionToExec + "_" + StatisticManager.solverQueriesUnique + ".txt";
                     ++StatisticManager.solverQueriesUnique;
                     try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                             new FileOutputStream(fileName), "utf-8"))) {
