@@ -102,6 +102,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static StatisticManager statisticManager = new StatisticManager();
     private static int veritestRegionExpectedCount = -1;
     private static int instantiationLimit = -1;
+    public static boolean showLocalNames = false;
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES}
 
@@ -181,6 +182,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
             if (conf.hasValue("instantiationLimit"))
                 instantiationLimit = conf.getInt("instantiationLimit");
+
+            if (conf.hasValue("showLocalNames"))
+                showLocalNames = conf.getBoolean("showLocalNames");
 
             StatisticManager.veritestingRunning = true;
             jpf.addPublisherExtension(ConsolePublisher.class, this);

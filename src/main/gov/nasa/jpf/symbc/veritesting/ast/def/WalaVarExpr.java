@@ -1,5 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
+import com.ibm.wala.ssa.IR;
+import com.ibm.wala.ssa.SSAInstruction;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import za.ac.sun.cs.green.expr.Variable;
 import za.ac.sun.cs.green.expr.Visitor;
@@ -22,6 +25,10 @@ public final class WalaVarExpr extends CloneableVariable {
         this.number = var;
     }
 
+    public WalaVarExpr(int var, String name) {
+        super(name + var);
+        this.number = var;
+    }
 
     private WalaVarExpr(int var, int uniqueNum) {
         super("w" + var);
@@ -113,5 +120,17 @@ public final class WalaVarExpr extends CloneableVariable {
         varId = varId.concat(Integer.toString(uniqueNum));
         return new WalaVarExpr(expr.number, varId);
     }*/
+
+    public static WalaVarExpr createWalaVar(IR ir, SSAInstruction ins, int ssaVar){
+        if (VeritestingListener.showLocalNames) { // show names of wala var if possible instead of using w
+            String[] varNames = ir.getLocalNames(ins.iindex, ssaVar);
+            if (varNames != null){
+                assert(varNames.length == 1);
+                return new WalaVarExpr(ssaVar, varNames[0]);
+            }
+            return new WalaVarExpr(ssaVar);
+        } else
+            return new WalaVarExpr(ssaVar);
+    }
 
 }
