@@ -6,6 +6,7 @@ import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.strings.Atom;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -24,6 +25,7 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.IntConstant;
+import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.*;
 
@@ -186,7 +188,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     || (invokeCode == IInvokeInstruction.Dispatch.INTERFACE)
                     || (invokeCode == IInvokeInstruction.Dispatch.SPECIAL))) {
                 Pair<String, StaticRegion> keyRegionPair = findMethodRegion(ti, c);
-                if(keyRegionPair == null) //case where we couldn't grap the method region, usually because a concrete reference does not exists.
+                if (keyRegionPair == null) //case where we couldn't grap the method region, usually because a concrete reference does not exists.
                     return c;
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
                 if (hgOrdStaticRegion != null) {
@@ -309,10 +311,15 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         String currClassName = null;
         if (!instruction.isStatic()) {
             if (c.params[0] instanceof IntConstant) //if the first param is a constant, then it is already a reference and it isn't in the varTypeTable, instead we need to ask SPF for it.
-                currClassName = ti.getHeap().get(((IntConstant)c.params[0]).getValue()).getClassInfo().getName();
-            else
-                return null;
-                //currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
+                currClassName = ti.getHeap().get(((IntConstant) c.params[0]).getValue()).getClassInfo().getName();
+            else if (VeritestingListener.simplify &&
+                    dynRegion.constantsTable != null &&
+                    dynRegion.constantsTable.lookup((Variable) c.params[0]) instanceof IntConstant) { //check if we can find it in the constant table.
+
+                IntConstant objRef = (IntConstant) dynRegion.constantsTable.lookup((Variable) c.params[0]);
+                currClassName = ti.getHeap().get((objRef).getValue()).getClassInfo().getName();
+            } else //return null; //TODO: we need to return null at this point and not depend on the type table. an object has to be completely dereferenced before we inline its method.
+            currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
         } else {
             Atom packageName = methodReference.getDeclaringClass().getName().getPackage();
             currClassName = (packageName != null ? packageName.toString() + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();

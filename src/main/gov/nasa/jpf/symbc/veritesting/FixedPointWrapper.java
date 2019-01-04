@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting;
 
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.SimplifyStmtVisitor;
@@ -144,10 +145,11 @@ public class FixedPointWrapper {
         collectTransformationState(arraySSAVisitor);
 
         /* Simplification iteration */
-        SimplifyStmtVisitor simplifyStmtVisitor = SimplifyStmtVisitor.create(intermediateRegion);
-        intermediateRegion = simplifyStmtVisitor.execute();
-        collectTransformationState(simplifyStmtVisitor);
-
+        if (VeritestingListener.simplify) {
+            SimplifyStmtVisitor simplifyStmtVisitor = SimplifyStmtVisitor.create(intermediateRegion);
+            intermediateRegion = simplifyStmtVisitor.execute();
+            collectTransformationState(simplifyStmtVisitor);
+        }
         regionAfter = intermediateRegion;
         return regionAfter;
     }
