@@ -17,10 +17,9 @@ public class ByteBuf {
     }
 
     public void appendInt(int x) {
-//    	byte x_b = (byte)x;
-//    	Byte xx = new Byte(x_b);
-//    	buf.add((byte)x);
-    	buf.add(x);
+    	byte x_b = (byte)x;
+    	Byte xx = new Byte(x_b);
+    	buf.add(xx);
     }
 
     public void appendByte(byte[] bytes) {
