@@ -362,27 +362,29 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         StackFrame sf = ti.getTopFrame();
 
         DynamicTable valueSymbolTable = new DynamicTable("var-value table", "var", "value");
-        List<WalaVarExpr> regionVarSet = dynRegion.varTypeTable.getKeys();
+        List<Variable> regionVarSet = dynRegion.varTypeTable.getKeys();
 
-        for (WalaVarExpr var : regionVarSet) {
-            Integer slot = (Integer) dynRegion.inputTable.lookup(var);
-            if ((slot != null) && (!dynRegion.isMethodRegion)) {
-                String varType = sf.getLocalVariableType(slot);
-                gov.nasa.jpf.symbc.numeric.Expression varValueExp;
-                varValueExp = (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
-                if (varValueExp == null) {
-                    int varValue = sf.getLocalVariable(slot);
-                    varValueExp = createSPFVariableForType(sf, varValue, varType);
+        for (Object var : regionVarSet) {
+            if (var instanceof Variable) {
+                Integer slot = (Integer) dynRegion.inputTable.lookup(var);
+                if ((slot != null) && (!dynRegion.isMethodRegion)) {
+                    String varType = sf.getLocalVariableType(slot);
+                    gov.nasa.jpf.symbc.numeric.Expression varValueExp;
+                    varValueExp = (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
+                    if (varValueExp == null) {
+                        int varValue = sf.getLocalVariable(slot);
+                        varValueExp = createSPFVariableForType(sf, varValue, varType);
 
-                }
-                Expression greenValue = SPFToGreenExpr(varValueExp);
-                valueSymbolTable.add(var, greenValue);
-
-            } else { //not a stack slot var, try to check if it is a constant from wala
-                SymbolTable symbolTable = dynRegion.ir.getSymbolTable();
-                if ((var.number > -1) && (symbolTable.isConstant(var.number))) {
-                    Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), var.number);
+                    }
+                    Expression greenValue = SPFToGreenExpr(varValueExp);
                     valueSymbolTable.add(var, greenValue);
+
+                } else { //not a stack slot var, try to check if it is a constant from wala
+                    SymbolTable symbolTable = dynRegion.ir.getSymbolTable();
+                    if ((((WalaVarExpr)var).number > -1) && (symbolTable.isConstant(((WalaVarExpr)var).number))) {
+                        Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr)var).number);
+                        valueSymbolTable.add(var, greenValue);
+                    }
                 }
             }
         }

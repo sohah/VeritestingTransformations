@@ -169,7 +169,7 @@ public class FixedPointWrapper {
         System.out.println("========================================= RUNNING HIGH-ORDER ONE EXTRA TIME AFTER FIXED POINT ITERATION# " + FixedPointWrapper.iterationNumber + "=========================================");
         FixedPointWrapper.resetChange();
 
-        SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, 2, true);
+        SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, 0, true);
         intermediateRegion = substitutionVisitor.execute();
         collectTransformationState(substitutionVisitor);
 
