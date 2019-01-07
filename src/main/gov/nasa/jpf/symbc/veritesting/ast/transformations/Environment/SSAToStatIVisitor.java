@@ -10,6 +10,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.PhiCondition;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.PhiEdge;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil;
+import org.apache.bcel.classfile.Utility;
 import za.ac.sun.cs.green.expr.*;
 
 import java.util.*;
@@ -292,15 +293,44 @@ public class SSAToStatIVisitor implements SSAInstruction.IVisitor {
                 );
     }
 
-    /*
-        MWW: casts in SPF involve object creation, so are beyond what we can support currently in
-        Static regions.
-     */
-
+    /**
+    * Casts in SPF involving object creation are beyond what we can support currently in Static regions,
+    * else emulate the type casting between primitive types
+    */
     @Override
     public void visitConversion(SSAConversionInstruction ssa) {
-        canVeritest = false;
-        // veriStatement = new gov.nasa.jpf.symbc.veritesting.ast.def.ConversionInstruction(ssa);
+        if (!ssa.getFromType().isPrimitiveType() || !ssa.getToType().isPrimitiveType()) canVeritest = false;
+        else {
+            String fromType = Utility.signatureToString(ssa.getFromType().getName().getClassName().toString());
+            String toType = Utility.signatureToString(ssa.getToType().getName().getClassName().toString());
+            if (fromType.equals("int")) {
+                if (toType.equals("long") ||
+                        toType.equals("double") || toType.equals("float")) {
+                    veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()), new WalaVarExpr(ssa.getUse(0)));
+                } else if (toType.equals("byte") || toType.equals("char")) {
+                    veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()),
+                            new Operation(Operation.Operator.BIT_AND, new WalaVarExpr(ssa.getUse(0)), new IntConstant(255)));
+                } else if (toType.equals("short")) {
+                    veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()),
+                            new Operation(Operation.Operator.BIT_AND, new WalaVarExpr(ssa.getUse(0)), new IntConstant(65535)));
+                } else canVeritest = false;
+            } else if (fromType.equals("double")) {
+                if (toType.equals("long")) {
+                    veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()), new WalaVarExpr(ssa.getUse(0)));
+                } else if (toType.equals("float") || toType.equals("int")) {
+                    veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()),
+                            new Operation(Operation.Operator.BIT_AND, new WalaVarExpr(ssa.getUse(0)), new IntConstant(Integer.MAX_VALUE)));
+                } else canVeritest = false;
+            } else if (fromType.equals("long")) {
+                if (toType.equals("double") || toType.equals("float") || toType.equals("int"))
+                    veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()), new WalaVarExpr(ssa.getUse(0)));
+                else canVeritest = false;
+            } else if (fromType.equals("float")) {
+                if (toType.equals("double") || toType.equals("int") || toType.equals("long"))
+                    veriStatement = new AssignmentStmt(new WalaVarExpr(ssa.getDef()), new WalaVarExpr(ssa.getUse(0)));
+                else canVeritest = false;
+            } else canVeritest = false;
+        }
     }
 
     /**

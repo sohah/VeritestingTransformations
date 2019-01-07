@@ -1,5 +1,5 @@
-import gov.nasa.jpf.symbc.Debug;
 import gov.nasa.jpf.symbc.veritesting.AdapterSynth.ArgSubAdapter;
+import gov.nasa.jpf.symbc.veritesting.AdapterSynth.GetInputsFromFile;
 import gov.nasa.jpf.symbc.veritesting.AdapterSynth.TestInput;
 
 import java.io.*;
@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import static java.lang.System.exit;
 
 public class AdapterSynth {
-    long const_lb = 0, const_ub = 10;
+    final long const_lb = 0;
+    final long const_ub = 2;
+    final int n_args_target = 3;
 
     ArgSubAdapter argSub;
     ArrayList<TestInput> testInputs = null;
@@ -40,18 +42,21 @@ public class AdapterSynth {
     }
 
     public void runTests_NoVeritest(AdapterRegionBase t) {
-        if (!isAdapterSearch) System.out.println("Starting new counterexample search for adapter: " + argSub);
+        System.out.println("Number of test inputs: " + testInputs.size());
+//        if (!isAdapterSearch) System.out.println("Starting new counterexample search for adapter: " + argSub);
         boolean isAllMatch = true;
         for (TestInput testInput: testInputs) {
-            if (isAdapterSearch) System.out.println("Starting new adapter search for test input: " + testInput);
+//            if (isAdapterSearch) System.out.println("Starting new adapter search for test input: " + testInput);
             boolean isThisMatch = testHarness_NoVeritest(t, testInput);
             if (isThisMatch) {
-                if (!isAdapterSearch) abortExecutionPath();
+                if (!isAdapterSearch) exit(0);
             } else {
                 // if isAdapterSearch, ask SPF to abort this execution path
                 // else save the model and stop executing this counterexample search step
                 if (isAdapterSearch) {
-//                    exit(-1);
+                    System.out.println("exiting because of mismatch in adapter search");
+//                    abortExecutionPath();
+                    exit(0);
                 } else {
                     concretizeCounterExample();
                     throw new IllegalArgumentException("Found a counterexample");
@@ -84,20 +89,29 @@ public class AdapterSynth {
         TestInput ret = new TestInput();
         int i_val1, i_val2, i_val3;
         boolean b_val1, b_val2, b_val3;
-        for(int i=0; i < 6; i++) {
+        int in0 = input.in[0];
+        int in1 = input.in[1];
+        int in2 = input.in[2];
+        input.in = new int[]{in0, in1, in2};
+        for(int i=0; i < n_args_target; i++) {
             i_val1 = argSub.i_val[i];
-            i_val2 = input.in[i_val1];
-            i_val3 = argSub.i_is_const[i] ? i_val1 : i_val2;
+//            i_val2 = input.in[i_val1];
+            // The commented-out version prevents summary instantiation because our simplification cannot discard the
+            // possibility of a out-of-bounds access by i_val1
+//            i_val3 = argSub.i_is_const[i]? i_val1 : input.in[i_val1];
+            // Hence, I used a hard-coded ITE to allow veritesting to summarize without involving the array access.
+            // This ITE still forces branching by SPF
+            i_val3 = argSub.i_is_const[i]? i_val1 : (i_val1 == 0 ? in0 : (i_val1 == 1 ? in1 : in2));
             ret.in[i] = i_val3;
-            System.out.print("");
+            System.out.println("after adapt branch");
         }
-        for(int i=0; i < 6; i++) {
+        /*for(int i=0; i < 6; i++) {
             b_val1 = (argSub.b_val[i] != 0);
             b_val2 = input.b[argSub.b_val[i]];
             b_val3 = argSub.b_is_const[i] ? b_val1: b_val2;
             ret.b[i] = b_val3;
             System.out.print("");
-        }
+        }*/
 //        for(int i=0; i < 6; i++) {
 //            ret.c[i] = argSub.c_is_const[i] ? (char) argSub.c_val[i] : input.c[argSub.c_val[i]];
 //        }
@@ -105,9 +119,16 @@ public class AdapterSynth {
     }
 
     public static void main(String[] args) {
+        System.out.println("System.getenv(STEP) = " + System.getenv("STEP"));
         AdapterSynth adapterSynth = new AdapterSynth();
         if (args.length == 0) {
-            args = new String[]{"args"};
+            if (!System.getenv("STEP").equals("A")) {
+                args = new String[]{"adapter"};
+                adapterSynth.isAdapterSearch = false;
+            } else {
+                args = new String[]{"tests"};
+                adapterSynth.isAdapterSearch = true;
+            }
         }
         if (args[0].equals("writeRandomTest")) {
             AdapterSynthUtil.writeRandomTest(args[1]);
@@ -125,23 +146,24 @@ public class AdapterSynth {
 
     private static void runOneStep_NoVeritest(String arg, AdapterSynth adapterSynth) {
         try {
-            GetInputsFromFile getInputsFromFile = new GetInputsFromFile(arg).invoke();
-            adapterSynth.isAdapterSearch = getInputsFromFile.getC().equals('A');
+            GetInputsFromFile getInputsFromFile = new GetInputsFromFile(arg, adapterSynth.isAdapterSearch).invoke();
+//            adapterSynth.isAdapterSearch = getInputsFromFile.getC().equals('A');
+            adapterSynth.isAdapterSearch = System.getenv("STEP").equals("A");
             if (!adapterSynth.isAdapterSearch) {
+                System.out.println("Starting new counterexample search for adapter: " + adapterSynth.argSub);
                 adapterSynth.argSub = getInputsFromFile.getAdapter();
                 adapterSynth.testInputs = new ArrayList<>();
-                System.out.println("Starting new counterexample search for adapter: " + adapterSynth.argSub);
                 adapterSynth.testInputs.add(AdapterSynthUtil.symbolicTestInput(/*0,0,0,0,0,0,
                         false,false,false,false,false,false,
                         '0','0','0','0','0','0'*/));
             } else {
+                System.out.println("Starting new adapter search for test inputs ");
                 adapterSynth.argSub = AdapterSynthUtil.symbolicArgSubAdapter(adapterSynth.argSub/*,
                         false, 0, false, 0,false, 0,false, 0,false, 0,false, 0,
                         false, 0, false, 0,false, 0,false, 0,false, 0,false, 0,
                         false, 0, false, 0,false, 0,false, 0,false, 0,false, 0*/);
 //                if (!isIdentityAdapter(adapterSynth.argSub)) exit(0); // hack to check if identity adapter works
                 adapterSynth.testInputs = getInputsFromFile.getTestInputs();
-                System.out.println("Starting new adapter search for test inputs ");
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -158,6 +180,10 @@ public class AdapterSynth {
         if (feasibleAdaptation) {
             System.out.println("feasible path");
             adapterSynth.runTests_NoVeritest(new TestFunctions());
+        } else {
+            System.out.println("infeasible path");
+//            adapterSynth.abortExecutionPath();
+            exit(0);
         }
     }
 }

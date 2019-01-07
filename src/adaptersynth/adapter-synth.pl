@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-
+# Sample usage: where $SPFDir is set to the root directory of SPF
+# TARGET_CLASSPATH_WALA=$SPFDIR/build/adaptersynth  perl $SPFDIR/src/adaptersynth/adapter-synth.pl $SPFDIR /Users/vaibhav/git_repos/jpf-core/build/RunJPF.jar 1 0 noveritesting | tee ../logs/noveritesting.2.log | grep -i "wrote"
 use strict;
 
 $| = 1;
@@ -39,9 +40,10 @@ sub recompileSPF() {
 }
 
 sub createInitialAdapter() {
+	`rm adapter tests`;
 	my @args = ("java", "-cp",
 		$spf_dir_path . "/build/examples:" . $spf_dir_path . "/build/adaptersynth:" . $spf_dir_path . "/build/jpf-symbc.jar",
-		"-Dfile.encoding=UTF-8", "AdapterSynth", ($default_adaptor_pref == 0 ? "writeZeroAdapter" : "writeIdentityAdapter"), "args");
+		"-Dfile.encoding=UTF-8", "AdapterSynth", ($default_adaptor_pref == 0 ? "writeZeroAdapter" : "writeIdentityAdapter"), "adapter");
 	open(LOG, "-|", @args);
 	while (<LOG>) {
 		print "  $_";
@@ -55,6 +57,7 @@ my @test_inputs = ();
 # inputs to either check it, or produce a counterexample.
 sub check_adaptor {
 	my $found_ce = 0;
+	$ENV{STEP} = 'C';
 	open(LOG, "-|", @args);
 	while (<LOG>) {
 		print "  $_";
@@ -74,6 +77,7 @@ my $last_adapter;
 # synthesize an adaptor that works for those tests.
 sub try_synth {
 	my $found_adapter = 0;
+	$ENV{STEP} = 'A';
 	open(LOG, "-|", @args);
 	while (<LOG>) {
 		print "  $_";
