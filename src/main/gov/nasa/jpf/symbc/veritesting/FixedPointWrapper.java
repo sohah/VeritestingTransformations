@@ -109,6 +109,11 @@ public class FixedPointWrapper {
         firstException = null;
     }
 
+    public static void resetChange() {
+        changed = false;
+        changedTransformation = null;
+    }
+
     public static void resetWrapper() {
         changed = false;
         changedTransformation = null;
@@ -127,7 +132,7 @@ public class FixedPointWrapper {
         if (FixedPointWrapper.iterationNumber > 1)
             FixedPointWrapper.resetIteration();
 
-        SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, iterationNumber);
+        SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, iterationNumber, false);
         intermediateRegion = substitutionVisitor.execute();
         collectTransformationState(substitutionVisitor);
 
@@ -155,4 +160,20 @@ public class FixedPointWrapper {
     }
 
 
+    public static DynamicRegion executeFixedPointHighOrder(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException, CloneNotSupportedException {
+        FixedPointWrapper.ti = ti;
+        FixedPointWrapper.topStackFrame = ti.getTopFrame();
+        FixedPointWrapper.regionBefore = dynRegion;
+        DynamicRegion intermediateRegion;
+
+        System.out.println("========================================= RUNNING HIGH-ORDER ONE EXTRA TIME AFTER FIXED POINT ITERATION# " + FixedPointWrapper.iterationNumber + "=========================================");
+        FixedPointWrapper.resetChange();
+
+        SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, 2, true);
+        intermediateRegion = substitutionVisitor.execute();
+        collectTransformationState(substitutionVisitor);
+
+        regionAfter = intermediateRegion;
+        return regionAfter;
+    }
 }

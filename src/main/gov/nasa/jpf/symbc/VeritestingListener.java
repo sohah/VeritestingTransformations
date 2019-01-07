@@ -368,17 +368,25 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         boolean somethingChanged = true;
         FixedPointWrapper.resetWrapper();
-        while (somethingChanged) {
+        do {
+            while (somethingChanged) {
 
             /*-------------- SUBSTITUTION & HIGH ORDER TRANSFORMATION ---------------*/
             /*--------------  FIELD TRANSFORMATION ---------------*/
             /*-------------- ARRAY TRANSFORMATION TRANSFORMATION ---------------*/
-            dynRegion = FixedPointWrapper.executeFixedPointTransformations(ti, dynRegion);
+                dynRegion = FixedPointWrapper.executeFixedPointTransformations(ti, dynRegion);
+                somethingChanged = FixedPointWrapper.isChangedFlag();
+
+                assert (FixedPointWrapper.isChangedFlag() == !FixedPointWrapper.isEqualRegion());
+            }
+            /*-------------- HIGH ORDER TRANSFORMATION ---------------*/
+            dynRegion = FixedPointWrapper.executeFixedPointHighOrder(ti, dynRegion);
             somethingChanged = FixedPointWrapper.isChangedFlag();
             transformationException = FixedPointWrapper.getFirstException();
-
             assert (FixedPointWrapper.isChangedFlag() == !FixedPointWrapper.isEqualRegion());
         }
+        while(somethingChanged);
+
 
         if (transformationException != null) throw transformationException;
 

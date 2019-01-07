@@ -47,6 +47,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
     public final ThreadInfo ti;
     private StaticRegionException sre = null;
     private CloneNotSupportedException cne = null;
+    private boolean useVarTable = false;
 
     /**
      * This is used to identify if a path had spfCase instruction that requires prouning the path. The flag is used
@@ -64,11 +65,12 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
     }
 
     private SubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
-                                DynamicTable valueSymbolTable) {
+                                DynamicTable valueSymbolTable, boolean useVarTable) {
         super(new ExprSubstitutionVisitor(ti, dynRegion, valueSymbolTable));
         this.ti = ti;
         this.dynRegion = dynRegion;
         eva = super.eva;
+        this.useVarTable = useVarTable;
 
     }
 
@@ -266,7 +268,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
         assert (methodRegion.isMethodRegion);
         hgOrdValueSymbolTable.mergeTable(fillValueSymbolTable(ti, methodRegion));
-        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, methodRegion, hgOrdValueSymbolTable);
+        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, methodRegion, hgOrdValueSymbolTable, this.useVarTable);
         Pair highOrderPair = new Pair(methodRegion.dynStmt.accept(visitor), methodRegion.varTypeTable);
         if (!this.somethingChanged)
             this.somethingChanged = visitor.somethingChanged || (((ExprSubstitutionVisitor) visitor.eva.theVisitor).isSomethingChanged());
@@ -318,8 +320,12 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
                 IntConstant objRef = (IntConstant) dynRegion.constantsTable.lookup((Variable) c.params[0]);
                 currClassName = ti.getHeap().get((objRef).getValue()).getClassInfo().getName();
-            } else //return null; //TODO: we need to return null at this point and not depend on the type table. an object has to be completely dereferenced before we inline its method.
-            currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
+            } else {
+                if (useVarTable)
+                    currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
+                else
+                    return null;
+            }
         } else {
             Atom packageName = methodReference.getDeclaringClass().getName().getPackage();
             currClassName = (packageName != null ? packageName.toString() + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
@@ -417,7 +423,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
     }
 
 
-    public static SubstitutionVisitor create(ThreadInfo ti, DynamicRegion dynRegion, int iterationNumber) {
+    public static SubstitutionVisitor create(ThreadInfo ti, DynamicRegion dynRegion, int iterationNumber, boolean useVarTable) {
 
         DynamicTable valueSymbolTable = null;
 
@@ -429,14 +435,14 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             try {
                 valueSymbolTable = SubstitutionVisitor.fillValueSymbolTable(ti, dynRegion);
             } catch (StaticRegionException e) {
-                visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
-                ;
+                visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable, useVarTable);
+
                 visitor.firstException = e;
                 return visitor;
             }
 
-        visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
-        ;
+        visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable, useVarTable);
+
         return visitor;
 
     }
