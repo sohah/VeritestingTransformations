@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 public class UnbeliveablySimplePad {
     private boolean startBtn;
     private boolean launchBtn;
@@ -26,16 +28,17 @@ public class UnbeliveablySimplePad {
 
     public static void main(String[] args) {
         UnbeliveablySimplePad pad = new UnbeliveablySimplePad();
-        int n = 1;
+        int count = 1;
         boolean startBtn = false;
         boolean launchBtn = false;
         boolean ignition = false;
+        int signal = 1;
 
-        pad.runPadSteps(n, startBtn, launchBtn, ignition);
+        pad.runPadSteps(signal, startBtn, launchBtn, ignition, true);
 
     }
 
-    public void runPadSteps(int n, boolean startBtn, boolean launchBtn, boolean ignition) {
+    public void runPadSteps(int signal, boolean startBtn, boolean launchBtn, boolean ignition, boolean symVar) {
 
         //make pad state symbolic.
         this.startBtn = startBtn;
@@ -43,22 +46,23 @@ public class UnbeliveablySimplePad {
         this.ignition = ignition;
 
         boolean rocketLaunched = false;
+        //Scanner reader = new Scanner(System.in);
 
-        if (n < 6) {
-     //       for (int i = 0; i < n; i++) {
-                //if (symVar) { // used to make this a veritesting region
-                    rocketLaunched = runPad(n); //running it here one step, but should be enclosed in a loop in real program.
-                    //assert (rocketLaunched ? getState() == IGNITION : true);
+        //while (true) {
+            //System.out.println("Enter a signal number (0-emptySignal) (1-startSignal) (2-armSignal) (3-launchSignal): ");
+            //int n = reader.nextInt();
 
-                //}
-
-             /*       if (rocketLaunched) {
-                        // resetPad(); this is another variant of resetting the pad, for now let's reset the pad in the next step.
-                        System.out.println("Rocket launched successfully.");
-                    } else
-                        System.out.println("Rocket still not launched.");*/
-       //     }
-        }
+            if (symVar) { // used to make this a veritesting region
+                rocketLaunched = runPad(signal); //running it here one step, but should be enclosed in a loop in real program.
+                //assert (rocketLaunched ? getState() == IGNITION : true);
+            }
+            if (rocketLaunched) {
+                // resetPad(); this is another variant of resetting the pad, for now let's reset the pad in the next step.
+                System.out.println("Rocket launched successfully.");
+            } else
+                System.out.println("Rocket still not launched.");
+            //     }
+        //}
     }
 
     private void resetPad() {
@@ -84,14 +88,11 @@ public class UnbeliveablySimplePad {
         } else {
             boolean startSignal;
             boolean launchSignal;
-            boolean emptySignal;
             boolean startOrLaunch;
 
-            startSignal = (n == 1);
-            launchSignal = (n == 2);
+            startSignal = (n == 0);
+            launchSignal = (n == 1);
             startOrLaunch = startSignal || launchSignal; //we have a problem in summarizing complex conditions
-
-            //emptySignal = (!startSignal && !launchSignal);
 
             if (startOrLaunch) { //only proceed if a non-empty signal was received, otherwise remain in the same state, ignoring incoming signal
                 if (perivousState == IDLE) {

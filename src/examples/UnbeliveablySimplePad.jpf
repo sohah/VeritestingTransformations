@@ -2,11 +2,11 @@ target=UnbeliveablySimplePad
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil
-#symbolic.debug=true
+symbolic.debug=true
 
 
 ######## miscellaneous  ######
-symbolic.method=UnbeliveablySimplePad.runPadSteps(sym#sym#sym#sym)
+symbolic.method=UnbeliveablySimplePad.runPadSteps(sym#sym#sym#sym#sym)
 
 symbolic.dp=z3
 
