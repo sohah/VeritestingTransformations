@@ -87,6 +87,11 @@ public class ArraySSAVisitor extends FixedPointAstMapVisitor {
             firstException = e;
             return c;
         }
+        catch (StaticRegionException e) {
+            somethingChanged = false;
+            firstException = e;
+            return c;
+        }
     }
 
     private Stmt getIfThenElseStmt(ArrayRef arrayRef, Stmt assignStmt) {

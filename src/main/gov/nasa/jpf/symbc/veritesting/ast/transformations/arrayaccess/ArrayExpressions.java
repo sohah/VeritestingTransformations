@@ -44,7 +44,7 @@ public class ArrayExpressions {
         ArrayExpressions map = new ArrayExpressions(this.ti);
         this.table.forEach((key, value) -> {
             Expression[] newValue = new Expression[value.length];
-            for (int i=0; i < value.length; i++)
+            for (int i = 0; i < value.length; i++)
                 newValue[i] = value[i];
             map.add(key, new Pair<>(newValue, arrayTypesTable.get(key)));
         });
@@ -71,7 +71,7 @@ public class ArrayExpressions {
             int len = getArrayLength(ti, arrayRef.ref);
             Expression oldValues[] = table.get(arrayRef.ref);
             Expression newValues[] = new Expression[len];
-            for (int i=0; i<len; i++)
+            for (int i = 0; i < len; i++)
                 newValues[i] = new GammaVarExpr(new Operation(EQ, arrayRef.index, new IntConstant(i)), value, oldValues[i]);
             table.put(arrayRef.ref, newValues);
         }
@@ -91,7 +91,7 @@ public class ArrayExpressions {
         return null;
     }
 
-    public Expression get(ArrayRef arrayRef) {
+    public Expression get(ArrayRef arrayRef) throws StaticRegionException {
         int ref = arrayRef.ref;
         if (!table.containsKey(ref)) {
             Pair<Expression[], String> p = getInitialArrayValues(ti, ref);
@@ -99,7 +99,12 @@ public class ArrayExpressions {
             arrayTypesTable.put(ref, p.getSecond());
         }
         if (arrayRef.index instanceof IntConstant) {
-            return table.get(ref)[((IntConstant) arrayRef.index).getValue()];
+            int len = ti.getElementInfo(arrayRef.ref).getArrayFields().arrayLength();
+            if (((IntConstant) arrayRef.index).getValue() >= 0 && ((IntConstant) arrayRef.index).getValue() < len)
+                return table.get(ref)[((IntConstant) arrayRef.index).getValue()];
+            else
+                throw new StaticRegionException("Concerte Index of Array is out of Bound");
+
         } else {
             Pair<Expression, String> p = getExpression(ti, arrayRef, new Pair(table.get(ref), arrayTypesTable.get(ref)));
             return p.getFirst();
@@ -115,9 +120,9 @@ public class ArrayExpressions {
             int ref = entry.getKey();
             Expression[] exps = entry.getValue();
             Expression[] newExps = new Expression[exps.length];
-            for (int i=0; i<exps.length; i++)
+            for (int i = 0; i < exps.length; i++)
                 if (exps[i] instanceof CloneableVariable)
-                    newExps[i] = ((CloneableVariable)exps[i]).makeUnique(uniqueNum);
+                    newExps[i] = ((CloneableVariable) exps[i]).makeUnique(uniqueNum);
                 else newExps[i] = exps[i];
             newTable.put(ref, newExps);
         }
@@ -132,8 +137,8 @@ public class ArrayExpressions {
             Map.Entry<Integer, Expression[]> entry = (Map.Entry) itr.next();
             int ref = entry.getKey();
             Expression[] exps = entry.getValue();
-            ret += "for array reference: " + ref +", expressions = \n";
-            for (int i=0; i<exps.length; i++)
+            ret += "for array reference: " + ref + ", expressions = \n";
+            for (int i = 0; i < exps.length; i++)
                 ret += "" + i + ": " + exps[i].toString() + "\n";
         }
         return ret;

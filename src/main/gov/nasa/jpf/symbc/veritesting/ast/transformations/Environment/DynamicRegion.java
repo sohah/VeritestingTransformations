@@ -113,11 +113,13 @@ public class DynamicRegion implements Region {
                          Expression spfRegionSummary) {
         this.ir = oldDynRegion.ir;
         this.dynStmt = dynStmt;
-        this.inputTable = new DynamicTable(
+       /* this.inputTable = new DynamicTable(
                 "Region Input Table",
                 "var",
                 oldDynRegion.isMethodRegion ? "param" : "slot");
-        ;
+*/
+
+        this.inputTable = oldDynRegion.inputTable;
         this.endIns = oldDynRegion.endIns;
         this.isMethodRegion = oldDynRegion.isMethodRegion;
         this.outputTable = oldDynRegion.outputTable;

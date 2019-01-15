@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting;
 
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.SimplifyStmtVisitor;
@@ -108,6 +109,11 @@ public class FixedPointWrapper {
         firstException = null;
     }
 
+    public static void resetChange() {
+        changed = false;
+        changedTransformation = null;
+    }
+
     public static void resetWrapper() {
         changed = false;
         changedTransformation = null;
@@ -126,7 +132,7 @@ public class FixedPointWrapper {
         if (FixedPointWrapper.iterationNumber > 1)
             FixedPointWrapper.resetIteration();
 
-        SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, iterationNumber);
+        SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, iterationNumber, false);
         intermediateRegion = substitutionVisitor.execute();
         collectTransformationState(substitutionVisitor);
 
@@ -144,13 +150,30 @@ public class FixedPointWrapper {
         collectTransformationState(arraySSAVisitor);
 
         /* Simplification iteration */
-        SimplifyStmtVisitor simplifyStmtVisitor = SimplifyStmtVisitor.create(intermediateRegion);
-        intermediateRegion = simplifyStmtVisitor.execute();
-        collectTransformationState(simplifyStmtVisitor);
-
+        if (VeritestingListener.simplify) {
+            SimplifyStmtVisitor simplifyStmtVisitor = SimplifyStmtVisitor.create(intermediateRegion);
+            intermediateRegion = simplifyStmtVisitor.execute();
+            collectTransformationState(simplifyStmtVisitor);
+        }
         regionAfter = intermediateRegion;
         return regionAfter;
     }
 
 
+    public static DynamicRegion executeFixedPointHighOrder(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException, CloneNotSupportedException {
+        FixedPointWrapper.ti = ti;
+        FixedPointWrapper.topStackFrame = ti.getTopFrame();
+        FixedPointWrapper.regionBefore = dynRegion;
+        DynamicRegion intermediateRegion;
+
+        System.out.println("========================================= RUNNING HIGH-ORDER ONE EXTRA TIME AFTER FIXED POINT ITERATION# " + FixedPointWrapper.iterationNumber + "=========================================");
+        FixedPointWrapper.resetChange();
+
+        SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, 0, true);
+        intermediateRegion = substitutionVisitor.execute();
+        collectTransformationState(substitutionVisitor);
+
+        regionAfter = intermediateRegion;
+        return regionAfter;
+    }
 }

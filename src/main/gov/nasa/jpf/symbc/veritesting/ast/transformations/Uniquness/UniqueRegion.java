@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
@@ -74,7 +75,9 @@ public class UniqueRegion {
         newDynRegion.arrayOutputs = newDynRegion.arrayOutputs.makeUnique(uniqueNum);
 
 
-        newDynRegion.constantsTable = makeConstantsTableUnique(newDynRegion.constantsTable, uniqueNum);
+        if(VeritestingListener.simplify)
+            newDynRegion.constantsTable = makeConstantsTableUnique(newDynRegion.constantsTable, uniqueNum);
+
         return newDynRegion;
     }
 
