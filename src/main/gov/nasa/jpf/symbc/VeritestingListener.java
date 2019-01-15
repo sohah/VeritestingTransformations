@@ -102,6 +102,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static StatisticManager statisticManager = new StatisticManager();
     private static int veritestRegionExpectedCount = -1;
     private static int instantiationLimit = -1;
+    public static boolean simplify = true;
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES}
 
@@ -182,6 +183,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("instantiationLimit"))
                 instantiationLimit = conf.getInt("instantiationLimit");
 
+            if (conf.hasValue("simplify"))
+                simplify = conf.getBoolean("simplify");
+
             StatisticManager.veritestingRunning = true;
             jpf.addPublisherExtension(ConsolePublisher.class, this);
         }
@@ -220,14 +224,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         StatisticManager.instructionToExec = key;
 
         if (initializeTime) {
-           discoverRegions(ti); // static analysis to discover regions
-           initializeTime = false;
+            discoverRegions(ti); // static analysis to discover regions
+            initializeTime = false;
         } else {
             try {
                 HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
                 StaticRegion staticRegion = regionsMap.get(key);
                 if ((staticRegion != null) && !(staticRegion.isMethodRegion) && !skipVeriRegions.contains(key) &&
-                isAllowedRegion(key)) {
+                        isAllowedRegion(key)) {
                     thisHighOrdCount = 0;
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                     if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
@@ -306,7 +310,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     private void updateSkipRegions(String message, String key) {
-        for (String skipString: skipRegionStrings) {
+        for (String skipString : skipRegionStrings) {
             if (message.toLowerCase().contains(skipString.toLowerCase()))
                 skipVeriRegions.add(key);
         }
@@ -372,35 +376,47 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         boolean somethingChanged = true;
         FixedPointWrapper.resetWrapper();
-        while (somethingChanged) {
+        do {
+            while (somethingChanged) {
 
             /*-------------- SUBSTITUTION & HIGH ORDER TRANSFORMATION ---------------*/
             /*--------------  FIELD TRANSFORMATION ---------------*/
             /*-------------- ARRAY TRANSFORMATION TRANSFORMATION ---------------*/
-            dynRegion = FixedPointWrapper.executeFixedPointTransformations(ti, dynRegion);
+                dynRegion = FixedPointWrapper.executeFixedPointTransformations(ti, dynRegion);
+                somethingChanged = FixedPointWrapper.isChangedFlag();
+
+                assert (FixedPointWrapper.isChangedFlag() == !FixedPointWrapper.isEqualRegion());
+            }
+            /*-------------- HIGH ORDER TRANSFORMATION ---------------*/
+            dynRegion = FixedPointWrapper.executeFixedPointHighOrder(ti, dynRegion);
             somethingChanged = FixedPointWrapper.isChangedFlag();
             transformationException = FixedPointWrapper.getFirstException();
-
             assert (FixedPointWrapper.isChangedFlag() == !FixedPointWrapper.isEqualRegion());
         }
+        while(somethingChanged);
+
 
         if (transformationException != null) throw transformationException;
 
         TypePropagationVisitor.propagateTypes(dynRegion);
 
         dynRegion = UniqueRegion.execute(dynRegion);
-        Iterator<Map.Entry<Variable, Expression>> itr = dynRegion.constantsTable.table.entrySet().iterator();
+
+        if (simplify) {
+            Iterator<Map.Entry<Variable, Expression>> itr = dynRegion.constantsTable.table.entrySet().iterator();
         /*
         ArrayRefVarExpr, FieldRefVarExpr, WalaVarExpr should be unique at this point because UniqueRegion should have
         handled it
          */
-        while (itr.hasNext()) {
-            Map.Entry<Variable, Expression> entry = itr.next();
-            if (entry.getKey() instanceof FieldRefVarExpr) assert ((FieldRefVarExpr) entry.getKey()).uniqueNum != -1;
-            if (entry.getKey() instanceof WalaVarExpr) assert ((WalaVarExpr) entry.getKey()).getUniqueNum() != -1;
-            if (entry.getKey() instanceof ArrayRefVarExpr) assert ((ArrayRefVarExpr) entry.getKey()).uniqueNum != -1;
+            while (itr.hasNext()) {
+                Map.Entry<Variable, Expression> entry = itr.next();
+                if (entry.getKey() instanceof FieldRefVarExpr)
+                    assert ((FieldRefVarExpr) entry.getKey()).uniqueNum != -1;
+                if (entry.getKey() instanceof WalaVarExpr) assert ((WalaVarExpr) entry.getKey()).getUniqueNum() != -1;
+                if (entry.getKey() instanceof ArrayRefVarExpr)
+                    assert ((ArrayRefVarExpr) entry.getKey()).uniqueNum != -1;
+            }
         }
-
 
         if (runMode == VeritestingMode.SPFCASES) {
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
@@ -475,7 +491,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
 
-
     /**
      * This pop up operands of the if instruction that begins the region.
      *
@@ -513,12 +528,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             Variable var = dynOutputTable.lookup(slot);
             assert (var instanceof WalaVarExpr);
             Expression symVar;
-            if (dynRegion.constantsTable.lookup(var) != null) {
+            if (simplify && dynRegion.constantsTable.lookup(var) != null) {
                 symVar = dynRegion.constantsTable.lookup(var);
                 if (symVar instanceof CloneableVariable)
                     symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), symVar.toString()); // assumes toString() would return the same string as getSymName()
-            }
-            else symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), ((WalaVarExpr) var).getSymName());
+            } else
+                symVar = createGreenVar((String) dynRegion.varTypeTable.lookup(var), ((WalaVarExpr) var).getSymName());
             //TODO: Dont write a local output as a symbolic expression attribute if it is a constant
             sf.setSlotAttr(slot, greenToSPFExpression(symVar));
         }
@@ -534,8 +549,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 symVar = dynRegion.constantsTable.lookup(expr);
                 if (symVar instanceof CloneableVariable)
                     symVar = createGreenVar(type, symVar.toString()); // assumes toString() would return the same string as getSymName()
-            }
-            else symVar = createGreenVar(type, expr.getSymName());
+            } else symVar = createGreenVar(type, expr.getSymName());
             new SubstituteGetOutput(ti, expr.fieldRef, false, greenToSPFExpression(symVar)).invoke();
         }
     }
@@ -582,7 +596,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         Config conf = ti.getVM().getConfig();
         String[] allClassPaths = conf.getStringArray("classpath");
         ArrayList<String> classPath = new ArrayList<>();
-        for (String s: allClassPaths) {
+        for (String s : allClassPaths) {
             classPath.add(s);
             // These classpaths are (1) classpath in .jpf file, (2) SPF class paths, (3) JPF-core class paths, so we
             // want to run static analysis only on class paths in the .jpf file
