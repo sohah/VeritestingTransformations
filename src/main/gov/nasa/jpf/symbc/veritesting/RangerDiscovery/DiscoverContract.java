@@ -47,7 +47,7 @@ public class DiscoverContract {
         String body = generateBody(query);
         body = "(and " + body + ")";
 
-        String rangerTransition = transitionHeader + body;
+        String rangerTransition = transitionHeader + body + ")";
 
         return rangerTransition;
     }
@@ -56,9 +56,9 @@ public class DiscoverContract {
         String header = "(define-fun R (";
         String parameters = "";
         for (String varName : z3FunDecSet) {
-            parameters = parameters + "(" + varName + " () Int) ";
+            parameters = parameters + "(" + varName + " Int) ";
         }
-        header += parameters + ") Bool";
+        header += parameters + ") Bool\n";
 
         return header;
     }
@@ -79,7 +79,7 @@ public class DiscoverContract {
             int assertionEndIndex = (int) startEndIndecies.getSecond();
 
             String assertion = query.substring(startingIndex, assertionEndIndex + 1); //+1 because substring is not inclusive for the endIndex.
-            constraints += "(" + assertion + ")\n";
+            constraints +=  "\t" + assertion + "\n";
             startingIndex = assertionEndIndex + 1;
         }
         return constraints;
