@@ -189,7 +189,7 @@ public class SSAToStatDefVisitor implements SSAInstruction.IVisitor {
     public void visitPhi(SSAPhiInstruction ssaPhiInstruction) { foundStoppingInsn=true; }
 
     @Override
-    public void visitPi(SSAPiInstruction ssaPiInstruction) { foundStoppingInsn=true; }
+    public void visitPi(SSAPiInstruction ssaPiInstruction) { }
 
     @Override
     public void visitGetCaughtException(SSAGetCaughtExceptionInstruction ssaGetCaughtExceptionInstruction) {

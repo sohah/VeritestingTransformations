@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
+import com.ibm.wala.ssa.SymbolTable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
@@ -17,6 +18,7 @@ import java.util.List;
  */
 public class SymbCondVisitor implements ExprVisitor<Expression> {
     private final boolean findStackSlotsOnly;
+    private final SymbolTable symbolTable;
     public boolean stackSlotNotFound;
     public ArrayList noStackSlotVars;
     private boolean isSymCondition = false;
@@ -27,12 +29,13 @@ public class SymbCondVisitor implements ExprVisitor<Expression> {
             new ExprVisitorAdapter<Expression>(this);
 
 
-    public SymbCondVisitor(StackFrame sf, SlotParamTable slotParamTable, boolean findStackSlotsOnly) {
+    public SymbCondVisitor(StackFrame sf, SlotParamTable slotParamTable, boolean findStackSlotsOnly, SymbolTable symbolTable) {
         this.slotParamTable = slotParamTable;
         this.sf = sf;
         this.findStackSlotsOnly = findStackSlotsOnly;
         this.stackSlotNotFound = false;
         noStackSlotVars = new ArrayList<WalaVarExpr>();
+        this.symbolTable = symbolTable;
     }
 
     public Expression visit(WalaVarExpr expr) {
@@ -47,7 +50,7 @@ public class SymbCondVisitor implements ExprVisitor<Expression> {
                 if (operand != null)
                     isSymCondition = true;
             }
-            if(slots == null) {
+            if(slots == null && !symbolTable.isConstant(expr.number)) {
                 stackSlotNotFound = true;
                 noStackSlotVars.add(expr);
             }

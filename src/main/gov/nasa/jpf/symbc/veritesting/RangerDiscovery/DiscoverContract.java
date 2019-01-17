@@ -32,16 +32,60 @@ public class DiscoverContract {
         }
 
         newQuery = //"  (set-logic QF_BV)\n" +
-                "  (set-logic QF_UFLIRA)\n" +
-                "  (set-option :produce-unsat-cores true)\n" +
-                generateFunDec(z3FunDecSet) +
-                newQuery
-                + "(check-sat)\n" +
-                "(get-unsat-core)\n" +
-                "(exit)\n";
+                        "  (set-option :produce-unsat-cores true)\n" +
+                        generateFunDec(z3FunDecSet) +
+                        newQuery;
+
 
         return newQuery;
     }
+
+    public static String generateRangerTransition(String query, HashSet z3FunDecSet) {
+
+
+        String transitionHeader = generateTransitionHeader(z3FunDecSet);
+        String body = generateBody(query);
+        body = "(and " + body + ")";
+
+        String rangerTransition = transitionHeader + body;
+
+        return rangerTransition;
+    }
+
+    private static String generateTransitionHeader(HashSet<String> z3FunDecSet) {
+        String header = "(define-fun R (";
+        String parameters = "";
+        for (String varName : z3FunDecSet) {
+            parameters = parameters + "(" + varName + " () Int) ";
+        }
+        header += parameters + ") Bool";
+
+        return header;
+    }
+
+    private static String generateBody(String query) {
+        assert (query.length() > 0);
+
+        String constraints = new String();
+        /*removing the outer solve*/
+        query = query.substring(8, query.length() - 1);
+
+        int startingIndex = 0;
+        int endingIndex = query.length();
+        while (startingIndex < endingIndex) {
+            Pair startEndIndecies = findAssertion(query, startingIndex);
+
+            startingIndex = (int) startEndIndecies.getFirst();
+            int assertionEndIndex = (int) startEndIndecies.getSecond();
+
+            String assertion = query.substring(startingIndex, assertionEndIndex + 1); //+1 because substring is not inclusive for the endIndex.
+            constraints += "(" + assertion + ")\n";
+            startingIndex = assertionEndIndex + 1;
+        }
+        return constraints;
+    }
+
+
 
     private static String generateFunDec(HashSet<String> z3FunDecSet) {
         String funDec = "";

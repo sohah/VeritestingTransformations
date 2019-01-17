@@ -45,7 +45,7 @@ public class InvokeInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return "\n" + Arrays.toString(result) + " = invoke " + Arrays.toString(params);
+        return "\n" + Arrays.toString(result) + " = invoke " + ((SSAInvokeInstruction) ((InvokeInstruction) this).original).getCallSite().getDeclaredTarget()+ Arrays.toString(params);
     }
 
     @Override

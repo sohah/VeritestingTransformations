@@ -78,18 +78,18 @@ public class StatisticManager {
 
 
     public String printAllRegionStatistics(){
-        String out="\n/************************ Printing Regions Statistics *****************\n"+
-        "veriHitNumber: number of times a region was successfully veritested\n" +
+        StringBuilder out= new StringBuilder("\n/************************ Printing Regions Statistics *****************\n" +
+                "veriHitNumber: number of times a region was successfully veritested\n" +
                 "spfHitNumber: number of times we were not able to veritest a region and we left it to SPF (this is counting failures due to statements in the region we couldn't summaries.)\n" +
-                "concreteHit: number of times a region was not veritested because of the condition\n" ;
+                "concreteHit: number of times a region was not veritested because of the condition\n");
 
         Set<String> keys = regionsStatisticsMap.keySet();
         Iterator<String> keysItr = keys.iterator();
 
         while(keysItr.hasNext())
-            out += regionsStatisticsMap.get(keysItr.next()).print();
-        out += "\n" + getDistinctVeriRegionKeys();
-        return out;
+            out.append(regionsStatisticsMap.get(keysItr.next()).print());
+        out.append("\n").append(getDistinctVeriRegionKeys());
+        return out.toString();
     }
 
     public String printAllExceptionStatistics(){
