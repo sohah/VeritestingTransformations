@@ -7,6 +7,7 @@ import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.strings.Atom;
 import gov.nasa.jpf.symbc.VeritestingListener;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -326,6 +327,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                 else
                     return null;
             }
+            if(c.getOriginal().getCallSite().getDeclaredTarget().getSelector().toString().equals(DiscoverContract.contractMethodName))
+                DiscoverContract.collectInput(ti, c.params, currClassName, dynRegion);
         } else {
             Atom packageName = methodReference.getDeclaringClass().getName().getPackage();
             currClassName = (packageName != null ? packageName.toString() + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
@@ -381,8 +384,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
                 } else { //not a stack slot var, try to check if it is a constant from wala
                     SymbolTable symbolTable = dynRegion.ir.getSymbolTable();
-                    if ((((WalaVarExpr)var).number > -1) && (symbolTable.isConstant(((WalaVarExpr)var).number))) {
-                        Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr)var).number);
+                    if ((((WalaVarExpr) var).number > -1) && (symbolTable.isConstant(((WalaVarExpr) var).number))) {
+                        Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr) var).number);
                         valueSymbolTable.add(var, greenValue);
                     }
                 }

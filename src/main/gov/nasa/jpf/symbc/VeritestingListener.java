@@ -36,6 +36,7 @@ import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticSummaryChoiceGenerator;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
@@ -189,6 +190,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             StatisticManager.veritestingRunning = true;
             jpf.addPublisherExtension(ConsolePublisher.class, this);
         }
+
+        if(conf.hasValue("contractMethodName"))
+            DiscoverContract.contractMethodName = conf.getString("contractMethodName");
     }
 
     public SymbolicInteger makeSymbolicInteger(String name) {
@@ -445,6 +449,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      */
 
     public static Instruction setupSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion) throws StaticRegionException {
+        DiscoverContract.dynRegion = dynRegion;
         if (canSetPC(ti, dynRegion.regionSummary)) {
             populateFieldOutputs(ti, dynRegion);
             populateArrayOutputs(ti, dynRegion);

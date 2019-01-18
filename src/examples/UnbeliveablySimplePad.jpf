@@ -23,3 +23,4 @@ listener = .symbc.VeritestingListener
 veritestingMode = 3
 symbolic.lazy = true
 showLocalNames = true
+contractMethodName = runPad(I)Z
