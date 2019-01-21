@@ -47,7 +47,8 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
             if (dynRegion.inputTable.lookup(expr) != null &&
                     sf.isReferenceSlot(((Integer)dynRegion.inputTable.lookup(expr))) && !dynRegion.isMethodRegion) {
                 int objRef = ((IntConstant) varValue).getValue();
-                dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
+                if (objRef == 0) dynRegion.varTypeTable.table.put(expr, "int");
+                else dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
             }
         }
         if (dynRegion.outputTable.reverseLookup(expr) != null &&
@@ -59,7 +60,8 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
             if (useForTypeOnly == null)
                 objRef = sf.getLocalVariable(slot);
             else objRef = (useForTypeOnly instanceof IntegerConstant) ? (int) ((IntegerConstant) useForTypeOnly).value : -1;
-            if (objRef != -1) dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
+            if (objRef != -1 && objRef != 0) dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
+            else dynRegion.varTypeTable.table.put(expr, "int");
         }
         if (varValue != null) {
             somethingChanged = true;
