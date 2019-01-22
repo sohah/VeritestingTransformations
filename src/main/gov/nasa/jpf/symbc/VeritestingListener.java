@@ -606,15 +606,16 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         long runEndTime = System.nanoTime();
         PrintWriter pw = publisher.getOut();
         publisher.publishTopicStart("VeritestingListener report:");
-        long dynRunTime = (runEndTime - runStartTime) - staticAnalysisDur;
+        long dynRunTime = (runEndTime - runStartTime) - JITAnalysis.staticAnalysisDur;
 
 //        pw.println(statisticManager.printAllRegionStatistics());
 //        pw.println(statisticManager.printStaticAnalysisStatistics());
 //        pw.println(statisticManager.printAllExceptionStatistics());
 
         pw.println("\n/************************ Printing Time Decomposition Statistics *****************");
-        pw.println("static analysis time = " + TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + " msec");
+        pw.println("static analysis time = " + TimeUnit.NANOSECONDS.toMillis(JITAnalysis.staticAnalysisDur) + " msec");
         pw.println("Veritesting Dyn Time = " + TimeUnit.NANOSECONDS.toMillis(dynRunTime) + " msec");
+        pw.println("Veritesting fix-pint Time = " + TimeUnit.NANOSECONDS.toMillis(FixedPointWrapper.fixedPointTime) + " msec");
 
         pw.println("\n/************************ Printing Solver Statistics *****************");
         pw.println("Total Solver Queries Count = " + solverCount);

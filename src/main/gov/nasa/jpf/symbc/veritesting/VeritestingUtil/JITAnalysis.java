@@ -18,7 +18,7 @@ import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
 public class JITAnalysis {
     private static HashSet<String> veriClasses = new HashSet<>();
 
-    private static long staticAnalysisDur;
+    public static long staticAnalysisDur;
     private static boolean firstTime = true;
     private static ThreadInfo ti;
     private static Instruction instruction;
