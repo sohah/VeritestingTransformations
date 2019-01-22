@@ -35,7 +35,7 @@ public class IfThenElseStmt implements Stmt {
         if (!(stmt2 instanceof IfThenElseStmt))
             return false;
         else {
-            String condition2 = this.condition.toString();
+            String condition2 = ((IfThenElseStmt)stmt2).condition.toString();
             return (this.condition.toString().equals(condition2)
                     && this.thenStmt.equals(((IfThenElseStmt) stmt2).thenStmt)
                     && this.elseStmt.equals(((IfThenElseStmt) stmt2).elseStmt));

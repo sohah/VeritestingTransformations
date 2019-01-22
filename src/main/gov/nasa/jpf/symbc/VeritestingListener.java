@@ -278,7 +278,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             } catch (Exception e) {
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
                 e.printStackTrace();
-                updateSkipRegions(e.getMessage(), key);
+                if (e.getMessage() != null) updateSkipRegions(e.getMessage(), key);
             }
         }
     }
@@ -620,7 +620,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         publisher.publishTopicStart("VeritestingListener report:");
         long dynRunTime = (runEndTime - runStartTime) - staticAnalysisDur;
 
-//        pw.println(statisticManager.printAllRegionStatistics());
+        pw.println(statisticManager.printAllRegionStatistics());
 //        pw.println(statisticManager.printStaticAnalysisStatistics());
 //        pw.println(statisticManager.printAllExceptionStatistics());
 
