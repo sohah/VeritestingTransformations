@@ -17,6 +17,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
 
 public class FixedPointWrapper {
 
+    public static long fixedPointTime;
 
     public static DynamicRegion getRegionAfter() {
         return regionAfter;
@@ -122,11 +123,17 @@ public class FixedPointWrapper {
     }
 
     public static DynamicRegion executeFixedPointTransformations(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException, CloneNotSupportedException {
+
+
+        long startTime = System.nanoTime();
+        ++FixedPointWrapper.iterationNumber;
+        if (iterationNumber == 1)
+            fixedPointTime = 0;
+
         FixedPointWrapper.ti = ti;
         FixedPointWrapper.topStackFrame = ti.getTopFrame();
         FixedPointWrapper.regionBefore = dynRegion;
         DynamicRegion intermediateRegion;
-        ++FixedPointWrapper.iterationNumber;
 
         System.out.println("========================================= RUNNING FIXED POINT ITERATION # " + FixedPointWrapper.iterationNumber + "=========================================");
         if (FixedPointWrapper.iterationNumber > 1)
@@ -155,12 +162,17 @@ public class FixedPointWrapper {
             intermediateRegion = simplifyStmtVisitor.execute();
             collectTransformationState(simplifyStmtVisitor);
         }
+        long endTime = System.nanoTime();
+        fixedPointTime += endTime - startTime;
+
         regionAfter = intermediateRegion;
         return regionAfter;
     }
 
 
     public static DynamicRegion executeFixedPointHighOrder(ThreadInfo ti, DynamicRegion dynRegion) throws StaticRegionException, CloneNotSupportedException {
+
+        long startTime = System.nanoTime();
         FixedPointWrapper.ti = ti;
         FixedPointWrapper.topStackFrame = ti.getTopFrame();
         FixedPointWrapper.regionBefore = dynRegion;
@@ -172,6 +184,9 @@ public class FixedPointWrapper {
         SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, 0, true);
         intermediateRegion = substitutionVisitor.execute();
         collectTransformationState(substitutionVisitor);
+
+        long endTime = System.nanoTime();
+        fixedPointTime += endTime - startTime;
 
         regionAfter = intermediateRegion;
         return regionAfter;

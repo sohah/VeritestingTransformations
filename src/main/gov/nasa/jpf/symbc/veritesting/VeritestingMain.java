@@ -60,10 +60,10 @@ public class VeritestingMain {
     HashSet<NatLoop> loops;
     IR ir;
 
-    public VeritestingMain(ThreadInfo ti, String appJar) {
+    public VeritestingMain(ThreadInfo ti) {
         try {
             Map map = System.getenv();
-            appJar = System.getenv("TARGET_CLASSPATH_WALA");// + appJar;
+            String appJar = System.getenv("TARGET_CLASSPATH_WALA");// + appJar;
             AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
                     (new FileProvider()).getFile(exclusionsFile));
 //                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
@@ -83,7 +83,7 @@ public class VeritestingMain {
         startingPointsHistory = new HashSet();
         URL[] cp = new URL[classPaths.size()];
         int cp_index = 0;
-        for (String classPath: classPaths) {
+        for (String classPath : classPaths) {
             File f = new File(classPath);
             try {
                 cp[cp_index++] = f.toURI().toURL();
@@ -174,6 +174,97 @@ public class VeritestingMain {
     }
 
 
+    private void jitStartAnalysis(String packageName, String className, String methodSig) {
+        try {
+
+            MethodReference mr = StringStuff.makeMethodReference(className + "." + methodSig);
+            IMethod m = cha.resolveMethod(mr);
+            if (m == null) {
+                System.out.println("could not resolve " + className + "." + methodSig);
+                return;
+                //Assertions.UNREACHABLE("could not resolve " + mr);
+            }
+            AnalysisOptions options = new AnalysisOptions();
+            options.getSSAOptions().setPiNodePolicy(SSAOptions.getAllBuiltInPiNodes());
+            IAnalysisCacheView cache = new AnalysisCacheImpl(options.getSSAOptions());
+            ir = cache.getIR(m, Everywhere.EVERYWHERE);
+            if (ir == null) {
+                System.out.println("Null IR for " + className + "." + methodSig);
+                return;
+            }
+            cfg = ir.getControlFlowGraph();
+            currentPackageName = packageName;
+            currentClassName = className;
+            currentMethodName = m.getName().toString();
+            this.methodSig = methodSig.substring(methodSig.indexOf('('));
+            System.out.println("Starting " + (methodAnalysis ? "method " : "region ") + "analysis for " +
+                    currentMethodName + "(" + currentClassName + "." + methodSig + ")");
+            NumberedDominators<ISSABasicBlock> uninverteddom =
+                    (NumberedDominators<ISSABasicBlock>) Dominators.make(cfg, cfg.entry());
+            loops = new HashSet<>();
+            HashSet<Integer> visited = new HashSet<>();
+            NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
+            // Here is where the magic happens.
+            CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
+                regionCreator.createStructuredConditionalRegions(veriRegions);
+                regionCreator.createStructuredMethodRegion(veriRegions);
+
+       /* // Placeholder for testing and visualizing static-time transformations
+            Set<String> keys = veriRegions.keySet();
+            for (String key: keys) {
+                StaticRegion r = veriRegions.get(key);
+                PhiToGammaSubstitution sub = new PhiToGammaSubstitution(r);
+                sub.doSubstitution();
+            } */
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void jitAnalyzeForVeritesting(ArrayList<String> classPaths, String _className) {
+        endingInsnsHash = new HashSet();
+        //methodSummaryClassNames.add(_className);
+        //findClasses(ti, cha, classPaths, _className, methodSummaryClassNames);
+        startingPointsHistory = new HashSet();
+        URL[] cp = new URL[classPaths.size()];
+        int cp_index = 0;
+        for (String classPath : classPaths) {
+            File f = new File(classPath);
+            try {
+                cp[cp_index++] = f.toURI().toURL();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                continue;
+            }
+        }
+
+        try {
+            URLClassLoader urlcl = new URLClassLoader(cp);
+            Class c = urlcl.loadClass(_className);
+            Method[] allMethods;
+            try {
+                allMethods = c.getDeclaredMethods();
+            } catch (NoClassDefFoundError n) {
+                System.out.println("NoClassDefFoundError for className = " + _className + "\n " +
+                        n.getMessage());
+                return;
+            }
+            for (Method m : allMethods) {
+                String signature = null;
+                try {
+                    signature = ReflectUtil.getSignature(m);
+                } catch (StaticRegionException e) {
+                    continue;
+                }
+                jitStartAnalysis(getPackageName(_className), _className, signature);
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private String getPackageName(String c) {
         if (c.contains(".")) return c.substring(0, c.lastIndexOf("."));
@@ -188,7 +279,7 @@ public class VeritestingMain {
         int iteration = 0;
         URL[] cp = new URL[classPaths.size()];
         int cp_index = 0;
-        for (String classPath: classPaths) {
+        for (String classPath : classPaths) {
             File f = new File(classPath);
             try {
                 cp[cp_index++] = f.toURI().toURL();
@@ -324,18 +415,25 @@ public class VeritestingMain {
 
 
     private Operation.Operator negateOperator(Operation.Operator operator) {
-        switch(operator) {
-            case NE: return Operation.Operator.EQ;
-            case EQ: return Operation.Operator.NE;
-            case GT: return Operation.Operator.LE;
-            case GE: return Operation.Operator.LT;
-            case LT: return Operation.Operator.GE;
-            case LE: return Operation.Operator.GT;
+        switch (operator) {
+            case NE:
+                return Operation.Operator.EQ;
+            case EQ:
+                return Operation.Operator.NE;
+            case GT:
+                return Operation.Operator.LE;
+            case GE:
+                return Operation.Operator.LT;
+            case LT:
+                return Operation.Operator.GE;
+            case LE:
+                return Operation.Operator.GT;
             default:
                 System.out.println("Don't know how to negate Green operator (" + operator + ")");
                 return null;
         }
     }
+
 
 
 }

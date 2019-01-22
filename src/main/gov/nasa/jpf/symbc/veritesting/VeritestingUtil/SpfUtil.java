@@ -33,7 +33,7 @@ public class SpfUtil {
      * @return Number of operands.
      * @throws StaticRegionException
      */
-    public static Integer getOperandNumber(String instruction) throws StaticRegionException {
+    public static int getOperandNumber(String instruction) {
         switch (instruction) {
             case "ifeq":
             case "ifne":
@@ -55,10 +55,9 @@ public class SpfUtil {
                 operandNum = 2;
                 break;
             default:
-                throwException(new StaticRegionException("Problem finding number of operands for the condition for " + instruction), INSTANTIATION);
+                operandNum = -1;
         }
         return operandNum;
-
     }
 
     /**
@@ -68,7 +67,7 @@ public class SpfUtil {
      * @return True if the operand(s) of "if" condition is symbolic and false if it was concerete.
      * @throws StaticRegionException
      */
-    public static boolean isSymCond(ThreadInfo ti, Instruction ins) throws StaticRegionException {
+    public static boolean isSymCond(ThreadInfo ti, Instruction ins) {
         StackFrame sf = ti.getTopFrame();
         boolean isSymCondition = false;
         SpfUtil.getOperandNumber(ins.getMnemonic());
@@ -111,6 +110,9 @@ public class SpfUtil {
                 isSymCondition = isBothSidesFeasible(ti, getComparator(ins), getNegComparator(ins), operand1, operand2);
             }*/
         }
+        if(operandNum == -11)
+            isSymCondition = false;
+
         return isSymCondition;
     }
 

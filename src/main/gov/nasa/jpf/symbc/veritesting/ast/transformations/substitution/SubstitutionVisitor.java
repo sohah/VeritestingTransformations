@@ -8,7 +8,7 @@ import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.util.strings.Atom;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.JITAnalysis;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -189,7 +189,16 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL
                     || (invokeCode == IInvokeInstruction.Dispatch.INTERFACE)
                     || (invokeCode == IInvokeInstruction.Dispatch.SPECIAL))) {
-                Pair<String, StaticRegion> keyRegionPair = findMethodRegion(ti, c);
+
+                Pair<String, StaticRegion> keyRegionPair = null;
+                try {
+                    keyRegionPair = findMethodRegion(ti, c);
+                } catch (StaticRegionException e) {
+                    if (firstException == null) {
+                        sre = e;
+                        return c;
+                    }
+                }
                 if (keyRegionPair == null) //case where we couldn't grap the method region, usually because a concrete reference does not exists.
                     return c;
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
@@ -303,7 +312,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
      * @param c Current invoke instruction.
      * @return A pair of the key and the methodRegion if a matching could be found.
      */
-    private Pair<String, StaticRegion> findMethodRegion(ThreadInfo ti, InvokeInstruction c) {
+    private Pair<String, StaticRegion> findMethodRegion(ThreadInfo ti, InvokeInstruction c) throws StaticRegionException {
 
         SSAInvokeInstruction instruction = c.getOriginal();
         MethodReference methodReference = instruction.getDeclaredTarget();
@@ -331,10 +340,14 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             currClassName = (packageName != null ? packageName.toString() + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
         }
 
-        String dynamicClassName = currClassName;
-        if (!Character.isLetterOrDigit(dynamicClassName.charAt(dynamicClassName.length() - 1))) {
+        String dynamicClassName = convertToJavaName(currClassName);
+
+/*        if (!Character.isLetterOrDigit(dynamicClassName.charAt(dynamicClassName.length() - 1))) {
             dynamicClassName = dynamicClassName.substring(0, dynamicClassName.length() - 2);
         }
+        */
+
+
         ArrayList<String> classList = getSuperClassList(ti, currClassName);
         Atom methodName = methodReference.getName();
         String methodSignature = methodReference.getSignature();
@@ -342,11 +355,27 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         String key = CreateStaticRegions.constructMethodIdentifier(dynamicClassName + "." + methodName + methodSignature);
         for (String className : classList) {
             key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
-            StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
+            //StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
+            StaticRegion staticRegion = JITAnalysis.discoverAllClassAndGetRegion(dynamicClassName, key);
             if (staticRegion != null)
                 return new Pair(key, staticRegion);
         }
         return new Pair(key, null);
+    }
+
+    private String convertToJavaName(String currClassName) {
+        String javaName = currClassName;
+        if (javaName != null) {
+            if (!Character.isLetterOrDigit(javaName.charAt(javaName.length() - 1))) {
+                javaName = javaName.substring(0, javaName.length() - 1);
+            }
+            if (javaName.charAt(0) == 'L') {
+                javaName = javaName.substring(1, javaName.length());
+            }
+
+            javaName = javaName.replaceAll("/", ".");
+        }
+        return javaName;
     }
 
 
@@ -381,8 +410,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
                 } else { //not a stack slot var, try to check if it is a constant from wala
                     SymbolTable symbolTable = dynRegion.ir.getSymbolTable();
-                    if ((((WalaVarExpr)var).number > -1) && (symbolTable.isConstant(((WalaVarExpr)var).number))) {
-                        Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr)var).number);
+                    if ((((WalaVarExpr) var).number > -1) && (symbolTable.isConstant(((WalaVarExpr) var).number))) {
+                        Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr) var).number);
                         valueSymbolTable.add(var, greenValue);
                     }
                 }

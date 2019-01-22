@@ -20,8 +20,6 @@
 package gov.nasa.jpf.symbc;
 
 
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Solver;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
@@ -31,38 +29,30 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
-import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3BitVector;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticSummaryChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.JITAnalysis;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.SimplifyStmtVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubstituteGetOutput;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
 
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePropagationVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.FixedPointAstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
 import gov.nasa.jpf.vm.Instruction;
 import za.ac.sun.cs.green.expr.*;
@@ -72,13 +62,14 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static gov.nasa.jpf.symbc.veritesting.AdapterSynth.SPFAdapterSynth.runAdapterSynth;
 import static gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator.getKind;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipVeriRegions;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.JITAnalysis.discoverRegions;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isSymCond;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isUnsupportedRegionEnd;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.*;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayUtil.doArrayStore;
@@ -95,7 +86,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static long cleanupTime = 0;
     public static int solverCount = 0;
     public static final int maxStaticExplorationDepth = 1;
-    public static boolean initializeTime = true;
     public static int veritestRegionCount = 0;
     private static long staticAnalysisDur;
     private final long runStartTime = System.nanoTime();
@@ -214,85 +204,109 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             return;
         // End equivalence checking code
 
+        String key = keyFromInstructionToExc(instructionToExecute);
+
+        StatisticManager.instructionToExec = key;
+
+        try {
+
+            if (isSymCond(ti, instructionToExecute) && !skipVeriRegions.contains(key) && isAllowedRegion(key)) {
+                StaticRegion staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
+
+                if (runMode != VeritestingMode.SPFCASES) {
+                    // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
+                    Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
+                    if (regionEndInsn != null) {
+                        throwException(new StaticRegionException("Unsupported region end instruction: " + regionEndInsn), INSTANTIATION);
+                    }
+
+                    DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
+                    Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
+                    ++veritestRegionCount;
+                    ti.setNextPC(nextInstruction);
+                    statisticManager.updateVeriSuccForRegion(key);
+
+                    System.out.println("------------- Region was successfully veritested --------------- ");
+                } else {
+                    runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
+                }
+            } else
+                statisticManager.updateConcreteHitStatForRegion(key);
+
+/*
+            if ((staticRegion != null) && !(staticRegion.isMethodRegion) && !skipVeriRegions.contains(key) &&
+                    isAllowedRegion(key)) {
+                thisHighOrdCount = 0;
+                //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
+                if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
+                    if (runMode != VeritestingMode.SPFCASES) {
+                        // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
+                        Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
+                        if (regionEndInsn != null) {
+                            throwException(new StaticRegionException("Unsupported region end instruction: " + regionEndInsn), INSTANTIATION);
+                        }
+
+                        DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
+                        Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
+                        ++veritestRegionCount;
+                        ti.setNextPC(nextInstruction);
+                        statisticManager.updateVeriSuccForRegion(key);
+
+                        System.out.println("------------- Region was successfully veritested --------------- ");
+                    } else {
+                        runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
+                    }
+                } else
+                    statisticManager.updateConcreteHitStatForRegion(key);
+*/
+
+        } catch (IllegalArgumentException e) {
+            statisticManager.updateSPFHitForRegion(key, e.getMessage());
+            System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+            updateSkipRegions(e.getMessage(), key);
+            return;
+        } catch (StaticRegionException sre) {
+            statisticManager.updateSPFHitForRegion(key, sre.getMessage());
+            System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
+            updateSkipRegions(sre.getMessage(), key);
+            return;
+        } catch (VisitorException greenEx) {
+            statisticManager.updateSPFHitForRegion(key, greenEx.getMessage());
+            System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + greenEx.getMessage() + "\n");
+            updateSkipRegions(greenEx.getMessage(), key);
+            return;
+        } catch (CloneNotSupportedException e) {
+            System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+            e.printStackTrace();
+            updateSkipRegions(e.getMessage(), key);
+            return;
+        } catch (Exception e) {
+            System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+            e.printStackTrace();
+            updateSkipRegions(e.getMessage(), key);
+        }
+    }
+
+    private String keyFromInstructionToExc(Instruction instructionToExecute) {
         MethodInfo methodInfo = instructionToExecute.getMethodInfo();
         String className = methodInfo.getClassName();
         String methodName = methodInfo.getName();
         String methodSignature = methodInfo.getSignature();
         int offset = instructionToExecute.getPosition();
         String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
-
-        StatisticManager.instructionToExec = key;
-
-        if (initializeTime) {
-            discoverRegions(ti); // static analysis to discover regions
-            initializeTime = false;
-        } else {
-            try {
-                HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
-                StaticRegion staticRegion = regionsMap.get(key);
-                if ((staticRegion != null) && !(staticRegion.isMethodRegion) && !skipVeriRegions.contains(key) &&
-                        isAllowedRegion(key)) {
-                    thisHighOrdCount = 0;
-                    //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
-                    if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
-                        if (runMode != VeritestingMode.SPFCASES) {
-                            // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
-                            Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
-                            if (regionEndInsn != null) {
-                                throwException(new StaticRegionException("Unsupported region end instruction: " + regionEndInsn), INSTANTIATION);
-                            }
-
-                            DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
-                            Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion);
-                            ++veritestRegionCount;
-                            ti.setNextPC(nextInstruction);
-                            statisticManager.updateVeriSuccForRegion(key);
-
-                            System.out.println("------------- Region was successfully veritested --------------- ");
-                        } else {
-                            runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
-                        }
-                    } else
-                        statisticManager.updateConcreteHitStatForRegion(key);
-                }
-            } catch (IllegalArgumentException e) {
-                statisticManager.updateSPFHitForRegion(key, e.getMessage());
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                updateSkipRegions(e.getMessage(), key);
-                return;
-            } catch (StaticRegionException sre) {
-                statisticManager.updateSPFHitForRegion(key, sre.getMessage());
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
-                updateSkipRegions(sre.getMessage(), key);
-                return;
-            } catch (VisitorException greenEx) {
-                statisticManager.updateSPFHitForRegion(key, greenEx.getMessage());
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + greenEx.getMessage() + "\n");
-                updateSkipRegions(greenEx.getMessage(), key);
-                return;
-            } catch (CloneNotSupportedException e) {
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                e.printStackTrace();
-                updateSkipRegions(e.getMessage(), key);
-                return;
-            } catch (Exception e) {
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                e.printStackTrace();
-                updateSkipRegions(e.getMessage(), key);
-            }
-        }
+        return key;
     }
+
 
     private boolean isNoVeritesting(StackFrame curr, boolean noVeritestingFlag) {
         String[] allowedFunctions = new String[]{"adapt", "f1", "f2"};
-        for (String s: allowedFunctions)
+        for (String s : allowedFunctions)
             if (curr.getMethodInfo().getName().equals(s)) return false;
         while (!JVMDirectCallStackFrame.class.isInstance(curr)) {
             if (curr.getMethodInfo().getName().contains("NoVeritest")) {
                 noVeritestingFlag = true;
                 break;
-            }
-            else curr = curr.getPrevious();
+            } else curr = curr.getPrevious();
         }
         return noVeritestingFlag;
     }
@@ -393,7 +407,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             transformationException = FixedPointWrapper.getFirstException();
             assert (FixedPointWrapper.isChangedFlag() == !FixedPointWrapper.isEqualRegion());
         }
-        while(somethingChanged);
+        while (somethingChanged);
 
 
         if (transformationException != null) throw transformationException;
@@ -585,32 +599,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
         //ti.setNextPC(ins);
         return ins;
-    }
-
-    /**
-     * This is tries to discover statically all potential regions that could be used as veritesting regions.
-     *
-     * @param ti Current running thread.
-     */
-    private void discoverRegions(ThreadInfo ti) {
-        Config conf = ti.getVM().getConfig();
-        String[] allClassPaths = conf.getStringArray("classpath");
-        ArrayList<String> classPath = new ArrayList<>();
-        for (String s : allClassPaths) {
-            classPath.add(s);
-            // These classpaths are (1) classpath in .jpf file, (2) SPF class paths, (3) JPF-core class paths, so we
-            // want to run static analysis only on class paths in the .jpf file
-//            if (!s.contains("jpf-symbc")) classPath.add(s);
-//            else break;
-        }
-        String className = conf.getString("target");
-        VeritestingMain veritestingMain = new VeritestingMain(ti, className + ".class");
-        long startTime = System.nanoTime();
-        veritestingMain.analyzeForVeritesting(classPath, className);
-        long endTime = System.nanoTime();
-        staticAnalysisDur = endTime - startTime;
-        statisticManager.collectStaticAnalysisMetrics(VeritestingMain.veriRegions);
-        StaticRegionException.staticAnalysisComplete();
     }
 
 
