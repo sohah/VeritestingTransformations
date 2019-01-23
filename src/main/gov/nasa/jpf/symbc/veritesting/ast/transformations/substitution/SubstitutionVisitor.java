@@ -311,7 +311,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
 
         String currClassName = null;
-        if (!instruction.isStatic()) {
+        if (!instruction.isStatic() && !instruction.isSpecial()) {
             if (c.params[0] instanceof IntConstant) //if the first param is a constant, then it is already a reference and it isn't in the varTypeTable, instead we need to ask SPF for it.
                 currClassName = ti.getHeap().get(((IntConstant) c.params[0]).getValue()).getClassInfo().getName();
             else if (VeritestingListener.simplify &&
@@ -327,8 +327,9 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     return null;
             }
         } else {
-            Atom packageName = methodReference.getDeclaringClass().getName().getPackage();
-            currClassName = (packageName != null ? packageName.toString() + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
+            Atom packageNameAtom = methodReference.getDeclaringClass().getName().getPackage();
+            String packageName = packageNameAtom != null ? packageNameAtom.toString().replaceAll("/", ".") : null;
+            currClassName = (packageName != null ? packageName + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
         }
 
         String dynamicClassName = currClassName;
