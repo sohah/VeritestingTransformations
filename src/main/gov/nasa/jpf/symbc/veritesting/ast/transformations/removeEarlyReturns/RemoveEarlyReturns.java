@@ -301,7 +301,8 @@ Similar things can be done for SPF Cases.
 
         // MWW TODO: need to add in types and new vars somewhere.
         // MWW TODO: Current type table is from integers; this is not the way to do it.
-        StaticRegion resultRegion = new StaticRegion(resultStmt, region.ir, region.isMethodRegion, region.endIns, null, stmtResult);
+    //    StaticRegion resultRegion = new StaticRegion(resultStmt, region.ir, region.isMethodRegion, region.endIns, null, stmtResult);
+        StaticRegion resultRegion = new StaticRegion(resultStmt, region, stmtResult);
         return resultRegion;
     }
 
