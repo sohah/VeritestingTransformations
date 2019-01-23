@@ -382,10 +382,11 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
                 } else { //not a stack slot var, try to check if it is a constant from wala
                     SymbolTable symbolTable = dynRegion.ir.getSymbolTable();
-                    if ((((WalaVarExpr)var).number > -1) && (symbolTable.isConstant(((WalaVarExpr)var).number))) {
-                        Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr)var).number);
-                        valueSymbolTable.add(var, greenValue);
-                    }
+                    if (var instanceof WalaVarExpr)
+                        if ((((WalaVarExpr) var).number > -1) && (symbolTable.isConstant(((WalaVarExpr) var).number))) {
+                            Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr) var).number);
+                            valueSymbolTable.add(var, greenValue);
+                        }
                 }
             }
         }

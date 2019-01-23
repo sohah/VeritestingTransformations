@@ -132,24 +132,16 @@ public class SimplifyStmtVisitor extends FixedPointAstMapVisitor {
         return newConstantsTable;
     }
 
-<<<<<<< HEAD
-        DynamicRegion ret = new DynamicRegion(dynRegion, stmt, dynRegion.spfCaseList, dynRegion.regionSummary,
-                dynRegion.spfPredicateSummary, dynRegion.earlyReturnResult);
-        System.out.println("\n--------------- AFTER SIMPLIFICATION ---------------\n");
-        System.out.println(StmtPrintVisitor.print(ret.dynStmt));
-        return ret;
-=======
     public static SimplifyStmtVisitor create(DynamicRegion dynRegion){
         DynamicTable<Expression> constantsTable = new DynamicTable<>("Constants Table", "Expression", "Constant Value");
         SimplifyStmtVisitor simplifyVisitor = new SimplifyStmtVisitor(dynRegion, constantsTable);
         return simplifyVisitor;
->>>>>>> 550921536b6f7796501f1d20980b81ad1220d03b
     }
 
     public DynamicRegion execute(){
         Stmt simplifiedStmt = dynRegion.dynStmt.accept(this);
         this.instantiatedRegion = new DynamicRegion(dynRegion, simplifiedStmt, dynRegion.spfCaseList, dynRegion.regionSummary,
-                dynRegion.spfPredicateSummary);
+                dynRegion.spfPredicateSummary, dynRegion.earlyReturnResult);
 
         if (instantiatedRegion.constantsTable == null)
             instantiatedRegion.constantsTable = this.constantsTable;
