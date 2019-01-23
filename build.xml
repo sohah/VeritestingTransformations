@@ -75,6 +75,13 @@
 	  <available file="src/examples"    type="dir" property="have_examples"/>
 	  <available file="src/benchmarks"    type="dir" property="have_benchmarks"/>
 	  <available file="src/ApacheCLI"    type="dir" property="have_apachecli"/>
+	  <available file="src/wbs"    type="dir" property="have_wbs"/>
+	  <available file="src/siena"    type="dir" property="have_siena"/>
+	  <available file="src/schedule2_3"    type="dir" property="have_schedule2_3"/>
+	  <available file="src/nanoxml"    type="dir" property="have_nanoxml"/>
+	  <available file="src/adaptersynth"    type="dir" property="have_adaptersynth"/>
+	  <available file="src/tcas"    type="dir" property="have_tcas"/>
+	  <available file="src/tcas_sr"    type="dir" property="have_tcas_sr"/>
 
 	  <condition property="have_jvm_code">
 		  <or>
@@ -106,7 +113,7 @@
   <!-- ======================= COMPILE SECTION ============================= -->
 
   <!-- public compile -->
-  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-examples,-compile-benchmarks,-compile-apachecli"
+  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-tcas,-compile-tcas-sr,-compile-examples,-compile-adaptersynth"
 	  description="compile all JPF core sources" >
   </target>
 
@@ -157,7 +164,7 @@
 	  </javac>
   </target>
 
-  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main">
+  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs,-compile-siena,-compile-schedule2_3,-compile-nanoxml">
 	  <mkdir dir="build/examples" />
 	  <javac srcdir="src/examples" destdir="build/examples"
 		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -165,6 +172,11 @@
 		  <classpath>
 			  <path refid="lib.path"/>
 			  <pathelement location="build/classes"/>
+			  <pathelement location="build/wbs"/>
+			  <pathelement location="build/siena"/>
+			  <pathelement location="build/schedule2_3"/>
+			  <pathelement location="build/nanoxml"/>
+			  <pathelement location="build/tcas"/>
 			  <pathelement location="build/annotations"/>
 		  </classpath>
 	  </javac>
@@ -196,6 +208,111 @@
 			  <pathelement location="build/apachecli"/>
 		  </classpath>
 	  </javac>
+	</target>
+
+  <target name="-compile-wbs" if="have_wbs" depends="-compile-classes">
+	  <mkdir dir="build/wbs" />
+		<javac srcdir="src/wbs" destdir="build/wbs" 
+		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+		  includeantruntime="false">
+		  <classpath>
+			  <path refid="lib.path"/>
+			  <pathelement location="build/classes"/>
+			  <pathelement location="build/annotations"/>
+			  <pathelement location="build/wbs"/>
+			</classpath>
+	  </javac>
+		<copy file="build/wbs/WBS.class" tofile="build/examples/WBS.class"/>
+  </target>
+
+	<target name="-compile-siena" if="have_siena" depends="-compile-classes">
+		<mkdir dir="build/siena" />
+		<javac srcdir="src/siena" destdir="build/siena"
+			   debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+			   includeantruntime="false">
+			<classpath>
+				<path refid="lib.path"/>
+				<pathelement location="build/classes"/>
+				<pathelement location="build/annotations"/>
+				<pathelement location="build/siena"/>
+			</classpath>
+		</javac>
+	</target>
+
+    <target name="-compile-schedule2_3" if="have_schedule2_3" depends="-compile-classes">
+		<mkdir dir="build/schedule2_3" />
+		<javac srcdir="src/schedule2_3" destdir="build/schedule2_3"
+			   debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+			   includeantruntime="false">
+			<classpath>
+				<path refid="lib.path"/>
+				<pathelement location="build/classes"/>
+				<pathelement location="build/annotations"/>
+				<pathelement location="build/schedule2_3"/>
+			</classpath>
+		</javac>
+	</target>
+
+    <target name="-compile-nanoxml" if="have_nanoxml" depends="-compile-classes">
+		<mkdir dir="build/nanoxml" />
+		<javac srcdir="src/nanoxml" destdir="build/nanoxml"
+			   debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+			   includeantruntime="false">
+			<classpath>
+				<path refid="lib.path"/>
+				<pathelement location="build/classes"/>
+				<pathelement location="build/annotations"/>
+				<pathelement location="build/nanoxml"/>
+			</classpath>
+		</javac>
+	</target>
+
+
+	<target name="-compile-adaptersynth" if="have_adaptersynth" depends="-compile-examples">
+		<mkdir dir="build/adaptersynth" />
+		<javac srcdir="src/adaptersynth" destdir="build/adaptersynth"
+			   debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+			   includeantruntime="false">
+			<classpath>
+				<path refid="lib.path"/>
+				<pathelement location="build/classes"/>
+				<pathelement location="build/examples"/>
+				<pathelement location="build/annotations"/>
+				<pathelement location="build/adaptersynth"/>
+			</classpath>
+		</javac>
+	</target>
+
+  <target name="-compile-tcas" if="have_tcas" depends="-compile-classes">
+	  <mkdir dir="build/tcas" />
+		<javac srcdir="src/tcas" destdir="build/tcas" 
+		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+		  includeantruntime="false">
+		  <classpath>
+			  <path refid="lib.path"/>
+			  <pathelement location="build/classes"/>
+			  <pathelement location="build/annotations"/>
+			  <pathelement location="build/tcas"/>
+			</classpath>
+	  </javac>
+		<copy file="build/tcas/tcas.class" tofile="build/examples/tcas.class"/>
+  </target>
+
+
+  <target name="-compile-tcas-sr" if="have_tcas_sr" depends="-compile-examples">
+	  <mkdir dir="build/tcas_sr" />
+		<javac srcdir="src/tcas_sr" destdir="build/tcas_sr" 
+		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+		  includeantruntime="false">
+		  <classpath>
+			  <path refid="lib.path"/>
+			  <pathelement location="build/classes"/>
+			  <pathelement location="build/examples"/>
+			  <pathelement location="build/annotations"/>
+			  <pathelement location="build/tcas_sr"/>
+			</classpath>
+	  </javac>
+		<copy file="build/tcas_sr/tcas_singlereturn.class" tofile="build/examples/tcas_singlereturn.class"/>
   </target>
 
 

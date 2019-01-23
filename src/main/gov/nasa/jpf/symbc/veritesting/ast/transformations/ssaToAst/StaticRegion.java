@@ -111,7 +111,7 @@ public class StaticRegion implements Region {
             varTypeTable = new VarTypeTable(ir);
         } else {
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(-2147483647, 2147483646));
-            SymbCondVisitor symbCondVisitor = new SymbCondVisitor(null, (SlotParamTable) slotParamTable, true);
+            SymbCondVisitor symbCondVisitor = new SymbCondVisitor(null, (SlotParamTable) slotParamTable, true, ir.getSymbolTable());
             ExprVisitorAdapter eva = symbCondVisitor.eva;
             if(staticStmt instanceof CompositionStmt){
                 eva.accept(((IfThenElseStmt)((CompositionStmt) staticStmt).s1).condition);

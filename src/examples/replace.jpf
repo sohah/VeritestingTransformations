@@ -15,4 +15,3 @@ symbolic.dp=z3bitvector
 #symbolic.debug=on
 veritestingMode=4
 performanceMode = true
-interestingClassNames = replace

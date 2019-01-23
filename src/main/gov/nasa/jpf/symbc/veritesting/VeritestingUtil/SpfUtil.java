@@ -270,11 +270,20 @@ public class SpfUtil {
     // consumes 1 or more stack operands
     public static Instruction isUnsupportedRegionEnd(StaticRegion region, Instruction ins) {
         int endIns = region.endIns;
-        while (ins.getPosition() != endIns) {
+        Instruction prevIns = null;
+        while (ins != null && ins.getPosition() != endIns) {
             if (ins instanceof GOTO && (((GOTO) ins).getTarget().getPosition() <= endIns)) {
+                prevIns = ins;
                 ins = ((GOTO) ins).getTarget();
             }
-            else ins = ins.getNext();
+            else {
+                prevIns = ins;
+                ins = ins.getNext(); // can potentially return null, seen in nativereturn instruction in java.lang.String.substring
+            }
+        }
+        if (ins == null) {
+            assert prevIns != null;
+            return prevIns;
         }
         Instruction ret = ins;
         if (ret.getMnemonic().contains("store")) return null;

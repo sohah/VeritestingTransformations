@@ -24,4 +24,9 @@ public class SwitchInstruction extends Instruction {
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        return (stmt2 instanceof SwitchInstruction);
+    }
 }

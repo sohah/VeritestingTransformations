@@ -6,8 +6,6 @@ import za.ac.sun.cs.green.expr.*;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
-import static gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr.makeNewWalaVarExpr;
-import static gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion.uniqueCounter;
 
 public class ArrayRef {
     public final int ref;

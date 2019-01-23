@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess;
 
+import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRef;
 import gov.nasa.jpf.vm.*;
 import za.ac.sun.cs.green.expr.Expression;
@@ -97,11 +98,23 @@ public class SubstituteGetOutput {
         int fieldSize = fieldInfo.getStorageSize();
         assert(finalValue != null);
         if (fieldSize == 1) {
-            eiFieldOwner.set1SlotField(fieldInfo, 0); // field value should not matter (I, Vaibhav, think)
-            eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+            if (finalValue instanceof IntegerConstant) {
+                eiFieldOwner.set1SlotField(fieldInfo, (int) ((IntegerConstant) finalValue).value);
+            } else if (finalValue instanceof gov.nasa.jpf.symbc.numeric.RealConstant) {
+                eiFieldOwner.setFloatField(fieldInfo, (float) ((gov.nasa.jpf.symbc.numeric.RealConstant) finalValue).value);
+            } else {
+                eiFieldOwner.set1SlotField(fieldInfo, 0); // Vaibhav: field value should not matter
+                eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+            }
         } else {
-            eiFieldOwner.set2SlotField(fieldInfo, 0); // field value should not matter (I, Vaibhav, think)
-            eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+            if (finalValue instanceof IntegerConstant) {
+                eiFieldOwner.set2SlotField(fieldInfo, ((IntegerConstant) finalValue).value);
+            } else if (finalValue instanceof gov.nasa.jpf.symbc.numeric.RealConstant) {
+                eiFieldOwner.setDoubleField(fieldInfo, ((gov.nasa.jpf.symbc.numeric.RealConstant) finalValue).value);
+            } else {
+                eiFieldOwner.set2SlotField(fieldInfo, 0); // Vaibhav: field value should not matter
+                eiFieldOwner.setFieldAttr(fieldInfo, finalValue);
+            }
         }
     }
 

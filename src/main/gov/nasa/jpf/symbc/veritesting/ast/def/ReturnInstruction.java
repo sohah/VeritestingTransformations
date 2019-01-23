@@ -35,4 +35,13 @@ public class ReturnInstruction extends Instruction {
     public String toString() {
         return "\n return " + rhs;
     }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if(!(stmt2 instanceof ReturnInstruction))
+            return false;
+        else {
+            return (this.rhs.toString().equals(((ReturnInstruction) stmt2).rhs.toString()));
+        }
+    }
 }

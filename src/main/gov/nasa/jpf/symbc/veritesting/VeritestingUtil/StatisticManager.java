@@ -78,17 +78,18 @@ public class StatisticManager {
 
 
     public String printAllRegionStatistics(){
-        String out="\n/************************ Printing Regions Statistics *****************\n"+
-        "veriHitNumber: number of times a region was successfully veritested\n" +
+        StringBuilder out= new StringBuilder("\n/************************ Printing Regions Statistics *****************\n" +
+                "veriHitNumber: number of times a region was successfully veritested\n" +
                 "spfHitNumber: number of times we were not able to veritest a region and we left it to SPF (this is counting failures due to statements in the region we couldn't summaries.)\n" +
-                "concreteHit: number of times a region was not veritested because of the condition\n" ;
+                "concreteHit: number of times a region was not veritested because of the condition\n");
 
         Set<String> keys = regionsStatisticsMap.keySet();
         Iterator<String> keysItr = keys.iterator();
 
         while(keysItr.hasNext())
-            out += regionsStatisticsMap.get(keysItr.next()).print();
-        return out;
+            out.append(regionsStatisticsMap.get(keysItr.next()).print());
+        out.append("\n").append(getDistinctVeriRegionKeys());
+        return out.toString();
     }
 
     public String printAllExceptionStatistics(){
@@ -144,7 +145,7 @@ public class StatisticManager {
         while(itr.hasNext()) {
             Map.Entry<String, StaticRegion> entry = itr.next();
             String key = entry.getKey();
-            if (!isInterestingRegion(key)) continue;
+//            if (!isInterestingRegion(key)) continue;
             StaticRegion region = entry.getValue();
             out.add(key + ": maxDepth = " + region.maxDepth + ", execution path count = " + region.totalNumPaths + "\n");
         }
@@ -172,6 +173,26 @@ public class StatisticManager {
             if (regionsStatisticsMap.get(keysItr.next()).veriHitNumber !=0)
                 ++count;
         return count;
+    }
+
+    public String getDistinctVeriRegionKeys() {
+        String ret = "";
+        Set<String> keys = regionsStatisticsMap.keySet();
+        Iterator<String> keysItr = keys.iterator();
+        ArrayList<String> out= new ArrayList<>();
+
+        while(keysItr.hasNext()) {
+            String key = keysItr.next();
+            if (regionsStatisticsMap.get(key).veriHitNumber != 0)
+                out.add(regionsStatisticsMap.get(key).regionKey + "\n");
+        }
+        Collections.sort(out);
+        out.add(0, "Printing keys of regions that were instantiated at least once\n");
+        out.add(out.size(), "Finished printing keys of regions that were instantiated at least once\n");
+        for (String s: out) {
+            ret += s;
+        }
+        return ret;
     }
 
     public int getSuccInstantiations(){

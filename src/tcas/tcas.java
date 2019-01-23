@@ -1,5 +1,5 @@
 
-public class tcas_singlereturn {
+public class tcas {
 	public static int OLEV = 600;
 	public static int MAXALTDIFF = 300;
 	public static int MINSEP = 600;
@@ -38,8 +38,6 @@ public class tcas_singlereturn {
 	public static int UNRESOLVED = 0;
 	public static int UPWARD_RA = 1;
 	public static int DOWNWARD_RA = 2;
-	private static int result_alt_sep_test = -1;
-	private static int result_alim = -1;
 
 	public static void initialize() {
 		Positive_RA_Alt_Thresh_0 = 400;
@@ -48,99 +46,73 @@ public class tcas_singlereturn {
 		Positive_RA_Alt_Thresh_3 = 740;
 	}
 
-	public static int b2I(boolean b) { return b ? 1 : 0; }
-
-	public static Outputs getOutputs() {
-		int[] ret = new int[]{Cur_Vertical_Sep, b2I(High_Confidence), b2I(Two_of_Three_Reports_Valid),
-		Own_Tracked_Alt, Own_Tracked_Alt_Rate, Other_Tracked_Alt, Alt_Layer_Value, Up_Separation, Down_Separation, Other_RAC, Climb_Inhibit,
-		result_alt_sep_test, result_alim};
-		return new Outputs(ret);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (tcas_singlereturn.class.isInstance(obj)) {
-			tcas_singlereturn o = (tcas_singlereturn) obj;
-			return true;
-		}
-		return false;
-	}
-
 	public static int ALIM() {
-		int result;
 		if (Alt_Layer_Value == 0){
-			result =  Positive_RA_Alt_Thresh_0;
+			return Positive_RA_Alt_Thresh_0;
 		}
 		else if (Alt_Layer_Value == 1){
-			result = Positive_RA_Alt_Thresh_1;
+			return Positive_RA_Alt_Thresh_1;
 		}
 		else if (Alt_Layer_Value == 2){
-			result = Positive_RA_Alt_Thresh_2;
+			return Positive_RA_Alt_Thresh_2;
 		}
 		else{
-			result = Positive_RA_Alt_Thresh_3;
+			return Positive_RA_Alt_Thresh_3;
 		}
-		return result;
 	}
 
 	public static int Inhibit_Biased_Climb() {
-		int result;
 		if (Climb_Inhibit > 0) {
-			result = Up_Separation + NOZCROSS;
+			int ret = Up_Separation + NOZCROSS;
+			return ret;
 		}
 		else{
-			result = Up_Separation;
+			return Up_Separation;
 		}
-		return result;
 	}
 
 	public static boolean Non_Crossing_Biased_Climb() {
 		int upward_preferred;
-		boolean result;
 		int inhibit_biased_climb = Inhibit_Biased_Climb();
 		if (inhibit_biased_climb > Down_Separation) {
 			upward_preferred = 1;
 		} else {
 			upward_preferred = 0;
 		}
-
 		if (upward_preferred != 0) {
 			int alim = ALIM();
 			if(!(Down_Separation >= alim)){
-				result = true;
+				return true;
 			}
 			else{
-				result = false;
+				return false;
 			}
 		}
 		else {
 			if (!(Cur_Vertical_Sep >= MINSEP)){
-				result = false;
+				return false;
 			}
 			else{
 				int alim = ALIM();
 				if(!(Up_Separation >= alim)){
-					result = false;
+					return false;
 				}
 				else{
 					boolean own_above_thread = Own_Above_Threat();
 					if (!own_above_thread){
-						result = false;
+						return false;
 					}
 					else{
-						result = true;
+						return true;
 					}
 				}
 
 			}
 		}
-		return result;
 	}
 
 	public static boolean Non_Crossing_Biased_Descend() {
 		int upward_preferred;
-		boolean result;
-
 		int inhibit_biased_climb = Inhibit_Biased_Climb();
 		if (inhibit_biased_climb > Down_Separation) {
 			upward_preferred = 1;
@@ -153,16 +125,16 @@ public class tcas_singlereturn {
 			boolean own_below_threat = Own_Below_Threat();
 			// reduction source
 			if (!(Cur_Vertical_Sep >= MINSEP)){
-				result = false;
+				return false;
 			}
 			else if (!(Down_Separation >= alim)){
-				result = false;
+				return false;
 			}
 			else if (!own_below_threat){
-				result = false;
+				return false;
 			}
 			else{
-				result = true;
+				return true;
 			}
 		}
 		else {
@@ -170,16 +142,15 @@ public class tcas_singlereturn {
 			boolean own_above_threat = Own_Above_Threat();
 			// reduction source
 			if(!(Up_Separation >= alim)){
-				result = false;
+				return false;
 			}
 			else if(!own_above_threat){
-				result = false;
+				return false;
 			}
 			else{
-				result = true;
+				return true;
 			}
 		}
-		return result;
 	}
 
 	public static boolean Own_Below_Threat() {
@@ -202,18 +173,16 @@ public class tcas_singlereturn {
 		int alt_sep = UNRESOLVED;
 		boolean need_upward_RA = false;
 		boolean non_crossing_biased_climb = Non_Crossing_Biased_Climb();
-		boolean own_below_threat, own_above_threat;
 		if(non_crossing_biased_climb){
-			own_below_threat = Own_Below_Threat(); //return symbolic temp variable
+			boolean own_below_threat = Own_Below_Threat(); //return symbolic temp variable
 			if(own_below_threat){
 				need_upward_RA = true; //is symbolic
 			}
 		}
-
 		boolean need_downward_RA = false;
 		boolean non_crossing_biased_descend = Non_Crossing_Biased_Descend();
 		if(non_crossing_biased_descend){
-			own_above_threat = Own_Above_Threat();
+			boolean own_above_threat = Own_Above_Threat();
 			if(own_above_threat){
 				need_downward_RA = true;
 			}
@@ -235,7 +204,7 @@ public class tcas_singlereturn {
 			}
 		}
 
-		/*commented from before: if(need_upward_RA && need_downward_RA) alt_sep = 0;
+		/*if(need_upward_RA && need_downward_RA) alt_sep = 0;
 		if(need_upward_RA && !need_downward_RA) alt_sep = 1;
 		if(!need_upward_RA && need_downward_RA) alt_sep = 2;
 		if(!need_upward_RA && !need_downward_RA) alt_sep = 0;*/
@@ -249,14 +218,15 @@ public class tcas_singlereturn {
 	    boolean intent_not_known = false;
 	    int alt_sep = UNRESOLVED;
 
-	   if(High_Confidence){
+	    if(High_Confidence){
 	    	if(Own_Tracked_Alt_Rate <= OLEV){
 	    		if(Cur_Vertical_Sep > MAXALTDIFF){
 	    			enabled = true;
 	    		}
 	    	}
 	    }
-	    if(enabled){
+
+		if(enabled){
 		    if(Other_Capability == TCAS_TA){
 		    	tcas_equipped = true;
 		    }
@@ -278,7 +248,8 @@ public class tcas_singlereturn {
 	    return alt_sep;
 	}
 
-	public static void mainProcess(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12) {
+	public static void mainProcess(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12) {//,
+								   //int a21, int a22, int a23, int a24, int a25, int a26, int a27, int a28, int a29, int a30, int a31, int a32) {
 		initialize();
 		Cur_Vertical_Sep = a1;
 		if (a2 == 0) {
@@ -303,10 +274,11 @@ public class tcas_singlereturn {
 		Other_RAC = a10;
 		Other_Capability = a11;
 		Climb_Inhibit = a12;
-		//alt_sep_test();
 
-		result_alt_sep_test = alt_sep_test();
-//		result_alim = ALIM();
+//		alt_sep_test();
+
+		int result = alt_sep_test();
+//		int alim = ALIM();
 
 		// MWW assertions.  These come from ACSL safety property paper: http://people.rennes.inria.fr/Arnaud.Gotlieb/CT_ATM_gotlieb.pdf
 		// fails
@@ -316,45 +288,52 @@ public class tcas_singlereturn {
 //				result != DOWNWARD_RA : true);
 
 		// passes
-//		assert((Up_Separation < result_alim &&
-//				Down_Separation < result_alim) ?
-//				result_alim != DOWNWARD_RA : true);
+//		assert((Up_Separation < alim &&
+//				Down_Separation < alim) ?
+//				result != DOWNWARD_RA : true);
 
 		//passes
-//		assert((Up_Separation < result_alim &&
-//				Down_Separation >= result_alim) ?
-//				result_alim != UPWARD_RA : true);
+//		assert((Up_Separation < alim &&
+//				Down_Separation >= alim) ?
+//				result != UPWARD_RA : true);
 
 		// fails
 //		assert((Up_Separation >= alim &&
 //				Down_Separation < alim) ?
 //				result != DOWNWARD_RA: true);
 
-					// Original properties
-/*@ behavior P2b : assumes
-Up_Separation < Positive_RA_Alt_Tresh &&
-Down_Separation < Positive_RA_Alt_Tresh &&
-Up_Separation < Down_Separation; ensures \result != need_Upward_RA;
 
-/*@ behavior P2a : assumes
-Up_Separation < Positive_RA_Alt_Tresh &&
-Down_Separation < Positive_RA_Alt_Tresh ; ensures \result != need_Downward_RA;
+		/*Cur_Vertical_Sep = a21;
+		if (a22 == 0) {
+			High_Confidence = false;
+		}
+		else {
+			High_Confidence = true;
+		}
+		if (a23 == 0) {
+			Two_of_Three_Reports_Valid = false;
+		}
+		else {
+			Two_of_Three_Reports_Valid = true;
+		}
 
-/*@ behavior P1b : assumes
-Up_Separation < Positive_RA_Alt_Tresh &&
-Down_Separation ≥ Positive_RA_Alt_Tresh; ensures \result != need_Upward_RA;
-P1b
-/*@ behavior P1a : assumes
-Up_Separation ≥ Positive_RA_Alt_Tresh &&
-Down_Separation < Positive_RA_Alt_Tresh; ensures \result != need_Downward_RA;
-*/
+		Own_Tracked_Alt = a24;
+		Own_Tracked_Alt_Rate = a25;
+		Other_Tracked_Alt = a26;
+		Alt_Layer_Value = a27;
+		Up_Separation = a28;
+		Down_Separation = a29;
+		Other_RAC = a30;
+		Other_Capability = a31;
+		Climb_Inhibit = a32;
+
+		alt_sep_test();*/
 	}
 
 	public static void main(String[] argv) {
-//		tcas_singlereturn t = new tcas_singlereturn();
-//		t.mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
-		int maxSteps = 1;
+		int maxSteps = Integer.parseInt(System.getenv("MAX_STEPS"));
 		for (int i=0; i < maxSteps; i++)
-			mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+			mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1); //,
+				//601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
 	}
 }

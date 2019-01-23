@@ -12,6 +12,10 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubsc
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.Variable;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * This class represents a DynamicRegion, that is, a StaticRegion that has been processed dynamically, this is done initially through uniquness transformation then later with the substitution and other transformations.
@@ -114,11 +118,13 @@ public class DynamicRegion implements Region {
                          RemoveEarlyReturns.ReturnResult earlyReturnResult) {
         this.ir = oldDynRegion.ir;
         this.dynStmt = dynStmt;
-        this.inputTable = new DynamicTable(
+       /* this.inputTable = new DynamicTable(
                 "Region Input Table",
                 "var",
                 oldDynRegion.isMethodRegion ? "param" : "slot");
-        ;
+*/
+
+        this.inputTable = oldDynRegion.inputTable;
         this.endIns = oldDynRegion.endIns;
         this.isMethodRegion = oldDynRegion.isMethodRegion;
         this.outputTable = oldDynRegion.outputTable;
@@ -172,7 +178,8 @@ public class DynamicRegion implements Region {
                 (OutputTable) staticRegion.outputTable, uniqueNum);
         this.fieldRefTypeTable = new FieldRefTypeTable();
         this.psm = new FieldSubscriptMap();
-        this.arrayOutputs = new ArrayExpressions(null);
+        this.arrayOutputs = null;
         this.constantsTable = null;
     }
+
 }

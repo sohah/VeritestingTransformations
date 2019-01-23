@@ -156,12 +156,13 @@ public class ProblemZ3BitVector extends ProblemGeneral {
             if (Status.SATISFIABLE == solver.check()) {
                 model = solver.getModel();
                 String strResult = model.eval((Expr)dpVar, false).toString();
-                return new BigInteger(strResult).longValue();
+                return new BigInteger(strResult).intValue();
             }
             else {
                 assert false; // should not be reachable
                 return 0;
             }
+        } catch(NumberFormatException ignored) { return 0L;
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("## Error Z3: Exception caught in getIntValue: \n" + e);

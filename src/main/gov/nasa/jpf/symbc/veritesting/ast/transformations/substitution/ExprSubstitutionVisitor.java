@@ -3,16 +3,13 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 import gov.nasa.jpf.symbc.numeric.IntegerConstant;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.ValueSymbolTable;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.*;
 
 /**
@@ -25,6 +22,12 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
     public ExprVisitorAdapter eva;
     private DynamicRegion dynRegion;
     private DynamicTable valueSymbolTable;
+
+    private boolean somethingChanged;
+
+    public boolean isSomethingChanged() {
+        return somethingChanged;
+    }
 
     public ExprSubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
                                    DynamicTable valueSymbolTable) {
@@ -44,7 +47,8 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
             if (dynRegion.inputTable.lookup(expr) != null &&
                     sf.isReferenceSlot(((Integer)dynRegion.inputTable.lookup(expr))) && !dynRegion.isMethodRegion) {
                 int objRef = ((IntConstant) varValue).getValue();
-                dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
+                if (objRef == 0) dynRegion.varTypeTable.table.put(expr, "int");
+                else dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
             }
         }
         if (dynRegion.outputTable.reverseLookup(expr) != null &&
@@ -56,9 +60,11 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
             if (useForTypeOnly == null)
                 objRef = sf.getLocalVariable(slot);
             else objRef = (useForTypeOnly instanceof IntegerConstant) ? (int) ((IntegerConstant) useForTypeOnly).value : -1;
-            if (objRef != -1) dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
+            if (objRef != -1 && objRef != 0) dynRegion.varTypeTable.table.put(expr, ti.getElementInfo(objRef).getType());
+            else dynRegion.varTypeTable.table.put(expr, "int");
         }
         if (varValue != null) {
+            somethingChanged = true;
             return varValue;
         } else
             return expr;

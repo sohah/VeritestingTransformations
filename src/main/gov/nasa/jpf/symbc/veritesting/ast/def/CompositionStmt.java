@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ast.def;
 
+import gov.nasa.jpf.symbc.numeric.Comparator;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 
 /**
@@ -22,6 +23,18 @@ public class CompositionStmt implements Stmt {
     @Override
     public String toString() {
         return "(( "+ s1.toString() + ") ; (" + s2.toString() + "))";
+    }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof CompositionStmt))
+            return false;
+        else{
+            Stmt s21 = ((CompositionStmt) stmt2).s1;
+            Stmt s22 = ((CompositionStmt) stmt2).s2;
+
+            return((this.s1.equals(s21)) && (this.s2.equals(s22)));
+        }
     }
 
 

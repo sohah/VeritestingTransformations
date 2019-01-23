@@ -21,6 +21,17 @@ public class AssignmentStmt implements Stmt {
         return lhs.toString() + " := (" + rhs.toString() +" )";
     }
 
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof AssignmentStmt))
+            return false;
+        else{
+            String lhs2 = ((AssignmentStmt) stmt2).lhs.toString();
+            String rhs2 = ((AssignmentStmt) stmt2).rhs.toString();
+            return((this.lhs.toString().equals(lhs2)) && (this.rhs.toString().equals(rhs2)));
+        }
+    }
+
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }

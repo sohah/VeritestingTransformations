@@ -29,4 +29,9 @@ public class NewInstruction extends Instruction {
     public String toString() {
         return "new Instruction";
     }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        return (stmt2 instanceof NewInstruction);
+    }
 }

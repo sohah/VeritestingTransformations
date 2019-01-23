@@ -134,9 +134,7 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(ArrayLengthInstruction c) {
-        return new ArrayLengthInstruction(c.getOriginal(),
-                c.arrayref,
-                c.def);
+        return new ArrayLengthInstruction(c.getOriginal(), c.arrayref, c.def);
     }
 
     @Override

@@ -6,6 +6,7 @@ import za.ac.sun.cs.green.expr.Expression;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.ast.def.SkipStmt.skip;
 
 
@@ -113,8 +114,10 @@ public class NoSkipVisitor implements AstVisitor<Stmt> {
 
     public Stmt bad(Object obj) {
         String name = obj.getClass().getCanonicalName();
-        throwException(new IllegalArgumentException("Unsupported class: " + name +
-                " value: " + obj.toString() + " seen in NoSkipVisitor"), INSTANTIATION);
+        String exceptionalReason = "Unsupported class: " + name +
+                " value: " + obj.toString() + " seen in NoSkipVisitor";
+        skipRegionStrings.add(exceptionalReason);
+        throwException(new IllegalArgumentException(exceptionalReason), INSTANTIATION);
         return (Stmt)obj;
     }
 }

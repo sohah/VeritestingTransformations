@@ -30,7 +30,7 @@ public class InstanceOfInstruction extends Instruction {
     }
 
     public SSAInstanceofInstruction getOriginal() {
-        return (SSAInstanceofInstruction)original;
+        return (SSAInstanceofInstruction) original;
     }
 
     @Override
@@ -40,6 +40,21 @@ public class InstanceOfInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return "\n"+ result + " = "+ val + " instanceOf "+ checkedType + ")";
+        return "\n" + result + " = " + val + " instanceOf " + checkedType + ")";
+    }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof InstanceOfInstruction))
+            return false;
+        else {
+            String result2 = ((InstanceOfInstruction) stmt2).result.toString();
+            String val2 = ((InstanceOfInstruction) stmt2).val.toString();
+            String checkedType2 = ((InstanceOfInstruction) stmt2).checkedType.toString();
+
+            return (this.result.toString().equals(result2)
+                    && this.val.toString().equals(val2)
+                    && this.checkedType.toString().equals(checkedType2));
+        }
     }
 }

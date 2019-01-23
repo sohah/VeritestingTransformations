@@ -26,7 +26,7 @@ public class ArrayLoadInstruction extends Instruction {
     }
 
     public SSAArrayLoadInstruction getOriginal() {
-        return (SSAArrayLoadInstruction)original;
+        return (SSAArrayLoadInstruction) original;
     }
 
     public ArrayLoadInstruction(SSAArrayLoadInstruction ins) {
@@ -44,6 +44,23 @@ public class ArrayLoadInstruction extends Instruction {
 
     @Override
     public String toString() {
-        return "" + def + " = "+ arrayref + "[" + index+":"+elementType +"]";
+        return "" + def + " = " + arrayref + "[" + index + ":" + elementType + "]";
+    }
+
+    @Override
+    public boolean equals(Stmt stmt2) {
+        if (!(stmt2 instanceof ArrayLoadInstruction))
+            return false;
+        else {
+            String arrayref2 = ((ArrayLoadInstruction) stmt2).arrayref.toString();
+            String index2 = ((ArrayLoadInstruction) stmt2).index.toString();
+            String elementType2 = ((ArrayLoadInstruction) stmt2).elementType.toString();
+            String def2 = ((ArrayLoadInstruction) stmt2).def.toString();
+
+            return ((this.arrayref.toString().equals(arrayref2))
+                    && (this.index.toString().equals(index2))
+                    && (this.elementType.toString().equals(elementType2))
+                    && (this.def.toString().equals(def2)));
+        }
     }
 }

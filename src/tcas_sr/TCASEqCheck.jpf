@@ -1,7 +1,7 @@
 target=TCASEqCheck
 veritestRegionExpectedCount = -1
 
-classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
+classpath=${jpf-symbc}/build/examples,${jpf-symbc}/build/tcas_sr
 sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil
 symbolic.debug=false
