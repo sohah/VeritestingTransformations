@@ -233,21 +233,6 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
                     dynRegion.varTypeTable.mergeTable(hgOrdTypeTable);
                     Stmt returnStmt;
-<<<<<<< HEAD
-                    if (getStmtRetExp(hgOrdStmt) != null) { //cases where return instruction was not the last instruction in a compsitional statement, then we have something wrong in our summary that we can't handle.
-                        if (c.result.length == 1) {
-                            Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
-                            assert (stmtRetPair != null);
-                            returnStmt = new AssignmentStmt(c.result[0], stmtRetPair.getSecond());
-                            return new CompositionStmt(stmtRetPair.getFirst(), returnStmt);
-                        } else {
-                            return getStmtRetExp(hgOrdStmt).getFirst();
-                        }
-                    } else {
-                        sre = new StaticRegionException("Cannot summarize invoke in " + instruction.toString());
-                        skipRegionStrings.add("Cannot summarize invoke");
-                        return new InvokeInstruction(c.getOriginal(), c.result, params);
-=======
                     somethingChanged = true;
                     if (c.result.length == 1) {
                         Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
@@ -255,7 +240,6 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                         return new CompositionStmt(stmtRetPair.getFirst(), returnStmt);
                     } else {
                         return getStmtRetExp(hgOrdStmt).getFirst();
->>>>>>> 550921536b6f7796501f1d20980b81ad1220d03b
                     }
                 } else {
                     sre = new StaticRegionException("Cannot summarize invoke in " + instruction.toString());
@@ -349,11 +333,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         }
 
         String dynamicClassName = currClassName;
-<<<<<<< HEAD
-        if ((dynamicClassName.charAt(dynamicClassName.length() - 1)) == ';') {
-=======
         if (!Character.isLetterOrDigit(dynamicClassName.charAt(dynamicClassName.length() - 1))) {
->>>>>>> 550921536b6f7796501f1d20980b81ad1220d03b
             dynamicClassName = dynamicClassName.substring(0, dynamicClassName.length() - 2);
         }
         ArrayList<String> classList = getSuperClassList(ti, currClassName);
@@ -383,49 +363,27 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         StackFrame sf = ti.getTopFrame();
 
         DynamicTable valueSymbolTable = new DynamicTable("var-value table", "var", "value");
-<<<<<<< HEAD
-        List<CloneableVariable> regionVarSet = dynRegion.varTypeTable.getKeys();
-
-        for (CloneableVariable var : regionVarSet) {
-            if (var instanceof WalaVarExpr) { //type table can contain local that we have created for early return, we need to exclude those.
-=======
         List<Variable> regionVarSet = dynRegion.varTypeTable.getKeys();
 
         for (Object var : regionVarSet) {
             if (var instanceof Variable) {
->>>>>>> 550921536b6f7796501f1d20980b81ad1220d03b
                 Integer slot = (Integer) dynRegion.inputTable.lookup(var);
                 if ((slot != null) && (!dynRegion.isMethodRegion)) {
                     String varType = sf.getLocalVariableType(slot);
                     gov.nasa.jpf.symbc.numeric.Expression varValueExp;
                     varValueExp = (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot);
-<<<<<<< HEAD
-                    if (varValueExp == null)
-                        try {
-                            int varValue = sf.getLocalVariable(slot);
-                            varValueExp = createSPFVariableForType(sf, varValue, varType);
-                        } catch (StaticRegionException e) {
-                            System.out.println(e.getMessage());
-                        }
-=======
                     if (varValueExp == null) {
                         int varValue = sf.getLocalVariable(slot);
                         varValueExp = createSPFVariableForType(sf, varValue, varType);
 
                     }
->>>>>>> 550921536b6f7796501f1d20980b81ad1220d03b
                     Expression greenValue = SPFToGreenExpr(varValueExp);
                     valueSymbolTable.add(var, greenValue);
 
                 } else { //not a stack slot var, try to check if it is a constant from wala
                     SymbolTable symbolTable = dynRegion.ir.getSymbolTable();
-<<<<<<< HEAD
-                    if ((((WalaVarExpr) var).number > -1) && (symbolTable.isConstant(((WalaVarExpr) var).number))) {
-                        Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr) var).number);
-=======
                     if ((((WalaVarExpr)var).number > -1) && (symbolTable.isConstant(((WalaVarExpr)var).number))) {
                         Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr)var).number);
->>>>>>> 550921536b6f7796501f1d20980b81ad1220d03b
                         valueSymbolTable.add(var, greenValue);
                     }
                 }
@@ -442,24 +400,13 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
      */
 
 
-<<<<<<< HEAD
-        assert (!dynRegion.isMethodRegion);
-        valueSymbolTable = fillValueSymbolTable(ti, dynRegion);
-
-        SubstitutionVisitor visitor = new SubstitutionVisitor(ti, dynRegion, valueSymbolTable);
-        Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
-        if (visitor.sre != null) throwException(visitor.sre, INSTANTIATION);
-        if (visitor.cne != null) throwException(new StaticRegionException(visitor.cne.getMessage()), INSTANTIATION);
-        DynamicRegion instantiatedDynRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null, dynRegion.earlyReturnResult);
-=======
     public DynamicRegion execute() {
->>>>>>> 550921536b6f7796501f1d20980b81ad1220d03b
 
         Stmt dynStmt = dynRegion.dynStmt.accept(this);
         /*if (this.sre != null) throwException(this.sre, INSTANTIATION);
         if (this.cne != null) throwException(new StaticRegionException(this.cne.getMessage()), INSTANTIATION);
         */
-        this.instantiatedRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null);
+        this.instantiatedRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null, dynRegion.earlyReturnResult);
 
         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
