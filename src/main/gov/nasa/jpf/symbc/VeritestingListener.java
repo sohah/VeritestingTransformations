@@ -294,6 +294,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         String methodSignature = methodInfo.getSignature();
         int offset = instructionToExecute.getPosition();
         String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+
         return key;
     }
 
@@ -608,7 +609,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         publisher.publishTopicStart("VeritestingListener report:");
         long dynRunTime = (runEndTime - runStartTime) - JITAnalysis.staticAnalysisDur;
 
-//        pw.println(statisticManager.printAllRegionStatistics());
+        pw.println(statisticManager.printAllRegionStatistics());
 //        pw.println(statisticManager.printStaticAnalysisStatistics());
 //        pw.println(statisticManager.printAllExceptionStatistics());
 

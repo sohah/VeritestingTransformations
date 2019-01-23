@@ -177,6 +177,10 @@ public class StaticTypeIVisitor implements SSAInstruction.IVisitor {
                 && (((firstUse == null || var >= firstUse) && (lastDef == null || var <= lastDef))
                 //SH: case of a method region where there aren't really boundaries.
                     || ((firstUse != null && firstUse == -100) && (lastDef != null && lastDef == -100)))) {
+            if (ir.getSymbolTable().isConstant(var) && ir.getSymbolTable().isNullConstant(var)) {
+                varTypeTable.add(var, "int");
+                return;
+            }
             String type;
             TypeName typeName = null;
             TypeReference typeRef = (TypeInference.make(ir, true)).getType(var).getTypeReference();
