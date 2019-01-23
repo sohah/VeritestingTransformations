@@ -107,7 +107,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static int veritestRegionExpectedCount = -1;
     private static int instantiationLimit = -1;
 
-    public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES}
+    public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
 
     private static VeritestingMode runMode;
     public static boolean performanceMode = false;
@@ -121,9 +121,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public VeritestingListener(Config conf, JPF jpf) {
         if (conf.hasValue("veritestingMode")) {
             veritestingMode = conf.getInt("veritestingMode");
-            runMode = veritestingMode == 4 ? VeritestingMode.SPFCASES :
+            runMode = veritestingMode == 5 ? VeritestingMode.EARLYRETURNS :
+                    (veritestingMode == 4 ? VeritestingMode.SPFCASES :
                     ((veritestingMode == 3 ? VeritestingMode.HIGHORDER :
-                            (veritestingMode == 2 ? VeritestingMode.VERITESTING : VeritestingMode.VANILLASPF)));
+                            (veritestingMode == 2 ? VeritestingMode.VERITESTING : VeritestingMode.VANILLASPF))));
 
             switch (runMode) {
                 case VANILLASPF:
@@ -140,6 +141,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     break;
                 case SPFCASES:
                     System.out.println("* running veritesting with SPFCases.");
+                    break;
+                case EARLYRETURNS:
+                    System.out.println("* running veritesting with SPFCases and Early Returns.");
                     break;
             }
 
@@ -308,10 +312,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         staticRegion.varTypeTable.print();
 
         /*-------------- EARLY RETURN TRANSFORMATION ---------------*/
-   /*     if (runMode == VeritestingMode.SPFCASES) {
+        if (runMode == VeritestingMode.EARLYRETURNS) {
             staticRegion = RemoveEarlyReturns.removeEarlyReturns(staticRegion);
         }
-*/
+
         /*-------------- UNIQUENESS TRANSFORMATION ---------------*/
         DynamicRegion dynRegion = UniqueRegion.execute(staticRegion);
 

@@ -210,4 +210,25 @@ public class StaticRegion implements Region {
         stmt.accept(regionBoundaryVisitor);
         return new Pair<>(new Pair<>(regionBoundaryVisitor.getFirstUse(), regionBoundaryVisitor.getLastUse()), new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef()));
     }
-}
+
+
+    public StaticRegion(Stmt staticStmt, StaticRegion staticRegion,RemoveEarlyReturns.ReturnResult returnResult) throws StaticRegionException {
+        this.ir = staticRegion.ir;
+        this.inputTable = staticRegion.inputTable;
+        this.outputTable = staticRegion.outputTable;
+        this.slotParamTable = staticRegion.slotParamTable;
+        this.staticStmt = staticStmt;
+        this.endIns = staticRegion.endIns;
+        this.isMethodRegion = staticRegion.isMethodRegion;
+        this.varTypeTable = staticRegion.varTypeTable;
+
+        if(returnResult == null){
+            RemoveEarlyReturns o = new RemoveEarlyReturns();
+            this.earlyReturnResult = o. new ReturnResult(staticStmt);
+        }
+        else
+            this.earlyReturnResult = returnResult;
+
+    }
+
+    }
