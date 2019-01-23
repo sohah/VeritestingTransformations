@@ -1,0 +1,13 @@
+target=printTokens2
+classpath=${jpf-symbc}/build/printTokens2_2
+sourcepath=${jpf-symbc}/src/printTokens2_2
+#symbolic.method = printTokens2.mainProcess(sym#sym)
+symbolic.method = printTokens2.mainProcess(sym#sym)
+symbolic.minint=-100
+symbolic.maxint=100
+vm.storage.class=nil
+listener = .symbc.VeritestingListener
+symbolic.dp=z3bitvector
+#listener = .listener.ChoiceTracker
+#symbolic.debug=on
+veritestingMode=3
