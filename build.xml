@@ -74,7 +74,7 @@
 	  <available file="src/tests"       type="dir" property="have_tests"/>
 	  <available file="src/examples"    type="dir" property="have_examples"/>
 	  <available file="src/benchmarks"    type="dir" property="have_benchmarks"/>
-	  <available file="src/ApacheCLI"    type="dir" property="have_apachecli"/>
+	  <available file="src/apachecli"    type="dir" property="have_apachecli"/>
 	  <available file="src/wbs"    type="dir" property="have_wbs"/>
 	  <available file="src/siena"    type="dir" property="have_siena"/>
 	  <available file="src/schedule2_3"    type="dir" property="have_schedule2_3"/>
