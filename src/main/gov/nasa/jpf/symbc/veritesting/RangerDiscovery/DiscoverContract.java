@@ -26,9 +26,58 @@ public class DiscoverContract {
     private static ArrayList<String> stateOutput = new ArrayList<>();
     private static ArrayList<String> intermediateVar = new ArrayList<>();
 
+    private static ArrayList<String> jkindInVar = new ArrayList<>();
+    private static ArrayList<String> jkindOutVar = new ArrayList<>();
+
     public static DynamicRegion dynRegion;
 
 
+
+    public static String generateKMerge(String query, ArrayList z3FunDecSet, String fileName){
+        
+        //TODO
+        discoverJKindVar();
+        String rangerTransition = generateRangerTransition(query, z3FunDecSet, fileName);
+        ArrayList<Pair<String, String>> inputMapping = generateMapping(jkindInVar, stateInput);
+        ArrayList<Pair<String, String>> outputMapping = generateMapping(jkindOutVar, stateOutput);
+        String contractAssertion = generateContractAssertion(inputMapping, outputMapping);
+
+        return null;
+
+    }
+
+    private static ArrayList<Pair<String, String>> generateMapping(ArrayList<String> jkindInVar, ArrayList<String> stateInput) {
+        //TODO
+        return null;
+    }
+
+
+    private static void discoverJKindVar() { //this really should automatically collect the inputs from the jkind file.
+        jkindInVar.add("sig");
+        jkindInVar.add("ignition");
+        jkindInVar.add("reset_flag");
+        jkindInVar.add("start_bt_val~0.reset_flag$");
+        jkindInVar.add("launch_bt_val~0.reset_flag");
+        jkindInVar.add("start_bt_val~0.start_bt");
+        jkindInVar.add("launch_bt_val~0.start_bt");
+        jkindInVar.add("start_bt_val~0.launch_bt");
+        jkindInVar.add("launch_bt_val~0.launch_bt");
+        jkindInVar.add("start_bt_val~0.start_bt_out");
+        jkindInVar.add("launch_bt_val~0.launch_bt_out");
+
+
+        jkindOutVar.add("sig");
+        jkindOutVar.add("ignition");
+        jkindOutVar.add("reset_flag");
+        jkindOutVar.add("start_bt_val~0.reset_flag$");
+        jkindOutVar.add("launch_bt_val~0.reset_flag");
+        jkindOutVar.add("start_bt_val~0.start_bt");
+        jkindOutVar.add("launch_bt_val~0.start_bt");
+        jkindOutVar.add("start_bt_val~0.launch_bt");
+        jkindOutVar.add("launch_bt_val~0.launch_bt");
+        jkindOutVar.add("start_bt_val~0.start_bt_out");
+        jkindOutVar.add("launch_bt_val~0.launch_bt_out");
+    }
 
     /**
      * used to generate a transition function R for discovery of the contract of the implementation.
@@ -53,6 +102,8 @@ public class DiscoverContract {
 
         return rangerTransition +"\n" + instantiation0 + "\n" + instantiation1;
     }
+
+
 
     private static String generateInstanitaion(int i) {
         String varInstance_i = declareVarInstance(i);
@@ -209,16 +260,10 @@ public class DiscoverContract {
     }
 
 
-    /**
-     * used to generate the input and output of the transition function, it stores it in a file.
-     * Input is defined to be the input of the method of interest plus the state of the object it lays within.
-     * <p>
-     * Output is defined as any state change that the method does as well as any stack slot change.
-     *
-     * @param dynRegion
-     */
-    public static void generateRInputOutput(DynamicRegion dynRegion) {
 
+    public static String generateContractAssertion(ArrayList<Pair<String, String>> inputMapping, ArrayList<Pair<String, String>> outputMapping) {
+        //TODO
+        return null;
 
     }
 
