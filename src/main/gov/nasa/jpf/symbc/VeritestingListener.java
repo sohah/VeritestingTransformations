@@ -353,6 +353,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
     }
 
+    @Override
+    public void choiceGeneratorRegistered(VM vm, ChoiceGenerator<?> nextCG, ThreadInfo currentThread, Instruction executedInstruction) {
+        System.out.println("choiceGeneratorRegistered at " + executedInstruction.getMethodInfo() + "#" + executedInstruction.getPosition());
+    }
 
     private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, StaticRegion staticRegion,
                                          String key) throws Exception {
