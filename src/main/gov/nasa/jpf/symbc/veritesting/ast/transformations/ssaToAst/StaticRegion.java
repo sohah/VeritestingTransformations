@@ -11,6 +11,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SymbCondVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Invariants.LocalOutputInvariantVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import za.ac.sun.cs.green.expr.Expression;
 
@@ -74,6 +75,8 @@ public class StaticRegion implements Region {
      */
     public long totalNumPaths = 0;
 
+    public RemoveEarlyReturns.ReturnResult earlyReturnResult;
+
     /**
      * @param staticStmt: Ranger IR statement that summarizes this static region
      * @param ir: Wala IR for the method which contains this StaticRegion
@@ -85,7 +88,7 @@ public class StaticRegion implements Region {
      *                     If unavailable, it can be given a null value.
      * @throws StaticRegionException
      */
-    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock startingBlock) throws StaticRegionException {
+    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock startingBlock, RemoveEarlyReturns.ReturnResult returnResult) throws StaticRegionException {
 
         this.ir = ir;
         this.isMethodRegion = isMethodRegion;
@@ -96,7 +99,12 @@ public class StaticRegion implements Region {
         Integer firstDef = null;
         Integer lastDef = null;
         Integer lastVar;
-
+        if(returnResult == null){
+            RemoveEarlyReturns o = new RemoveEarlyReturns();
+            this.earlyReturnResult = o. new ReturnResult(staticStmt);
+        }
+        else
+            this.earlyReturnResult = returnResult;
 
         if (isMethodRegion) {
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt);
@@ -145,7 +153,8 @@ public class StaticRegion implements Region {
             firstDef = regionBoundary.getSecond().getFirst();
             lastDef = regionBoundary.getSecond().getSecond();
 
-            lastVar = (lastDef != null) && (lastUse == null) ? lastDef : ((lastDef == null) && (lastUse != null) ? lastUse : (lastDef > lastUse ? lastDef: lastUse));
+            lastVar = findLastVar(firstDef, firstUse, lastDef, lastUse);
+            //lastVar = (lastDef != null) && (lastUse == null) ? lastDef : ((lastDef == null) && (lastUse != null) ? lastUse : (lastDef > lastUse ? lastDef: lastUse));
             ((SlotParamTable) slotParamTable).filterTableForBoundary(staticStmt, new Pair<>(firstUse, lastVar));
             varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastVar));
         }
@@ -174,6 +183,20 @@ public class StaticRegion implements Region {
         RegionMetricsVisitor.execute(this);
     }
 
+    private Integer findLastVar(Integer firstDef, Integer firstUse, Integer lastDef, Integer lastUse) {
+        ArrayList<Integer> vars = new ArrayList();
+        if(firstDef != null)
+            vars.add(firstDef);
+        if(lastDef != null)
+            vars.add(lastDef);
+        if(firstUse != null)
+            vars.add(firstUse);
+        if(lastUse != null)
+            vars.add(lastUse);
+
+        return Collections.max(vars);
+    }
+
     /**
      * This computes the region boundary in case of conditional region, to determine the first use and the first and last def variables inside the region.
      *
@@ -187,4 +210,25 @@ public class StaticRegion implements Region {
         stmt.accept(regionBoundaryVisitor);
         return new Pair<>(new Pair<>(regionBoundaryVisitor.getFirstUse(), regionBoundaryVisitor.getLastUse()), new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef()));
     }
-}
+
+
+    public StaticRegion(Stmt staticStmt, StaticRegion staticRegion,RemoveEarlyReturns.ReturnResult returnResult) throws StaticRegionException {
+        this.ir = staticRegion.ir;
+        this.inputTable = staticRegion.inputTable;
+        this.outputTable = staticRegion.outputTable;
+        this.slotParamTable = staticRegion.slotParamTable;
+        this.staticStmt = staticStmt;
+        this.endIns = staticRegion.endIns;
+        this.isMethodRegion = staticRegion.isMethodRegion;
+        this.varTypeTable = staticRegion.varTypeTable;
+
+        if(returnResult == null){
+            RemoveEarlyReturns o = new RemoveEarlyReturns();
+            this.earlyReturnResult = o. new ReturnResult(staticStmt);
+        }
+        else
+            this.earlyReturnResult = returnResult;
+
+    }
+
+    }

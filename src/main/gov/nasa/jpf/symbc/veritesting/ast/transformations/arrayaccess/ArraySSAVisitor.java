@@ -226,7 +226,7 @@ public class ArraySSAVisitor extends FixedPointAstMapVisitor {
 
     public DynamicRegion execute(){
         Stmt arrayStmt = dynRegion.dynStmt.accept(this);
-        instantiatedRegion = new DynamicRegion(dynRegion, arrayStmt, new SPFCaseList(), null, null);
+        instantiatedRegion = new DynamicRegion(dynRegion, arrayStmt, new SPFCaseList(), null, null, dynRegion.earlyReturnResult);
         instantiatedRegion.arrayOutputs = this.arrayExpressions;
         System.out.println(StmtPrintVisitor.print(instantiatedRegion.dynStmt));
         System.out.println(instantiatedRegion.arrayOutputs);

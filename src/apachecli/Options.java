@@ -268,9 +268,11 @@ public class Options implements Serializable
 		if(shortOptsIndex != 0){
 			for(int i=0; i<shortOptsIndex;){
 				char _opt = shortOptsKey[i];
-				if(opt == _opt){
-					result = true;
-					break;
+				if (!result) {
+					if (opt == _opt) {
+						result = true;
+//					break;
+					}
 				}
 				i = i + 1;
 			}

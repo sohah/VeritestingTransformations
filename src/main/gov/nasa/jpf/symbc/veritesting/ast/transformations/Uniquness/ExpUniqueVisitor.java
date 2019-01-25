@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.AstVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
@@ -30,6 +31,17 @@ public class ExpUniqueVisitor extends ExprMapVisitor implements ExprVisitor<Expr
     @Override
     public Expression visit(WalaVarExpr expr) {
         WalaVarExpr uniqueExpr = expr;
+        try {
+            uniqueExpr = expr.makeUnique(uniqueNum);
+        } catch (StaticRegionException e) {
+            sre = e;
+        }
+        return uniqueExpr;
+    }
+
+    @Override
+    public Expression visit(AstVarExpr expr) {
+        AstVarExpr uniqueExpr = expr;
         try {
             uniqueExpr = expr.makeUnique(uniqueNum);
         } catch (StaticRegionException e) {

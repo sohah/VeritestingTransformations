@@ -141,7 +141,7 @@ public class SimplifyStmtVisitor extends FixedPointAstMapVisitor {
     public DynamicRegion execute(){
         Stmt simplifiedStmt = dynRegion.dynStmt.accept(this);
         this.instantiatedRegion = new DynamicRegion(dynRegion, simplifiedStmt, dynRegion.spfCaseList, dynRegion.regionSummary,
-                dynRegion.spfPredicateSummary);
+                dynRegion.spfPredicateSummary, dynRegion.earlyReturnResult);
 
         if (instantiatedRegion.constantsTable == null)
             instantiatedRegion.constantsTable = this.constantsTable;

@@ -312,7 +312,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
 
         String currClassName = null;
-        if (!instruction.isStatic()) {
+        if (!instruction.isStatic() && !instruction.isSpecial()) {
             if (c.params[0] instanceof IntConstant) //if the first param is a constant, then it is already a reference and it isn't in the varTypeTable, instead we need to ask SPF for it.
                 currClassName = ti.getHeap().get(((IntConstant) c.params[0]).getValue()).getClassInfo().getName();
             else if (VeritestingListener.simplify &&
@@ -330,8 +330,9 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             if(c.getOriginal().getCallSite().getDeclaredTarget().getSelector().toString().equals(DiscoverContract.contractMethodName))
                 DiscoverContract.collectInput(ti, c.params, currClassName, dynRegion);
         } else {
-            Atom packageName = methodReference.getDeclaringClass().getName().getPackage();
-            currClassName = (packageName != null ? packageName.toString() + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
+            Atom packageNameAtom = methodReference.getDeclaringClass().getName().getPackage();
+            String packageName = packageNameAtom != null ? packageNameAtom.toString().replaceAll("/", ".") : null;
+            currClassName = (packageName != null ? packageName + "." : "") + methodReference.getDeclaringClass().getName().getClassName().toString();
         }
 
         String dynamicClassName = currClassName;
@@ -384,10 +385,11 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
                 } else { //not a stack slot var, try to check if it is a constant from wala
                     SymbolTable symbolTable = dynRegion.ir.getSymbolTable();
-                    if ((((WalaVarExpr) var).number > -1) && (symbolTable.isConstant(((WalaVarExpr) var).number))) {
-                        Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr) var).number);
-                        valueSymbolTable.add(var, greenValue);
-                    }
+                    if (var instanceof WalaVarExpr)
+                        if ((((WalaVarExpr) var).number > -1) && (symbolTable.isConstant(((WalaVarExpr) var).number))) {
+                            Expression greenValue = makeConstantFromWala(dynRegion.ir.getSymbolTable(), ((WalaVarExpr) var).number);
+                            valueSymbolTable.add(var, greenValue);
+                        }
                 }
             }
         }
@@ -408,7 +410,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         /*if (this.sre != null) throwException(this.sre, INSTANTIATION);
         if (this.cne != null) throwException(new StaticRegionException(this.cne.getMessage()), INSTANTIATION);
         */
-        this.instantiatedRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null);
+        this.instantiatedRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null, dynRegion.earlyReturnResult);
 
         System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));

@@ -25,6 +25,8 @@ public class WalaUtil {
             return new IntConstant(1);
         else if (symbolTable.isFalse(walaId))
             return new IntConstant(0);
+        else if (symbolTable.isNullConstant(walaId))
+            return new IntConstant(0);
         else // is a constant that we don't support, then just return it back.
         {
             System.out.println("constant type not supported for @w" + walaId);

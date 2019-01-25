@@ -96,6 +96,7 @@ public class SubstituteGetOutput {
 
     private void executeWrite(ElementInfo eiFieldOwner, FieldInfo fieldInfo) {
         int fieldSize = fieldInfo.getStorageSize();
+        assert(finalValue != null);
         if (fieldSize == 1) {
             if (finalValue instanceof IntegerConstant) {
                 eiFieldOwner.set1SlotField(fieldInfo, (int) ((IntegerConstant) finalValue).value);

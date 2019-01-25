@@ -121,7 +121,7 @@ public final class WalaVarExpr extends CloneableVariable {
         return new WalaVarExpr(expr.number, varId);
     }*/
 
-    public static WalaVarExpr createWalaVar(IR ir, SSAInstruction ins, int ssaVar){
+    /*public static WalaVarExpr createWalaVar(IR ir, SSAInstruction ins, int ssaVar){
         if (VeritestingListener.showLocalNames) { // show names of wala var if possible instead of using w
             String[] varNames = ir.getLocalNames(ins.iindex, ssaVar);
             if (varNames != null){
@@ -131,6 +131,6 @@ public final class WalaVarExpr extends CloneableVariable {
             return new WalaVarExpr(ssaVar);
         } else
             return new WalaVarExpr(ssaVar);
-    }
+    }*/
 
 }
