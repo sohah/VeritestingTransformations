@@ -154,6 +154,7 @@ public class DiscoverContract {
             Map.Entry<FieldRef, SubscriptPair> entry = fieldRefItr.next();
             stateOutput.add((new FieldRefVarExpr(entry.getKey(), entry.getValue())).toString());
         }
+        Collections.sort(stateOutput);
     }
 
     private static String generateTransitionHeader() {
@@ -291,6 +292,7 @@ public class DiscoverContract {
                     stateInput.add(fieldSym.toString());
             }
         }
+        Collections.sort(stateInput);
     }
 
 
