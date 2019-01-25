@@ -58,7 +58,7 @@ import symlib.Util;
 public class ProblemZ3 extends ProblemGeneral {
 
     /*SH: used to collect all function declarations (query variables) while constructing the solver and the context. */
-    private HashSet<String> z3FunDecSet = new HashSet();
+    private ArrayList<String> z3FunDecSet = new ArrayList<>();
 
 
     //This class acts as a safeguard to prevent

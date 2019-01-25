@@ -378,7 +378,6 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     if (varValueExp == null) {
                         int varValue = sf.getLocalVariable(slot);
                         varValueExp = createSPFVariableForType(sf, varValue, varType);
-
                     }
                     Expression greenValue = SPFToGreenExpr(varValueExp);
                     valueSymbolTable.add(var, greenValue);
