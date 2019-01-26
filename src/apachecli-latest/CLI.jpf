@@ -1,0 +1,17 @@
+target=CLI
+classpath = ${jpf-symbc}/build/apachecli
+sourcepath = ${jpf-symbc}/src/apachecli
+#symbolic.method = CLI.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym)
+symbolic.method = CLI.mainProcess(sym#sym#sym#con#con#con#con#con#sym)
+symbolic.minint=-100
+symbolic.maxint=100
+vm.storage.class=nil
+listener = .symbc.VeritestingListener
+#listener = .listener.ChoiceTracker
+#symbolic.debug=on
+veritestingMode = 1
+performanceMode = true
+symbolic.dp=z3bitvector
+#symbolic.strings = true
+#symbolic.string_dp = z3
+exclusionsFile=${jpf-symbc}/MyJava60RegressionExclusions.txt
