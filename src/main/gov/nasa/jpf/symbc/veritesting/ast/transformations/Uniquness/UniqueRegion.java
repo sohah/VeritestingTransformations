@@ -53,9 +53,10 @@ public class UniqueRegion {
             ExprVisitorAdapter eva = new ExprVisitorAdapter(expUniqueVisitor);
             Expression newAssign = (Expression) eva.accept(oldEarlyReturn.assign);
             Expression newCondition = (Expression) eva.accept(oldEarlyReturn.condition);
+            Expression newRetVar = (Expression) eva.accept(oldEarlyReturn.retVar);
 
             RemoveEarlyReturns o = new RemoveEarlyReturns();
-            RemoveEarlyReturns.ReturnResult newReturnResult = o.new ReturnResult(oldEarlyReturn.stmt, newAssign, newCondition, oldEarlyReturn.retPosAndType, oldEarlyReturn.retVar);
+            RemoveEarlyReturns.ReturnResult newReturnResult = o.new ReturnResult(oldEarlyReturn.stmt, newAssign, newCondition, oldEarlyReturn.retPosAndType, newRetVar);
             dynRegion = new DynamicRegion(staticRegion,
                     dynStmt,
                     uniqueNum, newReturnResult);
