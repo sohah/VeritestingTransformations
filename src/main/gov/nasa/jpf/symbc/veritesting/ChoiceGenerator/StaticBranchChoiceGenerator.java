@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ChoiceGenerator;
 
+import aima.core.logic.propositional.parsing.ast.FalseSentence;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.bytecode.IFNONNULL;
@@ -217,18 +218,26 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             pc = new PathCondition();
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
-        if (region.earlyReturnResult.hasER()) {// setting path condition in case of early return.
+        if (region.earlyReturnResult.hasER()) {// Early Return & SPFCases
             setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, new Operation(Operation.Operator.NOT, region.spfPredicateSummary), new Operation(Operation.Operator.NOT, region.earlyReturnResult.condition)))), STATIC_CHOICE);
-        } else
-            setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
-
-        setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
-        setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
-
-        if (region.earlyReturnResult.hasER())
+            setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
+            setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
             setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, new Operation(Operation.Operator.NOT, region.spfPredicateSummary), region.earlyReturnResult.condition))), RETURN_CHOICE);
-        else
+        }
+        else if(region.earlyReturnResult.hasER()){ //early return only
+            setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, new Operation(Operation.Operator.NOT, region.earlyReturnResult.condition)))), STATIC_CHOICE);
+            setPC(createPC(pc, region.regionSummary, Operation.FALSE), THEN_CHOICE);
+            setPC(createPC(pc, region.regionSummary, Operation.FALSE), ELSE_CHOICE);
+            setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, region.earlyReturnResult.condition))), RETURN_CHOICE);
+        }
+        else { // no early return or spfcases exists, then run only the static choice
+            setPC(createPC(pc, region.regionSummary, Operation.TRUE), STATIC_CHOICE);
+            setPC(createPC(pc, region.regionSummary, Operation.FALSE), THEN_CHOICE);
+            setPC(createPC(pc, region.regionSummary, Operation.FALSE), ELSE_CHOICE);
             setPC(createPC(pc, region.regionSummary, Operation.FALSE), RETURN_CHOICE);
+
+        }
+
     }
 
 }

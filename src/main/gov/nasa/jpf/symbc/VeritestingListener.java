@@ -420,7 +420,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             }
         }
 
-        if (runMode == VeritestingMode.SPFCASES) {
+        if ((runMode.ordinal()) >= (VeritestingMode.SPFCASES.ordinal())) {
 
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
             dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
@@ -435,11 +435,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         /*--------------- TO GREEN TRANSFORMATION ---------------*/
         dynRegion = AstToGreenVisitor.execute(dynRegion);
 
-        if (runMode == VeritestingMode.SPFCASES) {
+        if ((runMode.ordinal()) >= (VeritestingMode.SPFCASES.ordinal())) {
             SpfToGreenVisitor visitor = new SpfToGreenVisitor();
             dynRegion = visitor.execute(dynRegion);
         }
-
         return dynRegion;
     }
 
@@ -525,7 +524,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             return true;
         } else {
-            if (runMode == VeritestingMode.SPFCASES) // this is where we ignore populating the output of the static choice
+            if (runMode.ordinal() >= VeritestingMode.SPFCASES.ordinal()) // this is where we ignore populating the output of the static choice
                 ti.getVM().getSystemState().setIgnored(true); //to ignore counting of the current choice generator.
             throwException(new StaticRegionException("Path condition is unsat, no region is created."), INSTANTIATION);
             return false;

@@ -78,14 +78,14 @@ public class StaticRegion implements Region {
     public RemoveEarlyReturns.ReturnResult earlyReturnResult;
 
     /**
-     * @param staticStmt: Ranger IR statement that summarizes this static region
-     * @param ir: Wala IR for the method which contains this StaticRegion
+     * @param staticStmt:     Ranger IR statement that summarizes this static region
+     * @param ir:             Wala IR for the method which contains this StaticRegion
      * @param isMethodRegion: boolean value that if true indicates that this StaticRegion is for a method summary
-     * @param endIns: Ending instruction's bytecode offset for this static region
-     * @param startingBlock: if given, startingBlock is used for constructing definitions for variables used in the
-     *                     condition of the staticStmt, if the StaticRegion is for a multi-path region.
-     *                     startingBlock should correspond to the beginning block of the region.
-     *                     If unavailable, it can be given a null value.
+     * @param endIns:         Ending instruction's bytecode offset for this static region
+     * @param startingBlock:  if given, startingBlock is used for constructing definitions for variables used in the
+     *                        condition of the staticStmt, if the StaticRegion is for a multi-path region.
+     *                        startingBlock should correspond to the beginning block of the region.
+     *                        If unavailable, it can be given a null value.
      * @throws StaticRegionException
      */
     public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock startingBlock, RemoveEarlyReturns.ReturnResult returnResult) throws StaticRegionException {
@@ -99,11 +99,10 @@ public class StaticRegion implements Region {
         Integer firstDef = null;
         Integer lastDef = null;
         Integer lastVar;
-        if(returnResult == null){
+        if (returnResult == null) {
             RemoveEarlyReturns o = new RemoveEarlyReturns();
-            this.earlyReturnResult = o. new ReturnResult(staticStmt);
-        }
-        else
+            this.earlyReturnResult = o.new ReturnResult(staticStmt);
+        } else
             this.earlyReturnResult = returnResult;
 
         if (isMethodRegion) {
@@ -113,10 +112,9 @@ public class StaticRegion implements Region {
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(-2147483647, 2147483646));
             SymbCondVisitor symbCondVisitor = new SymbCondVisitor(null, (SlotParamTable) slotParamTable, true, ir.getSymbolTable());
             ExprVisitorAdapter eva = symbCondVisitor.eva;
-            if(staticStmt instanceof CompositionStmt){
-                eva.accept(((IfThenElseStmt)((CompositionStmt) staticStmt).s1).condition);
-            }
-            else if(staticStmt instanceof IfThenElseStmt) {
+            if (staticStmt instanceof CompositionStmt) {
+                eva.accept(((IfThenElseStmt) ((CompositionStmt) staticStmt).s1).condition);
+            } else if (staticStmt instanceof IfThenElseStmt) {
                 eva.accept(((IfThenElseStmt) staticStmt).condition);
             }
             if (symbCondVisitor.stackSlotNotFound) {
@@ -126,7 +124,7 @@ public class StaticRegion implements Region {
                 ISSABasicBlock bb = startingBlock;
                 boolean foundStoppingInsn = false;
                 while (symbCondVisitor.noStackSlotVars.size() > 0 && !foundStoppingInsn) {
-                    List<SSAInstruction> bbInsns = ((SSACFG.BasicBlock)bb).getAllInstructions();
+                    List<SSAInstruction> bbInsns = ((SSACFG.BasicBlock) bb).getAllInstructions();
                     reverse(bbInsns);
                     for (SSAInstruction ins : bbInsns) {
                         SSAToStatDefVisitor visitor =
@@ -185,13 +183,13 @@ public class StaticRegion implements Region {
 
     private Integer findLastVar(Integer firstDef, Integer firstUse, Integer lastDef, Integer lastUse) {
         ArrayList<Integer> vars = new ArrayList();
-        if(firstDef != null)
+        if (firstDef != null)
             vars.add(firstDef);
-        if(lastDef != null)
+        if (lastDef != null)
             vars.add(lastDef);
-        if(firstUse != null)
+        if (firstUse != null)
             vars.add(firstUse);
-        if(lastUse != null)
+        if (lastUse != null)
             vars.add(lastUse);
 
         return Collections.max(vars);
@@ -212,7 +210,7 @@ public class StaticRegion implements Region {
     }
 
 
-    public StaticRegion(Stmt staticStmt, StaticRegion staticRegion,RemoveEarlyReturns.ReturnResult returnResult) throws StaticRegionException {
+    public StaticRegion(Stmt staticStmt, StaticRegion staticRegion, RemoveEarlyReturns.ReturnResult returnResult) throws StaticRegionException {
         this.ir = staticRegion.ir;
         this.inputTable = staticRegion.inputTable;
         this.outputTable = staticRegion.outputTable;
@@ -222,13 +220,11 @@ public class StaticRegion implements Region {
         this.isMethodRegion = staticRegion.isMethodRegion;
         this.varTypeTable = staticRegion.varTypeTable;
 
-        if(returnResult == null){
+        if (returnResult == null) {
             RemoveEarlyReturns o = new RemoveEarlyReturns();
-            this.earlyReturnResult = o. new ReturnResult(staticStmt);
-        }
-        else
+            this.earlyReturnResult = o.new ReturnResult(staticStmt);
+        } else
             this.earlyReturnResult = returnResult;
-
     }
 
-    }
+}
