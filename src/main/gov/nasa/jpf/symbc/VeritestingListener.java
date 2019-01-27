@@ -239,7 +239,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     thisHighOrdCount = 0;
                     //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                     if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
-                        if (runMode != VeritestingMode.SPFCASES) {
+                        if ((runMode != VeritestingMode.SPFCASES) && (runMode != VeritestingMode.EARLYRETURNS)) {
                             // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
                             Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
                             if (regionEndInsn != null) {
@@ -459,7 +459,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             populateSlots(ti, dynRegion);
             clearStack(ti.getTopFrame(), ins);
 
-            if (earlyReturnSetup) {//we are setting up an early return choice.
+            if (earlyReturnSetup && VeritestingListener.runMode == VeritestingMode.EARLYRETURNS) {//we are setting up an early return choice.
                 pushReturnOnStack(ti.getTopFrame(), dynRegion);
             }
             return advanceSpf(ins, dynRegion, earlyReturnSetup);

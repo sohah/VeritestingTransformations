@@ -149,7 +149,7 @@ public class DynamicRegion implements Region {
      * @param uniqueNum
      */
 
-    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, int uniqueNum) throws StaticRegionException, CloneNotSupportedException {
+    public DynamicRegion(StaticRegion staticRegion, Stmt dynStmt, int uniqueNum, RemoveEarlyReturns.ReturnResult returnResult) throws StaticRegionException, CloneNotSupportedException {
         this.ir = staticRegion.ir;
         this.dynStmt = dynStmt;
         this.endIns = staticRegion.endIns;
@@ -157,7 +157,7 @@ public class DynamicRegion implements Region {
         this.spfCaseList = new SPFCaseList();
         this.regionSummary = null;
         this.spfPredicateSummary = null;
-        this.earlyReturnResult = staticRegion.earlyReturnResult;
+        this.earlyReturnResult = returnResult;
 
         this.slotParamTable = new DynamicTable(
                 (StaticTable) staticRegion.slotParamTable, uniqueNum);

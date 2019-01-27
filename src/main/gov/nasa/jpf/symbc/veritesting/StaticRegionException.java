@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting;
 
+import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 
 import java.util.HashMap;

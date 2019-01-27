@@ -46,11 +46,23 @@ public class UniqueRegion {
         ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum);
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
 
-
         Stmt dynStmt = staticRegion.staticStmt.accept(stmtVisitor);
+        RemoveEarlyReturns.ReturnResult oldEarlyReturn = staticRegion.earlyReturnResult;
+        DynamicRegion dynRegion;
+        if (oldEarlyReturn.hasER()) { //make early return result (assign and condition) unique as well.
+            ExprVisitorAdapter eva = new ExprVisitorAdapter(expUniqueVisitor);
+            Expression newAssign = (Expression) eva.accept(oldEarlyReturn.assign);
+            Expression newCondition = (Expression) eva.accept(oldEarlyReturn.condition);
 
-        DynamicRegion dynRegion = new DynamicRegion(staticRegion,
-                dynStmt, uniqueNum);
+            RemoveEarlyReturns o = new RemoveEarlyReturns();
+            RemoveEarlyReturns.ReturnResult newReturnResult = o.new ReturnResult(oldEarlyReturn.stmt, newAssign, newCondition, oldEarlyReturn.retPosAndType, oldEarlyReturn.retVar);
+            dynRegion = new DynamicRegion(staticRegion,
+                    dynStmt,
+                    uniqueNum, newReturnResult);
+        }else
+            dynRegion = new DynamicRegion(staticRegion,
+                    dynStmt,
+                    uniqueNum, staticRegion.earlyReturnResult);
 
 
         System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
@@ -70,24 +82,10 @@ public class UniqueRegion {
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
 
         Stmt dynStmt = oldDynRegion.dynStmt.accept(stmtVisitor);
-        RemoveEarlyReturns.ReturnResult oldEarlyReturn = oldDynRegion.earlyReturnResult;
-        DynamicRegion newDynRegion;
-        if (oldEarlyReturn.hasER()) { //make early return result (assign and condition) unique as well.
-            ExprVisitorAdapter eva = new ExprVisitorAdapter(expUniqueVisitor);
-            Expression newAssign = (Expression) eva.accept(oldEarlyReturn.assign);
-            Expression newCondition = (Expression) eva.accept(oldEarlyReturn.condition);
 
-            RemoveEarlyReturns o = new RemoveEarlyReturns();
-            RemoveEarlyReturns.ReturnResult newReturnResult = o.new ReturnResult(oldEarlyReturn.stmt, newAssign, newCondition, oldEarlyReturn.retPosAndType, oldEarlyReturn.retVar);
-            newDynRegion = new DynamicRegion(oldDynRegion,
-                    dynStmt,
-                    oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary, newReturnResult);
-        } else {
-            newDynRegion = new DynamicRegion(oldDynRegion,
-                    dynStmt,
-                    oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary, oldDynRegion.earlyReturnResult);
-        }
-
+        DynamicRegion newDynRegion = new DynamicRegion(oldDynRegion,
+                dynStmt,
+                oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary, oldDynRegion.earlyReturnResult);
         newDynRegion.fieldRefTypeTable.makeUniqueKey(uniqueNum);
         newDynRegion.psm.setUniqueNum(uniqueNum);
         newDynRegion.arrayOutputs = newDynRegion.arrayOutputs.makeUnique(uniqueNum);

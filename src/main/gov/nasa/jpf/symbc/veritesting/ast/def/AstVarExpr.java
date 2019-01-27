@@ -50,7 +50,7 @@ public class AstVarExpr extends CloneableVariable {
             this.type == ave.type);
     }
 
-    @Override public String toString() {  return this.getName(); }
+    @Override public String toString() {  return this.getSymName(); }
     @Override public int getLength() { return 0; }
     @Override public int getLeftLength() {  return 0; }
     @Override public int numVar() { return 0; }
