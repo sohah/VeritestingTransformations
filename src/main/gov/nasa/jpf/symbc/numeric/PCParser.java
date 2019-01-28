@@ -3,16 +3,16 @@
  * Administrator of the National Aeronautics and Space Administration.
  * All rights reserved.
  *
- * Symbolic Pathfinder (jpf-symbc) is licensed under the Apache License, 
+ * Symbolic Pathfinder (jpf-symbc) is licensed under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
- *        http://www.apache.org/licenses/LICENSE-2.0. 
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0.
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and 
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
@@ -38,6 +38,7 @@
 package gov.nasa.jpf.symbc.numeric;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener;
 import gov.nasa.jpf.symbc.numeric.solvers.IncrementalSolver;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
@@ -81,8 +82,8 @@ public class PCParser {
   static Object getExpression(IntegerExpression eRef) {
     assert eRef != null;
     assert !(eRef instanceof IntegerConstant);
-	
-		// System.out.println("PCParser::getExpression for " + eRef + " " + 
+
+		// System.out.println("PCParser::getExpression for " + eRef + " " +
 		// 			(eRef instanceof IntegerExpression) +" "+(eRef instanceof SymbolicInteger));
     if (eRef instanceof SymbolicInteger) {
       Object dp_var = symIntegerVar.get(eRef);
@@ -94,7 +95,7 @@ public class PCParser {
       return dp_var;
     }
 
-			
+
 
 		if (eRef instanceof ComplexNonLinearIntegerExpression) {
 			ComplexNonLinearIntegerExpression c = ((ComplexNonLinearIntegerExpression)eRef);
@@ -186,7 +187,7 @@ public class PCParser {
             return pb.rem(getExpression(e_leftRef),getExpression(e_rightRef));
           else
             throw new RuntimeException("## Error: Binary Non Linear Operation");
-        }	
+        }
       case AND:
         if(e_leftRef instanceof IntegerConstant && e_rightRef instanceof IntegerConstant)
           throw new RuntimeException("## Error: this is not a symbolic expression"); //
@@ -245,7 +246,7 @@ public class PCParser {
     		if(eRef instanceof ComplexNonLinearIntegerExpression) {
 					Comparator cmpRef = ((ComplexNonLinearIntegerExpression) eRef).getComparator();
 					if(cmpRef != null) return getComparatorExpression(e_leftRef, cmpRef, e_rightRef);
-					else throw new RuntimeException("Expression " + eRef + 
+					else throw new RuntimeException("Expression " + eRef +
 							" has neither operator nor comparator");
 				}
 				return null;
@@ -254,8 +255,8 @@ public class PCParser {
     }
   }
 
-	static Object getComparatorExpression(IntegerExpression e_leftRef, 
-																				Comparator cmpRef, 
+	static Object getComparatorExpression(IntegerExpression e_leftRef,
+																				Comparator cmpRef,
 																				IntegerExpression e_rightRef) {
 		switch(cmpRef) {
     	case LOGICAL_OR:
@@ -601,7 +602,7 @@ public class PCParser {
     return true;
   }
 
-  //Added by Gideon, to handle CNF style constraints??? 
+  //Added by Gideon, to handle CNF style constraints???
   static public boolean createDPLinearOrIntegerConstraint (LogicalORLinearIntegerConstraints c) {
     List<Object> orList = new ArrayList<Object>();
 
@@ -613,7 +614,7 @@ public class PCParser {
       switch(c_compRef){
         case EQ:
           if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-            if (((IntegerConstant) c_leftRef).value == ((IntegerConstant) c_rightRef).value) 
+            if (((IntegerConstant) c_leftRef).value == ((IntegerConstant) c_rightRef).value)
               return true;
           }
           else if (c_leftRef instanceof IntegerConstant) {
@@ -641,7 +642,7 @@ public class PCParser {
           break;
         case NE:
           if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-            if (((IntegerConstant) c_leftRef).value != ((IntegerConstant) c_rightRef).value) 
+            if (((IntegerConstant) c_leftRef).value != ((IntegerConstant) c_rightRef).value)
               return true;
           }
           else if (c_leftRef instanceof IntegerConstant) {
@@ -669,7 +670,7 @@ public class PCParser {
           break;
         case LT:
           if (c_leftRef instanceof IntegerConstant && c_rightRef instanceof IntegerConstant) {
-            if (((IntegerConstant) c_leftRef).value < ((IntegerConstant) c_rightRef).value) 
+            if (((IntegerConstant) c_leftRef).value < ((IntegerConstant) c_rightRef).value)
               return true;
           }
           else if (c_leftRef instanceof IntegerConstant) {
@@ -1004,7 +1005,7 @@ public class PCParser {
         else
           pb.post(pb.gt(getExpression(c_leftRef),getExpression(c_rightRef)));
         break;
-			case LOGICAL_OR: 
+			case LOGICAL_OR:
 				// System.out.println("Comparator is LOGICAL_OR");
 				if (c_leftRef instanceof IntegerConstant || c_rightRef instanceof IntegerConstant) {
 					throw new RuntimeException("cannot LOGICAL_OR using a constant in PCParser::createDPNonLinearIntegerConstraint");
@@ -1012,7 +1013,7 @@ public class PCParser {
         else
           pb.post(pb.logical_or(getExpression(c_leftRef),getExpression(c_rightRef)));
 				break;
-			case LOGICAL_AND: 
+			case LOGICAL_AND:
 				// System.out.println("Comparator is LOGICAL_AND");
 				if (c_leftRef instanceof IntegerConstant || c_rightRef instanceof IntegerConstant) {
 					throw new RuntimeException("cannot LOGICAL_AND using a constant in PCParser::createDPNonLinearIntegerConstraint");
@@ -1020,9 +1021,9 @@ public class PCParser {
         else
           pb.post(pb.logical_and(getExpression(c_leftRef),getExpression(c_rightRef)));
 				break;
-			case NONE_CMP: 
-			default: 
-				throw new RuntimeException("unknown comparator(" + 
+			case NONE_CMP:
+			default:
+				throw new RuntimeException("unknown comparator(" +
 						cRef.getComparator() + ") in PCParser::createDPNonLinearIntegerConstraint");
     }
     return true;
@@ -1046,8 +1047,8 @@ public class PCParser {
     if(pb instanceof IncrementalSolver) {
       //If we use an incremental solver, then we push the context
       //*before* adding the constraint header
-      ((IncrementalSolver)pb).push();
-      
+//      ((IncrementalSolver)pb).push();
+
       //Note that for an incremental solver
       //we only add the constraint header
       if(addConstraint(cRef) == false) {
