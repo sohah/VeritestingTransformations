@@ -29,26 +29,34 @@ public class DiscoverContract {
     private static ArrayList<String> jkindInVar = new ArrayList<>();
     private static ArrayList<String> jkindOutVar = new ArrayList<>();
 
+    private static HashMap<String, String> rangerTypeTable = new HashMap<>();
+
     public static DynamicRegion dynRegion;
 
+    enum InputOutput {INPUT, OUTPUT}
+
+    ;
 
 
-    public static String generateKMerge(String query, ArrayList z3FunDecSet, String fileName){
-        
-        //TODO
+    public static String generateKMerge(String query, ArrayList z3FunDecSet, String fileName) {
+
         discoverJKindVar();
         String rangerTransition = generateRangerTransition(query, z3FunDecSet, fileName);
-        ArrayList<Pair<String, String>> inputMapping = generateMapping(jkindInVar, stateInput);
-        ArrayList<Pair<String, String>> outputMapping = generateMapping(jkindOutVar, stateOutput);
-        String contractAssertion = generateContractAssertion(inputMapping, outputMapping);
 
-        return null;
+        ArrayList rInput = new ArrayList(stateInput);
+        rInput.addAll(freeInput);
 
-    }
+        ArrayList<ArrayList> rInputPermutations = Permutation.permutation(rInput);
+        ArrayList<ArrayList> rOutputPermutations = Permutation.permutation(stateInput);
+        //System.out.println(allPermutations);
 
-    private static ArrayList<Pair<String, String>> generateMapping(ArrayList<String> jkindInVar, ArrayList<String> stateInput) {
-        //TODO
-        return null;
+        int trials = 0;
+        for (ArrayList inputPermutation : rInputPermutations)
+            for (ArrayList outputPermutation : rOutputPermutations)
+                rangerTransition += generateContractAssertion(inputPermutation, outputPermutation, trials );
+
+        return rangerTransition;
+
     }
 
 
@@ -56,7 +64,7 @@ public class DiscoverContract {
         jkindInVar.add("sig");
         jkindInVar.add("ignition");
         jkindInVar.add("reset_flag");
-        jkindInVar.add("start_bt_val~0.reset_flag$");
+        jkindInVar.add("start_bt_val~0.reset_flag");
         jkindInVar.add("launch_bt_val~0.reset_flag");
         jkindInVar.add("start_bt_val~0.start_bt");
         jkindInVar.add("launch_bt_val~0.start_bt");
@@ -69,7 +77,7 @@ public class DiscoverContract {
         jkindOutVar.add("sig");
         jkindOutVar.add("ignition");
         jkindOutVar.add("reset_flag");
-        jkindOutVar.add("start_bt_val~0.reset_flag$");
+        jkindOutVar.add("start_bt_val~0.reset_flag");
         jkindOutVar.add("launch_bt_val~0.reset_flag");
         jkindOutVar.add("start_bt_val~0.start_bt");
         jkindOutVar.add("launch_bt_val~0.start_bt");
@@ -97,12 +105,11 @@ public class DiscoverContract {
 
         String rangerTransition = transitionHeader + body + ")";
 
-        String instantiation0 = generateInstanitaion(0) +"\n";
-        String instantiation1 = generateInstanitaion(1) +"\n";
+        String instantiation0 = generateInstanitaion(0) + "\n";
+        String instantiation1 = generateInstanitaion(1) + "\n";
 
-        return rangerTransition +"\n" + instantiation0 + "\n" + instantiation1;
+        return rangerTransition + "\n" + instantiation0 + "\n" + instantiation1;
     }
-
 
 
     private static String generateInstanitaion(int i) {
@@ -115,10 +122,10 @@ public class DiscoverContract {
         String R = "(assert (R ";
         String varBinds = "";
         varBinds += generateBinds(freeInput, i);
-        if(i==0)
+        if (i == 0)
             varBinds += generateBinds(stateInput, i);
         else
-            varBinds += generateBinds(stateOutput, i-1);
+            varBinds += generateBinds(stateOutput, i - 1);
 
         varBinds += generateBinds(stateOutput, i);
         varBinds += generateBinds(intermediateVar, i);
@@ -130,7 +137,7 @@ public class DiscoverContract {
         String bind = "";
 
         for (String varName : arrayList) {
-            bind += " " + generateVarName(varName, i) ;
+            bind += " " + generateVarName(varName, i);
         }
 
         return bind;
@@ -160,8 +167,8 @@ public class DiscoverContract {
         return inState;
     }
 
-    private static String generateVarName(String varName, int i){
-        return varName+"$"+i;
+    private static String generateVarName(String varName, int i) {
+        return varName + "$" + i;
     }
 
     private static void dumpInputOutput(String fileName) {
@@ -203,7 +210,9 @@ public class DiscoverContract {
              ((Iterator) fieldRefItr).hasNext(); ) {
 
             Map.Entry<FieldRef, SubscriptPair> entry = fieldRefItr.next();
-            stateOutput.add((new FieldRefVarExpr(entry.getKey(), entry.getValue())).toString());
+            FieldRefVarExpr fieldRefVarExpr = (new FieldRefVarExpr(entry.getKey(), entry.getValue()));
+            stateOutput.add(fieldRefVarExpr.toString());
+            rangerTypeTable.put(fieldRefVarExpr.toString(), dynRegion.fieldRefTypeTable.lookup(fieldRefVarExpr));
         }
         Collections.sort(stateOutput);
     }
@@ -219,13 +228,11 @@ public class DiscoverContract {
         parameters += createParameters(stateInput);
         parameters += createParameters(stateOutput);
         parameters += createParameters(intermediateVar);
-        
+
         header += parameters + ") Bool\n";
 
         return header;
     }
-
-
 
 
     private static String createParameters(ArrayList<String> inputArray) {
@@ -233,7 +240,7 @@ public class DiscoverContract {
         for (String varName : inputArray) {
             parameters += "(" + varName + " Int) ";
         }
-        return  parameters;
+        return parameters;
     }
 
 
@@ -260,13 +267,94 @@ public class DiscoverContract {
     }
 
 
+    public static String generateContractAssertion(ArrayList rInputPermutation, ArrayList rOutputPermutation, int trials) {
+        String trailId = "contract_match"+ trials;
+        String mergePredicate = "; ---------- joining contract begins here -------------\n (declare-fun contract_match () bool)\n";
+        mergePredicate += "push\n(assert(= " + trailId + "\n\t(let ";
 
-    public static String generateContractAssertion(ArrayList<Pair<String, String>> inputMapping, ArrayList<Pair<String, String>> outputMapping) {
-        //TODO
-        return null;
+        String inputMatchPredicate_1 = generateMatchPredicate(InputOutput.INPUT, rInputPermutation, -1);
+        String outputMatchPredicate_1 = generateMatchPredicate(InputOutput.OUTPUT, rOutputPermutation, -1);
+
+
+        String inputMatchPredicate_0 = generateMatchPredicate(InputOutput.INPUT, rInputPermutation, 0);
+        String outputMatchPredicate_0 = generateNotMatchPredicate(InputOutput.OUTPUT, rOutputPermutation, 0);
+
+        mergePredicate += inputMatchPredicate_1 + outputMatchPredicate_1 + inputMatchPredicate_0 + outputMatchPredicate_0;
+        mergePredicate += "\t\t(=> (and input_match~1 output_match~1 input_match$1) (output_not_match$1))\n";
+
+        mergePredicate += ")))\n " +
+                "(check-sat (" + trailId + ")) \n pop\n";
+        return mergePredicate;
+    }
+
+    private static String generateNotMatchPredicate(InputOutput output, ArrayList rOutputPermutation, int k) {
+        assert (output == InputOutput.OUTPUT);
+
+        String notMatchPredicate = "\n\t(output_not_match$" + k + "\n\t\t( and";
+        int index = 0;
+        for (String jkindVar : jkindOutVar) {
+            if (index == rOutputPermutation.size() - 1)
+                index = 0;
+            notMatchPredicate += createNotClause(jkindVar, (String) rOutputPermutation.get(index), k);
+        }
+
+        notMatchPredicate += "))\n";
+
+        return notMatchPredicate;
 
     }
 
+    private static String createNotClause(String jkindVar, String rangerVar, int k) {
+        String postFix = "";
+        if (k == -1)
+            postFix = "$0";
+        else if (k == 0)
+            postFix = "$1";
+
+        if (rangerTypeTable.get(rangerVar) == "bool")
+            return ("\n(= " + jkindVar + postFix + " (= " + rangerVar + "))\n");
+        else //assuming int
+            return ("\n(= " + jkindVar + postFix + " " + rangerVar + ")\n");
+    }
+
+    private static String generateMatchPredicate(InputOutput inputOutput, ArrayList permutation, int k) {
+        String matchPredicate = "";
+        if (inputOutput == InputOutput.INPUT) {
+            matchPredicate = (k == -1) ? "\t( input_match~1" : "input_match$1";
+        } else {
+            matchPredicate = (k == -1) ? "\t( output_match~1" : "output_match$1";
+        }
+        matchPredicate += "\n\t(and\n";
+        int index = 0;
+
+        for (String jkindVar : jkindInVar) {
+            if (index == permutation.size() - 1)
+                index = 0;
+            matchPredicate += createClause(inputOutput, jkindVar, (String) permutation.get(index), k);
+        }
+
+        matchPredicate += "))\n";
+
+
+        return matchPredicate;
+    }
+
+    private static String createClause(InputOutput inputOutput, String jkindVar, String rangerVar, int k) {
+        String postFix = "";
+        if ((inputOutput == InputOutput.INPUT) && (k == -1))
+            postFix = "~1";
+        else if ((inputOutput == InputOutput.OUTPUT) && (k == -1))
+            postFix = "$0";
+        else if ((inputOutput == InputOutput.INPUT) && (k == 0))
+            postFix = "$0";
+        else if ((inputOutput == InputOutput.OUTPUT) && (k == 0))
+            postFix = "$1";
+
+        if (rangerTypeTable.get(rangerVar) == "bool")
+            return ("\n(= " + jkindVar + postFix + " (= " + rangerVar + "))\n");
+        else //assuming int
+            return ("\n(= " + jkindVar + postFix + " " + rangerVar + ")\n");
+    }
 
 
     /**
@@ -333,8 +421,10 @@ public class DiscoverContract {
             for (int i = 0; i < declaredFields.length; i++) {
                 Object fieldSym = objRef.getFields().getFieldAttr(i);
                 //if the field has a symbolic value then this is a symbolic state of the object that should be considered as an input
-                if (fieldSym != null)
+                if (fieldSym != null){
                     stateInput.add(fieldSym.toString());
+                    rangerTypeTable.put(fieldSym.toString(), objRef.getFieldInfo(i).getType());
+                }
             }
         }
         Collections.sort(stateInput);
@@ -348,8 +438,10 @@ public class DiscoverContract {
         if (slot != null && slot.length > 0) {
             gov.nasa.jpf.symbc.numeric.Expression sym =
                     (gov.nasa.jpf.symbc.numeric.Expression) sf.getLocalAttr(slot[0]);
-            if (sym != null)
+            if (sym != null){
                 freeInput.add(sym.toString());
+                rangerTypeTable.put(sym.toString(), sf.getLocalVariableType(slot[0]));
+            }
         }
     }
 

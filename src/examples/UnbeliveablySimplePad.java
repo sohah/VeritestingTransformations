@@ -1,8 +1,6 @@
-import java.util.Scanner;
-
 public class UnbeliveablySimplePad {
-    private boolean startBtn;
-    private boolean launchBtn;
+    private boolean start_btn;
+    private boolean launch_btn;
     private boolean ignition;
 
     /*enum PadState {
@@ -22,27 +20,27 @@ public class UnbeliveablySimplePad {
 
 
     public UnbeliveablySimplePad() {
-        startBtn = false;
-        launchBtn = false;
+        start_btn = false;
+        launch_btn = false;
     }
 
     public static void main(String[] args) {
         UnbeliveablySimplePad pad = new UnbeliveablySimplePad();
         int count = 1;
-        boolean startBtn = false;
-        boolean launchBtn = false;
+        boolean start_btn = false;
+        boolean launch_btn = false;
         boolean ignition = false;
-        int signal = 1;
+        int sig = 1;
 
-        pad.runPadSteps(signal, startBtn, launchBtn, ignition, true);
+        pad.runPadSteps(sig, start_btn, launch_btn, ignition, true);
 
     }
 
-    public void runPadSteps(int signal, boolean startBtn, boolean launchBtn, boolean ignition, boolean symVar) {
+    public void runPadSteps(int sig, boolean start_btn, boolean launch_btn, boolean ignition, boolean symVar) {
 
         //make pad state symbolic.
-        this.startBtn = startBtn;
-        this.launchBtn = launchBtn;
+        this.start_btn = start_btn;
+        this.launch_btn = launch_btn;
         this.ignition = ignition;
 
         boolean rocketLaunched = false;
@@ -53,7 +51,7 @@ public class UnbeliveablySimplePad {
             //int n = reader.nextInt();
 
             if (symVar) { // used to make this a veritesting region
-                rocketLaunched = runPad(signal); //running it here one step, but should be enclosed in a loop in real program.
+                rocketLaunched = runPad(sig); //running it here one step, but should be enclosed in a loop in real program.
                 //assert (rocketLaunched ? getState() == IGNITION : true);
             }
             if (rocketLaunched) {
@@ -66,8 +64,8 @@ public class UnbeliveablySimplePad {
     }
 
     private void resetPad() {
-        startBtn = false;
-        launchBtn = false;
+        start_btn = false;
+        launch_btn = false;
         ignition = false;
     }
 
@@ -97,12 +95,12 @@ public class UnbeliveablySimplePad {
             if (startOrLaunch) { //only proceed if a non-empty signal was received, otherwise remain in the same state, ignoring incoming signal
                 if (perivousState == IDLE) {
                     if (startSignal) {
-                        startBtn = true;
+                        start_btn = true;
                     }
                 } else {
                     if (perivousState == READY) {
                         if (launchSignal) {
-                            launchBtn = true;
+                            launch_btn = true;
                         }
                     }
                 }
@@ -113,8 +111,8 @@ public class UnbeliveablySimplePad {
 
     public int getState() {
         int padState;
-        boolean mystartBtn = this.startBtn;
-        boolean myLaunchBtn = this.launchBtn;
+        boolean mystartBtn = this.start_btn;
+        boolean myLaunchBtn = this.launch_btn;
         boolean myIgnition = this.ignition;
 
         if (!mystartBtn && !myLaunchBtn && !myIgnition) //IDLE State

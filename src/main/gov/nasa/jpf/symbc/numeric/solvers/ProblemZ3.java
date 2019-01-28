@@ -739,7 +739,8 @@ public class ProblemZ3 extends ProblemGeneral {
 
                         DiscoverContract.z3QuerySet.add(new Pair(solver.toString(), z3FunDecSet));
 
-                        writer.write(DiscoverContract.generateRangerTransition(solver.toString(), z3FunDecSet, fileName));
+                        writer.write(DiscoverContract.generateKMerge(solver.toString(), z3FunDecSet, fileName));
+
                     }
                 } else
                     System.out.println("Encountered a problem while creating Solver Queries directory.");
