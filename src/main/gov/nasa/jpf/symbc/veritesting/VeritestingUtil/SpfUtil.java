@@ -4,6 +4,9 @@ import gov.nasa.jpf.jvm.bytecode.GOTO;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemGeneral;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3BitVectorIncremental;
+import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3Incremental;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt;
@@ -18,6 +21,7 @@ import za.ac.sun.cs.green.expr.Operation;
 
 import java.io.File;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.performanceMode;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 
@@ -306,6 +310,24 @@ public class SpfUtil {
 
     public static boolean isIncrementalSolver() {
         return SymbolicInstructionFactory.dp[0].equals("z3bitvectorinc") || SymbolicInstructionFactory.dp[0].equals("z3inc");
+    }
+
+    public static void maybeParseConstraint(PathCondition pc) throws StaticRegionException {
+        if (isIncrementalSolver()) {
+            ProblemGeneral pb = null;
+            final String[] dp = SymbolicInstructionFactory.dp;
+            if (dp[0].equalsIgnoreCase("z3inc")) {
+                pb = new ProblemZ3Incremental();
+            } else if (dp[0].equalsIgnoreCase("z3bitvectorinc")) {
+                pb = new ProblemZ3BitVectorIncremental();
+            }
+            if (pb != null) {
+                if (PCParser.parse(pc, pb) == null) {
+                    throwException(new StaticRegionException("Couldn't send region summary to incremental solver"), INSTANTIATION);
+                }
+            }
+            else throwException(new StaticRegionException("Unsupported solver type for veritesting"), INSTANTIATION);
+        }
     }
 
 }

@@ -20,6 +20,7 @@ import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.maybeParseConstraint;
 
 
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
@@ -58,6 +59,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             ++VeritestingListener.veritestRegionCount;
         } else if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
             System.out.println("\n=========Executing" + (choice == THEN_CHOICE ? " then " : " else ") + ".  Instruction: ");
+            maybeParseConstraint(getCurrentPC());
             switch (getKind(instructionToExecute)) {
                 case UNARYIF:
                     nextInstruction = executeUnaryIf(instructionToExecute, choice);
@@ -111,7 +113,6 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
             assert pc != null;
             assert (choice == THEN_CHOICE || choice == ELSE_CHOICE);
-
 
             if (choice == ELSE_CHOICE) {
                 Comparator byteCodeOp = SpfUtil.getComparator(instruction);

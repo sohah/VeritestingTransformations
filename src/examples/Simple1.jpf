@@ -15,13 +15,21 @@ symbolic.debug=false
 
 ######## testing equivalence ######
 symbolic.method=TestVeritesting.testHarness(con#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
-symbolic.dp=z3bitvector
 
 #symbolic.min_int=-2147483648
 #symbolic.max_int=2147483647
 symbolic.min_double=-100.0
 symbolic.max_double=100.0
-listener = .symbc.VeritestingListener
+
+#symbolic.dp=z3bitvector
+#listener = .symbc.VeritestingListener
 #listener = .symbc.SymbolicListener
+
 veritestingMode = 3
 symbolic.lazy = true
+performanceMode = false
+
+symbolic.dp=z3bitvectorinc
+listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+symbolic.optimizechoices=false
+

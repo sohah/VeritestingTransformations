@@ -70,8 +70,8 @@ import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwExceptio
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipVeriRegions;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isIncrementalSolver;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isUnsupportedRegionEnd;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.maybeParseConstraint;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.*;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayUtil.doArrayStore;
 
@@ -524,21 +524,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 || isPCSat(pc)) {
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
             long t1 = System.nanoTime();
-            if (isIncrementalSolver()) {
-                ProblemGeneral pb = null;
-                final String[] dp = SymbolicInstructionFactory.dp;
-                if (dp[0].equalsIgnoreCase("z3inc")) {
-                    pb = new ProblemZ3Incremental();
-                } else if (dp[0].equalsIgnoreCase("z3bitvectorinc")) {
-                    pb = new ProblemZ3BitVectorIncremental();
-                }
-                if (pb != null) {
-                    if (PCParser.parse(pc, pb) == null) {
-                        throwException(new StaticRegionException("Couldn't send region summary to incremental solver"), INSTANTIATION);
-                    }
-                }
-                else throwException(new StaticRegionException("Unsupported solver type for veritesting"), INSTANTIATION);
-            }
+            maybeParseConstraint(pc);
             regionSummaryParseTime += (System.nanoTime() - t1);
             return true;
         } else {
@@ -548,6 +534,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             return false;
         }
     }
+
 
 
     /**

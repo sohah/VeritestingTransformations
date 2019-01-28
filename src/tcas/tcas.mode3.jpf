@@ -8,10 +8,16 @@ symbolic.method = tcas.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#s
 vm.storage.class=nil
 
 #coverage.include=tcas
+
 veritestingMode = 3
 performanceMode = true
-listener = .symbc.VeritestingListener
+
+#listener = .symbc.VeritestingListener
 #,gov.nasa.jpf.listener.CoverageAnalyzer
 #listener = .symbc.SymbolicListener
 #listener = .listener.ChoiceTracker
-symbolic.dp=z3bitvector
+#symbolic.dp=z3bitvector
+
+symbolic.dp=z3bitvectorinc
+listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+symbolic.optimizechoices=false
