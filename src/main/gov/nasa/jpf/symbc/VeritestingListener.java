@@ -32,6 +32,7 @@ import gov.nasa.jpf.report.ConsolePublisher;
 import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.report.PublisherExtension;
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.symbc.numeric.solvers.*;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator;
@@ -79,6 +80,7 @@ import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwExceptio
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipVeriRegions;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isIncrementalSolver;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isUnsupportedRegionEnd;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.*;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayUtil.doArrayStore;
@@ -90,7 +92,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static int veritestingMode = 0;
 
     public static long totalSolverTime = 0, z3Time = 0;
-    public static long parseTime = 0;
+    public static long parseTime = 0, regionSummaryParseTime = 0;
     public static long solverAllocTime = 0;
     public static long cleanupTime = 0;
     public static int solverCount = 0;
@@ -358,6 +360,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         System.out.println("choiceGeneratorRegistered at " + executedInstruction.getMethodInfo() + "#" + executedInstruction.getPosition());
     }
 
+    @Override
+    public void choiceGeneratorProcessed(VM vm, ChoiceGenerator<?> processedCG) {
+        System.out.println("choiceGeneratorProcessed: at " + processedCG.getInsn().getMethodInfo() + "#" + processedCG.getInsn().getPosition());
+    }
+
     private DynamicRegion runVeritesting(ThreadInfo ti, Instruction instructionToExecute, StaticRegion staticRegion,
                                          String key) throws Exception {
         Exception transformationException = null;
@@ -387,7 +394,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 dynRegion = FixedPointWrapper.executeFixedPointTransformations(ti, dynRegion);
                 somethingChanged = FixedPointWrapper.isChangedFlag();
 
-                assert (FixedPointWrapper.isChangedFlag() == !FixedPointWrapper.isEqualRegion());
+                if (!performanceMode)
+                    assert (FixedPointWrapper.isChangedFlag() == !FixedPointWrapper.isEqualRegion());
             }
             /*-------------- HIGH ORDER TRANSFORMATION ---------------*/
             dynRegion = FixedPointWrapper.executeFixedPointHighOrder(ti, dynRegion);
@@ -519,10 +527,30 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if (runMode.ordinal() < VeritestingMode.SPFCASES.ordinal()) //only add region summary in non spfcases mode.
             pc._addDet(new GreenConstraint(regionSummary));
 
-        // if we're trying to run fast, then assume that the region summary is satisfiable in any non-SPFCASES mode
-        if ((performanceMode && (runMode == VeritestingMode.VERITESTING || runMode == VeritestingMode.HIGHORDER)) ||
-                isPCSat(pc)) {
+        // if we're trying to run fast, then assume that the region summary is satisfiable in any non-SPFCASES mode.
+        // But, if we're running in incremental solving mode, then we need to ask this region summary to be
+        // communicated to the solver right away which is part of the PathCondition.simplify() control flow.
+        if ((performanceMode &&
+                (runMode == VeritestingMode.VERITESTING || runMode == VeritestingMode.HIGHORDER))
+                || isPCSat(pc)) {
             ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
+            long t1 = System.nanoTime();
+            if (isIncrementalSolver()) {
+                ProblemGeneral pb = null;
+                final String[] dp = SymbolicInstructionFactory.dp;
+                if (dp[0].equalsIgnoreCase("z3inc")) {
+                    pb = new ProblemZ3Incremental();
+                } else if (dp[0].equalsIgnoreCase("z3bitvectorinc")) {
+                    pb = new ProblemZ3BitVectorIncremental();
+                }
+                if (pb != null) {
+                    if (PCParser.parse(pc, pb) == null) {
+                        throwException(new StaticRegionException("Couldn't send region summary to incremental solver"), INSTANTIATION);
+                    }
+                }
+                else throwException(new StaticRegionException("Unsupported solver type for veritesting"), INSTANTIATION);
+            }
+            regionSummaryParseTime += (System.nanoTime() - t1);
             return true;
         } else {
             if (runMode == VeritestingMode.SPFCASES) // this is where we ignore populating the output of the static choice
@@ -677,9 +705,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Total Solver Queries Count = " + solverCount);
         pw.println("Total Solver Time = " + TimeUnit.NANOSECONDS.toMillis(totalSolverTime) + " msec");
         pw.println("Total Solver Parse Time = " + TimeUnit.NANOSECONDS.toMillis(parseTime) + " msec");
+        pw.println("Region Summary Parse Time = " + TimeUnit.NANOSECONDS.toMillis(regionSummaryParseTime) + " msec");
         pw.println("Total Solver Clean up Time = " + TimeUnit.NANOSECONDS.toMillis(cleanupTime) + " msec");
-        pw.println("PCSatSolverCount = " + StatisticManager.PCSatSolverCount + " (makes sense only in SPFCases mode)");
-        pw.println("PCSatSolverTime = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.PCSatSolverTime) + " msec" + " (makes sense only in SPFCases mode)");
+        pw.println("PCSatSolverCount = " + StatisticManager.PCSatSolverCount);
+        pw.println("PCSatSolverTime = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.PCSatSolverTime) + " msec");
         pw.println("Constant Propagation Time for PC sat. checks = " + TimeUnit.NANOSECONDS.toMillis(StatisticManager.constPropTime));
         pw.println("Array SPF Case count = " + StatisticManager.ArraySPFCaseCount);
         pw.println("If-removed count = " + StatisticManager.ifRemovedCount);

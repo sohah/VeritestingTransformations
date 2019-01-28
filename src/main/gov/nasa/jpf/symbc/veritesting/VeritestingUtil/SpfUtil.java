@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
 import gov.nasa.jpf.jvm.bytecode.GOTO;
+import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
@@ -301,6 +302,10 @@ public class SpfUtil {
         if (bytecode >= 0xbc && bytecode <= 0xc7) return ret;
         if (bytecode >= 0xc8 && bytecode <= 0xc9) return null;
         return ret;
+    }
+
+    public static boolean isIncrementalSolver() {
+        return SymbolicInstructionFactory.dp[0].equals("z3bitvectorinc") || SymbolicInstructionFactory.dp[0].equals("z3inc");
     }
 
 }

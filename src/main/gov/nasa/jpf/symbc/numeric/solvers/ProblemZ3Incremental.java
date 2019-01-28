@@ -3,16 +3,16 @@
  * Administrator of the National Aeronautics and Space Administration.
  * All rights reserved.
  *
- * Symbolic Pathfinder (jpf-symbc) is licensed under the Apache License, 
+ * Symbolic Pathfinder (jpf-symbc) is licensed under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
- *        http://www.apache.org/licenses/LICENSE-2.0. 
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0.
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and 
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
@@ -29,7 +29,7 @@ import com.microsoft.z3.*;
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
 import symlib.Util;
 
-public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalSolver  {
+public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalSolver {
 
   //This class acts as a safeguard to prevent
   //issues when referencing ProblemZ3 in case the z3 libs are
@@ -89,6 +89,11 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
 
   }
 
+  @Override
+  public void reset() {
+    solver.reset();
+  }
+
   public void cleanup() {
     // nothing to be done here
   }
@@ -125,24 +130,24 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  public Object eq(long value, Object exp){
+  public Object eq(long value, Object exp) {
     try {
-      return ctx.mkEq( ctx.mkInt(value), (Expr)exp);
+      return ctx.mkEq(ctx.mkInt(value), (Expr) exp);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
     }
   }
 
-  public Object eq(Object exp, long value){
+  public Object eq(Object exp, long value) {
 
-    return ctx.mkEq(ctx.mkInt(value), (Expr)exp);
+    return ctx.mkEq(ctx.mkInt(value), (Expr) exp);
   }
 
   // should we use Expr or ArithExpr?
-  public Object eq(Object exp1, Object exp2){
-    try{
-      return  ctx.mkEq((Expr)exp1, (Expr)exp2);
+  public Object eq(Object exp1, Object exp2) {
+    try {
+      return ctx.mkEq((Expr) exp1, (Expr) exp2);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -171,27 +176,27 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   //	    }
   //	}
 
-  public Object neq(long value, Object exp){
-    return ctx.mkNot(ctx.mkEq(ctx.mkInt(value), (Expr)exp));
-  }
-
-
-  public Object neq(Object exp, long value){
+  public Object neq(long value, Object exp) {
     return ctx.mkNot(ctx.mkEq(ctx.mkInt(value), (Expr) exp));
   }
 
-  public Object neq(Object exp1, Object exp2){
-    try{
-      return  ctx.mkNot(ctx.mkEq((Expr)exp1, (Expr)exp2));
+
+  public Object neq(Object exp, long value) {
+    return ctx.mkNot(ctx.mkEq(ctx.mkInt(value), (Expr) exp));
+  }
+
+  public Object neq(Object exp1, Object exp2) {
+    try {
+      return ctx.mkNot(ctx.mkEq((Expr) exp1, (Expr) exp2));
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
     }
   }
 
-  public Object logical_not(Object exp1){
-    try{
-      return  ctx.mkNot((BoolExpr)exp1);
+  public Object not(Object exp1) {
+    try {
+      return ctx.mkNot((BoolExpr) exp1);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -220,9 +225,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   //	    }
   //	}
 
-  public Object leq(long value, Object exp){
-    try{
-      return  ctx.mkLe(ctx.mkInt(value), (IntExpr)exp);
+  public Object leq(long value, Object exp) {
+    try {
+      return ctx.mkLe(ctx.mkInt(value), (IntExpr) exp);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -230,9 +235,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  public Object leq(Object exp, long value){
-    try{
-      return  ctx.mkLe((IntExpr)exp,ctx.mkInt(value));
+  public Object leq(Object exp, long value) {
+    try {
+      return ctx.mkLe((IntExpr) exp, ctx.mkInt(value));
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -240,9 +245,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  public Object leq(Object exp1, Object exp2){
-    try{
-      return  ctx.mkLe((ArithExpr)exp1, (ArithExpr)exp2);
+  public Object leq(Object exp1, Object exp2) {
+    try {
+      return ctx.mkLe((ArithExpr) exp1, (ArithExpr) exp2);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -270,9 +275,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   //	    }
   //	}
   //
-  public Object geq(long value, Object exp){
-    try{
-      return  ctx.mkGe(ctx.mkInt(value),(IntExpr)exp);
+  public Object geq(long value, Object exp) {
+    try {
+      return ctx.mkGe(ctx.mkInt(value), (IntExpr) exp);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -280,9 +285,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  public Object geq(Object exp, long value){
-    try{
-      return  ctx.mkGe((IntExpr)exp,ctx.mkInt(value));
+  public Object geq(Object exp, long value) {
+    try {
+      return ctx.mkGe((IntExpr) exp, ctx.mkInt(value));
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -290,9 +295,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  public Object geq(Object exp1, Object exp2){
-    try{
-      return  ctx.mkGe((ArithExpr)exp1,(ArithExpr)exp2);
+  public Object geq(Object exp1, Object exp2) {
+    try {
+      return ctx.mkGe((ArithExpr) exp1, (ArithExpr) exp2);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -320,9 +325,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   //	    }
   //	}
   //
-  public Object lt(long value, Object exp){
-    try{
-      return  ctx.mkLt(ctx.mkInt(value),(IntExpr)exp);
+  public Object lt(long value, Object exp) {
+    try {
+      return ctx.mkLt(ctx.mkInt(value), (IntExpr) exp);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -330,9 +335,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  public Object lt(Object exp, long value){
-    try{
-      return  ctx.mkLt((IntExpr)exp,ctx.mkInt(value));
+  public Object lt(Object exp, long value) {
+    try {
+      return ctx.mkLt((IntExpr) exp, ctx.mkInt(value));
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -340,9 +345,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  public Object lt(Object exp1, Object exp2){
-    try{
-      return  ctx.mkLt((ArithExpr)exp1,(ArithExpr)exp2);
+  public Object lt(Object exp1, Object exp2) {
+    try {
+      return ctx.mkLt((ArithExpr) exp1, (ArithExpr) exp2);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -371,9 +376,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   //	}
   //
   //
-  public Object gt(long value, Object exp){
-    try{
-      return  ctx.mkGt(ctx.mkInt(value),(IntExpr)exp);
+  public Object gt(long value, Object exp) {
+    try {
+      return ctx.mkGt(ctx.mkInt(value), (IntExpr) exp);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -381,9 +386,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  public Object gt(Object exp, long value){
-    try{
-      return  ctx.mkGt((IntExpr)exp,ctx.mkInt(value));
+  public Object gt(Object exp, long value) {
+    try {
+      return ctx.mkGt((IntExpr) exp, ctx.mkInt(value));
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -391,9 +396,9 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  public Object gt(Object exp1, Object exp2){
-    try{
-      return  ctx.mkGt((ArithExpr)exp1,(ArithExpr)exp2);
+  public Object gt(Object exp1, Object exp2) {
+    try {
+      return ctx.mkGt((ArithExpr) exp1, (ArithExpr) exp2);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -435,8 +440,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   //
   //
   public Object plus(long value, Object exp) {
-    try{
-      return  ctx.mkAdd(new ArithExpr[] { ctx.mkInt(value), (IntExpr)exp});
+    try {
+      return ctx.mkAdd(new ArithExpr[]{ctx.mkInt(value), (IntExpr) exp});
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -444,8 +449,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   }
 
   public Object plus(Object exp, long value) {
-    try{
-      return  ctx.mkAdd(new ArithExpr[] { ctx.mkInt(value), (IntExpr)exp});
+    try {
+      return ctx.mkAdd(new ArithExpr[]{ctx.mkInt(value), (IntExpr) exp});
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -453,8 +458,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   }
 
   public Object plus(Object exp1, Object exp2) {
-    try{
-      return  ctx.mkAdd(new ArithExpr[] { (ArithExpr)exp1, (ArithExpr)exp2});
+    try {
+      return ctx.mkAdd(new ArithExpr[]{(ArithExpr) exp1, (ArithExpr) exp2});
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -480,8 +485,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   //	}
 
   public Object minus(long value, Object exp) {
-    try{
-      return  ctx.mkSub(new ArithExpr[] { ctx.mkInt(value), (IntExpr)exp});
+    try {
+      return ctx.mkSub(new ArithExpr[]{ctx.mkInt(value), (IntExpr) exp});
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -489,8 +494,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   }
 
   public Object minus(Object exp, long value) {
-    try{
-      return  ctx.mkSub(new ArithExpr[] {(IntExpr)exp, ctx.mkInt(value)});
+    try {
+      return ctx.mkSub(new ArithExpr[]{(IntExpr) exp, ctx.mkInt(value)});
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -498,8 +503,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   }
 
   public Object minus(Object exp1, Object exp2) {
-    try{
-      return  ctx.mkSub(new ArithExpr[] { (ArithExpr)exp1, (ArithExpr)exp2});
+    try {
+      return ctx.mkSub(new ArithExpr[]{(ArithExpr) exp1, (ArithExpr) exp2});
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -525,8 +530,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   //	}
 
   public Object mult(long value, Object exp) {
-    try{
-      return  ctx.mkMul(new ArithExpr[] {(IntExpr)exp, ctx.mkInt(value)});
+    try {
+      return ctx.mkMul(new ArithExpr[]{(IntExpr) exp, ctx.mkInt(value)});
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -534,8 +539,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   }
 
   public Object mult(Object exp, long value) {
-    try{
-      return  ctx.mkMul(new ArithExpr[] {(IntExpr)exp, ctx.mkInt(value)});
+    try {
+      return ctx.mkMul(new ArithExpr[]{(IntExpr) exp, ctx.mkInt(value)});
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -543,8 +548,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   }
 
   public Object mult(Object exp1, Object exp2) {
-    try{
-      return  ctx.mkMul(new ArithExpr[] {(ArithExpr)exp1, (ArithExpr)exp2});
+    try {
+      return ctx.mkMul(new ArithExpr[]{(ArithExpr) exp1, (ArithExpr) exp2});
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -567,11 +572,11 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   //		}
   //	}
   //
-  //	
+  //
 
   public Object div(long value, Object exp) {
-    try{
-      return  ctx.mkDiv(ctx.mkInt(value), (IntExpr)exp);
+    try {
+      return ctx.mkDiv(ctx.mkInt(value), (IntExpr) exp);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -579,8 +584,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   }
 
   public Object div(Object exp, long value) {
-    try{
-      return  ctx.mkDiv((IntExpr)exp,ctx.mkInt(value));
+    try {
+      return ctx.mkDiv((IntExpr) exp, ctx.mkInt(value));
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -588,8 +593,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   }
 
   public Object div(Object exp1, Object exp2) {
-    try{
-      return  ctx.mkDiv((ArithExpr)exp1,(ArithExpr)exp2);
+    try {
+      return ctx.mkDiv((ArithExpr) exp1, (ArithExpr) exp2);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -597,28 +602,30 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   }
 
   public Object rem(Object exp, long value) {// added by corina
-    try{
+    try {
 
-      return  ctx.mkRem((IntExpr) exp, ctx.mkInt(value));
+      return ctx.mkRem((IntExpr) exp, ctx.mkInt(value));
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
     }
   }
+
   public Object rem(long value, Object exp) {// added by corina
-    try{
+    try {
 
-      return  ctx.mkRem(ctx.mkInt(value), (IntExpr) exp);
+      return ctx.mkRem(ctx.mkInt(value), (IntExpr) exp);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
     }
   }
+
   public Object rem(Object exp1, Object exp2) {// added by corina
-    try{
-      if(exp2 instanceof Integer)
-        return  ctx.mkRem((IntExpr)exp1,ctx.mkInt((Integer)exp2));
-      return  ctx.mkRem((IntExpr) exp1, (IntExpr) exp2);
+    try {
+      if (exp2 instanceof Integer)
+        return ctx.mkRem((IntExpr) exp1, ctx.mkInt((Integer) exp2));
+      return ctx.mkRem((IntExpr) exp1, (IntExpr) exp2);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
@@ -647,9 +654,8 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
       Model model = null;
       if (Status.SATISFIABLE == solver.check()) {
         model = solver.getModel();
-        return Long.parseLong((model.evaluate((IntExpr)dpVar,false)).toString());
-      }
-      else {
+        return Long.parseLong((model.evaluate((IntExpr) dpVar, false)).toString());
+      } else {
         System.out.println("Error retrieving int value from Z3.");
         assert false; // should not be reachable
         return 0;
@@ -660,35 +666,35 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
     }
   }
 
-  private Expr test(){
-    Expr e = (Expr)makeIntVar("Z",-10, 10);
-    Expr f = (Expr)makeIntVar("f", -10,10);
-    Expr plus = (Expr)plus(10,e);
-    Expr plus2 = (Expr)plus(1,e);
-    Expr eq = (Expr)eq(plus, plus2);
+  private Expr test() {
+    Expr e = (Expr) makeIntVar("Z", -10, 10);
+    Expr f = (Expr) makeIntVar("f", -10, 10);
+    Expr plus = (Expr) plus(10, e);
+    Expr plus2 = (Expr) plus(1, e);
+    Expr eq = (Expr) eq(plus, plus2);
     return eq;
   }
 
   public Boolean solve() {
     try {
       /* find model for the constraints above */
-      Model model = null;                
+      Model model = null;
 
-      if (Status.SATISFIABLE == solver.check()) {   
+      if (Status.SATISFIABLE == solver.check()) {
         return true;
-      } else {       
+      } else {
         return false;
       }
-    } catch(Exception e){
+    } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error Z3: " + e);
     }
   }
 
   public void post(Object constraint) {
-    try{
+    try {
       //solver.Assert((BoolExpr)constraint);
-      solver.add((BoolExpr)constraint);
+      solver.add((BoolExpr) constraint);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException("## Error posting constraint to Z3 \n" + e);
@@ -1078,14 +1084,13 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
       if (Status.SATISFIABLE == solver.check()) {
         model = solver.getModel();
         // TODO: clean this up
-        String strResult = model.eval((Expr)dpvar, true).toString().replaceAll("\\s+","");
-        Expr temp = model.eval((Expr)dpvar, false);
+        String strResult = model.eval((Expr) dpvar, true).toString().replaceAll("\\s+", "");
+        Expr temp = model.eval((Expr) dpvar, false);
         if (temp instanceof com.microsoft.z3.RatNum) {
-          strResult = ((com.microsoft.z3.RatNum)temp).toDecimalString(10);
+          strResult = ((com.microsoft.z3.RatNum) temp).toDecimalString(10);
         }
-        return Double.parseDouble(strResult);
-      }
-      else {
+        return Double.parseDouble(strResult.replace('?', '0'));
+      } else {
         assert false; // should not be reachable
         return 0;
       }
@@ -1110,98 +1115,129 @@ public class ProblemZ3Incremental extends ProblemGeneral implements IncrementalS
   @Override
   public void postLogicalOR(Object[] constraint) {
     // TODO Auto-generated method stub
-    throw new RuntimeException("## Error Z3 \n");	
+    throw new RuntimeException("## Error Z3 \n");
   }
 
-    // Added by Aymeric to support arrays
-    @Override
-    public Object makeArrayVar(String name) {
-        try {
-            Sort int_type = ctx.mkIntSort();
-            return ctx.mkArrayConst(name, int_type, int_type);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  // Added by Aymeric to support arrays
+  @Override
+  public Object makeArrayVar(String name) {
+    try {
+      Sort int_type = ctx.mkIntSort();
+      return ctx.mkArrayConst(name, int_type, int_type);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object makeRealArrayVar(String name) {
-        try {
-            Sort int_type = ctx.mkIntSort();
-            Sort real_type = ctx.mkRealSort();
-            return ctx.mkArrayConst(name, int_type, real_type);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object makeRealArrayVar(String name) {
+    try {
+      Sort int_type = ctx.mkIntSort();
+      Sort real_type = ctx.mkRealSort();
+      return ctx.mkArrayConst(name, int_type, real_type);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object select(Object exp1, Object exp2) {
-        try {
-            return ctx.mkSelect((ArrayExpr)exp1, (IntExpr)exp2);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object select(Object exp1, Object exp2) {
+    try {
+      return ctx.mkSelect((ArrayExpr) exp1, (IntExpr) exp2);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object store(Object exp1, Object exp2, Object exp3) {
-        try {
-            return ctx.mkStore((ArrayExpr)exp1, (IntExpr)exp2, (IntExpr)exp3);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object store(Object exp1, Object exp2, Object exp3) {
+    try {
+      return ctx.mkStore((ArrayExpr) exp1, (IntExpr) exp2, (IntExpr) exp3);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object realSelect(Object exp1, Object exp2) {
-        try {
-            return ctx.mkSelect((ArrayExpr)exp1, (IntExpr)exp2);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object realSelect(Object exp1, Object exp2) {
+    try {
+      return ctx.mkSelect((ArrayExpr) exp1, (IntExpr) exp2);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object realStore(Object exp1, Object exp2, Object exp3) {
-        try {
-            return ctx.mkStore((ArrayExpr)exp1, (IntExpr)exp2, (RealExpr)exp3);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object realStore(Object exp1, Object exp2, Object exp3) {
+    try {
+      return ctx.mkStore((ArrayExpr) exp1, (IntExpr) exp2, (RealExpr) exp3);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object makeIntConst(long value) {
-        try {
-            return ctx.mkInt(value);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object makeIntConst(long value) {
+    try {
+      return ctx.mkInt(value);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object makeRealConst(double value) {
-        try {
-            return ctx.mkReal("" + value);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object makeRealConst(double value) {
+    try {
+      return ctx.mkReal("" + value);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    public Object logical_or(Object exp1, Object exp2) {
-  		throw new RuntimeException("## Error Z3Incremental does not support LOGICAL_OR");
-  	}
-  
-    public Object logical_and(Object exp1, Object exp2) {
-  		throw new RuntimeException("## Error Z3Incremental does not support LOGICAL_AND");
-  	}
+  @Override
+  public Object logical_not(Object exp1) {
+    try {
+      return ctx.mkNot((BoolExpr) exp1);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3: Exception caught in Z3 JNI: \n" + e);
+
+    }
+  }
+
+  @Override
+  public Object logical_or(Object exp1, Object exp2) {
+    try {
+      if (exp1 instanceof BoolExpr && exp2 instanceof BoolExpr) {
+        return ctx.mkOr((BoolExpr) exp1, (BoolExpr) exp2);
+      } else {
+        throw new RuntimeException("## Error Z3: logical_or(Object, Object) expected 2 BoolExprs.");
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3: logical_or(Object, Object) failed.\n" + e);
+    }
+  }
+
+  @Override
+  public Object logical_and(Object exp1, Object exp2) {
+    try {
+      if (exp1 instanceof BoolExpr && exp2 instanceof BoolExpr) {
+        return ctx.mkAnd((BoolExpr) exp1, (BoolExpr) exp2);
+      } else {
+        throw new RuntimeException("## Error Z3: logical_and(Object, Object) expected 2 BoolExprs.");
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3: logical_and(Object, Object) failed.\n" + e);
+    }
+  }
 }
