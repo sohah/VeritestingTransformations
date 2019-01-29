@@ -1,7 +1,7 @@
 public class UnbeliveablySimplePad {
     private boolean start_btn;
     private boolean launch_btn;
-    private boolean ignition;
+    private boolean ignition_r;
 
     /*enum PadState {
         IDLE,
@@ -41,7 +41,7 @@ public class UnbeliveablySimplePad {
         //make pad state symbolic.
         this.start_btn = start_btn;
         this.launch_btn = launch_btn;
-        this.ignition = ignition;
+        this.ignition_r = ignition;
 
         boolean rocketLaunched = false;
         //Scanner reader = new Scanner(System.in);
@@ -66,7 +66,7 @@ public class UnbeliveablySimplePad {
     private void resetPad() {
         start_btn = false;
         launch_btn = false;
-        ignition = false;
+        ignition_r = false;
     }
 
     /**
@@ -80,7 +80,7 @@ public class UnbeliveablySimplePad {
         int perivousState = getState();
 
         if (perivousState == LAUNCH) { //state needs to change regardless of the signal.
-            ignition = true;
+            ignition_r = true;
         } else if (perivousState == IGNITION || perivousState == INVALIDSTATE) { //state needs to change regardless of the signal.
             resetPad();
         } else {
@@ -106,14 +106,14 @@ public class UnbeliveablySimplePad {
                 }
             }
         }
-        return ignition;
+        return ignition_r;
     }
 
     public int getState() {
         int padState;
         boolean mystartBtn = this.start_btn;
         boolean myLaunchBtn = this.launch_btn;
-        boolean myIgnition = this.ignition;
+        boolean myIgnition = this.ignition_r;
 
         if (!mystartBtn && !myLaunchBtn && !myIgnition) //IDLE State
             padState = IDLE;

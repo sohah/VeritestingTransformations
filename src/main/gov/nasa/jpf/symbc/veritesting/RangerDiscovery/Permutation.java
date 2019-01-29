@@ -12,6 +12,7 @@ public class Permutation {
      * @return count of permutation,
      */
     public static ArrayList<ArrayList> permutation(ArrayList arr) {
+        allPermutations = new ArrayList<>();
         return permutation(arr, 0);
     }
 
@@ -31,7 +32,7 @@ public class Permutation {
         }
         if (n == arr.size() - 1) {
             allPermutations.add(new ArrayList(arr));
-            //System.out.println(arr);
+            System.out.println(arr);
         }
 
         return allPermutations;
