@@ -80,7 +80,12 @@ public class SubstituteGetOutput {
                     FieldInfo fieldInfo;
                     if (!isStatic) fieldInfo = ci.getInstanceField(fieldName);
                     else fieldInfo = ci.getStaticField(fieldName);
-                    if (fieldInfo == null) {
+                    if (!fieldInfo.getClassInfo().getName().equals(eiFieldOwner.getClassInfo().getName())) {
+                        //TODO We need to figure out when this scenario like these happen. One example is an ArrayOutOfBoundsException encountered when running Schedule2_3
+                        exceptionalMessage = "ElementInfo class reference (" + eiFieldOwner.getClassInfo().getName() +
+                                ") does not match FieldInfo class reference (" + fieldInfo.getClassInfo().getName() + ")";
+                        skipRegionStrings.add(exceptionalMessage);
+                    } else if (fieldInfo == null) {
                         exceptionalMessage = "java.lang.NoSuchFieldError" + "referencing field '" + fieldName
                                 + "' in " + eiFieldOwner;
                         skipRegionStrings.add("java.lang.NoSuchFieldError");
@@ -148,7 +153,6 @@ public class SubstituteGetOutput {
                 else type = fieldInfo.getType();
             }
         } catch(Exception e) {
-            //TODO We need to figure out when exceptions like these happen. One example is an ArrayOutOfBoundsException encountered when running Schedule2_3
             exceptionalMessage = e.getMessage() + " referencing field '" + fieldInfo.getName()
                     + "' in " + eiFieldOwner;
             skipRegionStrings.add(exceptionalMessage);
