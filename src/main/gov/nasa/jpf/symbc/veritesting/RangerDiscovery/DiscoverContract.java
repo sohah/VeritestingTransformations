@@ -67,6 +67,7 @@ public class DiscoverContract {
 
 
     private static void discoverJKindVar() { //this really should automatically collect the inputs from the jkind file.
+        //TODO: I need to have a means to obtain this set.
         jkindInVar.add("sig");
         jkindInVar.add("ignition");
         jkindInVar.add("reset_flag");
@@ -82,7 +83,7 @@ public class DiscoverContract {
         jkindTypeTable.put("sig", "int");
 
 
-        jkindOutVar.add("sig");
+        //jkindOutVar.add("sig");
         jkindOutVar.add("ignition");
         jkindOutVar.add("reset_flag");
         jkindOutVar.add("start_bt_val~0.reset_flag");
@@ -304,7 +305,7 @@ public class DiscoverContract {
         String notMatchPredicate = "\n\t(output_not_match$1" + "\n\t\t( and\n";
         int index = 0;
         for (String jkindVar : jkindOutVar) {
-            if (index == rOutputPermutation.size() - 1)
+            if (index == rOutputPermutation.size() )
                 index = 0;
             notMatchPredicate += createNotClause(jkindVar, (String) rOutputPermutation.get(index), k);
             ++index;
@@ -341,7 +342,7 @@ public class DiscoverContract {
         int index = 0;
 
         for (String jkindVar : jkindInVar) {
-            if (index == permutation.size() - 1)
+            if (index == permutation.size())
                 index = 0;
             matchPredicate += createClause(inputOutput, jkindVar, (String) permutation.get(index), k);
             ++index;
