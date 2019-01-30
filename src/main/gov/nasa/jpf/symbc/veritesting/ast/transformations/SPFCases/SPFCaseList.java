@@ -3,11 +3,14 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.def.SPFCaseStmt;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
+
 import java.util.HashSet;
 import java.util.Iterator;
 
 public class SPFCaseList {
     public final HashSet<SPFCaseStmt> casesList = new HashSet<>();
+
 
     public SPFCaseList(HashSet<SPFCaseStmt> spfCaseList) {
         Iterator<SPFCaseStmt> itr = spfCaseList.iterator();

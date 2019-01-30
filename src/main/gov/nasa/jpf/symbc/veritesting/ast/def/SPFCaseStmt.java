@@ -16,7 +16,7 @@ public class SPFCaseStmt implements Stmt {
      * These are the different reasons that requires SPF exploration.
      */
     public enum SPFReason {
-        OBJECT_CREATION, THROW,
+        OBJECT_CREATION, THROW, EARLYRETURN,
         MULTIPLE, OUT_OF_BOUND_EXCEPTION, INVOKE; //used when the two sides of the ifStmt have SPFCases
     }
 

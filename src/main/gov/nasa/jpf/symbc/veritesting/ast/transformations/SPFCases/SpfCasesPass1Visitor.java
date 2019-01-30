@@ -27,6 +27,7 @@ enum SpfCasesInstruction {
     NEWINSTRUCTION,
     ARRAYINSTRUCTION,
     INVOKE, //any invoke that has reached SPFCase pass, is an invoke that we couldn't deal with, and so we leave it up to SPF.
+    RETURN,
     ALL
 }
 
@@ -137,8 +138,12 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(ReturnInstruction c) {
-        return new ReturnInstruction(c.getOriginal(),
-                c.rhs);
+        if (this.spfCasesInstructionList.contains(SpfCasesInstruction.RETURN) ||
+                this.spfCasesInstructionList.contains(SpfCasesInstruction.ALL))
+            return new SPFCaseStmt(spfCondition,
+                    SPFCaseStmt.SPFReason.EARLYRETURN);
+        else
+            return new ReturnInstruction(c.getOriginal());
     }
 
     @Override

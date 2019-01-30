@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution;
 
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.shrikeBT.IInvokeInstruction;
+import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.MethodReference;
@@ -16,6 +17,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTab
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
@@ -45,8 +47,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
     private ExprVisitorAdapter<Expression> eva;
     public final DynamicRegion dynRegion;
     public final ThreadInfo ti;
+    private Exception subsExp = null;
     private StaticRegionException sre = null;
-    private CloneNotSupportedException cne = null;
     private boolean useVarTable = false;
 
     /**
@@ -201,15 +203,22 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     System.out.println("\n---------- STARTING Inlining Transformation for region: ---------------\n" + StmtPrintVisitor.print(hgOrdStaticRegion.staticStmt) + "\n");
                     DynamicRegion uniqueHgOrdDynRegion = null;
                     try {
+                        hgOrdStaticRegion = RemoveEarlyReturns.removeEarlyReturns(hgOrdStaticRegion);
                         uniqueHgOrdDynRegion = UniqueRegion.execute(hgOrdStaticRegion);
+
                     } catch (CloneNotSupportedException e) {
                         if (firstException == null) {
-                            cne = e;
+                            subsExp = e;
                             return c;
                         }
                     } catch (StaticRegionException e) {
                         if (firstException == null) {
                             sre = e;
+                            return c;
+                        }
+                    } catch (InvalidClassFileException e) {
+                        if (firstException == null) {
+                            subsExp = e;
                             return c;
                         }
                     }
@@ -292,6 +301,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         } else {
             if (stmt instanceof ReturnInstruction)
                 return new Pair(SkipStmt.skip, (((ReturnInstruction) stmt).rhs));
+            if ((stmt instanceof AssignmentStmt) && (((AssignmentStmt)stmt).lhs instanceof  AstVarExpr))
+                return new Pair(SkipStmt.skip, (((AssignmentStmt) stmt).rhs));
             else
                 return null;
         }

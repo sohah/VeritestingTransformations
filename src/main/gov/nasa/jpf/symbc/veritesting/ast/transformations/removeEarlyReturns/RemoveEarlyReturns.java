@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns;
 
 import com.ibm.wala.classLoader.IBytecodeMethod;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
@@ -29,7 +30,7 @@ public class RemoveEarlyReturns {
     public class ReturnResult {
         public final Stmt stmt;
         public final Expression assign;
-        public final Expression condition;
+        public Expression condition;
         public final Pair<Integer, String> retPosAndType;
         public Expression retVar;
 
@@ -100,8 +101,12 @@ public class RemoveEarlyReturns {
             } else {
                 assign = returnInstruction.rhs;
             }
-            newResult = new ReturnResult(SkipStmt.skip, assign,
-                    Operation.TRUE, new Pair(returnPosition, returnType), null);
+            if (region.isMethodRegion)//return no return statements
+                newResult = new ReturnResult(SkipStmt.skip, assign,
+                        Operation.TRUE, new Pair(returnPosition, returnType), null);
+            else //leave return statements.
+                newResult = new ReturnResult(SkipStmt.skip, assign,
+                        Operation.TRUE, new Pair(returnPosition, returnType), null);
             return newResult;
         } else if (init.stmt instanceof IfThenElseStmt) {
             Expression innerAssign;
@@ -294,14 +299,13 @@ Similar things can be done for SPF Cases.
             resultStmt = stmtResult.stmt;
 
 
-
         System.out.println("\nRegion after removeEarlyReturns: " +
                 PrettyPrintVisitor.print(resultStmt));
         // VarTypeTable varTypeTable = new VarTypeTable(region.varTypeTable);
 
         // MWW TODO: need to add in types and new vars somewhere.
         // MWW TODO: Current type table is from integers; this is not the way to do it.
-    //    StaticRegion resultRegion = new StaticRegion(resultStmt, region.ir, region.isMethodRegion, region.endIns, null, stmtResult);
+        //    StaticRegion resultRegion = new StaticRegion(resultStmt, region.ir, region.isMethodRegion, region.endIns, null, stmtResult);
         StaticRegion resultRegion = new StaticRegion(resultStmt, region, stmtResult);
         return resultRegion;
     }
