@@ -101,12 +101,14 @@ public class RemoveEarlyReturns {
             } else {
                 assign = returnInstruction.rhs;
             }
-            if (region.isMethodRegion)//return no return statements
+            /*if (region.isMethodRegion)//return no return statements
                 newResult = new ReturnResult(SkipStmt.skip, assign,
                         Operation.TRUE, new Pair(returnPosition, returnType), null);
             else //leave return statements.
-                newResult = new ReturnResult(SkipStmt.skip, assign,
-                        Operation.TRUE, new Pair(returnPosition, returnType), null);
+                newResult = new ReturnResult(init.stmt, assign,
+                        Operation.TRUE, new Pair(returnPosition, returnType), null);*/
+            newResult = new ReturnResult(SkipStmt.skip, assign,
+                    Operation.TRUE, new Pair(returnPosition, returnType), null);
             return newResult;
         } else if (init.stmt instanceof IfThenElseStmt) {
             Expression innerAssign;
@@ -281,11 +283,16 @@ Similar things can be done for SPF Cases.
             AstVarExpr erOccurredExpr = new AstVarExpr("~earlyReturnOccurred", "BOOL");
 
             stmtResult.retVar = assignVarExpr;
-            ReturnLessVisitor returnLessVisitor = new ReturnLessVisitor();
-            Stmt returnLessStmt = region.staticStmt.accept(returnLessVisitor);
+            Stmt returnLessOrNotStmt;
+
+            if (region.isMethodRegion) {
+                ReturnLessVisitor returnLessVisitor = new ReturnLessVisitor();
+                returnLessOrNotStmt = region.staticStmt.accept(returnLessVisitor);
+            } else
+                returnLessOrNotStmt = region.staticStmt;
 
             resultStmt =
-                    new CompositionStmt(returnLessStmt,
+                    new CompositionStmt(returnLessOrNotStmt,
                             new AssignmentStmt(assignVarExpr, stmtResult.assign));
 
             /*
