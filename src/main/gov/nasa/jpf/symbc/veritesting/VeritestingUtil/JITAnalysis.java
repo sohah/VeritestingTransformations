@@ -16,7 +16,15 @@ import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
 
 
 public class JITAnalysis {
-    private static HashSet<String> veriClasses = new HashSet<>();
+    /**
+     * keeps track of all classes we have seen for recovering of the IR
+     */
+    private static HashSet<String> attemptedClasses = new HashSet<>();
+
+    /**
+     * keeps track of all the methods we have seen for recovering the IR
+     */
+    private static HashSet<String> attemptedMehods = new HashSet<>();
 
     public static long staticAnalysisDur;
     private static boolean firstTime = true;
@@ -38,14 +46,16 @@ public class JITAnalysis {
 
         MethodInfo methodInfo = instruction.getMethodInfo();
         String className = methodInfo.getClassName();
-        StaticRegion staticRegion = discoverAllClassAndGetRegion(className, key);
+        String jvmMethodName = methodInfo.getFullName();
+
+        StaticRegion staticRegion = discoverAllClassAndGetRegion(className, jvmMethodName, key);
 
         statisticManager.collectStaticAnalysisMetrics(VeritestingMain.veriRegions);
         StaticRegionException.staticAnalysisComplete();
         return staticRegion;
     }
 
-    public static StaticRegion discoverAllClassAndGetRegion(String className, String key) throws StaticRegionException {
+    public static StaticRegion discoverAllClassAndGetRegion(String className, String jvmMethodName, String key) throws StaticRegionException {
 
         long startTime = System.nanoTime();
 
@@ -53,8 +63,9 @@ public class JITAnalysis {
             JITAnalysis.veritestingMain = new VeritestingMain(ti);
             firstTime = false;
         }
-        if (!veriClasses.contains(className)) { // need to run static analysis first
-            veriClasses.add(className);
+        if (!attemptedClasses.contains(className) || (!attemptedMehods.contains(key))) { // need to run static analysis first
+            attemptedClasses.add(className);
+            attemptedMehods.add(jvmMethodName);
             Config conf = ti.getVM().getConfig();
             String[] allClassPaths = conf.getStringArray("classpath");
             ArrayList<String> classPath = new ArrayList<>();
@@ -67,7 +78,7 @@ public class JITAnalysis {
             }
             //String className = conf.getString("target");
 
-            veritestingMain.jitAnalyzeForVeritesting(classPath, className);
+            veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName);
         }
 
         HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;

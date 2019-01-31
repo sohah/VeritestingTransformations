@@ -357,7 +357,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         for (String className : classList) {
             key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
             //StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
-            StaticRegion staticRegion = JITAnalysis.discoverAllClassAndGetRegion(dynamicClassName, key);
+            String jvmMethodName = methodReference.getSignature();
+            StaticRegion staticRegion = JITAnalysis.discoverAllClassAndGetRegion(dynamicClassName, jvmMethodName, key);
             if (staticRegion != null)
                 return new Pair(key, staticRegion);
         }

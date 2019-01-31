@@ -206,8 +206,8 @@ public class VeritestingMain {
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             // Here is where the magic happens.
             CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
-                regionCreator.createStructuredConditionalRegions(veriRegions);
-                regionCreator.createStructuredMethodRegion(veriRegions);
+            regionCreator.createStructuredConditionalRegions(veriRegions);
+            regionCreator.createStructuredMethodRegion(veriRegions);
 
        /* // Placeholder for testing and visualizing static-time transformations
             Set<String> keys = veriRegions.keySet();
@@ -223,7 +223,7 @@ public class VeritestingMain {
     }
 
 
-    public void jitAnalyzeForVeritesting(ArrayList<String> classPaths, String _className) {
+    public void jitAnalyzeForVeritesting(ArrayList<String> classPaths, String _className, String jvmMethodName) {
         endingInsnsHash = new HashSet();
         //methodSummaryClassNames.add(_className);
         //findClasses(ti, cha, classPaths, _className, methodSummaryClassNames);
@@ -255,14 +255,20 @@ public class VeritestingMain {
                 String signature = null;
                 try {
                     signature = ReflectUtil.getSignature(m);
+                    String jvmSignature = _className + "." + signature;
+                    if (jvmSignature.contains(jvmMethodName)) {
+                        jitStartAnalysis(getPackageName(_className), _className, signature);
+                        break;
+                    }
                 } catch (StaticRegionException e) {
                     continue;
                 }
-                jitStartAnalysis(getPackageName(_className), _className, signature);
             }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+
+
     }
 
 
@@ -433,7 +439,6 @@ public class VeritestingMain {
                 return null;
         }
     }
-
 
 
 }
