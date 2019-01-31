@@ -297,7 +297,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
     private Pair<Stmt, Expression> getStmtRetExp(Stmt stmt) {
         if (stmt instanceof CompositionStmt) {
             Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(((CompositionStmt) stmt).s2);
-            return new Pair(new CompositionStmt(((CompositionStmt) stmt).s1, stmtRetPair.getFirst()), stmtRetPair.getSecond());
+            return stmtRetPair != null ? new Pair(new CompositionStmt(((CompositionStmt) stmt).s1, stmtRetPair.getFirst()), stmtRetPair.getSecond()) : new Pair(stmt, null);
         } else {
             if (stmt instanceof ReturnInstruction)
                 return new Pair(SkipStmt.skip, (((ReturnInstruction) stmt).rhs));
