@@ -37,6 +37,6 @@ public class DumpXML {
 //		(new XMLWriter(System.out)).write(xml);
 	}
     public static void main(String args[]){   
-    	mainProcess('&','#', '3', ';', '<', '!', '?', '>', '/');
+    	mainProcess('<','a', '>', ';', '<', '!', '?', '>', '/');
     }
 } 

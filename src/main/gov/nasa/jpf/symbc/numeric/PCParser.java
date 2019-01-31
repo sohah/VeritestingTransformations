@@ -53,10 +53,7 @@ import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3BitVector;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3BitVectorIncremental;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemZ3Incremental;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemCoral;
 import gov.nasa.jpf.symbc.numeric.solvers.ProblemGeneral;
@@ -75,6 +72,10 @@ public class PCParser {
   static Map<SymbolicInteger,Object>	symIntegerVar; // a map between symbolic variables and DP variables
   static Map<IntVariable,Object>	intVariableMap; // a map between symbolic variables and DP variables
   static Map<RealVariable,Object>	realVariableMap; // a map between symbolic variables and DP variables
+
+  static final Map<SymbolicInteger, Object> globalsymIntegerVar = new HashMap<>();
+  static final Map<IntVariable, Object> globalintVariableMap = new HashMap<>();
+
   //static Boolean result; // tells whether result is satisfiable or not
   static int tempVars = 0; //Used to construct "or" clauses
 
@@ -1035,6 +1036,7 @@ public class PCParser {
     pb=pbtosolve;
 
 
+    saveGlobalVarMaps();
     symRealVar = new HashMap<SymbolicReal,Object>();
     symIntegerVar = new HashMap<SymbolicInteger,Object>();
     intVariableMap = new HashMap<IntVariable,Object>();
@@ -1066,6 +1068,33 @@ public class PCParser {
     }
 
     return pb;
+  }
+
+  private static void saveGlobalVarMaps() {
+    if (symIntegerVar != null) {
+      populateGlobalSymInt();
+    }
+    if (intVariableMap != null) {
+      populateGlobalIntVar();
+    }
+  }
+
+  private static void populateGlobalSymInt() {
+    Set<Map.Entry<SymbolicInteger, Object>> sym_intvar_mappings = PCParser.symIntegerVar.entrySet();
+    Iterator<Map.Entry<SymbolicInteger, Object>> i_int = sym_intvar_mappings.iterator();
+    while (i_int.hasNext()) {
+      Map.Entry<SymbolicInteger, Object> e = i_int.next();
+      globalsymIntegerVar.put(e.getKey(), e.getValue());
+    }
+  }
+
+  private static void populateGlobalIntVar() {
+    Set<Map.Entry<IntVariable, Object>> intvar_mappings = PCParser.intVariableMap.entrySet();
+    Iterator<Map.Entry<IntVariable, Object>> i_int = intvar_mappings.iterator();
+    while (i_int.hasNext()) {
+      Map.Entry<IntVariable, Object> e = i_int.next();
+      globalintVariableMap.put(e.getKey(), e.getValue());
+    }
   }
 
   private static boolean addConstraint(Constraint cRef) {

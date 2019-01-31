@@ -23,7 +23,7 @@ public class SPFAdapterSynth {
                 if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator) {
                     pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
                 } else return;
-                map = pc.solveWithValuation();
+                map = pc.solveWithValuation(null, null);
                 ArgSubAdapter argSubAdapter = ArgSubAdapter.randomAdapter();
                 for (int i = 0; i < 6; i++) {
                     argSubAdapter.i_is_const[i] = (getVal(map, "i_is_const" + i) != 0);
@@ -55,7 +55,7 @@ public class SPFAdapterSynth {
                 if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator) {
                     pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
                 } else return;
-                map = pc.solveWithValuation();
+                map = pc.solveWithValuation(null, null);
                 TestInput newInput = new TestInput();
                 for (int i = 0; i < 6; i++) {
                     if (map.containsKey("i" + i)) {
@@ -107,9 +107,9 @@ public class SPFAdapterSynth {
 //        }
     }
 
-    private static Long getVal(Map<String, Object> map, String s) {
-        if (map.containsKey(s))
+    public static Long getVal(Map<String, Object> map, String s) {
+        if (map != null && map.containsKey(s))
             return (Long)map.get(s);
-        else return 0L;
+        else return null;
     }
 }

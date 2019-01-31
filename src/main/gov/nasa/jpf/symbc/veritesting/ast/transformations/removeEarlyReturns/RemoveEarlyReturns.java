@@ -2,7 +2,6 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns;
 
 import com.ibm.wala.classLoader.IBytecodeMethod;
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
