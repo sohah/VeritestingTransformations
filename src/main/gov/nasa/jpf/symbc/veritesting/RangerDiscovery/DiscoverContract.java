@@ -292,7 +292,7 @@ public class DiscoverContract {
         String outputMatchPredicate_0 = generateNotMatchPredicate(InputOutput.OUTPUT, rOutputPermutation, 0);
 
         mergePredicate += "(" + inputMatchPredicate_1 + outputMatchPredicate_1 + inputMatchPredicate_0 + outputMatchPredicate_0 + ")";
-        mergePredicate += "\t\t(=> (and input_match~1 output_match~1 input_match$1) output_not_match$1)\n";
+        mergePredicate += "\t\t( and input_match~1 output_match~1 input_match$1 (not output_match$1))\n";
 
         mergePredicate += ")))\n " +
                 "(check-sat " + trailId + ") \n (pop)\n ; ---------- joining contract ends here -------------\n";
@@ -302,7 +302,7 @@ public class DiscoverContract {
     private static String generateNotMatchPredicate(InputOutput output, ArrayList rOutputPermutation, int k) {
         assert (output == InputOutput.OUTPUT);
 
-        String notMatchPredicate = "\n\t(output_not_match$1" + "\n\t\t( and\n";
+        String notMatchPredicate = "\n\t(output_match$1" + "\n\t\t( or\n";
         int index = 0;
         for (String jkindVar : jkindOutVar) {
             if (index == rOutputPermutation.size() )
@@ -328,7 +328,7 @@ public class DiscoverContract {
         if (jkindTypeTable.get(jkindVar) == null) //assuming it is a bool then
             return ("\t\t\t(= " + "$" + jkindVar + postFix + "(not (= " + rangerVar + " 1)))\n");
         else
-            return ("\t\t\t(not (= " + "$" + jkindVar + postFix+ "  " + rangerVar + "))\n");
+            return ("\t\t\t (= " + "$" + jkindVar + postFix+ "  " + rangerVar + ")\n");
     }
 
     private static String generateMatchPredicate(InputOutput inputOutput, ArrayList permutation, int k) {
