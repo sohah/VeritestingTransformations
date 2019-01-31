@@ -8,6 +8,7 @@ import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SSAToStatIVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
@@ -540,6 +541,17 @@ public class CreateStaticRegions {
             ISSABasicBlock terminus = finder.findMinConvergingNode();
             stmt = conjoin(stmt, conditionalBranch(cfg, currentBlock, terminus));
             stmt = conjoin(stmt, attemptSubregionRec(cfg, terminus, endingBlock));
+            //TODO: Add it here
+
+            int endIns;
+            try {
+
+            endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
+            VeritestingMain.veriRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(stmt, ir, false, endIns, currentBlock));
+            System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(stmt));
+            } catch (InvalidClassFileException e) {
+                System.out.println("Unable to create subregion.  Reason: " + e.toString());
+            }
         }
         else if (cfg.getNormalSuccessors(currentBlock).size() == 1){
             ISSABasicBlock nextBlock = cfg.getNormalSuccessors(currentBlock).iterator().next();

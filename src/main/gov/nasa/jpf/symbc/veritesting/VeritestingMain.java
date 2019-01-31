@@ -206,7 +206,7 @@ public class VeritestingMain {
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             // Here is where the magic happens.
             CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
-            regionCreator.createStructuredConditionalRegions(veriRegions);
+            //regionCreator.createStructuredConditionalRegions(veriRegions);
             regionCreator.createStructuredMethodRegion(veriRegions);
 
        /* // Placeholder for testing and visualizing static-time transformations
