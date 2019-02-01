@@ -49,8 +49,8 @@ public class DiscoverContract {
         ArrayList rInput = new ArrayList(stateInput);
         rInput.addAll(freeInput);
 
-        ArrayList<ArrayList> rInputPermutations = Permutation.permutation(rInput);
-        ArrayList<ArrayList> rOutputPermutations = Permutation.permutation(stateOutput);
+        ArrayList<ArrayList> rInputPermutations = DiscoveryUtility.permutation(rInput);
+        ArrayList<ArrayList> rOutputPermutations = DiscoveryUtility.permutation(stateOutput);
 
         //System.out.println(allPermutations);
 

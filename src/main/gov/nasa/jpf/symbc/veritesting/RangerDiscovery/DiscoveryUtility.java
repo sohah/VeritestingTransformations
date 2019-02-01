@@ -1,8 +1,12 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
-public class Permutation {
+public class DiscoveryUtility {
+
     private static ArrayList<ArrayList> allPermutations = new ArrayList<>();
 
     /**
@@ -50,4 +54,31 @@ public class Permutation {
         arr.set(i, arr.get(k));
         arr.set(k, tmp);
     }
+
+
+
+    /**
+     * Returns a string for the read file.
+     *
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    public static String readFileToString(String fileName) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(fileName));
+        try {
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+
+            while (line != null) {
+                sb.append(line);
+                sb.append("\n");
+                line = br.readLine();
+            }
+            return sb.toString();
+        } finally {
+            br.close();
+        }
+    }
+
 }
