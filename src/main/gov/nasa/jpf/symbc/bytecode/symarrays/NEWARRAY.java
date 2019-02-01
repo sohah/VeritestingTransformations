@@ -154,7 +154,9 @@ public class NEWARRAY extends gov.nasa.jpf.jvm.bytecode.NEWARRAY {
             } else {
                 cg = ti.getVM().getSystemState().getChoiceGenerator();
                 assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got:" + cg;
+                sf.pop();
                 arrayLength = Math.toIntExact(values.get((Integer)cg.getNextChoice()));
+                pc = ((PCChoiceGenerator) cg).getCurrentPC();
             }
 
 
