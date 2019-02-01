@@ -23,7 +23,7 @@ import static za.ac.sun.cs.green.expr.Operation.Operator.OR;
 public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
     private Expression spfCondition = Operation.TRUE;
     private final HashSet<SPFCaseStmt> spfCaseSet = new HashSet<>();
-    private Expression earlyReturnCondition = Operation.TRUE;
+    private Expression earlyReturnCondition = null;
 
 
     @Override
@@ -88,7 +88,7 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
             spfCaseSet.add(c);
             return new SPFCaseStmt(c.spfCondition, c.reason);
         } else {//collect the condition into the region's returnResultCondition, and replace it with a skip
-            if (earlyReturnCondition.equals(Operation.TRUE)) //initial condition
+            if (earlyReturnCondition == null) //initial condition
                 earlyReturnCondition = c.spfCondition;
             else
                 earlyReturnCondition = new Operation(OR, earlyReturnCondition, c.spfCondition);
