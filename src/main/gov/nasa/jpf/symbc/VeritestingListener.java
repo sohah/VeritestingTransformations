@@ -86,7 +86,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static long solverAllocTime = 0;
     public static long cleanupTime = 0;
     public static int solverCount = 0;
-    public static final int maxStaticExplorationDepth = 3;
+    public static int maxStaticExplorationDepth = 1;
     public static boolean initializeTime = true;
     public static int veritestRegionCount = 0;
     private static long staticAnalysisDur;
@@ -181,6 +181,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
             if (conf.hasValue("simplify"))
                 simplify = conf.getBoolean("simplify");
+
+            if (conf.hasValue("maxStaticExplorationDepth"))
+                maxStaticExplorationDepth = conf.getInt("maxStaticExplorationDepth");
 
             StatisticManager.veritestingRunning = true;
             jpf.addPublisherExtension(ConsolePublisher.class, this);

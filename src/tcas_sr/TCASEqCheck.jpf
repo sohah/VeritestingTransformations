@@ -2,7 +2,7 @@ target=TCASEqCheck
 veritestRegionExpectedCount = -1
 
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/build/tcas_sr
-sourcepath=${jpf-symbc}/src/examples
+sourcepath=${jpf-symbc}/src/tcas_sr
 vm.storage.class=nil
 symbolic.debug=false
 
@@ -16,6 +16,6 @@ symbolic.min_double=-100.0
 symbolic.max_double=100.0
 listener = .symbc.VeritestingListener
 #listener = .symbc.SymbolicListener
-veritestingMode = 4
+veritestingMode = 3
 performanceMode = false
 symbolic.lazy = true

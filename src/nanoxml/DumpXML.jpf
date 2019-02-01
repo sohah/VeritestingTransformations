@@ -12,7 +12,7 @@ vm.storage.class=nil
 #listener = .listener.ChoiceTracker
 #symbolic.debug=on
 
-veritestingMode=3
+veritestingMode=4
 performanceMode = true
 
 symbolic.dp=z3bitvectorinc
@@ -20,3 +20,4 @@ listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.Increme
 symbolic.optimizechoices=false
 
 symbolic.arrays = true
+maxStaticExplorationDepth = 3
