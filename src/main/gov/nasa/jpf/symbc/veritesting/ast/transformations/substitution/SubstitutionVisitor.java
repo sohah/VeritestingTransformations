@@ -197,7 +197,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     || (invokeCode == IInvokeInstruction.Dispatch.SPECIAL))) {
                 Pair<String, StaticRegion> keyRegionPair = findMethodRegion(ti, c);
                 if (keyRegionPair == null) //case where we couldn't grap the method region, usually because a concrete reference does not exists.
-                    return c;
+                    return new InvokeInstruction(c.getOriginal(), c.result, params);
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
                 if (hgOrdStaticRegion != null) {
                     ++StatisticManager.thisHighOrdCount;
@@ -213,17 +213,17 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     } catch (CloneNotSupportedException e) {
                         if (firstException == null) {
                             subsExp = e;
-                            return c;
+                            return new InvokeInstruction(c.getOriginal(), c.result, params);
                         }
                     } catch (StaticRegionException e) {
                         if (firstException == null) {
                             sre = e;
-                            return c;
+                            return new InvokeInstruction(c.getOriginal(), c.result, params);
                         }
                     } catch (InvalidClassFileException e) {
                         if (firstException == null) {
                             subsExp = e;
-                            return c;
+                            return new InvokeInstruction(c.getOriginal(), c.result, params);
                         }
                     }
                     DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
@@ -238,7 +238,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     } catch (StaticRegionException e) {
                         if (firstException == null) {
                             sre = e;
-                            return c;
+                            return new InvokeInstruction(c.getOriginal(), c.result, params);
                         }
                     }
                     Stmt hgOrdStmt = hgOrdUniqueStmtType.getFirst();
