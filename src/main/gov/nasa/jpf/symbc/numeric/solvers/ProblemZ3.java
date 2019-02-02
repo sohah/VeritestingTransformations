@@ -731,9 +731,10 @@ public class ProblemZ3 extends ProblemGeneral {
                     success = true;
                 }
 
-                if (success) {
+                if (success && DiscoverContract.rangerMode) {
                     String fileName = folderName + "/" + StatisticManager.instructionToExec + "_" + StatisticManager.solverQueriesUnique + ".txt";
                     ++StatisticManager.solverQueriesUnique;
+
                     try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                             new FileOutputStream(fileName), "utf-8"))) {
 
@@ -744,6 +745,7 @@ public class ProblemZ3 extends ProblemGeneral {
                             DiscoverContract.active = false;
                         }
                     }
+
                 } else
                     System.out.println("Encountered a problem while creating Solver Queries directory.");
 

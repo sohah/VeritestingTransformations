@@ -35,6 +35,7 @@ public class DiscoverContract {
     public static DynamicRegion dynRegion;
 
     public static boolean active = true;
+    public static boolean rangerMode;
 
     enum InputOutput {INPUT, OUTPUT}
 
@@ -58,7 +59,7 @@ public class DiscoverContract {
         for (ArrayList inputPermutation : rInputPermutations)
             for (ArrayList outputPermutation : rOutputPermutations) {
                 rangerTransition += generateContractAssertion(inputPermutation, outputPermutation, trials);
-                ++trials;
+                System.out.println("generating permutation number:" + ++trials) ;
             }
 
         return rangerTransition;

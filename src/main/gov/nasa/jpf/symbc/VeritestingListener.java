@@ -212,6 +212,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      * @param instructionToExecute instruction to be executed.
      */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+        DiscoverContract.rangerMode = true;
+
         StackFrame curr = ti.getTopFrame();
 //        runAdapterSynth(ti, curr);
         if (runMode == VeritestingMode.VANILLASPF) return;
@@ -267,32 +269,39 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 statisticManager.updateSPFHitForRegion(key, e.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
                 updateSkipRegions(e.getMessage(), key);
+                DiscoverContract.rangerMode = false;
                 return;
             } catch (InvalidClassFileException e) {
                 statisticManager.updateSPFHitForRegion(key, e.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+                DiscoverContract.rangerMode = false;
                 return;
             } catch (StaticRegionException sre) {
                 statisticManager.updateSPFHitForRegion(key, sre.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
                 updateSkipRegions(sre.getMessage(), key);
+                DiscoverContract.rangerMode = false;
                 return;
             } catch (VisitorException greenEx) {
                 statisticManager.updateSPFHitForRegion(key, greenEx.getMessage());
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + greenEx.getMessage() + "\n");
                 updateSkipRegions(greenEx.getMessage(), key);
+                DiscoverContract.rangerMode = false;
                 return;
             } catch (CloneNotSupportedException e) {
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
                 e.printStackTrace();
                 updateSkipRegions(e.getMessage(), key);
+                DiscoverContract.rangerMode = false;
                 return;
             } catch (Exception e) {
                 System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
                 e.printStackTrace();
                 if (e.getMessage() != null) updateSkipRegions(e.getMessage(), key);
+                DiscoverContract.rangerMode = false;
             }
         }
+        DiscoverContract.rangerMode = false;
     }
 
     private boolean isNoVeritesting(StackFrame curr, boolean noVeritestingFlag) {

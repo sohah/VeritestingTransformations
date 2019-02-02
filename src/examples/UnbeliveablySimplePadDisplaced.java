@@ -51,8 +51,8 @@ public class UnbeliveablySimplePadDisplaced {
 
         boolean rocketLaunched = false;
         //Scanner reader = new Scanner(System.in);
-        int k = 0;
-        while (k <= 7) {
+        //int k = 0;
+        //while (k <= 7) {
             //System.out.println("Enter a signal number (0-emptySignal) (1-startSignal) (2-armSignal) (3-launchSignal): ");
             //int n = reader.nextInt();
 
@@ -65,8 +65,8 @@ public class UnbeliveablySimplePadDisplaced {
                 System.out.println("Rocket launched successfully.");
             } else
                 System.out.println("Rocket still not launched.");
-            ++k;
-        }
+          //  ++k;
+        //}
         //}
     }
 
@@ -92,9 +92,11 @@ public class UnbeliveablySimplePadDisplaced {
         int previousState = getState();
 
         /**** pre conditions ****/
-        assert (ignition_r ? launch_btn && start_btn : false);
-        assert (launch_btn ? start_btn : false);
-        assert (reset_btn ? ((previousState == RESET1) || (previousState == RESET2)) : false);
+/*
+        assert (ignition_r ? launch_btn && start_btn : true);
+        assert (launch_btn ? start_btn : true);
+        assert (reset_btn ? ((previousState == RESET1) || (previousState == RESET2)) : true);
+*/
 
 
         if (previousState == LAUNCH) { //state needs to change regardless of the signal.
@@ -129,17 +131,17 @@ public class UnbeliveablySimplePadDisplaced {
             }
         }
 
-        int currentState = getState();
+        /*int currentState = getState();
 
-        /***PRECONDITIONS *********/
+        *//***PRECONDITIONS *********//*
         //First two dependent on the signal
-        assert (previousState == IDLE ? currentState == IDLE || currentState == READY : false);
-        assert (previousState == READY ? currentState == READY || currentState == LAUNCH : false);
-        assert (previousState == LAUNCH ? currentState == IGNITION : false);
-        assert (previousState == IGNITION ? currentState == RESET1 : false);
-        assert (previousState == RESET1 ? currentState == RESET2 : false);
-        assert (previousState == RESET2 ? currentState == IDLE : false);
-
+        assert (previousState == IDLE ? currentState == IDLE || currentState == READY : true);
+        assert (previousState == READY ? currentState == READY || currentState == LAUNCH : true);
+        assert (previousState == LAUNCH ? currentState == IGNITION : true);
+        assert (previousState == IGNITION ? currentState == RESET1 : true);
+        assert (previousState == RESET1 ? currentState == RESET2 : true);
+        assert (previousState == RESET2 ? currentState == IDLE : true);
+*/
         return ignition_r;
     }
 
@@ -154,13 +156,13 @@ public class UnbeliveablySimplePadDisplaced {
             padState = IDLE;
         else if (mystartBtn && !myLaunchBtn && !myIgnition && !reset) //Ready State
             padState = READY;
-        else if (mystartBtn && myLaunchBtn && !myIgnition & !reset) // Launch State
+        else if (mystartBtn && myLaunchBtn && !myIgnition && !reset) // Launch State
             padState = LAUNCH;
-        else if (mystartBtn && myLaunchBtn && myIgnition & !reset)
+        else if (mystartBtn && myLaunchBtn && myIgnition && !reset)
             padState = IGNITION;
-        else if (mystartBtn && myLaunchBtn && myIgnition & reset)
+        else if (mystartBtn && myLaunchBtn && myIgnition && reset)
             padState = RESET1;
-        else if (mystartBtn && !myLaunchBtn && !myIgnition & reset)
+        else if (mystartBtn && !myLaunchBtn && !myIgnition && reset)
             padState = RESET2;
         else
             padState = INVALIDSTATE; // Invalid State
