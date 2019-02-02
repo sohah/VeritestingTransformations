@@ -79,7 +79,8 @@ public class SubstituteGetOutput {
                 else {
                     FieldInfo fieldInfo;
                     if (!isStatic) fieldInfo = ci.getInstanceField(fieldName);
-                    else fieldInfo = ci.getStaticField(fieldName);
+                    else
+                        fieldInfo = ci.getStaticField(fieldName);
                     /*if (!fieldInfo.getClassInfo().getName().equals(eiFieldOwner.getClassInfo().getName())) {
                         //TODO We need to figure out when this scenario like these happen. One example is an ArrayOutOfBoundsException encountered when running Schedule2_3
                         exceptionalMessage = "ElementInfo class reference (" + eiFieldOwner.getClassInfo().getName() +

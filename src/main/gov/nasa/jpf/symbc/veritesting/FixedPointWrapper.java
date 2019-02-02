@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting;
 
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.SimplifyStmtVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
@@ -21,6 +22,8 @@ public class FixedPointWrapper {
     public static DynamicRegion getRegionAfter() {
         return regionAfter;
     }
+
+    public static DynamicTable multiPathRegSymbolValueTable = null;
 
     enum Transformation {SUBSTITUTION, FIELD, ARRAY, SIMPLIFICATION}
 
@@ -133,6 +136,8 @@ public class FixedPointWrapper {
             FixedPointWrapper.resetIteration();
 
         SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, iterationNumber, false);
+        if(multiPathRegSymbolValueTable == null)
+            multiPathRegSymbolValueTable = substitutionVisitor.getValueSymbolTable();
         intermediateRegion = substitutionVisitor.execute();
         collectTransformationState(substitutionVisitor);
 
@@ -169,9 +174,10 @@ public class FixedPointWrapper {
         System.out.println("========================================= RUNNING HIGH-ORDER ONE EXTRA TIME AFTER FIXED POINT ITERATION# " + FixedPointWrapper.iterationNumber + "=========================================");
         FixedPointWrapper.resetChange();
 
-        SubstitutionVisitor substitutionVisitor = SubstitutionVisitor.create(ti, dynRegion, 0, true);
-        intermediateRegion = substitutionVisitor.execute();
-        collectTransformationState(substitutionVisitor);
+        SubstitutionVisitor highOrderVisitor = SubstitutionVisitor.create(ti, dynRegion, 0, true);
+        highOrderVisitor.setValueSymbolTable(FixedPointWrapper.multiPathRegSymbolValueTable);
+        intermediateRegion = highOrderVisitor.execute();
+        collectTransformationState(highOrderVisitor);
 
         regionAfter = intermediateRegion;
         return regionAfter;

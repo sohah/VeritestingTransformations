@@ -66,6 +66,10 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         return somethingChanged;
     }
 
+    public void setValueSymbolTable(DynamicTable valueSymbolTable){((ExprSubstitutionVisitor)eva.theVisitor).setValueSymbolTable(valueSymbolTable);}
+
+    public DynamicTable getValueSymbolTable(){return ((ExprSubstitutionVisitor)eva.theVisitor).getValueSymbolTable();}
+
     private SubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
                                 DynamicTable valueSymbolTable, boolean useVarTable) {
         super(new ExprSubstitutionVisitor(ti, dynRegion, valueSymbolTable));
@@ -420,13 +424,13 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         */
         this.instantiatedRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null, dynRegion.earlyReturnResult);
 
-        System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION ---------------\n");
+        System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION for: "+ VeritestingListener.key +" ---------------\n");
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
         dynRegion.slotParamTable.print();
         dynRegion.outputTable.print();
         dynRegion.varTypeTable.print();
 
-        System.out.println("\n--------------- AFTER SUBSTITUTION TRANSFORMATION ---------------\n");
+        System.out.println("\n--------------- AFTER SUBSTITUTION TRANSFORMATION for: " + VeritestingListener.key + " ---------------\n");
         System.out.println(StmtPrintVisitor.print(instantiatedRegion.dynStmt));
         instantiatedRegion.slotParamTable.print();
         instantiatedRegion.outputTable.print();

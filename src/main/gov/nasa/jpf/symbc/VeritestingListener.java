@@ -90,6 +90,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static boolean initializeTime = true;
     public static int veritestRegionCount = 0;
     private static long staticAnalysisDur;
+    public static String key;
     private final long runStartTime = System.nanoTime();
     public static StatisticManager statisticManager = new StatisticManager();
     private static int veritestRegionExpectedCount = -1;
@@ -100,7 +101,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     private static VeritestingMode runMode;
     public static boolean performanceMode = false;
-
     // reads in a exclusionsFile configuration option, set to ${jpf-symbc}/MyJava60RegressionExclusions.txt by default
     public static String exclusionsFile;
 
@@ -215,7 +215,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         String methodName = methodInfo.getName();
         String methodSignature = methodInfo.getSignature();
         int offset = instructionToExecute.getPosition();
-        String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+        key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
 
         StatisticManager.instructionToExec = key;
 
