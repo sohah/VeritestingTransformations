@@ -188,16 +188,18 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             values.add(params[i]); // in case of non static, the first parameter needs to be de-referenced because it will refer to an object class.
         }
 
+        InvokeInstruction newC = new InvokeInstruction(c.getOriginal(), c.result, params);
+
         if (!spfCasePath) {
-            SSAInvokeInstruction instruction = c.getOriginal();
+            SSAInvokeInstruction instruction = newC.getOriginal();
             IInvokeInstruction.IDispatch invokeCode = instruction.getCallSite().getInvocationCode();
             if ((invokeCode == IInvokeInstruction.Dispatch.STATIC)
                     || (invokeCode == IInvokeInstruction.Dispatch.VIRTUAL
                     || (invokeCode == IInvokeInstruction.Dispatch.INTERFACE)
                     || (invokeCode == IInvokeInstruction.Dispatch.SPECIAL))) {
-                Pair<String, StaticRegion> keyRegionPair = findMethodRegion(ti, c);
+                Pair<String, StaticRegion> keyRegionPair = findMethodRegion(ti, newC);
                 if (keyRegionPair == null) //case where we couldn't grap the method region, usually because a concrete reference does not exists.
-                    return new InvokeInstruction(c.getOriginal(), c.result, params);
+                    return newC;
                 StaticRegion hgOrdStaticRegion = keyRegionPair.getSecond();
                 if (hgOrdStaticRegion != null) {
                     ++StatisticManager.thisHighOrdCount;
@@ -213,17 +215,17 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     } catch (CloneNotSupportedException e) {
                         if (firstException == null) {
                             subsExp = e;
-                            return new InvokeInstruction(c.getOriginal(), c.result, params);
+                            return newC;
                         }
                     } catch (StaticRegionException e) {
                         if (firstException == null) {
                             sre = e;
-                            return new InvokeInstruction(c.getOriginal(), c.result, params);
+                            return newC;
                         }
                     } catch (InvalidClassFileException e) {
                         if (firstException == null) {
                             subsExp = e;
-                            return new InvokeInstruction(c.getOriginal(), c.result, params);
+                            return newC;
                         }
                     }
                     DynamicTable hgOrdValueSymbolTable = new DynamicTable<Expression>("var-value table",
@@ -234,11 +236,11 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
 
                     Pair<Stmt, DynamicTable> hgOrdUniqueStmtType = null;
                     try {
-                        hgOrdUniqueStmtType = attemptHighOrderRegion(c, uniqueHgOrdDynRegion, hgOrdValueSymbolTable);
+                        hgOrdUniqueStmtType = attemptHighOrderRegion(uniqueHgOrdDynRegion, hgOrdValueSymbolTable);
                     } catch (StaticRegionException e) {
                         if (firstException == null) {
                             sre = e;
-                            return new InvokeInstruction(c.getOriginal(), c.result, params);
+                            return newC;
                         }
                     }
                     Stmt hgOrdStmt = hgOrdUniqueStmtType.getFirst();
@@ -247,9 +249,9 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     dynRegion.varTypeTable.mergeTable(hgOrdTypeTable);
                     Stmt returnStmt;
                     somethingChanged = true;
-                    if (c.result.length == 1) {
+                    if (newC.result.length == 1) {
                         Pair<Stmt, Expression> stmtRetPair = getStmtRetExp(hgOrdStmt);
-                        returnStmt = new AssignmentStmt(c.result[0], stmtRetPair.getSecond());
+                        returnStmt = new AssignmentStmt(newC.result[0], stmtRetPair.getSecond());
                         return new CompositionStmt(stmtRetPair.getFirst(), returnStmt);
                     } else {
                         return getStmtRetExp(hgOrdStmt).getFirst();
@@ -259,12 +261,12 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     if (firstException == null)
                         firstException = sre;
                     skipRegionStrings.add("Cannot summarize invoke");
-                    return new InvokeInstruction(c.getOriginal(), c.result, params);
+                    return newC;
                 }
             } else
-                return new InvokeInstruction(c.getOriginal(), c.result, params);
+                return newC;
         } else
-            return new InvokeInstruction(c.getOriginal(), c.result, params);
+            return newC;
     }
 
     /**
@@ -275,7 +277,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
      * @param hgOrdValueSymbolTable Value symbol table for te MethodRegion, usually populated with the parameters.
      * @return A pair of substituted statement for the high order region as well as its VarTypeTable.
      */
-    private Pair<Stmt, DynamicTable> attemptHighOrderRegion(InvokeInstruction c,
+    private Pair<Stmt, DynamicTable> attemptHighOrderRegion(
                                                             DynamicRegion methodRegion,
                                                             DynamicTable hgOrdValueSymbolTable) throws StaticRegionException {
 
