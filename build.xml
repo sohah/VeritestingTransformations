@@ -76,6 +76,7 @@
 	  <available file="src/benchmarks"    type="dir" property="have_benchmarks"/>
 	  <available file="src/apachecli"    type="dir" property="have_apachecli"/>
 	  <available file="src/wbs"    type="dir" property="have_wbs"/>
+	  <available file="src/replace"    type="dir" property="have_replace"/>
 	  <available file="src/siena"    type="dir" property="have_siena"/>
 	  <available file="src/schedule2_3"    type="dir" property="have_schedule2_3"/>
 	  <available file="src/nanoxml"    type="dir" property="have_nanoxml"/>
@@ -114,7 +115,7 @@
   <!-- ======================= COMPILE SECTION ============================= -->
 
   <!-- public compile -->
-  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-printtokens2_2,-compile-tcas,-compile-tcas-sr,-compile-examples,-compile-adaptersynth"
+  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-replace,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-printtokens2_2,-compile-tcas,-compile-tcas-sr,-compile-examples,-compile-adaptersynth"
 	  description="compile all JPF core sources" >
   </target>
 
@@ -226,6 +227,22 @@
 	  </javac>
 		<copy file="build/wbs/WBS.class" tofile="build/examples/WBS.class"/>
   </target>
+
+  <target name="-compile-replace" if="have_replace" depends="-compile-examples">
+	  <mkdir dir="build/replace" />
+		<javac srcdir="src/replace" destdir="build/replace" 
+		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+		  includeantruntime="false">
+		  <classpath>
+			  <path refid="lib.path"/>
+			  <pathelement location="build/classes"/>
+			  <pathelement location="build/examples"/>
+			  <pathelement location="build/annotations"/>
+			  <pathelement location="build/replace"/>
+			</classpath>
+	  </javac>
+  </target>
+
 
 	<target name="-compile-siena" if="have_siena" depends="-compile-classes">
 		<mkdir dir="build/siena" />

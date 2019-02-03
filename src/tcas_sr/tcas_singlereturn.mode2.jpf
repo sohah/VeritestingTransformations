@@ -1,6 +1,6 @@
 target=tcas_singlereturn
-classpath=${jpf-symbc}/build/examples
-sourcepath=${jpf-symbc}/src/examples
+classpath=${jpf-symbc}/build/tcas_sr
+sourcepath=${jpf-symbc}/src/tcas_sr
 symbolic.method = tcas_singlereturn.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 #symbolic.method = tcas_singlereturn.mainProcess(sym#con#con#con#con#con#con#con#con#con#con#con)
 #symbolic.minint=-100
