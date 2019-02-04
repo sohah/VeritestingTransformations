@@ -323,6 +323,7 @@
 		  <classpath>
 			  <path refid="lib.path"/>
 			  <pathelement location="build/classes"/>
+			  <pathelement location="build/examples"/>
 			  <pathelement location="build/annotations"/>
 			  <pathelement location="build/tcas"/>
 			</classpath>

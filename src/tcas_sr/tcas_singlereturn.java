@@ -48,7 +48,7 @@ public class tcas_singlereturn {
 		Positive_RA_Alt_Thresh_3 = 740;
 	}
 
-	public static int b2I(boolean b) { return b ? 1 : 0; }
+	private static int b2I(boolean b) { return b ? 1 : 0; }
 
 	public static Outputs getOutputs() {
 		int[] ret = new int[]{Cur_Vertical_Sep, b2I(High_Confidence), b2I(Two_of_Three_Reports_Valid),
