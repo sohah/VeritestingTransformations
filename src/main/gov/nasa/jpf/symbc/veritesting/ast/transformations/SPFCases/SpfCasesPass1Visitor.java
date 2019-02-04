@@ -18,20 +18,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 
-/**
- * This is the first pass of SPFCases that creates SPFCases nodes. It assumes substitution has run. The purpose of this transformation is to provide a place holder for specific instructions to become SPFCase Statements in RangerIR.
- */
-
-enum SpfCasesInstruction {
-    THROWINSTRUCTION,
-    NEWINSTRUCTION,
-    ARRAYINSTRUCTION,
-    INVOKE, //any invoke that has reached SPFCase pass, is an invoke that we couldn't deal with, and so we leave it up to SPF.
-    RETURN,
-    ALL
-}
-
-
 public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
     private Expression spfCondition = Operation.TRUE;
     private ThreadInfo ti;
@@ -143,7 +129,7 @@ public class SpfCasesPass1Visitor implements AstVisitor<Stmt> {
             return new SPFCaseStmt(spfCondition,
                     SPFCaseStmt.SPFReason.EARLYRETURN);
         else
-            return new ReturnInstruction(c.getOriginal());
+            return new ReturnInstruction(c.getOriginal(), c.rhs);
     }
 
     @Override

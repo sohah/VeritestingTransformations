@@ -43,6 +43,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesInstruction;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenVisitor;
@@ -73,6 +74,7 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isUnsupportedRegionEnd;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.maybeParseConstraint;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.*;
+import static gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesInstruction.*;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayUtil.doArrayStore;
 
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
@@ -424,7 +426,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if ((runMode.ordinal()) >= (VeritestingMode.SPFCASES.ordinal())) {
 
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
-            dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion, null);
+            dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion,
+                    runMode.ordinal() < VeritestingMode.EARLYRETURNS.ordinal() ?
+                            new ArrayList(Arrays.asList(THROWINSTRUCTION, NEWINSTRUCTION, ARRAYINSTRUCTION, INVOKE)) : null);
 
         /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
             dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
