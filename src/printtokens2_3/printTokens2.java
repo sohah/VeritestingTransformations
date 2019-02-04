@@ -15,10 +15,10 @@ public class printTokens2 {
 	public static final int end = 6;
 	
 	public static void main(String[] args) {
-		mainProcess('a', 'b');
+		mainProcess('a', 'b', 'c');
 	}
 	
-	public static void mainProcess(char i0, char i1){
+	public static void mainProcess(char i0, char i1, char i2){
 		
 //		StringBuilder sb = new StringBuilder();
 //		try{
@@ -40,21 +40,21 @@ public class printTokens2 {
 //		String string = sb.toString();
 //		char[] str = string.toCharArray();
 		
-		char[] str = new char[2];
+		char[] str = new char[3];
 		str[0] = i0;
 		str[1] = i1;
-				
+		str[2] = i2;
 		token_stream tp = open_token_stream(str);
-		//TODO 
 //		char a1 = get_char(tp);
 //		char a2 = get_char(tp);
 //		char a3 = get_char(tp);
 //		char a4 = get_char(tp);
+//		char a5 = get_char(tp);
+//		a5 = unget_char(a5, tp);
 //		a4 = unget_char(a4, tp);
 //		a3 = unget_char(a3, tp);
 //		a2 = unget_char(a2, tp);
 //		a1 = unget_char(a1, tp);
-		
 		boolean continueIndex = false;
 		while(!continueIndex){
 			char[] token = get_token(tp);
@@ -464,7 +464,7 @@ public class printTokens2 {
 		return ch;
 	}
 	/*
-	 * 
+	 *
 	 * 
 	 */
 	private static boolean is_token_end(int id, char ch) {

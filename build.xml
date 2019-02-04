@@ -80,7 +80,7 @@
 	  <available file="src/siena"    type="dir" property="have_siena"/>
 	  <available file="src/schedule2_3"    type="dir" property="have_schedule2_3"/>
 	  <available file="src/nanoxml"    type="dir" property="have_nanoxml"/>
-	  <available file="src/printtokens2_2"    type="dir" property="have_printtokens2_2"/>
+	  <available file="src/printtokens2_3"    type="dir" property="have_printtokens2_3"/>
 	  <available file="src/adaptersynth"    type="dir" property="have_adaptersynth"/>
 	  <available file="src/tcas"    type="dir" property="have_tcas"/>
 	  <available file="src/tcas_sr"    type="dir" property="have_tcas_sr"/>
@@ -115,7 +115,7 @@
   <!-- ======================= COMPILE SECTION ============================= -->
 
   <!-- public compile -->
-  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-replace,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-printtokens2_2,-compile-tcas,-compile-tcas-sr,-compile-examples,-compile-adaptersynth"
+  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-replace,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-printtokens2_3,-compile-tcas,-compile-tcas-sr,-compile-examples,-compile-adaptersynth"
 	  description="compile all JPF core sources" >
   </target>
 
@@ -166,7 +166,7 @@
 	  </javac>
   </target>
 
-  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-printtokens2_2">
+  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-printtokens2_3">
 	  <mkdir dir="build/examples" />
 	  <javac srcdir="src/examples" destdir="build/examples"
 		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -178,7 +178,7 @@
 			  <pathelement location="build/siena"/>
 			  <pathelement location="build/schedule2_3"/>
 			  <pathelement location="build/nanoxml"/>
-			  <pathelement location="build/printtokens2_2"/>
+			  <pathelement location="build/printtokens2_3"/>
 			  <pathelement location="build/tcas"/>
 			  <pathelement location="build/annotations"/>
 		  </classpath>
@@ -286,19 +286,20 @@
 		</javac>
 	</target>
 
-    <target name="-compile-printtokens2_2" if="have_printtokens2_2" depends="-compile-classes">
-		<mkdir dir="build/printtokens2_2" />
-		<javac srcdir="src/printtokens2_2" destdir="build/printtokens2_2"
+  <target name="-compile-printtokens2_3" if="have_printtokens2_3" depends="-compile-classes">
+		<mkdir dir="build/printtokens2_3" />
+		<javac srcdir="src/printtokens2_3" destdir="build/printtokens2_3"
 			   debug="${debug}" source="${src_level}" deprecation="${deprecation}"
 			   includeantruntime="false">
 			<classpath>
 				<path refid="lib.path"/>
 				<pathelement location="build/classes"/>
 				<pathelement location="build/annotations"/>
-				<pathelement location="build/printtokens2_2"/>
+				<pathelement location="build/printtokens2_3"/>
 			</classpath>
 		</javac>
 	</target>
+
 
 	<target name="-compile-adaptersynth" if="have_adaptersynth" depends="-compile-examples">
 		<mkdir dir="build/adaptersynth" />
