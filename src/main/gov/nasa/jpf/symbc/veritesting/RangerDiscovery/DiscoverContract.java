@@ -56,11 +56,17 @@ public class DiscoverContract {
         //System.out.println(allPermutations);
 
         int trials = 0;
-        for (ArrayList inputPermutation : rInputPermutations)
-            for (ArrayList outputPermutation : rOutputPermutations) {
-                rangerTransition += generateContractAssertion(inputPermutation, outputPermutation, trials);
-                System.out.println("generating permutation number:" + ++trials) ;
-            }
+        //for (ArrayList inputPermutation : rInputPermutations)
+//            for (ArrayList outputPermutation : rOutputPermutations) {
+      //          rangerTransition += generateContractAssertion(inputPermutation, outputPermutation, trials);
+        Collections.sort(rInput);
+        Collections.sort(stateOutput);
+        Collections.sort(jkindInVar);
+        Collections.sort(jkindOutVar);
+        rangerTransition += generateContractAssertion(rInput, stateOutput, trials);
+
+  //              System.out.println("generating permutation number:" + ++trials) ;
+    //        }
 
         return rangerTransition;
 
@@ -72,14 +78,8 @@ public class DiscoverContract {
         jkindInVar.add("sig");
         jkindInVar.add("ignition");
         jkindInVar.add("reset_flag");
-        jkindInVar.add("start_bt_val~0.reset_flag");
-        jkindInVar.add("launch_bt_val~0.reset_flag");
-        jkindInVar.add("start_bt_val~0.start_bt");
-        jkindInVar.add("launch_bt_val~0.start_bt");
-        jkindInVar.add("start_bt_val~0.launch_bt");
-        jkindInVar.add("launch_bt_val~0.launch_bt");
-        jkindInVar.add("start_bt_val~0.start_bt_out");
-        jkindInVar.add("launch_bt_val~0.launch_bt_out");
+        jkindInVar.add("start_bt");
+        jkindInVar.add("launch_bt");
 
         jkindTypeTable.put("sig", "int");
 
@@ -87,15 +87,10 @@ public class DiscoverContract {
         //jkindOutVar.add("sig");
         jkindOutVar.add("ignition");
         jkindOutVar.add("reset_flag");
-        jkindOutVar.add("start_bt_val~0.reset_flag");
-        jkindOutVar.add("launch_bt_val~0.reset_flag");
-        jkindOutVar.add("start_bt_val~0.start_bt");
-        jkindOutVar.add("launch_bt_val~0.start_bt");
-        jkindOutVar.add("start_bt_val~0.launch_bt");
-        jkindOutVar.add("launch_bt_val~0.launch_bt");
-        jkindOutVar.add("start_bt_val~0.start_bt_out");
-        jkindOutVar.add("launch_bt_val~0.launch_bt_out");
+        jkindOutVar.add("start_bt");
+        jkindOutVar.add("launch_bt");
     }
+
 
     /**
      * used to generate a transition function R for discovery of the contract of the implementation.
@@ -327,7 +322,7 @@ public class DiscoverContract {
 
         rangerVar += "$1";
         if (jkindTypeTable.get(jkindVar) == null) //assuming it is a bool then
-            return ("\t\t\t(= " + "$" + jkindVar + postFix + "(not (= " + rangerVar + " 1)))\n");
+            return ("\t\t\t(= " + "$" + jkindVar + postFix + "(= " + rangerVar + " 1))\n");
         else
             return ("\t\t\t (= " + "$" + jkindVar + postFix+ "  " + rangerVar + ")\n");
     }
