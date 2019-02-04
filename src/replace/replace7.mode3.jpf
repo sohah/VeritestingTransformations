@@ -1,6 +1,6 @@
 target=replace11
-classpath=${jpf-symbc}/build/examples
-sourcepath=${jpf-symbc}/src/examples
+classpath=${jpf-symbc}/build/replace
+sourcepath=${jpf-symbc}/src/replace
 symbolic.method = replace11.mainProcess(sym#sym#sym#sym#sym#sym#sym#con#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100

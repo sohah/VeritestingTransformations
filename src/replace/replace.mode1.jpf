@@ -1,6 +1,6 @@
 target=replace
-classpath=${jpf-symbc}/build/examples
-sourcepath=${jpf-symbc}/src/examples
+classpath=${jpf-symbc}/build/replace
+sourcepath=${jpf-symbc}/src/replace
 #symbolic.method = replace.mainProcess(sym#sym#sym#sym#sym)
 #symbolic.method = replace.mainProcess(sym#sym#sym#con#con)
 symbolic.method = replace.mainProcess(sym#sym#sym#sym#sym)
