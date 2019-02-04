@@ -19,7 +19,7 @@ public class TestVeritestingTCAS {
     }
 
     private Outputs SPFWrapper(TCASEqCheck v, int in0, int in1, int in2, int in3, int in4, int in5,
-                             int in6, int in7, int in8, int in9, int in10, int in11) {
+                               int in6, int in7, int in8, int in9, int in10, int in11) {
         return NoVeritest(v, in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
     }
 
@@ -27,18 +27,18 @@ public class TestVeritestingTCAS {
     // function or method call higher up in the stack. In the future, this call to SPFWrapperInner can be changed to
     // be a generic method call if other no-veritesting methods need to be invoked.
     private Outputs NoVeritest(TCASEqCheck v, int in0, int in1, int in2, int in3, int in4, int in5,
-                             int in6, int in7, int in8, int in9, int in10, int in11) {
+                               int in6, int in7, int in8, int in9, int in10, int in11) {
         return SPFWrapperInner(v, in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
     }
 
     private Outputs SPFWrapperInner(TCASEqCheck v, int in0, int in1, int in2, int in3, int in4, int in5,
-                                   int in6, int in7, int in8, int in9, int in10, int in11) {
+                                    int in6, int in7, int in8, int in9, int in10, int in11) {
         Outputs ret = v.testFunction(in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
         return ret;
     }
 
     private Outputs JRWrapper(TCASEqCheck v, int in0, int in1, int in2, int in3, int in4, int in5,
-                             int in6, int in7, int in8, int in9, int in10, int in11) {
+                              int in6, int in7, int in8, int in9, int in10, int in11) {
         return v.testFunction(in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11);
     }
 

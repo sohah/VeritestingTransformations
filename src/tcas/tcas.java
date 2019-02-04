@@ -39,6 +39,18 @@ public class tcas {
 	public static int UPWARD_RA = 1;
 	public static int DOWNWARD_RA = 2;
 
+	private static int result_alt_sep_test = -1;
+	private static int result_alim = -1;
+
+	private static int b2I(boolean b) { return b ? 1 : 0; }
+
+	public static Outputs getOutputs() {
+		int[] ret = new int[]{Cur_Vertical_Sep, b2I(High_Confidence), b2I(Two_of_Three_Reports_Valid),
+				Own_Tracked_Alt, Own_Tracked_Alt_Rate, Other_Tracked_Alt, Alt_Layer_Value, Up_Separation, Down_Separation, Other_RAC, Climb_Inhibit,
+				result_alt_sep_test, result_alim};
+		return new Outputs(ret);
+	}
+
 	public static void initialize() {
 		Positive_RA_Alt_Thresh_0 = 400;
 		Positive_RA_Alt_Thresh_1 = 500;
@@ -277,8 +289,8 @@ public class tcas {
 
 //		alt_sep_test();
 
-		int result = alt_sep_test();
-//		int alim = ALIM();
+		result_alt_sep_test = alt_sep_test();
+		result_alim = ALIM();
 
 		// MWW assertions.  These come from ACSL safety property paper: http://people.rennes.inria.fr/Arnaud.Gotlieb/CT_ATM_gotlieb.pdf
 		// fails
