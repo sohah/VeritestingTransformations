@@ -1,0 +1,16 @@
+target=replace11
+classpath=${jpf-symbc}/build/examples
+sourcepath=${jpf-symbc}/src/examples
+symbolic.method = replace11.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+symbolic.minint=-100
+symbolic.maxint=100
+vm.storage.class=nil
+#listener = .symbc.SymbolicListener
+listener = .symbc.VeritestingListener
+symbolic.dp=z3bitvector
+#listener = .listener.ChoiceTracker
+#symbolic.debug=on
+veritestingMode=3
+performanceMode = true
+interestingClassNames = replace11
+
