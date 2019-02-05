@@ -119,7 +119,7 @@ public class DiscoverContract {
 
     private static String getJkindTransition() {
         try {
-            return  DiscoveryUtility.readFileToString(jKindFile);
+            return DiscoveryUtility.readFileToString(jKindFile);
         } catch (IOException e) {
             System.out.println("problem while trying to read the jkind query.");
             return null;
@@ -293,8 +293,11 @@ public class DiscoverContract {
         String inputMatchPredicate_1 = generateMatchPredicate(InputOutput.INPUT, rInputPermutation, -1);
         String outputMatchPredicate_1 = generateMatchPredicate(InputOutput.OUTPUT, rOutputPermutation, -1);
 
+        ArrayList rK2Input = rOutputPermutation;
+        rK2Input.addAll(freeInput); //input always have the free var included plus the output of the pervious step
+        Collections.sort(rK2Input);
 
-        String inputMatchPredicate_0 = generateMatchPredicate(InputOutput.INPUT, rOutputPermutation, 0);
+        String inputMatchPredicate_0 = generateMatchPredicate(InputOutput.INPUT, rK2Input, 0);
         String outputMatchPredicate_0 = generateNotMatchPredicate(InputOutput.OUTPUT, rOutputPermutation, 0);
 
         mergePredicate += "(" + inputMatchPredicate_1 + outputMatchPredicate_1 + inputMatchPredicate_0 + outputMatchPredicate_0 + ")";
@@ -308,7 +311,7 @@ public class DiscoverContract {
     private static String generateNotMatchPredicate(InputOutput output, ArrayList rOutputPermutation, int k) {
         assert (output == InputOutput.OUTPUT);
 
-        String notMatchPredicate = "\n\t(output_match$1" + "\n\t\t( or\n";
+        String notMatchPredicate = "\n\t(output_match$1" + "\n\t\t( and \n";
         int index = 0;
         for (String jkindVar : jkindOutVar) {
             if (index == rOutputPermutation.size())
@@ -339,24 +342,43 @@ public class DiscoverContract {
 
     private static String generateMatchPredicate(InputOutput inputOutput, ArrayList permutation, int k) {
         String matchPredicate = "";
+        ArrayList<String> jInputOutputList;
+
         if (inputOutput == InputOutput.INPUT) {
             matchPredicate = (k == -1) ? "\t( input_match~1" : "( input_match$1";
+            jInputOutputList = jkindInVar;
         } else {
             matchPredicate = (k == -1) ? "\t( output_match~1" : "( output_match$1";
+            jInputOutputList = jkindOutVar;
         }
         matchPredicate += "\n\t(and\n";
         int index = 0;
 
-        for (String jkindVar : jkindInVar) {
+
+        for (String jkindVar : jInputOutputList) {
             if (index == permutation.size())
                 index = 0;
-            matchPredicate += createClause(inputOutput, jkindVar, (String) permutation.get(index), k);
+            if (isRangerFreeInput((String) permutation.get(index)))
+                matchPredicate += createClause(inputOutput, jkindVar, (String) permutation.get(index)+(k+1), k);
+            else
+                matchPredicate += createClause(inputOutput, jkindVar, (String) permutation.get(index), k);
             ++index;
         }
 
         matchPredicate += "))\n";
 
         return matchPredicate;
+    }
+
+    private static boolean isRangerFreeInput(String s) {
+        boolean exits = false;
+        int index = 0;
+        while(!exits && index <= freeInput.size()){
+            if(freeInput.contains(s))
+                exits = true;
+            ++index;
+        }
+        return exits;
     }
 
     private static String createClause(InputOutput inputOutput, String jkindVar, String rangerVar, int k) {
