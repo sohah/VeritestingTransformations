@@ -1,5 +1,7 @@
-
-public class UnbeliveablySimplePadReset {
+/**
+ * Simple Pad with a reset state
+ */
+public class SimplePadReset {
     private boolean start_btn;
     private boolean launch_btn;
     private boolean ignition_r;
@@ -22,13 +24,13 @@ public class UnbeliveablySimplePadReset {
     final int INVALIDSTATE = 7;
 
 
-    public UnbeliveablySimplePadReset() {
+    public SimplePadReset() {
         start_btn = false;
         launch_btn = false;
     }
 
     public static void main(String[] args) {
-        UnbeliveablySimplePadReset pad = new UnbeliveablySimplePadReset();
+        SimplePadReset pad = new SimplePadReset();
         int count = 1;
         boolean start_btn = false;
         boolean launch_btn = false;

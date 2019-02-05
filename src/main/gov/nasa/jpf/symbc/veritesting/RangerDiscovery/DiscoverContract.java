@@ -9,10 +9,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptP
 import gov.nasa.jpf.vm.*;
 import za.ac.sun.cs.green.expr.Expression;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.*;
 
 public class DiscoverContract {
@@ -39,12 +36,14 @@ public class DiscoverContract {
 
     enum InputOutput {INPUT, OUTPUT}
 
-    ;
+    static String jKindFile = "../../../ContractDiscoveryProjects/RunPadModel/ImaginaryPad/ImaginaryPad.k-induction.smt2";
 
 
     public static String generateKMerge(String query, ArrayList z3FunDecSet, String fileName) {
 
         discoverJKindVar();
+        String jkindTransition = getJkindTransition();
+
         String rangerTransition = generateRangerTransition(query, z3FunDecSet, fileName);
 
         ArrayList rInput = new ArrayList(stateInput);
@@ -56,19 +55,21 @@ public class DiscoverContract {
         //System.out.println(allPermutations);
 
         int trials = 0;
-        //for (ArrayList inputPermutation : rInputPermutations)
-//            for (ArrayList outputPermutation : rOutputPermutations) {
-      //          rangerTransition += generateContractAssertion(inputPermutation, outputPermutation, trials);
+        //provides an input/output mapping with a permutation of all possibilities.
+        /*for (ArrayList inputPermutation : rInputPermutations)
+            for (ArrayList outputPermutation : rOutputPermutations) {
+                rangerTransition += generateContractAssertion(inputPermutation, outputPermutation, trials);
+                System.out.println("generating permutation number:" + ++trials);
+            }*/
+
+        //single input output mapping that we'd know would exist.
         Collections.sort(rInput);
         Collections.sort(stateOutput);
         Collections.sort(jkindInVar);
         Collections.sort(jkindOutVar);
         rangerTransition += generateContractAssertion(rInput, stateOutput, trials);
 
-  //              System.out.println("generating permutation number:" + ++trials) ;
-    //        }
-
-        return rangerTransition;
+        return (jkindTransition + rangerTransition);
 
     }
 
@@ -114,6 +115,15 @@ public class DiscoverContract {
         String instantiation1 = generateInstanitaion(1) + "\n";
 
         return rangerTransition + "\n" + instantiation0 + "\n" + instantiation1;
+    }
+
+    private static String getJkindTransition() {
+        try {
+            return  DiscoveryUtility.readFileToString(jKindFile);
+        } catch (IOException e) {
+            System.out.println("problem while trying to read the jkind query.");
+            return null;
+        }
     }
 
 
@@ -301,7 +311,7 @@ public class DiscoverContract {
         String notMatchPredicate = "\n\t(output_match$1" + "\n\t\t( or\n";
         int index = 0;
         for (String jkindVar : jkindOutVar) {
-            if (index == rOutputPermutation.size() )
+            if (index == rOutputPermutation.size())
                 index = 0;
             notMatchPredicate += createNotClause(jkindVar, (String) rOutputPermutation.get(index), k);
             ++index;
@@ -324,7 +334,7 @@ public class DiscoverContract {
         if (jkindTypeTable.get(jkindVar) == null) //assuming it is a bool then
             return ("\t\t\t(= " + "$" + jkindVar + postFix + "(= " + rangerVar + " 1))\n");
         else
-            return ("\t\t\t (= " + "$" + jkindVar + postFix+ "  " + rangerVar + ")\n");
+            return ("\t\t\t (= " + "$" + jkindVar + postFix + "  " + rangerVar + ")\n");
     }
 
     private static String generateMatchPredicate(InputOutput inputOutput, ArrayList permutation, int k) {

@@ -1,5 +1,8 @@
+/**
+ * Pad that implements reset in two steps.
+ */
 
-public class UnbeliveablySimplePadDisplaced {
+public class SimplePadDisplaced {
     private boolean start_btn;
     private boolean launch_btn;
     private boolean ignition_r;
@@ -23,13 +26,13 @@ public class UnbeliveablySimplePadDisplaced {
     final int INVALIDSTATE = 7;
 
 
-    public UnbeliveablySimplePadDisplaced() {
+    public SimplePadDisplaced() {
         start_btn = false;
         launch_btn = false;
     }
 
     public static void main(String[] args) {
-        UnbeliveablySimplePadDisplaced pad = new UnbeliveablySimplePadDisplaced();
+        SimplePadDisplaced pad = new SimplePadDisplaced();
         int count = 1;
         boolean start_btn = false;
         boolean launch_btn = false;

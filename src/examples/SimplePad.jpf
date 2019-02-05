@@ -1,4 +1,4 @@
-target=UnbeliveablySimplePadReset
+target=SimplePad
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil
@@ -6,8 +6,7 @@ symbolic.debug=true
 
 
 ######## miscellaneous  ######
-symbolic.method=UnbeliveablySimplePadReset.runPadSteps(sym#sym#sym#sym#sym#sym)
-#symbolic.method=UnbeliveablySimplePadReset.runPad(sym)
+symbolic.method=SimplePad.runPadSteps(sym#sym#sym#sym#sym)
 
 symbolic.dp=z3
 

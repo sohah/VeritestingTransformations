@@ -1,4 +1,4 @@
-public class UnbeliveablySimplePad {
+public class SimplePad {
     private boolean start_btn;
     private boolean launch_btn;
     private boolean ignition_r;
@@ -19,13 +19,13 @@ public class UnbeliveablySimplePad {
     final int INVALIDSTATE = 5;
 
 
-    public UnbeliveablySimplePad() {
+    public SimplePad() {
         start_btn = false;
         launch_btn = false;
     }
 
     public static void main(String[] args) {
-        UnbeliveablySimplePad pad = new UnbeliveablySimplePad();
+        SimplePad pad = new SimplePad();
         int count = 1;
         boolean start_btn = false;
         boolean launch_btn = false;
