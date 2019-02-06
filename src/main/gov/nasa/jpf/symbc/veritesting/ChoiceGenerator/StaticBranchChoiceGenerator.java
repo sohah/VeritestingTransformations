@@ -226,9 +226,9 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, new Operation(Operation.Operator.NOT, region.spfPredicateSummary), region.earlyReturnResult.condition))), RETURN_CHOICE);
         }
         else { // no early return or spfcases exists, then run only the static choice
-            setPC(createPC(pc, region.regionSummary, Operation.TRUE), STATIC_CHOICE);
-            setPC(createPC(pc, region.regionSummary, Operation.FALSE), THEN_CHOICE);
-            setPC(createPC(pc, region.regionSummary, Operation.FALSE), ELSE_CHOICE);
+            setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
+            setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
+            setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
             setPC(createPC(pc, region.regionSummary, Operation.FALSE), RETURN_CHOICE);
 
         }

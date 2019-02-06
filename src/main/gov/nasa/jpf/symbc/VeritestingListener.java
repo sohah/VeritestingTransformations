@@ -101,7 +101,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
 
-    private static VeritestingMode runMode;
+    public static VeritestingMode runMode;
     public static boolean performanceMode = false;
     // reads in a exclusionsFile configuration option, set to ${jpf-symbc}/MyJava60RegressionExclusions.txt by default
     public static String exclusionsFile;
@@ -481,7 +481,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         if (simplify && dynRegion.constantsTable != null) { //only handling the case of ints
             isConcreteReturn = dynRegion.constantsTable.lookup((Variable) returnVar) instanceof IntConstant;
-            retVarValue = dynRegion.constantsTable.lookup((Variable) returnVar).numVar();
+            retVarValue = ((IntConstant)dynRegion.constantsTable.lookup((Variable) returnVar)).getValue();
         }
 
         if (returnType != null) {
