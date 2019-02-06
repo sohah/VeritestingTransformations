@@ -1,5 +1,5 @@
 target=tcas
-classpath=${jpf-symbc}/build/tcas
+classpath=${jpf-symbc}/build/tcas,${jpf-symbc}/build/examples/
 sourcepath=${jpf-symbc}/src/tcas
 symbolic.method = tcas.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 #symbolic.method = tcas.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)

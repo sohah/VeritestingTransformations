@@ -598,7 +598,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             FieldRefVarExpr expr = (FieldRefVarExpr) itr.next();
             String type = dynRegion.fieldRefTypeTable.lookup(expr);
             Expression symVar;
-            if (dynRegion.constantsTable.lookup(expr) != null) {
+            if (dynRegion.constantsTable != null && dynRegion.constantsTable.lookup(expr) != null) {
                 symVar = dynRegion.constantsTable.lookup(expr);
                 if (symVar instanceof CloneableVariable)
                     symVar = createGreenVar(type, symVar.toString()); // assumes toString() would return the same string as getSymName()
