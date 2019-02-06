@@ -481,12 +481,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         if (simplify && dynRegion.constantsTable != null) { //only handling the case of ints
             isConcreteReturn = dynRegion.constantsTable.lookup((Variable) returnVar) instanceof IntConstant;
-            retVarValue = ((IntConstant)dynRegion.constantsTable.lookup((Variable) returnVar)).getValue();
+            if (isConcreteReturn)
+                retVarValue = ((IntConstant) dynRegion.constantsTable.lookup((Variable) returnVar)).getValue();
         }
 
         if (returnType != null) {
             switch (returnType) {
-                /*case "double":
+                case "double":
                     sf.pushDouble(0);
                     break;
                 case "float":
@@ -495,7 +496,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 case "long":
                     sf.pushLong(0);
                     break;
-                */
                 case "int":
                 case "short":
                 case "boolean":
