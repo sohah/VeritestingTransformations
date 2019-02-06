@@ -474,9 +474,19 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     private static void pushReturnOnStack(StackFrame sf, DynamicRegion dynRegion) throws StaticRegionException {
         String returnType = dynRegion.earlyReturnResult.retPosAndType.getSecond();
+        Expression returnVar = dynRegion.earlyReturnResult.retVar;
+        boolean isConcreteReturn = false;
+
+        int retVarValue = 0;
+
+        if (simplify && dynRegion.constantsTable != null) { //only handling the case of ints
+            isConcreteReturn = dynRegion.constantsTable.lookup((Variable) returnVar) instanceof IntConstant;
+            retVarValue = dynRegion.constantsTable.lookup((Variable) returnVar).numVar();
+        }
+
         if (returnType != null) {
             switch (returnType) {
-                case "double":
+                /*case "double":
                     sf.pushDouble(0);
                     break;
                 case "float":
@@ -485,18 +495,20 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 case "long":
                     sf.pushLong(0);
                     break;
+                */
                 case "int":
                 case "short":
                 case "boolean":
-                    sf.push(0);
+                case "C":
+                    sf.push(retVarValue);
                     break;
-                default: //assumen int
-                    sf.push(0);
-                    break;
+                default: //assume int for now
+                    sf.push(retVarValue);
             }
-            sf.setOperandAttr(greenToSPFExpression(dynRegion.earlyReturnResult.retVar));
+            if (!isConcreteReturn)
+                sf.setOperandAttr(greenToSPFExpression(dynRegion.earlyReturnResult.retVar));
         } else {
-            System.out.println("SPF does not know the type, type is assumed int.");
+            System.out.println("SPF does not know the type of the returnResult.");
             throw new StaticRegionException("Cannot push operand on stack for early return, operand type is unknown.!");
         }
     }
@@ -541,7 +553,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             return false;
         }
     }
-
 
 
     /**

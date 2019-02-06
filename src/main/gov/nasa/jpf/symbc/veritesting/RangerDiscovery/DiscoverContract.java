@@ -89,8 +89,6 @@ public class DiscoverContract {
             }
             ++walkingIndex;
         }
-
         return new Pair(startingIndex, closingIndex);
     }
-
 }

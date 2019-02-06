@@ -39,40 +39,37 @@ public class SimplifyStmtVisitor extends FixedPointAstMapVisitor {
     }
 
     public boolean getSomethingChanged() {
-        return ((SimplifyRangerExprVisitor)exprVisitor).somethingChanged;
+        return ((SimplifyRangerExprVisitor) exprVisitor).somethingChanged;
     }
 
     public IllegalArgumentException getExprException() {
         IllegalArgumentException ret = null;
-        if (((SimplifyRangerExprVisitor)exprVisitor).exception != null) {
-            ret = (((SimplifyRangerExprVisitor)exprVisitor).exception);
+        if (((SimplifyRangerExprVisitor) exprVisitor).exception != null) {
+            ret = (((SimplifyRangerExprVisitor) exprVisitor).exception);
         }
         return ret;
     }
 
     @Override
     public Stmt visit(AssignmentStmt a) {
-        if(!(a.lhs instanceof AstVarExpr)) {
-            Expression rhs = eva.accept(a.rhs);
-            if (isConstant(rhs) || isVariable(rhs)) {
-                constantsTable.add((Variable) a.lhs, rhs);
-                if (isVariable(rhs)) {
-                    String type = getGreenVariableType(rhs);
-                    if (type == null) type = (String) dynRegion.varTypeTable.lookup(rhs);
-                    if (type == null) type = dynRegion.fieldRefTypeTable.lookup(rhs);
-                    if (type != null) {
-                        if (a.lhs instanceof WalaVarExpr)
-                            dynRegion.varTypeTable.add(a.lhs, type);
-                        else if (a.lhs instanceof FieldRefVarExpr || a.lhs instanceof ArrayRefVarExpr)
-                            dynRegion.fieldRefTypeTable.add((CloneableVariable) a.lhs, type);
-                    }
+        Expression rhs = eva.accept(a.rhs);
+        if (isConstant(rhs) || isVariable(rhs)) {
+            constantsTable.add((Variable) a.lhs, rhs);
+            if (isVariable(rhs)) {
+                String type = getGreenVariableType(rhs);
+                if (type == null) type = (String) dynRegion.varTypeTable.lookup(rhs);
+                if (type == null) type = dynRegion.fieldRefTypeTable.lookup(rhs);
+                if (type != null) {
+                    if (a.lhs instanceof WalaVarExpr)
+                        dynRegion.varTypeTable.add(a.lhs, type);
+                    else if (a.lhs instanceof FieldRefVarExpr || a.lhs instanceof ArrayRefVarExpr)
+                        dynRegion.fieldRefTypeTable.add((CloneableVariable) a.lhs, type);
                 }
-                this.somethingChanged = true;
-                return SkipStmt.skip;
             }
-            return new AssignmentStmt(a.lhs, rhs);
+            this.somethingChanged = true;
+            return SkipStmt.skip;
         }
-        else return a;
+        return new AssignmentStmt(a.lhs, rhs);
     }
 
     @Override
@@ -135,13 +132,13 @@ public class SimplifyStmtVisitor extends FixedPointAstMapVisitor {
         return newConstantsTable;
     }
 
-    public static SimplifyStmtVisitor create(DynamicRegion dynRegion){
+    public static SimplifyStmtVisitor create(DynamicRegion dynRegion) {
         DynamicTable<Expression> constantsTable = new DynamicTable<>("Constants Table", "Expression", "Constant Value");
         SimplifyStmtVisitor simplifyVisitor = new SimplifyStmtVisitor(dynRegion, constantsTable);
         return simplifyVisitor;
     }
 
-    public DynamicRegion execute(){
+    public DynamicRegion execute() {
         Stmt simplifiedStmt = dynRegion.dynStmt.accept(this);
         this.instantiatedRegion = new DynamicRegion(dynRegion, simplifiedStmt, dynRegion.spfCaseList, dynRegion.regionSummary,
                 dynRegion.spfPredicateSummary, dynRegion.earlyReturnResult);
