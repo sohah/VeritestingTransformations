@@ -331,6 +331,46 @@ public class WBS {
 		wbs.update(pedal2, auto2, skid2);
 		wbs.update(pedal3, auto3, skid3);
 	}
+
+	public void sym1(int a1, boolean a2, boolean a3) {
+		update(a1, a2, a3);
+	}
+
+	public void sym2(int b1, boolean b2, boolean b3) {
+		update(b1, b2, b3);
+	}
+
+	public void sym3(int c1, boolean c2, boolean c3) {
+		update(c1, c2, c3);
+	}
+
+	public void sym4(int d1, boolean d2, boolean d3) {
+		update(d1, d2, d3);
+	}
+
+	public void sym5(int e1, boolean e2, boolean e3) {
+		update(e1, e2, e3);
+	}
+
+	public void sym6(int f1, boolean f2, boolean f3) {
+		update(f1, f2, f3);
+	}
+
+	public void sym7(int g1, boolean g2, boolean g3) {
+		update(g1, g2, g3);
+	}
+
+	public void sym8(int h1, boolean h2, boolean h3) {
+		update(h1, h2, h3);
+	}
+
+	public void sym9(int i1, boolean i2, boolean i3) {
+		update(i1, i2, i3);
+	}
+
+	public void sym10(int j1, boolean j2, boolean j3) {
+		update(j1, j2, j3);
+	}
 	
 	public static void main(String[] args) {
 		launch(0,false,false,0,false,false,0,false,false);
