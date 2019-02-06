@@ -26,11 +26,21 @@ public class RunWBS {
     public static void main(String[] args) {
         WBS wbs = new WBS();
         int maxSteps = Integer.parseInt(System.getenv("MAX_STEPS"));
-        for (int i = 0; i < maxSteps; i++) {
-            int pedal = 0; //Debug.makeSymbolicInteger("pedal" + i);
-            boolean auto = false; //Debug.makeSymbolicBoolean("auto" + i);
-            boolean skid = false; //Debug.makeSymbolicBoolean("skid" + i);
-            wbs.update(pedal, auto, skid);
-        }
+//        for (int i = 0; i < maxSteps; i++) {
+//            int pedal = 0; //Debug.makeSymbolicInteger("pedal" + i);
+//            boolean auto = false; //Debug.makeSymbolicBoolean("auto" + i);
+//            boolean skid = false; //Debug.makeSymbolicBoolean("skid" + i);
+//            wbs.update(pedal, auto, skid);
+//        }
+        if (maxSteps-- > 0) wbs.sym1(0, false, false);
+        if (maxSteps-- > 0) wbs.sym2(0, false, false);
+        if (maxSteps-- > 0) wbs.sym3(0, false, false);
+        if (maxSteps-- > 0) wbs.sym4(0, false, false);
+        if (maxSteps-- > 0) wbs.sym5(0, false, false);
+        if (maxSteps-- > 0) wbs.sym6(0, false, false);
+        if (maxSteps-- > 0) wbs.sym7(0, false, false);
+        if (maxSteps-- > 0) wbs.sym8(0, false, false);
+        if (maxSteps-- > 0) wbs.sym9(0, false, false);
+        if (maxSteps-- > 0) wbs.sym10(0, false, false);
     }
 }
