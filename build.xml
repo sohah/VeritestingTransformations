@@ -76,6 +76,7 @@
 	  <available file="src/benchmarks"    type="dir" property="have_benchmarks"/>
 	  <available file="src/apachecli"    type="dir" property="have_apachecli"/>
 	  <available file="src/wbs"    type="dir" property="have_wbs"/>
+	  <available file="src/MerArbiter-v2"    type="dir" property="have_merarbiter_v2"/>
 	  <available file="src/replace"    type="dir" property="have_replace"/>
 	  <available file="src/siena"    type="dir" property="have_siena"/>
 	  <available file="src/schedule2_3"    type="dir" property="have_schedule2_3"/>
@@ -115,7 +116,7 @@
   <!-- ======================= COMPILE SECTION ============================= -->
 
   <!-- public compile -->
-  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-replace,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-printtokens2_3,-compile-tcas,-compile-tcas-sr,-compile-examples,-compile-adaptersynth"
+  <target name="compile" depends="-init,-compile-annotations,-compile-main,-compile-peers,-compile-classes,-compile-tests,-compile-benchmarks,-compile-apachecli,-compile-wbs,-compile-merarbiter-v2,-compile-replace,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-printtokens2_3,-compile-tcas,-compile-tcas-sr,-compile-examples,-compile-adaptersynth"
 	  description="compile all JPF core sources" >
   </target>
 
@@ -166,7 +167,7 @@
 	  </javac>
   </target>
 
-  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-printtokens2_3">
+  <target name="-compile-examples" if="have_examples" depends="-compile-annotations,-compile-main,-compile-wbs,-compile-merarbiter-v2,-compile-siena,-compile-schedule2_3,-compile-nanoxml,-compile-printtokens2_3">
 	  <mkdir dir="build/examples" />
 	  <javac srcdir="src/examples" destdir="build/examples"
 		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
@@ -175,6 +176,7 @@
 			  <path refid="lib.path"/>
 			  <pathelement location="build/classes"/>
 			  <pathelement location="build/wbs"/>
+			  <pathelement location="build/MerArbiter-v2"/>
 			  <pathelement location="build/siena"/>
 			  <pathelement location="build/schedule2_3"/>
 			  <pathelement location="build/nanoxml"/>
@@ -227,6 +229,22 @@
 	  </javac>
 		<copy file="build/wbs/WBS.class" tofile="build/examples/WBS.class"/>
   </target>
+
+  <target name="-compile-merarbiter-v2" if="have_merarbiter_v2" depends="-compile-classes">
+	  <mkdir dir="build/merarbiter-v2" />
+		<javac srcdir="src/MerArbiter-v2" destdir="build/MerArbiter-v2" 
+		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
+		  includeantruntime="false">
+		  <classpath>
+			  <path refid="lib.path"/>
+			  <pathelement location="build/classes"/>
+			  <pathelement location="build/annotations"/>
+			  <pathelement location="/Users/vaibhav/Downloads/foundry/lib/foundry-1.0.jar"/>
+			  <pathelement location="/Users/vaibhav/Downloads/foundry/lib/velocity-1.4.jar"/>
+			</classpath>
+	  </javac>
+  </target>
+
 
   <target name="-compile-replace" if="have_replace" depends="-compile-examples">
 	  <mkdir dir="build/replace" />
