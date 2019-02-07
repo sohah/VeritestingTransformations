@@ -204,7 +204,7 @@ public class ProblemZ3BitVector extends ProblemGeneral {
                     try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                             new FileOutputStream(fileName), "utf-8"))) {
 
-                        DiscoverContract.z3QuerySet.add(new Pair(solver.toString(), z3FunDecSet));
+                        DiscoverContract.getZ3QuerySet().add(new Pair(solver.toString(), z3FunDecSet));
 
                         writer.write(DiscoverContract.toSMT(solver.toString(), z3FunDecSet));
                     }

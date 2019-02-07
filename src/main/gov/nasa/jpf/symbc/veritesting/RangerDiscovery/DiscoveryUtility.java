@@ -81,4 +81,11 @@ public class DiscoveryUtility {
         }
     }
 
+    public static String writeArrayList(ArrayList<String> stringArrayList) {
+        String s = "";
+        for (int i = 0; i < stringArrayList.size(); i++)
+            s += stringArrayList.get(i) + "\n";
+        return s;
+    }
+
 }

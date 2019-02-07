@@ -21,8 +21,6 @@ package gov.nasa.jpf.symbc;
 
 
 import com.ibm.wala.shrikeCT.InvalidClassFileException;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Solver;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
@@ -42,28 +40,20 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicOutputTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicTable;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass2Visitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness.UniqueRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySSAVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.constprop.SimplifyStmtVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSSAVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubstituteGetOutput;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.linearization.LinearizationTransformation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.substitution.SubstitutionVisitor;
 
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.typepropagation.TypePropagationVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.FixedPointAstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import gov.nasa.jpf.vm.*;
 import gov.nasa.jpf.vm.Instruction;
 import za.ac.sun.cs.green.expr.*;
@@ -73,8 +63,6 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static gov.nasa.jpf.symbc.veritesting.AdapterSynth.SPFAdapterSynth.runAdapterSynth;
-import static gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator.getKind;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
@@ -463,7 +451,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public static Instruction setupSPF(ThreadInfo ti, Instruction ins, DynamicRegion dynRegion, boolean earlyReturnSetup) throws StaticRegionException {
 
-        DiscoverContract.dynRegion = dynRegion;
+        DiscoverContract.setRangerRegion(dynRegion);
         if (canSetPC(ti, dynRegion.regionSummary)) {
             populateFieldOutputs(ti, dynRegion);
             populateArrayOutputs(ti, dynRegion);

@@ -328,7 +328,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     return null;
             }
             if(c.getOriginal().getCallSite().getDeclaredTarget().getSelector().toString().equals(DiscoverContract.contractMethodName))
-                DiscoverContract.collectInput(ti, c.params, currClassName, dynRegion);
+                DiscoverContract.collectRinput(ti, c.params, currClassName, dynRegion);
         } else {
             Atom packageNameAtom = methodReference.getDeclaringClass().getName().getPackage();
             String packageName = packageNameAtom != null ? packageNameAtom.toString().replaceAll("/", ".") : null;

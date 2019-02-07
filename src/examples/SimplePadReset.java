@@ -1,3 +1,6 @@
+import gov.nasa.jpf.symbc.Debug;
+
+
 /**
  * Simple Pad with a reset state
  */
@@ -39,6 +42,9 @@ public class SimplePadReset {
         int sig = 1;
 
         pad.runPadSteps(sig, start_btn, launch_btn, ignition, reset_btn, true);
+
+        // used to generate test cases.
+        //Debug.printPC("SimplePadReset.runPadSteps Path Condition: ");
 
     }
 

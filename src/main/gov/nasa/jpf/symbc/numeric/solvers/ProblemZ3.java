@@ -738,7 +738,7 @@ public class ProblemZ3 extends ProblemGeneral {
                     try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                             new FileOutputStream(fileName), "utf-8"))) {
 
-                        DiscoverContract.z3QuerySet.add(new Pair(solver.toString(), z3FunDecSet));
+                        DiscoverContract.getZ3QuerySet().add(new Pair(solver.toString(), z3FunDecSet));
 
                         if (DiscoverContract.active) {
                             writer.write(DiscoverContract.generateKMerge(solver.toString(), z3FunDecSet, fileName));
