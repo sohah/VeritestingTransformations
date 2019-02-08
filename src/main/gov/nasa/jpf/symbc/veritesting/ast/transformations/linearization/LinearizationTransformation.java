@@ -18,6 +18,7 @@ public class LinearizationTransformation extends DefaultTransformation {
         Stmt stmt = region.dynStmt.accept(v);
 
         System.out.println(StmtPrintVisitor.print(stmt));
+        System.out.println("\nStack output: " + region.stackOutput);
 
         return new DynamicRegion(region,
                 stmt, region.spfCaseList, null,null, region.earlyReturnResult);

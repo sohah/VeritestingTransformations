@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.AstVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Region;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
+import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SPFCaseList;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayExpressions;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArraySubscriptMap;
@@ -106,9 +107,11 @@ public class DynamicRegion implements Region {
 
 
     public RemoveEarlyReturns.ReturnResult earlyReturnResult;
-    /*
 
-*/
+    /**
+     * Holds the expression that should be written out to the stack
+     */
+    public WalaVarExpr stackOutput = null;
 
     public DynamicRegion(DynamicRegion oldDynRegion,
                          Stmt dynStmt,
@@ -138,6 +141,7 @@ public class DynamicRegion implements Region {
         this.earlyReturnResult = earlyReturnResult;
         this.arrayOutputs = oldDynRegion.arrayOutputs;
         this.constantsTable = oldDynRegion.constantsTable;
+        this.stackOutput = oldDynRegion.stackOutput;
     }
 
 
@@ -180,6 +184,7 @@ public class DynamicRegion implements Region {
         this.psm = new FieldSubscriptMap();
         this.arrayOutputs = null;
         this.constantsTable = null;
+        this.stackOutput = staticRegion.stackOutput;
     }
 
 }

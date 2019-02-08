@@ -15,6 +15,7 @@ import java.util.Set;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.STATIC;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 
+/* Implements an invariant that checks if the region has up to one stack output */
 public class LocalOutputInvariantVisitor extends AstMapVisitor {
     ExprVisitorAdapter<Expression> eva;
     public List<AssignmentStmt> gammaStmts;
@@ -42,6 +43,7 @@ public class LocalOutputInvariantVisitor extends AstMapVisitor {
     public Stmt visit(IfThenElseStmt a) {
         a.thenStmt.accept(this);
         a.elseStmt.accept(this);
+        gammaStmts.clear();
         return a;
     }
 
@@ -101,8 +103,11 @@ public class LocalOutputInvariantVisitor extends AstMapVisitor {
                 for (int slot : outputSlots) {
                     if (((Integer) staticRegion.outputTable.lookup(slot)) == lhs.number) outputFound = true;
                 }
-                if (!outputFound)
-                    throwException(new StaticRegionException("static region with gamma expression has non-local output in lhs"), STATIC);
+                if (!outputFound) {
+                    if (staticRegion.stackOutput == null) staticRegion.stackOutput = lhs;
+                    else
+                        throwException(new StaticRegionException("static region with gamma expression has more than one non-local output in lhs"), STATIC);
+                }
             }
         }
         return true;

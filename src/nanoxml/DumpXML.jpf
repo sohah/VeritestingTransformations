@@ -12,7 +12,7 @@ vm.storage.class=nil
 #listener = .listener.ChoiceTracker
 #symbolic.debug=on
 
-veritestingMode=4
+veritestingMode=5
 performanceMode = true
 
 symbolic.dp=z3bitvectorinc

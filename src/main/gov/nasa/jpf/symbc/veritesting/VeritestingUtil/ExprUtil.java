@@ -96,13 +96,13 @@ public class ExprUtil {
     public static String getConstantType(Expression expr) {
         assert isConstant(expr);
         if (IntConstant.class.isInstance(expr)) return "int";
-        if (RealConstant.class.isInstance(expr)) return "real";
+        if (RealConstant.class.isInstance(expr)) return "float";
         return null;
     }
 
     public static String getGreenVariableType(Expression expr) {
         if (IntVariable.class.isInstance(expr)) return "int";
-        if (RealVariable.class.isInstance(expr)) return "real";
+        if (RealVariable.class.isInstance(expr)) return "float";
         return null;
     }
 

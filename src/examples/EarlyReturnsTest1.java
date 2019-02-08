@@ -3,12 +3,15 @@ public class EarlyReturnsTest1 extends TestRegionBaseClass {
 
     public Outputs erTest1(char ch) {
         char[] tokens = get_token(ch);
-        boolean is_spec_symbol = tokens[0] == '(';
         Outputs o = new Outputs();
         o.intOutputs = new int[2];
         o.intOutputs[0] = (int) tokens[0];
-        o.intOutputs[1] = is_spec_symbol ? 1 : 0;
+        o.intOutputs[1] = isLParen(tokens[0]);
         return o;
+    }
+
+    public int isLParen(char c) {
+        return c == '{' ? 1 : 0;
     }
 
     public char[] get_token(char ch) {

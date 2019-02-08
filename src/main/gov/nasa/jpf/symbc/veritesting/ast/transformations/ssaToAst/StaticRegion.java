@@ -13,7 +13,6 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Invariants.LocalOutputInvariantVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
-import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
@@ -65,17 +64,25 @@ public class StaticRegion implements Region {
      */
     public final VarTypeTable varTypeTable;
 
-    /*
+    /**
     * Holds the total number of IfThenElseStmts present in this static region
      */
     public int maxDepth = 0;
 
-    /*
+    /**
      * Holds the total number of execution paths that can be taken through this region
      */
     public long totalNumPaths = 0;
 
+    /**
+     * Holds the early return result that is computed by the RemoveEarlyReturns pass called in VeritestingListener
+     */
     public RemoveEarlyReturns.ReturnResult earlyReturnResult;
+
+    /**
+     * Holds the expression that should be written out to the stack
+     */
+    public WalaVarExpr stackOutput = null;
 
     /**
      * @param staticStmt:     Ranger IR statement that summarizes this static region
@@ -171,12 +178,6 @@ public class StaticRegion implements Region {
                 outputTable = new OutputTable(ir, isMethodRegion, (SlotParamTable) slotParamTable, (InputTable) inputTable, staticStmt, new Pair<>(firstDef, lastDef));
         }
         this.endIns = endIns;
-        if (staticStmt instanceof CompositionStmt && ((CompositionStmt) staticStmt).s2 instanceof AssignmentStmt) {
-            AssignmentStmt assignmentStmt = (AssignmentStmt) ((CompositionStmt) staticStmt).s2;
-            if ((assignmentStmt.rhs instanceof GammaVarExpr) && (outputTable.table.size() == 0)) {
-                throwException(new StaticRegionException("static region with gamma expression cannot have no local outputs"), STATIC);
-            }
-        }
         LocalOutputInvariantVisitor.execute(this);
         RegionMetricsVisitor.execute(this);
     }
@@ -219,6 +220,7 @@ public class StaticRegion implements Region {
         this.endIns = staticRegion.endIns;
         this.isMethodRegion = staticRegion.isMethodRegion;
         this.varTypeTable = staticRegion.varTypeTable;
+        this.stackOutput = staticRegion.stackOutput;
 
         if (returnResult == null) {
             RemoveEarlyReturns o = new RemoveEarlyReturns();

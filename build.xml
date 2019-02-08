@@ -239,8 +239,6 @@
 			  <path refid="lib.path"/>
 			  <pathelement location="build/classes"/>
 			  <pathelement location="build/annotations"/>
-			  <pathelement location="/Users/vaibhav/Downloads/foundry/lib/foundry-1.0.jar"/>
-			  <pathelement location="/Users/vaibhav/Downloads/foundry/lib/velocity-1.4.jar"/>
 			</classpath>
 	  </javac>
   </target>

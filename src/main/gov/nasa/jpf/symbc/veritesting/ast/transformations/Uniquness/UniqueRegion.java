@@ -3,10 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Uniquness;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
-import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
@@ -72,6 +69,7 @@ public class UniqueRegion {
         dynRegion.inputTable.print();
         dynRegion.varTypeTable.print();
         dynRegion.outputTable.print();
+        System.out.println("Stack output: " + dynRegion.stackOutput);
 
         return dynRegion;
     }
@@ -90,6 +88,8 @@ public class UniqueRegion {
         newDynRegion.fieldRefTypeTable.makeUniqueKey(uniqueNum);
         newDynRegion.psm.setUniqueNum(uniqueNum);
         newDynRegion.arrayOutputs = newDynRegion.arrayOutputs.makeUnique(uniqueNum);
+        if (oldDynRegion.stackOutput != null)
+            newDynRegion.stackOutput = oldDynRegion.stackOutput.makeUnique(uniqueNum);
 
 
         if(VeritestingListener.simplify)

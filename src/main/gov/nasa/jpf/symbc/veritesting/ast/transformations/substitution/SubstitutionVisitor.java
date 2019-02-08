@@ -272,7 +272,6 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
     /**
      * Attempts to substitute in a high order region.
      *
-     * @param c                     Current invoke instruction
      * @param methodRegion          MethodRegion where the substitution is going to be attempted.
      * @param hgOrdValueSymbolTable Value symbol table for te MethodRegion, usually populated with the parameters.
      * @return A pair of substituted statement for the high order region as well as its VarTypeTable.
@@ -437,6 +436,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         instantiatedRegion.slotParamTable.print();
         instantiatedRegion.outputTable.print();
         instantiatedRegion.varTypeTable.print();
+        System.out.println("Stack output: " + dynRegion.stackOutput);
 
         if (!this.somethingChanged)
             this.somethingChanged = ((ExprSubstitutionVisitor) eva.theVisitor).isSomethingChanged();
