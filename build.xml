@@ -176,7 +176,7 @@
 			  <path refid="lib.path"/>
 			  <pathelement location="build/classes"/>
 			  <pathelement location="build/wbs"/>
-			  <pathelement location="build/MerArbiter-v2"/>
+			  <pathelement location="build/merarbiter-v2"/>
 			  <pathelement location="build/siena"/>
 			  <pathelement location="build/schedule2_3"/>
 			  <pathelement location="build/nanoxml"/>
@@ -232,7 +232,7 @@
 
   <target name="-compile-merarbiter-v2" if="have_merarbiter_v2" depends="-compile-classes">
 	  <mkdir dir="build/merarbiter-v2" />
-		<javac srcdir="src/MerArbiter-v2" destdir="build/MerArbiter-v2" 
+		<javac srcdir="src/MerArbiter-v2" destdir="build/merarbiter-v2"
 		  debug="${debug}" source="${src_level}" deprecation="${deprecation}"
 		  includeantruntime="false">
 		  <classpath>
