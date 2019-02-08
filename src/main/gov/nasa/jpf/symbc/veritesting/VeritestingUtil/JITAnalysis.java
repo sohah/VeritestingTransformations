@@ -26,6 +26,7 @@ public class JITAnalysis {
      */
     private static HashSet<String> attemptedMehods = new HashSet<>();
 
+
     public static long staticAnalysisDur;
     private static boolean firstTime = true;
     private static ThreadInfo ti;
@@ -63,22 +64,18 @@ public class JITAnalysis {
             JITAnalysis.veritestingMain = new VeritestingMain(ti);
             firstTime = false;
         }
-        if (!attemptedClasses.contains(className) || (!attemptedMehods.contains(key))) { // need to run static analysis first
+        ArrayList<String> classPath = new ArrayList<>();
+
+        if (!attemptedClasses.contains(className) || (!attemptedMehods.contains(jvmMethodName))) { // need to run static analysis first
             attemptedClasses.add(className);
             attemptedMehods.add(jvmMethodName);
-            Config conf = ti.getVM().getConfig();
-            String[] allClassPaths = conf.getStringArray("classpath");
-            ArrayList<String> classPath = new ArrayList<>();
-            for (String s : allClassPaths) {
-                classPath.add(s);
-                // These classpaths are (1) classpath in .jpf file, (2) SPF class paths, (3) JPF-core class paths, so we
-                // want to run static analysis only on class paths in the .jpf file
-//            if (!s.contains("jpf-symbc")) classPath.add(s);
-//            else break;
-            }
             //String className = conf.getString("target");
-
-            veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName);
+            classPath = getClassPaths();
+            try {
+                veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, false);
+            } catch (StaticRegionException sre) { // if failed while summarizing the method, try to summarize regions inside it.
+                veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, true);
+            }
         }
 
         HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
@@ -91,6 +88,20 @@ public class JITAnalysis {
             throw new StaticRegionException("Region has no recovered static region");
         else
             return staticRegion;
+    }
+
+    private static ArrayList<String> getClassPaths() {
+        Config conf = ti.getVM().getConfig();
+        String[] allClassPaths = conf.getStringArray("classpath");
+        ArrayList<String> classPath = new ArrayList<>();
+        for (String s : allClassPaths) {
+            classPath.add(s);
+            // These classpaths are (1) classpath in .jpf file, (2) SPF class paths, (3) JPF-core class paths, so we
+            // want to run static analysis only on class paths in the .jpf file
+//            if (!s.contains("jpf-symbc")) classPath.add(s);
+//            else break;
+        }
+        return classPath;
     }
 
 

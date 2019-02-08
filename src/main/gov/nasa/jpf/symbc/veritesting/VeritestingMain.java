@@ -174,39 +174,39 @@ public class VeritestingMain {
     }
 
 
-    private void jitStartAnalysis(String packageName, String className, String methodSig) {
-        try {
-
-            MethodReference mr = StringStuff.makeMethodReference(className + "." + methodSig);
-            IMethod m = cha.resolveMethod(mr);
-            if (m == null) {
-                System.out.println("could not resolve " + className + "." + methodSig);
-                return;
-                //Assertions.UNREACHABLE("could not resolve " + mr);
-            }
-            AnalysisOptions options = new AnalysisOptions();
-            options.getSSAOptions().setPiNodePolicy(SSAOptions.getAllBuiltInPiNodes());
-            IAnalysisCacheView cache = new AnalysisCacheImpl(options.getSSAOptions());
-            ir = cache.getIR(m, Everywhere.EVERYWHERE);
-            if (ir == null) {
-                System.out.println("Null IR for " + className + "." + methodSig);
-                return;
-            }
-            cfg = ir.getControlFlowGraph();
-            currentPackageName = packageName;
-            currentClassName = className;
-            currentMethodName = m.getName().toString();
-            this.methodSig = methodSig.substring(methodSig.indexOf('('));
-            System.out.println("Starting " + (methodAnalysis ? "method " : "region ") + "analysis for " +
-                    currentMethodName + "(" + currentClassName + "." + methodSig + ")");
-            NumberedDominators<ISSABasicBlock> uninverteddom =
-                    (NumberedDominators<ISSABasicBlock>) Dominators.make(cfg, cfg.entry());
-            loops = new HashSet<>();
-            HashSet<Integer> visited = new HashSet<>();
-            NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
-            // Here is where the magic happens.
-            CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
-            //regionCreator.createStructuredConditionalRegions(veriRegions);
+    private void jitStartAnalysis(String packageName, String className, String methodSig, boolean multiPathAnalysis) throws StaticRegionException {
+        MethodReference mr = StringStuff.makeMethodReference(className + "." + methodSig);
+        IMethod m = cha.resolveMethod(mr);
+        if (m == null) {
+            System.out.println("could not resolve " + className + "." + methodSig);
+            return;
+            //Assertions.UNREACHABLE("could not resolve " + mr);
+        }
+        AnalysisOptions options = new AnalysisOptions();
+        options.getSSAOptions().setPiNodePolicy(SSAOptions.getAllBuiltInPiNodes());
+        IAnalysisCacheView cache = new AnalysisCacheImpl(options.getSSAOptions());
+        ir = cache.getIR(m, Everywhere.EVERYWHERE);
+        if (ir == null) {
+            System.out.println("Null IR for " + className + "." + methodSig);
+            return;
+        }
+        cfg = ir.getControlFlowGraph();
+        currentPackageName = packageName;
+        currentClassName = className;
+        currentMethodName = m.getName().toString();
+        this.methodSig = methodSig.substring(methodSig.indexOf('('));
+        System.out.println("Starting " + (methodAnalysis ? "method " : "region ") + "analysis for " +
+                currentMethodName + "(" + currentClassName + "." + methodSig + ")");
+        NumberedDominators<ISSABasicBlock> uninverteddom =
+                (NumberedDominators<ISSABasicBlock>) Dominators.make(cfg, cfg.entry());
+        loops = new HashSet<>();
+        HashSet<Integer> visited = new HashSet<>();
+        NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
+        // Here is where the magic happens.
+        CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
+        if (multiPathAnalysis)
+            regionCreator.createStructuredConditionalRegions(veriRegions);
+        else
             regionCreator.createStructuredMethodRegion(veriRegions);
 
        /* // Placeholder for testing and visualizing static-time transformations
@@ -217,13 +217,10 @@ public class VeritestingMain {
                 sub.doSubstitution();
             } */
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 
-    public void jitAnalyzeForVeritesting(ArrayList<String> classPaths, String _className, String jvmMethodName) {
+    public void jitAnalyzeForVeritesting(ArrayList<String> classPaths, String _className, String jvmMethodName, boolean multiPathRegion) throws StaticRegionException {
         endingInsnsHash = new HashSet();
         //methodSummaryClassNames.add(_className);
         //findClasses(ti, cha, classPaths, _className, methodSummaryClassNames);
@@ -253,15 +250,12 @@ public class VeritestingMain {
             }
             for (Method m : allMethods) {
                 String signature = null;
-                try {
-                    signature = ReflectUtil.getSignature(m);
-                    String jvmSignature = _className + "." + signature;
-                    if (jvmSignature.contains(jvmMethodName)) {
-                        jitStartAnalysis(getPackageName(_className), _className, signature);
-                        break;
-                    }
-                } catch (StaticRegionException e) {
-                    continue;
+
+                signature = ReflectUtil.getSignature(m);
+                String jvmSignature = _className + "." + signature;
+                if (jvmSignature.contains(jvmMethodName)) {
+                    jitStartAnalysis(getPackageName(_className), _className, signature, multiPathRegion);
+                    break;
                 }
             }
         } catch (ClassNotFoundException e) {

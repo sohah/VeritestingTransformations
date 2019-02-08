@@ -11,6 +11,8 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SSAToStatIVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import x10.wala.util.NatLoop;
 import za.ac.sun.cs.green.expr.*;
@@ -29,7 +31,6 @@ import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUti
 
 /**
  * This class creates our structure IR from the WALA SSA form, this is basically done by decompiling DAGs within a Java program.
- *
  */
 /*
 Here we are essentially decompiling DAGs within a Java program.  The goals
@@ -108,7 +109,8 @@ public class CreateStaticRegions {
 
     /**
      * Create the key of a conditional region, by using the name as well as the bytecode offset of the last instruction in the first block that starts the region.
-     * @param ir IR of the staticRegion.
+     *
+     * @param ir  IR of the staticRegion.
      * @param blk The first block that identifies the begining of the region.
      * @return A string that is used as a key for the region.
      */
@@ -119,7 +121,7 @@ public class CreateStaticRegions {
         } catch (InvalidClassFileException e) {
             e.printStackTrace();
         }
-        if(offset == -100)
+        if (offset == -100)
             try {
                 throwException(new StaticRegionException("Cannot find the index of the first instruction in the region."), DONTKNOW);
             } catch (StaticRegionException e) {
@@ -131,6 +133,7 @@ public class CreateStaticRegions {
 
     /**
      * Create the key of a Method region.
+     *
      * @param methodSignature Signature of a method.
      * @return A string that is used as a key for the region.
      */
@@ -150,7 +153,7 @@ public class CreateStaticRegions {
     private Graph<ISSABasicBlock> domTree;
 
     /**
-     *This is used for Phi instructions, where each edge in the graph is mapped to a list of conditions that represents the path up till that edge.
+     * This is used for Phi instructions, where each edge in the graph is mapped to a list of conditions that represents the path up till that edge.
      */
     private Map<PhiEdge, List<PhiCondition>> blockConditionMap;
 
@@ -203,6 +206,7 @@ public class CreateStaticRegions {
 
     /**
      * This creates a composition statement between two statements
+     *
      * @param stmt1 First statement to be used in a composition.
      * @param stmt2 Second statement to be used in a composition.
      * @return A composition statement in RangerIR.
@@ -219,6 +223,7 @@ public class CreateStaticRegions {
 
     /**
      * This translate the last block in an identified region by visiting all its instructions and creating a Gamma if a Phi instruction was found.
+     *
      * @param currentBlock The last block in the region.
      * @return A statement in RangerIR that represents the last block in the region.
      * @throws StaticRegionException
@@ -227,7 +232,7 @@ public class CreateStaticRegions {
         SSAToStatIVisitor visitor =
                 new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
         Stmt stmt = SkipStmt.skip;
-        for (SSAInstruction ins: currentBlock) {
+        for (SSAInstruction ins : currentBlock) {
             if (!(ins instanceof SSAPhiInstruction))
                 return stmt;
             else {
@@ -240,6 +245,7 @@ public class CreateStaticRegions {
 
     /**
      * This translates "internal" blocks inside the region, these are blocks that are not the begining or the end of the region.
+     *
      * @param currentBlock Current block that needs to be translated.
      * @return A statement in RangerIR that represents the translated statement.
      * @throws StaticRegionException An exception that indicates a problem in the translation.
@@ -248,7 +254,7 @@ public class CreateStaticRegions {
         SSAToStatIVisitor visitor =
                 new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
         Stmt stmt = SkipStmt.skip;
-        for (SSAInstruction ins: currentBlock) {
+        for (SSAInstruction ins : currentBlock) {
             if ((ins instanceof SSAConditionalBranchInstruction) ||
                     (ins instanceof SSAGotoInstruction)) {
                 // properly formed blocks will only have branches and gotos as the last instruction.
@@ -262,25 +268,29 @@ public class CreateStaticRegions {
 
     /**
      * Gets the immediate detonators of a block.
+     *
      * @param elem Block for which we want to find it immediate denominator.
      * @return Immediate denominator of a block.
      */
     private ISSABasicBlock getIDom(ISSABasicBlock elem) {
-        assert(this.domTree.getPredNodeCount(elem) == 1);
-        return (ISSABasicBlock)this.domTree.getPredNodes(elem).next();
+        assert (this.domTree.getPredNodeCount(elem) == 1);
+        return (ISSABasicBlock) this.domTree.getPredNodes(elem).next();
     }
 
 
-        /**
+    /**
      * This method checks to see whether each node in a subgraph up to a terminus has a subgraph.
-     * @param entry Entry block, from which a search/check starts.
+     *
+     * @param entry    Entry block, from which a search/check starts.
      * @param terminus End block, where search/check should terminates.
      * @return True if the entry to the terminus is a self contained subregion.
      * @throws StaticRegionException Exception that indicates something went wrong during computation.
      */
     private boolean isSelfContainedSubgraph(ISSABasicBlock entry, ISSABasicBlock terminus) throws StaticRegionException {
         // trivial case.
-        if (entry == terminus) { return false; }
+        if (entry == terminus) {
+            return false;
+        }
 
         SSACFG cfg = ir.getControlFlowGraph();
         PriorityQueue<ISSABasicBlock> toVisit = SSAUtil.constructSortedBlockPQ();
@@ -317,14 +327,15 @@ public class CreateStaticRegions {
 
     /**
      * This searches a self contained subgraph inside the region.
-     *
      */
     private void findSelfContainedSubgraphs(ISSABasicBlock entry,
-                                   ISSABasicBlock current,
-                                   ISSABasicBlock terminus,
-                                   Set<ISSABasicBlock> subgraphs) throws StaticRegionException {
+                                            ISSABasicBlock current,
+                                            ISSABasicBlock terminus,
+                                            Set<ISSABasicBlock> subgraphs) throws StaticRegionException {
 
-        if (subgraphs.contains(current) || current == terminus) {  return; }
+        if (subgraphs.contains(current) || current == terminus) {
+            return;
+        }
 
         if (isSelfContainedSubgraph(current, terminus)) {
             subgraphs.add(current);
@@ -354,22 +365,22 @@ public class CreateStaticRegions {
 
     /**
      * Re-constructs a complex condition for an if/then/else condition.
-     *
+     * <p>
      * MWW: 9/10/2018.  The assertion: (child.getNumber() > entry.getNumber()) at
      * the top of this function is too restrictive.  The issue is that we assume
      * all parents are within the path between entry and child.  This is true
      * for "top-level" Java if/then/else expressions, but if we wish to
      * construct regions from within complex conditions, it no longer holds.
-     *
+     * <p>
      * There are two ways to examine this case: we can
      */
     private Expression createComplexIfCondition(ISSABasicBlock child,
                                                 ISSABasicBlock entry) throws StaticRegionException {
-        assert(child.getNumber() > entry.getNumber());
+        assert (child.getNumber() > entry.getNumber());
         SSACFG cfg = ir.getControlFlowGraph();
         Expression returnExpr = null;
 
-        for (ISSABasicBlock parent: cfg.getNormalPredecessors(child)) {
+        for (ISSABasicBlock parent : cfg.getNormalPredecessors(child)) {
 
             // 9/10/2018 MWW: missing condition: if entry is "inside" a complex
             // if condition, then it should be possible to construct a region that
@@ -383,13 +394,12 @@ public class CreateStaticRegions {
 
             if (!isConditionalBranch(parent)) {
                 throwException(new StaticRegionException("createComplexIfCondition: unconditional branch (continue or break)"), STATIC);
-            }
-            else if (parent != entry && SSAUtil.statefulBlock(parent)) {
+            } else if (parent != entry && SSAUtil.statefulBlock(parent)) {
                 throwException(new StaticRegionException("createComplexIfCondition: stateful condition"), STATIC);
             }
 
-            assert(child == Util.getTakenSuccessor(cfg, parent) ||
-                   child == Util.getNotTakenSuccessor(cfg, parent));
+            assert (child == Util.getTakenSuccessor(cfg, parent) ||
+                    child == Util.getNotTakenSuccessor(cfg, parent));
 
             Expression branchExpr;
             Expression condExpr = SSAUtil.convertCondition(ir, SSAUtil.getLastBranchInstruction(parent));
@@ -399,8 +409,7 @@ public class CreateStaticRegions {
 
             if (parent == entry) {
                 branchExpr = condExpr;
-            }
-            else {
+            } else {
                 Expression parentExpr = createComplexIfCondition(parent, entry);
                 branchExpr = new Operation(Operation.Operator.AND, parentExpr, condExpr);
             }
@@ -411,7 +420,7 @@ public class CreateStaticRegions {
                 returnExpr = new Operation(Operation.Operator.OR, returnExpr, branchExpr);
             }
         }
-        assert(returnExpr != null);
+        assert (returnExpr != null);
         return returnExpr;
     }
 
@@ -426,7 +435,8 @@ public class CreateStaticRegions {
 
     /**
      * Attempts to discover conditional successors on the then or the else side of a conditional block.
-     * @param entry Entry block.
+     *
+     * @param entry    Entry block.
      * @param terminus End blcok where search needs to stop
      * @throws StaticRegionException An Exception that indicates that something went wrong during computation.
      */
@@ -452,8 +462,7 @@ public class CreateStaticRegions {
             Iterator<ISSABasicBlock> it = subgraphs.iterator();
             thenBlock = it.next();
             elseBlock = it.next();
-        }
-        else {
+        } else {
             // MWW: I don't anticipate this condition ever occurring, but it might;
             // esp. for JVM programs not compiled by Java compiler.
             String errorText = "Unexpected number (" + subgraphs.size() +
@@ -471,9 +480,10 @@ public class CreateStaticRegions {
 
     /**
      * Attempts to translate a conditional part of the cfg to IfThenElse statement in RangerIR.
-     * @param cfg Current control flow graph.
+     *
+     * @param cfg          Current control flow graph.
      * @param currentBlock current block
-     * @param terminus End block.
+     * @param terminus     End block.
      * @return A RangerIR IfThenElse statement.
      * @throws StaticRegionException
      */
@@ -522,9 +532,10 @@ public class CreateStaticRegions {
 
     /**
      * Translates from current block but does not include the ending block.
-     * @param cfg Control flow graph.
+     *
+     * @param cfg          Control flow graph.
      * @param currentBlock Current block
-     * @param endingBlock End block, this is not included in this translation.
+     * @param endingBlock  End block, this is not included in this translation.
      * @return a statement that represents this part of cfg in RangerIR.
      * @throws StaticRegionException
      */
@@ -539,21 +550,31 @@ public class CreateStaticRegions {
         if (cfg.getNormalSuccessors(currentBlock).size() == 2) {
             FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
             ISSABasicBlock terminus = finder.findMinConvergingNode();
-            stmt = conjoin(stmt, conditionalBranch(cfg, currentBlock, terminus));
-            stmt = conjoin(stmt, attemptSubregionRec(cfg, terminus, endingBlock));
-            //TODO: Add it here
+            Stmt condStmt = conditionalBranch(cfg, currentBlock, terminus);
+
+            //SH: Adding conditional regions begins here
+            ExprMapVisitor cloneExprVisitor = new ExprMapVisitor();
+            AstMapVisitor cloneSmtVisitor = new AstMapVisitor(cloneExprVisitor);
+            Stmt multiPathStmt = condStmt.accept(cloneSmtVisitor);
 
             int endIns;
             try {
 
-            endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
-            VeritestingMain.veriRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(stmt, ir, false, endIns, currentBlock));
-            System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(stmt));
+                endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
+                VeritestingMain.veriRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(multiPathStmt, ir, false, endIns, currentBlock));
+                //System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(multiPathStmt));
             } catch (InvalidClassFileException e) {
                 System.out.println("Unable to create subregion.  Reason: " + e.toString());
+            }catch (StaticRegionException e) {
+                System.out.println("Unable to create subregion.  Reason: " + e.toString());
             }
-        }
-        else if (cfg.getNormalSuccessors(currentBlock).size() == 1){
+
+            //SH: Adding conditional regions ends here
+
+            stmt = conjoin(stmt, condStmt);
+            stmt = conjoin(stmt, attemptSubregionRec(cfg, terminus, endingBlock));
+
+        } else if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
             ISSABasicBlock nextBlock = cfg.getNormalSuccessors(currentBlock).iterator().next();
             this.blockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
 
@@ -566,7 +587,7 @@ public class CreateStaticRegions {
                         throwException(new StaticRegionException(currentBlock.toString() + " is the beginning of an infinite loop"), STATIC);
                     else {
                         if (seenLoopStartSet.containsKey(nextBlock))
-                            seenLoopStartSet.put(nextBlock, seenLoopStartSet.get(nextBlock)+1);
+                            seenLoopStartSet.put(nextBlock, seenLoopStartSet.get(nextBlock) + 1);
                         else seenLoopStartSet.put(nextBlock, 1);
                     }
                 }
@@ -579,16 +600,17 @@ public class CreateStaticRegions {
     // precondition: endingBlock is the terminus of the loop
 
     /**
-     *  Attempts to translate conditional region and translates it to RangerIR statement
-     * @param cfg Control flow graph
+     * Attempts to translate conditional region and translates it to RangerIR statement
+     *
+     * @param cfg           Control flow graph
      * @param startingBlock Starting block that is a branch instruction.
-     * @param terminus End of the region.
+     * @param terminus      End of the region.
      * @return Translated statement in RangerIR that has decompiled the CFG.
      * @throws StaticRegionException
      */
     private Stmt attemptConditionalSubregion(SSACFG cfg, ISSABasicBlock startingBlock, ISSABasicBlock terminus) throws StaticRegionException {
 
-        assert(isBranch(cfg, startingBlock));
+        assert (isBranch(cfg, startingBlock));
         Stmt stmt = conditionalBranch(cfg, startingBlock, terminus);
         stmt = conjoin(stmt, translateTruncatedFinalBlock(terminus));
         return stmt;
@@ -596,6 +618,7 @@ public class CreateStaticRegions {
 
     /**
      * Attempts to translate a method region to a RangerIR statement.
+     *
      * @param cfg
      * @param startingBlock
      * @param endingBlock
@@ -610,21 +633,26 @@ public class CreateStaticRegions {
 
     /**
      * This class walks through method, attempting to find conditional veritesting regions
+     *
      * @param currentBlock
      * @param endingBlock
      * @param veritestingRegions
      * @throws StaticRegionException
      */
     private void createStructuredConditionalRegions(ISSABasicBlock currentBlock,
-                                                   ISSABasicBlock endingBlock,
-                                                   HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
+                                                    ISSABasicBlock endingBlock,
+                                                    HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
 
-        if (visitedBlocks.contains(currentBlock)) { return; }
+        if (visitedBlocks.contains(currentBlock)) {
+            return;
+        }
         visitedBlocks.add(currentBlock);
 
         SSACFG cfg = ir.getControlFlowGraph();
         // terminating conditions
-        if (currentBlock == endingBlock) { return; }
+        if (currentBlock == endingBlock) {
+            return;
+        }
 
 
         if (isBranch(cfg, currentBlock)) {
@@ -640,17 +668,17 @@ public class CreateStaticRegions {
                 // MWW: removing - even if successful we want to create additional regions.
                 // createStructuredConditionalRegions(terminus, endingBlock, veritestingRegions);
                 // return;
-            } catch (StaticRegionException e ) {
+            } catch (StaticRegionException e) {
                 //SSAUtil.printBlocksUpTo(cfg, endingBlock.getNumber());
                 System.out.println("Unable to create subregion.  Reason: " + e.toString());
-            } catch (InvalidClassFileException e){
+            } catch (InvalidClassFileException e) {
                 System.out.println("Unable to create subregion.  Reason: " + e.toString());
             } catch (IllegalArgumentException e) {
                 System.out.println("Unable to create subregion.  Serious error. Reason: " + e.toString());
                 throwException(e, STATIC);
             }
         }
-        for (ISSABasicBlock nextBlock: cfg.getNormalSuccessors(currentBlock)) {
+        for (ISSABasicBlock nextBlock : cfg.getNormalSuccessors(currentBlock)) {
             createStructuredConditionalRegions(nextBlock, endingBlock, veritestingRegions);
         }
     }
@@ -662,21 +690,18 @@ public class CreateStaticRegions {
         createStructuredConditionalRegions(cfg.entry(), cfg.exit(), veritestingRegions);
     }
 
-/**
- * This class walks through method, attempting to find method regions veritesting regions
- */
+    /**
+     * This class walks through method, attempting to find method regions veritesting regions
+     */
     public void createStructuredMethodRegion(HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
-
         reset();
         SSACFG cfg = ir.getControlFlowGraph();
-        try {
-            Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());
-            System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
-            SSAInstruction[] insns = ir.getInstructions();
-            //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
-            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0, null));
-        } catch (StaticRegionException sre) {
-            System.out.println("Unable to create a method summary subregion for: " + cfg.getMethod().getName().toString());
-        }
+
+        Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());
+        System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
+        SSAInstruction[] insns = ir.getInstructions();
+        //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
+        veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0, null));
+
     }
 }
