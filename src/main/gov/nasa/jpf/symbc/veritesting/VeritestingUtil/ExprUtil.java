@@ -145,7 +145,7 @@ public class ExprUtil {
             if (GreenConstraint.class.isInstance(constraint)) {
                 Expression greenExpression = ((GreenConstraint) constraint).getExp();
                 if (isSatGreenExpression(greenExpression) == FALSE) {
-                    System.out.println("found an unsat pc");
+                    System.out.println("found an unsat constraint");
                     return false;
                 }
 //                try {

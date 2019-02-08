@@ -6,6 +6,7 @@ import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.bytecode.IFNONNULL;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
@@ -20,6 +21,7 @@ import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatGreenExpression;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.maybeParseConstraint;
 
 
@@ -219,17 +221,37 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             pc = new PathCondition();
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
+        ExprUtil.SatResult isSPFPredSat = isSatGreenExpression(region.spfPredicateSummary);
         if (region.earlyReturnResult.hasER()) {// Early Return & SPFCases
-            setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, new Operation(Operation.Operator.NOT, region.spfPredicateSummary), new Operation(Operation.Operator.NOT, region.earlyReturnResult.condition)))), STATIC_CHOICE);
-            setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
-            setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
-            setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, new Operation(Operation.Operator.NOT, region.spfPredicateSummary), region.earlyReturnResult.condition))), RETURN_CHOICE);
+            setPC(createPC(pc, region.regionSummary,
+                    (new Operation(Operation.Operator.AND,
+                            new Operation(Operation.Operator.NOT, region.spfPredicateSummary),
+                            new Operation(Operation.Operator.NOT, region.earlyReturnResult.condition)))), STATIC_CHOICE);
+            if (isSPFPredSat != ExprUtil.SatResult.FALSE) {
+                setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
+                setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
+            }
+            else {
+                setPC(createPC(pc, Operation.FALSE, Operation.FALSE), THEN_CHOICE);
+                setPC(createPC(pc, Operation.FALSE, Operation.FALSE), ELSE_CHOICE);
+            }
+
+            setPC(createPC(pc, region.regionSummary,
+                    (new Operation(Operation.Operator.AND,
+                            new Operation(Operation.Operator.NOT, region.spfPredicateSummary),
+                            region.earlyReturnResult.condition))), RETURN_CHOICE);
         }
         else { // no early return or spfcases exists, then run only the static choice
             setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
-            setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
-            setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
-            setPC(createPC(pc, region.regionSummary, Operation.FALSE), RETURN_CHOICE);
+            if (isSPFPredSat != ExprUtil.SatResult.FALSE) {
+                setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
+                setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
+            }
+            else {
+                setPC(createPC(pc, Operation.FALSE, Operation.FALSE), THEN_CHOICE);
+                setPC(createPC(pc, Operation.FALSE, Operation.FALSE), ELSE_CHOICE);
+            }
+            setPC(createPC(pc, Operation.FALSE, Operation.FALSE), RETURN_CHOICE);
 
         }
 
