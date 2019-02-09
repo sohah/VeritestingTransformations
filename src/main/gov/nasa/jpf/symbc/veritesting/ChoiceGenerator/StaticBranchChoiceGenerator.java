@@ -218,8 +218,9 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
             pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
         else {
-            pc = new PathCondition();
-            pc._addDet(new GreenConstraint(Operation.TRUE));
+            PCChoiceGenerator cg = ti.getVM().getLastChoiceGeneratorOfType(PCChoiceGenerator.class);
+            if (cg == null) throw new StaticRegionException("Cannot find latest PCChoiceGenerator");
+            pc = cg.getCurrentPC();
         }
         ExprUtil.SatResult isSPFPredSat = isSatGreenExpression(region.spfPredicateSummary);
         if (region.earlyReturnResult.hasER()) {// Early Return & SPFCases

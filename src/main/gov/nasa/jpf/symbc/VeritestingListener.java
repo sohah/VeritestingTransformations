@@ -539,15 +539,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      */
     private static boolean canSetPC(ThreadInfo ti, Expression regionSummary) throws StaticRegionException {
         PathCondition pc;
+        PCChoiceGenerator currCG;
 
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator) {
-            pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
+            currCG = (PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator();
         } else {
-            if (runMode.ordinal() < VeritestingMode.SPFCASES.ordinal())
-                throwException(new IllegalArgumentException("cannot create new PCChoiceGenerator in non-SPFCases mode"), INSTANTIATION);
-            pc = new PathCondition();
-            pc._addDet(new GreenConstraint(Operation.TRUE));
+            currCG = ti.getVM().getLastChoiceGeneratorOfType(PCChoiceGenerator.class);
         }
+        if (currCG == null) throw new StaticRegionException("Cannot find latest PCChoiceGenerator");
+        pc = currCG.getCurrentPC();
         if (runMode.ordinal() < VeritestingMode.SPFCASES.ordinal()) //only add region summary in non spfcases mode.
             pc._addDet(new GreenConstraint(regionSummary));
 
@@ -557,7 +557,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         if ((performanceMode &&
                 (runMode == VeritestingMode.VERITESTING || runMode == VeritestingMode.HIGHORDER))
                 || isPCSat(pc)) {
-            ((PCChoiceGenerator) ti.getVM().getSystemState().getChoiceGenerator()).setCurrentPC(pc);
+            currCG.setCurrentPC(pc);
             long t1 = System.nanoTime();
             maybeParseConstraint(pc);
             regionSummaryParseTime += (System.nanoTime() - t1);
