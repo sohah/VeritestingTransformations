@@ -202,7 +202,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                 Pair<String, StaticRegion> keyRegionPair = null;
                 if(VeritestingListener.jitAnalysis){
                 try {
-                    keyRegionPair = jitFindMethodRegion(ti, c);
+                    keyRegionPair = jitFindMethodRegion(ti, newC);
                 } catch (StaticRegionException e) {
                     if (firstException == null) {
                         sre = e;
