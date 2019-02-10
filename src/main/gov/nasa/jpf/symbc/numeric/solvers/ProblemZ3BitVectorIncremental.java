@@ -3,16 +3,16 @@
  * Administrator of the National Aeronautics and Space Administration.
  * All rights reserved.
  *
- * Symbolic Pathfinder (jpf-symbc) is licensed under the Apache License, 
+ * Symbolic Pathfinder (jpf-symbc) is licensed under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- * 
- *        http://www.apache.org/licenses/LICENSE-2.0. 
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0.
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and 
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import com.microsoft.z3.*;
 
 import gov.nasa.jpf.symbc.SymbolicInstructionFactory;
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.string.translate.BVExpr;
 
 public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements IncrementalSolver {
@@ -85,7 +86,7 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
     minAllowed = (long) -(Math.pow(2, bitVectorLength - 1));
     maxAllowed = (long) (Math.pow(2, bitVectorLength - 1) - 1);
     useFpForReals = SymbolicInstructionFactory.fp;
-    if (SymbolicInstructionFactory.debugMode) { 
+    if (SymbolicInstructionFactory.debugMode) {
       System.out.println("Z3bitvector using " + bitVectorLength + "-bit bitvectors.");
       System.out.println("Allowed [min,max] values: [" + minAllowed + "," + maxAllowed + "].");
       System.out.println("Using floating point for reals: " + (useFpForReals ? "yes" : "no"));
@@ -102,6 +103,11 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
     solver.pop();
   }
 
+  @Override
+  public void reset() {
+    solver.reset();
+  }
+
   public void cleanup() {
     // nothing to be done here
   }
@@ -112,8 +118,8 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
    */
   private void checkBounds(long l) {
     if (l < minAllowed || l > maxAllowed)
-      throw new RuntimeException("Symbolic variable bound " + l + 
-          " is outside the permitted range for bitvector length " + bitVectorLength);
+      throw new RuntimeException("Symbolic variable bound " + l +
+              " is outside the permitted range for bitvector length " + bitVectorLength);
   }
 
   public long getIntValue(Object dpVar) {
@@ -149,7 +155,10 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n\n");
       }
       else{
+        long t1 = System.nanoTime();
         result = solver.check() == Status.SATISFIABLE ? true : false;
+        VeritestingListener.z3Time += (System.nanoTime() - t1);
+        VeritestingListener.solverCount++;
       }
       return result;
     } catch(Exception e){
@@ -311,14 +320,14 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
     }
   }
 
-  public Object logical_not(Object exp1){
-    try{
-      return  ctx.mkNot((BoolExpr)exp1);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new RuntimeException("## Error Z3: not(Object) failed.\n" + e);
-    }
-  }
+  //    public Object not(Object exp1){
+  //        try{
+  //            return  ctx.mkNot((BoolExpr)exp1);
+  //        } catch (Exception e) {
+  //            e.printStackTrace();
+  //            throw new RuntimeException("## Error Z3: not(Object) failed.\n" + e);
+  //        }
+  //    }
 
   @Override
   public Object leq(long value, Object exp){
@@ -465,7 +474,7 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
         return ctx.mkFPLt((FPExpr) exp1, (FPExpr) exp2);
       } else {
         throw new RuntimeException("## Error in Z3: operator lt expected 2 ArithExpr. Received: " +
-            exp1.getClass().toString() + " and " + exp2.getClass().toString());
+                exp1.getClass().toString() + " and " + exp2.getClass().toString());
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -566,6 +575,8 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
         return ctx.mkBVAdd((BitVecExpr) exp1, (BitVecExpr) exp2);
       } else if (exp1 instanceof IntExpr && exp2 instanceof IntExpr) {
         return ctx.mkAdd((IntExpr) exp1, (IntExpr) exp2);
+      } else if (exp1 instanceof RealExpr && exp2 instanceof RealExpr) {
+        return ctx.mkAdd((RealExpr) exp1, (RealExpr) exp2);
       } else {
         throw new RuntimeException();
       }
@@ -620,7 +631,7 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
         return ctx.mkFPSub(ctx.mkFPRoundNearestTiesToEven(), (FPExpr) exp1, (FPExpr) exp2);
       } else {
         throw new RuntimeException("## Error in Z3: operator minus expected 2 ArithExpr. Received: " +
-            exp1.getClass().toString() + " and " + exp2.getClass().toString());
+                exp1.getClass().toString() + " and " + exp2.getClass().toString());
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -1181,6 +1192,45 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
   }
 
   @Override
+  public Object logical_or(Object exp1, Object exp2) {
+    try {
+      if (exp1 instanceof BoolExpr && exp2 instanceof  BoolExpr) {
+        return ctx.mkOr((BoolExpr) exp1, (BoolExpr) exp2);
+      } else {
+        throw new RuntimeException("## Error Z3: logical_or(Object, Object) expected 2 BoolExprs.");
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3: logical_or(Object, Object) failed.\n" + e);
+    }
+  }
+
+  @Override
+  public Object logical_and(Object exp1, Object exp2) {
+    try {
+      if (exp1 instanceof BoolExpr && exp2 instanceof  BoolExpr) {
+        return ctx.mkAnd((BoolExpr) exp1, (BoolExpr) exp2);
+      } else {
+        throw new RuntimeException("## Error Z3: logical_and(Object, Object) expected 2 BoolExprs.");
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3: logical_and(Object, Object) failed.\n" + e);
+    }
+  }
+
+  public Object logical_not(Object exp){
+    try{
+      if(exp instanceof BoolExpr)
+        return ctx.mkNot((BoolExpr)exp);
+      else throw new RuntimeException("## Error Z3: logical_not(Object) expected a BoolExpr.\n");
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3: logical_not(Object) failed.\n" + e);
+    }
+  }
+
+  @Override
   public Object plus(double value, Object exp) {
     try {
       if (useFpForReals) {
@@ -1384,7 +1434,8 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
           strResult = ((com.microsoft.z3.RatNum)temp).toDecimalString(10);
         }
 
-        return Double.parseDouble(strResult);
+        // return Double.parseDouble(strResult);
+        return Double.parseDouble(strResult.replace('?', '0'));
       }
       else {
         assert false; // should not be reachable
@@ -1413,110 +1464,102 @@ public class ProblemZ3BitVectorIncremental extends ProblemGeneral implements Inc
     throw new RuntimeException("## Error Z3 \n");
   }
 
-    // Added by Aymeric to support arrays
-    @Override
-    public Object makeArrayVar(String name) {
-        try {
-			Sort sort = ctx.mkBitVecSort(this.bitVectorLength);
-            return ctx.mkArrayConst(name, sort, sort);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  // Added by Aymeric to support arrays
+  @Override
+  public Object makeArrayVar(String name) {
+    try {
+      Sort sort = ctx.mkBitVecSort(this.bitVectorLength);
+      return ctx.mkArrayConst(name, sort, sort);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object makeRealArrayVar(String name) {
-        try {
-            Sort int_type = ctx.mkBitVecSort(this.bitVectorLength);
-            Sort real_type = ctx.mkRealSort();
-            if (useFpForReals) {
-                if (this.bitVectorLength == 32) {
-                    real_type = ctx.mkFPSort32();
-                } else {
-                    real_type = ctx.mkFPSortDouble();
-                }
-            }
-            return ctx.mkArrayConst(name, int_type, real_type);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
+  @Override
+  public Object makeRealArrayVar(String name) {
+    try {
+      Sort int_type = ctx.mkBitVecSort(this.bitVectorLength);
+      Sort real_type = ctx.mkRealSort();
+      if (useFpForReals) {
+        if (this.bitVectorLength == 32) {
+          real_type = ctx.mkFPSort32();
+        } else {
+          real_type = ctx.mkFPSortDouble();
         }
+      }
+      return ctx.mkArrayConst(name, int_type, real_type);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
-    
-    @Override
-    public Object select(Object exp1, Object exp2) {
-        try {
-            return ctx.mkSelect((ArrayExpr)exp1, (BitVecExpr)exp2);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
-    }
+  }
 
-    @Override
-    public Object store(Object exp1, Object exp2, Object exp3) {
-        try {
-            return ctx.mkStore((ArrayExpr)exp1, (BitVecExpr)exp2, (BitVecExpr)exp3);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object select(Object exp1, Object exp2) {
+    try {
+      return ctx.mkSelect((ArrayExpr)exp1, (BitVecExpr)exp2);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object realSelect(Object exp1, Object exp2) {
-        try {
-            return ctx.mkSelect((ArrayExpr)exp1, (BitVecExpr)exp2);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object store(Object exp1, Object exp2, Object exp3) {
+    try {
+      return ctx.mkStore((ArrayExpr)exp1, (BitVecExpr)exp2, (BitVecExpr)exp3);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object realStore(Object exp1, Object exp2, Object exp3) {
-        try {
-            if (useFpForReals) {
-                return ctx.mkStore((ArrayExpr)exp1, (BitVecExpr)exp2, (FPExpr)exp3);
-            }
-            return ctx.mkStore((ArrayExpr)exp1, (BitVecExpr)exp2, (RealExpr)exp3);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object realSelect(Object exp1, Object exp2) {
+    try {
+      return ctx.mkSelect((ArrayExpr)exp1, (BitVecExpr)exp2);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object makeIntConst(long value) {
-        checkBounds(value);
-        try {
-            return ctx.mkBV(value, this.bitVectorLength);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object realStore(Object exp1, Object exp2, Object exp3) {
+    try {
+      if (useFpForReals) {
+        return ctx.mkStore((ArrayExpr)exp1, (BitVecExpr)exp2, (FPExpr)exp3);
+      }
+      return ctx.mkStore((ArrayExpr)exp1, (BitVecExpr)exp2, (RealExpr)exp3);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    @Override
-    public Object makeRealConst(double value) {
-        try {
-            if (useFpForReals) {
-                FPSort sort = this.bitVectorLength == 32 ? ctx.mkFPSort32() : ctx.mkFPSort64();
-                return ctx.mkFPNumeral(value, sort);
-            }
-            return ctx.mkReal("" + value);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
-        }
+  @Override
+  public Object makeIntConst(long value) {
+    checkBounds(value);
+    try {
+      return ctx.mkBV(value, this.bitVectorLength);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
     }
+  }
 
-    public Object logical_or(Object exp1, Object exp2) {
-  		throw new RuntimeException("## Error Z3BitVectorIncremental does not support LOGICAL_OR");
-  	}
-  
-    public Object logical_and(Object exp1, Object exp2) {
-  		throw new RuntimeException("## Error Z3BitVectorIncremental does not support LOGICAL_AND");
-  	}
+  @Override
+  public Object makeRealConst(double value) {
+    try {
+      if (useFpForReals) {
+        FPSort sort = this.bitVectorLength == 32 ? ctx.mkFPSort32() : ctx.mkFPSort64();
+        return ctx.mkFPNumeral(value, sort);
+      }
+      return ctx.mkReal("" + value);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("## Error Z3 : Exception caught in Z3 JNI: " + e);
+    }
+  }
 }

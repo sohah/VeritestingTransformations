@@ -286,7 +286,7 @@ public class FieldSSAVisitor extends FixedPointAstMapVisitor {
     public DynamicRegion execute(){
         Stmt fieldStmt = dynRegion.dynStmt.accept(this);
 
-        instantiatedRegion = new DynamicRegion(dynRegion, fieldStmt, new SPFCaseList(), null, null);
+        instantiatedRegion = new DynamicRegion(dynRegion, fieldStmt, new SPFCaseList(), null, null, dynRegion.earlyReturnResult);
         instantiatedRegion.psm = this.psm;
 
         System.out.println(StmtPrintVisitor.print(instantiatedRegion.dynStmt));

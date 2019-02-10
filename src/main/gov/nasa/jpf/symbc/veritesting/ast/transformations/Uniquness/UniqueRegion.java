@@ -8,9 +8,12 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.def.Stmt;
 import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
+import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Variable;
 
@@ -31,6 +34,7 @@ public class UniqueRegion {
 
     /**
      * Used to create a unique conditional region.
+     *
      * @param staticRegion Dynamic region that needs to be unique.
      * @return A new static region that is unique.
      */
@@ -42,11 +46,24 @@ public class UniqueRegion {
         ExpUniqueVisitor expUniqueVisitor = new ExpUniqueVisitor(uniqueNum);
         AstMapVisitor stmtVisitor = new AstMapVisitor(expUniqueVisitor);
 
-
         Stmt dynStmt = staticRegion.staticStmt.accept(stmtVisitor);
+        RemoveEarlyReturns.ReturnResult oldEarlyReturn = staticRegion.earlyReturnResult;
+        DynamicRegion dynRegion;
+        if (oldEarlyReturn.hasER()) { //make early return result (assign and condition) unique as well.
+            ExprVisitorAdapter eva = new ExprVisitorAdapter(expUniqueVisitor);
+            Expression newAssign = (Expression) eva.accept(oldEarlyReturn.assign);
+            Expression newCondition = (Expression) eva.accept(oldEarlyReturn.condition);
+            Expression newRetVar = (Expression) eva.accept(oldEarlyReturn.retVar);
 
-        DynamicRegion dynRegion = new DynamicRegion(staticRegion,
-                dynStmt, uniqueNum);
+            RemoveEarlyReturns o = new RemoveEarlyReturns();
+            RemoveEarlyReturns.ReturnResult newReturnResult = o.new ReturnResult(oldEarlyReturn.stmt, newAssign, newCondition, oldEarlyReturn.retPosAndType, newRetVar);
+            dynRegion = new DynamicRegion(staticRegion,
+                    dynStmt,
+                    uniqueNum, newReturnResult);
+        }else
+            dynRegion = new DynamicRegion(staticRegion,
+                    dynStmt,
+                    uniqueNum, staticRegion.earlyReturnResult);
 
 
         System.out.println("\n--------------- UNIQUENESS TRANSFORMATION ---------------");
@@ -69,7 +86,7 @@ public class UniqueRegion {
 
         DynamicRegion newDynRegion = new DynamicRegion(oldDynRegion,
                 dynStmt,
-                oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary);
+                oldDynRegion.spfCaseList, oldDynRegion.regionSummary, oldDynRegion.spfPredicateSummary, oldDynRegion.earlyReturnResult);
         newDynRegion.fieldRefTypeTable.makeUniqueKey(uniqueNum);
         newDynRegion.psm.setUniqueNum(uniqueNum);
         newDynRegion.arrayOutputs = newDynRegion.arrayOutputs.makeUnique(uniqueNum);

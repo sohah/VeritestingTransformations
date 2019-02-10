@@ -1,12 +1,13 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases;
 
-import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.*;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns.ReturnResult;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,6 +57,7 @@ public class SpfToGreenVisitor implements AstVisitor<Expression> {
 
     /**
      * Transform a composition statement into a conjunction in green.
+     *
      * @param stmt The composition statement to be translated.
      * @return A green expression that represents the compsition statement.
      */
@@ -157,15 +159,32 @@ public class SpfToGreenVisitor implements AstVisitor<Expression> {
         return bad(c);
     }
 
-    public static DynamicRegion execute(DynamicRegion dynRegion){
+    public DynamicRegion execute(DynamicRegion dynRegion) {
 
         HashSet<SPFCaseStmt> greenList = new HashSet<>();
-        for(SPFCaseStmt spfCaseStmt: dynRegion.spfCaseList.casesList){
+        for (SPFCaseStmt spfCaseStmt : dynRegion.spfCaseList.casesList) {
             greenList.add(noVars(spfCaseStmt, dynRegion));
         }
 
         SPFCaseList greenSPFCaseList = new SPFCaseList(greenList);
         Expression spfPredicateSummary = toGreenSinglePredicate(greenSPFCaseList);
+        ReturnResult newReturnResult;
+        Expression newCond;
+        Expression newAssign;
+        if (dynRegion.earlyReturnResult.hasER()) {
+            newAssign = earlyReturnToGreen(dynRegion.earlyReturnResult.assign, dynRegion);
+            newCond = earlyReturnToGreen(dynRegion.earlyReturnResult.condition, dynRegion);
+            Expression newRetVar = earlyReturnToGreen(dynRegion.earlyReturnResult.retVar, dynRegion);
+            ReturnResult oldResult = dynRegion.earlyReturnResult;
+
+            RemoveEarlyReturns o = new RemoveEarlyReturns();
+
+            newReturnResult = o.new ReturnResult(oldResult.stmt, newAssign, newCond, oldResult.retPosAndType, newRetVar);
+
+        } else { //if no early return in the region, assign false to the early return condition.
+            newReturnResult = dynRegion.earlyReturnResult;
+        }
+
 
         System.out.println("\n--------------- SPFCases GREEN PREDICATE ---------------");
         System.out.println(StmtPrintVisitor.print(spfPredicateSummary));
@@ -174,14 +193,25 @@ public class SpfToGreenVisitor implements AstVisitor<Expression> {
                 dynRegion.dynStmt,
                 dynRegion.spfCaseList,
                 dynRegion.regionSummary,
-                spfPredicateSummary);
+                spfPredicateSummary, newReturnResult);
 
         return greenDynRegion;
     }
 
+    private Expression earlyReturnToGreen(Expression earlyReturnExp, DynamicRegion dynRegion) {
+
+        WalaVarToSPFVarVisitor walaVarVisitor = new WalaVarToSPFVarVisitor(dynRegion.varTypeTable);
+        ExprVisitorAdapter eva1 = new ExprVisitorAdapter(walaVarVisitor);
+        Expression noWalaVarExp = (Expression) eva1.accept(earlyReturnExp);
+        FieldArrayVarToSPFVarVisitor fieldRefVisitor = new FieldArrayVarToSPFVarVisitor(dynRegion.fieldRefTypeTable);
+        ExprVisitorAdapter eva2 = new ExprVisitorAdapter(fieldRefVisitor);
+        Expression noFieldRefVarExp = (Expression) eva2.accept(noWalaVarExp);
+        return noFieldRefVarExp;
+    }
+
     private static Expression toGreenSinglePredicate(SPFCaseList greenSPFCaseList) {
         Expression result = Operation.FALSE;
-        for (SPFCaseStmt spfStmt: greenSPFCaseList.casesList) {
+        for (SPFCaseStmt spfStmt : greenSPFCaseList.casesList) {
             result = new Operation(Operation.Operator.OR, result, spfStmt.spfCondition);
         }
         return result;
@@ -195,7 +225,7 @@ public class SpfToGreenVisitor implements AstVisitor<Expression> {
         astMapVisitor = new AstMapVisitor(fieldRefVisitor);
         Stmt noRangerVarStmt = noWalaVarStmt.accept(astMapVisitor);
 
-        assert(noRangerVarStmt instanceof SPFCaseStmt);
+        assert (noRangerVarStmt instanceof SPFCaseStmt);
         return (SPFCaseStmt) noRangerVarStmt;
     }
 }

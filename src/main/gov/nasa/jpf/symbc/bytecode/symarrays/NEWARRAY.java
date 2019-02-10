@@ -22,12 +22,9 @@ package gov.nasa.jpf.symbc.bytecode.symarrays;
 
 
 import gov.nasa.jpf.symbc.arrays.ArrayExpression;
-import gov.nasa.jpf.symbc.numeric.Comparator;
-import gov.nasa.jpf.symbc.numeric.IntegerConstant;
-import gov.nasa.jpf.symbc.numeric.IntegerExpression;
-import gov.nasa.jpf.symbc.numeric.PCChoiceGenerator;
-import gov.nasa.jpf.symbc.numeric.PathCondition;
+import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.string.SymbolicLengthInteger;
+import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
@@ -36,6 +33,13 @@ import gov.nasa.jpf.vm.Heap;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
+import za.ac.sun.cs.green.expr.IntVariable;
+
+import java.util.ArrayList;
+import java.util.Map;
+
+import static gov.nasa.jpf.symbc.veritesting.AdapterSynth.SPFAdapterSynth.getVal;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.maybeParseConstraint;
 
 /**
  * Symbolic version of the NEWARRAY class from jpf-core. Has some extra code to
@@ -49,6 +53,10 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 
 public class NEWARRAY extends gov.nasa.jpf.jvm.bytecode.NEWARRAY {
+
+    private static final int c = 3;//TODO make this into a configuration option
+    private static final boolean stopIfCExceeded = true; //TODO make this into a configuration option
+    ArrayList<Long> values ;
 
 	public NEWARRAY(int typeCode) {
     	super(typeCode);
@@ -107,41 +115,80 @@ public class NEWARRAY extends gov.nasa.jpf.jvm.bytecode.NEWARRAY {
 
             ChoiceGenerator<?> cg = null;
             if (!ti.isFirstStepInsn()) {
-                cg = new PCChoiceGenerator(2);
+                if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator) {
+                    pc = ((PCChoiceGenerator) (ti.getVM().getSystemState().getChoiceGenerator())).getCurrentPC();
+                } else {
+                    pc = new PathCondition();
+                    pc._addDet(Comparator.EQ, new IntegerConstant(0), new IntegerConstant(0));
+                }
+                assert pc != null;
+
+                Map<String, Object> map = attr instanceof SymbolicInteger ?
+                        pc.solveWithValuation((SymbolicInteger) attr, null) : null;
+                String name = map != null ? ((SymbolicInteger) attr).getName() : null;
+                Long lastValue = getVal(map, name);
+                if (map == null || map.size() == 0 || lastValue == null) { //reached an unsat state
+                    ti.getVM().getSystemState().setIgnored(true);
+                    return getNext(ti);
+                }
+                values = new ArrayList<>();
+                values.add(lastValue);
+                while (c - values.size() > 0) {
+                    pc._addDet(Comparator.NE, (IntegerExpression)attr, new IntegerConstant(lastValue));
+                    map = pc.solveWithValuation((SymbolicInteger)attr, null);
+                    lastValue = getVal(map, name);
+                    if (map == null || map.size() == 0 || lastValue == null) break;
+                    else values.add(lastValue);
+                }
+                if (values.size() == c && stopIfCExceeded) {
+                    pc._addDet(Comparator.NE, (IntegerExpression)attr, new IntegerConstant(lastValue));
+                    map = pc.solveWithValuation((SymbolicInteger)attr, null);
+                    if (map == null || map.size() == 0 || lastValue == null) {
+                        return ti.createAndThrowException("too many feasibe solutions for " + name);
+                    }
+                }
+                cg = new PCChoiceGenerator(values.size());
+
                 ti.getVM().setNextChoiceGenerator(cg);
                 return this;
             } else {
                 cg = ti.getVM().getSystemState().getChoiceGenerator();
                 assert (cg instanceof PCChoiceGenerator) : "expected PCChoiceGenerator, got:" + cg;
+                sf.pop();
+                arrayLength = Math.toIntExact(values.get((Integer)cg.getNextChoice()));
+                pc = ((PCChoiceGenerator) cg).getCurrentPC();
             }
-            
-            ChoiceGenerator<?> prev_cg = cg.getPreviousChoiceGeneratorOfType(PCChoiceGenerator.class);
 
-            if(prev_cg == null)
-                pc = new PathCondition();
-            else
-                pc = ((PCChoiceGenerator)prev_cg).getCurrentPC();
-            assert pc != null;
 
-            if ((Integer)cg.getNextChoice() == 0) {
-                pc._addDet(Comparator.LT, (IntegerExpression)attr, new IntegerConstant(0));
+            /*if ((Integer)cg.getNextChoice() == 0) {
+                pc._addDet(Comparator.EQ, (IntegerExpression)attr, new IntegerConstant(1));
                 if (pc.simplify()) {
                     ((PCChoiceGenerator) cg).setCurrentPC(pc);
-                    return ti.createAndThrowException("java.lang.NegativeArraySizeException");
+//                    return ti.createAndThrowException("java.lang.NegativeArraySizeException");
+                    sf.pop();
+                    arrayLength = 1;
+                } else {
+                    ti.getVM().getSystemState().setIgnored(true);
+                    return getNext(ti);
+                }
+            } else if ((Integer)cg.getNextChoice() == 1) {
+                pc._addDet(Comparator.EQ, (IntegerExpression)attr, new IntegerConstant(0));
+                if (pc.simplify()) {
+                    ((PCChoiceGenerator) cg).setCurrentPC(pc);
+                    sf.pop();
+                    arrayLength = 0;
                 } else {
                     ti.getVM().getSystemState().setIgnored(true);
                     return getNext(ti);
                 }
             } else {
-                pc._addDet(Comparator.GE, (IntegerExpression)attr, new IntegerConstant(0));
+                pc._addDet(Comparator.GE, (IntegerExpression)attr, new IntegerConstant(2));
                 if (pc.simplify()) {
-                    ((PCChoiceGenerator) cg).setCurrentPC(pc);
-                    arrayLength = sf.pop();
-                } else {
-                    ti.getVM().getSystemState().setIgnored(true);
-                    return getNext(ti);
+                    System.out.println("arraylen >= 2 at " + getMethodInfo() + "#" + getPosition());
                 }
-            }
+                ti.getVM().getSystemState().setIgnored(true);
+                return getNext(ti);
+            }*/
         } else {
 			arrayLength = sf.pop();
 		}
@@ -180,6 +227,11 @@ public class NEWARRAY extends gov.nasa.jpf.jvm.bytecode.NEWARRAY {
             arrayAttr = new ArrayExpression(eiArray.toString());
             pc._addDet(Comparator.EQ, arrayAttr.length, (IntegerExpression)attr);
             pc.arrayExpressions.put(arrayAttr.getRootName(), arrayAttr);
+            try {
+                maybeParseConstraint(pc);
+            } catch (StaticRegionException e) {
+                return ti.createAndThrowException("Failed to send arrayAttr.length constraint to solver");
+            }
         }
         sf.setOperandAttr(arrayAttr);
 

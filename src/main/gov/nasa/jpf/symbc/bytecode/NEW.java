@@ -86,11 +86,11 @@ public class NEW extends gov.nasa.jpf.jvm.bytecode.NEW {
 	 // TODO: to review
 	    //insert dummy expressions for StringBuilder and StringBuffer
 	    //String className = ci.getName();
-	    if(className.equals("java.lang.StringBuilder") || className.equals("java.lang.StringBuffer")){
+	    /*if(className.equals("java.lang.StringBuilder") || className.equals("java.lang.StringBuffer")){
 	    	SymbolicStringBuilder t = new SymbolicStringBuilder();
 	    	StackFrame sf = ti.getModifiableTopFrame();
 	    	sf.setOperandAttr(t);
-	    }
+	    }*/
 	    
 	    return getNext(ti);
 

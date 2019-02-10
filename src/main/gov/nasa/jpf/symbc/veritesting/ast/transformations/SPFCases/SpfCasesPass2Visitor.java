@@ -3,12 +3,16 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases;
 import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.StmtPrintVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.HashSet;
+
+import static za.ac.sun.cs.green.expr.Operation.Operator.AND;
+import static za.ac.sun.cs.green.expr.Operation.Operator.OR;
 
 
 /**
@@ -19,6 +23,7 @@ import java.util.HashSet;
 public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
     private Expression spfCondition = Operation.TRUE;
     private final HashSet<SPFCaseStmt> spfCaseSet = new HashSet<>();
+    private Expression earlyReturnCondition = null;
 
 
     @Override
@@ -32,7 +37,7 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
         Stmt s1 = a.s1.accept(this);
         Stmt s2 = a.s2.accept(this);
 
-        if ((s1 instanceof SPFCaseStmt) && (s2 instanceof SPFCaseStmt)){
+        if ((s1 instanceof SPFCaseStmt) && (s2 instanceof SPFCaseStmt)) {
             spfCaseSet.remove(s1);
             spfCaseSet.remove(s2);
             SPFCaseStmt stmt = new SPFCaseStmt(spfCondition, SPFCaseStmt.SPFReason.MULTIPLE);
@@ -79,8 +84,17 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
 
     @Override
     public Stmt visit(SPFCaseStmt c) {
-        spfCaseSet.add(c);
-        return new SPFCaseStmt(c.spfCondition, c.reason);
+        if (c.reason != SPFCaseStmt.SPFReason.EARLYRETURN) {
+            spfCaseSet.add(c);
+            return new SPFCaseStmt(c.spfCondition, c.reason);
+        } else {//collect the condition into the region's returnResultCondition, and replace it with a skip
+            if (earlyReturnCondition == null) //initial condition
+                earlyReturnCondition = c.spfCondition;
+            else
+                earlyReturnCondition = new Operation(OR, earlyReturnCondition, c.spfCondition);
+            return SkipStmt.skip;
+        }
+
     }
 
     @Override
@@ -173,6 +187,7 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
      * @return Dynamic Region with a new AST and spfCaseSet populated.
      */
     public static DynamicRegion execute(DynamicRegion dynRegion) {
+
         SpfCasesPass2Visitor visitor = new SpfCasesPass2Visitor();
         Stmt dynStmt = dynRegion.dynStmt.accept(visitor);
 
@@ -180,8 +195,12 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
         System.out.println(StmtPrintVisitor.print(dynStmt));
         SPFCaseList detectedCases = new SPFCaseList(visitor.spfCaseSet);
         detectedCases.print();
+
+        dynRegion.earlyReturnResult.condition = visitor.earlyReturnCondition;
+
+        System.out.println("printing early return result condition after spfcases2: " + visitor.earlyReturnCondition);
         return new DynamicRegion(dynRegion,
                 dynStmt,
-                detectedCases, null, null);
+                detectedCases, null, null, dynRegion.earlyReturnResult);
     }
 }

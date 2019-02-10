@@ -54,6 +54,7 @@ import gov.nasa.jpf.symbc.arrays.ArrayExpression;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.VM;
+import za.ac.sun.cs.green.expr.IntVariable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -354,11 +355,12 @@ public class PathCondition implements Comparable<PathCondition> {
 		else 
 			return simplifyGreen();
 	}
-	
-	public Map<String, Object> solveWithValuation() {
+
+
+	public Map<String, Object> solveWithValuation(SymbolicInteger symInt, IntVariable intVar) {
 		SymbolicConstraintsGeneral solver = new SymbolicConstraintsGeneral();
 
-		Map<String,Object> result1 = solver.solveWithSolution(this);
+		Map<String,Object> result1 = solver.solveWithSolution(this, symInt, intVar);
 		solver.cleanup();
 		PathCondition.flagSolved = true;
 		return result1;
@@ -662,6 +664,5 @@ public class PathCondition implements Comparable<PathCondition> {
 		count--;
 		resetHashCode();
 	}
-
 
 }

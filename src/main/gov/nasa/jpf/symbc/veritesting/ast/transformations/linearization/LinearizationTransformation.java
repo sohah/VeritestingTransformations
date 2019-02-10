@@ -20,6 +20,6 @@ public class LinearizationTransformation extends DefaultTransformation {
         System.out.println(StmtPrintVisitor.print(stmt));
 
         return new DynamicRegion(region,
-                stmt, region.spfCaseList, null,null);
+                stmt, region.spfCaseList, null,null, region.earlyReturnResult);
     }
 }

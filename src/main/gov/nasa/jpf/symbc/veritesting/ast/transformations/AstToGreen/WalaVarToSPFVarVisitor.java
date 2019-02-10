@@ -68,7 +68,9 @@ public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
 
     @Override
     public Expression visit(IfThenElseExpr expr) {
-        return expr;
+        return new IfThenElseExpr(eva.accept(expr.condition),
+                eva.accept(expr.thenExpr),
+                eva.accept(expr.elseExpr));
     }
 
     @Override
@@ -100,6 +102,6 @@ public class WalaVarToSPFVarVisitor implements ExprVisitor<Expression> {
 
     @Override
     public Expression visit(AstVarExpr expr) {
-        return createGreenVar(expr.type, expr.getName());
+        return createGreenVar(expr.type, expr.getSymName());
     }
 }

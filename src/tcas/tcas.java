@@ -39,6 +39,18 @@ public class tcas {
 	public static int UPWARD_RA = 1;
 	public static int DOWNWARD_RA = 2;
 
+	private static int result_alt_sep_test = -1;
+	private static int result_alim = -1;
+
+	private static int b2I(boolean b) { return b ? 1 : 0; }
+
+	public static Outputs getOutputs() {
+		int[] ret = new int[]{Cur_Vertical_Sep, b2I(High_Confidence), b2I(Two_of_Three_Reports_Valid),
+				Own_Tracked_Alt, Own_Tracked_Alt_Rate, Other_Tracked_Alt, Alt_Layer_Value, Up_Separation, Down_Separation, Other_RAC, Climb_Inhibit,
+				result_alt_sep_test, result_alim};
+		return new Outputs(ret);
+	}
+
 	public static void initialize() {
 		Positive_RA_Alt_Thresh_0 = 400;
 		Positive_RA_Alt_Thresh_1 = 500;
@@ -277,8 +289,8 @@ public class tcas {
 
 //		alt_sep_test();
 
-		int result = alt_sep_test();
-//		int alim = ALIM();
+		result_alt_sep_test = alt_sep_test();
+		result_alim = ALIM();
 
 		// MWW assertions.  These come from ACSL safety property paper: http://people.rennes.inria.fr/Arnaud.Gotlieb/CT_ATM_gotlieb.pdf
 		// fails
@@ -330,10 +342,61 @@ public class tcas {
 		alt_sep_test();*/
 	}
 
+	public static void sym1(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12) {
+		mainProcess(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
+	}
+
+	public static void sym2(int b1, int b2, int b3, int b4, int b5, int b6, int b7, int b8, int b9, int b10, int b11, int b12) {
+		mainProcess(b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12);
+	}
+
+	public static void sym3(int c1, int c2, int c3, int c4, int c5, int c6, int c7, int c8, int c9, int c10, int c11, int c12) {
+		mainProcess(c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12);
+	}
+
+	public static void sym4(int d1, int d2, int d3, int d4, int d5, int d6, int d7, int d8, int d9, int d10, int d11, int d12) {
+		mainProcess(d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12);
+	}
+
+	public static void sym5(int e1, int e2, int e3, int e4, int e5, int e6, int e7, int e8, int e9, int e10, int e11, int e12) {
+		mainProcess(e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12);
+	}
+
+	public static void sym6(int f1, int f2, int f3, int f4, int f5, int f6, int f7, int f8, int f9, int f10, int f11, int f12) {
+		mainProcess(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);
+	}
+
+	public static void sym7(int g1, int g2, int g3, int g4, int g5, int g6, int g7, int g8, int g9, int g10, int g11, int g12) {
+		mainProcess(g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12);
+	}
+
+	public static void sym8(int h1, int h2, int h3, int h4, int h5, int h6, int h7, int h8, int h9, int h10, int h11, int h12) {
+		mainProcess(h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12);
+	}
+
+	public static void sym9(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int i9, int i10, int i11, int i12) {
+		mainProcess(i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12);
+	}
+
+	public static void sym10(int j1, int j2, int j3, int j4, int j5, int j6, int j7, int j8, int j9, int j10, int j11, int j12) {
+		mainProcess(j1, j2, j3, j4, j5, j6, j7, j8, j9, j10, j11, j12);
+	}
+
 	public static void main(String[] argv) {
 		int maxSteps = Integer.parseInt(System.getenv("MAX_STEPS"));
-		for (int i=0; i < maxSteps; i++)
-			mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1); //,
-				//601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+//		for (int i=0; i < maxSteps; i++)
+//			mainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1); //,
+		//601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		if (maxSteps-- > 0) sym1(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		if (maxSteps-- > 0) sym2(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		if (maxSteps-- > 0) sym3(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		if (maxSteps-- > 0) sym4(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		if (maxSteps-- > 0) sym5(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		if (maxSteps-- > 0) sym6(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		if (maxSteps-- > 0) sym7(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		if (maxSteps-- > 0) sym8(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		if (maxSteps-- > 0) sym9(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
+		if (maxSteps-- > 0) sym10(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1);
 	}
+
 }

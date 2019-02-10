@@ -59,6 +59,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import static gov.nasa.jpf.symbc.numeric.PCParser.*;
+
 
 // generalized to use different constraint solvers/decision procedures
 // Warning: should never use / modify the types from pb:
@@ -245,7 +247,7 @@ public class SymbolicConstraintsGeneral {
 
 
             // compute solutions for integer variables
-            final Set<Entry<SymbolicInteger, Object>> sym_intvar_mappings = PCParser.symIntegerVar.entrySet();
+            final Set<Entry<SymbolicInteger, Object>> sym_intvar_mappings = symIntegerVar.entrySet();
             final Iterator<Entry<SymbolicInteger, Object>> i_int = sym_intvar_mappings.iterator();
             //try {
             while (i_int.hasNext()) {
@@ -284,7 +286,7 @@ public class SymbolicConstraintsGeneral {
             return false;
     }
 
-    public Map<String, Object> solveWithSolution(PathCondition pc) {
+    public Map<String, Object> solveWithSolution(PathCondition pc, SymbolicInteger symInt, IntVariable intVar) {
         //if (SymbolicInstructionFactory.debugMode)
         //System.out.println("solving: PC " + pc);
         Map<String, Object> result = new HashMap<String, Object>();
@@ -326,8 +328,11 @@ public class SymbolicConstraintsGeneral {
             } // end catch
 
 
+            if (symInt != null && !symIntegerVar.containsKey(symInt) && globalsymIntegerVar.containsKey(symInt)) {
+                symIntegerVar.put(symInt, globalsymIntegerVar.get(symInt));
+            }
             // compute solutions for integer variables
-            Set<Entry<SymbolicInteger, Object>> sym_intvar_mappings = PCParser.symIntegerVar.entrySet();
+            Set<Entry<SymbolicInteger, Object>> sym_intvar_mappings = symIntegerVar.entrySet();
             Iterator<Entry<SymbolicInteger, Object>> i_int = sym_intvar_mappings.iterator();
             //try {
             while (i_int.hasNext()) {
@@ -338,8 +343,12 @@ public class SymbolicConstraintsGeneral {
 
             }
 
+            if (intVar != null && !intVariableMap.containsKey(intVar) && globalintVariableMap.containsKey(intVar)) {
+                intVariableMap.put(intVar, globalintVariableMap.get(intVar));
+            }
+
             // compute solutions for IntVariable objects in the model
-            final Set<Entry<IntVariable, Object>> intVariableSet = PCParser.intVariableMap.entrySet();
+            final Set<Entry<IntVariable, Object>> intVariableSet = intVariableMap.entrySet();
             final Iterator<Entry<IntVariable, Object>> intVariableItr = intVariableSet.iterator();
             while (intVariableItr.hasNext()) {
                 final Entry<IntVariable, Object> e = intVariableItr.next();

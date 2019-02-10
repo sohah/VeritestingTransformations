@@ -190,7 +190,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
 				pa.solve(pc,solver);
 			}
 			else */
-			Map<String, Object> val = pc.solveWithValuation();
+			Map<String, Object> val = pc.solveWithValuation(null, null);
 
 			// get the chain of choice generators.
 			ChoiceGenerator<?> [] cgs = ss.getChoiceGenerators();
@@ -236,7 +236,7 @@ public class SymbolicSequenceListener extends PropertyListenerAdapter implements
         				pa.solve(pc,solver);
         			}
         			else */
-        				Map<String, Object> val = pc.solveWithValuation();
+        				Map<String, Object> val = pc.solveWithValuation(null, null);
                         System.out.println(pc);
         			// get the chain of choice generators.
         			ChoiceGenerator<?> [] cgs = ss.getChoiceGenerators();

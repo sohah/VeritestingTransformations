@@ -139,6 +139,7 @@ public class ArrayUtil {
                 if (newExpr instanceof CloneableVariable)
                     newExpr = createGreenVar(type, newExpr.toString());
                 eiArray.setElementAttr(i, greenToSPFExpression(newExpr));
+                assert(greenToSPFExpression(newExpr) != null);
             }
         }
     }

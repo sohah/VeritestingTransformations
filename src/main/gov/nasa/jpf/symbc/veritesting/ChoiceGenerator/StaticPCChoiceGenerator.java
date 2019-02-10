@@ -64,7 +64,7 @@ public abstract class StaticPCChoiceGenerator extends PCChoiceGenerator {
 
     abstract public Instruction execute(ThreadInfo ti, Instruction instructionToExecute, int choice) throws StaticRegionException;
 
-    public static StaticSummaryChoiceGenerator.Kind getKind(Instruction instruction) {
+    public static Kind getKind(Instruction instruction) {
         switch (instruction.getMnemonic()) {
             case "ifeq":
             case "ifge":

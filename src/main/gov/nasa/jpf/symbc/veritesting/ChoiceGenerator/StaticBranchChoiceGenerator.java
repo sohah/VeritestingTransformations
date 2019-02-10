@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.ChoiceGenerator;
 
+import aima.core.logic.propositional.parsing.ast.FalseSentence;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.bytecode.IFNONNULL;
@@ -19,11 +20,11 @@ import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.maybeParseConstraint;
 
 
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
-    Object[] spfSlotAttr;
 
     public static final int STATIC_CHOICE = 0;
     public static final int THEN_CHOICE = 1;
@@ -31,7 +32,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
     public static final int RETURN_CHOICE = 3;
 
     public StaticBranchChoiceGenerator(DynamicRegion region, Instruction instruction) {
-        super(2, region, instruction);
+        super(3, region, instruction);
         Kind kind = getKind(instruction);
 
         assert (kind == Kind.BINARYIF ||
@@ -42,12 +43,12 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
     // MWW: make choice 0 and choice 4 also the responsibility of the CG
     public Instruction execute(ThreadInfo ti, Instruction instructionToExecute, int choice) throws StaticRegionException {
         // if/else conditions.
-        assert (choice == STATIC_CHOICE || choice == THEN_CHOICE || choice == ELSE_CHOICE);
+        assert (choice == STATIC_CHOICE || choice == THEN_CHOICE || choice == ELSE_CHOICE || choice == RETURN_CHOICE);
 
         Instruction nextInstruction = null;
         if (choice == STATIC_CHOICE) {
             System.out.println("\n=========Executing static region choice in BranchCG");
-            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion());
+            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion(), false);
             MethodInfo methodInfo = instructionToExecute.getMethodInfo();
             String className = methodInfo.getClassName();
             String methodName = methodInfo.getName();
@@ -58,6 +59,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             ++VeritestingListener.veritestRegionCount;
         } else if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
             System.out.println("\n=========Executing" + (choice == THEN_CHOICE ? " then " : " else ") + ".  Instruction: ");
+            maybeParseConstraint(getCurrentPC());
             switch (getKind(instructionToExecute)) {
                 case UNARYIF:
                     nextInstruction = executeUnaryIf(instructionToExecute, choice);
@@ -71,9 +73,17 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                 case OTHER:
                     throwException(new StaticRegionException("Error: Branch choice generator instantiated on non-branch instruction!"), INSTANTIATION);
             }
-        } else {
-            // should never get here (until we make early returns)
-            assert (false);
+        } else { //early returns choice happened
+            System.out.println("\n=========Executing early retrun choice in BranchCG");
+            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion(), true);
+            MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+            String className = methodInfo.getClassName();
+            String methodName = methodInfo.getName();
+            String methodSignature = methodInfo.getSignature();
+            int offset = instructionToExecute.getPosition();
+            String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+            statisticManager.updateVeriSuccForRegion(key);
+            ++VeritestingListener.veritestRegionCount;
         }
         return nextInstruction;
     }
@@ -103,7 +113,6 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
             assert pc != null;
             assert (choice == THEN_CHOICE || choice == ELSE_CHOICE);
-
 
             if (choice == ELSE_CHOICE) {
                 Comparator byteCodeOp = SpfUtil.getComparator(instruction);
@@ -210,10 +219,20 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             pc = new PathCondition();
             pc._addDet(new GreenConstraint(Operation.TRUE));
         }
-        setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
-        setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
-        setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
-        // TODO: create the path predicate for the 'return' case.
+        if (region.earlyReturnResult.hasER()) {// Early Return & SPFCases
+            setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, new Operation(Operation.Operator.NOT, region.spfPredicateSummary), new Operation(Operation.Operator.NOT, region.earlyReturnResult.condition)))), STATIC_CHOICE);
+            setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
+            setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
+            setPC(createPC(pc, region.regionSummary, (new Operation(Operation.Operator.AND, new Operation(Operation.Operator.NOT, region.spfPredicateSummary), region.earlyReturnResult.condition))), RETURN_CHOICE);
+        }
+        else { // no early return or spfcases exists, then run only the static choice
+            setPC(createPC(pc, region.regionSummary, Operation.TRUE), STATIC_CHOICE);
+            setPC(createPC(pc, region.regionSummary, Operation.FALSE), THEN_CHOICE);
+            setPC(createPC(pc, region.regionSummary, Operation.FALSE), ELSE_CHOICE);
+            setPC(createPC(pc, region.regionSummary, Operation.FALSE), RETURN_CHOICE);
+
+        }
+
     }
 
 }

@@ -79,7 +79,14 @@ public class SubstituteGetOutput {
                 else {
                     FieldInfo fieldInfo;
                     if (!isStatic) fieldInfo = ci.getInstanceField(fieldName);
-                    else fieldInfo = ci.getStaticField(fieldName);
+                    else
+                        fieldInfo = ci.getStaticField(fieldName);
+                    /*if (!fieldInfo.getClassInfo().getName().equals(eiFieldOwner.getClassInfo().getName())) {
+                        //TODO We need to figure out when this scenario like these happen. One example is an ArrayOutOfBoundsException encountered when running Schedule2_3
+                        exceptionalMessage = "ElementInfo class reference (" + eiFieldOwner.getClassInfo().getName() +
+                                ") does not match FieldInfo class reference (" + fieldInfo.getClassInfo().getName() + ")";
+                        skipRegionStrings.add(exceptionalMessage);
+                    } else*/
                     if (fieldInfo == null) {
                         exceptionalMessage = "java.lang.NoSuchFieldError" + "referencing field '" + fieldName
                                 + "' in " + eiFieldOwner;
@@ -96,6 +103,7 @@ public class SubstituteGetOutput {
 
     private void executeWrite(ElementInfo eiFieldOwner, FieldInfo fieldInfo) {
         int fieldSize = fieldInfo.getStorageSize();
+        assert(finalValue != null);
         if (fieldSize == 1) {
             if (finalValue instanceof IntegerConstant) {
                 eiFieldOwner.set1SlotField(fieldInfo, (int) ((IntegerConstant) finalValue).value);
@@ -118,32 +126,38 @@ public class SubstituteGetOutput {
     }
 
     private void executeRead(ElementInfo eiFieldOwner, FieldInfo fieldInfo) {
-        gov.nasa.jpf.symbc.numeric.Expression fieldAttr =
-                (gov.nasa.jpf.symbc.numeric.Expression) eiFieldOwner.getFieldAttr(fieldInfo);
-        if (fieldAttr != null) {
-            def = SPFToGreenExpr(fieldAttr);
-            type = fieldInfo.getType();
-        } else {
-            if (fieldInfo.getStorageSize() == 1) {
-                if (fieldInfo.getType().equals("float")) {
-                    def = new RealConstant(Float.intBitsToFloat(eiFieldOwner.get1SlotField(fieldInfo)));
-                }
-                if (Objects.equals(fieldInfo.getType(), "int") ||
-                        Objects.equals(fieldInfo.getType(), "boolean") ||
-                        Objects.equals(fieldInfo.getType(), "byte") ||
-                        Objects.equals(fieldInfo.getType(), "char") ||
-                        Objects.equals(fieldInfo.getType(), "short"))
-                    def = new IntConstant(eiFieldOwner.get1SlotField(fieldInfo));
-                if (fieldInfo.isReference())
-                    def = new IntConstant(eiFieldOwner.getReferenceField(fieldInfo));
+        try {
+            gov.nasa.jpf.symbc.numeric.Expression fieldAttr =
+                    (gov.nasa.jpf.symbc.numeric.Expression) eiFieldOwner.getFieldAttr(fieldInfo);
+            if (fieldAttr != null) {
+                def = SPFToGreenExpr(fieldAttr);
+                type = fieldInfo.getType();
             } else {
-                if (Objects.equals(fieldInfo.getType(), "double"))
-                    def = new RealConstant(Double.longBitsToDouble(eiFieldOwner.get2SlotField(fieldInfo)));
-                if (Objects.equals(fieldInfo.getType(), "long"))
-                    def = new IntConstant((int) eiFieldOwner.get2SlotField(fieldInfo));
+                if (fieldInfo.getStorageSize() == 1) {
+                    if (fieldInfo.getType().equals("float")) {
+                        def = new RealConstant(Float.intBitsToFloat(eiFieldOwner.get1SlotField(fieldInfo)));
+                    }
+                    if (Objects.equals(fieldInfo.getType(), "int") ||
+                            Objects.equals(fieldInfo.getType(), "boolean") ||
+                            Objects.equals(fieldInfo.getType(), "byte") ||
+                            Objects.equals(fieldInfo.getType(), "char") ||
+                            Objects.equals(fieldInfo.getType(), "short"))
+                        def = new IntConstant(eiFieldOwner.get1SlotField(fieldInfo));
+                    if (fieldInfo.isReference())
+                        def = new IntConstant(eiFieldOwner.getReferenceField(fieldInfo));
+                } else {
+                    if (Objects.equals(fieldInfo.getType(), "double"))
+                        def = new RealConstant(Double.longBitsToDouble(eiFieldOwner.get2SlotField(fieldInfo)));
+                    if (Objects.equals(fieldInfo.getType(), "long"))
+                        def = new IntConstant((int) eiFieldOwner.get2SlotField(fieldInfo));
+                }
+                if (def == null) exceptionalMessage = "unsupported field type";
+                else type = fieldInfo.getType();
             }
-            if (def == null) exceptionalMessage = "unsupported field type";
-            else type = fieldInfo.getType();
+        } catch(Exception e) {
+            exceptionalMessage = e.getMessage() + " referencing field '" + fieldInfo.getName()
+                    + "' in " + eiFieldOwner;
+            skipRegionStrings.add(exceptionalMessage);
         }
     }
 }
