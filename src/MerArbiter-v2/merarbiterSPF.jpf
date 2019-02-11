@@ -4,7 +4,9 @@ sourcepath=${jpf-symbc}/src/MerArbiter-v2
 
 #symbolic.method=MerArbiter.MerArbiter.runMachines(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 #symbolic.method=MerArbiter.MerArbiter.runMachines(sym#sym#sym#sym#con#con#con#con#con#con#con#con#con#con#con#con)
-symbolic.method=MerArbiter.MerArbiter.runMachines(sym#sym#sym#sym#sym#sym#sym#sym#con#con#con#con#con#con#con#con)
+#symbolic.method=MerArbiter.MerArbiter.runMachines(sym#sym#sym#sym#sym#sym#sym#sym#con#con#con#con#con#con#con#con)
+symbolic.method=MerArbiter.MerArbiter.sym_i1(sym#sym#sym#sym),MerArbiter.MerArbiter.sym_i2(sym#sym#sym#sym),MerArbiter.MerArbiter.sym_i3(sym#sym#sym#sym),MerArbiter.MerArbiter.sym_i4(sym#sym#sym#sym),MerArbiter.MerArbiter.sym_i5(sym#sym#sym#sym),MerArbiter.MerArbiter.sym_i6(sym#sym#sym#sym),MerArbiter.MerArbiter.sym_i7(sym#sym#sym#sym),MerArbiter.MerArbiter.sym_i8(sym#sym#sym#sym)
+#symbolic.method=MerArbiter.MerArbiter.sym_i1(sym#sym#sym#sym),MerArbiter.MerArbiter.sym_i2(sym#sym#sym#sym),MerArbiter.MerArbiter.sym_i3(con#con#con#con),MerArbiter.MerArbiter.sym_i4(con#con#con#con)
 
 symbolic.minint=-100
 symbolic.maxint=100
