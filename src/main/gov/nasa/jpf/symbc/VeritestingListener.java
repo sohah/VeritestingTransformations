@@ -231,7 +231,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 if (isSymCond(ti, instructionToExecute) && !skipVeriRegions.contains(key) && isAllowedRegion(key)) {
                     StaticRegion staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
 
-                    if (runMode != VeritestingMode.SPFCASES) {
+                    if ((runMode != VeritestingMode.SPFCASES) && (runMode != VeritestingMode.EARLYRETURNS)) {
                         // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
                         Instruction regionEndInsn = isUnsupportedRegionEnd(staticRegion, instructionToExecute);
                         if (regionEndInsn != null) {

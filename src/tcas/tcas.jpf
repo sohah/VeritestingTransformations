@@ -10,8 +10,9 @@ vm.storage.class=nil
 
 #coverage.include=tcas
 
-veritestingMode = 3
+veritestingMode = 5
 performanceMode = true
+jitAnalysis=true
 
 #listener = .symbc.VeritestingListener
 #,gov.nasa.jpf.listener.CoverageAnalyzer
