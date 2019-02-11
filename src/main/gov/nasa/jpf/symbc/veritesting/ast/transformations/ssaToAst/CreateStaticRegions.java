@@ -552,25 +552,7 @@ public class CreateStaticRegions {
             FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
             ISSABasicBlock terminus = finder.findMinConvergingNode();
             Stmt condStmt = conditionalBranch(cfg, currentBlock, terminus);
-            //SH: Adding conditional regions begins here
-            if (VeritestingListener.jitAnalysis) {
-                ExprMapVisitor cloneExprVisitor = new ExprMapVisitor();
-                AstMapVisitor cloneSmtVisitor = new AstMapVisitor(cloneExprVisitor);
-                Stmt multiPathStmt = condStmt.accept(cloneSmtVisitor);
 
-                int endIns;
-                try {
-
-                    endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
-                    VeritestingMain.veriRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(multiPathStmt, ir, false, endIns, currentBlock, null));
-                    //System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(multiPathStmt));
-                } catch (InvalidClassFileException e) {
-                    System.out.println("Unable to create subregion.  Reason: " + e.toString());
-                } catch (StaticRegionException e) {
-                    System.out.println("Unable to create subregion.  Reason: " + e.toString());
-                }
-                //SH: Adding conditional regions ends here
-            }
             stmt = conjoin(stmt, condStmt);
             stmt = conjoin(stmt, attemptSubregionRec(cfg, terminus, endingBlock));
         } else if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
@@ -666,9 +648,6 @@ public class CreateStaticRegions {
                 veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns, currentBlock, null));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
-                // MWW: removing - even if successful we want to create additional regions.
-                // createStructuredConditionalRegions(terminus, endingBlock, veritestingRegions);
-                // return;
             } catch (StaticRegionException e) {
                 //SSAUtil.printBlocksUpTo(cfg, endingBlock.getNumber());
                 System.out.println("Unable to create subregion.  Reason: " + e.toString());
@@ -700,6 +679,73 @@ public class CreateStaticRegions {
 
         try {
             Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());
+            System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
+            SSAInstruction[] insns = ir.getInstructions();
+            //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
+            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0, null, null));
+        } catch (StaticRegionException sre) {
+            if (VeritestingListener.jitAnalysis)
+                throw sre;
+            else
+                System.out.println("Unable to create a method summary subregion for: " + cfg.getMethod().getName().toString());
+        }
+    }
+
+    public Stmt attemptMethodSubregions(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock, HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
+
+        if (currentBlock == endingBlock) {
+            return SkipStmt.skip;
+        }
+
+        Stmt stmt = translateInternalBlock(currentBlock);
+
+        if (cfg.getNormalSuccessors(currentBlock).size() == 2) {
+            FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
+            ISSABasicBlock terminus = finder.findMinConvergingNode();
+            Stmt condStmt = attemptConditionalSubregion(cfg, currentBlock, terminus);
+            int endIns;
+            try {
+                endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
+                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(condStmt, ir, false, endIns, currentBlock, null));
+            } catch (InvalidClassFileException e) {
+                throw new StaticRegionException("unable to create static region:" + e.getMessage());
+            }
+
+            stmt = conjoin(stmt, condStmt);
+            stmt = conjoin(stmt, attemptMethodSubregions(cfg, terminus, endingBlock, veritestingRegions));
+        } else if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
+            ISSABasicBlock nextBlock = cfg.getNormalSuccessors(currentBlock).iterator().next();
+            this.blockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
+
+            if (nextBlock.getNumber() < endingBlock.getNumber()) {
+                if (isLoopStart(loops, nextBlock)) {
+                    // Not sure why, but if we see the beginning of a loop more than twice, we're seeing a infinite loop.
+                    // This check correctly detects infinite loops in Pad.main() and
+                    // java.lang.ref.Reference$ReferenceHandler.run() while not classifying any other loops as infinite loops.
+                    if (seenLoopStartSet.containsKey(nextBlock) && seenLoopStartSet.get(nextBlock) > 2)
+                        throwException(new StaticRegionException(currentBlock.toString() + " is the beginning of an infinite loop"), STATIC);
+                    else {
+                        if (seenLoopStartSet.containsKey(nextBlock))
+                            seenLoopStartSet.put(nextBlock, seenLoopStartSet.get(nextBlock) + 1);
+                        else seenLoopStartSet.put(nextBlock, 1);
+                    }
+                }
+                stmt = conjoin(stmt, attemptMethodSubregions(cfg, nextBlock, endingBlock, veritestingRegions));
+            }
+        }
+        return stmt;
+    }
+
+
+    /**
+     * This class walks through method, attempting to find method regions veritesting regions
+     */
+    public void createStructuredRegion(HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
+        reset();
+        SSACFG cfg = ir.getControlFlowGraph();
+
+        try {
+            Stmt s = attemptMethodSubregions(cfg, cfg.entry(), cfg.exit(), veritestingRegions);
             System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
             SSAInstruction[] insns = ir.getInstructions();
             //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);

@@ -210,7 +210,7 @@ public class VeritestingMain {
         if (multiPathAnalysis)
             regionCreator.createStructuredConditionalRegions(veriRegions);
         else
-            regionCreator.createStructuredMethodRegion(veriRegions);
+            regionCreator.createStructuredRegion(veriRegions);
 
        /* // Placeholder for testing and visualizing static-time transformations
             Set<String> keys = veriRegions.keySet();
