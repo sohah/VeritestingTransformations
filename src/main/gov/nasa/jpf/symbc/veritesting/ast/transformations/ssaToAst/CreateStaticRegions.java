@@ -275,11 +275,11 @@ public class CreateStaticRegions {
                 new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
         Stmt stmt = SkipStmt.skip;
         for (SSAInstruction ins : currentBlock) {
-            if (!(ins instanceof SSAPhiInstruction) || (ins instanceof SSAReturnInstruction))
-                return stmt;
-            else {
-                Stmt gamma = visitor.convert(ins);
-                stmt = conjoin(stmt, gamma);
+            if (ins instanceof SSAPhiInstruction) {
+                // properly formed blocks will only have branches and gotos as the last instruction.
+                // We will handle branches in attemptSubregion.
+            } else {
+                stmt = conjoin(stmt, visitor.convert(ins));
             }
         }
         return stmt;
@@ -777,7 +777,7 @@ public class CreateStaticRegions {
         } else {// if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
             assert (cfg.getNormalSuccessors(currentBlock).size() == 1);
             if (phiBlock(currentBlock))
-                stmt = translateTruncatedFinalBlock(currentBlock);
+                stmt = jitTranslateTruncatedFinalBlock(currentBlock);
             else
                 stmt = translateInternalBlock(currentBlock);
 
