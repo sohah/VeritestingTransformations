@@ -267,6 +267,46 @@ public class CreateStaticRegions {
         return stmt;
     }
 
+    private Stmt jitTranslateTruncatedFinalBlock(ISSABasicBlock currentBlock) throws StaticRegionException {
+        SSAToStatIVisitor visitor =
+                new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
+        Stmt stmt = SkipStmt.skip;
+        for (SSAInstruction ins : currentBlock) {
+            if (!(ins instanceof SSAPhiInstruction) ||(ins instanceof SSAReturnInstruction))
+                return stmt;
+            else {
+                Stmt gamma = visitor.convert(ins);
+                stmt = conjoin(stmt, gamma);
+            }
+        }
+        return stmt;
+    }
+
+
+    /**
+     *
+     * @param currentBlock
+     * @return
+     * @throws StaticRegionException
+     */
+    private Stmt jitTranslateInternalBlock(ISSABasicBlock currentBlock) throws StaticRegionException {
+        SSAToStatIVisitor visitor =
+                new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
+        Stmt stmt = SkipStmt.skip;
+        for (SSAInstruction ins : currentBlock) {
+            if ((ins instanceof SSAConditionalBranchInstruction) ||
+                    (ins instanceof SSAGotoInstruction) ||
+                    (ins instanceof SSAPhiInstruction)) { //Phi instructions should have been translated in attemptConditionalSubregion
+                // properly formed blocks will only have branches and gotos as the last instruction.
+                // We will handle branches in attemptSubregion.
+            } else {
+                stmt = conjoin(stmt, visitor.convert(ins));
+            }
+        }
+        return stmt;
+    }
+
+
     /**
      * Gets the immediate detonators of a block.
      *
@@ -593,6 +633,9 @@ public class CreateStaticRegions {
 
         assert (isBranch(cfg, startingBlock));
         Stmt stmt = conditionalBranch(cfg, startingBlock, terminus);
+        //if(VeritestingListener.jitAnalysis)
+//            stmt = conjoin(stmt, jitTranslateTruncatedFinalBlock(terminus));
+//        else
         stmt = conjoin(stmt, translateTruncatedFinalBlock(terminus));
         return stmt;
     }
