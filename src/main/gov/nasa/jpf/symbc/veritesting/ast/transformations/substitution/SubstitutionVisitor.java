@@ -527,6 +527,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         instantiatedRegion.slotParamTable.print();
         instantiatedRegion.outputTable.print();
         instantiatedRegion.varTypeTable.print();
+        System.out.println("Stack output: " + dynRegion.stackOutput);
 
         if (!this.somethingChanged)
             this.somethingChanged = ((ExprSubstitutionVisitor) eva.theVisitor).isSomethingChanged();

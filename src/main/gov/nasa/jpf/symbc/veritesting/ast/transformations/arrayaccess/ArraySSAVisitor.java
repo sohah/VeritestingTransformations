@@ -19,6 +19,7 @@ import java.util.Map;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.compose;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayUtil.getInitialArrayValues;
 import static za.ac.sun.cs.green.expr.Operation.Operator.*;
 
@@ -176,11 +177,11 @@ public class ArraySSAVisitor extends FixedPointAstMapVisitor {
                 assert elseExps.arrayTypesTable.get(thenArrayRef).equals(thenExps.arrayTypesTable.get(thenArrayRef));
                 assert thenExpArr.length == elseExpArr.length;
                 if (!Arrays.equals(thenExpArr, elseExpArr))
-                    compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr, elseExpArr, type));
+                    compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr, elseExpArr, type), false);
                 elseExps.remove(thenArrayRef);
             } else {
                 compStmt = compose(compStmt, createGammaStmtArray(thenArrayRef, condition, thenExpArr,
-                        getInitialArrayValues(ti, thenArrayRef).getFirst(), type));
+                        getInitialArrayValues(ti, thenArrayRef).getFirst(), type), false);
             }
         }
 
@@ -193,7 +194,7 @@ public class ArraySSAVisitor extends FixedPointAstMapVisitor {
                         "thenMap at this point");
             } else {
                 compStmt = compose(compStmt, createGammaStmtArray(elseArrayRef, condition,
-                        getInitialArrayValues(ti, elseArrayRef).getFirst(), elseExpArr, type));
+                        getInitialArrayValues(ti, elseArrayRef).getFirst(), elseExpArr, type), false);
             }
         }
 
@@ -209,20 +210,13 @@ public class ArraySSAVisitor extends FixedPointAstMapVisitor {
                     new SubscriptPair(-1, gsm.createSubscript(ref)));
             dynRegion.fieldRefTypeTable.add(lhs, type);
             Stmt assignStmt = new AssignmentStmt(lhs, new GammaVarExpr(condition, thenExpArr[i], elseExpArr[i]));
-            compStmt = compose(compStmt, assignStmt);
+            compStmt = compose(compStmt, assignStmt, false);
             arrayExpressions.update(arrayRef, lhs);
         }
         return compStmt;
     }
 
-    private Stmt compose(Stmt s1, Stmt s2) {
-        if (s1 == null && s2 == null)
-            throwException(new IllegalArgumentException("trying to compose with two null statements"), INSTANTIATION);
-        else if (s1 == null) return s2;
-        else if (s2 == null) return s1;
-        else return new CompositionStmt(s1, s2);
-        return null;
-    }
+
 
     public DynamicRegion execute(){
         Stmt arrayStmt = dynRegion.dynStmt.accept(this);

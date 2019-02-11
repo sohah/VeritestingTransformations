@@ -49,7 +49,7 @@ public class StaticRegionException extends Exception {
             Pair<Integer, ExceptionPhase> p = ExceptionMap.get(sre.getMessage());
             // assumes exceptional messages are not shared between phases.
             // If this assumption doesn't hold, we need to include phase in the key of ExceptionMap.
-            assert phase == p.getSecond();
+            assert phase == p.getSecond() || phase == ExceptionPhase.DONTKNOW || p.getSecond() == ExceptionPhase.DONTKNOW;
             ExceptionMap.put(sre.getMessage(), new Pair(p.getFirst()+1, phase));
         } else {
             ExceptionMap.put(sre.getMessage(), new Pair(1, phase));

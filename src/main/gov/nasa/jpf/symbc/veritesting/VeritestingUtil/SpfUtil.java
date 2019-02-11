@@ -275,7 +275,7 @@ public class SpfUtil {
 
     // we want to allow only stores at the end of the region but skip regions that end on any other instruction that
     // consumes 1 or more stack operands
-    public static Instruction isUnsupportedRegionEnd(StaticRegion region, Instruction ins) {
+    public static boolean isStackConsumingRegionEnd(StaticRegion region, Instruction ins) throws StaticRegionException {
         int endIns = region.endIns;
         Instruction prevIns = null;
         while (ins != null && ins.getPosition() != endIns) {
@@ -290,24 +290,24 @@ public class SpfUtil {
         }
         if (ins == null) {
             assert prevIns != null;
-            return prevIns;
+            throw new StaticRegionException("region end instruction cannot be found");
         }
         Instruction ret = ins;
-        if (ret.getMnemonic().contains("store")) return null;
+        if (ret.getMnemonic().contains("store")) return false; //TODO double-check what to return here
         // https://en.wikipedia.org/wiki/Java_bytecode_instruction_listings
         int bytecode = ret.getByteCode();
-        if (bytecode <= 0x2d) return null;
-        if (bytecode >= 0x2e && bytecode <= 0x83) return ret;
-        if (bytecode == 0x84) return null;
-        if (bytecode >= 0x85 && bytecode <= 0xa6) return ret;
-        if (bytecode >= 0xa7 && bytecode <= 0xa9) return null;
-        if (bytecode >= 0xaa && bytecode <= 0xb0) return ret;
-        if (bytecode >= 0xb1 && bytecode <= 0xb2) return null;
-        if (bytecode >= 0xb3 && bytecode <= 0xba) return ret;
-        if (bytecode == 0xbb) return null;
-        if (bytecode >= 0xbc && bytecode <= 0xc7) return ret;
-        if (bytecode >= 0xc8 && bytecode <= 0xc9) return null;
-        return ret;
+        if (bytecode <= 0x2d) return false;
+        if (bytecode >= 0x2e && bytecode <= 0x83) return true;
+        if (bytecode == 0x84) return false;
+        if (bytecode >= 0x85 && bytecode <= 0xa6) return true;
+        if (bytecode >= 0xa7 && bytecode <= 0xa9) return false;
+        if (bytecode >= 0xaa && bytecode <= 0xb0) return true;
+        if (bytecode >= 0xb1 && bytecode <= 0xb2) return false;
+        if (bytecode >= 0xb3 && bytecode <= 0xba) return true;
+        if (bytecode == 0xbb) return false;
+        if (bytecode >= 0xbc && bytecode <= 0xc7) return true;
+        if (bytecode >= 0xc8 && bytecode <= 0xc9) return false;
+        return true;
     }
 
     public static boolean isIncrementalSolver() {

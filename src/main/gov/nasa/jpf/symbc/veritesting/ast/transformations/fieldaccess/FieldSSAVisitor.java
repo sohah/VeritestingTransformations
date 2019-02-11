@@ -20,6 +20,7 @@ import java.util.Map;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.compose;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.getConstantType;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isConstant;
 
@@ -168,11 +169,11 @@ public class FieldSSAVisitor extends FixedPointAstMapVisitor {
             if (elseSubscript != null ) {
                 if (!thenSubscript.equals(elseSubscript))
                     compStmt = compose(compStmt, createGammaStmt(condition, thenFieldRef, thenSubscript,
-                            elseMap.lookup(thenFieldRef)));
+                            elseMap.lookup(thenFieldRef)), false);
                 elseMap.remove(thenFieldRef);
             } else {
                 compStmt = compose(compStmt, createGammaStmt(condition, thenFieldRef, thenSubscript,
-                        new SubscriptPair(FIELD_SUBSCRIPT_BASE, gsm.createSubscript(thenFieldRef))));
+                        new SubscriptPair(FIELD_SUBSCRIPT_BASE, gsm.createSubscript(thenFieldRef))), false);
             }
         }
 
@@ -183,22 +184,14 @@ public class FieldSSAVisitor extends FixedPointAstMapVisitor {
                 throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"), INSTANTIATION);
             } else {
                 compStmt = compose(compStmt, createGammaStmt(condition, elseFieldRef,
-                        new SubscriptPair(FIELD_SUBSCRIPT_BASE, gsm.createSubscript(elseFieldRef)), elseSubscript));
+                        new SubscriptPair(FIELD_SUBSCRIPT_BASE, gsm.createSubscript(elseFieldRef)), elseSubscript),
+                        false);
             }
         }
 
         return compStmt;
     }
 
-    private Stmt compose(Stmt s1, Stmt s2) {
-        if (s1 == null && s2 == null) {
-            throwException(new IllegalArgumentException("trying to compose with two null statements"), INSTANTIATION);
-            return null;
-        }
-        else if (s1 == null) return s2;
-        else if (s2 == null) return s1;
-        else return new CompositionStmt(s1, s2);
-    }
 
     private Stmt createGammaStmt(Expression condition, FieldRef fieldRef, SubscriptPair thenSubscript,
                                  SubscriptPair elseSubscript) {

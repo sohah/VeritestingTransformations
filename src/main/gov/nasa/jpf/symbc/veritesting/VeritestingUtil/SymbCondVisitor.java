@@ -1,7 +1,9 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
+import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SymbolTable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.FirstITEStmtVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SlotParamTable;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
@@ -11,6 +13,7 @@ import ia_parser.Exp;
 import za.ac.sun.cs.green.expr.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -20,7 +23,7 @@ public class SymbCondVisitor implements ExprVisitor<Expression> {
     private final boolean findStackSlotsOnly;
     private final SymbolTable symbolTable;
     public boolean stackSlotNotFound;
-    public ArrayList noStackSlotVars;
+    public HashSet<WalaVarExpr> noStackSlotVars;
     private boolean isSymCondition = false;
     private boolean foundWalaVarExpr = false;
     private SlotParamTable slotParamTable;
@@ -34,7 +37,7 @@ public class SymbCondVisitor implements ExprVisitor<Expression> {
         this.sf = sf;
         this.findStackSlotsOnly = findStackSlotsOnly;
         this.stackSlotNotFound = false;
-        noStackSlotVars = new ArrayList<WalaVarExpr>();
+        noStackSlotVars = new HashSet<>();
         this.symbolTable = symbolTable;
     }
 
@@ -128,5 +131,23 @@ public class SymbCondVisitor implements ExprVisitor<Expression> {
 
     public boolean isFoundWalaVarExpr() {
         return foundWalaVarExpr;
+    }
+
+    public static HashSet<WalaVarExpr> execute(IR ir, SlotParamTable slotParamTable, Stmt staticStmt) {
+        SymbCondVisitor symbCondVisitor = new SymbCondVisitor(null, slotParamTable, true, ir.getSymbolTable());
+        ExprVisitorAdapter eva = symbCondVisitor.eva;
+        Triple<Expression, ArrayList<GetInstruction>, ArrayList<ArrayLoadInstruction>> triple = FirstITEStmtVisitor.execute(staticStmt);
+        eva.accept(triple.getFirst());
+        for (GetInstruction getInstruction: triple.getSecond()) {
+            if (getInstruction.def instanceof WalaVarExpr &&
+                    symbCondVisitor.noStackSlotVars.contains(getInstruction.def))
+                symbCondVisitor.noStackSlotVars.remove(getInstruction.def);
+        }
+        for (ArrayLoadInstruction arrayLoad: triple.getThird()) {
+            if (arrayLoad.def instanceof WalaVarExpr &&
+                    symbCondVisitor.noStackSlotVars.contains(arrayLoad.def))
+                symbCondVisitor.noStackSlotVars.remove(arrayLoad.def);
+        }
+        return symbCondVisitor.noStackSlotVars;
     }
 }

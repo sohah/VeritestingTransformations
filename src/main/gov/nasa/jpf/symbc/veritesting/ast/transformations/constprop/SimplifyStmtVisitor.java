@@ -70,7 +70,6 @@ public class SimplifyStmtVisitor extends FixedPointAstMapVisitor {
             return SkipStmt.skip;
         }
         return new AssignmentStmt(a.lhs, rhs);
-
     }
 
     @Override

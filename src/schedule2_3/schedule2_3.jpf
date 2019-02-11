@@ -6,14 +6,14 @@ symbolic.minint=-100
 symbolic.maxint=100
 vm.storage.class=nil
 
-listener = .symbc.VeritestingListener
-symbolic.dp=z3bitvector
+#listener = .symbc.VeritestingListener
+#symbolic.dp=z3bitvector
 #listener = .listener.ChoiceTracker
 #symbolic.debug=on
 
-veritestingMode=3
+veritestingMode=5
 performanceMode = true
 
-#symbolic.dp=z3bitvectorinc
-#listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+symbolic.dp=z3bitvectorinc
+listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 symbolic.optimizechoices=false

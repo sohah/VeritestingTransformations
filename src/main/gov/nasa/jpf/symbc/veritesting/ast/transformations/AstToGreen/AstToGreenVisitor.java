@@ -8,10 +8,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
-import za.ac.sun.cs.green.expr.Expression;
-import za.ac.sun.cs.green.expr.Operation;
-import za.ac.sun.cs.green.expr.Visitor;
-import za.ac.sun.cs.green.expr.VisitorException;
+import za.ac.sun.cs.green.expr.*;
 
 import java.util.ArrayList;
 
@@ -210,6 +207,8 @@ public class AstToGreenVisitor implements AstVisitor<Expression> {
 
         System.out.println("\nGreen Expression pushed on the Path Condition:");
         System.out.println(ExprUtil.AstToString(regionSummary));
+        System.out.println("Stack output: " + dynRegion.stackOutput);
+
 /*
 
 

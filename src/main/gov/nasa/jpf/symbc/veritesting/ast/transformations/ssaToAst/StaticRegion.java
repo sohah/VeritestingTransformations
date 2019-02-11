@@ -13,7 +13,6 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Invariants.LocalOutputInvariantVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
-import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.*;
 
@@ -65,17 +64,25 @@ public class StaticRegion implements Region {
      */
     public final VarTypeTable varTypeTable;
 
-    /*
+    /**
     * Holds the total number of IfThenElseStmts present in this static region
      */
     public int maxDepth = 0;
 
-    /*
+    /**
      * Holds the total number of execution paths that can be taken through this region
      */
     public long totalNumPaths = 0;
 
+    /**
+     * Holds the early return result that is computed by the RemoveEarlyReturns pass called in VeritestingListener
+     */
     public RemoveEarlyReturns.ReturnResult earlyReturnResult;
+
+    /**
+     * Holds the expression that should be written out to the stack
+     */
+    public WalaVarExpr stackOutput = null;
 
     /**
      * @param staticStmt:     Ranger IR statement that summarizes this static region
@@ -110,25 +117,26 @@ public class StaticRegion implements Region {
             varTypeTable = new VarTypeTable(ir);
         } else {
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(-2147483647, 2147483646));
-            SymbCondVisitor symbCondVisitor = new SymbCondVisitor(null, (SlotParamTable) slotParamTable, true, ir.getSymbolTable());
-            ExprVisitorAdapter eva = symbCondVisitor.eva;
-            if (staticStmt instanceof CompositionStmt) {
+            HashSet<WalaVarExpr> noStackSlotVars = SymbCondVisitor.execute(ir, (SlotParamTable) slotParamTable, staticStmt);
+            /*if (staticStmt instanceof CompositionStmt && ((CompositionStmt) staticStmt).s1 instanceof IfThenElseStmt) {
                 eva.accept(((IfThenElseStmt) ((CompositionStmt) staticStmt).s1).condition);
+            } else if (staticStmt instanceof CompositionStmt && ((CompositionStmt) staticStmt).s2 instanceof IfThenElseStmt) {
+                eva.accept(((IfThenElseStmt) ((CompositionStmt) staticStmt).s2).condition);
             } else if (staticStmt instanceof IfThenElseStmt) {
                 eva.accept(((IfThenElseStmt) staticStmt).condition);
-            }
-            if (symbCondVisitor.stackSlotNotFound) {
+            }*/
+            if (noStackSlotVars.size() > 0) {
                 StaticRegionException sre = new StaticRegionException("region contains condition that cannot be instantiated");
                 SSACFG cfg = ir.getControlFlowGraph();
                 if (startingBlock == null) throwException(sre, STATIC);
                 ISSABasicBlock bb = startingBlock;
                 boolean foundStoppingInsn = false;
-                while (symbCondVisitor.noStackSlotVars.size() > 0 && !foundStoppingInsn) {
+                while (noStackSlotVars.size() > 0 && !foundStoppingInsn) {
                     List<SSAInstruction> bbInsns = ((SSACFG.BasicBlock) bb).getAllInstructions();
                     reverse(bbInsns);
                     for (SSAInstruction ins : bbInsns) {
                         SSAToStatDefVisitor visitor =
-                                new SSAToStatDefVisitor(ir, symbCondVisitor.noStackSlotVars, (SlotParamTable) slotParamTable);
+                                new SSAToStatDefVisitor(ir, noStackSlotVars, (SlotParamTable) slotParamTable);
                         Stmt stmt = visitor.convert(ins);
                         foundStoppingInsn = visitor.foundStoppingInsn;
                         if (stmt != null) {
@@ -139,7 +147,7 @@ public class StaticRegion implements Region {
                     if (cfg.getPredNodeCount(bb) != 1) foundStoppingInsn = true;
                     else bb = (ISSABasicBlock) itr.next();
                 }
-                if (symbCondVisitor.noStackSlotVars.size() > 0) {
+                if (noStackSlotVars.size() > 0) {
                     throwException(sre, STATIC);
                 }
             }
@@ -171,12 +179,6 @@ public class StaticRegion implements Region {
                 outputTable = new OutputTable(ir, isMethodRegion, (SlotParamTable) slotParamTable, (InputTable) inputTable, staticStmt, new Pair<>(firstDef, lastDef));
         }
         this.endIns = endIns;
-        if (staticStmt instanceof CompositionStmt && ((CompositionStmt) staticStmt).s2 instanceof AssignmentStmt) {
-            AssignmentStmt assignmentStmt = (AssignmentStmt) ((CompositionStmt) staticStmt).s2;
-            if ((assignmentStmt.rhs instanceof GammaVarExpr) && (outputTable.table.size() == 0)) {
-                throwException(new StaticRegionException("static region with gamma expression cannot have no local outputs"), STATIC);
-            }
-        }
         LocalOutputInvariantVisitor.execute(this);
         RegionMetricsVisitor.execute(this);
     }
@@ -219,6 +221,7 @@ public class StaticRegion implements Region {
         this.endIns = staticRegion.endIns;
         this.isMethodRegion = staticRegion.isMethodRegion;
         this.varTypeTable = staticRegion.varTypeTable;
+        this.stackOutput = staticRegion.stackOutput;
 
         if (returnResult == null) {
             RemoveEarlyReturns o = new RemoveEarlyReturns();

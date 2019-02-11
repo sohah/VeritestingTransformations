@@ -1,13 +1,16 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases;
 
+import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.*;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns.ReturnResult;
+import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -172,14 +175,24 @@ public class SpfToGreenVisitor implements AstVisitor<Expression> {
         Expression newCond;
         Expression newAssign;
         if (dynRegion.earlyReturnResult.hasER()) {
-            newAssign = earlyReturnToGreen(dynRegion.earlyReturnResult.assign, dynRegion);
-            newCond = earlyReturnToGreen(dynRegion.earlyReturnResult.condition, dynRegion);
-            Expression newRetVar = earlyReturnToGreen(dynRegion.earlyReturnResult.retVar, dynRegion);
-            ReturnResult oldResult = dynRegion.earlyReturnResult;
+            boolean isConcreteReturn = false;
+            if (VeritestingListener.simplify && dynRegion.constantsTable != null){
+                Expression returnVar = dynRegion.earlyReturnResult.retVar;
+                isConcreteReturn = dynRegion.constantsTable.lookup((Variable) returnVar) instanceof IntConstant;
+            }
 
-            RemoveEarlyReturns o = new RemoveEarlyReturns();
+            if(!isConcreteReturn) {
+                newAssign = earlyReturnToGreen(dynRegion.earlyReturnResult.assign, dynRegion);
+                newCond = earlyReturnToGreen(dynRegion.earlyReturnResult.condition, dynRegion);
+                Expression newRetVar = earlyReturnToGreen(dynRegion.earlyReturnResult.retVar, dynRegion);
+                ReturnResult oldResult = dynRegion.earlyReturnResult;
 
-            newReturnResult = o.new ReturnResult(oldResult.stmt, newAssign, newCond, oldResult.retPosAndType, newRetVar);
+                RemoveEarlyReturns o = new RemoveEarlyReturns();
+
+                newReturnResult = o.new ReturnResult(oldResult.stmt, newAssign, newCond, oldResult.retPosAndType, newRetVar);
+            }
+            else
+                newReturnResult = dynRegion.earlyReturnResult;
 
         } else { //if no early return in the region, assign false to the early return condition.
             newReturnResult = dynRegion.earlyReturnResult;

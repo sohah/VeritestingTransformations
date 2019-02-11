@@ -6,12 +6,12 @@ import gov.nasa.jpf.symbc.numeric.GreenToSPFTranslator;
 import gov.nasa.jpf.symbc.numeric.PathCondition;
 import gov.nasa.jpf.symbc.numeric.solvers.SolverTranslator;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.ast.def.ArrayRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
+import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import za.ac.sun.cs.green.expr.*;
 
 import static gov.nasa.jpf.symbc.VeritestingListener.performanceMode;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
+import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SatResult.DONTKNOW;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SatResult.FALSE;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.SatResult.TRUE;
@@ -96,13 +96,13 @@ public class ExprUtil {
     public static String getConstantType(Expression expr) {
         assert isConstant(expr);
         if (IntConstant.class.isInstance(expr)) return "int";
-        if (RealConstant.class.isInstance(expr)) return "real";
+        if (RealConstant.class.isInstance(expr)) return "float";
         return null;
     }
 
     public static String getGreenVariableType(Expression expr) {
         if (IntVariable.class.isInstance(expr)) return "int";
-        if (RealVariable.class.isInstance(expr)) return "real";
+        if (RealVariable.class.isInstance(expr)) return "float";
         return null;
     }
 
@@ -145,7 +145,7 @@ public class ExprUtil {
             if (GreenConstraint.class.isInstance(constraint)) {
                 Expression greenExpression = ((GreenConstraint) constraint).getExp();
                 if (isSatGreenExpression(greenExpression) == FALSE) {
-                    System.out.println("found an unsat pc");
+                    System.out.println("found an unsat constraint");
                     return false;
                 }
 //                try {
@@ -245,6 +245,19 @@ public class ExprUtil {
         else
             returnExp = new Operation(Operation.Operator.NOT, e1);
         return returnExp;
+    }
+
+    public static Stmt compose(Stmt s1, Stmt s2, boolean allowBothNull) {
+        if (s1 == null && s2 == null) {
+            if (!allowBothNull)
+                throwException(new IllegalArgumentException("trying to compose with two null statements"),
+                    gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.DONTKNOW);
+            else return null;
+        }
+        else if (s1 == null) return s2;
+        else if (s2 == null) return s1;
+        else return new CompositionStmt(s1, s2);
+        return null;
     }
 
 }
