@@ -295,8 +295,7 @@ public class CreateStaticRegions {
         Stmt stmt = SkipStmt.skip;
         for (SSAInstruction ins : currentBlock) {
             if ((ins instanceof SSAConditionalBranchInstruction) ||
-                    (ins instanceof SSAGotoInstruction) ||
-                    (ins instanceof SSAPhiInstruction)) { //Phi instructions should have been translated in attemptConditionalSubregion
+                    (ins instanceof SSAGotoInstruction)) { //Phi instructions should have been translated in attemptConditionalSubregion
                 // properly formed blocks will only have branches and gotos as the last instruction.
                 // We will handle branches in attemptSubregion.
             } else {
