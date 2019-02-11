@@ -117,25 +117,26 @@ public class StaticRegion implements Region {
             varTypeTable = new VarTypeTable(ir);
         } else {
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(-2147483647, 2147483646));
-            SymbCondVisitor symbCondVisitor = new SymbCondVisitor(null, (SlotParamTable) slotParamTable, true, ir.getSymbolTable());
-            ExprVisitorAdapter eva = symbCondVisitor.eva;
-            if (staticStmt instanceof CompositionStmt) {
+            HashSet<WalaVarExpr> noStackSlotVars = SymbCondVisitor.execute(ir, (SlotParamTable) slotParamTable, staticStmt);
+            /*if (staticStmt instanceof CompositionStmt && ((CompositionStmt) staticStmt).s1 instanceof IfThenElseStmt) {
                 eva.accept(((IfThenElseStmt) ((CompositionStmt) staticStmt).s1).condition);
+            } else if (staticStmt instanceof CompositionStmt && ((CompositionStmt) staticStmt).s2 instanceof IfThenElseStmt) {
+                eva.accept(((IfThenElseStmt) ((CompositionStmt) staticStmt).s2).condition);
             } else if (staticStmt instanceof IfThenElseStmt) {
                 eva.accept(((IfThenElseStmt) staticStmt).condition);
-            }
-            if (symbCondVisitor.stackSlotNotFound) {
+            }*/
+            if (noStackSlotVars.size() > 0) {
                 StaticRegionException sre = new StaticRegionException("region contains condition that cannot be instantiated");
                 SSACFG cfg = ir.getControlFlowGraph();
                 if (startingBlock == null) throwException(sre, STATIC);
                 ISSABasicBlock bb = startingBlock;
                 boolean foundStoppingInsn = false;
-                while (symbCondVisitor.noStackSlotVars.size() > 0 && !foundStoppingInsn) {
+                while (noStackSlotVars.size() > 0 && !foundStoppingInsn) {
                     List<SSAInstruction> bbInsns = ((SSACFG.BasicBlock) bb).getAllInstructions();
                     reverse(bbInsns);
                     for (SSAInstruction ins : bbInsns) {
                         SSAToStatDefVisitor visitor =
-                                new SSAToStatDefVisitor(ir, symbCondVisitor.noStackSlotVars, (SlotParamTable) slotParamTable);
+                                new SSAToStatDefVisitor(ir, noStackSlotVars, (SlotParamTable) slotParamTable);
                         Stmt stmt = visitor.convert(ins);
                         foundStoppingInsn = visitor.foundStoppingInsn;
                         if (stmt != null) {
@@ -146,7 +147,7 @@ public class StaticRegion implements Region {
                     if (cfg.getPredNodeCount(bb) != 1) foundStoppingInsn = true;
                     else bb = (ISSABasicBlock) itr.next();
                 }
-                if (symbCondVisitor.noStackSlotVars.size() > 0) {
+                if (noStackSlotVars.size() > 0) {
                     throwException(sre, STATIC);
                 }
             }

@@ -8,6 +8,7 @@ import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SSAToStatIVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
@@ -19,6 +20,7 @@ import java.util.*;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.DONTKNOW;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.STATIC;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.compose;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.isConditionalBranch;
 import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUtil.isLoopStart;
 
@@ -165,6 +167,7 @@ public class CreateStaticRegions {
     private Map<ISSABasicBlock, Expression> thenCondition;
     private Map<ISSABasicBlock, ISSABasicBlock> thenSuccessor;
     private Map<ISSABasicBlock, ISSABasicBlock> elseSuccessor;
+    private Map<ISSABasicBlock, Stmt> thenConditionSetup;
 
     /**
      * For memoization, so we don't visit the same blocks over and over.
@@ -180,6 +183,7 @@ public class CreateStaticRegions {
         thenCondition = new HashMap<>();
         thenSuccessor = new HashMap<>();
         elseSuccessor = new HashMap<>();
+        thenConditionSetup = new HashMap<>();
         visitedBlocks = new HashSet<>();
         this.loops = loops;
         seenLoopStartSet = new HashMap<>();
@@ -371,11 +375,13 @@ public class CreateStaticRegions {
      * <p>
      * There are two ways to examine this case: we can
      */
-    private Expression createComplexIfCondition(ISSABasicBlock child,
-                                                ISSABasicBlock entry) throws StaticRegionException {
+    private Pair<Expression, Stmt> createComplexIfCondition(ISSABasicBlock child,
+//    private Expression createComplexIfCondition(ISSABasicBlock child,
+                                                            ISSABasicBlock entry) throws StaticRegionException {
         assert (child.getNumber() > entry.getNumber());
         SSACFG cfg = ir.getControlFlowGraph();
         Expression returnExpr = null;
+        Stmt setupStmt = null;
 
         for (ISSABasicBlock parent : cfg.getNormalPredecessors(child)) {
 
@@ -390,26 +396,36 @@ public class CreateStaticRegions {
             }
 
             if (!isConditionalBranch(parent)) {
-                throwException(new StaticRegionException("createComplexIfCondition: unconditional branch (continue or break)"), STATIC);
+                if (parent.getLastInstruction() instanceof SSAGetInstruction) {
+                    setupStmt = compose(setupStmt, new GetInstruction((SSAGetInstruction) parent.getLastInstruction()), false);
+                } else if (parent.getLastInstruction() instanceof SSAArrayLoadInstruction) {
+                    setupStmt = compose(setupStmt, new ArrayLoadInstruction((SSAArrayLoadInstruction) parent.getLastInstruction()), false);
+                } else
+                    throwException(new StaticRegionException("createComplexIfCondition: unconditional branch (continue or break)"), STATIC);
             } else if (parent != entry && SSAUtil.statefulBlock(parent)) {
                 throwException(new StaticRegionException("createComplexIfCondition: stateful condition"), STATIC);
             }
 
-            assert (child == Util.getTakenSuccessor(cfg, parent) ||
-                    child == Util.getNotTakenSuccessor(cfg, parent));
-
             Expression branchExpr;
-            Expression condExpr = SSAUtil.convertCondition(ir, SSAUtil.getLastBranchInstruction(parent));
-            if (child == Util.getNotTakenSuccessor(cfg, parent)) {
-                condExpr = new Operation(Operation.Operator.NOT, condExpr);
+            Expression condExpr = null;
+            if (isConditionalBranch(parent)) {
+                assert (child == Util.getTakenSuccessor(cfg, parent) ||
+                        child == Util.getNotTakenSuccessor(cfg, parent));
+                condExpr = SSAUtil.convertCondition(ir, SSAUtil.getLastBranchInstruction(parent));
+                if (child == Util.getNotTakenSuccessor(cfg, parent)) {
+                    condExpr = new Operation(Operation.Operator.NOT, condExpr);
+                }
             }
 
             if (parent == entry) {
                 branchExpr = condExpr;
             } else {
-                Expression parentExpr = createComplexIfCondition(parent, entry);
-                branchExpr = new Operation(Operation.Operator.AND, parentExpr, condExpr);
+                Pair<Expression, Stmt> parentExprStmt = createComplexIfCondition(parent, entry);
+                Expression parentExpr = parentExprStmt.getFirst();
+                setupStmt = compose(parentExprStmt.getSecond(), setupStmt, true);
+                branchExpr = condExpr != null ? new Operation(Operation.Operator.AND, parentExpr, condExpr) : parentExpr;
             }
+            assert branchExpr != null;
 
             if (returnExpr == null) {
                 returnExpr = branchExpr;
@@ -418,7 +434,7 @@ public class CreateStaticRegions {
             }
         }
         assert (returnExpr != null);
-        return returnExpr;
+        return new Pair<>(returnExpr, setupStmt);
     }
 
     /*
@@ -469,8 +485,9 @@ public class CreateStaticRegions {
         }
         this.thenSuccessor.put(entry, thenBlock);
         this.elseSuccessor.put(entry, elseBlock);
-        Expression cond = createComplexIfCondition(thenBlock, entry);
-        this.thenCondition.put(entry, cond);
+        Pair<Expression, Stmt> condExprStmt = createComplexIfCondition(thenBlock, entry);
+        this.thenCondition.put(entry, condExprStmt.getFirst());
+        this.thenConditionSetup.put(entry, condExprStmt.getSecond());
     }
 
     // precondition: terminus is the loop join.
@@ -515,7 +532,9 @@ public class CreateStaticRegions {
         }
         currentCondition.removeLast();
 
-        return new IfThenElseStmt(SSAUtil.getLastBranchInstruction(currentBlock), condExpr, thenStmt, elseStmt);
+        return compose(this.thenConditionSetup.get(currentBlock),
+                new IfThenElseStmt(SSAUtil.getLastBranchInstruction(currentBlock), condExpr, thenStmt, elseStmt),
+                false);
     }
 
 

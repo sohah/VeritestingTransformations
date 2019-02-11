@@ -12,6 +12,7 @@ import za.ac.sun.cs.green.expr.IntConstant;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.STATIC;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
@@ -21,13 +22,13 @@ import static gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.SSAUti
 
 public class SSAToStatDefVisitor implements SSAInstruction.IVisitor {
 
-    private final ArrayList<WalaVarExpr> noStackSlotVars;
+    private final HashSet<WalaVarExpr> noStackSlotVars;
     private final SlotParamTable slotParamTable;
     public boolean foundStoppingInsn = false;
     private Stmt veriStatement = null;
     private final IR ir;
 
-    public SSAToStatDefVisitor(IR ir, ArrayList<WalaVarExpr> noStackSlotVars, SlotParamTable slotParamTable) {
+    public SSAToStatDefVisitor(IR ir, HashSet<WalaVarExpr> noStackSlotVars, SlotParamTable slotParamTable) {
         this.noStackSlotVars = noStackSlotVars;
         this.ir = ir;
         this.slotParamTable = slotParamTable;
