@@ -294,7 +294,8 @@ public class CreateStaticRegions {
         Stmt stmt = SkipStmt.skip;
         for (SSAInstruction ins : currentBlock) {
             if ((ins instanceof SSAConditionalBranchInstruction) ||
-                    (ins instanceof SSAGotoInstruction)) { //Phi instructions should have been translated in attemptConditionalSubregion
+                    (ins instanceof SSAGotoInstruction) ||
+                    (ins instanceof SSAPhiInstruction)) { //Phi instructions should have been translated in attemptConditionalSubregion
                 // properly formed blocks will only have branches and gotos as the last instruction.
                 // We will handle branches in attemptSubregion.
             } else {
@@ -757,7 +758,11 @@ public class CreateStaticRegions {
             stmt = conjoin(stmt, attemptMethodSubregions(cfg, terminus, endingBlock, veritestingRegions));
         } else {// if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
             assert (cfg.getNormalSuccessors(currentBlock).size() == 1);
-            stmt = translateTruncatedFinalBlock(currentBlock);
+            if (phiBlock(currentBlock))
+                stmt = translateTruncatedFinalBlock(currentBlock);
+            else
+                stmt = translateInternalBlock(currentBlock);
+
             ISSABasicBlock nextBlock = cfg.getNormalSuccessors(currentBlock).iterator().next();
             this.blockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
 
@@ -778,6 +783,15 @@ public class CreateStaticRegions {
             }
         }
         return stmt;
+    }
+
+    private boolean phiBlock(ISSABasicBlock currentBlock) {
+        boolean hasPhi = false;
+        for (SSAInstruction ins : currentBlock) {
+            if (ins instanceof SSAPhiInstruction)
+                return hasPhi = true;
+        }
+        return hasPhi;
     }
 
 
