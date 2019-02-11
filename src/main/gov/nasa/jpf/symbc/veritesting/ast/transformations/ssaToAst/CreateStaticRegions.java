@@ -272,7 +272,7 @@ public class CreateStaticRegions {
                 new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
         Stmt stmt = SkipStmt.skip;
         for (SSAInstruction ins : currentBlock) {
-            if (!(ins instanceof SSAPhiInstruction) ||(ins instanceof SSAReturnInstruction))
+            if (!(ins instanceof SSAPhiInstruction) || (ins instanceof SSAReturnInstruction))
                 return stmt;
             else {
                 Stmt gamma = visitor.convert(ins);
@@ -284,12 +284,11 @@ public class CreateStaticRegions {
 
 
     /**
-     *
      * @param currentBlock
      * @return
      * @throws StaticRegionException
      */
-    private Stmt jitTranslateInternalBlock(ISSABasicBlock currentBlock) throws StaticRegionException {
+    private Stmt jitTranslateTruncatedConditionalBlock(ISSABasicBlock currentBlock) throws StaticRegionException {
         SSAToStatIVisitor visitor =
                 new SSAToStatIVisitor(ir, currentBlock, blockConditionMap, currentCondition);
         Stmt stmt = SkipStmt.skip;
@@ -739,9 +738,10 @@ public class CreateStaticRegions {
             return SkipStmt.skip;
         }
 
-        Stmt stmt = translateInternalBlock(currentBlock);
+        Stmt stmt; //= translateInternalBlock(currentBlock);
 
         if (cfg.getNormalSuccessors(currentBlock).size() == 2) {
+            stmt = jitTranslateTruncatedConditionalBlock(currentBlock);
             FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
             ISSABasicBlock terminus = finder.findMinConvergingNode();
             Stmt condStmt = attemptConditionalSubregion(cfg, currentBlock, terminus);
@@ -755,7 +755,9 @@ public class CreateStaticRegions {
 
             stmt = conjoin(stmt, condStmt);
             stmt = conjoin(stmt, attemptMethodSubregions(cfg, terminus, endingBlock, veritestingRegions));
-        } else if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
+        } else {// if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
+            assert (cfg.getNormalSuccessors(currentBlock).size() == 1);
+            stmt = translateTruncatedFinalBlock(currentBlock);
             ISSABasicBlock nextBlock = cfg.getNormalSuccessors(currentBlock).iterator().next();
             this.blockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
 
