@@ -23,3 +23,5 @@ symbolic.optimizechoices=false
 veritestingMode = 4
 performanceMode = false
 symbolic.lazy = true
+
+jitAnalysis = true

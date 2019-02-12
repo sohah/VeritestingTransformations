@@ -26,3 +26,5 @@ symbolic.lazy = true
 
 # makes JPF create BreakGenerator choice generators more often (each time a backward-jumping Goto is encountered after more than 50 insns)
 vm.max_transition_length = 50
+
+jitAnalysis = true
