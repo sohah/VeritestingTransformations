@@ -104,7 +104,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static int veritestRegionExpectedCount = -1;
     private static int instantiationLimit = -1;
     public static boolean simplify = true;
-    public static boolean jitAnalysis = true;
+    public static boolean jitAnalysis = false;
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
 
@@ -228,67 +228,19 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         String key = keyFromInstructionToExc(instructionToExecute);
 
         StatisticManager.instructionToExec = key;
-
-        if (jitAnalysis) {
-            try {
+        try {
+            if (jitAnalysis) {
                 if (isSymCond(ti, instructionToExecute) && !skipVeriRegions.contains(key) && isAllowedRegion(key)) {
                     thisHighOrdCount = 0;
                     StaticRegion staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
-                    if ((runMode != VeritestingMode.SPFCASES) && (runMode != VeritestingMode.EARLYRETURNS)) {
-                        // If region ends on a stack operand consuming instruction that isn't a store, then abort the region
-                        boolean isEndingInsnStackConsuming = isStackConsumingRegionEnd(staticRegion, instructionToExecute);
-                        // If region ends on a stack operand consuming instruction then the region should have a stack output
-                        if (isEndingInsnStackConsuming && staticRegion.stackOutput == null) {
-                            throwException(new StaticRegionException("Region ends on a stack-consuming instructions"), INSTANTIATION);
-                        }
-                        if (!isEndingInsnStackConsuming && staticRegion.stackOutput != null) {
-                            throwException(new StaticRegionException("Region with stack output ends on a non-stack-consuming instructions"), INSTANTIATION);
-                        }
-                        DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
-                        Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion, false);
-                        ++veritestRegionCount;
-                        ti.setNextPC(nextInstruction);
-                        statisticManager.updateVeriSuccForRegion(key);
-
-                        System.out.println("------------- Region was successfully veritested --------------- ");
-                    } else {
-                        runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
-                    }
+                    runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
                 } else
                     statisticManager.updateConcreteHitStatForRegion(key);
-            } catch (IllegalArgumentException e) {
-                statisticManager.updateSPFHitForRegion(key, e.getMessage());
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                updateSkipRegions(e.getMessage(), key);
-                return;
-            } catch (StaticRegionException sre) {
-                statisticManager.updateSPFHitForRegion(key, sre.getMessage());
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
-                updateSkipRegions(sre.getMessage(), key);
-                return;
-            } catch (VisitorException greenEx) {
-                statisticManager.updateSPFHitForRegion(key, greenEx.getMessage());
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + greenEx.getMessage() + "\n");
-                updateSkipRegions(greenEx.getMessage(), key);
-                return;
-            } catch (CloneNotSupportedException e) {
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                e.printStackTrace();
-                updateSkipRegions(e.getMessage(), key);
-                return;
-            } catch (Exception e) {
-                System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                e.printStackTrace();
-                updateSkipRegions(e.getMessage(), key);
-            }
-        } else
-
-        {
-            if (initializeTime) {
-                discoverRegions(ti); // static analysis to discover regions
-                initializeTime = false;
-            } else {
-                try {
+            } else { //not jitAnalysis
+                if (initializeTime) {
+                    discoverRegions(ti); // static analysis to discover regions
+                    initializeTime = false;
+                } else {
                     HashMap<String, StaticRegion> regionsMap = VeritestingMain.veriRegions;
                     StaticRegion staticRegion = regionsMap.get(key);
                     if ((staticRegion != null) && !(staticRegion.isMethodRegion) && !skipVeriRegions.contains(key) &&
@@ -296,61 +248,61 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         thisHighOrdCount = 0;
                         //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                         if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
-                            if ((runMode != VeritestingMode.SPFCASES) && (runMode != VeritestingMode.EARLYRETURNS)) {
-                                boolean isEndingInsnStackConsuming = isStackConsumingRegionEnd(staticRegion, instructionToExecute);
-                                // If region ends on a stack operand consuming instruction then the region should have a stack output
-                                if (isEndingInsnStackConsuming && staticRegion.stackOutput == null) {
-                                    throwException(new StaticRegionException("Region ends on a stack-consuming instructions"), INSTANTIATION);
-                                }
-                                if (!isEndingInsnStackConsuming && staticRegion.stackOutput != null) {
-                                    throwException(new StaticRegionException("Region with stack output ends on a non-stack-consuming instructions"), INSTANTIATION);
-                                }
-
-                                DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
-                                Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion, false);
-                                ++veritestRegionCount;
-                                ti.setNextPC(nextInstruction);
-                                statisticManager.updateVeriSuccForRegion(key);
-
-                                System.out.println("------------- Region was successfully veritested --------------- ");
-                            } else {
-                                runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
-                            }
+                            runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
                         } else
                             statisticManager.updateConcreteHitStatForRegion(key);
                     }
-                } catch (IllegalArgumentException e) {
-                    statisticManager.updateSPFHitForRegion(key, e.getMessage());
-                    System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                    updateSkipRegions(e.getMessage(), key);
-                    return;
-                } catch (InvalidClassFileException e) {
-                    statisticManager.updateSPFHitForRegion(key, e.getMessage());
-                    System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                    return;
-                } catch (StaticRegionException sre) {
-                    statisticManager.updateSPFHitForRegion(key, sre.getMessage());
-                    System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
-                    updateSkipRegions(sre.getMessage(), key);
-                    return;
-                } catch (VisitorException greenEx) {
-                    statisticManager.updateSPFHitForRegion(key, greenEx.getMessage());
-                    System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + greenEx.getMessage() + "\n");
-                    updateSkipRegions(greenEx.getMessage(), key);
-                    return;
-                } catch (CloneNotSupportedException e) {
-                    System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                    e.printStackTrace();
-                    updateSkipRegions(e.getMessage(), key);
-                    return;
-                } catch (Exception e) {
-                    System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
-                    e.printStackTrace();
-                    if (e.getMessage() != null) updateSkipRegions(e.getMessage(), key);
                 }
             }
+        } catch (IllegalArgumentException e) {
+            statisticManager.updateSPFHitForRegion(key, e.getMessage());
+            System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+            updateSkipRegions(e.getMessage(), key);
+            return;
+        } catch (StaticRegionException sre) {
+            statisticManager.updateSPFHitForRegion(key, sre.getMessage());
+            System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
+            updateSkipRegions(sre.getMessage(), key);
+            return;
+        } catch (VisitorException greenEx) {
+            statisticManager.updateSPFHitForRegion(key, greenEx.getMessage());
+            System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + greenEx.getMessage() + "\n");
+            updateSkipRegions(greenEx.getMessage(), key);
+            return;
+        } catch (CloneNotSupportedException e) {
+            System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+            e.printStackTrace();
+            updateSkipRegions(e.getMessage(), key);
+            return;
+        } catch (Exception e) {
+            System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
+            e.printStackTrace();
+            updateSkipRegions(e.getMessage(), key);
         }
+    }
 
+
+    private void runVeritestingWrapper(ThreadInfo ti, VM vm, StaticRegion staticRegion, Instruction instructionToExecute) throws Exception {
+        if ((runMode != VeritestingMode.SPFCASES) && (runMode != VeritestingMode.EARLYRETURNS)) {
+            boolean isEndingInsnStackConsuming = isStackConsumingRegionEnd(staticRegion, instructionToExecute);
+            // If region ends on a stack operand consuming instruction then the region should have a stack output
+            if (isEndingInsnStackConsuming && staticRegion.stackOutput == null) {
+                throwException(new StaticRegionException("Region ends on a stack-consuming instructions"), INSTANTIATION);
+            }
+            if (!isEndingInsnStackConsuming && staticRegion.stackOutput != null) {
+                throwException(new StaticRegionException("Region with stack output ends on a non-stack-consuming instructions"), INSTANTIATION);
+            }
+
+            DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
+            Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion, false);
+            ++veritestRegionCount;
+            ti.setNextPC(nextInstruction);
+            statisticManager.updateVeriSuccForRegion(key);
+
+            System.out.println("------------- Region was successfully veritested --------------- ");
+        } else {
+            runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
+        }
     }
 
     private String keyFromInstructionToExc(Instruction instructionToExecute) {

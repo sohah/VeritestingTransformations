@@ -12,8 +12,6 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SSAToStatIVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstMapVisitor;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor;
 import x10.wala.util.NatLoop;
 import za.ac.sun.cs.green.expr.*;
@@ -751,13 +749,22 @@ public class CreateStaticRegions {
         }
     }
 
-    public Stmt attemptMethodSubregions(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock, HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
+    /**
+     * This methods attempt to connect discover multi-path regions and connecting them to recover the method as well.
+     * @param cfg
+     * @param currentBlock
+     * @param endingBlock
+     * @param veritestingRegions
+     * @return
+     * @throws StaticRegionException
+     */
+    public Stmt attemptMethodAndMultiPathRegions(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock, HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
 
         if (currentBlock == endingBlock) {
             return SkipStmt.skip;
         }
 
-        Stmt stmt; //= translateInternalBlock(currentBlock);
+        Stmt stmt;
 
         if (cfg.getNormalSuccessors(currentBlock).size() == 2) {
             stmt = jitTranslateTruncatedConditionalBlock(currentBlock);
@@ -773,8 +780,8 @@ public class CreateStaticRegions {
             }
 
             stmt = conjoin(stmt, condStmt);
-            stmt = conjoin(stmt, attemptMethodSubregions(cfg, terminus, endingBlock, veritestingRegions));
-        } else {// if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
+            stmt = conjoin(stmt, attemptMethodAndMultiPathRegions(cfg, terminus, endingBlock, veritestingRegions));
+        } else {
             assert (cfg.getNormalSuccessors(currentBlock).size() == 1);
             if (phiBlock(currentBlock))
                 stmt = jitTranslateTruncatedFinalBlock(currentBlock);
@@ -797,7 +804,7 @@ public class CreateStaticRegions {
                         else seenLoopStartSet.put(nextBlock, 1);
                     }
                 }
-                stmt = conjoin(stmt, attemptMethodSubregions(cfg, nextBlock, endingBlock, veritestingRegions));
+                stmt = conjoin(stmt, attemptMethodAndMultiPathRegions(cfg, nextBlock, endingBlock, veritestingRegions));
             }
         }
         return stmt;
@@ -814,14 +821,14 @@ public class CreateStaticRegions {
 
 
     /**
-     * This class walks through method, attempting to find method regions veritesting regions
+     * This class walks through method, attempting to recover a method region and also recover all multi-path regions inside of it.
      */
     public void createStructuredRegion(HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
         reset();
         SSACFG cfg = ir.getControlFlowGraph();
 
         try {
-            Stmt s = attemptMethodSubregions(cfg, cfg.entry(), cfg.exit(), veritestingRegions);
+            Stmt s = attemptMethodAndMultiPathRegions(cfg, cfg.entry(), cfg.exit(), veritestingRegions);
             System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
             SSAInstruction[] insns = ir.getInstructions();
             //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
