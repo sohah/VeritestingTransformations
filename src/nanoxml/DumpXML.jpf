@@ -22,4 +22,4 @@ symbolic.optimizechoices=false
 symbolic.arrays = true
 maxStaticExplorationDepth = 3
 
-jitAnalysis = true
+jitAnalysis = false
