@@ -104,7 +104,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static int veritestRegionExpectedCount = -1;
     private static int instantiationLimit = -1;
     public static boolean simplify = true;
-    public static boolean jitAnalysis = false;
+    public static boolean jitAnalysis = true;
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
 

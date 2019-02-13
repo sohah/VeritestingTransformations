@@ -2,7 +2,7 @@ target=DumpXML
 classpath=${jpf-symbc}/build/nanoxml
 sourcepath=${jpf-symbc}/src/nanoxml
 #symbolic.method = DumpXML.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym)
-symbolic.method = DumpXML.mainProcess(sym#sym#sym#sym#con#con#con#con#con)
+symbolic.method = DumpXML.mainProcess(sym#sym#sym#sym#sym#sym#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100
 vm.storage.class=nil
@@ -22,4 +22,4 @@ symbolic.optimizechoices=false
 symbolic.arrays = true
 maxStaticExplorationDepth = 3
 
-jitAnalysis = false
+jitAnalysis = true
