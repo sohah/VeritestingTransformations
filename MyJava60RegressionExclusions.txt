@@ -4,6 +4,7 @@ java\/security\/.*
 java\/rmi\/.*
 java\/time\/.*
 java\/math\/.*
+java\/util\/.*
 apple\/.*
 java\/text\/.*
 java\/lang\/management\/.*

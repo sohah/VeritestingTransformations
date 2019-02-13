@@ -20,3 +20,5 @@ listener = .symbc.VeritestingListener
 veritestingMode = 5
 performanceMode = false
 symbolic.lazy = true
+
+jitAnalysis = true
