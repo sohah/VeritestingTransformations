@@ -293,7 +293,8 @@ public class SpfUtil {
             throw new StaticRegionException("region end instruction cannot be found");
         }
         Instruction ret = ins;
-        if (ret.getMnemonic().contains("store")) return false; //TODO double-check what to return here
+        if (ret.getMnemonic().contains("store"))
+            return false; //TODO double-check what to return here, why does this keep happening with WBS?
         // https://en.wikipedia.org/wiki/Java_bytecode_instruction_listings
         int bytecode = ret.getByteCode();
         if (bytecode <= 0x2d) return false;

@@ -1,7 +1,7 @@
 target=printTokens2
 classpath=${jpf-symbc}/build/printTokens2_3
 sourcepath=${jpf-symbc}/src/printTokens2_3
-symbolic.method = printTokens2.mainProcess(sym#sym#con#con#con#con#con#con)
+symbolic.method = printTokens2.mainProcess(sym#sym#sym#sym#con#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100
 vm.storage.class=nil
