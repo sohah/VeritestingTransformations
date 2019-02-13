@@ -781,8 +781,7 @@ public class CreateStaticRegions {
 
             stmt = conjoin(stmt, condStmt);
             stmt = conjoin(stmt, attemptMethodAndMultiPathRegions(cfg, terminus, endingBlock, veritestingRegions));
-        } else {
-            assert (cfg.getNormalSuccessors(currentBlock).size() == 1);
+        } else if(cfg.getNormalSuccessors(currentBlock).size() == 1) {
             if (phiBlock(currentBlock))
                 stmt = jitTranslateTruncatedFinalBlock(currentBlock);
             else
@@ -806,7 +805,8 @@ public class CreateStaticRegions {
                 }
                 stmt = conjoin(stmt, attemptMethodAndMultiPathRegions(cfg, nextBlock, endingBlock, veritestingRegions));
             }
-        }
+        } else
+            stmt = translateInternalBlock(currentBlock);
         return stmt;
     }
 
