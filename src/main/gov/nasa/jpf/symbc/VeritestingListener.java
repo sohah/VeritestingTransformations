@@ -1,27 +1,7 @@
-/*
- * Copyright (C) 2014, United States Government, as represented by the
- * Administrator of the National Aeronautics and Space Administration.
- * All rights reserved.
- *
- * Symbolic Pathfinder (jpf-symbc) is licensed under the Apache License, 
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- * 
- *        http://www.apache.org/licenses/LICENSE-2.0. 
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and 
- * limitations under the License.
- */
-
-
 package gov.nasa.jpf.symbc;
 
 
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
@@ -105,6 +85,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static int instantiationLimit = -1;
     public static boolean simplify = true;
     public static boolean jitAnalysis = true;
+    private static int timeout_mins = -1;
+    private static long npaths = 0;
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
 
@@ -199,6 +181,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
             StatisticManager.veritestingRunning = true;
             jpf.addPublisherExtension(ConsolePublisher.class, this);
+            if (System.getenv("TIMEOUT_MINS") != null) {
+                timeout_mins = Integer.parseInt(System.getenv("TIMEOUT_MINS"));
+            }
         }
     }
 
@@ -215,6 +200,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      * @param instructionToExecute instruction to be executed.
      */
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
+        if (timeout_mins != -1) {
+            long runningTimeNsecs = System.nanoTime() - runStartTime;
+            if (TimeUnit.NANOSECONDS.toSeconds(runningTimeNsecs) > (timeout_mins*60)-10) {
+                System.out.println("Metrics Vector:");
+                System.out.println(getMetricsVector(runningTimeNsecs));
+                timeout_mins = -1;
+            }
+        }
         StackFrame curr = ti.getTopFrame();
 //        runAdapterSynth(ti, curr);
         if (runMode == VeritestingMode.VANILLASPF) return;
@@ -397,6 +390,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 ti.setNextPC(nextInstruction);
             }
         }
+    }
+
+    @Override
+    public void threadTerminated(VM vm, ThreadInfo terminatedThread) {
+        System.out.println("threadTerminated");
+        npaths++;
+        super.threadTerminated(vm, terminatedThread);
     }
 
     @Override
@@ -761,9 +761,16 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
 
         assert veritestRegionCount == statisticManager.getSuccInstantiations();
-        pw.println((TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + TimeUnit.NANOSECONDS.toMillis(dynRunTime)) + "," +
-                TimeUnit.NANOSECONDS.toMillis(staticAnalysisDur) + "," +
+        pw.println("Metrics Vector:");
+        pw.println(getMetricsVector(dynRunTime));
+
+    }
+
+    private String getMetricsVector(long dynRunTime) {
+        return (TimeUnit.NANOSECONDS.toMillis((jitAnalysis ? JITAnalysis.staticAnalysisDur : staticAnalysisDur)) + TimeUnit.NANOSECONDS.toMillis(dynRunTime)) + "," +
+                TimeUnit.NANOSECONDS.toMillis(jitAnalysis ? JITAnalysis.staticAnalysisDur : staticAnalysisDur) + "," +
                 TimeUnit.NANOSECONDS.toMillis(dynRunTime) + "," +
+                npaths + "," +
                 solverCount + "," +
                 TimeUnit.NANOSECONDS.toMillis(totalSolverTime) + "," +
                 TimeUnit.NANOSECONDS.toMillis(parseTime) + "," +
@@ -786,7 +793,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 // static analysis metrics
                 interestingRegionCount + "," + numMethodSummaries + "," + maxBranchDepth + "," + maxExecPathCount + "," + avgExecPathCount + "," +
                 // exception metrics
-                staticPhaseEx + "," + instPhaseEx + "," + unknownPhaseEx);
-
+                staticPhaseEx + "," + instPhaseEx + "," + unknownPhaseEx;
     }
 }
