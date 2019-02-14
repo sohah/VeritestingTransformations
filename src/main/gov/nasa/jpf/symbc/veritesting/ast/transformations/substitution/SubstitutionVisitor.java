@@ -206,7 +206,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                 } catch (StaticRegionException e) {
                     if (firstException == null) {
                         sre = e;
-                        return c;
+                        return newC;
                     }
                 }
                 }
