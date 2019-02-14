@@ -24,3 +24,5 @@ exclusionsFile=${jpf-symbc}/src/apachecli/MyJava60RegressionExclusions.txt
 
 jitAnalysis = true
 symbolic.lazy = true
+
+symbolic.lazy = true
