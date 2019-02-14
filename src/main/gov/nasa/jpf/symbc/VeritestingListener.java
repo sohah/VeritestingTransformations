@@ -84,7 +84,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static int veritestRegionExpectedCount = -1;
     private static int instantiationLimit = -1;
     public static boolean simplify = true;
-    public static boolean jitAnalysis = true;
+    public static boolean jitAnalysis = false;
     private static int timeout_mins = -1;
     private static long npaths = 0;
 
