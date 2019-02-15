@@ -9,7 +9,6 @@ import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.dominators.NumberedDominators;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
-import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.SSAToStatIVisitor;
@@ -159,7 +158,9 @@ public class CreateStaticRegions {
      */
     private Map<PhiEdge, List<PhiCondition>> blockConditionMap;
 
-    Deque<PhiCondition> insertedCurrentCondition = new LinkedList();
+    Deque<PhiCondition> jitCurrentCondition = new LinkedList();
+    private Set<ISSABasicBlock> jitVisitedBlocks = new HashSet<>();
+
 
     /**
      * Keeps track of the current conditions/depth while visiting nodes in the graph.
@@ -204,6 +205,7 @@ public class CreateStaticRegions {
     private void reset() {
         blockConditionMap = new HashMap<>();
         currentCondition = new LinkedList<>();
+        jitVisitedBlocks = new HashSet<>();
     }
 
     public boolean isBranch(SSACFG cfg, ISSABasicBlock block) {
@@ -249,7 +251,7 @@ public class CreateStaticRegions {
         return stmt;
     }
 
-    private Stmt jitTranslateTruncatedFinalBlock2(ISSABasicBlock currentBlock, Map<PhiEdge, List<PhiCondition>>insertedBlockConditionMap, Deque<PhiCondition> insertedCurrentCondition) throws StaticRegionException {
+    private Stmt jitTranslateTruncatedFinalBlock2(ISSABasicBlock currentBlock, Map<PhiEdge, List<PhiCondition>> insertedBlockConditionMap, Deque<PhiCondition> insertedCurrentCondition) throws StaticRegionException {
         SSAToStatIVisitor visitor =
                 new SSAToStatIVisitor(ir, currentBlock, insertedBlockConditionMap, insertedCurrentCondition);
         Stmt stmt = SkipStmt.skip;
@@ -668,6 +670,9 @@ public class CreateStaticRegions {
         ISSABasicBlock thenBlock = thenSuccessor.get(currentBlock);
         ISSABasicBlock elseBlock = elseSuccessor.get(currentBlock);
 
+        this.jitVisitedBlocks.add(thenBlock);
+        this.jitVisitedBlocks.add(elseBlock);
+
         Stmt thenStmt, elseStmt;
         currentCondition.addLast(new PhiCondition(PhiCondition.Branch.Then, condExpr));
         this.blockConditionMap.put(new PhiEdge(currentBlock, thenBlock), new ArrayList(currentCondition));
@@ -723,13 +728,13 @@ public class CreateStaticRegions {
      */
     public Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> jitAttemptSubregionRec(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
 
-        insertedCurrentCondition = new LinkedList<>(currentCondition);
-        insertedCurrentCondition.removeLast();
+        jitCurrentCondition = new LinkedList<>(currentCondition);
+        jitCurrentCondition.removeLast();
 
-        Map<PhiEdge, List<PhiCondition>> insertedBlockConditionMap = new HashMap<>();
+        Map<PhiEdge, List<PhiCondition>> jitBlockConditionMap = new HashMap<>();
 
         if (currentBlock == endingBlock) {
-            return new Pair(SkipStmt.skip, insertedBlockConditionMap);
+            return new Pair(SkipStmt.skip, jitBlockConditionMap);
         }
 
         Stmt stmt = translateInternalBlock(currentBlock);
@@ -738,10 +743,10 @@ public class CreateStaticRegions {
 
             FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
             ISSABasicBlock terminus = finder.findMinConvergingNode();
-            Stmt condStmt = jitConditionalBranch(cfg, currentBlock, terminus, insertedBlockConditionMap);
+            Stmt condStmt = jitConditionalBranch(cfg, currentBlock, terminus, jitBlockConditionMap);
 
             stmt = conjoin(stmt, condStmt);
-            Stmt partialGammaStmt = jitTranslateTruncatedFinalBlock2(terminus, insertedBlockConditionMap, insertedCurrentCondition);
+            Stmt partialGammaStmt = jitTranslateTruncatedFinalBlock2(terminus, jitBlockConditionMap, jitCurrentCondition);
             int endIns;
 
             try {
@@ -756,13 +761,13 @@ public class CreateStaticRegions {
 
             Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = jitAttemptSubregionRec(cfg, terminus, endingBlock);
             Stmt subRegStmt = stmtMapPair.getFirst();
-            stmt = conjoin(stmt,subRegStmt );
-            insertedBlockConditionMap.putAll(stmtMapPair.getSecond());
+            stmt = conjoin(stmt, subRegStmt);
+            jitBlockConditionMap.putAll(stmtMapPair.getSecond());
 
         } else if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
             ISSABasicBlock nextBlock = cfg.getNormalSuccessors(currentBlock).iterator().next();
             this.blockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
-            insertedBlockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
+            jitBlockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
             if (nextBlock.getNumber() < endingBlock.getNumber()) {
                 if (isLoopStart(loops, nextBlock)) {
                     // Not sure why, but if we see the beginning of a loop more than twice, we're seeing a infinite loop.
@@ -778,10 +783,10 @@ public class CreateStaticRegions {
                 }
                 Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = jitAttemptSubregionRec(cfg, nextBlock, endingBlock);
                 stmt = conjoin(stmt, stmtMapPair.getFirst());
-                insertedBlockConditionMap.putAll(stmtMapPair.getSecond());
+                jitBlockConditionMap.putAll(stmtMapPair.getSecond());
             }
         }
-        return new Pair(stmt, insertedBlockConditionMap);
+        return new Pair(stmt, jitBlockConditionMap);
     }
 
     // precondition: endingBlock is the terminus of the loop
@@ -930,6 +935,9 @@ public class CreateStaticRegions {
 
         if (cfg.getNormalSuccessors(currentBlock).size() == 2) {
             stmt = jitTranslateTruncatedConditionalBlock(currentBlock);
+
+            reset();
+
             FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
             ISSABasicBlock terminus = finder.findMinConvergingNode();
             Stmt condStmt = jitAttemptConditionalSubregion(cfg, currentBlock, terminus);
@@ -941,7 +949,9 @@ public class CreateStaticRegions {
                 throw new StaticRegionException("unable to create static region:" + e.getMessage());
             }
 
+            populateMissedRegions(cfg, currentBlock, terminus);
             stmt = conjoin(stmt, condStmt);
+
             stmt = conjoin(stmt, attemptMethodAndMultiPathRegions(cfg, terminus, endingBlock));
         } else if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
             if (phiBlock(currentBlock))
@@ -970,6 +980,28 @@ public class CreateStaticRegions {
         } else
             stmt = translateInternalBlock(currentBlock);
         return stmt;
+    }
+
+    private void populateMissedRegions(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
+        ISSABasicBlock thenBlock = Util.getTakenSuccessor(cfg, currentBlock);
+        ISSABasicBlock elseBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
+
+        ISSABasicBlock[] candidateBlocks = {thenBlock, elseBlock};
+        for (int i = 0; i < candidateBlocks.length; i++) {
+            if (!jitVisitedBlocks.contains(candidateBlocks[i]) && isBranch(cfg, currentBlock)) {
+                reset();
+                FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, candidateBlocks[i], endingBlock);
+                ISSABasicBlock terminus = finder.findMinConvergingNode();
+                Stmt condStmt = jitAttemptConditionalSubregion(cfg, candidateBlocks[i], terminus);
+                int endIns;
+                try {
+                    endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
+                    veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, candidateBlocks[i]), new StaticRegion(condStmt, ir, false, endIns, currentBlock, null));
+                } catch (InvalidClassFileException e) {
+                    throw new StaticRegionException("unable to create static region:" + e.getMessage());
+                }
+            }
+        }
     }
 
     private boolean phiBlock(ISSABasicBlock currentBlock) {
