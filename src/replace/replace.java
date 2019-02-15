@@ -61,10 +61,10 @@ public class replace {
 		patPara[2] = '\0';
 		char[] pat = new char[patLen];
 		int patResult = makepat(patPara, pat);
-//		if(patResult <= 0){
-//			System.out.println("Challege: illegal pattern!");
-//			return new char[]{};
-//		}
+		if(patResult <= 0){
+			System.out.println("Challege: illegal pattern!");
+			return new char[]{};
+		}
 		//
 		char[] subPara = new char[subParaLen];
 		subPara[0] = i2;
@@ -73,10 +73,10 @@ public class replace {
 //		subPara[3] = i5;
 		subPara[2] = '\0';
 		char[] sub = new char[subLen];
-//		int subResult = makesub(subPara, sub);
-//		if(subResult <= 0){
-//			System.out.println("Challege: illegal sub");
-//		}
+		int subResult = makesub(subPara, sub);
+		if(subResult <= 0){
+			System.out.println("Challege: illegal sub");
+		}
 		//
 		char[] str = new char[strLen];
 		str[0] = i4;
@@ -86,7 +86,7 @@ public class replace {
 */
 		str[1] = '\0';
 		//
-//		change(str, pat, sub);
+		change(str, pat, sub);
 		for (int i=0; i < printBuf.length; i++) printBuf[i] = '0';
 		char[] retChar = new char[pat.length + sub.length + str.length + printBuf.length];
 		for (int i=0; i < printBuf.length; i++) printBuf[i] = '0';

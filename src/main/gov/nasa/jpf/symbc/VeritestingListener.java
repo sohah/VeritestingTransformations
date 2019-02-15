@@ -277,14 +277,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     private void runVeritestingWrapper(ThreadInfo ti, VM vm, StaticRegion staticRegion, Instruction instructionToExecute) throws Exception {
         if ((runMode != VeritestingMode.SPFCASES) && (runMode != VeritestingMode.EARLYRETURNS)) {
-            boolean isEndingInsnStackConsuming = isStackConsumingRegionEnd(staticRegion, instructionToExecute);
-            // If region ends on a stack operand consuming instruction then the region should have a stack output
-            if (isEndingInsnStackConsuming && staticRegion.stackOutput == null) {
-                throwException(new StaticRegionException("Region ends on a stack-consuming instructions"), INSTANTIATION);
-            }
-            if (!isEndingInsnStackConsuming && staticRegion.stackOutput != null) {
-                throwException(new StaticRegionException("Region with stack output ends on a non-stack-consuming instructions"), INSTANTIATION);
-            }
+            isRegionEndOk(staticRegion, instructionToExecute);
 
             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
             Instruction nextInstruction = setupSPF(ti, instructionToExecute, dynRegion, false);
@@ -294,7 +287,19 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
             System.out.println("------------- Region was successfully veritested --------------- ");
         } else {
+            isRegionEndOk(staticRegion, instructionToExecute);
             runVeritestingWithSPF(ti, vm, instructionToExecute, staticRegion, key);
+        }
+    }
+
+    private void isRegionEndOk(StaticRegion staticRegion, Instruction instructionToExecute) throws StaticRegionException {
+        boolean isEndingInsnStackConsuming = isStackConsumingRegionEnd(staticRegion, instructionToExecute);
+        // If region ends on a stack operand consuming instruction then the region should have a stack output
+        if (isEndingInsnStackConsuming && staticRegion.stackOutput == null) {
+            throwException(new StaticRegionException("Region ends on a stack-consuming instructions"), INSTANTIATION);
+        }
+        if (!isEndingInsnStackConsuming && staticRegion.stackOutput != null) {
+            throwException(new StaticRegionException("Region with stack output ends on a non-stack-consuming instruction"), INSTANTIATION);
         }
     }
 
