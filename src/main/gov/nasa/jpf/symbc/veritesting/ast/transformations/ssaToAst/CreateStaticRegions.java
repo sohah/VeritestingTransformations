@@ -162,6 +162,7 @@ public class CreateStaticRegions {
     private Set<ISSABasicBlock> jitVisitedBlocks = new HashSet<>();
 
 
+
     /**
      * Keeps track of the current conditions/depth while visiting nodes in the graph.
      */
@@ -665,6 +666,8 @@ public class CreateStaticRegions {
             throwException(new StaticRegionException("conditionalBranch: no conditional branch!"), STATIC);
         }
 
+        jitVisitedBlocks.add(currentBlock);
+
         findConditionalSuccessors(currentBlock, terminus);
         Expression condExpr = thenCondition.get(currentBlock);
         ISSABasicBlock thenBlock = thenSuccessor.get(currentBlock);
@@ -672,11 +675,6 @@ public class CreateStaticRegions {
 
         ISSABasicBlock actualElseBlock = Util.getTakenSuccessor(cfg, currentBlock);
         ISSABasicBlock actualThenBlock = Util.getNotTakenSuccessor(cfg, currentBlock);
-        if (!thenBlock.equals(actualThenBlock))
-            populateMissedRegions(cfg, actualThenBlock, terminus);
-
-        if (!elseBlock.equals(actualElseBlock))
-            populateMissedRegions(cfg, actualElseBlock, terminus);
 
         Stmt thenStmt, elseStmt;
         currentCondition.addLast(new PhiCondition(PhiCondition.Branch.Then, condExpr));
@@ -708,6 +706,12 @@ public class CreateStaticRegions {
         Stmt returnStmt = compose(this.thenConditionSetup.get(currentBlock),
                 new IfThenElseStmt(SSAUtil.getLastBranchInstruction(currentBlock), condExpr, thenStmt, elseStmt),
                 false);
+
+        if (!thenBlock.equals(actualThenBlock))
+            populateMissedRegions(cfg, actualThenBlock, terminus);
+
+        if (!elseBlock.equals(actualElseBlock))
+            populateMissedRegions(cfg, actualElseBlock, terminus);
 
         return returnStmt;
 
@@ -748,7 +752,7 @@ public class CreateStaticRegions {
 
             FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
             ISSABasicBlock terminus = finder.findMinConvergingNode();
-            //populateMissedRegions2(cfg, currentBlock, terminus, new HashMap<>(jitBlockConditionMap));
+
             Stmt condStmt = jitConditionalBranch(cfg, currentBlock, terminus, jitBlockConditionMap);
 
             stmt = conjoin(stmt, condStmt);
