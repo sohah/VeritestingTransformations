@@ -20,7 +20,7 @@ vm.storage.class=nil
 # instruct jpf not to stop at first error
 search.multiple_errors=true
 
-veritestingMode=3
+veritestingMode=2
 performanceMode = true
 
 symbolic.dp=z3bitvectorinc
@@ -31,4 +31,4 @@ symbolic.arrays = true
 maxStaticExplorationDepth = 3
 symbolic.lazy = true
 
-jitAnalysis = true
+jitAnalysis = false
