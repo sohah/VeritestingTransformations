@@ -550,6 +550,101 @@ public class CreateStaticRegions {
         this.thenConditionSetup.put(entry, condExprStmt.getSecond());
     }
 
+    /**
+     * Translates from current block but does not include the ending block.
+     *
+     * @param cfg          Control flow graph.
+     * @param currentBlock Current block
+     * @param endingBlock  End block, this is not included in this translation.
+     * @return a statement that represents this part of cfg in RangerIR.
+     * @throws StaticRegionException
+     */
+    public Stmt attemptSubregionRec(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
+
+        if (currentBlock == endingBlock) {
+            return SkipStmt.skip;
+        }
+
+        Stmt stmt = translateInternalBlock(currentBlock);
+
+        if (cfg.getNormalSuccessors(currentBlock).size() == 2) {
+            FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
+            ISSABasicBlock terminus = finder.findMinConvergingNode();
+            Stmt condStmt = conditionalBranch(cfg, currentBlock, terminus);
+
+            stmt = conjoin(stmt, condStmt);
+            stmt = conjoin(stmt, attemptSubregionRec(cfg, terminus, endingBlock));
+        } else if (cfg.getNormalSuccessors(currentBlock).size() == 1) {
+            ISSABasicBlock nextBlock = cfg.getNormalSuccessors(currentBlock).iterator().next();
+            this.blockConditionMap.put(new PhiEdge(currentBlock, nextBlock), new ArrayList(currentCondition));
+
+            if (nextBlock.getNumber() < endingBlock.getNumber()) {
+                if (isLoopStart(loops, nextBlock)) {
+                    // Not sure why, but if we see the beginning of a loop more than twice, we're seeing a infinite loop.
+                    // This check correctly detects infinite loops in Pad.main() and
+                    // java.lang.ref.Reference$ReferenceHandler.run() while not classifying any other loops as infinite loops.
+                    if (seenLoopStartSet.containsKey(nextBlock) && seenLoopStartSet.get(nextBlock) > 2)
+                        throwException(new StaticRegionException(currentBlock.toString() + " is the beginning of an infinite loop"), STATIC);
+                    else {
+                        if (seenLoopStartSet.containsKey(nextBlock))
+                            seenLoopStartSet.put(nextBlock, seenLoopStartSet.get(nextBlock) + 1);
+                        else seenLoopStartSet.put(nextBlock, 1);
+                    }
+                }
+                stmt = conjoin(stmt, attemptSubregionRec(cfg, nextBlock, endingBlock));
+            }
+        }
+        return stmt;
+    }
+
+
+    /**
+     * Attempts to translate a conditional part of the cfg to IfThenElse statement in RangerIR.
+     *
+     * @param cfg          Current control flow graph.
+     * @param currentBlock current block
+     * @param terminus     End block.
+     * @return A RangerIR IfThenElse statement.
+     * @throws StaticRegionException
+     */
+    private Stmt conditionalBranch(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock terminus)
+            throws StaticRegionException {
+
+        if (!isConditionalBranch(currentBlock)) {
+            throwException(new StaticRegionException("conditionalBranch: no conditional branch!"), STATIC);
+        }
+
+        findConditionalSuccessors(currentBlock, terminus);
+        Expression condExpr = thenCondition.get(currentBlock);
+        ISSABasicBlock thenBlock = thenSuccessor.get(currentBlock);
+        ISSABasicBlock elseBlock = elseSuccessor.get(currentBlock);
+
+        Stmt thenStmt, elseStmt;
+        currentCondition.addLast(new PhiCondition(PhiCondition.Branch.Then, condExpr));
+        this.blockConditionMap.put(new PhiEdge(currentBlock, thenBlock), new ArrayList(currentCondition));
+        if (thenBlock.getNumber() < terminus.getNumber()) {
+            thenStmt = attemptSubregionRec(cfg, thenBlock, terminus);
+        } else {
+            thenStmt = SkipStmt.skip;
+        }
+        currentCondition.removeLast();
+
+        currentCondition.addLast(new PhiCondition(PhiCondition.Branch.Else, condExpr));
+        this.blockConditionMap.put(new PhiEdge(currentBlock, elseBlock), new ArrayList(currentCondition));
+        if (elseBlock.getNumber() < terminus.getNumber()) {
+            elseStmt = attemptSubregionRec(cfg, elseBlock, terminus);
+        } else {
+            elseStmt = SkipStmt.skip;
+        }
+        currentCondition.removeLast();
+        Stmt returnStmt = compose(this.thenConditionSetup.get(currentBlock),
+                new IfThenElseStmt(SSAUtil.getLastBranchInstruction(currentBlock), condExpr, thenStmt, elseStmt),
+                false);
+
+        return returnStmt;
+    }
+
+
     // precondition: terminus is the loop join.
 
     /**
@@ -561,7 +656,7 @@ public class CreateStaticRegions {
      * @return A RangerIR IfThenElse statement.
      * @throws StaticRegionException
      */
-    private Stmt conditionalBranch(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock terminus, Map<PhiEdge, List<PhiCondition>> insertedBlockConditionMap)
+    private Stmt jitConditionalBranch(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock terminus, Map<PhiEdge, List<PhiCondition>> insertedBlockConditionMap)
             throws StaticRegionException {
 
         if (!isConditionalBranch(currentBlock)) {
@@ -579,7 +674,7 @@ public class CreateStaticRegions {
         insertedBlockConditionMap.put(new PhiEdge(currentBlock, thenBlock), new ArrayList(currentCondition));
 
         if (thenBlock.getNumber() < terminus.getNumber()) {
-            Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = attemptSubregionRec(cfg, thenBlock, terminus);
+            Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = jitAttemptSubregionRec(cfg, thenBlock, terminus);
             thenStmt = stmtMapPair.getFirst();
             insertedBlockConditionMap.putAll(stmtMapPair.getSecond());
         } else {
@@ -592,7 +687,7 @@ public class CreateStaticRegions {
         insertedBlockConditionMap.put(new PhiEdge(currentBlock, elseBlock), new ArrayList(currentCondition));
 
         if (elseBlock.getNumber() < terminus.getNumber()) {
-            Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = attemptSubregionRec(cfg, elseBlock, terminus);
+            Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = jitAttemptSubregionRec(cfg, elseBlock, terminus);
             elseStmt = stmtMapPair.getFirst();
             insertedBlockConditionMap.putAll(stmtMapPair.getSecond());
         } else {
@@ -626,7 +721,7 @@ public class CreateStaticRegions {
      * @return a statement that represents this part of cfg in RangerIR.
      * @throws StaticRegionException
      */
-    public Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> attemptSubregionRec(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
+    public Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> jitAttemptSubregionRec(SSACFG cfg, ISSABasicBlock currentBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
 
         insertedCurrentCondition = new LinkedList<>(currentCondition);
         insertedCurrentCondition.removeLast();
@@ -643,20 +738,23 @@ public class CreateStaticRegions {
 
             FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
             ISSABasicBlock terminus = finder.findMinConvergingNode();
-            Stmt condStmt = conditionalBranch(cfg, currentBlock, terminus, insertedBlockConditionMap);
+            Stmt condStmt = jitConditionalBranch(cfg, currentBlock, terminus, insertedBlockConditionMap);
 
             stmt = conjoin(stmt, condStmt);
-            Stmt trunk2 = jitTranslateTruncatedFinalBlock2(terminus, insertedBlockConditionMap, insertedCurrentCondition);
+            Stmt partialGammaStmt = jitTranslateTruncatedFinalBlock2(terminus, insertedBlockConditionMap, insertedCurrentCondition);
             int endIns;
 
             try {
                 endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
-                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(conjoin(stmt,trunk2), ir, false, endIns, currentBlock, null));
+                Stmt s = conjoin(stmt, partialGammaStmt);
+                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns, currentBlock, null));
+                System.out.println("Subregion" + System.lineSeparator() + PrettyPrintVisitor.print(s));
+
             } catch (InvalidClassFileException e) {
                 System.out.println("Unable to create subregion.  Reason: " + e.toString());
             }
 
-            Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = attemptSubregionRec(cfg, terminus, endingBlock);
+            Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = jitAttemptSubregionRec(cfg, terminus, endingBlock);
             Stmt subRegStmt = stmtMapPair.getFirst();
             stmt = conjoin(stmt,subRegStmt );
             insertedBlockConditionMap.putAll(stmtMapPair.getSecond());
@@ -678,7 +776,7 @@ public class CreateStaticRegions {
                         else seenLoopStartSet.put(nextBlock, 1);
                     }
                 }
-                Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = attemptSubregionRec(cfg, nextBlock, endingBlock);
+                Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = jitAttemptSubregionRec(cfg, nextBlock, endingBlock);
                 stmt = conjoin(stmt, stmtMapPair.getFirst());
                 insertedBlockConditionMap.putAll(stmtMapPair.getSecond());
             }
@@ -700,7 +798,18 @@ public class CreateStaticRegions {
     private Stmt attemptConditionalSubregion(SSACFG cfg, ISSABasicBlock startingBlock, ISSABasicBlock terminus) throws StaticRegionException {
 
         assert (isBranch(cfg, startingBlock));
-        Stmt stmt = conditionalBranch(cfg, startingBlock, terminus, new HashMap<>());
+        Stmt stmt = conditionalBranch(cfg, startingBlock, terminus);
+        //if(VeritestingListener.jitAnalysis)
+//            stmt = conjoin(stmt, jitTranslateTruncatedFinalBlock(terminus));
+//        else
+        stmt = conjoin(stmt, translateTruncatedFinalBlock(terminus));
+        return stmt;
+    }
+
+    private Stmt jitAttemptConditionalSubregion(SSACFG cfg, ISSABasicBlock startingBlock, ISSABasicBlock terminus) throws StaticRegionException {
+
+        assert (isBranch(cfg, startingBlock));
+        Stmt stmt = jitConditionalBranch(cfg, startingBlock, terminus, new HashMap<>());
         //if(VeritestingListener.jitAnalysis)
 //            stmt = conjoin(stmt, jitTranslateTruncatedFinalBlock(terminus));
 //        else
@@ -718,7 +827,7 @@ public class CreateStaticRegions {
      * @throws StaticRegionException
      */
     private Stmt attemptMethodSubregion(SSACFG cfg, ISSABasicBlock startingBlock, ISSABasicBlock endingBlock) throws StaticRegionException {
-        Stmt stmt = attemptSubregionRec(cfg, startingBlock, endingBlock).getFirst();
+        Stmt stmt = attemptSubregionRec(cfg, startingBlock, endingBlock);
         stmt = conjoin(stmt, translateInternalBlock(endingBlock));
         return stmt;
     }
@@ -823,7 +932,7 @@ public class CreateStaticRegions {
             stmt = jitTranslateTruncatedConditionalBlock(currentBlock);
             FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
             ISSABasicBlock terminus = finder.findMinConvergingNode();
-            Stmt condStmt = attemptConditionalSubregion(cfg, currentBlock, terminus);
+            Stmt condStmt = jitAttemptConditionalSubregion(cfg, currentBlock, terminus);
             int endIns;
             try {
                 endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
