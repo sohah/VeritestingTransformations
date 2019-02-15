@@ -28,3 +28,4 @@ listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.Increme
 symbolic.optimizechoices=false
 
 jitAnalysis = false
+maxStaticExplorationDepth = 3

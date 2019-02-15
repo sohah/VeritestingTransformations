@@ -114,9 +114,6 @@ public class VeritestingMain {
                 startAnalysis(getPackageName(_className), _className, signature);
             }
 
-            //Return if not in highOrder mode or higher
-            if (VeritestingListener.veritestingMode <= 2) return;
-
             for (String methodSummaryClassName : methodSummaryClassNames) {
                 Class cAdditional;
                 try {
