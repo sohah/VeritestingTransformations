@@ -83,7 +83,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static int veritestRegionExpectedCount = -1;
     private static int instantiationLimit = -1;
     public static boolean simplify = true;
-    public static boolean jitAnalysis = false;
+    public static boolean jitAnalysis = true;
     // makes timeout reporting happens at least 12 times in the last 2 minutes before a timeout at a gap of 10 seconds
     private static int timeout_mins = -1, timeoutReportingCounter = 12;
     private static long npaths = 0;
