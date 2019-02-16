@@ -54,7 +54,6 @@ import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwExceptio
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipVeriRegions;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.*;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.JITAnalysis.discoverRegions;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isSymCond;
 
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.isStackConsumingRegionEnd;
@@ -85,7 +84,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static int instantiationLimit = -1;
     public static boolean simplify = true;
     public static boolean jitAnalysis = false;
-    private static int timeout_mins = -1;
+    // makes timeout reporting happens at least 12 times in the last 2 minutes before a timeout at a gap of 10 seconds
+    private static int timeout_mins = -1, timeoutReportingCounter = 12;
     private static long npaths = 0;
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
@@ -203,10 +203,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
         if (timeout_mins != -1) {
             long runningTimeNsecs = System.nanoTime() - runStartTime;
-            if (TimeUnit.NANOSECONDS.toSeconds(runningTimeNsecs) > (timeout_mins*60)-10) {
+            if (TimeUnit.NANOSECONDS.toSeconds(runningTimeNsecs) > ((timeout_mins*60)-(10* timeoutReportingCounter)) ) {
                 System.out.println("Metrics Vector:");
                 System.out.println(getMetricsVector(runningTimeNsecs));
-                timeout_mins = -1;
+                timeoutReportingCounter--;
             }
         }
         StackFrame curr = ti.getTopFrame();
