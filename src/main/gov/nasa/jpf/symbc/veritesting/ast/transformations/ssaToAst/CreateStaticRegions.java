@@ -239,6 +239,14 @@ public class CreateStaticRegions {
                 return stmt;
             else {
                 Stmt gamma = visitor.convert(ins);
+                /*
+                TODO: figure out if this change makes a correctness difference
+                if (gamma instanceof AssignmentStmt && ((AssignmentStmt) gamma).rhs instanceof GammaVarExpr) {
+                    Expression exp1 = ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).thenExpr;
+                    Expression exp2 = ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).elseExpr;
+                    if (exp1.equals(exp2))
+                        gamma = SkipStmt.skip;
+                }*/
                 stmt = conjoin(stmt, gamma);
             }
         }
