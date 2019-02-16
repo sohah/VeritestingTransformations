@@ -162,7 +162,6 @@ public class CreateStaticRegions {
     private Set<ISSABasicBlock> jitVisitedBlocks = new HashSet<>();
 
 
-
     /**
      * Keeps track of the current conditions/depth while visiting nodes in the graph.
      */
@@ -767,8 +766,9 @@ public class CreateStaticRegions {
 
             } catch (InvalidClassFileException e) {
                 System.out.println("Unable to create subregion.  Reason: " + e.toString());
+            } catch (StaticRegionException e) {
+                System.out.println("Unable to create subregion.  Reason: " + e.toString());
             }
-
             Pair<Stmt, Map<PhiEdge, List<PhiCondition>>> stmtMapPair = jitAttemptSubregionRec(cfg, terminus, endingBlock);
             Stmt subRegStmt = stmtMapPair.getFirst();
             stmt = conjoin(stmt, subRegStmt);
