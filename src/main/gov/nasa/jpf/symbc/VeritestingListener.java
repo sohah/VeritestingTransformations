@@ -173,8 +173,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("simplify"))
                 simplify = conf.getBoolean("simplify");
 
-            if (conf.hasValue("jitAnalysis"))
+            if (conf.hasValue("jitAnalysis")){
                 jitAnalysis = conf.getBoolean("jitAnalysis");
+            System.out.println("*^_^ running jitAnalysis ^_^");}
 
             if (conf.hasValue("maxStaticExplorationDepth"))
                 maxStaticExplorationDepth = conf.getInt("maxStaticExplorationDepth");
