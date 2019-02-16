@@ -173,9 +173,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("simplify"))
                 simplify = conf.getBoolean("simplify");
 
-            if (conf.hasValue("jitAnalysis")){
+            if (conf.hasValue("jitAnalysis")) {
                 jitAnalysis = conf.getBoolean("jitAnalysis");
-            System.out.println("*^_^ running jitAnalysis ^_^");}
+            }
 
             if (conf.hasValue("maxStaticExplorationDepth"))
                 maxStaticExplorationDepth = conf.getInt("maxStaticExplorationDepth");
@@ -203,7 +203,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
         if (timeout_mins != -1) {
             long runningTimeNsecs = System.nanoTime() - runStartTime;
-            if (TimeUnit.NANOSECONDS.toSeconds(runningTimeNsecs) > ((timeout_mins*60)-(10* timeoutReportingCounter)) ) {
+            if (TimeUnit.NANOSECONDS.toSeconds(runningTimeNsecs) > ((timeout_mins * 60) - (10 * timeoutReportingCounter))) {
                 System.out.println("Metrics Vector:");
                 System.out.println(getMetricsVector(runningTimeNsecs));
                 timeoutReportingCounter--;

@@ -61,6 +61,7 @@ public class JITAnalysis {
         long startTime = System.nanoTime();
 
         if (firstTime) { //create veritestingMain only once.
+            System.out.println("^_^ running jitAnalysis ^_^");
             JITAnalysis.veritestingMain = new VeritestingMain(ti);
             firstTime = false;
         }
