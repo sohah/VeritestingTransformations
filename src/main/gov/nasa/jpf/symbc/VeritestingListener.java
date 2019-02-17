@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc;
 
 
+import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
@@ -210,7 +211,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
         StackFrame curr = ti.getTopFrame();
 //        runAdapterSynth(ti, curr);
-        if (runMode == VeritestingMode.VANILLASPF) return;
+        if (runMode == VeritestingMode.VANILLASPF || !(instructionToExecute instanceof IfInstruction)) return;
         if (!performanceMode) {
             if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
             boolean noVeritestingFlag = false;
