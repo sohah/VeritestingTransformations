@@ -211,12 +211,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         StackFrame curr = ti.getTopFrame();
 //        runAdapterSynth(ti, curr);
         if (runMode == VeritestingMode.VANILLASPF) return;
-        if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
-        boolean noVeritestingFlag = false;
-        noVeritestingFlag = isNoVeritesting(curr, noVeritestingFlag);
-        if (noVeritestingFlag)
-            return;
-        // End equivalence checking code
+        if (!performanceMode) {
+            if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
+            boolean noVeritestingFlag = false;
+            noVeritestingFlag = isNoVeritesting(curr, noVeritestingFlag);
+            if (noVeritestingFlag)
+                return;
+            // End equivalence checking code
+        }
 
         String key = keyFromInstructionToExc(instructionToExecute);
 
