@@ -1,5 +1,15 @@
 import gov.nasa.jpf.symbc.Debug;
-
+/**
+ * This implementation is match, the pad with the following requirements:
+ *
+ * -- this pad has the following requirements for states:
+ -- 1. if current launch_bt is true then it must be the case that the start_bt is on now and also in the previous step.
+ -- 2. if ignition is true for only one step after launch_bt is true. That is ignition is true only if the previous
+ --	 step launch was on and it wasn't the case that in the previous step that iginition was on nore was the reset.
+ -- 3. there will be one state where start_bt, launch_bt, ignition are on, followed by a step where
+ -- 	start_bt, launch_bt and reset_btn are on, while the ignition is off. The following step would be
+ --	reseting everything, that is all buttons are false.
+ */
 
 /**
  * Simple Pad with a reset state
@@ -39,16 +49,16 @@ public class SimplePadReset {
         boolean launch_btn = false;
         boolean ignition = false;
         boolean reset_btn = false;
-        int sig = 1;
+        int signal = 1;
 
-        pad.runPadSteps(sig, start_btn, launch_btn, ignition, reset_btn, true);
+        pad.runPadSteps(signal, start_btn, launch_btn, ignition, reset_btn, true);
 
         // used to generate test cases.
         //Debug.printPC("SimplePadReset.runPadSteps Path Condition: ");
 
     }
 
-    public void runPadSteps(int sig, boolean start_btn, boolean launch_btn, boolean ignition, boolean reset_btn, boolean symVar) {
+    public void runPadSteps(int signal, boolean start_btn, boolean launch_btn, boolean ignition, boolean reset_btn, boolean symVar) {
 
         //make pad state symbolic.
         this.start_btn = start_btn;
@@ -64,7 +74,7 @@ public class SimplePadReset {
         //int n = reader.nextInt();
 
         if (symVar) { // used to make this a veritesting region
-            rocketLaunched = runPad(sig); //running it here one step, but should be enclosed in a loop in real program.
+            rocketLaunched = runPad(signal); //running it here one step, but should be enclosed in a loop in real program.
             //assert (rocketLaunched ? getState() == IGNITION : true);
         }
         if (rocketLaunched) {
@@ -79,7 +89,7 @@ public class SimplePadReset {
 
     private void resetPad() {
         launch_btn = false;
-        ignition_r = false;
+        //ignition_r = false;
         start_btn = false;
         reset_btn = false;
     }
@@ -106,8 +116,10 @@ public class SimplePadReset {
 
         if (previousState == LAUNCH) { //state needs to change regardless of the signal.
             ignition_r = true;
-        } else if (previousState == IGNITION)
+        } else if (previousState == IGNITION){
             reset_btn = true;
+            ignition_r = false;
+        }
         else if (previousState == RESET || (previousState == INVALIDSTATE))
             resetPad();
         else {
@@ -163,7 +175,7 @@ public class SimplePadReset {
             padState = LAUNCH;
         else if (mystartBtn && myLaunchBtn && myIgnition && !reset)
             padState = IGNITION;
-        else if (mystartBtn && myLaunchBtn && myIgnition && reset)
+        else if (mystartBtn && myLaunchBtn && !myIgnition && reset)
             padState = RESET;
         else
             padState = INVALIDSTATE; // Invalid State

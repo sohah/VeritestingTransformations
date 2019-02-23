@@ -13,6 +13,8 @@ public class DiscoverContract {
 
     public static boolean active = true;
     public static boolean rangerMode;
+    // a unique post fix for ranger variables to destinguish them from jkind variables
+    public static String rangerPostFix ="$r";
 
 
     enum InputOutput {INPUT, OUTPUT}
@@ -66,7 +68,7 @@ public class DiscoverContract {
 
         rangerTransition += generateContractAssertion();
 
-        return (jkindTransition + rangerTransition);
+        return (jkindTransition + rangerTransition + "\n(get-model)");
 
     }
 
@@ -97,7 +99,10 @@ public class DiscoverContract {
 
 
     private static String generateInstanitaion(int i) {
+        //instance variable declarations
         String varInstance_i = declareVarInstance(i);
+
+        //r binding to the declarations above.
         String rInstance = declareRInstance(i);
         return varInstance_i + "\n" + rInstance;
     }
@@ -152,7 +157,7 @@ public class DiscoverContract {
     }
 
     private static String generateVarName(String varName, int i) {
-        return varName + "$" + i;
+        return varName + rangerPostFix + i;
     }
 
 
@@ -236,7 +241,7 @@ public class DiscoverContract {
     private static ArrayList<String> generateRforKVarNames(ArrayList<String> rFreeInput, int i) {
         ArrayList<String> newList = new ArrayList<String>();
 
-        String rPostFix = "$" + i;
+        String rPostFix = rangerPostFix + i;
         for (String var : rFreeInput) {
             newList.add(var + rPostFix);
         }
