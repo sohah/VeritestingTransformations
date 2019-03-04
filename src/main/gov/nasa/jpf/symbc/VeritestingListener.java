@@ -224,12 +224,16 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         StatisticManager.instructionToExec = key;
         try {
             if (jitAnalysis) {
-                if (isSymCond(ti, instructionToExecute) && !skipVeriRegions.contains(key) && isAllowedRegion(key)) {
-                    thisHighOrdCount = 0;
-                    StaticRegion staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
-                    runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
-                } else
-                    statisticManager.updateConcreteHitStatForRegion(key);
+                StaticRegion staticRegion;
+                if (!skipVeriRegions.contains(key) && isAllowedRegion(key)) {
+                    if (isSymCond(ti, instructionToExecute)) {
+                        thisHighOrdCount = 0;
+                        staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
+                        if (staticRegion != null)
+                            runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
+                    } else
+                        statisticManager.updateConcreteHitStatForRegion(key);
+                }
             } else { //not jitAnalysis
                 if (initializeTime) {
                     discoverRegions(ti); // static analysis to discover regions
