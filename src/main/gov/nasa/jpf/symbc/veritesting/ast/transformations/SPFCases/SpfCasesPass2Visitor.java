@@ -10,6 +10,7 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import static za.ac.sun.cs.green.expr.Operation.Operator.AND;
 import static za.ac.sun.cs.green.expr.Operation.Operator.OR;
@@ -22,7 +23,7 @@ import static za.ac.sun.cs.green.expr.Operation.Operator.OR;
 
 public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
     private Expression spfCondition = Operation.TRUE;
-    private final HashSet<SPFCaseStmt> spfCaseSet = new HashSet<>();
+    private final LinkedHashSet<SPFCaseStmt> spfCaseSet = new LinkedHashSet<>();
     private Expression earlyReturnCondition = null;
 
 

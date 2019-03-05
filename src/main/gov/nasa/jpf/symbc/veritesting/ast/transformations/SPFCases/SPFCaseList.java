@@ -7,12 +7,13 @@ import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.Rem
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 
 public class SPFCaseList {
-    public final HashSet<SPFCaseStmt> casesList = new HashSet<>();
+    public final LinkedHashSet<SPFCaseStmt> casesList = new LinkedHashSet<>();
 
 
-    public SPFCaseList(HashSet<SPFCaseStmt> spfCaseList) {
+    public SPFCaseList(LinkedHashSet<SPFCaseStmt> spfCaseList) {
         Iterator<SPFCaseStmt> itr = spfCaseList.iterator();
         while(itr.hasNext()){
             addCase(itr.next());
