@@ -234,8 +234,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
                         if (staticRegion != null)
                             runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
-                    } else
-                        statisticManager.updateConcreteHitStatForRegion(key);
+                    } /*else
+                        statisticManager.updateConcreteHitStatForRegion(key);*/
                 }
             } else { //not jitAnalysis
                 if (initializeTime) {
@@ -738,9 +738,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         publisher.publishTopicStart("VeritestingListener report:");
         long dynRunTime = (runEndTime - runStartTime) - (jitAnalysis ? JITAnalysis.staticAnalysisDur : staticAnalysisDur);
 
-//        pw.println(statisticManager.printAllRegionStatistics());
+        pw.println(statisticManager.printAllRegionStatistics());
 //        pw.println(statisticManager.printStaticAnalysisStatistics());
-//        pw.println(statisticManager.printAllExceptionStatistics());
+        pw.println(statisticManager.printAllExceptionStatistics());
 
         pw.println("\n/************************ Printing Time Decomposition Statistics *****************");
         pw.println("static analysis time = " + TimeUnit.NANOSECONDS.toMillis(jitAnalysis ? JITAnalysis.staticAnalysisDur : staticAnalysisDur) + " msec");

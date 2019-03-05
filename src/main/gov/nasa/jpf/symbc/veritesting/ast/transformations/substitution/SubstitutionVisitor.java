@@ -204,8 +204,10 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                 try {
                     keyRegionPair = jitFindMethodRegion(ti, newC);
                 } catch (StaticRegionException e) {
+                    sre = new StaticRegionException("Cannot summarize invoke in " + instruction.toString());
                     if (firstException == null) {
-                        sre = e;
+                        firstException = sre;
+                        skipRegionStrings.add("Cannot summarize invoke");
                         return newC;
                     }
                 }

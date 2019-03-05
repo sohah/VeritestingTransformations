@@ -85,8 +85,11 @@ public class JITAnalysis {
         long endTime = System.nanoTime();
         staticAnalysisDur += endTime - startTime;
 
-        if (staticRegion == null)
-            throw new StaticRegionException("Region " + key + " has no recovered static region");
+        if (staticRegion == null){
+            //throw new StaticRegionException("Region " + key + " has no recovered static region");
+            System.out.println("Region " + key + " has no recovered static region");
+            return null;
+        }
         else
             return staticRegion;
     }
