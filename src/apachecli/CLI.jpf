@@ -15,14 +15,15 @@ symbolic.optimizechoices=false
 
 #listener = .listener.ChoiceTracker
 #symbolic.debug=on
-veritestingMode = 3
+veritestingMode = 5
 performanceMode = true
 #interestingClassNames = Util,UnrecognizedOptionException,TypeHandler,PosixParser,Parser,ParseException,OptionValidator,Options,OptionsGroup,OptionBuilder,MissingOptionException,MissingArgumentException,HelpFormatter,GnuParser,CommandLineParser,CommandLine,CLI,BasicParser,AlreadySelectedException,Option
 #symbolic.strings = true
 #symbolic.string_dp = z3
 exclusionsFile=${jpf-symbc}/src/apachecli/MyJava60RegressionExclusions.txt
 
-jitAnalysis = true
+jitAnalysis = false
+maxStaticExplorationDepth = 2
 symbolic.lazy = true
 
 symbolic.lazy = true
