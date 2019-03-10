@@ -181,7 +181,7 @@ public class FieldSSAVisitor extends FixedPointAstMapVisitor {
             FieldRef elseFieldRef = entry.getKey();
             SubscriptPair elseSubscript = entry.getValue();
             if (thenMap.lookup(elseFieldRef) != null) {
-                throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point"), INSTANTIATION);
+                throwException(new IllegalArgumentException("invariant failure: something in elseMap should not be in thenMap at this point in FieldSSAVisitor"), INSTANTIATION);
             } else {
                 compStmt = compose(compStmt, createGammaStmt(condition, elseFieldRef,
                         new SubscriptPair(FIELD_SUBSCRIPT_BASE, gsm.createSubscript(elseFieldRef)), elseSubscript),
@@ -196,7 +196,7 @@ public class FieldSSAVisitor extends FixedPointAstMapVisitor {
     private Stmt createGammaStmt(Expression condition, FieldRef fieldRef, SubscriptPair thenSubscript,
                                  SubscriptPair elseSubscript) {
         if (thenSubscript.pathSubscript == FIELD_SUBSCRIPT_BASE && elseSubscript.pathSubscript == FIELD_SUBSCRIPT_BASE) {
-            throwException(new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts"), INSTANTIATION);
+            throwException(new IllegalArgumentException("invariant failure: ran into a gamma between subscripts that are both base subscripts in FieldSSAVisitor"), INSTANTIATION);
         }
         SubstituteGetOutput output = new SubstituteGetOutput(ti, fieldRef, true, null).invoke();
         if (output.exceptionalMessage != null) throwException(new IllegalArgumentException(output.exceptionalMessage), INSTANTIATION);
@@ -247,13 +247,13 @@ public class FieldSSAVisitor extends FixedPointAstMapVisitor {
 
             }
         } else
-            exceptionalMessage = "encountered obj-ref in GetInstruction that is not a constant";
+            exceptionalMessage = "encountered obj-ref in GetInstruction that is not a constant in FieldSSAVisitor";
         // only one of rhs and exceptionalMessage should be non-null
         assert (rhs == null) ^ (exceptionalMessage == null);
         if (c.def instanceof WalaVarExpr) {
             if (type != null) dynRegion.varTypeTable.add(((WalaVarExpr) c.def).number, type);
         }
-        else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c;
+        else exceptionalMessage = "def not instance of WalaVarExpr in GetInstruction: " + c + " in FieldSSAVisitor";
         if (exceptionalMessage != null) {
             populateException(new IllegalArgumentException(exceptionalMessage));
             return c;
