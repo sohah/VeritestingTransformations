@@ -181,18 +181,17 @@ public class SpfToGreenVisitor implements AstVisitor<Expression> {
                 isConcreteReturn = dynRegion.constantsTable.lookup((Variable) returnVar) instanceof IntConstant;
             }
 
+            newAssign = earlyReturnToGreen(dynRegion.earlyReturnResult.assign, dynRegion);
+            newCond = earlyReturnToGreen(dynRegion.earlyReturnResult.condition, dynRegion);
+            ReturnResult oldResult = dynRegion.earlyReturnResult;
+            RemoveEarlyReturns o = new RemoveEarlyReturns();
             if(!isConcreteReturn) {
-                newAssign = earlyReturnToGreen(dynRegion.earlyReturnResult.assign, dynRegion);
-                newCond = earlyReturnToGreen(dynRegion.earlyReturnResult.condition, dynRegion);
                 Expression newRetVar = earlyReturnToGreen(dynRegion.earlyReturnResult.retVar, dynRegion);
-                ReturnResult oldResult = dynRegion.earlyReturnResult;
-
-                RemoveEarlyReturns o = new RemoveEarlyReturns();
-
                 newReturnResult = o.new ReturnResult(oldResult.stmt, newAssign, newCond, oldResult.retPosAndType, newRetVar);
             }
-            else
-                newReturnResult = dynRegion.earlyReturnResult;
+            else {
+                newReturnResult = o.new ReturnResult(oldResult.stmt, newAssign, newCond, oldResult.retPosAndType, oldResult.retVar);
+            }
 
         } else { //if no early return in the region, assign false to the early return condition.
             newReturnResult = dynRegion.earlyReturnResult;

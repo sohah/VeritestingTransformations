@@ -733,7 +733,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         publisher.publishTopicStart("VeritestingListener report:");
         long dynRunTime = (runEndTime - runStartTime) - (jitAnalysis ? JITAnalysis.staticAnalysisDur : staticAnalysisDur);
 
-//        pw.println(statisticManager.printAllRegionStatistics());
+        pw.println(statisticManager.printAllRegionStatistics());
 //        pw.println(statisticManager.printStaticAnalysisStatistics());
 //        pw.println(statisticManager.printAllExceptionStatistics());
 
