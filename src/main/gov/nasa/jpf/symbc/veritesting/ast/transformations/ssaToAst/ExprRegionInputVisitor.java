@@ -33,12 +33,21 @@ public class ExprRegionInputVisitor extends ExprMapVisitor implements ExprVisito
     public Expression visit(WalaVarExpr expr) {
         int[] varSlots = slotParamTable.lookup(expr.number);
         if (varSlots != null) {
-            for (int i = 0; i < varSlots.length; i++)
+            // if varSlots.length is greater than 1, then try all
+            // but the last stack slot because when a Wala var corresponds to multiple stack slots, the last one
+            // corresponds to the stack slot that is being written to in this source code, which is why this last
+            // stack slot cannot be considered as an input stack slot
+            int i = (varSlots.length == 1 ? 0 : varSlots.length-2);
+            while(i >= 0) {
                 if (seenBiggerWalaNum(varSlots[i], expr.number)) {
-                    if (defUseVisit == DefUseVisit.USE)
+                    if (defUseVisit == DefUseVisit.USE) {
                         inputTable.add(expr.number, varSlots[i]);
+                        break;
+                    }
                     seenSlots.put(varSlots[i], expr.number);
                 }
+                i--;
+            }
         }
         return expr;
     }
