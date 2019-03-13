@@ -19,16 +19,21 @@ import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwExceptio
 public class LocalOutputInvariantVisitor extends AstMapVisitor {
     ExprVisitorAdapter<Expression> eva;
     public List<AssignmentStmt> gammaStmts;
+    public List<Integer> gammaWalaVarDefs;
 
     private LocalOutputInvariantVisitor(StaticRegion staticRegion) {
         super(new ExprMapVisitor());
         eva = super.eva;
-        gammaStmts = new ArrayList<AssignmentStmt>();
+        gammaStmts = new ArrayList<>();
+        gammaWalaVarDefs = new ArrayList<>();
     }
 
     @Override
     public Stmt visit(AssignmentStmt a) {
-        if (a.rhs instanceof GammaVarExpr) gammaStmts.add(a);
+        if (a.rhs instanceof GammaVarExpr) {
+            gammaStmts.add(a);
+            if (a.lhs instanceof WalaVarExpr) gammaWalaVarDefs.add(((WalaVarExpr) a.lhs).number);
+        }
         return a;
     }
 
@@ -95,6 +100,7 @@ public class LocalOutputInvariantVisitor extends AstMapVisitor {
     public static boolean execute(StaticRegion staticRegion) throws StaticRegionException {
         LocalOutputInvariantVisitor visitor = new LocalOutputInvariantVisitor(staticRegion);
         staticRegion.staticStmt.accept(visitor);
+        // Every gamma statement's lhs should either be a local output or be the sole stack output of the region
         for (AssignmentStmt assignmentStmt: visitor.gammaStmts) {
             if (assignmentStmt.rhs instanceof GammaVarExpr && WalaVarExpr.class.isInstance(assignmentStmt.lhs)) {
                 WalaVarExpr lhs = (WalaVarExpr) assignmentStmt.lhs;
@@ -109,6 +115,13 @@ public class LocalOutputInvariantVisitor extends AstMapVisitor {
                         throwException(new StaticRegionException("static region with gamma expression has more than one non-local output in lhs"), STATIC);
                 }
             }
+        }
+        // Every output in the output table should come from a gamma statement
+        Set<Integer> outputSlots = staticRegion.outputTable.table.keySet();
+        for (int slot : outputSlots) {
+            if (!visitor.gammaWalaVarDefs.contains(staticRegion.outputTable.lookup(slot)))
+                throwException(new StaticRegionException("local output " + staticRegion.outputTable.lookup(slot) +
+                        " to stack slot " + slot + " does not have corresponding gamma statement"), STATIC);
         }
         return true;
     }
