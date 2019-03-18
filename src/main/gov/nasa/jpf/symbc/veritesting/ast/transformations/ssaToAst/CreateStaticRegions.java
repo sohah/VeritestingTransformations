@@ -778,7 +778,7 @@ public class CreateStaticRegions {
             try {
                 endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
                 Stmt s = conjoin(stmt, partialGammaStmt);
-                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns, currentBlock, null));
+                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns, currentBlock, terminus, null));
                 System.out.println("Subregion" + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
             } catch (InvalidClassFileException e) {
@@ -1037,7 +1037,7 @@ public class CreateStaticRegions {
                 int endIns;
                 try {
                     endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
-                    veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(stmt, ir, false, endIns, currentBlock, null));
+                    veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(stmt, ir, false, endIns, currentBlock, terminus, null));
                 } catch (InvalidClassFileException e) {
                     throw new StaticRegionException("unable to create static region:" + e.getMessage());
                 }
