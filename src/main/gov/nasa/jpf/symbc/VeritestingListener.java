@@ -721,12 +721,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 ins = ((GOTO) ins).getTarget();
             else ins = ins.getNext();
         }
-
-        if (ins.getMnemonic().contains("store")) {
-            ins = ins.getNext();
-            System.out.println("advancing beyond a store at end of region");
+        // this hack used to go along with a corresponding hack in SpfUtil.isStackConsumingRegionEnd that would advance
+        // SPF beyond a store at the end of the region. These hacks aren't needed anymore but I am keeping this code
+        // around until a month or two has gone by after we've stopped seeing these issues (March 13, 2019)
+//        if (ins.getMnemonic().contains("store")) {
+//            ins = ins.getNext();
+//            System.out.println("advancing beyond a store at end of region");
 //            assert false; //too late to throw a StaticRegionException, region's outputs have already been written
-        }
+//        }
         //ti.setNextPC(ins);
         return ins;
     }

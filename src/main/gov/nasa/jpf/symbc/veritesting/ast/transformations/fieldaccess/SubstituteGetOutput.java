@@ -21,7 +21,8 @@ public class SubstituteGetOutput {
     private ThreadInfo ti;
     private gov.nasa.jpf.symbc.numeric.Expression finalValue;
 
-    public SubstituteGetOutput(ThreadInfo ti, FieldRef fieldRef, boolean isRead, gov.nasa.jpf.symbc.numeric.Expression finalValue) {
+    public SubstituteGetOutput(ThreadInfo ti, FieldRef fieldRef, boolean isRead,
+                               gov.nasa.jpf.symbc.numeric.Expression finalValue) {
         this.fieldRef = fieldRef;
         this.isRead = isRead;
         this.ti = ti;
@@ -52,14 +53,14 @@ public class SubstituteGetOutput {
         type = null;
         if (objRef == 0) {
             exceptionalMessage = "java.lang.NullPointerException" + "referencing field '" + fieldName +
-                    "' on null object";
+                    "' on null object in FieldSSAVisitor";
         } else {
             ClassInfo ci = null;
             try {
                 ci = ClassLoaderInfo.getCurrentResolvedClassInfo(className);
             } catch (ClassInfoException e) {
                 exceptionalMessage = "fillFieldInputHole: class loader failed to resolve class name " +
-                        className;
+                        className + " in FieldSSAVisitor";
                 skipRegionStrings.add("fillFieldInputHole: class loader failed to resolve");
             }
             if (ci != null) {
@@ -73,7 +74,7 @@ public class SubstituteGetOutput {
                     else eiFieldOwner = ci.getModifiableStaticElementInfo();
                 }
                 if (eiFieldOwner == null) {
-                    exceptionalMessage = "failed to resolve eiFieldOwner for field";
+                    exceptionalMessage = "failed to resolve eiFieldOwner for field in FieldSSAVisitor";
                     skipRegionStrings.add(exceptionalMessage);
                 }
                 else {
@@ -89,7 +90,7 @@ public class SubstituteGetOutput {
                     } else*/
                     if (fieldInfo == null) {
                         exceptionalMessage = "java.lang.NoSuchFieldError" + "referencing field '" + fieldName
-                                + "' in " + eiFieldOwner;
+                                + "' in " + eiFieldOwner + " in FieldSSAVisitor";
                         skipRegionStrings.add("java.lang.NoSuchFieldError");
                     } else {
                         if (isRead) executeRead(eiFieldOwner, fieldInfo);
@@ -151,12 +152,12 @@ public class SubstituteGetOutput {
                     if (Objects.equals(fieldInfo.getType(), "long"))
                         def = new IntConstant((int) eiFieldOwner.get2SlotField(fieldInfo));
                 }
-                if (def == null) exceptionalMessage = "unsupported field type";
+                if (def == null) exceptionalMessage = "unsupported field type in FieldSSAVisitor";
                 else type = fieldInfo.getType();
             }
         } catch(Exception e) {
             exceptionalMessage = e.getMessage() + " referencing field '" + fieldInfo.getName()
-                    + "' in " + eiFieldOwner;
+                    + "' in " + eiFieldOwner + " in FieldSSAVisitor";
             skipRegionStrings.add(exceptionalMessage);
         }
     }

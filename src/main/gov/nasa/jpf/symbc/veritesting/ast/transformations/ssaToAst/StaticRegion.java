@@ -12,7 +12,6 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Invariants.LocalOutputInvariantVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.removeEarlyReturns.RemoveEarlyReturns;
-import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 
 import java.util.*;
 
@@ -95,7 +94,7 @@ public class StaticRegion implements Region {
      *                        If unavailable, it can be given a null value.
      * @throws StaticRegionException
      */
-    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock startingBlock, RemoveEarlyReturns.ReturnResult returnResult) throws StaticRegionException {
+    public StaticRegion(Stmt staticStmt, IR ir, Boolean isMethodRegion, int endIns, ISSABasicBlock startingBlock, ISSABasicBlock terminus, RemoveEarlyReturns.ReturnResult returnResult) throws StaticRegionException {
 
         this.ir = ir;
         this.isMethodRegion = isMethodRegion;
@@ -116,7 +115,7 @@ public class StaticRegion implements Region {
             slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt);
             varTypeTable = new VarTypeTable(ir);
         } else {
-            slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(-2147483647, 2147483646));
+            slotParamTable = new SlotParamTable(ir, isMethodRegion, staticStmt, new Pair<>(-2147483647, 2147483646), startingBlock.getNumber(), terminus.getNumber());
             HashSet<WalaVarExpr> noStackSlotVars = SymbCondVisitor.execute(ir, (SlotParamTable) slotParamTable, staticStmt);
             /*if (staticStmt instanceof CompositionStmt && ((CompositionStmt) staticStmt).s1 instanceof IfThenElseStmt) {
                 eva.accept(((IfThenElseStmt) ((CompositionStmt) staticStmt).s1).condition);
@@ -151,17 +150,17 @@ public class StaticRegion implements Region {
                     throwException(sre, STATIC);
                 }
             }
-            Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> regionBoundary = computeRegionBoundary(staticStmt);
+//            Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> regionBoundary = computeRegionBoundary(staticStmt);
+            RegionBoundaryOutput regionBoundary = computeRegionBoundary(staticStmt);
             // first use var that hasn't been defined in the region, an invariant that this must be the first use in the if condition
 
-            firstUse = regionBoundary.getFirst().getFirst();
-            lastUse = regionBoundary.getFirst().getSecond();
-            firstDef = regionBoundary.getSecond().getFirst();
-            lastDef = regionBoundary.getSecond().getSecond();
+            firstUse = regionBoundary.getFirstUse();
+            lastUse = regionBoundary.getLastUse();
+            firstDef = regionBoundary.getFirstDef();
+            lastDef = regionBoundary.getLastDef();
 
             lastVar = findLastVar(firstDef, firstUse, lastDef, lastUse);
-            //lastVar = (lastDef != null) && (lastUse == null) ? lastDef : ((lastDef == null) && (lastUse != null) ? lastUse : (lastDef > lastUse ? lastDef: lastUse));
-            ((SlotParamTable) slotParamTable).filterTableForBoundary(staticStmt, new Pair<>(firstUse, lastVar));
+            ((SlotParamTable) slotParamTable).filterTable(new Pair<>(firstUse, lastVar), regionBoundary.getAllDefs(), regionBoundary.getAllUses());
             varTypeTable = new VarTypeTable(ir, new Pair<>(firstUse, lastVar));
         }
         this.staticStmt = staticStmt;
@@ -201,14 +200,16 @@ public class StaticRegion implements Region {
      * This computes the region boundary in case of conditional region, to determine the first use and the first and last def variables inside the region.
      *
      * @param stmt Statement of the region.
-     * @return A triple of first-use, first-def and last-def variables in the region.
+     * @return A pair of pairs, ( (first-use, last-use), (first-def, last-def) ) variables in the region.
      */
-    private Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> computeRegionBoundary(Stmt stmt) {
+    private RegionBoundaryOutput computeRegionBoundary(Stmt stmt) {
         ExprBoundaryVisitor exprBoundaryVisitor = new ExprBoundaryVisitor();
 
         RegionBoundaryVisitor regionBoundaryVisitor = new RegionBoundaryVisitor(exprBoundaryVisitor);
         stmt.accept(regionBoundaryVisitor);
-        return new Pair<>(new Pair<>(regionBoundaryVisitor.getFirstUse(), regionBoundaryVisitor.getLastUse()), new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef()));
+        return regionBoundaryVisitor.getOutput();
+//        return new Pair<>(new Pair<>(regionBoundaryVisitor.getFirstUse(), regionBoundaryVisitor.getLastUse()),
+//                new Pair<>(regionBoundaryVisitor.getFirstDef(), regionBoundaryVisitor.getLastDef()));
     }
 
 

@@ -25,4 +25,5 @@ symbolic.lazy = true
 veritestRegionExpectedCount=-1
 performanceMode=true
 simplify=true
-jitAnalysis=true
+jitAnalysis=false
+exclusionsFile=${jpf-symbc}/UtilExclusions.txt

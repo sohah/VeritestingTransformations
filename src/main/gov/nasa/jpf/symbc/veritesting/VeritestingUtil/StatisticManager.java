@@ -52,7 +52,7 @@ public class StatisticManager {
             regionsStatisticsMap.put(key, regionStatistics);
         }
 
-        if(failError.contains("put") || failError.contains("get")){
+        if(failError.contains("FieldSSAVisitor")){
             regionStatistics.failReasonList.add(new FailEntry(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION, failError));
         }
 

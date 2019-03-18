@@ -8,6 +8,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * An Expression Boundary Visitor that attempts to discover first "use" var inside a region.
@@ -17,12 +18,14 @@ public class ExprBoundaryVisitor extends ExprMapVisitor implements ExprVisitor<E
     private boolean seenFirstUse = false;
     private Integer firstUse;
     private Integer lastUse;
+    private HashSet<Integer> allUses;
 
-    public ExprBoundaryVisitor() { }
+    public ExprBoundaryVisitor() { allUses = new HashSet<>(); }
 
     @Override
     public Expression visit(WalaVarExpr expr) {
         if (expr.number == -1) return expr;
+        allUses.add(expr.number);
         if(seenFirstUse){
             if (expr.number < firstUse){
                 firstUse = expr.number;
@@ -45,5 +48,7 @@ public class ExprBoundaryVisitor extends ExprMapVisitor implements ExprVisitor<E
     public Integer getLastUse() {
         return lastUse;
     }
+
+    public HashSet<Integer> getAllUses() { return allUses; }
 
 }

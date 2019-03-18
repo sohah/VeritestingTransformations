@@ -245,13 +245,15 @@ public class CreateStaticRegions {
                 return stmt;
             else {
                 Stmt gamma = visitor.convert(ins);
-                /*
-                TODO: figure out if this change makes a correctness difference
-                if (gamma instanceof AssignmentStmt && ((AssignmentStmt) gamma).rhs instanceof GammaVarExpr) {
+                // This simplification causes problems in the LocalOutputInvariantVisitor in StaticRegion constructor
+                // that tries to ensure that all local outputs in outputTable have a assignment using a gamma expression
+                /* Vaibhav: this simplification should not make a correctness difference unless we have a region that
+                * writes the same value to a local variable on both sides of a branch */
+                /*if (gamma instanceof AssignmentStmt && ((AssignmentStmt) gamma).rhs instanceof GammaVarExpr) {
                     Expression exp1 = ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).thenExpr;
                     Expression exp2 = ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).elseExpr;
                     if (exp1.equals(exp2))
-                        gamma = SkipStmt.skip;
+                        gamma = new AssignmentStmt(((AssignmentStmt) gamma).lhs, ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).thenExpr);
                 }*/
                 stmt = conjoin(stmt, gamma);
             }
@@ -338,10 +340,10 @@ public class CreateStaticRegions {
 
 
     /**
-     * Gets the immediate detonators of a block.
+     * Gets the immediate dominator of a block.
      *
-     * @param elem Block for which we want to find it immediate denominator.
-     * @return Immediate denominator of a block.
+     * @param elem Block for which we want to find its immediate dominator.
+     * @return Immediate dominator of a block.
      */
     private ISSABasicBlock getIDom(ISSABasicBlock elem) {
         assert (this.domTree.getPredNodeCount(elem) == 1);
@@ -369,11 +371,13 @@ public class CreateStaticRegions {
 
         visited.add(entry);
         toVisit.addAll(SSAUtil.getNonReturnSuccessors(cfg, entry));
+        ISSABasicBlock lastVisited = entry;
 
         while (!toVisit.isEmpty()) {
             ISSABasicBlock current = toVisit.remove();
             if (!visited.contains(current)) {
                 visited.add(current);
+                lastVisited = current;
                 ISSABasicBlock immediatePreDom = getIDom(current);
                 if (current == terminus) {
                     // because of priority queue, a non-empty queue means we have
@@ -393,6 +397,11 @@ public class CreateStaticRegions {
         }
         // This condition occurs when we have a region terminated by a 'return'
         // We treat these as self-contained.
+        if (lastVisited.getLastInstruction() instanceof SSAThrowInstruction) {
+            // Vaibhav: I am guessing that we dont want to summarize a region that ends with a
+            // throw exception at this point
+            throwException(new StaticRegionException("last visited basic block threw an exception"), STATIC);
+        }
         return true;
     }
 
@@ -888,7 +897,7 @@ public class CreateStaticRegions {
                 int endIns;
 
                 endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
-                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns, currentBlock, null));
+                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(s, ir, false, endIns, currentBlock, terminus, null));
                 System.out.println("Subregion: " + System.lineSeparator() + PrettyPrintVisitor.print(s));
 
             } catch (StaticRegionException e) {
@@ -925,7 +934,7 @@ public class CreateStaticRegions {
             System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
             SSAInstruction[] insns = ir.getInstructions();
             //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
-            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0, null, null));
+            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0, null, null, null));
         } catch (StaticRegionException sre) {
             if (VeritestingListener.jitAnalysis)
                 throw sre;
@@ -962,7 +971,7 @@ public class CreateStaticRegions {
             int endIns;
             try {
                 endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
-                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(condStmt, ir, false, endIns, currentBlock, null));
+                veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(condStmt, ir, false, endIns, currentBlock, terminus, null));
             } catch (InvalidClassFileException e) {
                 throw new StaticRegionException("unable to create static region:" + e.getMessage());
             }
@@ -1061,7 +1070,7 @@ public class CreateStaticRegions {
             System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
             SSAInstruction[] insns = ir.getInstructions();
             //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
-            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0, null, null));
+            veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0, null, null, null));
         } catch (StaticRegionException sre) {
             if (VeritestingListener.jitAnalysis)
                 throw sre;

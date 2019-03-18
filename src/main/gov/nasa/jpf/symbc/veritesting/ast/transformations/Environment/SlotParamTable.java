@@ -30,13 +30,14 @@ public class SlotParamTable extends StaticTable<int[]> {
     }
 
 
-    public SlotParamTable(IR ir, Boolean isMethodRegion, Stmt stmt, Pair<Integer, Integer> firstUseLastDef) { // var -> param/slot
+    public SlotParamTable(IR ir, Boolean isMethodRegion, Stmt stmt, Pair<Integer, Integer> firstUseLastDef,
+                          int startingBlockNumber, int terminusBlockNumber) { // var -> param/slot
         super("stack-slot table", "var", isMethodRegion ? "param" : "slot");
         assert(!isMethodRegion);
         this.ir = ir;
         this.isMethodRegion = isMethodRegion;
         this.stmt = stmt;
-        populateSlotsForVars(firstUseLastDef);
+        populateSlotsForVars(startingBlockNumber, terminusBlockNumber);
     }
 
 
@@ -52,8 +53,16 @@ public class SlotParamTable extends StaticTable<int[]> {
     }
 
 
-    private void populateSlotsForVars(Pair<Integer, Integer> firstUseLastDef) {
+    private void populateSlotsForVars(int startingBlockNumber, int terminusBlockNumber) {
         StackSlotIVisitor stackSlotIVisitor = new StackSlotIVisitor(ir, this);
+        // visit the region's instructions first to ensure that stack slots corresponding to the region are preferred
+        // to stack slots originating from the rest of the method
+        for (int bbNum = startingBlockNumber; bbNum <= terminusBlockNumber; bbNum++){
+            ISSABasicBlock bb = ir.getControlFlowGraph().getNode(bbNum);
+            for (SSAInstruction ins: bb) if (ins != null) ins.visit(stackSlotIVisitor);
+            for (Iterator<SSAPhiInstruction> phiItr = bb.iteratePhis(); phiItr.hasNext(); )
+                phiItr.next().visit(stackSlotIVisitor);
+        }
         for (SSAInstruction ins : ir.getControlFlowGraph().getInstructions()) {
             if (ins != null)
                 ins.visit(stackSlotIVisitor);
@@ -67,14 +76,17 @@ public class SlotParamTable extends StaticTable<int[]> {
 //        filterTableForBoundary(stmt, firstUseLastDef);
     }
 
-    public void filterTableForBoundary(Stmt stmt, Pair<Integer, Integer> firstUseLastDef) {
+    public void filterTable(Pair<Integer, Integer> firstUseLastDef, ArrayList<Integer> allDefs, HashSet<Integer> allUses) {
         Iterator<Integer> keyItr = this.getKeys().iterator();
 
         while (keyItr.hasNext()) {
             Integer var = keyItr.next();
+            // if Wala variable is outside the boundary of the region summary, then remove it
             if ((firstUseLastDef.getFirst() != null && var < firstUseLastDef.getFirst()) ||
                     (firstUseLastDef.getSecond() != null && var > firstUseLastDef.getSecond()))
                 keyItr.remove();
+            // if Wala variable is not defined in the region summary, then remove it
+            else if (!allDefs.contains(var) && !allUses.contains(var)) keyItr.remove();
         }
     }
 

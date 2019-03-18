@@ -21,27 +21,6 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
         super(exprBoundaryVisitor);
     }
 
-    public Integer getLastDef() {
-        if (allDefs.size() > 0)
-            return Collections.max(allDefs);
-        else
-            return null;
-    }
-
-    public Integer getFirstDef() {
-        if (allDefs.size() > 0)
-            return Collections.min(allDefs);
-        else
-            return null;
-    }
-
-    public Integer getFirstUse() {
-        return ((ExprBoundaryVisitor) exprVisitor).getFirstUse();
-    }
-
-    public Integer getLastUse() {
-        return ((ExprBoundaryVisitor) exprVisitor).getLastUse();
-    }
 
     @Override
     public Stmt visit(AssignmentStmt a) {
@@ -175,4 +154,7 @@ public class RegionBoundaryVisitor extends AstMapVisitor {
     }
 
 
+    public RegionBoundaryOutput getOutput() {
+        return new RegionBoundaryOutput(allDefs, (ExprBoundaryVisitor)exprVisitor);
+    }
 }
