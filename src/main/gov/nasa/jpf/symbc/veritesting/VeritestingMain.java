@@ -205,7 +205,7 @@ public class VeritestingMain {
         CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
         if (multiPathAnalysis) {
             regionCreator.createStructuredConditionalRegions(veriRegions);
-            regionCreator.createStructuredMethodRegion(veriRegions);
+            //regionCreator.createStructuredMethodRegion(veriRegions);
         } else
             regionCreator.jitCreateStructuredRegion(veriRegions);
 

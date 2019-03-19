@@ -72,6 +72,11 @@ public class JITAnalysis {
             attemptedMehods.add(jvmMethodName);
             //String className = conf.getString("target");
             classPath = getClassPaths();
+            /*try {
+                veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, false);
+            } catch (StaticRegionException sre) { // if failed while summarizing the method, try to summarize regions inside it.
+                    System.out.println(sre);
+            }*/
             try {
                 veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, false);
             } catch (StaticRegionException sre1) { // if failed while summarizing the method, try to summarize regions inside it.
