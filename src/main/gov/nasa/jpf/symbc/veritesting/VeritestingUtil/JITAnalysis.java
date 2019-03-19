@@ -74,8 +74,12 @@ public class JITAnalysis {
             classPath = getClassPaths();
             try {
                 veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, false);
-            } catch (StaticRegionException sre) { // if failed while summarizing the method, try to summarize regions inside it.
-                veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, true);
+            } catch (StaticRegionException sre1) { // if failed while summarizing the method, try to summarize regions inside it.
+                try {
+                    veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, true);
+                } catch (StaticRegionException sre2) {
+                    System.out.println(sre2);
+                }
             }
         }
 
@@ -85,12 +89,11 @@ public class JITAnalysis {
         long endTime = System.nanoTime();
         staticAnalysisDur += endTime - startTime;
 
-        if (staticRegion == null){
+        if (staticRegion == null) {
             //throw new StaticRegionException("Region " + key + " has no recovered static region");
             System.out.println("Region " + key + " has no recovered static region");
             return null;
-        }
-        else
+        } else
             return staticRegion;
     }
 

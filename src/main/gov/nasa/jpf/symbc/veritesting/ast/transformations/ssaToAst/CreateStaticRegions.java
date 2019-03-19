@@ -939,7 +939,7 @@ public class CreateStaticRegions {
             if (VeritestingListener.jitAnalysis)
                 throw sre;
             else
-                System.out.println("Unable to create a method summary subregion for: " + cfg.getMethod().getName().toString());
+                System.out.println("Unable to create a method summary region for: " + cfg.getMethod().getName().toString());
         }
     }
 
@@ -973,9 +973,9 @@ public class CreateStaticRegions {
                 endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
                 veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(condStmt, ir, false, endIns, currentBlock, terminus, null));
             } catch (InvalidClassFileException e) {
-                throw new StaticRegionException("unable to create static region:" + e.getMessage());
+                //throw new StaticRegionException("unable to create static region:" + e.getMessage());
+                System.out.println("unable to create static region:" + e.getMessage());
             }
-
             //reset();
             //populateMissedRegions(cfg, currentBlock, terminus);
             stmt = conjoin(stmt, condStmt);
@@ -1059,7 +1059,7 @@ public class CreateStaticRegions {
     /**
      * This class walks through method, attempting to recover a method region and also recover all multi-path regions inside of it.
      */
-    public void createStructuredRegion(HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
+    public void jitCreateStructuredRegion(HashMap<String, StaticRegion> veritestingRegions) throws StaticRegionException {
         this.veritestingRegions = veritestingRegions;
 
         reset();

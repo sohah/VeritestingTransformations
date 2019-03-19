@@ -10,7 +10,6 @@ import java.util.*;
 
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IMethod;
-import com.ibm.wala.core.tests.callGraph.CallGraphTestUtil;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
@@ -204,10 +203,11 @@ public class VeritestingMain {
         NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
         // Here is where the magic happens.
         CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
-        if (multiPathAnalysis)
+        if (multiPathAnalysis) {
             regionCreator.createStructuredConditionalRegions(veriRegions);
-        else
-            regionCreator.createStructuredRegion(veriRegions);
+            regionCreator.createStructuredMethodRegion(veriRegions);
+        } else
+            regionCreator.jitCreateStructuredRegion(veriRegions);
 
        /* // Placeholder for testing and visualizing static-time transformations
             Set<String> keys = veriRegions.keySet();
