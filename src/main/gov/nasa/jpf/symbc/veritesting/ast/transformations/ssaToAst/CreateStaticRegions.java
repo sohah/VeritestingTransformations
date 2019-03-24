@@ -1073,11 +1073,11 @@ public class CreateStaticRegions {
             SSAInstruction[] insns = ir.getInstructions();
             //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
             veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0, null, null, null));
-        } catch (StaticRegionException sre) {
-            if (VeritestingListener.jitAnalysis)
+        } catch (StaticRegionException sre) { //TODO: check if we need that for method regions.
+          //  if (VeritestingListener.jitAnalysis)
                 throw sre;
-            else
-                System.out.println("Unable to create a method summary subregion for: " + cfg.getMethod().getName().toString());
+           // else
+           //     System.out.println("Unable to create a method summary subregion for: " + cfg.getMethod().getName().toString());
         }
     }
 }
