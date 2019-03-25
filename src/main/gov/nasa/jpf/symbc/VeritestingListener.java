@@ -238,8 +238,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         thisHighOrdCount = 0;
                         staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
                         if (staticRegion != null){
-                            runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
                             regionDigest.append("\n" + staticRegion.staticStmt.toString());
+                            runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
                         }
                     } /*else
                         statisticManager.updateConcreteHitStatForRegion(key);*/
