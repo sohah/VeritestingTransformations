@@ -119,7 +119,7 @@ public class StatisticManager {
     public String printAccumulativeStatistics(){
         String out="\n/************************ Printing Region Statistics *****************\n" +
                 "Number of Distinct Veritested Regions = " + getDistinctVeriRegionNum() + "\nNumber of Distinct Un-Veritested Symbolic Regions = "+ getDistinctSpfRegionNum()
-                + "\nNumber of Distinct Un-Veritested Concrete Regions = "+ getConcreteRegionNum()
+              //  + "\nNumber of Distinct Un-Veritested Concrete Regions = "+ getConcreteRegionNum()
                 + "\nNumber of Distinct Failed Regions for Field Reference = " + getFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION)
                 + "\nNumber of Distinct Failed Regions for SPFCases = " + getFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION)
                 + "\nNumber of Distinct Failed Regions for Other Reasons = " + getFailNum(FailEntry.FailReason.OTHER)
@@ -131,7 +131,7 @@ public class StatisticManager {
         String out="\n/************************ Printing Instantiation Statistics *****************\n" +
                 "Number of successful instantiations = " + getSuccInstantiations() +
                 "\nTotal Number of unsuccessful instantiations = "+ getFailedInstantiations()
-                + "\nNumber of failed instantiations due to concrete condition = "+ getConcreteInstNum()
+                //+ "\nNumber of failed instantiations due to concrete condition = "+ getConcreteInstNum()
                 + "\nNumber of failed instantiations due to Field Reference = " + getInstFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION)
                 + "\nNumber of failed instantiations due to SPFCases = " + getInstFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION)
                 + "\nNumber of failed instantiations due to Other Reasons = " + getInstFailNum(FailEntry.FailReason.OTHER) + "\n\n";
