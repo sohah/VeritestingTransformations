@@ -12,7 +12,6 @@ vm.storage.class=nil
 
 veritestingMode = 5
 performanceMode = true
-jitAnalysis=true
 
 #listener = .symbc.VeritestingListener
 #,gov.nasa.jpf.listener.CoverageAnalyzer
