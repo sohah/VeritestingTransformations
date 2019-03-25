@@ -89,6 +89,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static int timeout_mins = -1, timeoutReportingCounter = 12;
     private static long npaths = 0;
 
+    public static StringBuilder regionDigest = new StringBuilder();
+    private boolean printRegionDigest = false;
+
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
 
     public static VeritestingMode runMode;
@@ -177,7 +180,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("jitAnalysis")) {
                 jitAnalysis = conf.getBoolean("jitAnalysis");
             }
-
+            if (conf.hasValue("printRegionDigest")) {
+                printRegionDigest = conf.getBoolean("printRegionDigest");
+            }
             if (conf.hasValue("maxStaticExplorationDepth"))
                 maxStaticExplorationDepth = conf.getInt("maxStaticExplorationDepth");
 
@@ -232,8 +237,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     if (isSymCond(ti, instructionToExecute)) {
                         thisHighOrdCount = 0;
                         staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
-                        if (staticRegion != null)
+                        if (staticRegion != null){
                             runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
+                            regionDigest.append("\n" + staticRegion.staticStmt.toString());
+                        }
                     } /*else
                         statisticManager.updateConcreteHitStatForRegion(key);*/
                 }
@@ -249,6 +256,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         thisHighOrdCount = 0;
                         //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                         if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
+                            regionDigest.append("\n" + staticRegion.staticStmt.toString());
                             runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
                         } else
                             statisticManager.updateConcreteHitStatForRegion(key);
@@ -739,6 +747,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         PrintWriter pw = publisher.getOut();
         publisher.publishTopicStart("VeritestingListener report:");
         long dynRunTime = (runEndTime - runStartTime) - (jitAnalysis ? JITAnalysis.staticAnalysisDur : staticAnalysisDur);
+
+        if(printRegionDigest){
+            pw.print("^-^ printing regionDigest^-^\n" + regionDigest.toString());
+            pw.print("^-^ end of regionDigest ^-^");
+        }
 
         pw.println(statisticManager.printAllRegionStatistics());
 //        pw.println(statisticManager.printStaticAnalysisStatistics());
