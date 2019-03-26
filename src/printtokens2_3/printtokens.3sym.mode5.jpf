@@ -20,3 +20,6 @@ listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.Increme
 symbolic.optimizechoices=false
 maxStaticExplorationDepth = 3
 symbolic.lazy = true
+
+jitAnalysis=false
+printRegionDigest=true

@@ -1,7 +1,8 @@
-target=Schedule2
-classpath=${jpf-symbc}/build/schedule2_3
-sourcepath=${jpf-symbc}/src/schedule2_3
-symbolic.method = Schedule2.mainProcess(sym#sym#sym)
+target=DumpXML
+classpath=${jpf-symbc}/build/nanoxml
+sourcepath=${jpf-symbc}/src/nanoxml
+#symbolic.method = DumpXML.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym)
+symbolic.method = DumpXML.mainProcess(sym#sym#sym#sym#sym#con#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100
 vm.storage.class=nil
@@ -12,11 +13,15 @@ vm.storage.class=nil
 #symbolic.debug=on
 
 veritestingMode=5
-performanceMode = true
+performanceMode = false
 
 symbolic.dp=z3bitvectorinc
 listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 symbolic.optimizechoices=false
 
-jitAnalysis=false
+symbolic.arrays = true
+maxStaticExplorationDepth = 3
+
+
+jitAnalysis=true
 printRegionDigest=true

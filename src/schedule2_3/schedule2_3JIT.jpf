@@ -18,5 +18,5 @@ symbolic.dp=z3bitvectorinc
 listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 symbolic.optimizechoices=false
 
-jitAnalysis=false
+jitAnalysis=true
 printRegionDigest=true

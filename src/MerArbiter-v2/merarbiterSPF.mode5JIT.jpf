@@ -32,5 +32,5 @@ maxStaticExplorationDepth = 3
 symbolic.lazy = true
 
 
-jitAnalysis=false
+jitAnalysis=true
 printRegionDigest=true
