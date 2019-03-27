@@ -25,3 +25,4 @@ symbolic.optimizechoices=false
 printRegionDigest=true
 
 jitAnalysis=true
+regionDigestPrintName=wbsJIT.log

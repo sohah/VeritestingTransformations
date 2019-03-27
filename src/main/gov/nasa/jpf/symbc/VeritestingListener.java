@@ -45,7 +45,7 @@ import za.ac.sun.cs.green.expr.*;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.RealConstant;
 
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -91,6 +91,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public static StringBuilder regionDigest = new StringBuilder();
     private boolean printRegionDigest = false;
+    private static String regionDigestPrintName;
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
 
@@ -180,6 +181,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("jitAnalysis")) {
                 jitAnalysis = conf.getBoolean("jitAnalysis");
             }
+            if (conf.hasValue("regionDigestPrintName")) {
+                regionDigestPrintName = conf.getString("regionDigestPrintName");
+                regionDigest.append("\n").append(regionDigestPrintName).append("\n");
+            }
             if (conf.hasValue("printRegionDigest")) {
                 printRegionDigest = conf.getBoolean("printRegionDigest");
             }
@@ -238,7 +243,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         thisHighOrdCount = 0;
                         staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
                         if (staticRegion != null){
-                            regionDigest.append("\n" + staticRegion.staticStmt.toString());
+                            regionDigest.append("\n").append(staticRegion.staticStmt.toString());
                             runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
                         }
                     } /*else
@@ -256,7 +261,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         thisHighOrdCount = 0;
                         //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                         if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
-                            regionDigest.append("\n" + staticRegion.staticStmt.toString());
+                            regionDigest.append("\n").append(staticRegion.staticStmt.toString());
                             runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
                         } else
                             statisticManager.updateConcreteHitStatForRegion(key);
@@ -267,26 +272,31 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             statisticManager.updateSPFHitForRegion(key, e.getMessage());
             System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
             updateSkipRegions(e.getMessage(), key);
+            writeRegionDigest();
             return;
         } catch (StaticRegionException sre) {
             statisticManager.updateSPFHitForRegion(key, sre.getMessage());
             System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
             updateSkipRegions(sre.getMessage(), key);
+            writeRegionDigest();
             return;
         } catch (VisitorException greenEx) {
             statisticManager.updateSPFHitForRegion(key, greenEx.getMessage());
             System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + greenEx.getMessage() + "\n");
             updateSkipRegions(greenEx.getMessage(), key);
+            writeRegionDigest();
             return;
         } catch (CloneNotSupportedException e) {
             System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
             e.printStackTrace();
             updateSkipRegions(e.getMessage(), key);
+            writeRegionDigest();
             return;
         } catch (Exception e) {
             System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
             e.printStackTrace();
             updateSkipRegions(e.getMessage(), key);
+            writeRegionDigest();
         }
     }
 
@@ -748,10 +758,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         publisher.publishTopicStart("VeritestingListener report:");
         long dynRunTime = (runEndTime - runStartTime) - (jitAnalysis ? JITAnalysis.staticAnalysisDur : staticAnalysisDur);
 
-        if(printRegionDigest){
-            pw.print("^-^ printing regionDigest^-^\n" + regionDigest.toString());
-            pw.print("^-^ end of regionDigest ^-^");
-        }
+        writeRegionDigest();
 
         pw.println(statisticManager.printAllRegionStatistics());
 //        pw.println(statisticManager.printStaticAnalysisStatistics());
@@ -792,6 +799,17 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Metrics Vector:");
         pw.println(getMetricsVector(dynRunTime));
 
+    }
+
+    private void writeRegionDigest() {
+        if(printRegionDigest){
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream("../logs/regionDigest_"+regionDigestPrintName), "utf-8"))) {
+                writer.write(regionDigest.toString());
+            } catch (Exception e){
+                System.out.println("problem writing regionDigest out.");
+            }
+        }
     }
 
     private String getMetricsVector(long dynRunTime) {

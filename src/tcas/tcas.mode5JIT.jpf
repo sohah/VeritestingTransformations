@@ -24,3 +24,4 @@ listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.Increme
 symbolic.optimizechoices=false
 jitAnalysis=true
 printRegionDigest=true
+regionDigestPrintName=tcasJIT.log

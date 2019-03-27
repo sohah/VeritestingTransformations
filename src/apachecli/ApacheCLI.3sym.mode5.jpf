@@ -24,3 +24,4 @@ symbolic.optimizechoices=false
 jitAnalysis=false
 symbolic.lazy = true
 printRegionDigest=true
+regionDigestPrintName=ApacheCLI

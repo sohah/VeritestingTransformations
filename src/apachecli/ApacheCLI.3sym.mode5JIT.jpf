@@ -24,3 +24,4 @@ symbolic.optimizechoices=false
 jitAnalysis=true
 symbolic.lazy = true
 printRegionDigest=true
+regionDigestPrintName=ApacheCLIJIT

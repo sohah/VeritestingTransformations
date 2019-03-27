@@ -1,9 +1,9 @@
 target=SENPDriver
 classpath=${jpf-symbc}/build/siena
 sourcepath=${jpf-symbc}/src/siena
-symbolic.method = SENPDriver.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym)
+#symbolic.method = SENPDriver.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym)
 #symbolic.method = SENPDriver.mainProcess(sym#sym#sym#con#con#con#con#con#con)
-#symbolic.method = SENPDriver.mainProcess(sym#con#con#con#con#con#con#con#con)
+symbolic.method = SENPDriver.mainProcess(sym#con#con#con#con#con#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100
 vm.storage.class=nil
@@ -22,3 +22,4 @@ symbolic.optimizechoices=false
 
 jitAnalysis=false
 printRegionDigest=true
+regionDigestPrintName=Siena.log
