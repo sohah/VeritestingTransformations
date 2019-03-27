@@ -784,7 +784,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println(statisticManager.printAccumulativeStatistics());
         pw.println(statisticManager.printInstantiationStatistics());
 
-        pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
+        //SH: turning this off because it is not an interesting number to know, because it includes those regions that were concrete.
+  //      pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
         pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
         /* Begin added for equivalence checking */
         if (veritestRegionExpectedCount != -1) {
