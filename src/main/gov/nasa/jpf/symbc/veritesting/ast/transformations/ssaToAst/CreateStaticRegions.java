@@ -831,9 +831,6 @@ public class CreateStaticRegions {
 
         assert (isBranch(cfg, startingBlock));
         Stmt stmt = conditionalBranch(cfg, startingBlock, terminus);
-        //if(VeritestingListener.jitAnalysis)
-//            stmt = conjoin(stmt, jitTranslateTruncatedFinalBlock(terminus));
-//        else
         stmt = conjoin(stmt, translateTruncatedFinalBlock(terminus));
         return stmt;
     }
@@ -842,9 +839,6 @@ public class CreateStaticRegions {
 
         assert (isBranch(cfg, startingBlock));
         Stmt stmt = jitConditionalBranch(cfg, startingBlock, terminus, new HashMap<>());
-        //if(VeritestingListener.jitAnalysis)
-//            stmt = conjoin(stmt, jitTranslateTruncatedFinalBlock(terminus));
-//        else
         stmt = conjoin(stmt, translateTruncatedFinalBlock(terminus));
         return stmt;
     }
@@ -932,8 +926,6 @@ public class CreateStaticRegions {
         try {
             Stmt s = attemptMethodSubregion(cfg, cfg.entry(), cfg.exit());
             System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
-            SSAInstruction[] insns = ir.getInstructions();
-            //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
             veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0, null, null, null));
         } catch (StaticRegionException sre) {
             System.out.println("Unable to create a method summary region for: " + cfg.getMethod().getName().toString());
@@ -960,7 +952,6 @@ public class CreateStaticRegions {
         if (cfg.getNormalSuccessors(currentBlock).size() == 2) {
             stmt = jitTranslateTruncatedConditionalBlock(currentBlock);
 
-//            reset();
 
             FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
             ISSABasicBlock terminus = finder.findMinConvergingNode();
@@ -970,13 +961,10 @@ public class CreateStaticRegions {
                 endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex());
                 veritestingRegions.put(CreateStaticRegions.constructRegionIdentifier(ir, currentBlock), new StaticRegion(condStmt, ir, false, endIns, currentBlock, terminus, null));
             } catch (InvalidClassFileException e) {
-                //throw new StaticRegionException("unable to create static region:" + e.getMessage());
                 System.out.println("unable to create static region:" + e.getMessage());
             } catch (StaticRegionException sre) {
                 System.out.println("unable to create static region:" + sre.getMessage());
             }
-            //reset();
-            //populateMissedRegions(cfg, currentBlock, terminus);
             stmt = conjoin(stmt, condStmt);
 
             stmt = conjoin(stmt, attemptMethodAndMultiPathRegions(cfg, terminus, endingBlock));
@@ -1020,7 +1008,6 @@ public class CreateStaticRegions {
 
                 FindStructuredBlockEndNode finder = new FindStructuredBlockEndNode(cfg, currentBlock, endingBlock);
                 ISSABasicBlock terminus = finder.findMinConvergingNode();
-                //Stmt condStmt = jitAttemptConditionalSubregion(cfg, candidateBlocks[i], terminus);
 
 
                 Map<PhiEdge, List<PhiCondition>> tanslationMap = new HashMap<>();
@@ -1071,13 +1058,9 @@ public class CreateStaticRegions {
             Stmt s = attemptMethodAndMultiPathRegions(cfg, cfg.entry(), cfg.exit());
             System.out.println("Method" + System.lineSeparator() + PrettyPrintVisitor.print(s));
             SSAInstruction[] insns = ir.getInstructions();
-            //int endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(insns[insns.length - 1].iindex);
             veritestingRegions.put(CreateStaticRegions.constructMethodIdentifier(cfg.entry()), new StaticRegion(s, ir, true, 0, null, null, null));
         } catch (StaticRegionException sre) { //TODO: check if we need that for method regions.
-          //  if (VeritestingListener.jitAnalysis)
                 throw sre;
-           // else
-           //     System.out.println("Unable to create a method summary subregion for: " + cfg.getMethod().getName().toString());
         }
     }
 }
