@@ -1,9 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst;
 
-import com.ibm.wala.ssa.IR;
-import com.ibm.wala.ssa.ISSABasicBlock;
-import com.ibm.wala.ssa.SSACFG;
-import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.classLoader.IBytecodeMethod;
+import com.ibm.wala.shrikeCT.InvalidClassFileException;
+import com.ibm.wala.ssa.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionMetricsVisitor;
@@ -177,8 +176,29 @@ public class StaticRegion implements Region {
             else
                 outputTable = new OutputTable(ir, isMethodRegion, (SlotParamTable) slotParamTable, (InputTable) inputTable, staticStmt, new Pair<>(firstDef, lastDef));
         }
-        this.endIns = endIns;
+
         LocalOutputInvariantVisitor.execute(this);
+        if (!isMethodRegion &&
+                ((SSACFG.BasicBlock)terminus).getStackSlotPhis() != null &&
+                ((SSACFG.BasicBlock)terminus).getStackSlotPhis().length != 0) {
+            SSAPhiInstruction[] stackSlotPhis = ((SSACFG.BasicBlock)terminus).getStackSlotPhis();
+            if (stackSlotPhis.length != 1)
+                throwException(new StaticRegionException("static regions with more than one stack output are currently unsupported"), STATIC);
+            int walaStackOutputNum = stackSlotPhis[0].getDef();
+            if (stackOutput != null && walaStackOutputNum != stackOutput.number)
+                throwException(new StaticRegionException("Wala's stack output Wala var does not match our stack output Wala var"), STATIC);
+            if (stackOutput == null) {
+                if (((OutputTable) outputTable).isOutputVar(walaStackOutputNum)) {
+                    try {
+                        endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex()+1);
+                    } catch (InvalidClassFileException e) {
+                        e.printStackTrace();
+                        throwException(new StaticRegionException("ran into trouble when updating the region end for region with stack output captured by local output"), STATIC);
+                    }
+                }
+            }
+        }
+        this.endIns = endIns;
         RegionMetricsVisitor.execute(this);
     }
 
