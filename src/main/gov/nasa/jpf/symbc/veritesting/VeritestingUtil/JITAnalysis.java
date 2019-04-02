@@ -116,5 +116,7 @@ public class JITAnalysis {
         return classPath;
     }
 
-
+    public static HashSet<String> getAttemptedMethods() {
+        return attemptedMehods;
+    }
 }

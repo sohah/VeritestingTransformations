@@ -52,6 +52,7 @@ public class VeritestingMain {
     public static HashSet<String> skipVeriRegions = new HashSet<>();
     public static final HashSet<String> skipRegionStrings = new HashSet<>();
     private ThreadInfo ti;
+    private static HashSet<String> attemptedMehods = new HashSet<>();
 
     SSACFG cfg;
     HashSet startingPointsHistory;
@@ -74,6 +75,10 @@ public class VeritestingMain {
         } catch (WalaException | IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static HashSet<String> getAttemptedMehods() {
+        return attemptedMehods;
     }
 
     public void analyzeForVeritesting(ArrayList<String> classPaths, String _className) {
@@ -390,6 +395,8 @@ public class VeritestingMain {
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             // Here is where the magic happens.
             CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
+            attemptedMehods.add(this.methodSig);
+
             if (!methodAnalysis) {
                 //regionCreator.createStructuredConditionalRegions(cfg, veritestingRegions);
                 regionCreator.createStructuredConditionalRegions(veriRegions);

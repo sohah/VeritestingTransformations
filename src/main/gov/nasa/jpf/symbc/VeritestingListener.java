@@ -181,12 +181,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("jitAnalysis")) {
                 jitAnalysis = conf.getBoolean("jitAnalysis");
             }
-            if (conf.hasValue("regionDigestPrintName")) {
-                regionDigestPrintName = conf.getString("regionDigestPrintName");
-                regionDigest.append("\n").append(regionDigestPrintName).append("\n");
-            }
+
             if (conf.hasValue("printRegionDigest")) {
                 printRegionDigest = conf.getBoolean("printRegionDigest");
+                if (conf.hasValue("regionDigestPrintName"))
+                    regionDigestPrintName = conf.getString("regionDigestPrintName");
+                else
+                    regionDigestPrintName = "UnspecifiedDigestName";
+                regionDigest.append("\n").append(regionDigestPrintName).append("\n");
             }
             if (conf.hasValue("maxStaticExplorationDepth"))
                 maxStaticExplorationDepth = conf.getInt("maxStaticExplorationDepth");
@@ -242,7 +244,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     if (isSymCond(ti, instructionToExecute)) {
                         thisHighOrdCount = 0;
                         staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
-                        if (staticRegion != null){
+                        if (staticRegion != null) {
                             regionDigest.append("\n").append(staticRegion.staticStmt.toString());
                             runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
                         }
@@ -760,6 +762,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         writeRegionDigest();
 
+
         pw.println(statisticManager.printAllRegionStatistics());
 //        pw.println(statisticManager.printStaticAnalysisStatistics());
         pw.println(statisticManager.printAllExceptionStatistics());
@@ -785,8 +788,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println(statisticManager.printInstantiationStatistics());
 
         //SH: turning this off because it is not an interesting number to know, because it includes those regions that were concrete.
-  //      pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
+        //      pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
+
         pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
+
         /* Begin added for equivalence checking */
         if (veritestRegionExpectedCount != -1) {
             pw.println("Expected Number of Veritested Regions Instances = " + veritestRegionExpectedCount);
@@ -803,12 +808,19 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     private void writeRegionDigest() {
-        if(printRegionDigest){
+        if (printRegionDigest) {
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream("../logs/regionDigest_"+regionDigestPrintName), "utf-8"))) {
+                    new FileOutputStream("../logs/regionDigest_" + regionDigestPrintName), "utf-8"))) {
                 writer.write(regionDigest.toString());
-            } catch (Exception e){
+            } catch (Exception e) {
                 System.out.println("problem writing regionDigest out.");
+            }
+            if (jitAnalysis) {
+                System.out.println("printing methods attempted for jitAnalysis\n");
+                System.out.println(JITAnalysis.getAttemptedMethods());
+            } else {
+                System.out.println("printing methods attempted for Static Analysis\n");
+                System.out.println(VeritestingMain.getAttemptedMehods());
             }
         }
     }
