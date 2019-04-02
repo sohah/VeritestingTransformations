@@ -112,17 +112,29 @@ public class LocalOutputInvariantVisitor extends AstMapVisitor {
                 if (!outputFound) {
                     if (staticRegion.stackOutput == null) staticRegion.stackOutput = lhs;
                     else
-                        throwException(new StaticRegionException("static region with gamma expression has more than one non-local output in lhs"), STATIC);
+                        throwException(new StaticRegionException("static region with gamma expression has more than one stack output in lhs"), STATIC);
                 }
             }
         }
+        /*
+        I (Vaibhav) used to think that this assertion should hold across all multi-path regions. But I found that there
+        are three root causes of this assertion's violations that dont result in a correctness violation.
+        1. The region summary has a return statement on one side of an if-statement and a local variable assignment on the other.
+        2. The local output is not used after the region. For example, this root cause can be seen in
+            i. last if-then statement in java.util.Integer.getChars(II[C)V
+            ii. the if-then statement containing the innermost if-then-else statement inside the double-nested
+                 do-while loop in java.util.Base64$Encoder.encode0([BI[B)I
+        3. The local variables that are the outputs go out of scope outside the region and therefore don't need gamma statement.
+        Therefore, I am commenting out the below assertion.
+         */
+
         // Every output in the output table should come from a gamma statement
-        Set<Integer> outputSlots = staticRegion.outputTable.table.keySet();
+        /*Set<Integer> outputSlots = staticRegion.outputTable.table.keySet();
         for (int slot : outputSlots) {
             if (!visitor.gammaWalaVarDefs.contains(staticRegion.outputTable.lookup(slot)))
                 throwException(new StaticRegionException("local output " + staticRegion.outputTable.lookup(slot) +
                         " to stack slot " + slot + " does not have corresponding gamma statement"), STATIC);
-        }
+        }*/
         return true;
     }
 }
