@@ -763,7 +763,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         writeRegionDigest();
 
 
-        pw.println(statisticManager.printAllRegionStatistics());
+        //pw.println(statisticManager.printAllRegionStatistics());
 //        pw.println(statisticManager.printStaticAnalysisStatistics());
         pw.println(statisticManager.printAllExceptionStatistics());
 
