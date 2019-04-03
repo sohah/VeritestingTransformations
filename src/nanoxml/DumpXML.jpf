@@ -2,7 +2,7 @@ target=DumpXML
 classpath=${jpf-symbc}/build/nanoxml
 sourcepath=${jpf-symbc}/src/nanoxml
 #symbolic.method = DumpXML.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym)
-symbolic.method = DumpXML.mainProcess(sym#sym#sym#sym#sym#sym#con#con#con)
+symbolic.method = DumpXML.mainProcess(sym#sym#sym#con#con#con#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100
 vm.storage.class=nil
@@ -13,7 +13,7 @@ vm.storage.class=nil
 #symbolic.debug=on
 
 veritestingMode=5
-performanceMode = true
+performanceMode = false
 
 symbolic.dp=z3bitvectorinc
 listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
@@ -22,4 +22,7 @@ symbolic.optimizechoices=false
 symbolic.arrays = true
 maxStaticExplorationDepth = 3
 
-jitAnalysis = true
+
+jitAnalysis=false
+printRegionDigest=true
+regionDigestPrintName=NanoXML.log

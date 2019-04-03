@@ -45,7 +45,7 @@ import za.ac.sun.cs.green.expr.*;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.RealConstant;
 
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -84,10 +84,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     private static int veritestRegionExpectedCount = -1;
     private static int instantiationLimit = -1;
     public static boolean simplify = true;
-    public static boolean jitAnalysis = false;
+    public static boolean jitAnalysis = true;
     // makes timeout reporting happens at least 12 times in the last 2 minutes before a timeout at a gap of 10 seconds
     private static int timeout_mins = -1, timeoutReportingCounter = 12;
     private static long npaths = 0;
+
+    public static StringBuilder regionDigest = new StringBuilder();
+    private boolean printRegionDigest = false;
+    private static String regionDigestPrintName;
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
 
@@ -174,9 +178,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("simplify"))
                 simplify = conf.getBoolean("simplify");
 
-            if (conf.hasValue("jitAnalysis"))
+            if (conf.hasValue("jitAnalysis")) {
                 jitAnalysis = conf.getBoolean("jitAnalysis");
+            }
 
+            if (conf.hasValue("printRegionDigest")) {
+                printRegionDigest = conf.getBoolean("printRegionDigest");
+                if (conf.hasValue("regionDigestPrintName"))
+                    regionDigestPrintName = conf.getString("regionDigestPrintName");
+                else
+                    regionDigestPrintName = "UnspecifiedDigestName";
+                regionDigest.append("\n").append(regionDigestPrintName).append("\n");
+            }
             if (conf.hasValue("maxStaticExplorationDepth"))
                 maxStaticExplorationDepth = conf.getInt("maxStaticExplorationDepth");
 
@@ -203,7 +216,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public void executeInstruction(VM vm, ThreadInfo ti, Instruction instructionToExecute) {
         if (timeout_mins != -1) {
             long runningTimeNsecs = System.nanoTime() - runStartTime;
-            if (TimeUnit.NANOSECONDS.toSeconds(runningTimeNsecs) > ((timeout_mins*60)-(10* timeoutReportingCounter)) ) {
+            if (TimeUnit.NANOSECONDS.toSeconds(runningTimeNsecs) > ((timeout_mins * 60) - (10 * timeoutReportingCounter))) {
                 System.out.println("Metrics Vector:");
                 System.out.println(getMetricsVector(runningTimeNsecs));
                 timeoutReportingCounter--;
@@ -226,12 +239,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         StatisticManager.instructionToExec = key;
         try {
             if (jitAnalysis) {
-                if (isSymCond(ti, instructionToExecute) && !skipVeriRegions.contains(key) && isAllowedRegion(key)) {
-                    thisHighOrdCount = 0;
-                    StaticRegion staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
-                    runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
-                } else
-                    statisticManager.updateConcreteHitStatForRegion(key);
+                StaticRegion staticRegion;
+                if (!skipVeriRegions.contains(key) && isAllowedRegion(key)) {
+                    if (isSymCond(ti, instructionToExecute)) {
+                        thisHighOrdCount = 0;
+                        staticRegion = JITAnalysis.discoverRegions(ti, instructionToExecute, key); // Just-In-Time static analysis to discover regions
+                        if (staticRegion != null) {
+                            regionDigest.append("\n").append(staticRegion.staticStmt.toString());
+                            runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
+                        }
+                    } /*else
+                        statisticManager.updateConcreteHitStatForRegion(key);*/
+                }
             } else { //not jitAnalysis
                 if (initializeTime) {
                     discoverRegions(ti); // static analysis to discover regions
@@ -244,6 +263,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                         thisHighOrdCount = 0;
                         //if (SpfUtil.isSymCond(staticRegion.staticStmt)) {
                         if (SpfUtil.isSymCond(ti, staticRegion.staticStmt, (SlotParamTable) staticRegion.slotParamTable, instructionToExecute)) {
+                            regionDigest.append("\n").append(staticRegion.staticStmt.toString());
                             runVeritestingWrapper(ti, vm, staticRegion, instructionToExecute);
                         } else
                             statisticManager.updateConcreteHitStatForRegion(key);
@@ -254,26 +274,31 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             statisticManager.updateSPFHitForRegion(key, e.getMessage());
             System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
             updateSkipRegions(e.getMessage(), key);
+            writeRegionDigest();
             return;
         } catch (StaticRegionException sre) {
             statisticManager.updateSPFHitForRegion(key, sre.getMessage());
             System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + sre.getMessage() + "\n");
             updateSkipRegions(sre.getMessage(), key);
+            writeRegionDigest();
             return;
         } catch (VisitorException greenEx) {
             statisticManager.updateSPFHitForRegion(key, greenEx.getMessage());
             System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + greenEx.getMessage() + "\n");
             updateSkipRegions(greenEx.getMessage(), key);
+            writeRegionDigest();
             return;
         } catch (CloneNotSupportedException e) {
             System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
             e.printStackTrace();
             updateSkipRegions(e.getMessage(), key);
+            writeRegionDigest();
             return;
         } catch (Exception e) {
             System.out.println("!!!!!!!! Aborting Veritesting !!!!!!!!!!!! " + "\n" + e.getMessage() + "\n");
             e.printStackTrace();
             updateSkipRegions(e.getMessage(), key);
+            writeRegionDigest();
         }
     }
 
@@ -735,9 +760,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         publisher.publishTopicStart("VeritestingListener report:");
         long dynRunTime = (runEndTime - runStartTime) - (jitAnalysis ? JITAnalysis.staticAnalysisDur : staticAnalysisDur);
 
-        pw.println(statisticManager.printAllRegionStatistics());
+        writeRegionDigest();
+
+
+        //pw.println(statisticManager.printAllRegionStatistics());
 //        pw.println(statisticManager.printStaticAnalysisStatistics());
-//        pw.println(statisticManager.printAllExceptionStatistics());
+        pw.println(statisticManager.printAllExceptionStatistics());
 
         pw.println("\n/************************ Printing Time Decomposition Statistics *****************");
         pw.println("static analysis time = " + TimeUnit.NANOSECONDS.toMillis(jitAnalysis ? JITAnalysis.staticAnalysisDur : staticAnalysisDur) + " msec");
@@ -759,8 +787,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println(statisticManager.printAccumulativeStatistics());
         pw.println(statisticManager.printInstantiationStatistics());
 
-        pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
+        //SH: turning this off because it is not an interesting number to know, because it includes those regions that were concrete.
+        //      pw.println("Total number of Distinct regions = " + statisticManager.regionCount());
+
         pw.println("Number of Veritested Regions Instances = " + veritestRegionCount);
+
         /* Begin added for equivalence checking */
         if (veritestRegionExpectedCount != -1) {
             pw.println("Expected Number of Veritested Regions Instances = " + veritestRegionExpectedCount);
@@ -774,6 +805,24 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Metrics Vector:");
         pw.println(getMetricsVector(dynRunTime));
 
+    }
+
+    private void writeRegionDigest() {
+        if (printRegionDigest) {
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream("../logs/regionDigest_" + regionDigestPrintName), "utf-8"))) {
+                writer.write(regionDigest.toString());
+            } catch (Exception e) {
+                System.out.println("problem writing regionDigest out.");
+            }
+            if (jitAnalysis) {
+                System.out.println("printing methods attempted for jitAnalysis\n");
+                System.out.println(JITAnalysis.getAttemptedMethods());
+            } else {
+                System.out.println("printing methods attempted for Static Analysis\n");
+                System.out.println(VeritestingMain.getAttemptedMehods());
+            }
+        }
     }
 
     private String getMetricsVector(long dynRunTime) {

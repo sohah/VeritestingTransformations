@@ -14,6 +14,7 @@ import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
@@ -164,7 +165,7 @@ public class SpfToGreenVisitor implements AstVisitor<Expression> {
 
     public DynamicRegion execute(DynamicRegion dynRegion) {
 
-        HashSet<SPFCaseStmt> greenList = new HashSet<>();
+        LinkedHashSet<SPFCaseStmt> greenList = new LinkedHashSet<>();
         for (SPFCaseStmt spfCaseStmt : dynRegion.spfCaseList.casesList) {
             greenList.add(noVars(spfCaseStmt, dynRegion));
         }

@@ -1,7 +1,8 @@
-target=printTokens2
-classpath=${jpf-symbc}/build/printtokens2_3
-sourcepath=${jpf-symbc}/src/printtokens2_3
-symbolic.method = printTokens2.mainProcess(sym#sym#con#con#con#con#con#con)
+target=DumpXML
+classpath=${jpf-symbc}/build/nanoxml
+sourcepath=${jpf-symbc}/src/nanoxml
+#symbolic.method = DumpXML.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym)
+symbolic.method = DumpXML.mainProcess(sym#sym#sym#con#con#con#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100
 vm.storage.class=nil
@@ -12,14 +13,16 @@ vm.storage.class=nil
 #symbolic.debug=on
 
 veritestingMode=5
-performanceMode = true
+performanceMode = false
 
 symbolic.dp=z3bitvectorinc
 listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 symbolic.optimizechoices=false
+
+symbolic.arrays = true
 maxStaticExplorationDepth = 3
-symbolic.lazy = true
-simplify = true
-jitAnalysis=false
+
+
+jitAnalysis=true
 printRegionDigest=true
-regionDigestPrintName=printTokens.log
+regionDigestPrintName=NanoXMLJIT.log

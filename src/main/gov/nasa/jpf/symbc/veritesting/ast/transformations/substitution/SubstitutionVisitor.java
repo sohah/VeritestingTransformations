@@ -67,9 +67,13 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         return somethingChanged;
     }
 
-    public void setValueSymbolTable(DynamicTable valueSymbolTable){((ExprSubstitutionVisitor)eva.theVisitor).setValueSymbolTable(valueSymbolTable);}
+    public void setValueSymbolTable(DynamicTable valueSymbolTable) {
+        ((ExprSubstitutionVisitor) eva.theVisitor).setValueSymbolTable(valueSymbolTable);
+    }
 
-    public DynamicTable getValueSymbolTable(){return ((ExprSubstitutionVisitor)eva.theVisitor).getValueSymbolTable();}
+    public DynamicTable getValueSymbolTable() {
+        return ((ExprSubstitutionVisitor) eva.theVisitor).getValueSymbolTable();
+    }
 
     private SubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
                                 DynamicTable valueSymbolTable, boolean useVarTable) {
@@ -200,18 +204,19 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                     || (invokeCode == IInvokeInstruction.Dispatch.SPECIAL))) {
 
                 Pair<String, StaticRegion> keyRegionPair = null;
-                if(VeritestingListener.jitAnalysis){
-                try {
-                    keyRegionPair = jitFindMethodRegion(ti, newC);
-                } catch (StaticRegionException e) {
-                    if (firstException == null) {
-                        sre = e;
-                        return newC;
+                if (VeritestingListener.jitAnalysis) {
+                    try {
+                        keyRegionPair = jitFindMethodRegion(ti, newC);
+                    } catch (StaticRegionException e) {
+                        sre = new StaticRegionException("Cannot summarize invoke in " + instruction.toString());
+                        if (firstException == null) {
+                            firstException = sre;
+                            skipRegionStrings.add("Cannot summarize invoke");
+                            return newC;
+                        }
                     }
-                }
-                }
-                else
-                keyRegionPair = findMethodRegion(ti, newC);
+                } else
+                    keyRegionPair = findMethodRegion(ti, newC);
 
                 if (keyRegionPair == null) //case where we couldn't grap the method region, usually because a concrete reference does not exists.
                     return newC;
@@ -292,8 +297,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
      * @return A pair of substituted statement for the high order region as well as its VarTypeTable.
      */
     private Pair<Stmt, DynamicTable> attemptHighOrderRegion(
-                                                            DynamicRegion methodRegion,
-                                                            DynamicTable hgOrdValueSymbolTable) throws StaticRegionException {
+            DynamicRegion methodRegion,
+            DynamicTable hgOrdValueSymbolTable) throws StaticRegionException {
 
         assert (methodRegion.isMethodRegion);
         hgOrdValueSymbolTable.mergeTable(fillValueSymbolTable(ti, methodRegion));
@@ -321,7 +326,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         } else {
             if (stmt instanceof ReturnInstruction)
                 return new Pair(SkipStmt.skip, (((ReturnInstruction) stmt).rhs));
-            if ((stmt instanceof AssignmentStmt) && (((AssignmentStmt)stmt).lhs instanceof  AstVarExpr))
+            if ((stmt instanceof AssignmentStmt) && (((AssignmentStmt) stmt).lhs instanceof AstVarExpr))
                 return new Pair(SkipStmt.skip, (((AssignmentStmt) stmt).rhs));
             else
                 return null;
@@ -381,8 +386,10 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             //StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
             String jvmMethodName = methodName.toString() + methodSignature; //methodReference.getSignature();
             StaticRegion staticRegion = JITAnalysis.discoverAllClassAndGetRegion(className, jvmMethodName, key);
-            if (staticRegion != null)
+            if (staticRegion != null) {
+                VeritestingListener.regionDigest.append("\n" + staticRegion.staticStmt.toString());
                 return new Pair(key, staticRegion);
+            }
         }
         return new Pair(key, null);
     }
@@ -435,8 +442,10 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         for (String className : classList) {
             key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
             StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
-            if (staticRegion != null)
+            if (staticRegion != null) {
+                VeritestingListener.regionDigest.append("\n" + staticRegion.staticStmt.toString());
                 return new Pair(key, staticRegion);
+            }
         }
         return new Pair(key, null);
     }
@@ -516,7 +525,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         */
         this.instantiatedRegion = new DynamicRegion(dynRegion, dynStmt, new SPFCaseList(), null, null, dynRegion.earlyReturnResult);
 
-        System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION for: "+ VeritestingListener.key +" ---------------\n");
+        System.out.println("\n--------------- SUBSTITUTION TRANSFORMATION for: " + VeritestingListener.key + " ---------------\n");
         System.out.println(StmtPrintVisitor.print(dynRegion.dynStmt));
         dynRegion.slotParamTable.print();
         dynRegion.outputTable.print();

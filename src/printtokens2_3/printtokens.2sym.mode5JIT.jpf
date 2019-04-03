@@ -20,6 +20,7 @@ symbolic.optimizechoices=false
 maxStaticExplorationDepth = 3
 symbolic.lazy = true
 simplify = true
-jitAnalysis=false
+
+jitAnalysis=true
 printRegionDigest=true
-regionDigestPrintName=printTokens.log
+regionDigestPrintName=printTokensJIT.log

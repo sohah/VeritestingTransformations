@@ -61,6 +61,7 @@ public class JITAnalysis {
         long startTime = System.nanoTime();
 
         if (firstTime) { //create veritestingMain only once.
+            System.out.println("^_^ running jitAnalysis ^_^");
             JITAnalysis.veritestingMain = new VeritestingMain(ti);
             firstTime = false;
         }
@@ -71,10 +72,19 @@ public class JITAnalysis {
             attemptedMehods.add(jvmMethodName);
             //String className = conf.getString("target");
             classPath = getClassPaths();
-            try {
+            /*try {
                 veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, false);
             } catch (StaticRegionException sre) { // if failed while summarizing the method, try to summarize regions inside it.
-                veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, true);
+                    System.out.println(sre);
+            }*/
+            try {
+                veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, false);
+            } catch (StaticRegionException sre1) { // if failed while summarizing the method, try to summarize regions inside it.
+                try {
+                    veritestingMain.jitAnalyzeForVeritesting(classPath, className, jvmMethodName, true);
+                } catch (StaticRegionException sre2) {
+                    System.out.println(sre2);
+                }
             }
         }
 
@@ -84,9 +94,11 @@ public class JITAnalysis {
         long endTime = System.nanoTime();
         staticAnalysisDur += endTime - startTime;
 
-        if (staticRegion == null)
-            throw new StaticRegionException("Region has no recovered static region");
-        else
+        if (staticRegion == null) {
+            //throw new StaticRegionException("Region " + key + " has no recovered static region");
+            System.out.println("Region " + key + " has no recovered static region");
+            return null;
+        } else
             return staticRegion;
     }
 
@@ -104,5 +116,7 @@ public class JITAnalysis {
         return classPath;
     }
 
-
+    public static HashSet<String> getAttemptedMethods() {
+        return attemptedMehods;
+    }
 }
