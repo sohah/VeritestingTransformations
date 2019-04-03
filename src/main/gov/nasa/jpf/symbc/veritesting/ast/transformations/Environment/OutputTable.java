@@ -87,4 +87,8 @@ public class OutputTable extends StaticTable<Integer> {
         System.out.println("\nprinting " + tableName + " (" + label1 + "->" + label2 + ")");
         table.forEach((v1, v2) -> System.out.println(v1 + " --------- @w" + v2));
     }
+
+    public boolean isOutputVar(int var) {
+        return table.containsValue(var);
+    }
 }

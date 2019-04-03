@@ -324,7 +324,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         boolean isEndingInsnStackConsuming = isStackConsumingRegionEnd(staticRegion, instructionToExecute);
         // If region ends on a stack operand consuming instruction then the region should have a stack output
         if (isEndingInsnStackConsuming && staticRegion.stackOutput == null) {
-            throwException(new StaticRegionException("Region ends on a stack-consuming instructions"), INSTANTIATION);
+            throwException(new StaticRegionException("Region ends on a stack-consuming instruction"), INSTANTIATION);
         }
         if (!isEndingInsnStackConsuming && staticRegion.stackOutput != null) {
             throwException(new StaticRegionException("Region with stack output ends on a non-stack-consuming instruction"), INSTANTIATION);
