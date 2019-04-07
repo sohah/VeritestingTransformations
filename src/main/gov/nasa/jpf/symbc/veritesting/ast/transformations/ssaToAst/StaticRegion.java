@@ -181,6 +181,8 @@ public class StaticRegion implements Region {
         if (!isMethodRegion &&
                 ((SSACFG.BasicBlock)terminus).getStackSlotPhis() != null &&
                 ((SSACFG.BasicBlock)terminus).getStackSlotPhis().length != 0) {
+            // a StackSlotPhi is essentially a phi instruction that computes an output that is to be written to the
+            // stack and not a local variable
             SSAPhiInstruction[] stackSlotPhis = ((SSACFG.BasicBlock)terminus).getStackSlotPhis();
             if (stackSlotPhis.length != 1)
                 throwException(new StaticRegionException("static regions with more than one stack output are currently unsupported"), STATIC);
@@ -189,12 +191,12 @@ public class StaticRegion implements Region {
                 throwException(new StaticRegionException("Wala's stack output Wala var does not match our stack output Wala var"), STATIC);
             if (stackOutput == null) {
                 if (((OutputTable) outputTable).isOutputVar(walaStackOutputNum)) {
-                    try {
-                        endIns = ((IBytecodeMethod) (ir.getMethod())).getBytecodeIndex(terminus.getFirstInstructionIndex()+1);
-                    } catch (InvalidClassFileException e) {
-                        e.printStackTrace();
-                        throwException(new StaticRegionException("ran into trouble when updating the region end for region with stack output captured by local output"), STATIC);
-                    }
+                    // if a region summary includes a stack output, then don't consider it a local variable output
+                    // since the region should be ending on an instruction that stores this stack output to the stack
+                    stackOutput = new WalaVarExpr(walaStackOutputNum);
+                    int[] slots = ((SlotParamTable) slotParamTable).lookup(walaStackOutputNum);
+                    for (int i = 0; i < slots.length; i++)
+                        outputTable.remove(slots[i]);
                 }
             }
         }
