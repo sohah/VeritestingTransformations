@@ -839,6 +839,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 statisticManager.getConcreteRegionNum() + "," +
                 statisticManager.getFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION) + "," +
                 statisticManager.getFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION) + "," +
+                statisticManager.getFailNum(FailEntry.FailReason.MISSINGMETHODSUMMARY) + "," +
                 statisticManager.getFailNum(FailEntry.FailReason.OTHER) + "," +
                 hgOrdRegionInstance + "," +
                 statisticManager.regionCount() + "," +
@@ -848,6 +849,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 statisticManager.getConcreteInstNum() + "," +
                 statisticManager.getInstFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION) + "," +
                 statisticManager.getInstFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION) + "," +
+                statisticManager.getInstFailNum(FailEntry.FailReason.MISSINGMETHODSUMMARY) + "," +
                 statisticManager.getInstFailNum(FailEntry.FailReason.OTHER) + "," +
                 // static analysis metrics
                 interestingRegionCount + "," + numMethodSummaries + "," + maxBranchDepth + "," + maxExecPathCount + "," + avgExecPathCount + "," +

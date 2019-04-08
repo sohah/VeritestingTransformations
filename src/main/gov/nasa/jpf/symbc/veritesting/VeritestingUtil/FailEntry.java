@@ -6,6 +6,7 @@ public class FailEntry {
         FIELDREFERNCEINSTRUCTION,
         SPFCASEINSTRUCTION,
         CONCRETE,
+        MISSINGMETHODSUMMARY,
         OTHER;
     }
 

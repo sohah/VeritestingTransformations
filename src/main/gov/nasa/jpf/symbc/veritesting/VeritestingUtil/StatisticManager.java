@@ -54,12 +54,11 @@ public class StatisticManager {
 
         if(failError.contains("FieldSSAVisitor")){
             regionStatistics.failReasonList.add(new FailEntry(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION, failError));
-        }
-
-        else if(failError.contains("new") || (failError.contains("throw")) || (failError.contains("arrayload")) || (failError.contains("arraystore")) ){
+        } else if (failError.contains("not summarize invoke")) {
+            regionStatistics.failReasonList.add(new FailEntry(FailEntry.FailReason.MISSINGMETHODSUMMARY, failError));
+        } else if(failError.contains("new") || (failError.contains("throw")) || (failError.contains("arrayload")) || (failError.contains("arraystore")) ){
             regionStatistics.failReasonList.add(new FailEntry(FailEntry.FailReason.SPFCASEINSTRUCTION, failError));
-        }
-        else{
+        } else{
             regionStatistics.failReasonList.add(new FailEntry(FailEntry.FailReason.OTHER, failError));
         }
     }
@@ -122,6 +121,7 @@ public class StatisticManager {
               //  + "\nNumber of Distinct Un-Veritested Concrete Regions = "+ getConcreteRegionNum()
                 + "\nNumber of Distinct Failed Regions for Field Reference = " + getFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION)
                 + "\nNumber of Distinct Failed Regions for SPFCases = " + getFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION)
+                + "\nNumber of Distinct Failed Regions for missing method summaries = " + getFailNum(FailEntry.FailReason.MISSINGMETHODSUMMARY)
                 + "\nNumber of Distinct Failed Regions for Other Reasons = " + getFailNum(FailEntry.FailReason.OTHER)
                 + "\nNumber of High Order Regions Used = " + hgOrdRegionInstance;
         return out;
@@ -134,6 +134,7 @@ public class StatisticManager {
                 //+ "\nNumber of failed instantiations due to concrete condition = "+ getConcreteInstNum()
                 + "\nNumber of failed instantiations due to Field Reference = " + getInstFailNum(FailEntry.FailReason.FIELDREFERNCEINSTRUCTION)
                 + "\nNumber of failed instantiations due to SPFCases = " + getInstFailNum(FailEntry.FailReason.SPFCASEINSTRUCTION)
+                + "\nNumber of failed instantiations due to missing method summaries = " + getInstFailNum(FailEntry.FailReason.MISSINGMETHODSUMMARY)
                 + "\nNumber of failed instantiations due to Other Reasons = " + getInstFailNum(FailEntry.FailReason.OTHER) + "\n\n";
         return out;
     }

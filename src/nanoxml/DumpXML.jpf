@@ -23,6 +23,5 @@ symbolic.arrays = true
 maxStaticExplorationDepth = 3
 
 
-jitAnalysis=false
 printRegionDigest=true
 regionDigestPrintName=NanoXML.log
