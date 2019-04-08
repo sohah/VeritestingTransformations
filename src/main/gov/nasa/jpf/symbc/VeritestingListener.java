@@ -162,8 +162,15 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("jpf-symbc")) {
                 exclusionsFile = conf.getString("jpf-symbc") + "/MyJava60RegressionExclusions.txt";
             }
+            if (conf.hasValue("jitAnalysis")) {
+                jitAnalysis = conf.getBoolean("jitAnalysis");
+            }
             if (conf.hasValue("exclusionsFile")) {
                 exclusionsFile = conf.getString("exclusionsFile");
+                if (jitAnalysis) {
+                    System.out.println("**** warning: exclusionsFile is ignored when jitAnalysis is turned on");
+                    System.out.println("use jitAnalysis = false in your JPF configuration file to use the exclusionsFile property");
+                }
             }
             if (conf.hasValue("interestingClassNames")) {
                 interestingClassNames = conf.getStringArray("interestingClassNames", new char[]{','});
@@ -178,9 +185,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("simplify"))
                 simplify = conf.getBoolean("simplify");
 
-            if (conf.hasValue("jitAnalysis")) {
-                jitAnalysis = conf.getBoolean("jitAnalysis");
-            }
+
 
             if (conf.hasValue("printRegionDigest")) {
                 printRegionDigest = conf.getBoolean("printRegionDigest");
@@ -820,7 +825,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 System.out.println(JITAnalysis.getAttemptedMethods());
             } else {
                 System.out.println("printing methods attempted for Static Analysis\n");
-                System.out.println(VeritestingMain.getAttemptedMehods());
+                System.out.println(VeritestingMain.getAttemptedMethods());
             }
         }
     }

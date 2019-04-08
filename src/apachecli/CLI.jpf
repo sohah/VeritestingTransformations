@@ -22,7 +22,6 @@ performanceMode = true
 #symbolic.string_dp = z3
 exclusionsFile=${jpf-symbc}/src/apachecli/MyJava60RegressionExclusions.txt
 
-jitAnalysis = false
 maxStaticExplorationDepth = 2
 symbolic.lazy = true
 

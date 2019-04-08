@@ -37,6 +37,7 @@ import x10.wala.util.NatLoopSolver;
 import za.ac.sun.cs.green.expr.Operation;
 
 import static gov.nasa.jpf.symbc.VeritestingListener.exclusionsFile;
+import static gov.nasa.jpf.symbc.VeritestingListener.jitAnalysis;
 
 /**
  * Main class file for veritesting static analysis exploration.
@@ -52,7 +53,7 @@ public class VeritestingMain {
     public static HashSet<String> skipVeriRegions = new HashSet<>();
     public static final HashSet<String> skipRegionStrings = new HashSet<>();
     private ThreadInfo ti;
-    private static HashSet<String> attemptedMehods = new HashSet<>();
+    private static HashSet<String> attemptedMethods = new HashSet<>();
 
     SSACFG cfg;
     HashSet startingPointsHistory;
@@ -65,9 +66,11 @@ public class VeritestingMain {
             Map map = System.getenv();
             String appJar = System.getenv("TARGET_CLASSPATH_WALA");// + appJar;
             AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
-                    (new FileProvider()).getFile(exclusionsFile));
+                    jitAnalysis == true ? null : (new FileProvider()).getFile(exclusionsFile));
 //                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
+            System.out.print("Constructing class hierarchy...");
             cha = ClassHierarchyFactory.make(scope);
+            System.out.println("done!");
             methodSummaryClassNames = new HashSet<String>();
             //veritestingRegions = new HashMap<>();
             veriRegions = new HashMap<>();
@@ -77,8 +80,8 @@ public class VeritestingMain {
         }
     }
 
-    public static HashSet<String> getAttemptedMehods() {
-        return attemptedMehods;
+    public static HashSet<String> getAttemptedMethods() {
+        return attemptedMethods;
     }
 
     public void analyzeForVeritesting(ArrayList<String> classPaths, String _className) {
@@ -395,7 +398,7 @@ public class VeritestingMain {
             NatLoopSolver.findAllLoops(cfg, uninverteddom, loops, visited, cfg.getNode(0));
             // Here is where the magic happens.
             CreateStaticRegions regionCreator = new CreateStaticRegions(ir, loops);
-            attemptedMehods.add(this.methodSig);
+            attemptedMethods.add(this.methodSig);
 
             if (!methodAnalysis) {
                 //regionCreator.createStructuredConditionalRegions(cfg, veritestingRegions);
