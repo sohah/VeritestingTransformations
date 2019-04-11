@@ -15,10 +15,7 @@ import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.*;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticPCChoiceGenerator;
-import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.FailEntry;
-import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.JITAnalysis;
-import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
-import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.*;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.AstToGreenVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.AstToGreen.WalaVarToSPFVarVisitor;
@@ -92,6 +89,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     public static StringBuilder regionDigest = new StringBuilder();
     private boolean printRegionDigest = false;
     private static String regionDigestPrintName;
+
+    private static boolean spfCasesHeuristicsOn = false;
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
 
@@ -185,6 +184,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("simplify"))
                 simplify = conf.getBoolean("simplify");
 
+            if (conf.hasValue("SPFCasesHeuristics"))
+                spfCasesHeuristicsOn = conf.getBoolean("SPFCasesHeuristics");
 
 
             if (conf.hasValue("printRegionDigest")) {
@@ -240,6 +241,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
 
         String key = keyFromInstructionToExc(instructionToExecute);
+
+        if(spfCasesHeuristicsOn){ //if we are in heuristic mode then count paths.
+            StatisticManager.getLastRegionHeuristic();
+        }
 
         StatisticManager.instructionToExec = key;
         try {
@@ -405,8 +410,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             StaticPCChoiceGenerator newCG;
             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
 
-            newCG = new StaticBranchChoiceGenerator(dynRegion, instructionToExecute);
-            newCG.makeVeritestingCG(ti);
+            if (spfCasesHeuristicsOn)
+                newCG = new StaticBranchChoiceGenerator(dynRegion, instructionToExecute, true);
+            else
+                newCG = new StaticBranchChoiceGenerator(dynRegion, instructionToExecute);
+
+            newCG.makeVeritestingCG(ti, key);
 
             SystemState systemState = vm.getSystemState();
             systemState.setNextChoiceGenerator(newCG);
@@ -735,7 +744,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
      * @param ins       Insturction to be executed.
      * @param dynRegion Dynamic region that has been successfully transformed and summarized.
      */
-    private static Instruction advanceSpf(Instruction ins, DynamicRegion dynRegion, boolean earlyReturnSetup) {
+    public static Instruction advanceSpf(Instruction ins, DynamicRegion dynRegion, boolean earlyReturnSetup) {
         int endIns;
         if (!earlyReturnSetup) // going to first instruction after the region
             endIns = dynRegion.endIns;

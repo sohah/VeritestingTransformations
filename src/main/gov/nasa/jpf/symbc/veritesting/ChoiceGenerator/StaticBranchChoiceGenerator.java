@@ -1,19 +1,21 @@
 package gov.nasa.jpf.symbc.veritesting.ChoiceGenerator;
 
-import aima.core.logic.propositional.parsing.ast.FalseSentence;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.bytecode.IFNONNULL;
 import gov.nasa.jpf.symbc.numeric.*;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionHitExactHeuristic;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
+import rbt.Range;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
@@ -23,18 +25,35 @@ import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwExceptio
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatGreenExpression;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.maybeParseConstraint;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.regionHeuristicFinished;
 
 
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
 
-    public static final int STATIC_CHOICE = 0;
-    public static final int THEN_CHOICE = 1;
-    public static final int ELSE_CHOICE = 2;
-    public static final int RETURN_CHOICE = 3;
+    private final int STATIC_CHOICE;
+    private final int THEN_CHOICE;
+    private final int ELSE_CHOICE;
+    private final int RETURN_CHOICE;
+
+    private final int HEURISTICS_THEN_CHOICE;
+    private final int HEURISTICS_ELSE_CHOICE;
+
+
+    boolean heuristicsOn = false;
 
     public StaticBranchChoiceGenerator(DynamicRegion region, Instruction instruction) {
         super(3, region, instruction);
+
+        STATIC_CHOICE = 0;
+        THEN_CHOICE = 1;
+        ELSE_CHOICE = 2;
+        RETURN_CHOICE = 3;
+
+        HEURISTICS_THEN_CHOICE = -1;
+        HEURISTICS_ELSE_CHOICE = -1;
+
+        this.heuristicsOn = false;
         Kind kind = getKind(instruction);
 
         assert (kind == Kind.BINARYIF ||
@@ -42,10 +61,33 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                 kind == Kind.UNARYIF);
     }
 
-    // MWW: make choice 0 and choice 4 also the responsibility of the CG
+    public StaticBranchChoiceGenerator(DynamicRegion region, Instruction instruction, boolean heuristicsOn) {
+        super(5, region, instruction);
+        if (!heuristicsOn) {
+            System.out.println("heuristics must be on to be able to use the heuristics choice generator!");
+            assert false;
+        }
+
+        HEURISTICS_THEN_CHOICE = 0;
+        HEURISTICS_ELSE_CHOICE = 1;
+        STATIC_CHOICE = 2;
+        THEN_CHOICE = 3;
+        ELSE_CHOICE = 4;
+        RETURN_CHOICE = 5;
+
+        this.heuristicsOn = heuristicsOn;
+
+        Kind kind = getKind(instruction);
+
+        assert (kind == Kind.BINARYIF ||
+                kind == Kind.NULLIF ||
+                kind == Kind.UNARYIF);
+    }
+
+
     public Instruction execute(ThreadInfo ti, Instruction instructionToExecute, int choice) throws StaticRegionException {
         // if/else conditions.
-        assert (choice == STATIC_CHOICE || choice == THEN_CHOICE || choice == ELSE_CHOICE || choice == RETURN_CHOICE);
+        assert (choice == STATIC_CHOICE || choice == THEN_CHOICE || choice == ELSE_CHOICE || choice == RETURN_CHOICE || choice == HEURISTICS_THEN_CHOICE || choice == HEURISTICS_ELSE_CHOICE);
 
         Instruction nextInstruction = null;
         if (choice == STATIC_CHOICE) {
@@ -59,7 +101,43 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
             statisticManager.updateVeriSuccForRegion(key);
             ++VeritestingListener.veritestRegionCount;
-        } else if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
+            if(heuristicsOn)
+                regionHeuristicFinished(key);
+        }
+        if (choice == HEURISTICS_THEN_CHOICE || choice == HEURISTICS_ELSE_CHOICE) {
+            System.out.println("\n=========Executing" + (choice == HEURISTICS_THEN_CHOICE ? " then heuristics " : " else heuristics") + ".  Instruction: ");
+            if (choice == HEURISTICS_THEN_CHOICE) {
+                MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+                String className = methodInfo.getClassName();
+                String methodName = methodInfo.getName();
+                String methodSignature = methodInfo.getSignature();
+                int offset = instructionToExecute.getPosition();
+                String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+                Instruction endIns = VeritestingListener.advanceSpf(instructionToExecute, region, false);
+                RegionHitExactHeuristic regionHitExactHeuristic = new RegionHitExactHeuristic(key, endIns, 0);
+                StatisticManager.addRegionExactHeuristic(key, regionHitExactHeuristic);
+
+            if(!StatisticManager.getRegionHeuristicStatus(key)){ //if we already counted the paths for this region, no need to recount it again.
+                ti.getVM().getSystemState().setIgnored(true);
+                return instructionToExecute;
+            }
+
+            }
+            switch (getKind(instructionToExecute)) {
+                case UNARYIF:
+                    nextInstruction = executeUnaryIf(instructionToExecute, choice);
+                    break;
+                case BINARYIF:
+                    nextInstruction = executeBinaryIf(instructionToExecute, choice);
+                    break;
+                case NULLIF:
+                    nextInstruction = executeNullIf(instructionToExecute);
+                    break;
+                case OTHER:
+                    throwException(new StaticRegionException("Error: Branch choice generator instantiated on non-branch instruction!"), INSTANTIATION);
+            }
+        }
+        if (choice == THEN_CHOICE || choice == ELSE_CHOICE) {
             System.out.println("\n=========Executing" + (choice == THEN_CHOICE ? " then " : " else ") + ".  Instruction: ");
             maybeParseConstraint(getCurrentPC());
             switch (getKind(instructionToExecute)) {
@@ -75,7 +153,8 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                 case OTHER:
                     throwException(new StaticRegionException("Error: Branch choice generator instantiated on non-branch instruction!"), INSTANTIATION);
             }
-        } else { //early returns choice happened
+        }
+        if (choice == RETURN_CHOICE) { //early returns choice happened
             System.out.println("\n=========Executing early retrun choice in BranchCG");
             nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion(), true);
             MethodInfo methodInfo = instructionToExecute.getMethodInfo();
@@ -114,9 +193,9 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             pc = this.getCurrentPC();
 
             assert pc != null;
-            assert (choice == THEN_CHOICE || choice == ELSE_CHOICE);
+            assert (choice == THEN_CHOICE || choice == ELSE_CHOICE || choice == HEURISTICS_THEN_CHOICE || choice == HEURISTICS_ELSE_CHOICE);
 
-            if (choice == ELSE_CHOICE) {
+            if (choice == ELSE_CHOICE || choice == HEURISTICS_ELSE_CHOICE) {
                 Comparator byteCodeOp = SpfUtil.getComparator(instruction);
                 if (sym_v1 != null) {
                     if (sym_v2 != null) { //both are symbolic values
@@ -133,6 +212,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                 }
                 return ((IfInstruction) instruction).getTarget();
             } else {
+                assert (choice == THEN_CHOICE || choice == HEURISTICS_THEN_CHOICE);
                 Comparator byteCodeNegOp = SpfUtil.getNegComparator(instruction);
                 if (sym_v1 != null) {
                     if (sym_v2 != null) { //both are symbolic values
@@ -177,7 +257,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             return instruction.execute(ti);
         }
         PathCondition pc = this.getCurrentPC();
-        if (choice == ELSE_CHOICE) {
+        if (choice == ELSE_CHOICE || choice == HEURISTICS_ELSE_CHOICE) {
             pc._addDet(SpfUtil.getComparator(instruction), sym_v, 0);
             boolean isPCSat = isPCSat(pc);
             if (!isPCSat) {// not satisfiable
@@ -212,7 +292,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         return pcCopy;
     }
 
-    public void makeVeritestingCG(ThreadInfo ti) throws StaticRegionException {
+    public void makeVeritestingCG(ThreadInfo ti, String key) throws StaticRegionException {
         assert (region.regionSummary != null);
         PathCondition pc;
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
@@ -222,6 +302,12 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             if (cg == null) throw new StaticRegionException("Cannot find latest PCChoiceGenerator");
             pc = cg.getCurrentPC();
         }
+        if (this.heuristicsOn) { //setup heuristics path conditions
+            setPC(pc.make_copy(), HEURISTICS_THEN_CHOICE);
+            setPC(pc.make_copy(), HEURISTICS_ELSE_CHOICE);
+            StatisticManager.addRegionExactHeuristic(key);
+        }
+
         ExprUtil.SatResult isSPFPredSat = isSatGreenExpression(region.spfPredicateSummary);
         if (region.earlyReturnResult.hasER()) {// Early Return & SPFCases
             setPC(createPC(pc, region.regionSummary,
@@ -231,8 +317,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             if (isSPFPredSat != ExprUtil.SatResult.FALSE) {
                 setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
                 setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
-            }
-            else {
+            } else {
                 setPC(createPC(pc, Operation.FALSE, Operation.FALSE), THEN_CHOICE);
                 setPC(createPC(pc, Operation.FALSE, Operation.FALSE), ELSE_CHOICE);
             }
@@ -241,14 +326,12 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                     (new Operation(Operation.Operator.AND,
                             new Operation(Operation.Operator.NOT, region.spfPredicateSummary),
                             region.earlyReturnResult.condition))), RETURN_CHOICE);
-        }
-        else { // no early return or spfcases exists, then run only the static choice
+        } else { // no early return or spfcases exists, then run only the static choice
             setPC(createPC(pc, region.regionSummary, new Operation(Operation.Operator.NOT, region.spfPredicateSummary)), STATIC_CHOICE);
             if (isSPFPredSat != ExprUtil.SatResult.FALSE) {
                 setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), THEN_CHOICE);
                 setPC(createPC(pc, region.regionSummary, region.spfPredicateSummary), ELSE_CHOICE);
-            }
-            else {
+            } else {
                 setPC(createPC(pc, Operation.FALSE, Operation.FALSE), THEN_CHOICE);
                 setPC(createPC(pc, Operation.FALSE, Operation.FALSE), ELSE_CHOICE);
             }
