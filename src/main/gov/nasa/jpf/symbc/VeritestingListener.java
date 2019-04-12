@@ -242,7 +242,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         String key = keyFromInstructionToExc(instructionToExecute);
 
-        if(spfCasesHeuristicsOn){ //if we are in heuristic mode then count paths, if we are at the end of the region of interest then return
+        if(spfCasesHeuristicsOn && ti.isFirstStepInsn()){ //if we are in heuristic mode then count paths, if we are at the end of the region of interest then return
             RegionHitExactHeuristic regionHeuristic = StatisticManager.getRegionHeuristic(key);
             if(regionHeuristic.getRegionStatus() && instructionToExecute.equals(regionHeuristic.getTargetInstruction())){
                 regionHeuristic.incrementPathCount();
@@ -421,7 +421,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             else
                 newCG = new StaticBranchChoiceGenerator(dynRegion, instructionToExecute);
 
-            newCG.makeVeritestingCG(ti, key);
+            newCG.makeVeritestingCG(ti, instructionToExecute, key);
 
             SystemState systemState = vm.getSystemState();
             systemState.setNextChoiceGenerator(newCG);

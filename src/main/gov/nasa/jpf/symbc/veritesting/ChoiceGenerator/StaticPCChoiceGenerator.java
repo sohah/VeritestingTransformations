@@ -90,6 +90,6 @@ public abstract class StaticPCChoiceGenerator extends PCChoiceGenerator {
 
 
 
-    public abstract void makeVeritestingCG(ThreadInfo ti, String key) throws StaticRegionException;
+    public abstract void makeVeritestingCG(ThreadInfo ti, Instruction instruction, String key) throws StaticRegionException;
 
 }

@@ -66,6 +66,7 @@ public class StatisticManager {
             assert false;
         }
         regionHeuristic.active = false;
+        System.out.println("finished heuristic for regon with key: "+key + " with path count = " + regionHeuristic.pathCount);
     }
 
     public static boolean getRegionHeuristicStatus(String key) {

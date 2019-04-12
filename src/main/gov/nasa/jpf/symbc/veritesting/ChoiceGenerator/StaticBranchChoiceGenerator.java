@@ -15,7 +15,6 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import rbt.Range;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
@@ -40,7 +39,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
     private final int HEURISTICS_ELSE_CHOICE;
 
 
-    boolean heuristicsOn = false;
+    private boolean heuristicsOn;
 
     public StaticBranchChoiceGenerator(DynamicRegion region, Instruction instruction) {
         super(3, region, instruction);
@@ -113,9 +112,6 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                 String methodSignature = methodInfo.getSignature();
                 int offset = instructionToExecute.getPosition();
                 String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
-                Instruction endIns = VeritestingListener.advanceSpf(instructionToExecute, region, false);
-                RegionHitExactHeuristic regionHitExactHeuristic = new RegionHitExactHeuristic(key, endIns, 0);
-                StatisticManager.addRegionExactHeuristic(key, regionHitExactHeuristic);
 
             if(!StatisticManager.getRegionHeuristicStatus(key)){ //if we already counted the paths for this region, no need to recount it again.
                 ti.getVM().getSystemState().setIgnored(true);
@@ -292,7 +288,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         return pcCopy;
     }
 
-    public void makeVeritestingCG(ThreadInfo ti, String key) throws StaticRegionException {
+    public void makeVeritestingCG(ThreadInfo ti, Instruction instructionToExecute, String key) throws StaticRegionException {
         assert (region.regionSummary != null);
         PathCondition pc;
         if (ti.getVM().getSystemState().getChoiceGenerator() instanceof PCChoiceGenerator)
@@ -305,7 +301,9 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         if (this.heuristicsOn) { //setup heuristics path conditions
             setPC(pc.make_copy(), HEURISTICS_THEN_CHOICE);
             setPC(pc.make_copy(), HEURISTICS_ELSE_CHOICE);
-            StatisticManager.addRegionExactHeuristic(key);
+            Instruction endIns = VeritestingListener.advanceSpf(instructionToExecute, region, false);
+            RegionHitExactHeuristic regionHitExactHeuristic = new RegionHitExactHeuristic(key, endIns, 0);
+            StatisticManager.addRegionExactHeuristic(key, regionHitExactHeuristic);
         }
 
         ExprUtil.SatResult isSPFPredSat = isSatGreenExpression(region.spfPredicateSummary);
