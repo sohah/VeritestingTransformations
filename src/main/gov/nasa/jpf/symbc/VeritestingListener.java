@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc;
 
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.veritesting.Heuristics.HeuristicManager;
+import gov.nasa.jpf.symbc.veritesting.Heuristics.PathStatus;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
@@ -231,7 +232,26 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
         StackFrame curr = ti.getTopFrame();
 //        runAdapterSynth(ti, curr);
-        if (runMode == VeritestingMode.VANILLASPF || !(instructionToExecute instanceof IfInstruction)) return;
+        if (runMode == VeritestingMode.VANILLASPF)
+            return;
+        else if (HeuristicManager.getRegionHeuristicSize() == 0 && !(instructionToExecute instanceof IfInstruction))
+            return;
+        else if ((HeuristicManager.getRegionHeuristicSize() != 0) && !(HeuristicManager.getRegionHeuristic().getRegionStatus()) && !(instructionToExecute instanceof IfInstruction))
+            return;
+        else{
+            if (spfCasesHeuristicsOn && ti.isFirstStepInsn()) { //if we are in heuristic mode then count paths, if we are at the end of the region of interest then return
+                PathStatus pathStatus = HeuristicManager.incrementRegionExactHeuristicCount(instructionToExecute);
+                switch (pathStatus) {
+                    case ENDREACHED:
+                        ti.getVM().getSystemState().setIgnored(true);
+                        return;
+                    case INHEURISTIC:
+                    case OUTHEURISTIC:
+                        break; // continue veritesting.
+                }
+            }
+        }
+
         if (!performanceMode) {
             if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
             boolean noVeritestingFlag = false;
@@ -242,13 +262,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
 
         String key = keyFromInstructionToExc(instructionToExecute);
-
-        if (spfCasesHeuristicsOn && ti.isFirstStepInsn()) { //if we are in heuristic mode then count paths, if we are at the end of the region of interest then return
-            if (HeuristicManager.incrementRegionExactHeuristicCount(instructionToExecute)) {
-                ti.getVM().getSystemState().setIgnored(true);
-                return;
-            }
-        }
 
 
         StatisticManager.instructionToExec = key;

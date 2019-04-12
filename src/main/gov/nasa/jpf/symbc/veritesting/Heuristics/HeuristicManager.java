@@ -4,6 +4,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionHitExactHeuristic;
 
 import java.util.ArrayList;
 
+
 public class HeuristicManager {
 
 
@@ -20,14 +21,16 @@ public class HeuristicManager {
             regionHitExactHeuristicArray.add(regionHitExactHeuristic);
     }
 
-    public static boolean incrementRegionExactHeuristicCount(gov.nasa.jpf.vm.Instruction instructionToExecute) {
+    public static PathStatus incrementRegionExactHeuristicCount(gov.nasa.jpf.vm.Instruction instructionToExecute) {
         RegionHitExactHeuristic regionHeuristic = HeuristicManager.getRegionHeuristic();
-        if (regionHeuristic.getRegionStatus()
-                && instructionToExecute.equals(regionHeuristic.getTargetInstruction())) {
-            regionHeuristic.incrementPathCount();
-            return true;
+        if (regionHeuristic.getRegionStatus()){
+            if (instructionToExecute.toString().equals(regionHeuristic.getTargetInstruction().toString())) {
+                regionHeuristic.incrementPathCount();
+                return PathStatus.ENDREACHED; //returns true if we are trying to count paths, whether we hit end instruction or not.
+            }
+            return PathStatus.INHEURISTIC;
         }
-        return false;
+        return PathStatus.OUTHEURISTIC;
     }
 
     public static void regionHeuristicFinished(String key) {
@@ -63,5 +66,9 @@ public class HeuristicManager {
         for (RegionHitExactHeuristic regionHeuristic : regionHitExactHeuristicArray) {
             System.out.println(regionHeuristic.toString());
         }
+    }
+
+    public static int getRegionHeuristicSize() {
+        return regionHitExactHeuristicArray.size();
     }
 }
