@@ -4,6 +4,7 @@ import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.VeritestingListener;
 import gov.nasa.jpf.symbc.bytecode.IFNONNULL;
 import gov.nasa.jpf.symbc.numeric.*;
+import gov.nasa.jpf.symbc.veritesting.Heuristics.HeuristicManager;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionHitExactHeuristic;
@@ -19,12 +20,12 @@ import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
 import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
+import static gov.nasa.jpf.symbc.veritesting.Heuristics.HeuristicManager.regionHeuristicFinished;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isPCSat;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil.isSatGreenExpression;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.maybeParseConstraint;
-import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager.regionHeuristicFinished;
 
 
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
@@ -113,7 +114,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                 int offset = instructionToExecute.getPosition();
                 String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
 
-            if(!StatisticManager.getRegionHeuristicStatus(key)){ //if we already counted the paths for this region, no need to recount it again.
+            if(!HeuristicManager.getRegionHeuristicStatus(key)){ //if we already counted the paths for this region, no need to recount it again.
                 ti.getVM().getSystemState().setIgnored(true);
                 return instructionToExecute;
             }
@@ -303,7 +304,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             setPC(pc.make_copy(), HEURISTICS_ELSE_CHOICE);
             Instruction endIns = VeritestingListener.advanceSpf(instructionToExecute, region, false);
             RegionHitExactHeuristic regionHitExactHeuristic = new RegionHitExactHeuristic(key, endIns, 0);
-            StatisticManager.addRegionExactHeuristic(key, regionHitExactHeuristic);
+            HeuristicManager.addRegionExactHeuristic(regionHitExactHeuristic);
         }
 
         ExprUtil.SatResult isSPFPredSat = isSatGreenExpression(region.spfPredicateSummary);

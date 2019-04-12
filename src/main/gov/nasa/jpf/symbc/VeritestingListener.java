@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc;
 
 
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
+import gov.nasa.jpf.symbc.veritesting.Heuristics.HeuristicManager;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
@@ -242,15 +243,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         String key = keyFromInstructionToExc(instructionToExecute);
 
-        if(spfCasesHeuristicsOn && ti.isFirstStepInsn()){ //if we are in heuristic mode then count paths, if we are at the end of the region of interest then return
-            RegionHitExactHeuristic regionHeuristic = StatisticManager.getRegionHeuristic(key);
-            if(regionHeuristic.getRegionStatus() && instructionToExecute.equals(regionHeuristic.getTargetInstruction())){
-                regionHeuristic.incrementPathCount();
+        if (spfCasesHeuristicsOn && ti.isFirstStepInsn()) { //if we are in heuristic mode then count paths, if we are at the end of the region of interest then return
+            if (HeuristicManager.incrementRegionExactHeuristicCount(instructionToExecute)) {
                 ti.getVM().getSystemState().setIgnored(true);
                 return;
             }
-
         }
+
 
         StatisticManager.instructionToExec = key;
         try {
@@ -485,9 +484,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         do {
             while (somethingChanged) {
 
-            /*-------------- SUBSTITUTION & HIGH ORDER TRANSFORMATION ---------------*/
-            /*--------------  FIELD TRANSFORMATION ---------------*/
-            /*-------------- ARRAY TRANSFORMATION TRANSFORMATION ---------------*/
+                /*-------------- SUBSTITUTION & HIGH ORDER TRANSFORMATION ---------------*/
+                /*--------------  FIELD TRANSFORMATION ---------------*/
+                /*-------------- ARRAY TRANSFORMATION TRANSFORMATION ---------------*/
                 dynRegion = FixedPointWrapper.executeFixedPointTransformations(ti, dynRegion);
                 somethingChanged = FixedPointWrapper.isChangedFlag();
 
@@ -527,12 +526,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         if ((runMode.ordinal()) >= (VeritestingMode.SPFCASES.ordinal())) {
 
-        /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
+            /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
             dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion,
                     runMode.ordinal() < VeritestingMode.EARLYRETURNS.ordinal() ?
                             new ArrayList(Arrays.asList(THROWINSTRUCTION, NEWINSTRUCTION, ARRAYINSTRUCTION, INVOKE)) : null);
 
-        /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
+            /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
             dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
         }
         /*--------------- LINEARIZATION TRANSFORMATION ---------------*/
@@ -825,6 +824,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Metrics Vector:");
         pw.println(getMetricsVector(dynRunTime));
 
+        statisticManager.printHeuristicStatistics();
     }
 
     private void writeRegionDigest() {

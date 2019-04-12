@@ -1,9 +1,12 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
+import gov.nasa.jpf.symbc.veritesting.Heuristics.HeuristicManager;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingMain;
+import gov.nasa.jpf.symbc.veritesting.ast.def.Instruction;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.StaticRegion;
 
+import java.lang.management.ThreadInfo;
 import java.util.*;
 
 import static gov.nasa.jpf.symbc.VeritestingListener.interestingClassNames;
@@ -29,55 +32,11 @@ public class StatisticManager {
     public static int staticPhaseEx = 0, instPhaseEx = 0, unknownPhaseEx = 0;
     public static int thisHighOrdCount = 0;
 
-    /**
-     * used to collect all regions that we hit along with the number of paths that SPF had to explore through it.
-     * An invariant here is that the last added element is the element that we wish to count its paths, if we are still
-     * in the heuristic choices.
-     */
-    private static LinkedHashMap<String, RegionHitExactHeuristic> regionHitExactHeuristicMap = new LinkedHashMap<>();
 
-
-    public static void addRegionExactHeuristic(String key) {
-        if (!regionHitExactHeuristicMap.containsKey(key))
-            regionHitExactHeuristicMap.put(key, null);
+    public void printHeuristicStatistics() {
+        System.out.println("\nPrinting Heuristic Statistics:\n");
+        HeuristicManager.printStatistics();
     }
-
-    public static boolean regionExactHeuristicExists(String key) {
-        return regionHitExactHeuristicMap.containsKey(key);
-    }
-
-    public static void addRegionExactHeuristic(String key, RegionHitExactHeuristic regionHitExactHeuristic) {
-        regionHitExactHeuristicMap.put(key, regionHitExactHeuristic);
-    }
-
-    public static void incrementRegionExactHeuristicCount(String key) {
-        RegionHitExactHeuristic regionHeuristic = regionHitExactHeuristicMap.get(key);
-        if (!regionHeuristic.active) {
-            System.out.println("cannot change the count of finished region heuristics!");
-            assert false;
-        }
-        ++regionHeuristic.pathCount;
-    }
-
-    public static void regionHeuristicFinished(String key) {
-        RegionHitExactHeuristic regionHeuristic = regionHitExactHeuristicMap.get(key);
-        if (!regionHeuristic.active) {
-            System.out.println("expecting region heuristic in 'active status'!");
-            assert false;
-        }
-        regionHeuristic.active = false;
-        System.out.println("finished heuristic for regon with key: "+key + " with path count = " + regionHeuristic.pathCount);
-    }
-
-    public static boolean getRegionHeuristicStatus(String key) {
-        RegionHitExactHeuristic regionHeuristic = regionHitExactHeuristicMap.get(key);
-        return regionHeuristic.active;
-    }
-
-    public static RegionHitExactHeuristic getRegionHeuristic(String key) {
-        return regionHitExactHeuristicMap.get(key);
-    }
-
 
     public void updateVeriSuccForRegion(String key) {
         hgOrdRegionInstance += thisHighOrdCount;
