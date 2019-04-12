@@ -73,8 +73,8 @@ public class StatisticManager {
         return regionHeuristic.active;
     }
 
-    public static RegionHitExactHeuristic getRegionHeuristic() {
-        return regionHitExactHeuristicMap.;
+    public static RegionHitExactHeuristic getRegionHeuristic(String key) {
+        return regionHitExactHeuristicMap.get(key);
     }
 
 

@@ -15,4 +15,15 @@ public class RegionHitExactHeuristic {
         active = true;
     }
 
+    public boolean getRegionStatus(){
+        return active;
+    }
+
+    public Instruction getTargetInstruction() {
+        return targetInstruction;
+    }
+
+    public void incrementPathCount() {
+        ++pathCount;
+    }
 }
