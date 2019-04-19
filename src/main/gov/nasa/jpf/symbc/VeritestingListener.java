@@ -235,8 +235,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
          boolean isIfInstruction = instructionToExecute instanceof IfInstruction;
          boolean isEmptyRegionHeuristic = HeuristicManager.getRegionHeuristicSize() == 0;
         boolean isActiveLastRegion = (isEmptyRegionHeuristic)? false: HeuristicManager.getRegionHeuristic()
-                .getRegionStatus
-                ();
+                .getRegionStatus();
 
         String lastRegionKey = (isEmptyRegionHeuristic)? null: HeuristicManager.getLastRegionKey();
 

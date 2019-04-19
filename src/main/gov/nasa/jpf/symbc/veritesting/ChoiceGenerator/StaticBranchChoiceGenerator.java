@@ -116,10 +116,11 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
                 int offset = instructionToExecute.getPosition();
                 String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
 
-            if(!HeuristicManager.getRegionHeuristicStatus(key)){ //if we already counted the paths for this region, no need to recount it again.
+                assert(HeuristicManager.getRegionHeuristic().getRegionStatus());
+            /*if(!HeuristicManager.getRegionHeuristicStatus(key)){ //if we already counted the paths for this region, no need to recount it again.
                 ti.getVM().getSystemState().setIgnored(true);
                 return instructionToExecute;
-            }
+            }*/
 
             }
             switch (getKind(instructionToExecute)) {
@@ -306,6 +307,8 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             setPC(pc.make_copy(), HEURISTICS_ELSE_CHOICE);
             Instruction endIns = VeritestingListener.advanceSpf(instructionToExecute, region, false);
             RegionHitExactHeuristic regionHitExactHeuristic = new RegionHitExactHeuristic(key, endIns, 0);
+            /*if(!HeuristicManager.addRegionExactHeuristic(regionHitExactHeuristic))
+                this.heuristicsCountingMode = false;*/
             HeuristicManager.addRegionExactHeuristic(regionHitExactHeuristic);
         }
 

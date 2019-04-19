@@ -18,17 +18,23 @@ public class HeuristicManager {
     private static ArrayList<RegionHitExactHeuristic> regionHitExactHeuristicArray = new ArrayList<>();
 
 
-    public static void addRegionExactHeuristic(RegionHitExactHeuristic regionHitExactHeuristic) {
-        if (!regionHitExactHeuristicArray.contains(regionHitExactHeuristic))
-            regionHitExactHeuristicArray.add(regionHitExactHeuristic);
+    public static boolean addRegionExactHeuristic(RegionHitExactHeuristic newRegionHitExactHeuristic) {
+       /* for (RegionHitExactHeuristic regionHitExactHeuristic : regionHitExactHeuristicArray) {
+            if (regionHitExactHeuristic.getRegionKey().equals(newRegionHitExactHeuristic.getRegionKey()))
+                return false; //do not recreate heursitics for regions we already created.
+        }*/
+        regionHitExactHeuristicArray.add(newRegionHitExactHeuristic);
+        return true;
     }
 
     public static PathStatus incrementRegionExactHeuristicCount(gov.nasa.jpf.vm.Instruction instructionToExecute) {
         RegionHitExactHeuristic regionHeuristic = HeuristicManager.getRegionHeuristic();
-        if (regionHeuristic.getRegionStatus()){
-            assert(StaticBranchChoiceGenerator.heuristicsCountingMode);
+        if (regionHeuristic.getRegionStatus()) {
+            assert (StaticBranchChoiceGenerator.heuristicsCountingMode);
             if (instructionToExecute.toString().equals(regionHeuristic.getTargetInstruction().toString())
-                    || instructionToExecute instanceof ReturnInstruction) {
+                    || instructionToExecute instanceof ReturnInstruction) {// do the check for the return
+                // instructions that lay only inside the region, not for example a return from another hight order
+                // region
                 regionHeuristic.incrementPathCount();
                 return PathStatus.ENDREACHED; //returns true if we are trying to count paths, whether we hit end
                 // instruction or return instruction
