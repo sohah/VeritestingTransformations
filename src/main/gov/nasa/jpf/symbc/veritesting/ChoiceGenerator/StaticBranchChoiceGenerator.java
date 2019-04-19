@@ -101,8 +101,10 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
             statisticManager.updateVeriSuccForRegion(key);
             ++VeritestingListener.veritestRegionCount;
-            if(heuristicsCountingMode)
+            if(heuristicsCountingMode){
                 regionHeuristicFinished(key);
+                heuristicsCountingMode = false;
+            }
         }
         if (choice == HEURISTICS_THEN_CHOICE || choice == HEURISTICS_ELSE_CHOICE) {
             System.out.println("\n=========Executing" + (choice == HEURISTICS_THEN_CHOICE ? " then heuristics " : " else heuristics") + ".  Instruction: ");

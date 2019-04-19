@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.Heuristics;
 
+import gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionHitExactHeuristic;
 import gov.nasa.jpf.vm.bytecode.ReturnInstruction;
 
@@ -25,6 +26,7 @@ public class HeuristicManager {
     public static PathStatus incrementRegionExactHeuristicCount(gov.nasa.jpf.vm.Instruction instructionToExecute) {
         RegionHitExactHeuristic regionHeuristic = HeuristicManager.getRegionHeuristic();
         if (regionHeuristic.getRegionStatus()){
+            assert(StaticBranchChoiceGenerator.heuristicsCountingMode);
             if (instructionToExecute.toString().equals(regionHeuristic.getTargetInstruction().toString())
                     || instructionToExecute instanceof ReturnInstruction) {
                 regionHeuristic.incrementPathCount();
@@ -58,6 +60,12 @@ public class HeuristicManager {
         }
         return regionHeuristic.getRegionStatus();
     }
+
+    public static String getLastRegionKey() {
+        RegionHitExactHeuristic regionHeuristic = regionHitExactHeuristicArray.get(regionHitExactHeuristicArray.size() - 1);
+        return regionHeuristic.getRegionKey();
+    }
+
 
     public static RegionHitExactHeuristic getRegionHeuristic() {
         assert (regionHitExactHeuristicArray.size() != 0);
