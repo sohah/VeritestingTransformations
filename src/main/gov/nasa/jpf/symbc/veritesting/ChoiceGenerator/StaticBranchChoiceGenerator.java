@@ -9,7 +9,6 @@ import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ExprUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionHitExactHeuristic;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil;
-import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.ssaToAst.CreateStaticRegions;
 import gov.nasa.jpf.vm.Instruction;
@@ -40,7 +39,8 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
     private final int HEURISTICS_ELSE_CHOICE;
 
 
-    private boolean heuristicsOn;
+    public static boolean heuristicsCountingMode;
+
 
     public StaticBranchChoiceGenerator(DynamicRegion region, Instruction instruction) {
         super(3, region, instruction);
@@ -53,7 +53,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         HEURISTICS_THEN_CHOICE = -1;
         HEURISTICS_ELSE_CHOICE = -1;
 
-        this.heuristicsOn = false;
+        this.heuristicsCountingMode = false;
         Kind kind = getKind(instruction);
 
         assert (kind == Kind.BINARYIF ||
@@ -75,7 +75,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         ELSE_CHOICE = 4;
         RETURN_CHOICE = 5;
 
-        this.heuristicsOn = heuristicsOn;
+        this.heuristicsCountingMode = heuristicsOn;
 
         Kind kind = getKind(instruction);
 
@@ -101,7 +101,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
             statisticManager.updateVeriSuccForRegion(key);
             ++VeritestingListener.veritestRegionCount;
-            if(heuristicsOn)
+            if(heuristicsCountingMode)
                 regionHeuristicFinished(key);
         }
         if (choice == HEURISTICS_THEN_CHOICE || choice == HEURISTICS_ELSE_CHOICE) {
@@ -299,7 +299,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             if (cg == null) throw new StaticRegionException("Cannot find latest PCChoiceGenerator");
             pc = cg.getCurrentPC();
         }
-        if (this.heuristicsOn) { //setup heuristics path conditions
+        if (this.heuristicsCountingMode) { //setup heuristics path conditions
             setPC(pc.make_copy(), HEURISTICS_THEN_CHOICE);
             setPC(pc.make_copy(), HEURISTICS_ELSE_CHOICE);
             Instruction endIns = VeritestingListener.advanceSpf(instructionToExecute, region, false);

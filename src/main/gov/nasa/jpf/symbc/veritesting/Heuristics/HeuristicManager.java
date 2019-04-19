@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.Heuristics;
 
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionHitExactHeuristic;
+import gov.nasa.jpf.vm.bytecode.ReturnInstruction;
 
 import java.util.ArrayList;
 
@@ -24,9 +25,11 @@ public class HeuristicManager {
     public static PathStatus incrementRegionExactHeuristicCount(gov.nasa.jpf.vm.Instruction instructionToExecute) {
         RegionHitExactHeuristic regionHeuristic = HeuristicManager.getRegionHeuristic();
         if (regionHeuristic.getRegionStatus()){
-            if (instructionToExecute.toString().equals(regionHeuristic.getTargetInstruction().toString())) {
+            if (instructionToExecute.toString().equals(regionHeuristic.getTargetInstruction().toString())
+                    || instructionToExecute instanceof ReturnInstruction) {
                 regionHeuristic.incrementPathCount();
-                return PathStatus.ENDREACHED; //returns true if we are trying to count paths, whether we hit end instruction or not.
+                return PathStatus.ENDREACHED; //returns true if we are trying to count paths, whether we hit end
+                // instruction or return instruction
             }
             return PathStatus.INHEURISTIC;
         }

@@ -186,7 +186,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("simplify"))
                 simplify = conf.getBoolean("simplify");
 
-            if (conf.hasValue("SPFCasesHeuristics"))
+            if (conf.hasValue("SPFCasesHeuristics") && (veritestingMode >= 4))
                 spfCasesHeuristicsOn = conf.getBoolean("SPFCasesHeuristics");
 
 
@@ -239,7 +239,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         else if ((HeuristicManager.getRegionHeuristicSize() != 0) && !(HeuristicManager.getRegionHeuristic().getRegionStatus()) && !(instructionToExecute instanceof IfInstruction))
             return;
         else{
-            if (spfCasesHeuristicsOn && ti.isFirstStepInsn()) { //if we are in heuristic mode then count paths, if we are at the end of the region of interest then return
+            if (spfCasesHeuristicsOn && StaticBranchChoiceGenerator.heuristicsCountingMode) { //if we are
+                // in heuristic
+                // mode then count
+                // paths, if we are at the end of the region of interest then return
                 PathStatus pathStatus = HeuristicManager.incrementRegionExactHeuristicCount(instructionToExecute);
                 switch (pathStatus) {
                     case ENDREACHED:
@@ -837,7 +840,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Metrics Vector:");
         pw.println(getMetricsVector(dynRunTime));
 
-        statisticManager.printHeuristicStatistics();
+        if(spfCasesHeuristicsOn)
+            statisticManager.printHeuristicStatistics();
     }
 
     private void writeRegionDigest() {
