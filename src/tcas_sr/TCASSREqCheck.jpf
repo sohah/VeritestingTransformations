@@ -21,4 +21,3 @@ veritestingMode = 5
 performanceMode = false
 symbolic.lazy = true
 
-jitAnalysis = false

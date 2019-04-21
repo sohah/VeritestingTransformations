@@ -20,4 +20,3 @@ performanceMode = true
 testingMode = true
 #,gov.nasa.jpf.listener.CoverageAnalyzer
 #listener = .listener.ChoiceTracker
-jitAnalysis=false
