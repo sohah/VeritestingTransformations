@@ -2,7 +2,7 @@ target=replace
 classpath=${jpf-symbc}/build/replace
 sourcepath=${jpf-symbc}/src/replace
 #symbolic.method = replace.mainProcess(sym#sym#sym#sym#sym)
-symbolic.method = replace.mainProcess(sym#sym#con#con#con)
+symbolic.method = replace.mainProcess(sym#sym#sym#sym#sym)
 #symbolic.method = replace.mainProcess(sym#con#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100
@@ -14,7 +14,7 @@ vm.storage.class=nil
 #listener = .listener.ChoiceTracker
 #symbolic.debug=on
 
-veritestingMode=5
+veritestingMode=3
 performanceMode = true
 
 symbolic.dp=z3bitvectorinc

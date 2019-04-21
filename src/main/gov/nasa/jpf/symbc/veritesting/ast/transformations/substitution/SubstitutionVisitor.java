@@ -32,6 +32,7 @@ import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.veritestingMode;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.ClassUtils.getSuperClassList;
@@ -341,6 +342,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
      */
     private Pair<String, StaticRegion> jitFindMethodRegion(ThreadInfo ti, InvokeInstruction c) throws StaticRegionException {
 
+
         SSAInvokeInstruction instruction = c.getOriginal();
         MethodReference methodReference = instruction.getDeclaredTarget();
         CallSiteReference site = instruction.getCallSite();
@@ -381,6 +383,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
         String methodSignature = methodReference.getSignature();
         methodSignature = methodSignature.substring(methodSignature.indexOf('('));
         String key = CreateStaticRegions.constructMethodIdentifier(dynamicClassName + "." + methodName + methodSignature);
+        if (veritestingMode <= 2) return new Pair(key, null);
         for (String className : classList) {
             key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
             //StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
