@@ -10,9 +10,9 @@ TARGET_CLASSPATH_WALA=/export/scratch2/vaibhav/VeritestingTransformations/build/
 
 for NSTEP in {6..7}; do
   for MODE in {2..5}; do
-    echo "running ApacheCLI.$(($NSTEP))sym.mode$(($MODE))" && timeout $(($TIMEOUT_MINS))m  java -Djava.library.path=/export/scratch2/vaibhav/VeritestingTransformations/lib -Xmx8192m -ea -Dfile.encoding=UTF-8 -jar /export/scratch/vaibhav/jpf-core-veritesting/build/RunJPF.jar   $VERIDIR/src/apachecli/ApacheCLI.$(($NSTEP))sym.mode$(($MODE)).jpf >& $VERIDIR/logs/ApacheCLI.$((NSTEP))sym.mode$((MODE)).log 
+    echo "running ApacheCLI.$(($NSTEP))_1sym.mode$(($MODE))" && timeout $(($TIMEOUT_MINS))m  java -Djava.library.path=/export/scratch2/vaibhav/VeritestingTransformations/lib -Xmx8192m -ea -Dfile.encoding=UTF-8 -jar /export/scratch/vaibhav/jpf-core-veritesting/build/RunJPF.jar   $VERIDIR/src/apachecli/ApacheCLI.$(($NSTEP))_1sym.mode$(($MODE)).jpf >& $VERIDIR/logs/ApacheCLI.$((NSTEP))_1sym.mode$((MODE)).log 
     if [ $? -eq 124 ]; then 
-          echo "running ApacheCLI.$(($NSTEP))sym.mode$(($MODE)) timed out" >> $VERIDIR/logs/ApacheCLI.$((NSTEP))sym.mode$((MODE)).log
+          echo "running ApacheCLI.$(($NSTEP))_1sym.mode$(($MODE)) timed out" >> $VERIDIR/logs/ApacheCLI.$((NSTEP))_1sym.mode$((MODE)).log
     fi
   done;
 done

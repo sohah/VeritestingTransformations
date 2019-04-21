@@ -20,11 +20,22 @@ TIMEOUT_MINS=720 && export TIMEOUT_MINS
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/scratch2/vaibhav/VeritestingTransformations/lib && export LD_LIBRARY_PATH
 TARGET_CLASSPATH_WALA=/export/scratch2/vaibhav/VeritestingTransformations/build/nanoxml/ && export TARGET_CLASSPATH_WALA
 
-for NSYM in {5,6,7,8}; do
-  for MODE in {5,4,3,2}; do
+for NSYM in {7..7}; do
+  for MODE in {5..2}; do
     echo "running DumpXML.$(($NSYM))sym.mode$(($MODE))" && timeout $(($TIMEOUT_MINS))m  java -Djava.library.path=/export/scratch2/vaibhav/VeritestingTransformations/lib -Xmx8192m -ea -Dfile.encoding=UTF-8 -jar /export/scratch/vaibhav/jpf-core-veritesting/build/RunJPF.jar   $VERIDIR/src/nanoxml/DumpXML.$(($NSYM))sym.mode$(($MODE)).jpf >& $VERIDIR/logs/DumpXML.$((NSYM))sym.mode$((MODE)).log 
     if [ $? -eq 124 ]; then 
           echo "running DumpXML.$(($NSYM))sym.mode$(($MODE)) timed out" >> $VERIDIR/logs/DumpXML.$((NSYM))sym.mode$((MODE)).log
     fi
   done;
 done
+
+NSYM=8
+MODE=5
+#for NSYM in {8..8}; do
+#  for MODE in {5..5}; do
+    echo "running DumpXML.$(($NSYM))sym.mode$(($MODE))" && timeout $(($TIMEOUT_MINS))m  java -Djava.library.path=/export/scratch2/vaibhav/VeritestingTransformations/lib -Xmx8192m -ea -Dfile.encoding=UTF-8 -jar /export/scratch/vaibhav/jpf-core-veritesting/build/RunJPF.jar   $VERIDIR/src/nanoxml/DumpXML.$(($NSYM))sym.mode$(($MODE)).jpf >& $VERIDIR/logs/DumpXML.$((NSYM))sym.mode$((MODE)).log 
+    if [ $? -eq 124 ]; then 
+          echo "running DumpXML.$(($NSYM))sym.mode$(($MODE)) timed out" >> $VERIDIR/logs/DumpXML.$((NSYM))sym.mode$((MODE)).log
+    fi
+#  done;
+#done

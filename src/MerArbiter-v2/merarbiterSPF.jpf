@@ -31,4 +31,3 @@ symbolic.arrays = true
 maxStaticExplorationDepth = 3
 symbolic.lazy = true
 
-jitAnalysis = false
