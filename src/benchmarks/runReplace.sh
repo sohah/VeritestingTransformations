@@ -1,13 +1,18 @@
 #!/bin/bash
 
-alias runSPF='LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/scratch2/vaibhav/VeritestingTransformations/lib TARGET_CLASSPATH_WALA=/export/scratch2/vaibhav/VeritestingTransformations/build/replace/ java -Djava.library.path=/export/scratch2/vaibhav/VeritestingTransformations/lib -Xmx1024m -ea -Dfile.encoding=UTF-8 -jar /export/scratch/vaibhav/jpf-core-veritesting/build/RunJPF.jar '
+alias runSPF='LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/export/scratch2/vaibhav/VeritestingTransformations/lib TARGET_CLASSPATH_WALA=/export/scratch2/vaibhav/VeritestingTransformations/build/replace/ java -Djava.library.path=/export/scratch2/vaibhav/VeritestingTransformations/lib -Xmx8192m -ea -Dfile.encoding=UTF-8 -jar /export/scratch/vaibhav/jpf-core-veritesting/build/RunJPF.jar '
 shopt -s expand_aliases
 VERIDIR=/export/scratch2/vaibhav/VeritestingTransformations
 
+echo "running replace5.mode1"
 runSPF $VERIDIR/src/replace/replace.mode1.jpf >& $VERIDIR/logs/replace.mode1.log
+echo "running replace5.mode2"
 runSPF $VERIDIR/src/replace/replace.mode2.jpf >& $VERIDIR/logs/replace.mode2.log
+echo "running replace5.mode3"
 runSPF $VERIDIR/src/replace/replace.mode3.jpf >& $VERIDIR/logs/replace.mode3.log
+echo "running replace5.mode4"
 runSPF $VERIDIR/src/replace/replace.mode4.jpf >& $VERIDIR/logs/replace.mode4.log
+echo "running replace5.mode5"
 runSPF $VERIDIR/src/replace/replace.mode5.jpf >& $VERIDIR/logs/replace.mode5.log
 
 echo "running replace11.mode1"
