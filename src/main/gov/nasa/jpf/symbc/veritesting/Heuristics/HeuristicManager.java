@@ -32,7 +32,11 @@ public class HeuristicManager {
         if (regionHeuristic.getRegionStatus()) {
             assert (StaticBranchChoiceGenerator.heuristicsCountingMode);
             if (instructionToExecute.toString().equals(regionHeuristic.getTargetInstruction().toString())
-                    || instructionToExecute instanceof ReturnInstruction) {// do the check for the return
+                    || (instructionToExecute instanceof ReturnInstruction && instructionToExecute.getMethodInfo()
+                    .equals(regionHeuristic.getMethodInfo())))
+            {// do the
+                // check
+                // for the return
                 // instructions that lay only inside the region, not for example a return from another hight order
                 // region
                 regionHeuristic.incrementPathCount();

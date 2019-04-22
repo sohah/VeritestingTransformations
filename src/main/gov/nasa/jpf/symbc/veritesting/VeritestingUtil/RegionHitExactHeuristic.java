@@ -1,16 +1,25 @@
 package gov.nasa.jpf.symbc.veritesting.VeritestingUtil;
 
 import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.MethodInfo;
 
 public class RegionHitExactHeuristic{
     String regionKey;
     Instruction targetInstruction;
+
+    public MethodInfo getMethodInfo() {
+        return methodInfo;
+    }
+
+    MethodInfo methodInfo;
     boolean active;
     int pathCount = 0;
 
-    public RegionHitExactHeuristic(String regionKey, Instruction targetInstruction, int pathCount) {
+    public RegionHitExactHeuristic(String regionKey, Instruction targetInstruction, MethodInfo methodInfo, int
+            pathCount) {
         this.regionKey = regionKey;
         this.targetInstruction = targetInstruction;
+        this.methodInfo = methodInfo;
         this.pathCount = pathCount;
         active = true;
     }

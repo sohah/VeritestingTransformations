@@ -306,7 +306,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             setPC(pc.make_copy(), HEURISTICS_THEN_CHOICE);
             setPC(pc.make_copy(), HEURISTICS_ELSE_CHOICE);
             Instruction endIns = VeritestingListener.advanceSpf(instructionToExecute, region, false);
-            RegionHitExactHeuristic regionHitExactHeuristic = new RegionHitExactHeuristic(key, endIns, 0);
+            RegionHitExactHeuristic regionHitExactHeuristic = new RegionHitExactHeuristic(key, endIns, endIns.getMethodInfo() , 0);
             /*if(!HeuristicManager.addRegionExactHeuristic(regionHitExactHeuristic))
                 this.heuristicsCountingMode = false;*/
             HeuristicManager.addRegionExactHeuristic(regionHitExactHeuristic);
