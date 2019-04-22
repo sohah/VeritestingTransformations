@@ -32,6 +32,7 @@ import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.printRegionDigest;
 import static gov.nasa.jpf.symbc.VeritestingListener.veritestingMode;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
@@ -390,7 +391,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             String jvmMethodName = methodName.toString() + methodSignature; //methodReference.getSignature();
             StaticRegion staticRegion = JITAnalysis.discoverAllClassAndGetRegion(className, jvmMethodName, key);
             if (staticRegion != null) {
-                VeritestingListener.regionDigest.append("\n" + staticRegion.staticStmt.toString());
+                if (printRegionDigest) VeritestingListener.regionDigest.append("\n" + staticRegion.staticStmt.toString());
                 return new Pair(key, staticRegion);
             }
         }
@@ -446,7 +447,7 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
             StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
             if (staticRegion != null) {
-                VeritestingListener.regionDigest.append("\n" + staticRegion.staticStmt.toString());
+                if (printRegionDigest) VeritestingListener.regionDigest.append("\n" + staticRegion.staticStmt.toString());
                 return new Pair(key, staticRegion);
             }
         }

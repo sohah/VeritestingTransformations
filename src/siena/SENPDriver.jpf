@@ -3,7 +3,7 @@ classpath=${jpf-symbc}/build/siena
 sourcepath=${jpf-symbc}/src/siena
 #symbolic.method = SENPDriver.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym)
 #symbolic.method = SENPDriver.mainProcess(sym#sym#sym#con#con#con#con#con#con)
-symbolic.method = SENPDriver.mainProcess(sym#con#con#con#con#con#con#con#con)
+symbolic.method = SENPDriver.mainProcess(sym#sym#con#con#con#con#con#con#con)
 symbolic.minint=-100
 symbolic.maxint=100
 vm.storage.class=nil
@@ -13,7 +13,7 @@ vm.storage.class=nil
 #listener = .listener.ChoiceTracker
 #symbolic.debug=on
 
-veritestingMode=5
+veritestingMode=4
 performanceMode = true
 jitAnalysis=true
 symbolic.dp=z3bitvectorinc
