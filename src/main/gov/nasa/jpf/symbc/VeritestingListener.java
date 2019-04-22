@@ -2,6 +2,8 @@ package gov.nasa.jpf.symbc;
 
 
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
+import gov.nasa.jpf.symbc.veritesting.Heuristics.HeuristicManager;
+import gov.nasa.jpf.symbc.veritesting.Heuristics.PathStatus;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
@@ -184,7 +186,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             if (conf.hasValue("simplify"))
                 simplify = conf.getBoolean("simplify");
 
-            if (conf.hasValue("SPFCasesHeuristics"))
+            if (conf.hasValue("SPFCasesHeuristics") && (veritestingMode >= 4))
                 spfCasesHeuristicsOn = conf.getBoolean("SPFCasesHeuristics");
 
 
@@ -229,8 +231,43 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             }
         }
         StackFrame curr = ti.getTopFrame();
+
+         boolean isIfInstruction = instructionToExecute instanceof IfInstruction;
+         boolean isEmptyRegionHeuristic = HeuristicManager.getRegionHeuristicSize() == 0;
+        boolean isActiveLastRegion = (isEmptyRegionHeuristic)? false: HeuristicManager.getRegionHeuristic()
+                .getRegionStatus();
+
+        String lastRegionKey = (isEmptyRegionHeuristic)? null: HeuristicManager.getLastRegionKey();
+
 //        runAdapterSynth(ti, curr);
-        if (runMode == VeritestingMode.VANILLASPF || !(instructionToExecute instanceof IfInstruction)) return;
+        if (runMode == VeritestingMode.VANILLASPF)
+            return;
+        else if (isEmptyRegionHeuristic && !isIfInstruction)
+            return;
+        else if (! isEmptyRegionHeuristic && !isActiveLastRegion && ! isIfInstruction)
+            return;
+        else if (spfCasesHeuristicsOn
+                && StaticBranchChoiceGenerator.heuristicsCountingMode
+                && isIfInstruction
+                && !keyFromInstructionToExc(instructionToExecute).equals(lastRegionKey)) //if we are in another
+            // if-statement inside the heuristic counting mode, then just return and let spf handle it.
+            return;
+         else if (spfCasesHeuristicsOn && StaticBranchChoiceGenerator.heuristicsCountingMode) { //if we are
+            // in heuristic
+            // mode then count
+            // paths, if we are at the end of the region of interest then return
+            PathStatus pathStatus = HeuristicManager.incrementRegionExactHeuristicCount(instructionToExecute);
+            switch (pathStatus) {
+                case ENDREACHED:
+                    ti.getVM().getSystemState().setIgnored(true);
+                    return;
+                case INHEURISTIC:
+                case OUTHEURISTIC:
+                    break; // continue veritesting.
+            }
+        }
+
+
         if (!performanceMode) {
             if (instantiationLimit > 0 && statisticManager.getSuccInstantiations() > instantiationLimit) return;
             boolean noVeritestingFlag = false;
@@ -242,15 +279,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         String key = keyFromInstructionToExc(instructionToExecute);
 
-        if(spfCasesHeuristicsOn){ //if we are in heuristic mode then count paths, if we are at the end of the region of interest then return
-            RegionHitExactHeuristic regionHeuristic = StatisticManager.getRegionHeuristic(key);
-            if(regionHeuristic.getRegionStatus() && instructionToExecute.equals(regionHeuristic.getTargetInstruction())){
-                regionHeuristic.incrementPathCount();
-                ti.getVM().getSystemState().setIgnored(true);
-                return;
-            }
-
-        }
 
         StatisticManager.instructionToExec = key;
         try {
@@ -412,7 +440,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     private void runVeritestingWithSPF(ThreadInfo ti, VM vm, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws Exception {
-        if (!ti.isFirstStepInsn()) { // first time around
+        if (!ti.isFirstStepInsn() && !StaticBranchChoiceGenerator.heuristicsCountingMode) { // first time around
             StaticPCChoiceGenerator newCG;
             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
 
@@ -421,7 +449,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             else
                 newCG = new StaticBranchChoiceGenerator(dynRegion, instructionToExecute);
 
-            newCG.makeVeritestingCG(ti, key);
+            newCG.makeVeritestingCG(ti, instructionToExecute, key);
 
             SystemState systemState = vm.getSystemState();
             systemState.setNextChoiceGenerator(newCG);
@@ -485,9 +513,9 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         do {
             while (somethingChanged) {
 
-            /*-------------- SUBSTITUTION & HIGH ORDER TRANSFORMATION ---------------*/
-            /*--------------  FIELD TRANSFORMATION ---------------*/
-            /*-------------- ARRAY TRANSFORMATION TRANSFORMATION ---------------*/
+                /*-------------- SUBSTITUTION & HIGH ORDER TRANSFORMATION ---------------*/
+                /*--------------  FIELD TRANSFORMATION ---------------*/
+                /*-------------- ARRAY TRANSFORMATION TRANSFORMATION ---------------*/
                 dynRegion = FixedPointWrapper.executeFixedPointTransformations(ti, dynRegion);
                 somethingChanged = FixedPointWrapper.isChangedFlag();
 
@@ -527,12 +555,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         if ((runMode.ordinal()) >= (VeritestingMode.SPFCASES.ordinal())) {
 
-        /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
+            /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
             dynRegion = SpfCasesPass1Visitor.execute(ti, dynRegion,
                     runMode.ordinal() < VeritestingMode.EARLYRETURNS.ordinal() ?
                             new ArrayList(Arrays.asList(THROWINSTRUCTION, NEWINSTRUCTION, ARRAYINSTRUCTION, INVOKE)) : null);
 
-        /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
+            /*-------------- SPFCases TRANSFORMATION 1ST PASS ---------------*/
             dynRegion = SpfCasesPass2Visitor.execute(dynRegion);
         }
         /*--------------- LINEARIZATION TRANSFORMATION ---------------*/
@@ -825,6 +853,8 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         pw.println("Metrics Vector:");
         pw.println(getMetricsVector(dynRunTime));
 
+        if (spfCasesHeuristicsOn)
+            statisticManager.printHeuristicStatistics();
     }
 
     private void writeRegionDigest() {
