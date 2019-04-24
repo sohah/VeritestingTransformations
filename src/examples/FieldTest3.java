@@ -12,7 +12,7 @@ public class FieldTest3  extends TestRegionBaseClass {
             count = 2;
             count += 1;
         }
-//        assert (x != 0 ? count == x + 3 : count == 3);
+        assert (x != 0 ? count == x + 3 : count == 3);
         Outputs o = new Outputs();
         o.intOutputs = new int[1];
         o.intOutputs[0] = count;

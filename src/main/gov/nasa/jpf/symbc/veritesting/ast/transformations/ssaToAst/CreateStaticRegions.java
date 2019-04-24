@@ -371,13 +371,11 @@ public class CreateStaticRegions {
 
         visited.add(entry);
         toVisit.addAll(SSAUtil.getNonReturnSuccessors(cfg, entry));
-        ISSABasicBlock lastVisited = entry;
 
         while (!toVisit.isEmpty()) {
             ISSABasicBlock current = toVisit.remove();
             if (!visited.contains(current)) {
                 visited.add(current);
-                lastVisited = current;
                 ISSABasicBlock immediatePreDom = getIDom(current);
                 if (current == terminus) {
                     // because of priority queue, a non-empty queue means we have
@@ -397,11 +395,6 @@ public class CreateStaticRegions {
         }
         // This condition occurs when we have a region terminated by a 'return'
         // We treat these as self-contained.
-        if (lastVisited.getLastInstruction() instanceof SSAThrowInstruction) {
-            // Vaibhav: I am guessing that we dont want to summarize a region that ends with a
-            // throw exception at this point
-            throwException(new StaticRegionException("last visited basic block threw an exception"), STATIC);
-        }
         return true;
     }
 
@@ -512,7 +505,12 @@ public class CreateStaticRegions {
                 returnExpr = new Operation(Operation.Operator.OR, returnExpr, branchExpr);
             }
         }
-        assert (returnExpr != null);
+// Vaibhav: This happens when we have a region like assert (x != 0 ? count == x + 3 : count == 3); which is in
+// FieldTest3. All predecessors of child have a number less than parent because of which the we never run any full
+// iterations through the "for (ISSABasicBlock parent : cfg.getNormalPredecessors(child))" loop. I think it is best to
+// not create such a region. It is also good to not crash Java Ranger on encountering such a region.
+//        assert (returnExpr != null);
+        if (returnExpr == null) throwException(new StaticRegionException("createComplexIfCondition: failed to recover condition"), STATIC);
         return new Pair<>(returnExpr, setupStmt);
     }
 
