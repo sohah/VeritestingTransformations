@@ -32,16 +32,21 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
 
     @Override
     public Ast visit(AssignmentStmt a) {
+        
         return null;
     }
 
     @Override
     public Ast visit(CompositionStmt a) {
+        a.s1.accept(this);
+        a.s2.accept(this);
         return null;
     }
 
+
     @Override
     public Ast visit(IfThenElseStmt a) {
+        assert false;
         return null;
     }
 
@@ -52,75 +57,89 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
 
     @Override
     public Ast visit(SPFCaseStmt c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(ArrayLoadInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(ArrayStoreInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(SwitchInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(ReturnInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(GetInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(PutInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(NewInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(InvokeInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(ArrayLengthInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(ThrowInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(CheckCastInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(InstanceOfInstruction c) {
+        assert false;
         return null;
     }
 
     @Override
     public Ast visit(PhiInstruction c) {
+        assert false;
         return null;
     }
 
-    public static ArrayList<Equation> execute(DynamicRegion dynamicRegion, InOutManager inOutManager){
+    public static ArrayList<Equation> execute(DynamicRegion dynamicRegion, InOutManager inOutManager) {
         EquationExprVisitor equationExprVisitor = new EquationExprVisitor();
         EquationVisitor equationVisitor = new EquationVisitor(equationExprVisitor, dynamicRegion, inOutManager);
         dynamicRegion.dynStmt.accept(equationVisitor);
