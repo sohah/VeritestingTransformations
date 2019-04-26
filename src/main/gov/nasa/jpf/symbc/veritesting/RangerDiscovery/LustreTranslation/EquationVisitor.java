@@ -23,7 +23,7 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
     private ArrayList<Equation> equationList;
 
 
-    public EquationVisitor(ExprVisitor<Expression> exprVisitor, DynamicRegion dynamicRegion, InOutManager inOutManager) {
+    private EquationVisitor(ExprVisitor<Expression> exprVisitor, DynamicRegion dynamicRegion, InOutManager inOutManager) {
         this.eva = new ExprVisitorAdapter<Expression>(exprVisitor);
         this.exprVisitor = exprVisitor;
         this.dynamicRegion = dynamicRegion;

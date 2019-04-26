@@ -10,4 +10,12 @@ public class InputOutput {
     public void add(String start_btn, Type type) {
         varList.add(new Pair<>(start_btn, type));
     }
+
+    public boolean contains(String varName, Type type){
+        for(int i=0; i<varList.size(); i++){
+            if(varList.get(i).getFirst().equals(varName) && varList.get(i).getSecond().equals(type))
+                return true;
+        }
+        return false;
+    }
 }

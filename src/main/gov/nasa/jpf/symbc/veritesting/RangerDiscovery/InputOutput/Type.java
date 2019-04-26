@@ -1,5 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
 public enum Type {
-    INT, FLOAT, BOOL
+    INT, FLOAT, STRING, BOOL
 }

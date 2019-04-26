@@ -1,8 +1,9 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 
-import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
-import jkind.lustre.Ast;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import jkind.lustre.Node;
 
 import java.util.ArrayList;
 
@@ -23,14 +24,15 @@ public class DiscoverContract {
     public static String packageName;
 /***** end of unused vars***/
 
-    public final Ast discoverLusterContract(){
+    public final ArrayList<Node> discoverLusterContract(DynamicRegion dynamicRegion){
 
         Contract contract = new Contract();
-        return translateToLuster();
+        Node rNode = ToLutre.generateRnode(dynamicRegion, contract);
+        Node rWrapper = ToLutre.generateRwrapper();
+
+        ArrayList<Node> nodeList = new ArrayList<>();
+        nodeList.add(rNode);
+        nodeList.add(rWrapper);
+        return nodeList;
     }
-
-    private Ast translateToLuster() {
-
-    }
-
 }

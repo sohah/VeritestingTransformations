@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
 import jkind.lustre.Ast;
+import jkind.lustre.TupleType;
 import jkind.lustre.VarDecl;
 
 import java.util.ArrayList;
@@ -10,7 +11,6 @@ public class InOutManager {
     InputOutput freeInput = new InputOutput();
     InputOutput stateInput = new InputOutput();
     InputOutput stateOutput = new InputOutput();
-
 
     public void discoverVars(){
         discoverFreeInput();
@@ -47,12 +47,12 @@ public class InOutManager {
     }
 
     public ArrayList<VarDecl> generateInputDecl() {
-        ArrayList<Ast> inputDeclList = generateLustreDecl(freeInput);
+        ArrayList<VarDecl> inputDeclList = generateLustreDecl(freeInput);
         inputDeclList.addAll(generateLustreDecl(stateInput));
         return inputDeclList;
     }
 
-    private ArrayList<Ast> generateLustreDecl(InputOutput stateInput) {
+    private ArrayList<VarDecl> generateLustreDecl(InputOutput stateInput) {
         return generateLustreDecl(stateOutput);
     }
 
@@ -60,5 +60,27 @@ public class InOutManager {
 
 
         return null;
+    }
+
+    /**
+     * searches in all in input and output arrays to check if it is one in them
+     * @param s
+     * @return
+     */
+    public boolean isInOutVar(String s, Type type) {
+        return isFreeInVar(s, type) || isStateInVar(s, type) || isStateOutVar(s, type);
+    }
+
+
+    public boolean isFreeInVar(String varName, Type type){
+        return freeInput.contains(varName, type);
+    }
+
+    public boolean isStateInVar(String varName, Type type){
+        return stateInput.contains(varName, type);
+    }
+
+    public boolean isStateOutVar(String varName, Type type){
+        return stateOutput.contains(varName, type);
     }
 }
