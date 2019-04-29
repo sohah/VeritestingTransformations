@@ -1036,6 +1036,8 @@ public class CreateStaticRegions {
 
                 }
             }
+            else
+                populateMissedRegions(cfg, cfg.getNormalSuccessors(currentBlock).iterator().next(), endingBlock);
         }
     }
 
