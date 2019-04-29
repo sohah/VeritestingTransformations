@@ -246,15 +246,22 @@ public class CreateStaticRegions {
             else {
                 Stmt gamma = visitor.convert(ins);
                 // This simplification causes problems in the LocalOutputInvariantVisitor in StaticRegion constructor
-                // that tries to ensure that all local outputs in outputTable have a assignment using a gamma expression
+                // that tries to ensure that all local outputs in outputTable have a assignment using a gamma expression.
+                // This part of the LocalOutputInvariantVisitor is now commented out (04/29/2019).
                 /* Vaibhav: this simplification should not make a correctness difference unless we have a region that
-                * writes the same value to a local variable on both sides of a branch */
-                /*if (gamma instanceof AssignmentStmt && ((AssignmentStmt) gamma).rhs instanceof GammaVarExpr) {
+                * writes the same value to a local variable on both sides of a branch. But, having this simplification
+                * turned on causes the LocalOutputInvariantVisitor to not create a stack output for the lhs of such
+                * gamma expressions. An example of this is in replace.amatch([C[CI)I#56 that ends on the instruction
+                * at offset 62. Using this simplification, we now dont assume that such regions have a stack output and therefore
+                * dont want such regions to end on a stack consuming instruction. These regions appear right before the
+                * beginning of a loop and these gamma expressions are assigning a value that would be modified in the
+                * loop. */
+                if (gamma instanceof AssignmentStmt && ((AssignmentStmt) gamma).rhs instanceof GammaVarExpr) {
                     Expression exp1 = ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).thenExpr;
                     Expression exp2 = ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).elseExpr;
                     if (exp1.equals(exp2))
                         gamma = new AssignmentStmt(((AssignmentStmt) gamma).lhs, ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).thenExpr);
-                }*/
+                }
                 stmt = conjoin(stmt, gamma);
             }
         }
