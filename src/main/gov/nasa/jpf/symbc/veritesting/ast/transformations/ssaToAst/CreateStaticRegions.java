@@ -728,10 +728,10 @@ public class CreateStaticRegions {
                 new IfThenElseStmt(SSAUtil.getLastBranchInstruction(currentBlock), condExpr, thenStmt, elseStmt),
                 false);
 
-        if (!thenBlock.equals(actualThenBlock))
+        if (!actualThenBlock.equals(thenBlock) &&(!actualThenBlock.equals(elseBlock)))
             populateMissedRegions(cfg, actualThenBlock, terminus);
 
-        if (!elseBlock.equals(actualElseBlock))
+        if (!actualElseBlock.equals(thenBlock) &&(!actualElseBlock.equals(elseBlock)))
             populateMissedRegions(cfg, actualElseBlock, terminus);
 
         return returnStmt;
