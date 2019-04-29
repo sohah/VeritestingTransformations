@@ -5,6 +5,10 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionHitExactHeuristic;
 import gov.nasa.jpf.vm.bytecode.ReturnInstruction;
 
 import java.util.ArrayList;
+import java.util.Formatter;
+
+import static gov.nasa.jpf.symbc.VeritestingListener.performanceMode;
+import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.RegionHitExactHeuristic.formatString;
 
 
 public class HeuristicManager {
@@ -23,8 +27,9 @@ public class HeuristicManager {
             if (regionHitExactHeuristic.getRegionKey().equals(newRegionHitExactHeuristic.getRegionKey()))
                 return false; //do not recreate heursitics for regions we already created.
         }*/
-        regionHitExactHeuristicArray.add(newRegionHitExactHeuristic);
-        return true;
+       if (performanceMode) regionHitExactHeuristicArray.clear();
+       regionHitExactHeuristicArray.add(newRegionHitExactHeuristic);
+       return true;
     }
 
     public static PathStatus incrementRegionExactHeuristicCount(gov.nasa.jpf.vm.Instruction instructionToExecute) {
@@ -83,7 +88,10 @@ public class HeuristicManager {
     }
 
     public static void printStatistics() {
-        System.out.println("RegionKey\t\t\t\t\t\tTargetInstruction\t\t\t\tActiveStatus\t\t\tPathCount");
+//        System.out.println("RegionKey" + heurTabStr + heurTabStr + "TargetInstruction" + heurTabStr + "ActiveStatus" + heurTabStr + "PathCount");
+        Formatter f = new Formatter();
+        f.format(formatString,"RegionKey" , "TargetInstruction" , "ActiveStatus" , "PathCount" , "EstimatedPathCount");
+        System.out.println(f.toString());
         for (RegionHitExactHeuristic regionHeuristic : regionHitExactHeuristicArray) {
             System.out.println(regionHeuristic.toString());
         }

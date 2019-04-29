@@ -1,5 +1,5 @@
 target=TestLocalOutputs
-veritestRegionExpectedCount = 16
+veritestRegionExpectedCount = 4
 
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples

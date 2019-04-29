@@ -13,7 +13,7 @@ vm.storage.class=nil
 #listener = .listener.ChoiceTracker
 
 #symbolic.debug=on
-veritestingMode=3
+veritestingMode=5
 performanceMode = true
 #interestingClassNames = replace11
 

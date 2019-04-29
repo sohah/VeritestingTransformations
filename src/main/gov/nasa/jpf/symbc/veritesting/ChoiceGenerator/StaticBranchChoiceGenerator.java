@@ -18,7 +18,9 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.VeritestingMode.SPFCASES;
 import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
+import static gov.nasa.jpf.symbc.VeritestingListener.veritestingMode;
 import static gov.nasa.jpf.symbc.veritesting.Heuristics.HeuristicManager.regionHeuristicFinished;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
@@ -101,26 +103,35 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
             statisticManager.updateVeriSuccForRegion(key);
             ++VeritestingListener.veritestRegionCount;
+
             if(heuristicsCountingMode){
                 regionHeuristicFinished(key);
                 heuristicsCountingMode = false;
+                assert key.equals(HeuristicManager.getLastRegionKey());
+                RegionHitExactHeuristic regionHitExactHeuristic = HeuristicManager.getRegionHeuristic();
+                assert !regionHitExactHeuristic.getRegionStatus();
+                if (region.totalNumPaths != regionHitExactHeuristic.getPathCount()) {
+                    System.out.println("** warning: our estimated path count (" + region.totalNumPaths +
+                            ") does not match exact path count (" + regionHitExactHeuristic.getPathCount());
+                }
+                regionHitExactHeuristic.setEstimatedPathCount(region.totalNumPaths);
             }
+
+
         }
         if (choice == HEURISTICS_THEN_CHOICE || choice == HEURISTICS_ELSE_CHOICE) {
             System.out.println("\n=========Executing" + (choice == HEURISTICS_THEN_CHOICE ? " then heuristics " : " else heuristics") + ".  Instruction: ");
             if (choice == HEURISTICS_THEN_CHOICE) {
-                MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+                /*MethodInfo methodInfo = instructionToExecute.getMethodInfo();
                 String className = methodInfo.getClassName();
                 String methodName = methodInfo.getName();
                 String methodSignature = methodInfo.getSignature();
                 int offset = instructionToExecute.getPosition();
                 String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
-
-                assert(HeuristicManager.getRegionHeuristic().getRegionStatus());
-            /*if(!HeuristicManager.getRegionHeuristicStatus(key)){ //if we already counted the paths for this region, no need to recount it again.
-                ti.getVM().getSystemState().setIgnored(true);
-                return instructionToExecute;
-            }*/
+                if(!HeuristicManager.getRegionHeuristicStatus(key)){ //if we already counted the paths for this region, no need to recount it again.
+                    ti.getVM().getSystemState().setIgnored(true);
+                    return instructionToExecute;
+                }*/
 
             }
             switch (getKind(instructionToExecute)) {
@@ -342,6 +353,15 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
             setPC(createPC(pc, Operation.FALSE, Operation.FALSE), RETURN_CHOICE);
 
         }
+
+    }
+
+    public static int getNumSatChoices(DynamicRegion region) {
+        int count  = 0;
+        count += isSatGreenExpression(region.regionSummary) != ExprUtil.SatResult.FALSE ? 1 : 0;
+        if (veritestingMode >= 4) count += region.spfCaseList.casesList.size();
+        if (veritestingMode == 5) count += region.earlyReturnResult.hasER() ? 1 : 0;
+        return count;
 
     }
 

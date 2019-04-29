@@ -49,6 +49,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
+import static gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator.getNumSatChoices;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
@@ -65,8 +66,10 @@ import static gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.Arr
 public class VeritestingListener extends PropertyListenerAdapter implements PublisherExtension {
 
 
-    //TODO: make these into configuration options
+    // veritestingMode ranges from 1 to 5 which is the same as runMode ranging from VANILLASPF, VERITESTING, HIGHORDER,
+    // SPFCASES, EARLYRETURNS
     public static int veritestingMode = 0;
+    public static VeritestingMode runMode;
 
     public static long totalSolverTime = 0, z3Time = 0;
     public static long parseTime = 0, regionSummaryParseTime = 0;
@@ -96,7 +99,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
     public enum VeritestingMode {VANILLASPF, VERITESTING, HIGHORDER, SPFCASES, EARLYRETURNS}
 
-    public static VeritestingMode runMode;
+
     public static boolean performanceMode = false;
     // reads in a exclusionsFile configuration option, set to ${jpf-symbc}/MyJava60RegressionExclusions.txt by default
     public static String exclusionsFile;
@@ -232,10 +235,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
         StackFrame curr = ti.getTopFrame();
 
-         boolean isIfInstruction = instructionToExecute instanceof IfInstruction;
-         boolean isEmptyRegionHeuristic = HeuristicManager.getRegionHeuristicSize() == 0;
-        boolean isActiveLastRegion = (isEmptyRegionHeuristic)? false: HeuristicManager.getRegionHeuristic()
-                .getRegionStatus();
+        boolean isIfInstruction = instructionToExecute instanceof IfInstruction;
+        boolean isEmptyRegionHeuristic = HeuristicManager.getRegionHeuristicSize() == 0;
+        boolean isActiveLastRegion = (isEmptyRegionHeuristic)? false:
+                HeuristicManager.getRegionHeuristic().getRegionStatus();
 
         String lastRegionKey = (isEmptyRegionHeuristic)? null: HeuristicManager.getLastRegionKey();
 
@@ -252,7 +255,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 && !keyFromInstructionToExc(instructionToExecute).equals(lastRegionKey)) //if we are in another
             // if-statement inside the heuristic counting mode, then just return and let spf handle it.
             return;
-         else if (spfCasesHeuristicsOn && StaticBranchChoiceGenerator.heuristicsCountingMode) { //if we are
+        else if (spfCasesHeuristicsOn && StaticBranchChoiceGenerator.heuristicsCountingMode) { //if we are
             // in heuristic
             // mode then count
             // paths, if we are at the end of the region of interest then return
@@ -368,10 +371,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         boolean isEndingInsnStackConsuming = isStackConsumingRegionEnd(staticRegion, instructionToExecute);
         // If region ends on a stack operand consuming instruction then the region should have a stack output
         if (isEndingInsnStackConsuming && staticRegion.stackOutput == null) {
-            throwException(new StaticRegionException("Region ends on a stack-consuming instruction"), INSTANTIATION);
+            String ex = "Region ends on a stack-consuming instruction";
+            skipRegionStrings.add(ex);
+            throwException(new StaticRegionException(ex), INSTANTIATION);
         }
         if (!isEndingInsnStackConsuming && staticRegion.stackOutput != null) {
-            throwException(new StaticRegionException("Region with stack output ends on a non-stack-consuming instruction"), INSTANTIATION);
+            String ex = "Region with stack output ends on a non-stack-consuming instruction";
+            skipRegionStrings.add(ex);
+            throwException(new StaticRegionException(ex), INSTANTIATION);
         }
     }
 
@@ -439,11 +446,18 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         }
     }
 
-    private void runVeritestingWithSPF(ThreadInfo ti, VM vm, Instruction instructionToExecute, StaticRegion staticRegion, String key) throws Exception {
+    private void runVeritestingWithSPF(ThreadInfo ti, VM vm, Instruction instructionToExecute, StaticRegion staticRegion,
+                                       String key) throws Exception {
+
         if (!ti.isFirstStepInsn() && !StaticBranchChoiceGenerator.heuristicsCountingMode) { // first time around
             StaticPCChoiceGenerator newCG;
             DynamicRegion dynRegion = runVeritesting(ti, instructionToExecute, staticRegion, key);
-
+            if (dynRegion.totalNumPaths > 0 && dynRegion.totalNumPaths <= (getNumSatChoices(dynRegion))) {
+                String ex = "region instantiation is not beneficial (" +
+                        dynRegion.totalNumPaths + "," + getNumSatChoices(dynRegion) + ")";
+                skipRegionStrings.add(ex);
+                throwException(new StaticRegionException(ex), INSTANTIATION);
+            }
             if (spfCasesHeuristicsOn)
                 newCG = new StaticBranchChoiceGenerator(dynRegion, instructionToExecute, true);
             else
@@ -552,6 +566,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     assert ((ArrayRefVarExpr) entry.getKey()).uniqueNum != -1;
             }
         }
+        RegionMetricsVisitor.execute(dynRegion);
 
         if ((runMode.ordinal()) >= (VeritestingMode.SPFCASES.ordinal())) {
 
