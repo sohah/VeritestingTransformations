@@ -1,0 +1,88 @@
+-- depth 3 of four bools, that tries to discover the relationship among the input and the output.
+-- This version is different than Vote_All_depth3, in that it lifted the True and False at the upper level instead of
+-- being part of the inner clauses.
+-- RESULT:
+
+-- Tired  minimal candidate
+
+-- INITIAL REPAIRED PROPERTY:
+
+-- TIGHT 1:
+-- TIGHT 2:
+-- TIGHT 3:
+
+
+repair node discover_binary_Bool_1_Int_4_Terms3(a0: bool; a1:bool; a2:bool; a3:bool)
+[valhole_0: inthole;
+valhole_1:inthole;
+valhole_2: inthole;
+
+level_0_hole:inthole;
+level_1_hole:inthole;
+level_2_hole:inthole;
+level_3_hole:inthole
+
+]
+
+returns (out: bool);
+var
+
+leaf_0:bool;
+leaf_1:bool;
+leaf_2:bool;
+
+bExprlevel_1:bool;
+bExprlevel_2:bool;
+
+let
+
+    leaf_0 = if(valhole_0 = 0) then a0
+                   else if(valhole_0 = 1) then a1
+                   else if(valhole_0 = 2) then a2
+                   else a3;
+
+
+    leaf_1 = if(valhole_1 = 0) then a0
+                   else if(valhole_1 = 1) then a1
+                   else if(valhole_1 = 2) then a2
+                   else a3;
+
+
+    bExprlevel_1 =  if(level_2_hole = 1) then leaf_0 and leaf_1
+                   else if(level_2_hole = 2) then leaf_0 or leaf_1
+                   else if(level_2_hole = 3) then leaf_0 => leaf_1
+                   else if(level_2_hole = 4) then leaf_0 xor leaf_1
+                   else if(level_2_hole = 5) then not leaf_0
+                   else not leaf_1;
+
+
+
+    leaf_2 = if(valhole_2 = 0) then a0
+                   else if(valhole_2 = 1) then a1
+                   else if(valhole_2 = 2) then a2
+                   else a3;
+
+
+    bExprlevel_2 =  if(level_3_hole = 1) then bExprlevel_1 and leaf_2
+                     else if(level_3_hole = 2) then bExprlevel_1 or leaf_2
+                     else if(level_3_hole = 3) then bExprlevel_1 => leaf_2
+                     else if(level_3_hole = 4) then bExprlevel_1 xor leaf_2
+                     else if(level_3_hole = 4) then not leaf_2
+                     else if(level_3_hole = 4) then true
+                     else false;
+
+
+    out = bExprlevel_2;
+tel;
+
+
+
+node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool);
+
+let
+
+p1 = true -> (repair(a and a, discover_binary_Bool_1_Int_4_Terms3(a,b,c,out)));
+
+  --%PROPERTY p1;
+
+tel;

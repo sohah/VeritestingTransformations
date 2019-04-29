@@ -36,7 +36,7 @@ public class SPFCaseStmt implements Stmt {
     }
 
     @Override
-    public boolean equals(Stmt stmt2) {
+    public boolean equals(Object stmt2) {
         if (!(stmt2 instanceof SPFCaseStmt))
             return false;
         else {
@@ -47,4 +47,13 @@ public class SPFCaseStmt implements Stmt {
         }
     }
 
+    @Override
+    public boolean equals(Stmt stmt2) {
+        return this.equals((Object)stmt2);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.toString().hashCode();
+    }
 }

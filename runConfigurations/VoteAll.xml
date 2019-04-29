@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="VoteAll" type="CompoundRunConfigurationType">
+    <toRun name="VoteAllDepth1" type="JarApplication" />
+    <toRun name="VoteAllDepth3" type="JarApplication" />
+    <toRun name="VoteAllDepth4" type="JarApplication" />
+    <toRun name="VoteAllDepth2" type="JarApplication" />
+    <method v="2" />
+  </configuration>
+</component>

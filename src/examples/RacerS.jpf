@@ -1,0 +1,16 @@
+target=RacerS
+classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
+sourcepath=${jpf-symbc}/src/examples
+vm.storage.class=nil
+symbolic.debug=false
+
+
+######## miscellaneous  ######
+symbolic.method=RacerS.setD(sym)
+
+symbolic.dp=z3
+
+#listener = .symbc.VeritestingListener
+listener = .symbc.SymbolicListener,gov.nasa.jpf.listener.PreciseRaceDetector
+
+report.console.property_violation=error,trace

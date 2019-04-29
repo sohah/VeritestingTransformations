@@ -1,3 +1,7 @@
+### Note:
+
+This repo used to hold "JavaRanger", it has moved to [here](https://github.com/vaibhavbsharma/java-ranger). Going forward this repo contains the implementation of contract discovery described [here](https://github.com/sohah/ContractDiscovery). Sept. 10th 2019.
+
 # JavaRanger for Symbolic PathFinder
 
 JavaRanger collapses paths of regions of code that could be summarized statically. This allows for less path exploration by dynamic symbolic execution, thus allowing dynamic symbolic execution to be used over larger programs.

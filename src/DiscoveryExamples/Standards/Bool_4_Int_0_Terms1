@@ -1,0 +1,22 @@
+repair node discover_binary_Bool_1_Int_4_Terms1(a0: bool; a1:bool; a2:bool; a3:bool)
+[valhole_0: inthole;
+
+level_0_hole:inthole
+
+]
+
+returns (out: bool);
+var
+
+leaf_0:bool;
+
+let
+
+    leaf_0 = if(valhole_0 = 0) then a0
+                   else if(valhole_0 = 1) then a1
+                   else if(valhole_0 = 2) then a2
+                   else a3;
+
+    out = leaf_0;
+tel;
+

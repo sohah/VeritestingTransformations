@@ -1,0 +1,17 @@
+node main(
+  pedal_r : int;
+  autoBreak_r : bool;
+  skid_r : bool;
+  NormalPressure_r : int;
+  AltPressure_r : int;
+  Sys_Mode : int
+) returns (
+  p1 : bool
+);
+let
+  --%MAIN;
+  p1 = (true -> (((pedal_r > -14) xor (NormalPressure_r = 6)) and ((NormalPressure_r > -1) and (Sys_Mode = 0))));
+
+  --%PROPERTY p1;
+
+tel;

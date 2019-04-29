@@ -1,0 +1,147 @@
+repair node discover_binary_Bool_1_Int_4_Terms5(a0: bool; i0:int; i1:int; i2:int;i3:int)
+[valhole_0: inthole;
+valhole_1:inthole;
+valhole_2: inthole;
+valhole_3: inthole;
+valhole_4: inthole;
+
+const_hole0: inthole;
+const_hole1 : inthole;
+const_hole2 :inthole;
+const_hole3 :inthole;
+const_hole4 :inthole;
+
+level_0_hole:inthole;
+level_1_hole:inthole;
+level_2_hole:inthole;
+level_3_hole:inthole;
+level_4_hole:inthole;
+level_5_hole:inthole
+
+]
+
+returns (out: bool);
+var
+
+leaf_0:bool;
+leaf_1:bool;
+leaf_2:bool;
+leaf_3:bool;
+leaf_4:bool;
+
+bExprlevel_1:bool;
+bExprlevel_2:bool;
+bExprlevel_3:bool;
+bExprlevel_4:bool;
+
+let
+
+    leaf_0 = if(valhole_0 = 0) then a0
+                   else if(valhole_0 = 1) then i0 <= const_hole0
+                   else if(valhole_0 = 2) then i0 > const_hole0
+                   else if(valhole_0 = 3) then i0 = const_hole0
+                   else if(valhole_0 = 4) then i1 <= const_hole0
+                   else if(valhole_0 = 5) then i1 > const_hole0
+                   else if(valhole_0 = 6) then i1 = const_hole0
+                   else if(valhole_0 = 7) then i2 <= const_hole0
+                   else if(valhole_0 = 8) then i2 > const_hole0
+                   else if(valhole_0 = 9) then i2 = const_hole0
+                   else if(valhole_0 = 10) then i3 <= const_hole0
+                   else if(valhole_0 = 11) then i3 > const_hole0
+                   else i3 = const_hole0;
+
+
+    leaf_1 = if(valhole_1 = 0) then a0
+                   else if(valhole_1 = 1) then i0 <= const_hole1
+                   else if(valhole_1 = 2) then i0 > const_hole1
+                   else if(valhole_1 = 3) then i0 = const_hole1
+                   else if(valhole_1 = 4) then i1 <= const_hole1
+                   else if(valhole_1 = 5) then i1 > const_hole1
+                   else if(valhole_1 = 6) then i1 = const_hole1
+                   else if(valhole_1 = 7) then i2 <= const_hole1
+                   else if(valhole_1 = 8) then i2 > const_hole1
+                   else if(valhole_1 = 9) then i2 = const_hole1
+                   else if(valhole_1 = 10) then i3 <= const_hole1
+                   else if(valhole_1 = 11) then i3 > const_hole1
+                   else i3 = const_hole1;
+
+
+    bExprlevel_1 =  if(level_2_hole = 1) then leaf_0 and leaf_1
+                   else if(level_2_hole = 2) then leaf_0 or leaf_1
+                   else if(level_2_hole = 3) then leaf_0 => leaf_1
+                   else if(level_2_hole = 4) then leaf_0 xor leaf_1
+                   else if(level_2_hole = 5) then not leaf_0
+                   else not leaf_1;
+
+
+
+    leaf_2 = if(valhole_2 = 0) then a0
+                   else if(valhole_2 = 1) then i0 <= const_hole2
+                   else if(valhole_2 = 2) then i0 > const_hole2
+                   else if(valhole_2 = 3) then i0 = const_hole2
+                   else if(valhole_2 = 4) then i1 <= const_hole2
+                   else if(valhole_2 = 5) then i1 > const_hole2
+                   else if(valhole_2 = 6) then i1 = const_hole2
+                   else if(valhole_2 = 7) then i2 <= const_hole2
+                   else if(valhole_2 = 8) then i2 > const_hole2
+                   else if(valhole_2 = 9) then i2 = const_hole2
+                   else if(valhole_2 = 10) then i3 <= const_hole2
+                   else if(valhole_2 = 11) then i3 > const_hole2
+                   else i3 = const_hole2;
+
+
+    bExprlevel_2 =  if(level_3_hole = 1) then bExprlevel_1 and leaf_2
+                     else if(level_3_hole = 2) then bExprlevel_1 or leaf_2
+                     else if(level_3_hole = 3) then bExprlevel_1 => leaf_2
+                     else if(level_3_hole = 4) then bExprlevel_1 xor leaf_2
+                     else not leaf_2;
+
+
+    leaf_3 = if(valhole_3 = 0) then a0
+                   else if(valhole_3 = 1) then i0 <= const_hole3
+                   else if(valhole_3 = 2) then i0 > const_hole3
+                   else if(valhole_3 = 3) then i0 = const_hole3
+                   else if(valhole_3 = 4) then i1 <= const_hole3
+                   else if(valhole_3 = 5) then i1 > const_hole3
+                   else if(valhole_3 = 6) then i1 = const_hole3
+                   else if(valhole_3 = 7) then i2 <= const_hole3
+                   else if(valhole_3 = 8) then i2 > const_hole3
+                   else if(valhole_3 = 9) then i2 = const_hole3
+                   else if(valhole_3 = 10) then i3 <= const_hole3
+                   else if(valhole_3 = 11) then i3 > const_hole3
+                   else i3 = const_hole3;
+
+
+    bExprlevel_3 =  if(level_4_hole = 1) then bExprlevel_2 and leaf_3
+                     else if(level_4_hole = 2) then bExprlevel_2 or leaf_3
+                     else if(level_4_hole = 3) then bExprlevel_2 => leaf_3
+                     else if(level_5_hole = 4) then bExprlevel_2 xor leaf_3
+                     else not leaf_3;
+
+
+    leaf_4 = if(valhole_4 = 0) then a0
+                   else if(valhole_4 = 1) then i0 <= const_hole4
+                   else if(valhole_4 = 2) then i0 > const_hole4
+                   else if(valhole_4 = 3) then i0 = const_hole4
+                   else if(valhole_4 = 4) then i1 <= const_hole4
+                   else if(valhole_4 = 5) then i1 > const_hole4
+                   else if(valhole_4 = 6) then i1 = const_hole4
+                   else if(valhole_4 = 7) then i2 <= const_hole4
+                   else if(valhole_4 = 8) then i2 > const_hole4
+                   else if(valhole_4 = 9) then i2 = const_hole4
+                   else if(valhole_4 = 10) then i3 <= const_hole4
+                   else if(valhole_4 = 11) then i3 > const_hole4
+                   else i3 = const_hole4;
+
+
+    bExprlevel_4 =  if(level_5_hole = 1) then bExprlevel_3 and leaf_4
+                     else if(level_5_hole = 2) then bExprlevel_3 or leaf_4
+                     else if(level_5_hole = 3) then bExprlevel_3 => leaf_4
+                     else if(level_5_hole = 4) then bExprlevel_3 xor leaf_4
+                     else if(level_5_hole = 5) then not leaf_4
+                     else if(level_5_hole = 6) then true
+                     else false;
+
+
+    out = bExprlevel_4;
+tel;

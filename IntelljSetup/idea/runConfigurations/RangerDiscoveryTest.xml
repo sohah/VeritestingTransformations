@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="RangerDiscoveryTest" type="CompoundRunConfigurationType" factoryName="Compound Run Configuration">
+    <toRun type="JarApplication" name="FaultyEven_Const" />
+    <toRun type="JarApplication" name="FaultyEven_Pre" />
+    <toRun type="JarApplication" name="FaultyPad_Const" />
+    <toRun type="JarApplication" name="FaultyPad_Pre" />
+    <toRun type="JarApplication" name="FaultyWbs_Const" />
+    <method />
+  </configuration>
+</component>

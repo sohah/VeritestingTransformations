@@ -20,4 +20,8 @@ public class Pair <T,V> {
     public V getSecond(){
         return second;
     }
+
+    public void putFirst(T first) {this.first = first;}
+
+    public void putSecond(V second) {this.second = second;}
 }

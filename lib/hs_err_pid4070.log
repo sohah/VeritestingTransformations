@@ -1,0 +1,714 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGBUS (0xa) at pc=0x000000010bdc9e92, pid=4070, tid=0x0000000000001c03
+#
+# JRE version: Java(TM) SE Runtime Environment (8.0_131-b11) (build 1.8.0_131-b11)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.131-b11 mixed mode bsd-amd64 compressed oops)
+# Problematic frame:
+# C  [libzip.dylib+0x2e92]  newEntry+0x154
+#
+# Failed to write core dump. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.java.com/bugreport/crash.jsp
+# The crash happened outside the Java Virtual Machine in native code.
+# See problematic frame for where to report the bug.
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00007f8337804000):  JavaThread "main" [_thread_in_native, id=7171, stack(0x0000700007bc6000,0x0000700007cc6000)]
+
+siginfo: si_signo: 10 (SIGBUS), si_code: 2 (BUS_ADRERR), si_addr: 0x0000000112861f3b
+
+Registers:
+RAX=0x00007f8336c3c1f0, RBX=0x0000000112861f2f, RCX=0x0000000000000001, RDX=0x0000000000000300
+RSP=0x0000700007cc1a00, RBP=0x0000700007cc1a60, RSI=0x0000000000040000, RDI=0x00000000000003e5
+R8 =0x0000000000000048, R9 =0x00007f8336e3e4d0, R10=0x00000000fffc0000, R11=0x0000700007cc1ade
+R12=0x00007f833788ec00, R13=0x0000000000002000, R14=0x00000000e92bd335, R15=0x00007f8339910fa0
+RIP=0x000000010bdc9e92, EFLAGS=0x0000000000010202, ERR=0x0000000000000004
+  TRAPNO=0x000000000000000e
+
+Top of Stack: (sp=0x0000700007cc1a00)
+0x0000700007cc1a00:   0000000000000042 0000000007cc1a3e
+0x0000700007cc1a10:   00007f8336d38e00 00007f83378041f8
+0x0000700007cc1a20:   0000700007cc1a40 00007f8336c3c1f0
+0x0000700007cc1a30:   00007f8336e3e4d0 00007f8336c3c1f0
+0x0000700007cc1a40:   00007f833788ec00 0000000000002000
+0x0000700007cc1a50:   00000000e92bd335 00007f8339910fa0
+0x0000700007cc1a60:   0000700007cc1ac0 000000010bdca52d
+0x0000700007cc1a70:   0000700007cc1b21 0000700007cc1b20
+0x0000700007cc1a80:   0000004100000000 0000004201804000
+0x0000700007cc1a90:   0000700007cc1ade 0000700007cc1f28
+0x0000700007cc1aa0:   0000000000000042 0000700007cc1ade
+0x0000700007cc1ab0:   00007f8336c3c1f0 00007f83378041f8
+0x0000700007cc1ac0:   0000700007cc1f10 000000010bdc9238
+0x0000700007cc1ad0:   0000000114551688 6f67700000000001
+0x0000700007cc1ae0:   6a2f6173616e2f76 63626d79732f6670
+0x0000700007cc1af0:   736574697265762f 7473612f676e6974
+0x0000700007cc1b00:   4650532f6665642f 746d745365736143
+0x0000700007cc1b10:   7361655246505324 7373616c632e6e6f
+0x0000700007cc1b20:   0000700007cc0000 00007fffc5b13438
+0x0000700007cc1b30:   0000700007cc1cf8 0000000114844220
+0x0000700007cc1b40:   0000700007cc1cd8 0000000000000000
+0x0000700007cc1b50:   00007fffc5b5b680 0000000000000000
+0x0000700007cc1b60:   000000010c816b2a 000000000000004a
+0x0000700007cc1b70:   0000700007cc1f60 00007fffc5b1d98b
+0x0000700007cc1b80:   0000000014844220 00000000148af2d8
+0x0000700007cc1b90:   0000000014542f30 0000000014a26de8
+0x0000700007cc1ba0:   000000001491e898 0000000000000006
+0x0000700007cc1bb0:   0000000213ceadb0 0000000013ceb050
+0x0000700007cc1bc0:   000000001488f198 00000000153370d0
+0x0000700007cc1bd0:   0000700013ceaef0 00007f830fd54ff8
+0x0000700007cc1be0:   0000700007cc1c30 00007fffc5b13438
+0x0000700007cc1bf0:   0000700007cc1db8 0000000000000001 
+
+Instructions: (pc=0x000000010bdc9e92)
+0x000000010bdc9e72:   49 8b 7f 38 e8 5b 1b 00 00 4d 89 77 38 49 89 5f
+0x000000010bdc9e82:   40 4c 89 f0 48 85 c0 0f 84 11 05 00 00 48 89 c3
+0x000000010bdc9e92:   0f b6 43 0c 0f b6 4b 0d 48 c1 e1 08 48 01 c1 0f
+0x000000010bdc9ea2:   b6 43 0e 0f b6 53 0f 48 c1 e2 08 48 01 c2 48 c1 
+
+Register to memory mapping:
+
+RAX=0x00007f8336c3c1f0 is an unknown value
+RBX=0x0000000112861f2f is an unknown value
+RCX=0x0000000000000001 is an unknown value
+RDX=0x0000000000000300 is an unknown value
+RSP=0x0000700007cc1a00 is pointing into the stack for thread: 0x00007f8337804000
+RBP=0x0000700007cc1a60 is pointing into the stack for thread: 0x00007f8337804000
+RSI=0x0000000000040000 is an unknown value
+RDI=0x00000000000003e5 is an unknown value
+R8 =0x0000000000000048 is an unknown value
+R9 =0x00007f8336e3e4d0 is an unknown value
+R10=0x00000000fffc0000 is an unknown value
+R11=0x0000700007cc1ade is pointing into the stack for thread: 0x00007f8337804000
+R12=0x00007f833788ec00 is an unknown value
+R13=0x0000000000002000 is an unknown value
+R14=0x00000000e92bd335 is an unknown value
+R15=0x00007f8339910fa0 is an unknown value
+
+
+Stack: [0x0000700007bc6000,0x0000700007cc6000],  sp=0x0000700007cc1a00,  free space=1006k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [libzip.dylib+0x2e92]  newEntry+0x154
+C  [libzip.dylib+0x352d]  ZIP_GetEntry2+0xd4
+C  [libzip.dylib+0x2238]  Java_java_util_zip_ZipFile_getEntry+0xcf
+J 129  java.util.zip.ZipFile.getEntry(J[BZ)J (0 bytes) @ 0x0000000115a5b30e [0x0000000115a5b240+0xce]
+J 5531 C2 java.util.zip.ZipFile.getEntry(Ljava/lang/String;)Ljava/util/zip/ZipEntry; (86 bytes) @ 0x00000001164dd4c8 [0x00000001164dd180+0x348]
+J 5674 C2 sun.misc.URLClassPath.getResource(Ljava/lang/String;Z)Lsun/misc/Resource; (83 bytes) @ 0x0000000116984aec [0x00000001169846a0+0x44c]
+J 255 C1 java.net.URLClassLoader$1.run()Ljava/lang/Class; (63 bytes) @ 0x0000000115a9caec [0x0000000115a9c8e0+0x20c]
+J 224 C1 java.net.URLClassLoader$1.run()Ljava/lang/Object; (5 bytes) @ 0x0000000115a8b58c [0x0000000115a8b500+0x8c]
+v  ~StubRoutines::call_stub
+V  [libjvm.dylib+0x2ee5b6]
+V  [libjvm.dylib+0x34ed14]
+J 177  java.security.AccessController.doPrivileged(Ljava/security/PrivilegedExceptionAction;Ljava/security/AccessControlContext;)Ljava/lang/Object; (0 bytes) @ 0x0000000115a72255 [0x0000000115a72180+0xd5]
+J 192 C1 java.net.URLClassLoader.findClass(Ljava/lang/String;)Ljava/lang/Class; (47 bytes) @ 0x0000000115a7d7d4 [0x0000000115a7d640+0x194]
+J 5187 C2 java.lang.ClassLoader.loadClass(Ljava/lang/String;Z)Ljava/lang/Class; (122 bytes) @ 0x00000001165a63b4 [0x00000001165a5320+0x1094]
+J 229 C1 java.lang.ClassLoader.loadClass(Ljava/lang/String;)Ljava/lang/Class; (7 bytes) @ 0x0000000115a8a744 [0x0000000115a8a640+0x104]
+v  ~StubRoutines::call_stub
+V  [libjvm.dylib+0x2ee5b6]
+V  [libjvm.dylib+0x2eed5a]
+V  [libjvm.dylib+0x2eeeb2]
+V  [libjvm.dylib+0x53ca02]
+V  [libjvm.dylib+0x53c1ca]
+V  [libjvm.dylib+0x53cc1e]
+V  [libjvm.dylib+0x53d2d1]
+V  [libjvm.dylib+0x1e334a]
+V  [libjvm.dylib+0x1f379a]
+V  [libjvm.dylib+0x3cbf3a]
+V  [libjvm.dylib+0x2e94a3]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/NewInstruction;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+34
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/NewInstruction;)Ljava/lang/Object;+2
+J 5111 C1 gov.nasa.jpf.symbc.veritesting.ast.def.NewInstruction.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x000000011638408c [0x0000000116383f80+0x10c]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+5
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/IfThenElseStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+42
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/IfThenElseStmt;)Ljava/lang/Object;+2
+J 5365 C2 gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x00000001161027e4 [0x00000001161027a0+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.execute(Lgov/nasa/jpf/vm/ThreadInfo;Lgov/nasa/jpf/symbc/veritesting/ast/transformations/Environment/DynamicRegion;Ljava/util/ArrayList;)Lgov/nasa/jpf/symbc/veritesting/ast/transformations/Environment/DynamicRegion;+15
+j  gov.nasa.jpf.symbc.VeritestingListener.runVeritesting(Lgov/nasa/jpf/vm/ThreadInfo;Lgov/nasa/jpf/vm/Instruction;Lgov/nasa/jpf/symbc/veritesting/ast/transformations/ssaToAst/StaticRegion;Ljava/lang/String;)Lgov/nasa/jpf/symbc/veritesting/ast/transformations/Environment/DynamicRegion;+489
+j  gov.nasa.jpf.symbc.VeritestingListener.runVeritestingWithSPF(Lgov/nasa/jpf/vm/ThreadInfo;Lgov/nasa/jpf/vm/VM;Lgov/nasa/jpf/vm/Instruction;Lgov/nasa/jpf/symbc/veritesting/ast/transformations/ssaToAst/StaticRegion;Ljava/lang/String;)V+14
+j  gov.nasa.jpf.symbc.VeritestingListener.runVeritestingWrapper(Lgov/nasa/jpf/vm/ThreadInfo;Lgov/nasa/jpf/vm/VM;Lgov/nasa/jpf/symbc/veritesting/ast/transformations/ssaToAst/StaticRegion;Lgov/nasa/jpf/vm/Instruction;)V+100
+J 6433 C2 gov.nasa.jpf.symbc.VeritestingListener.executeInstruction(Lgov/nasa/jpf/vm/VM;Lgov/nasa/jpf/vm/ThreadInfo;Lgov/nasa/jpf/vm/Instruction;)V (612 bytes) @ 0x00000001169b9db0 [0x00000001169b8600+0x17b0]
+J 6596 C2 gov.nasa.jpf.vm.ThreadInfo.executeTransition(Lgov/nasa/jpf/vm/SystemState;)V (97 bytes) @ 0x0000000116a40f38 [0x0000000116a40ba0+0x398]
+j  gov.nasa.jpf.vm.SystemState.executeNextTransition(Lgov/nasa/jpf/vm/VM;)V+86
+j  gov.nasa.jpf.vm.VM.forward()Z+46
+j  gov.nasa.jpf.search.Search.forward()Z+9
+j  gov.nasa.jpf.search.DFSearch.search()V+77
+j  gov.nasa.jpf.JPF.run()V+38
+j  gov.nasa.jpf.JPF.start(Lgov/nasa/jpf/Config;[Ljava/lang/String;)V+78
+v  ~StubRoutines::call_stub
+V  [libjvm.dylib+0x2ee5b6]
+V  [libjvm.dylib+0x4d3488]
+V  [libjvm.dylib+0x4d39bc]
+V  [libjvm.dylib+0x3469b8]
+j  sun.reflect.NativeMethodAccessorImpl.invoke0(Ljava/lang/reflect/Method;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;+0
+j  sun.reflect.NativeMethodAccessorImpl.invoke(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;+100
+j  sun.reflect.DelegatingMethodAccessorImpl.invoke(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;+6
+j  java.lang.reflect.Method.invoke(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;+56
+j  gov.nasa.jpf.tool.Run.call(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Object;)Z+68
+j  gov.nasa.jpf.tool.RunJPF.main([Ljava/lang/String;)V+175
+v  ~StubRoutines::call_stub
+V  [libjvm.dylib+0x2ee5b6]
+V  [libjvm.dylib+0x3253ce]
+V  [libjvm.dylib+0x31e145]
+C  [java+0x3931]  JavaMain+0x9c4
+C  [libsystem_pthread.dylib+0x393b]  _pthread_body+0xb4
+C  [libsystem_pthread.dylib+0x3887]  _pthread_body+0x0
+C  [libsystem_pthread.dylib+0x308d]  thread_start+0xd
+C  0x0000000000000000
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+J 129  java.util.zip.ZipFile.getEntry(J[BZ)J (0 bytes) @ 0x0000000115a5b298 [0x0000000115a5b240+0x58]
+J 5531 C2 java.util.zip.ZipFile.getEntry(Ljava/lang/String;)Ljava/util/zip/ZipEntry; (86 bytes) @ 0x00000001164dd4c8 [0x00000001164dd180+0x348]
+J 5674 C2 sun.misc.URLClassPath.getResource(Ljava/lang/String;Z)Lsun/misc/Resource; (83 bytes) @ 0x0000000116984aec [0x00000001169846a0+0x44c]
+J 255 C1 java.net.URLClassLoader$1.run()Ljava/lang/Class; (63 bytes) @ 0x0000000115a9caec [0x0000000115a9c8e0+0x20c]
+J 224 C1 java.net.URLClassLoader$1.run()Ljava/lang/Object; (5 bytes) @ 0x0000000115a8b58c [0x0000000115a8b500+0x8c]
+v  ~StubRoutines::call_stub
+J 177  java.security.AccessController.doPrivileged(Ljava/security/PrivilegedExceptionAction;Ljava/security/AccessControlContext;)Ljava/lang/Object; (0 bytes) @ 0x0000000115a721e3 [0x0000000115a72180+0x63]
+J 192 C1 java.net.URLClassLoader.findClass(Ljava/lang/String;)Ljava/lang/Class; (47 bytes) @ 0x0000000115a7d7d4 [0x0000000115a7d640+0x194]
+J 5187 C2 java.lang.ClassLoader.loadClass(Ljava/lang/String;Z)Ljava/lang/Class; (122 bytes) @ 0x00000001165a63b4 [0x00000001165a5320+0x1094]
+J 229 C1 java.lang.ClassLoader.loadClass(Ljava/lang/String;)Ljava/lang/Class; (7 bytes) @ 0x0000000115a8a744 [0x0000000115a8a640+0x104]
+v  ~StubRoutines::call_stub
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/NewInstruction;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+34
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/NewInstruction;)Ljava/lang/Object;+2
+J 5111 C1 gov.nasa.jpf.symbc.veritesting.ast.def.NewInstruction.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x000000011638408c [0x0000000116383f80+0x10c]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+5
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/IfThenElseStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+42
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/IfThenElseStmt;)Ljava/lang/Object;+2
+J 5365 C2 gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x00000001161027e4 [0x00000001161027a0+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Lgov/nasa/jpf/symbc/veritesting/ast/def/Stmt;+19
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/CompositionStmt;)Ljava/lang/Object;+2
+J 5197 C2 gov.nasa.jpf.symbc.veritesting.ast.def.CompositionStmt.accept(Lgov/nasa/jpf/symbc/veritesting/ast/visitors/AstVisitor;)Ljava/lang/Object; (8 bytes) @ 0x0000000115f3dda4 [0x0000000115f3dd60+0x44]
+j  gov.nasa.jpf.symbc.veritesting.ast.transformations.SPFCases.SpfCasesPass1Visitor.execute(Lgov/nasa/jpf/vm/ThreadInfo;Lgov/nasa/jpf/symbc/veritesting/ast/transformations/Environment/DynamicRegion;Ljava/util/ArrayList;)Lgov/nasa/jpf/symbc/veritesting/ast/transformations/Environment/DynamicRegion;+15
+j  gov.nasa.jpf.symbc.VeritestingListener.runVeritesting(Lgov/nasa/jpf/vm/ThreadInfo;Lgov/nasa/jpf/vm/Instruction;Lgov/nasa/jpf/symbc/veritesting/ast/transformations/ssaToAst/StaticRegion;Ljava/lang/String;)Lgov/nasa/jpf/symbc/veritesting/ast/transformations/Environment/DynamicRegion;+489
+j  gov.nasa.jpf.symbc.VeritestingListener.runVeritestingWithSPF(Lgov/nasa/jpf/vm/ThreadInfo;Lgov/nasa/jpf/vm/VM;Lgov/nasa/jpf/vm/Instruction;Lgov/nasa/jpf/symbc/veritesting/ast/transformations/ssaToAst/StaticRegion;Ljava/lang/String;)V+14
+j  gov.nasa.jpf.symbc.VeritestingListener.runVeritestingWrapper(Lgov/nasa/jpf/vm/ThreadInfo;Lgov/nasa/jpf/vm/VM;Lgov/nasa/jpf/symbc/veritesting/ast/transformations/ssaToAst/StaticRegion;Lgov/nasa/jpf/vm/Instruction;)V+100
+J 6433 C2 gov.nasa.jpf.symbc.VeritestingListener.executeInstruction(Lgov/nasa/jpf/vm/VM;Lgov/nasa/jpf/vm/ThreadInfo;Lgov/nasa/jpf/vm/Instruction;)V (612 bytes) @ 0x00000001169b9db0 [0x00000001169b8600+0x17b0]
+J 6596 C2 gov.nasa.jpf.vm.ThreadInfo.executeTransition(Lgov/nasa/jpf/vm/SystemState;)V (97 bytes) @ 0x0000000116a40f38 [0x0000000116a40ba0+0x398]
+j  gov.nasa.jpf.vm.SystemState.executeNextTransition(Lgov/nasa/jpf/vm/VM;)V+86
+j  gov.nasa.jpf.vm.VM.forward()Z+46
+j  gov.nasa.jpf.search.Search.forward()Z+9
+j  gov.nasa.jpf.search.DFSearch.search()V+77
+j  gov.nasa.jpf.JPF.run()V+38
+j  gov.nasa.jpf.JPF.start(Lgov/nasa/jpf/Config;[Ljava/lang/String;)V+78
+v  ~StubRoutines::call_stub
+j  sun.reflect.NativeMethodAccessorImpl.invoke0(Ljava/lang/reflect/Method;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;+0
+j  sun.reflect.NativeMethodAccessorImpl.invoke(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;+100
+j  sun.reflect.DelegatingMethodAccessorImpl.invoke(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;+6
+j  java.lang.reflect.Method.invoke(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;+56
+j  gov.nasa.jpf.tool.Run.call(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Object;)Z+68
+j  gov.nasa.jpf.tool.RunJPF.main([Ljava/lang/String;)V+175
+v  ~StubRoutines::call_stub
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x00007f833707d000 JavaThread "Service Thread" daemon [_thread_blocked, id=17923, stack(0x00007000084e1000,0x00007000085e1000)]
+  0x00007f8337848000 JavaThread "C1 CompilerThread1" daemon [_thread_blocked, id=17411, stack(0x00007000083de000,0x00007000084de000)]
+  0x00007f833707c000 JavaThread "C2 CompilerThread0" daemon [_thread_in_native, id=16899, stack(0x00007000082db000,0x00007000083db000)]
+  0x00007f833703c800 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=16387, stack(0x00007000081d8000,0x00007000082d8000)]
+  0x00007f8337808800 JavaThread "Finalizer" daemon [_thread_blocked, id=11523, stack(0x00007000080d5000,0x00007000081d5000)]
+  0x00007f833705f000 JavaThread "Reference Handler" daemon [_thread_blocked, id=11011, stack(0x0000700007fd2000,0x00007000080d2000)]
+=>0x00007f8337804000 JavaThread "main" [_thread_in_native, id=7171, stack(0x0000700007bc6000,0x0000700007cc6000)]
+
+Other Threads:
+  0x00007f833705c800 VMThread [stack: 0x0000700007ecf000,0x0000700007fcf000] [id=10499]
+  0x00007f8337846800 WatcherThread [stack: 0x00007000085e4000,0x00007000086e4000] [id=18435]
+
+VM state:not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap:
+ PSYoungGen      total 296960K, used 256786K [0x00000007aab00000, 0x00000007bfc00000, 0x00000007c0000000)
+  eden space 248832K, 98% used [0x00000007aab00000,0x00000007b9924a20,0x00000007b9e00000)
+  from space 48128K, 26% used [0x00000007b9e00000,0x00000007baaa0040,0x00000007bcd00000)
+  to   space 47104K, 0% used [0x00000007bce00000,0x00000007bce00000,0x00000007bfc00000)
+ ParOldGen       total 100352K, used 65963K [0x0000000780000000, 0x0000000786200000, 0x00000007aab00000)
+  object space 100352K, 65% used [0x0000000780000000,0x000000078406ae60,0x0000000786200000)
+ Metaspace       used 20697K, capacity 21020K, committed 24576K, reserved 1071104K
+  class space    used 2633K, capacity 2746K, committed 3584K, reserved 1048576K
+
+Card table byte_map: [0x000000010d563000,0x000000010d764000] byte_map_base: 0x0000000109963000
+
+Marking Bits: (ParMarkBitMap*) 0x000000010caf1ea0
+ Begin Bits: [0x000000010d8ba000, 0x000000010e8ba000)
+ End Bits:   [0x000000010e8ba000, 0x000000010f8ba000)
+
+Polling page: 0x000000010bdbd000
+
+CodeCache: size=245760Kb used=16734Kb max_used=17738Kb free=229025Kb
+ bounds [0x0000000115913000, 0x0000000116a83000, 0x0000000124913000]
+ total_blobs=5247 nmethods=4829 adapters=332
+ compilation: enabled
+
+Compilation events (10 events):
+Event: 94.903 Thread 0x00007f8337848000 6753       2       gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap::clone (23 bytes)
+Event: 94.904 Thread 0x00007f8337848000 nmethod 6753 0x0000000116469cd0 code [0x0000000116469e40, 0x000000011646a0d8]
+Event: 94.904 Thread 0x00007f8337848000 6754       2       gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.FieldSubscriptMap$$Lambda$9/121521031::get$Lambda (9 bytes)
+Event: 94.904 Thread 0x00007f8337848000 nmethod 6754 0x0000000115e75650 code [0x0000000115e757a0, 0x0000000115e75930]
+Event: 94.908 Thread 0x00007f8337848000 6755       2       gov.nasa.jpf.symbc.veritesting.ast.transformations.arrayaccess.ArrayExpressions::clone (36 bytes)
+Event: 94.909 Thread 0x00007f8337848000 nmethod 6755 0x0000000115d57ad0 code [0x0000000115d57c40, 0x0000000115d57ef8]
+Event: 94.909 Thread 0x00007f8337848000 6756       2       java.util.LinkedHashMap::forEach (65 bytes)
+Event: 94.910 Thread 0x00007f8337848000 nmethod 6756 0x0000000115c2d210 code [0x0000000115c2d3a0, 0x0000000115c2d6c8]
+Event: 94.911 Thread 0x00007f8337848000 6757       2       gov.nasa.jpf.symbc.veritesting.ast.visitors.PrettyPrintVisitor$PrettyPrintExpr::visit (6 bytes)
+Event: 94.911 Thread 0x00007f8337848000 nmethod 6757 0x0000000115db4710 code [0x0000000115db4880, 0x0000000115db4a58]
+
+GC Heap History (10 events):
+Event: 79.103 GC heap before
+{Heap before GC invocations=29 (full 1):
+ PSYoungGen      total 289792K, used 289600K [0x00000007aab00000, 0x00000007c0000000, 0x00000007c0000000)
+  eden space 252928K, 100% used [0x00000007aab00000,0x00000007ba200000,0x00000007ba200000)
+  from space 36864K, 99% used [0x00000007ba200000,0x00000007bc5d0010,0x00000007bc600000)
+  to   space 51200K, 0% used [0x00000007bce00000,0x00000007bce00000,0x00000007c0000000)
+ ParOldGen       total 60416K, used 49664K [0x0000000780000000, 0x0000000783b00000, 0x00000007aab00000)
+  object space 60416K, 82% used [0x0000000780000000,0x00000007830803d0,0x0000000783b00000)
+ Metaspace       used 20843K, capacity 22174K, committed 23296K, reserved 1069056K
+  class space    used 2880K, capacity 3239K, committed 3584K, reserved 1048576K
+Event: 79.344 GC heap after
+Heap after GC invocations=29 (full 1):
+ PSYoungGen      total 297984K, used 30368K [0x00000007aab00000, 0x00000007c0000000, 0x00000007c0000000)
+  eden space 246784K, 0% used [0x00000007aab00000,0x00000007aab00000,0x00000007b9c00000)
+  from space 51200K, 59% used [0x00000007bce00000,0x00000007beba8010,0x00000007c0000000)
+  to   space 51200K, 0% used [0x00000007b9c00000,0x00000007b9c00000,0x00000007bce00000)
+ ParOldGen       total 60416K, used 58112K [0x0000000780000000, 0x0000000783b00000, 0x00000007aab00000)
+  object space 60416K, 96% used [0x0000000780000000,0x00000007838c03d0,0x0000000783b00000)
+ Metaspace       used 20843K, capacity 22174K, committed 23296K, reserved 1069056K
+  class space    used 2880K, capacity 3239K, committed 3584K, reserved 1048576K
+}
+Event: 79.344 GC heap before
+{Heap before GC invocations=30 (full 2):
+ PSYoungGen      total 297984K, used 30368K [0x00000007aab00000, 0x00000007c0000000, 0x00000007c0000000)
+  eden space 246784K, 0% used [0x00000007aab00000,0x00000007aab00000,0x00000007b9c00000)
+  from space 51200K, 59% used [0x00000007bce00000,0x00000007beba8010,0x00000007c0000000)
+  to   space 51200K, 0% used [0x00000007b9c00000,0x00000007b9c00000,0x00000007bce00000)
+ ParOldGen       total 60416K, used 58112K [0x0000000780000000, 0x0000000783b00000, 0x00000007aab00000)
+  object space 60416K, 96% used [0x0000000780000000,0x00000007838c03d0,0x0000000783b00000)
+ Metaspace       used 20843K, capacity 22174K, committed 23296K, reserved 1069056K
+  class space    used 2880K, capacity 3239K, committed 3584K, reserved 1048576K
+Event: 80.961 GC heap after
+Heap after GC invocations=30 (full 2):
+ PSYoungGen      total 297984K, used 9865K [0x00000007aab00000, 0x00000007c0000000, 0x00000007c0000000)
+  eden space 246784K, 0% used [0x00000007aab00000,0x00000007aab00000,0x00000007b9c00000)
+  from space 51200K, 19% used [0x00000007bce00000,0x00000007bd7a2750,0x00000007c0000000)
+  to   space 51200K, 0% used [0x00000007b9c00000,0x00000007b9c00000,0x00000007bce00000)
+ ParOldGen       total 100352K, used 60091K [0x0000000780000000, 0x0000000786200000, 0x00000007aab00000)
+  object space 100352K, 59% used [0x0000000780000000,0x0000000783aaee60,0x0000000786200000)
+ Metaspace       used 18570K, capacity 18786K, committed 23296K, reserved 1069056K
+  class space    used 2469K, capacity 2567K, committed 3584K, reserved 1048576K
+}
+Event: 82.856 GC heap before
+{Heap before GC invocations=31 (full 2):
+ PSYoungGen      total 297984K, used 256649K [0x00000007aab00000, 0x00000007c0000000, 0x00000007c0000000)
+  eden space 246784K, 100% used [0x00000007aab00000,0x00000007b9c00000,0x00000007b9c00000)
+  from space 51200K, 19% used [0x00000007bce00000,0x00000007bd7a2750,0x00000007c0000000)
+  to   space 51200K, 0% used [0x00000007b9c00000,0x00000007b9c00000,0x00000007bce00000)
+ ParOldGen       total 100352K, used 60091K [0x0000000780000000, 0x0000000786200000, 0x00000007aab00000)
+  object space 100352K, 59% used [0x0000000780000000,0x0000000783aaee60,0x0000000786200000)
+ Metaspace       used 19262K, capacity 19534K, committed 23296K, reserved 1069056K
+  class space    used 2488K, capacity 2601K, committed 3584K, reserved 1048576K
+Event: 82.966 GC heap after
+Heap after GC invocations=31 (full 2):
+ PSYoungGen      total 261120K, used 13894K [0x00000007aab00000, 0x00000007bfe00000, 0x00000007c0000000)
+  eden space 246784K, 0% used [0x00000007aab00000,0x00000007aab00000,0x00000007b9c00000)
+  from space 14336K, 96% used [0x00000007b9c00000,0x00000007ba991980,0x00000007baa00000)
+  to   space 50176K, 0% used [0x00000007bcd00000,0x00000007bcd00000,0x00000007bfe00000)
+ ParOldGen       total 100352K, used 61971K [0x0000000780000000, 0x0000000786200000, 0x00000007aab00000)
+  object space 100352K, 61% used [0x0000000780000000,0x0000000783c84e60,0x0000000786200000)
+ Metaspace       used 19262K, capacity 19534K, committed 23296K, reserved 1069056K
+  class space    used 2488K, capacity 2601K, committed 3584K, reserved 1048576K
+}
+Event: 86.839 GC heap before
+{Heap before GC invocations=32 (full 2):
+ PSYoungGen      total 261120K, used 260678K [0x00000007aab00000, 0x00000007bfe00000, 0x00000007c0000000)
+  eden space 246784K, 100% used [0x00000007aab00000,0x00000007b9c00000,0x00000007b9c00000)
+  from space 14336K, 96% used [0x00000007b9c00000,0x00000007ba991980,0x00000007baa00000)
+  to   space 50176K, 0% used [0x00000007bcd00000,0x00000007bcd00000,0x00000007bfe00000)
+ ParOldGen       total 100352K, used 61971K [0x0000000780000000, 0x0000000786200000, 0x00000007aab00000)
+  object space 100352K, 61% used [0x0000000780000000,0x0000000783c84e60,0x0000000786200000)
+ Metaspace       used 20556K, capacity 20866K, committed 24320K, reserved 1071104K
+  class space    used 2629K, capacity 2743K, committed 3584K, reserved 1048576K
+Event: 86.901 GC heap after
+Heap after GC invocations=32 (full 2):
+ PSYoungGen      total 299008K, used 16361K [0x00000007aab00000, 0x00000007c0000000, 0x00000007c0000000)
+  eden space 248832K, 0% used [0x00000007aab00000,0x00000007aab00000,0x00000007b9e00000)
+  from space 50176K, 32% used [0x00000007bcd00000,0x00000007bdcfa5c8,0x00000007bfe00000)
+  to   space 48128K, 0% used [0x00000007b9e00000,0x00000007b9e00000,0x00000007bcd00000)
+ ParOldGen       total 100352K, used 63411K [0x0000000780000000, 0x0000000786200000, 0x00000007aab00000)
+  object space 100352K, 63% used [0x0000000780000000,0x0000000783dece60,0x0000000786200000)
+ Metaspace       used 20556K, capacity 20866K, committed 24320K, reserved 1071104K
+  class space    used 2629K, capacity 2743K, committed 3584K, reserved 1048576K
+}
+Event: 91.401 GC heap before
+{Heap before GC invocations=33 (full 2):
+ PSYoungGen      total 299008K, used 265193K [0x00000007aab00000, 0x00000007c0000000, 0x00000007c0000000)
+  eden space 248832K, 100% used [0x00000007aab00000,0x00000007b9e00000,0x00000007b9e00000)
+  from space 50176K, 32% used [0x00000007bcd00000,0x00000007bdcfa5c8,0x00000007bfe00000)
+  to   space 48128K, 0% used [0x00000007b9e00000,0x00000007b9e00000,0x00000007bcd00000)
+ ParOldGen       total 100352K, used 63411K [0x0000000780000000, 0x0000000786200000, 0x00000007aab00000)
+  object space 100352K, 63% used [0x0000000780000000,0x0000000783dece60,0x0000000786200000)
+ Metaspace       used 20624K, capacity 20948K, committed 24576K, reserved 1071104K
+  class space    used 2633K, capacity 2746K, committed 3584K, reserved 1048576K
+Event: 91.457 GC heap after
+Heap after GC invocations=33 (full 2):
+ PSYoungGen      total 296960K, used 12928K [0x00000007aab00000, 0x00000007bfc00000, 0x00000007c0000000)
+  eden space 248832K, 0% used [0x00000007aab00000,0x00000007aab00000,0x00000007b9e00000)
+  from space 48128K, 26% used [0x00000007b9e00000,0x00000007baaa0040,0x00000007bcd00000)
+  to   space 47104K, 0% used [0x00000007bce00000,0x00000007bce00000,0x00000007bfc00000)
+ ParOldGen       total 100352K, used 65963K [0x0000000780000000, 0x0000000786200000, 0x00000007aab00000)
+  object space 100352K, 65% used [0x0000000780000000,0x000000078406ae60,0x0000000786200000)
+ Metaspace       used 20624K, capacity 20948K, committed 24576K, reserved 1071104K
+  class space    used 2633K, capacity 2746K, committed 3584K, reserved 1048576K
+}
+
+Deoptimization events (10 events):
+Event: 85.188 Thread 0x00007f8337804000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000000115c5e030 method=gov.nasa.jpf.vm.ThreadInfo.executeInstruction()Lgov/nasa/jpf/vm/Instruction; @ 106
+Event: 85.410 Thread 0x00007f8337804000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x000000011680a2b0 method=gov.nasa.jpf.vm.ThreadInfo.getModifiableTopFrame()Lgov/nasa/jpf/vm/StackFrame; @ 15
+Event: 85.748 Thread 0x00007f8337804000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x000000011680a2b0 method=gov.nasa.jpf.vm.ThreadInfo.getModifiableTopFrame()Lgov/nasa/jpf/vm/StackFrame; @ 15
+Event: 86.250 Thread 0x00007f8337804000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000000115a66c58 method=gov.nasa.jpf.symbc.bytecode.BytecodeUtils.isMethodSymbolic(Lgov/nasa/jpf/Config;Ljava/lang/String;ILjava/util/Vector;)Z @ 149
+Event: 87.457 Thread 0x00007f8337804000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000000116230174 method=gov.nasa.jpf.vm.ThreadInfo.executeInstruction()Lgov/nasa/jpf/vm/Instruction; @ 206
+Event: 88.103 Thread 0x00007f8337804000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000000115a4891c method=gov.nasa.jpf.vm.ThreadInfo.executeInstruction()Lgov/nasa/jpf/vm/Instruction; @ 206
+Event: 88.122 Thread 0x00007f8337804000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000000115eae57c method=gov.nasa.jpf.vm.SystemState.breakTransition()Z @ 11
+Event: 88.996 Thread 0x00007f8337804000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000000116980158 method=gov.nasa.jpf.vm.ThreadInfo.executeInstruction()Lgov/nasa/jpf/vm/Instruction; @ 206
+Event: 93.492 Thread 0x00007f8337804000 Uncommon trap: reason=unstable_if action=reinterpret pc=0x0000000116030bc0 method=gov.nasa.jpf.jvm.bytecode.INVOKESTATIC.getInvokedMethod(Lgov/nasa/jpf/vm/ThreadInfo;)Lgov/nasa/jpf/vm/MethodInfo; @ 4
+Event: 94.915 Thread 0x00007f8337804000 Uncommon trap: reason=class_check action=maybe_recompile pc=0x000000011618363c method=gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor.visit(Lgov/nasa/jpf/symbc/veritesting/ast/def/WalaVarExpr;)Ljava/lang/Object; @ 2
+
+Internal exceptions (10 events):
+Event: 27.908 Thread 0x00007f8337804000 Implicit null exception at 0x0000000115d10314 to 0x0000000115d10ad5
+Event: 28.442 Thread 0x00007f8337804000 Exception <a 'java/lang/NoClassDefFoundError': com/martiansoftware/jsap/StringParser> (0x00000007b9dfc930) thrown at [/Users/java_re/workspace/8-2-build-macosx-x86_64/jdk8u131/8869/hotspot/src/share/vm/classfile/systemDictionary.cpp, line 199]
+Event: 28.486 Thread 0x00007f8337804000 Exception <a 'java/lang/NoClassDefFoundError': com/martiansoftware/jsap/StringParser> (0x00000007ba335980) thrown at [/Users/java_re/workspace/8-2-build-macosx-x86_64/jdk8u131/8869/hotspot/src/share/vm/classfile/systemDictionary.cpp, line 199]
+Event: 29.816 Thread 0x00007f8337804000 Exception <a 'java/lang/NoClassDefFoundError': com/martiansoftware/jsap/StringParser> (0x00000007ae853158) thrown at [/Users/java_re/workspace/8-2-build-macosx-x86_64/jdk8u131/8869/hotspot/src/share/vm/classfile/systemDictionary.cpp, line 199]
+Event: 31.307 Thread 0x00007f8337804000 Implicit null exception at 0x0000000116370074 to 0x0000000116370197
+Event: 31.667 Thread 0x00007f8337804000 Implicit null exception at 0x0000000116033c84 to 0x00000001160340e9
+Event: 48.233 Thread 0x00007f8337804000 Implicit null exception at 0x000000011650b900 to 0x000000011651066d
+Event: 60.920 Thread 0x00007f8337804000 Exception <a 'java/lang/NoClassDefFoundError': com/martiansoftware/jsap/StringParser> (0x00000007ba770d90) thrown at [/Users/java_re/workspace/8-2-build-macosx-x86_64/jdk8u131/8869/hotspot/src/share/vm/classfile/systemDictionary.cpp, line 199]
+Event: 61.036 Thread 0x00007f8337804000 Exception <a 'java/lang/NoClassDefFoundError': com/martiansoftware/jsap/StringParser> (0x00000007bad446b0) thrown at [/Users/java_re/workspace/8-2-build-macosx-x86_64/jdk8u131/8869/hotspot/src/share/vm/classfile/systemDictionary.cpp, line 199]
+Event: 62.476 Thread 0x00007f8337804000 Exception <a 'java/lang/NoClassDefFoundError': com/martiansoftware/jsap/StringParser> (0x00000007b2737c48) thrown at [/Users/java_re/workspace/8-2-build-macosx-x86_64/jdk8u131/8869/hotspot/src/share/vm/classfile/systemDictionary.cpp, line 199]
+
+Events (10 events):
+Event: 94.415 Thread 0x00007f8337804000 DEOPT UNPACKING pc=0x0000000115959f73 sp=0x0000700007cc46e0 mode 0
+Event: 94.762 Thread 0x00007f8337804000 DEOPT PACKING pc=0x00000001164cd320 sp=0x0000700007cc4990
+Event: 94.762 Thread 0x00007f8337804000 DEOPT UNPACKING pc=0x0000000115959f73 sp=0x0000700007cc46e0 mode 0
+Event: 94.842 Thread 0x00007f8337804000 DEOPT PACKING pc=0x00000001164cd320 sp=0x0000700007cc4990
+Event: 94.843 Thread 0x00007f8337804000 DEOPT UNPACKING pc=0x0000000115959f73 sp=0x0000700007cc46e0 mode 0
+Event: 94.915 Thread 0x00007f8337804000 Uncommon trap: trap_request=0xffffffde fr.pc=0x000000011618363c
+Event: 94.915 Thread 0x00007f8337804000 DEOPT PACKING pc=0x000000011618363c sp=0x0000700007cc4000
+Event: 94.915 Thread 0x00007f8337804000 DEOPT UNPACKING pc=0x0000000115917f69 sp=0x0000700007cc3fb0 mode 2
+Event: 94.916 loading class gov/nasa/jpf/symbc/veritesting/ast/def/SPFCaseStmt$SPFReason
+Event: 94.916 loading class gov/nasa/jpf/symbc/veritesting/ast/def/SPFCaseStmt$SPFReason done
+
+
+Dynamic libraries:
+0x000000003a909000 	/System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa
+0x000000003a909000 	/System/Library/Frameworks/Security.framework/Versions/A/Security
+0x000000003a909000 	/System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices
+0x000000003a909000 	/usr/lib/libz.1.dylib
+0x000000003a909000 	/usr/lib/libSystem.B.dylib
+0x000000003a909000 	/usr/lib/libobjc.A.dylib
+0x000000003a909000 	/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+0x000000003a909000 	/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation
+0x000000003a909000 	/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit
+0x000000003a909000 	/System/Library/Frameworks/CoreData.framework/Versions/A/CoreData
+0x000000003a909000 	/System/Library/PrivateFrameworks/RemoteViewServices.framework/Versions/A/RemoteViewServices
+0x000000003a909000 	/System/Library/PrivateFrameworks/UIFoundation.framework/Versions/A/UIFoundation
+0x000000003a909000 	/System/Library/PrivateFrameworks/DFRFoundation.framework/Versions/A/DFRFoundation
+0x000000003a909000 	/usr/lib/libenergytrace.dylib
+0x000000003a909000 	/System/Library/PrivateFrameworks/SkyLight.framework/Versions/A/SkyLight
+0x000000003a909000 	/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics
+0x000000003a909000 	/usr/lib/libScreenReader.dylib
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Accelerate
+0x000000003a909000 	/System/Library/Frameworks/IOSurface.framework/Versions/A/IOSurface
+0x000000003a909000 	/System/Library/Frameworks/AudioToolbox.framework/Versions/A/AudioToolbox
+0x000000003a909000 	/System/Library/Frameworks/AudioUnit.framework/Versions/A/AudioUnit
+0x000000003a909000 	/System/Library/PrivateFrameworks/DataDetectorsCore.framework/Versions/A/DataDetectorsCore
+0x000000003a909000 	/System/Library/PrivateFrameworks/DesktopServicesPriv.framework/Versions/A/DesktopServicesPriv
+0x000000003a909000 	/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/HIToolbox
+0x000000003a909000 	/usr/lib/libicucore.A.dylib
+0x000000003a909000 	/System/Library/Frameworks/QuartzCore.framework/Versions/A/QuartzCore
+0x000000003a909000 	/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/SpeechRecognition.framework/Versions/A/SpeechRecognition
+0x000000003a909000 	/usr/lib/libauto.dylib
+0x000000003a909000 	/usr/lib/libxml2.2.dylib
+0x000000003a909000 	/System/Library/PrivateFrameworks/CoreUI.framework/Versions/A/CoreUI
+0x000000003a909000 	/System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio
+0x000000003a909000 	/System/Library/Frameworks/DiskArbitration.framework/Versions/A/DiskArbitration
+0x000000003a909000 	/usr/lib/liblangid.dylib
+0x000000003a909000 	/System/Library/PrivateFrameworks/MultitouchSupport.framework/Versions/A/MultitouchSupport
+0x000000003a909000 	/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit
+0x000000003a909000 	/usr/lib/libDiagnosticMessagesClient.dylib
+0x000000003a909000 	/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices
+0x000000003a909000 	/System/Library/PrivateFrameworks/PerformanceAnalysis.framework/Versions/A/PerformanceAnalysis
+0x000000003a909000 	/System/Library/PrivateFrameworks/GenerationalStorage.framework/Versions/A/GenerationalStorage
+0x000000003a909000 	/System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL
+0x000000003a909000 	/System/Library/Frameworks/CoreImage.framework/Versions/A/CoreImage
+0x000000003a909000 	/System/Library/Frameworks/CoreText.framework/Versions/A/CoreText
+0x000000003a909000 	/System/Library/Frameworks/ImageIO.framework/Versions/A/ImageIO
+0x000000003a909000 	/System/Library/PrivateFrameworks/Backup.framework/Versions/A/Backup
+0x000000003a909000 	/usr/lib/libarchive.2.dylib
+0x000000003a909000 	/System/Library/Frameworks/CFNetwork.framework/Versions/A/CFNetwork
+0x000000003a909000 	/System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration
+0x000000003a909000 	/usr/lib/libCRFSuite.dylib
+0x000000003a909000 	/usr/lib/libc++.1.dylib
+0x000000003a909000 	/usr/lib/libc++abi.dylib
+0x000000003a909000 	/usr/lib/system/libcache.dylib
+0x000000003a909000 	/usr/lib/system/libcommonCrypto.dylib
+0x000000003a909000 	/usr/lib/system/libcompiler_rt.dylib
+0x000000003a909000 	/usr/lib/system/libcopyfile.dylib
+0x000000003a909000 	/usr/lib/system/libcorecrypto.dylib
+0x000000003a909000 	/usr/lib/system/libdispatch.dylib
+0x000000003a909000 	/usr/lib/system/libdyld.dylib
+0x000000003a909000 	/usr/lib/system/libkeymgr.dylib
+0x000000003a909000 	/usr/lib/system/liblaunch.dylib
+0x000000003a909000 	/usr/lib/system/libmacho.dylib
+0x000000003a909000 	/usr/lib/system/libquarantine.dylib
+0x000000003a909000 	/usr/lib/system/libremovefile.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_asl.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_blocks.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_c.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_configuration.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_coreservices.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_coretls.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_dnssd.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_info.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_kernel.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_m.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_malloc.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_network.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_networkextension.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_notify.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_platform.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_pthread.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_sandbox.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_secinit.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_symptoms.dylib
+0x000000003a909000 	/usr/lib/system/libsystem_trace.dylib
+0x000000003a909000 	/usr/lib/system/libunwind.dylib
+0x000000003a909000 	/usr/lib/system/libxpc.dylib
+0x000000003a909000 	/usr/lib/libbsm.0.dylib
+0x000000003a909000 	/usr/lib/system/libkxld.dylib
+0x000000003a909000 	/usr/lib/libcoretls.dylib
+0x000000003a909000 	/usr/lib/libcoretls_cfhelpers.dylib
+0x000000003a909000 	/usr/lib/libOpenScriptingUtil.dylib
+0x000000003a909000 	/usr/lib/libpam.2.dylib
+0x000000003a909000 	/usr/lib/libsqlite3.dylib
+0x000000003a909000 	/usr/lib/libxar.1.dylib
+0x000000003a909000 	/usr/lib/libbz2.1.0.dylib
+0x000000003a909000 	/usr/lib/liblzma.5.dylib
+0x000000003a909000 	/usr/lib/libnetwork.dylib
+0x000000003a909000 	/usr/lib/libpcap.A.dylib
+0x000000003a909000 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/FSEvents.framework/Versions/A/FSEvents
+0x000000003a909000 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/CarbonCore
+0x000000003a909000 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Metadata
+0x000000003a909000 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/OSServices.framework/Versions/A/OSServices
+0x000000003a909000 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/SearchKit.framework/Versions/A/SearchKit
+0x000000003a909000 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/AE.framework/Versions/A/AE
+0x000000003a909000 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/LaunchServices
+0x000000003a909000 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/DictionaryServices.framework/Versions/A/DictionaryServices
+0x000000003a909000 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/SharedFileList.framework/Versions/A/SharedFileList
+0x000000003a909000 	/System/Library/Frameworks/NetFS.framework/Versions/A/NetFS
+0x000000003a909000 	/System/Library/PrivateFrameworks/NetAuth.framework/Versions/A/NetAuth
+0x000000003a909000 	/System/Library/PrivateFrameworks/login.framework/Versions/A/Frameworks/loginsupport.framework/Versions/A/loginsupport
+0x000000003a909000 	/System/Library/PrivateFrameworks/TCC.framework/Versions/A/TCC
+0x000000003a909000 	/usr/lib/libmecabra.dylib
+0x000000003a909000 	/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ATS.framework/Versions/A/ATS
+0x000000003a909000 	/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ColorSync.framework/Versions/A/ColorSync
+0x000000003a909000 	/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/HIServices
+0x000000003a909000 	/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/LangAnalysis.framework/Versions/A/LangAnalysis
+0x000000003a909000 	/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/PrintCore.framework/Versions/A/PrintCore
+0x000000003a909000 	/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/QD.framework/Versions/A/QD
+0x000000003a909000 	/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/SpeechSynthesis.framework/Versions/A/SpeechSynthesis
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vImage.framework/Versions/A/vImage
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/vecLib
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libvDSP.dylib
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBNNS.dylib
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libQuadrature.dylib
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libvMisc.dylib
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libLAPACK.dylib
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libLinearAlgebra.dylib
+0x000000003a909000 	/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libSparseBLAS.dylib
+0x000000003a909000 	/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ATS.framework/Versions/A/Resources/libFontParser.dylib
+0x000000003a909000 	/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/ATS.framework/Versions/A/Resources/libFontRegistry.dylib
+0x000000003a909000 	/System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libJPEG.dylib
+0x000000003a909000 	/System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libTIFF.dylib
+0x000000003a909000 	/System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libPng.dylib
+0x000000003a909000 	/System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libGIF.dylib
+0x000000003a909000 	/System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libJP2.dylib
+0x000000003a909000 	/System/Library/Frameworks/ImageIO.framework/Versions/A/Resources/libRadiance.dylib
+0x000000003a909000 	/usr/lib/libcompression.dylib
+0x000000003a909000 	/System/Library/PrivateFrameworks/AppleJPEG.framework/Versions/A/AppleJPEG
+0x000000003a909000 	/usr/lib/libcups.2.dylib
+0x000000003a909000 	/System/Library/Frameworks/Kerberos.framework/Versions/A/Kerberos
+0x000000003a909000 	/System/Library/Frameworks/GSS.framework/Versions/A/GSS
+0x000000003a909000 	/usr/lib/libresolv.9.dylib
+0x000000003a909000 	/usr/lib/libiconv.2.dylib
+0x000000003a909000 	/System/Library/PrivateFrameworks/Heimdal.framework/Versions/A/Heimdal
+0x000000003a909000 	/usr/lib/libheimdal-asn1.dylib
+0x000000003a909000 	/System/Library/Frameworks/OpenDirectory.framework/Versions/A/OpenDirectory
+0x000000003a909000 	/System/Library/PrivateFrameworks/CommonAuth.framework/Versions/A/CommonAuth
+0x000000003a909000 	/System/Library/Frameworks/OpenDirectory.framework/Versions/A/Frameworks/CFOpenDirectory.framework/Versions/A/CFOpenDirectory
+0x000000003a909000 	/System/Library/Frameworks/SecurityFoundation.framework/Versions/A/SecurityFoundation
+0x000000003a909000 	/System/Library/PrivateFrameworks/LanguageModeling.framework/Versions/A/LanguageModeling
+0x000000003a909000 	/usr/lib/libmarisa.dylib
+0x000000003a909000 	/usr/lib/libChineseTokenizer.dylib
+0x000000003a909000 	/usr/lib/libcmph.dylib
+0x000000003a909000 	/System/Library/PrivateFrameworks/CoreEmoji.framework/Versions/A/CoreEmoji
+0x000000003a909000 	/System/Library/Frameworks/ServiceManagement.framework/Versions/A/ServiceManagement
+0x000000003a909000 	/usr/lib/libxslt.1.dylib
+0x000000003a909000 	/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/Ink.framework/Versions/A/Ink
+0x000000003a909000 	/System/Library/PrivateFrameworks/TextureIO.framework/Versions/A/TextureIO
+0x000000003a909000 	/System/Library/Frameworks/Metal.framework/Versions/A/Metal
+0x000000003a909000 	/usr/lib/libate.dylib
+0x000000003a909000 	/System/Library/PrivateFrameworks/GPUCompiler.framework/libmetal_timestamp.dylib
+0x000000003a909000 	/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libCoreFSCache.dylib
+0x000000003a909000 	/System/Library/PrivateFrameworks/IOAccelerator.framework/Versions/A/IOAccelerator
+0x000000003a909000 	/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo
+0x000000003a909000 	/usr/lib/libFosl_dynamic.dylib
+0x000000003a909000 	/System/Library/PrivateFrameworks/MetalPerformanceShaders.framework/Versions/A/MetalPerformanceShaders
+0x000000003a909000 	/System/Library/PrivateFrameworks/FaceCore.framework/Versions/A/FaceCore
+0x000000003a909000 	/System/Library/Frameworks/OpenCL.framework/Versions/A/OpenCL
+0x000000003a909000 	/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGLU.dylib
+0x000000003a909000 	/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGFXShared.dylib
+0x000000003a909000 	/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib
+0x000000003a909000 	/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGLImage.dylib
+0x000000003a909000 	/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libCVMSPluginSupport.dylib
+0x000000003a909000 	/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libCoreVMClient.dylib
+0x000000003a909000 	/System/Library/PrivateFrameworks/CrashReporterSupport.framework/Versions/A/CrashReporterSupport
+0x000000003a909000 	/System/Library/PrivateFrameworks/Sharing.framework/Versions/A/Sharing
+0x000000003a909000 	/System/Library/PrivateFrameworks/IconServices.framework/Versions/A/IconServices
+0x000000003a909000 	/System/Library/PrivateFrameworks/ProtocolBuffer.framework/Versions/A/ProtocolBuffer
+0x000000003a909000 	/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Apple80211
+0x000000003a909000 	/System/Library/Frameworks/CoreWLAN.framework/Versions/A/CoreWLAN
+0x000000003a909000 	/System/Library/PrivateFrameworks/CoreUtils.framework/Versions/A/CoreUtils
+0x000000003a909000 	/System/Library/Frameworks/IOBluetooth.framework/Versions/A/IOBluetooth
+0x000000003a909000 	/System/Library/PrivateFrameworks/CoreWiFi.framework/Versions/A/CoreWiFi
+0x000000003a909000 	/System/Library/Frameworks/CoreBluetooth.framework/Versions/A/CoreBluetooth
+0x000000003a909000 	/System/Library/Frameworks/CoreDisplay.framework/Versions/A/CoreDisplay
+0x000000003a909000 	/System/Library/PrivateFrameworks/IOPresentment.framework/Versions/A/IOPresentment
+0x000000003a909000 	/System/Library/PrivateFrameworks/DSExternalDisplay.framework/Versions/A/DSExternalDisplay
+0x000000003a909000 	/System/Library/PrivateFrameworks/DebugSymbols.framework/Versions/A/DebugSymbols
+0x000000003a909000 	/System/Library/PrivateFrameworks/CoreSymbolication.framework/Versions/A/CoreSymbolication
+0x000000003a909000 	/System/Library/PrivateFrameworks/Symbolication.framework/Versions/A/Symbolication
+0x000000003a909000 	/System/Library/PrivateFrameworks/AppleFSCompression.framework/Versions/A/AppleFSCompression
+0x000000003a909000 	/System/Library/PrivateFrameworks/SpeechRecognitionCore.framework/Versions/A/SpeechRecognitionCore
+0x000000003a909000 	/System/Library/PrivateFrameworks/ChunkingLibrary.framework/Versions/A/ChunkingLibrary
+0x000000010c200000 	/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/server/libjvm.dylib
+0x000000003a909000 	/usr/lib/libstdc++.6.dylib
+0x000000010bd7a000 	/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/libverify.dylib
+0x000000010bd88000 	/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/libjava.dylib
+0x000000010bdc7000 	/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/libzip.dylib
+0x000000010bde4000 	/System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/JavaRuntimeSupport
+0x0000000110f21000 	/System/Library/Frameworks/JavaVM.framework/Versions/A/Frameworks/JavaNativeFoundation.framework/Versions/A/JavaNativeFoundation
+0x0000000110f36000 	/System/Library/Frameworks/JavaVM.framework/Versions/A/JavaVM
+0x000000003a909000 	/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon
+0x0000000110f43000 	/System/Library/PrivateFrameworks/JavaLaunching.framework/Versions/A/JavaLaunching
+0x000000003a909000 	/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/CommonPanels.framework/Versions/A/CommonPanels
+0x000000003a909000 	/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/Help.framework/Versions/A/Help
+0x000000003a909000 	/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/ImageCapture.framework/Versions/A/ImageCapture
+0x000000003a909000 	/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/OpenScripting.framework/Versions/A/OpenScripting
+0x000000003a909000 	/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/Print.framework/Versions/A/Print
+0x000000003a909000 	/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/SecurityHI.framework/Versions/A/SecurityHI
+0x0000000112adc000 	/Users/sohanabel/git/VeriTransformations/VeritestingTransformations/lib/libz3java.dylib
+0x0000000112b0e000 	/Users/sohanabel/git/VeriTransformations/VeritestingTransformations/lib/libz3.dylib
+
+VM Arguments:
+jvm_args: -Djava.library.path=/Users/sohanabel/git/VeriTransformations/VeritestingTransformations/lib/ -Xmx1024m -ea -Dfile.encoding=UTF-8 
+java_command: /Users/sohanabel/git/VeriTransformations/jpf-core-veritesting/build/RunJPF.jar /Users/sohanabel/git/VeriTransformations/VeritestingTransformations/src/MerArbiter-v2/merarbiterSPF.mode5.jpf
+java_class_path (initial): /Users/sohanabel/git/VeriTransformations/jpf-core-veritesting/build/RunJPF.jar
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home
+PATH=/usr/local/opt/llvm/bin:/opt/local/bin:/opt/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Library/TeX/texbin/opt/local/bin:/opt/local/sbin:~/aspectj1.8/bin:~/apache-maven-3.5.0/bin:~/z3
+SHELL=/bin/bash
+DISPLAY=/private/tmp/com.apple.launchd.VqpZNkoa7i/org.macosforge.xquartz:0
+
+Signal Handlers:
+SIGSEGV: [libjvm.dylib+0x5b1eb1], sa_mask[0]=11111111011111110111111111111111, sa_flags=SA_ONSTACK|SA_RESTART|SA_SIGINFO
+SIGBUS: [libjvm.dylib+0x5b1eb1], sa_mask[0]=11111111011111110111111111111111, sa_flags=SA_RESTART|SA_SIGINFO
+SIGFPE: [libjvm.dylib+0x488988], sa_mask[0]=11111111011111110111111111111111, sa_flags=SA_RESTART|SA_SIGINFO
+SIGPIPE: [libjvm.dylib+0x488988], sa_mask[0]=11111111011111110111111111111111, sa_flags=SA_RESTART|SA_SIGINFO
+SIGXFSZ: [libjvm.dylib+0x488988], sa_mask[0]=11111111011111110111111111111111, sa_flags=SA_RESTART|SA_SIGINFO
+SIGILL: [libjvm.dylib+0x488988], sa_mask[0]=11111111011111110111111111111111, sa_flags=SA_RESTART|SA_SIGINFO
+SIGUSR1: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGUSR2: [libjvm.dylib+0x4884a6], sa_mask[0]=00100000000000000000000000000000, sa_flags=SA_RESTART|SA_SIGINFO
+SIGHUP: [libjvm.dylib+0x486a7d], sa_mask[0]=11111111011111110111111111111111, sa_flags=SA_RESTART|SA_SIGINFO
+SIGINT: [libjvm.dylib+0x486a7d], sa_mask[0]=11111111011111110111111111111111, sa_flags=SA_RESTART|SA_SIGINFO
+SIGTERM: [libjvm.dylib+0x486a7d], sa_mask[0]=11111111011111110111111111111111, sa_flags=SA_RESTART|SA_SIGINFO
+SIGQUIT: [libjvm.dylib+0x486a7d], sa_mask[0]=11111111011111110111111111111111, sa_flags=SA_RESTART|SA_SIGINFO
+
+
+---------------  S Y S T E M  ---------------
+
+OS:Bsduname:Darwin 16.7.0 Darwin Kernel Version 16.7.0: Thu Dec 20 21:53:35 PST 2018; root:xnu-3789.73.31~1/RELEASE_X86_64 x86_64
+rlimit: STACK 8192k, CORE 0k, NPROC 709, NOFILE 10240, AS infinity
+load average:16.64 12.97 14.13
+
+CPU:total 2 (initial active 2) (2 cores per cpu, 1 threads per core) family 6 model 23 stepping 10, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, tsc
+
+Memory: 4k page, physical 4194304k(19256k free)
+
+/proc/meminfo:
+
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (25.131-b11) for bsd-amd64 JRE (1.8.0_131-b11), built on Mar 15 2017 01:32:22 by "java_re" with gcc 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)
+
+time: Sat Feb 16 13:55:16 2019
+elapsed time: 95 seconds (0d 0h 1m 35s)
+

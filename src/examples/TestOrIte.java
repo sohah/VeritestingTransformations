@@ -1,3 +1,5 @@
+package examples;
+
 public class TestOrIte extends TestRegionBaseClass {
 
     public static Outputs mwwTestOrIte(boolean x, boolean y, int a) {

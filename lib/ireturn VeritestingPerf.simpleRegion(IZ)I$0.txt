@@ -1,0 +1,4 @@
+(solver
+  (bvsge y #x80000000)
+  (bvsle y #x7fffffff)
+  (= y #x00000064))

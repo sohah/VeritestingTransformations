@@ -1,0 +1,36 @@
+                                                          Step 
+variable                                                     0     1 
+
+SIGNALS                                                  
+Ranger_wrapper~0.Ranger_node~0.a                             0     0 
+Ranger_wrapper~0.Ranger_node~0.a_bool                    false false 
+Ranger_wrapper~0.Ranger_node~0.b                             0     0 
+Ranger_wrapper~0.Ranger_node~0.b_bool                    false false 
+Ranger_wrapper~0.Ranger_node~0.c                             0     0 
+Ranger_wrapper~0.Ranger_node~0.c_bool                    false false 
+Ranger_wrapper~0.Ranger_node~0.out                           0     0 
+Ranger_wrapper~0.Ranger_node~0.out_bool                  false false 
+Ranger_wrapper~0.Ranger_node~0.r347_out_1_1_2                0     0 
+Ranger_wrapper~0.Ranger_node~0.r347_out_1_3_2                0     0 
+Ranger_wrapper~0.Ranger_node~0.r347_out_1_3_2_bool       false false 
+Ranger_wrapper~0.Ranger_node~0.symVar                        1     1 
+Ranger_wrapper~0.Ranger_node~0.threshold                     2     3 
+Ranger_wrapper~0.Ranger_node~0.w8_2                          0     0 
+Ranger_wrapper~0.a_bool                                  false false 
+Ranger_wrapper~0.b_bool                                  false false 
+Ranger_wrapper~0.c_bool                                  false false 
+Ranger_wrapper~0.out_0                                   false false 
+Ranger_wrapper~0.out_bool                                false false 
+Ranger_wrapper~0.threshold                                   2     3 
+T_node~0.a                                               false false 
+T_node~0.b                                               false false 
+T_node~0.c                                               false false 
+T_node~0.out                                             false false 
+T_node~0.p1                                               true false 
+T_node~0.threshold                                           2     3 
+a                                                        false false 
+b                                                        false false 
+c                                                        false false 
+discovery_out                                             true false 
+out                                                      false false 
+threshold                                                    2     3 

@@ -1,0 +1,21 @@
+target=DiscoveryTCAS
+classpath=${jpf-symbc}/build/tcas
+sourcepath=${jpf-symbc}/src/tcas
+symbolic.method = DiscoveryTCAS.discoveryMainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+#symbolic.minint=-100
+#symbolic.maxint=100
+vm.storage.class=nil
+
+
+#listener = .symbc.VeritestingListener
+#symbolic.dp=z3bitvector
+
+symbolic.dp=z3bitvectorinc
+listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+
+#listener = gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+
+veritestingMode = 5
+performanceMode = true
+simplify = false
+contractDiscoveryOn = false

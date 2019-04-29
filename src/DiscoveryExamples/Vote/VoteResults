@@ -1,0 +1,77 @@
+Original Property
+        out = ((a && b) || (b && c) || (a && c)) && (threshold < 10) && (threshold > 5);
+
+Repair Expression
+discover_binary_Bool_4_Int_0_Depth_N(a,b,c, out)
+
+***********************Vota_All_depth2******************
+ depth 2 of four bools, that tries to discover the relationship among the input and the output.
+ RESULT : Great!! Minimal repair was found at, outer loop # = 2 minimal repair loop # = 1 the LAST candidate repair loop # = 2
+
+ Tried 13 minimal/tight Candidate
+
+ INITIAL PROPERTY: p1 = (true -> (out => out));
+ TIGHT 1:   p1 = (true -> ((out => c) or (out and a)));
+ TIGHT 2:   p1 = (true -> ((out => c) or (b and a)));
+
+***********************Vota_All_depth3******************
+ depth 3 of four bools, that tries to discover the relationship among the input and the output.
+ This version is different than Vote_All_depth3, in that it lifted the True and False at the upper level instead of
+ being part of the inner clauses.
+ RESULT: Great! a tighter repair was found at, outer loop # = 8 minimal repair loop # = 3 successful candidate # = 0
+
+ Tired 16 minimal candidate
+
+ INITIAL REPAIRED PROPERTY:   p1 = (true -> (((out or out) and (out or out)) or (not (out and b))));
+
+ TIGHT 1:   p1 = (true -> ((not (b => c)) => ((not c) => (out => a))));
+ TIGHT 2:   p1 = (true -> (((b or out) or (b => c)) and ((out => c) or (b and a))));
+ TIGHT 3:   p1 = (true -> (((b => a) xor (b => c)) or ((not out) or (c and a))));
+
+***********************Vota_All_depth4******************
+ depth 3 of four bools, that tries to discover the relationship among the input and the output.
+ This version is different than Vote_All_depth3, in that it lifted the True and False at the upper level instead of
+ being part of the inner clauses.
+ RESULT: Great! a tighter repair was found at, outer loop # = 8 minimal repair loop # = 3 successful candidate # = 0
+
+ Tried: 10 minimal/tight candidate
+ INITIAL REPAIRED PROPERTY:   p1 = (true -> ((not (not (a xor a))) => (not (out => a))));
+
+ TIGHT 1:   p1 = (true -> ((not (not (out xor c))) or ((c and c) => (a or b))));
+ TIGHT 2:   p1 = (true -> ((not ((not b) and (c xor a))) or (not (out xor b))));
+ TIGHT 3:   p1 = (true -> (not (((not b) and (b xor out)) and (not (a and c)))));
+ TIGHT 4:   p1 = (true -> (((b => out) xor (b xor out)) xor ((not (c xor a)) and ((out => b) xor (out => c)))));
+
+
+========================================================================================================================
+
+Original Property
+        out = a || b || c
+
+***********************Vota_Equal_depth4******************
+
+Repair Expression
+        p1 = true -> out = (repair((a and b), discover_binary_Bool_3_Int_0_depth4(a,b,c)));
+
+-- depth 4 of 3 bools, that tries to discover the exact property for the output.
+
+-- RESULT:Minimal repair finished with the following result, outer loop # = 7 minimal repair loop # = -1 the LAST candidate repair loop # = -1
+
+
+ --Tried: 1 minimal/tight candidate
+ --INITIAL REPAIRED PROPERTY: p1 = (true -> (out = (((not (c => a)) or (b or (a xor c))) or (not ((b => c) => (not c))))));
+
+ --TIGHT 1: None
+
+
+***********************Vota_Iff_depth4******************
+
+-- depth 4 for if and only if outer level.
+-- RESULT : Minimal repair finished with the following result, outer loop # = 2 minimal repair loop # = 1 the LAST candidate repair loop # = 8
+
+-- Tried  15 minimal/tight Candidate
+
+-- INITIAL PROPERTY:   p1 = (true -> true);
+
+-- TIGHT 1: p1 = (true -> ((((c => a) or (a xor b)) => ((not out) xor (a or b))) and (((c xor b) => (b or out)) => (b => b))));
+-- TIGHT 2:   p1 = (true -> ((((a => b) xor (not out)) => (b or c)) and ((not out) => ((b or c) xor (not out)))));

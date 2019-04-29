@@ -1,7 +1,7 @@
 import gov.nasa.jpf.symbc.veritesting.AdapterSynth.ArgSubAdapter;
 import gov.nasa.jpf.symbc.veritesting.AdapterSynth.GetInputsFromFile;
 import gov.nasa.jpf.symbc.veritesting.AdapterSynth.TestInput;
-
+import examples.Outputs;
 import java.io.*;
 import java.util.ArrayList;
 
@@ -179,7 +179,7 @@ public class AdapterSynth {
         feasibleAdaptation = AdapterSynthUtil.isFeasibleAdaptation(adapterSynth);
         if (feasibleAdaptation) {
             System.out.println("feasible path");
-            adapterSynth.runTests_NoVeritest(new TestFunctions());
+            //adapterSynth.runTests_NoVeritest(new TestFunctions());
         } else {
             System.out.println("infeasible path");
 //            adapterSynth.abortExecutionPath();

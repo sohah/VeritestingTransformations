@@ -1,4 +1,6 @@
-class Outputs {
+package examples;
+
+public class Outputs {
     public int[] intOutputs;
 
     public Outputs(int [] outputs) {

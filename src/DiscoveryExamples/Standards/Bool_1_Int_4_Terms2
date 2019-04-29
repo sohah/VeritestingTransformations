@@ -1,0 +1,65 @@
+repair node discover_binary_Bool_1_Int_4_Terms2(a0: bool; i0:int; i1:int; i2:int;i3:int)
+[valhole_0: inthole;
+valhole_1:inthole;
+
+const_hole0: inthole;
+const_hole1 : inthole;
+
+level_0_hole:inthole;
+level_1_hole:inthole;
+level_2_hole:inthole
+
+]
+
+returns (out: bool);
+var
+
+leaf_0:bool;
+leaf_1:bool;
+
+bExprlevel_1:bool;
+
+let
+
+    leaf_0 = if(valhole_0 = 0) then a0
+                   else if(valhole_0 = 1) then i0 <= const_hole0
+                   else if(valhole_0 = 2) then i0 > const_hole0
+                   else if(valhole_0 = 3) then i0 = const_hole0
+                   else if(valhole_0 = 4) then i1 <= const_hole0
+                   else if(valhole_0 = 5) then i1 > const_hole0
+                   else if(valhole_0 = 6) then i1 = const_hole0
+                   else if(valhole_0 = 7) then i2 <= const_hole0
+                   else if(valhole_0 = 8) then i2 > const_hole0
+                   else if(valhole_0 = 9) then i2 = const_hole0
+                   else if(valhole_0 = 10) then i3 <= const_hole0
+                   else if(valhole_0 = 11) then i3 > const_hole0
+                   else i3 = const_hole0;
+
+
+    leaf_1 = if(valhole_1 = 0) then a0
+                   else if(valhole_1 = 1) then i0 <= const_hole1
+                   else if(valhole_1 = 2) then i0 > const_hole1
+                   else if(valhole_1 = 3) then i0 = const_hole1
+                   else if(valhole_1 = 4) then i1 <= const_hole1
+                   else if(valhole_1 = 5) then i1 > const_hole1
+                   else if(valhole_1 = 6) then i1 = const_hole1
+                   else if(valhole_1 = 7) then i2 <= const_hole1
+                   else if(valhole_1 = 8) then i2 > const_hole1
+                   else if(valhole_1 = 9) then i2 = const_hole1
+                   else if(valhole_1 = 10) then i3 <= const_hole1
+                   else if(valhole_1 = 11) then i3 > const_hole1
+                   else i3 = const_hole1;
+
+
+    bExprlevel_1 =  if(level_2_hole = 1) then leaf_0 and leaf_1
+                   else if(level_2_hole = 2) then leaf_0 or leaf_1
+                   else if(level_2_hole = 3) then leaf_0 => leaf_1
+                   else if(level_2_hole = 4) then leaf_0 xor leaf_1
+                   else if(level_2_hole = 5) then not leaf_0
+                   else if(level_2_hole = 6) then not leaf_1
+                   else if(level_2_hole = 7) then true
+                   else false;
+
+
+    out = bExprlevel_1;
+tel;

@@ -1,0 +1,5 @@
+(solver
+  (bvsge y #x80000000)
+  (bvsle y #x7fffffff)
+  (not (= y #x0000000a))
+  (not (= y #x00000064)))

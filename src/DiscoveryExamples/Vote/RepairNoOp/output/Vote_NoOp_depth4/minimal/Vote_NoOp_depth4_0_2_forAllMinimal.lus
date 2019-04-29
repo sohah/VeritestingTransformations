@@ -1,0 +1,110 @@
+node Ranger_node(
+  a_bool : bool;
+  b_bool : bool;
+  c_bool : bool;
+  threshold : int;
+  out_bool : bool
+) returns (
+  r347_out_1_3_2_bool : bool
+);
+var
+  w8_2 : int;
+  r347_out_1_1_2 : int;
+  r347_out_1_3_2 : int;
+  symVar : int;
+  a : int;
+  b : int;
+  c : int;
+  out : int;
+let
+  w8_2 = (if (((a <> 0) or ((not (a <> 0)) and (b <> 0))) or (((not (a <> 0)) and (not (b <> 0))) and (not (c = 0)))) then 1 else 0);
+
+  r347_out_1_1_2 = w8_2;
+
+  r347_out_1_3_2 = (if (not (symVar = 0)) then r347_out_1_1_2 else out);
+
+  a = (if a_bool then 1 else 0);
+
+  b = (if b_bool then 1 else 0);
+
+  c = (if c_bool then 1 else 0);
+
+  out = (if out_bool then 1 else 0);
+
+  r347_out_1_3_2_bool = (false -> (if (r347_out_1_3_2 = 1) then true else false));
+
+  symVar = 1;
+
+tel;
+
+node Ranger_wrapper(
+  a_bool : bool;
+  b_bool : bool;
+  c_bool : bool;
+  threshold : int
+) returns (
+  out_0 : bool
+);
+var
+  out_bool : bool;
+let
+  out_bool = Ranger_node(a_bool, b_bool, c_bool, threshold, (false -> (pre out_bool)));
+
+  out_0 = out_bool;
+
+tel;
+
+node T_node(
+  a : bool;
+  b : bool;
+  c : bool;
+  threshold : int;
+  out : bool
+) returns (
+  p1 : bool
+);
+let
+  p1 = (true -> true);
+
+tel;
+
+node Candidate_T_Prime(
+  a : bool;
+  b : bool;
+  c : bool;
+  threshold : int;
+  out : bool
+) returns (
+  p1 : bool
+);
+let
+  p1 = (true -> (((not (b and a)) or (not b)) or (not ((c => c) => (c xor a)))));
+
+tel;
+
+node main(
+  a : bool;
+  b : bool;
+  c : bool;
+  threshold : int;
+  out__ : bool
+) returns (
+  discovery_out : bool
+);
+var
+  out : bool;
+  isMatchImpl : bool;
+  isTighter : bool;
+let
+  --%MAIN;
+  out = Ranger_wrapper(a, b, c, threshold);
+
+  isMatchImpl = Candidate_T_Prime(a, b, c, threshold, out);
+
+  isTighter = (Candidate_T_Prime(a, b, c, threshold, out__) => T_node(a, b, c, threshold, out__));
+
+  discovery_out = (isMatchImpl and isTighter);
+
+  --%PROPERTY discovery_out;
+
+tel;

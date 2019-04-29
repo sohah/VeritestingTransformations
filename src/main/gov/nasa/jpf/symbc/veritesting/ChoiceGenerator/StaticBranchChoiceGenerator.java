@@ -18,7 +18,10 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import za.ac.sun.cs.green.expr.Expression;
 import za.ac.sun.cs.green.expr.Operation;
 
+import static gov.nasa.jpf.symbc.VeritestingListener.VeritestingMode.SPFCASES;
+import static gov.nasa.jpf.symbc.VeritestingListener.runMode;
 import static gov.nasa.jpf.symbc.VeritestingListener.statisticManager;
+import static gov.nasa.jpf.symbc.VeritestingListener.veritestingMode;
 import static gov.nasa.jpf.symbc.veritesting.Heuristics.HeuristicManager.regionHeuristicFinished;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
@@ -30,13 +33,13 @@ import static gov.nasa.jpf.symbc.veritesting.VeritestingUtil.SpfUtil.maybeParseC
 public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
 
-    private final int STATIC_CHOICE;
-    private final int THEN_CHOICE;
-    private final int ELSE_CHOICE;
-    private final int RETURN_CHOICE;
+    public static int STATIC_CHOICE;
+    public static int THEN_CHOICE;
+    public static int ELSE_CHOICE;
+    public static int RETURN_CHOICE;
 
-    private final int HEURISTICS_THEN_CHOICE;
-    private final int HEURISTICS_ELSE_CHOICE;
+    public static int HEURISTICS_THEN_CHOICE;
+    public static int HEURISTICS_ELSE_CHOICE;
 
 
     public static boolean heuristicsCountingMode;
@@ -92,35 +95,42 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         Instruction nextInstruction = null;
         if (choice == STATIC_CHOICE) {
             System.out.println("\n=========Executing static region choice in BranchCG");
-            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion(), false);
-            MethodInfo methodInfo = instructionToExecute.getMethodInfo();
-            String className = methodInfo.getClassName();
-            String methodName = methodInfo.getName();
-            String methodSignature = methodInfo.getSignature();
-            int offset = instructionToExecute.getPosition();
-            String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
-            statisticManager.updateVeriSuccForRegion(key);
-            ++VeritestingListener.veritestRegionCount;
+            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion(), STATIC_CHOICE);
+
             if(heuristicsCountingMode){
-                regionHeuristicFinished(key);
-                heuristicsCountingMode = false;
-            }
-        }
-        if (choice == HEURISTICS_THEN_CHOICE || choice == HEURISTICS_ELSE_CHOICE) {
-            System.out.println("\n=========Executing" + (choice == HEURISTICS_THEN_CHOICE ? " then heuristics " : " else heuristics") + ".  Instruction: ");
-            if (choice == HEURISTICS_THEN_CHOICE) {
                 MethodInfo methodInfo = instructionToExecute.getMethodInfo();
                 String className = methodInfo.getClassName();
                 String methodName = methodInfo.getName();
                 String methodSignature = methodInfo.getSignature();
                 int offset = instructionToExecute.getPosition();
                 String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+                regionHeuristicFinished(key);
+                heuristicsCountingMode = false;
+                assert key.equals(HeuristicManager.getLastRegionKey());
+                RegionHitExactHeuristic regionHitExactHeuristic = HeuristicManager.getRegionHeuristic();
+                assert !regionHitExactHeuristic.getRegionStatus();
+                if (region.totalNumPaths != regionHitExactHeuristic.getPathCount()) {
+                    System.out.println("** warning: our estimated path count (" + region.totalNumPaths +
+                            ") does not match exact path count (" + regionHitExactHeuristic.getPathCount());
+                }
+                regionHitExactHeuristic.setEstimatedPathCount(region.totalNumPaths);
+            }
 
-                assert(HeuristicManager.getRegionHeuristic().getRegionStatus());
-            /*if(!HeuristicManager.getRegionHeuristicStatus(key)){ //if we already counted the paths for this region, no need to recount it again.
-                ti.getVM().getSystemState().setIgnored(true);
-                return instructionToExecute;
-            }*/
+
+        }
+        if (choice == HEURISTICS_THEN_CHOICE || choice == HEURISTICS_ELSE_CHOICE) {
+            System.out.println("\n=========Executing" + (choice == HEURISTICS_THEN_CHOICE ? " then heuristics " : " else heuristics") + ".  Instruction: ");
+            if (choice == HEURISTICS_THEN_CHOICE) {
+                /*MethodInfo methodInfo = instructionToExecute.getMethodInfo();
+                String className = methodInfo.getClassName();
+                String methodName = methodInfo.getName();
+                String methodSignature = methodInfo.getSignature();
+                int offset = instructionToExecute.getPosition();
+                String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
+                if(!HeuristicManager.getRegionHeuristicStatus(key)){ //if we already counted the paths for this region, no need to recount it again.
+                    ti.getVM().getSystemState().setIgnored(true);
+                    return instructionToExecute;
+                }*/
 
             }
             switch (getKind(instructionToExecute)) {
@@ -156,15 +166,7 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
         }
         if (choice == RETURN_CHOICE) { //early returns choice happened
             System.out.println("\n=========Executing early retrun choice in BranchCG");
-            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion(), true);
-            MethodInfo methodInfo = instructionToExecute.getMethodInfo();
-            String className = methodInfo.getClassName();
-            String methodName = methodInfo.getName();
-            String methodSignature = methodInfo.getSignature();
-            int offset = instructionToExecute.getPosition();
-            String key = CreateStaticRegions.constructRegionIdentifier(className + "." + methodName + methodSignature, offset);
-            statisticManager.updateVeriSuccForRegion(key);
-            ++VeritestingListener.veritestRegionCount;
+            nextInstruction = VeritestingListener.setupSPF(ti, instructionToExecute, getRegion(), RETURN_CHOICE);
         }
         return nextInstruction;
     }
@@ -343,6 +345,30 @@ public class StaticBranchChoiceGenerator extends StaticPCChoiceGenerator {
 
         }
 
+    }
+
+    public static int getNumSatChoices(DynamicRegion region) {
+        int count  = 0;
+        count += isSatGreenExpression(region.regionSummary) != ExprUtil.SatResult.FALSE ? 1 : 0;
+        if (veritestingMode >= 4) count += region.spfCaseList.casesList.size();
+        if (veritestingMode == 5) count += region.earlyReturnResult.hasER() ? 1 : 0;
+        return count;
+    }
+
+    // Checks if the STATIC choice is the only one that is satisfiable using only ExprUtils.isSatGreenExpression()
+    public static boolean isOnlyStaticChoiceSat(DynamicRegion region) {
+        if (veritestingMode <= 3) {
+            System.out.println("Static choice is the only choice that should be satisfiable in modes 2 and 3");
+            assert false;
+        }
+        if (region.spfCaseList.casesList.size() > 0 || region.earlyReturnResult.hasER()) return false;
+        else {
+            if (isSatGreenExpression(region.regionSummary) == ExprUtil.SatResult.FALSE) {
+                System.out.println("The region summary should not be false at this point");
+                assert false;
+            }
+            return true;
+        }
     }
 
 }

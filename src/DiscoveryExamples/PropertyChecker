@@ -1,0 +1,20 @@
+node main(a: bool; b:bool; c:bool; out:bool; threshold:int) returns (p1: bool);
+
+var
+
+   prop1: bool;
+   --out : bool;
+
+let
+
+
+    --out = ((a and b) or (b and c) or (a and c)) and (threshold < 10) and (threshold > 5);
+
+    prop1 =  ((a or b or c) = (((not (c => a)) or (b or (a xor c))) or (not ((b => c) => (not c)))));
+
+
+    p1 = prop1   ;
+
+  --%PROPERTY p1;
+
+tel;

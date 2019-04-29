@@ -1,0 +1,78 @@
+
+***********************Assertion 1 - Depth 2******************
+
+Original Assertion: assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+ -- RESULT : Minimal repair finished with the following result, outer loop # = 1 minimal repair loop # = 4 the LAST candidate repair loop # = 2
+
+ -- Tried 50 minimal/tight Candidate
+
+ -- INITIAL PROPERTY:  p1 = (true -> (not ((NormalPressure_r <= 14) and (Sys_Mode = 13))));
+ -- TIGHT 1:  p1 = (true -> (not ((NormalPressure_r = -1) or (Sys_Mode = 13))));
+ -- TIGHT 2:  p1 = (true -> (not ((NormalPressure_r = -1) or (Sys_Mode > 12))));
+ -- TIGHT 3:  p1 = (true -> (not ((NormalPressure_r <= -1) or (Sys_Mode > 8))));
+ -- TIGHT 4:  p1 = (true -> (not ((NormalPressure_r <= -1) or (Sys_Mode > 3))));
+ -- TIGHT 5:  p1 = (true -> ((Sys_Mode = 0) and ((NormalPressure_r <= -1) xor (Sys_Mode <= 14))));
+
+***********************Assertion 2 - Depth 2******************
+
+Original Assertion:assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0) : true);
+
+ -- RESULT : Great!! Minimal repair was found at, outer loop # = 4 minimal repair loop # = 3 the LAST candidate repair loop # = 2
+
+ -- Tried 49 minimal/tight Candidate
+
+ -- INITIAL PROPERTY:  p1 = (true -> true);
+ -- TIGHT 1: p1 = (true -> (((NormalPressure_r = 5) or (Sys_Mode = 0)) or ((NormalPressure_r = -9) and skid_r)));
+ -- TIGHT 2: p1 = (true -> ((NormalPressure_r <= 5) and (Sys_Mode = 0)));
+ -- TIGHT 3: p1 = (true -> (((NormalPressure_r <= 5) and (Sys_Mode = 0)) and ((pedal_r > 9) or (NormalPressure_r > -3))
+ ));
+ -- TIGHT 4: p1 = (true -> (((NormalPressure_r <= 5) xor (Sys_Mode > 11)) and ((NormalPressure_r > -1) and (Sys_Mode = 0))));
+
+
+***********************Assertion 3 - Depth 2******************
+
+Original Assertion: assert ((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
+
+ -- RESULT : Great!! Minimal repair was found at, outer loop # = 2 minimal repair loop # = 3 the LAST candidate repair loop # = 3
+
+ -- Tried  74 minimal/tight Candidate
+
+ -- INITIAL PROPERTY:   p1 = (true -> (((pedal_r = 0) and (Sys_Mode > 13)) => ((pedal_r = 3) and (NormalPressure_r <= -1))));
+ -- TIGHT 1:   p1 = (true -> (((NormalPressure_r <= -2) => (Sys_Mode <= 0)) and (Sys_Mode = 0)));
+ -- TIGHT 2:   p1 = (true -> (((NormalPressure_r = 0) and (Sys_Mode = 0)) or ((NormalPressure_r > 0) and (Sys_Mode = 0))));
+ -- TIGHT 3:  p1 = (true -> (((NormalPressure_r = 15) xor (Sys_Mode <= 0)) and ((NormalPressure_r > -1) and (Sys_Mode = 0))));
+ -- TIGHT 4:  p1 = (true -> (((NormalPressure_r <= -1) xor (Sys_Mode > -3)) and ((NormalPressure_r <= 5) and (Sys_Mode = 0))));
+
+
+
+***********************Assertion 4 - Depth 2******************
+
+Original Assertion:  assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+-- RESULT :Great!! Minimal repair was found at, outer loop # = 1 minimal repair loop # = 2 the LAST candidate repair loop # = 21
+
+-- Tried 45 minimal/tight Candidate
+
+-- INITIAL PROPERTY:   p1 = (true -> (not ((NormalPressure_r = -1) and (Sys_Mode = -4))));
+-- TIGHT 1: p1 = (true -> (((NormalPressure_r > -2) and (Sys_Mode > -5)) and (Sys_Mode = 0)));
+-- TIGHT 2: p1 = (true -> ((NormalPressure_r > -1) and (Sys_Mode = 0)));
+-- TIGHT 3: p1 = (true -> ((skid_r => (NormalPressure_r = 0)) and ((NormalPressure_r > -1) and (Sys_Mode = 0))));
+
+
+
+***********************Assertion 5 - Depth 2******************
+
+Original Assertion:  assert((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+-- RESULT : Great!! Minimal repair was found at, outer loop # = 2 minimal repair loop # = 4 the LAST candidate repair loop # = 2
+
+-- Tried  73 minimal/tight Candidate
+
+-- INITIAL PROPERTY:   p1 = (true -> (not (NormalPressure_r = -1)));
+-- TIGHT 1:  p1 = (true -> (not (NormalPressure_r <= -1)));
+-- TIGHT 2:  p1 = (true -> (((NormalPressure_r <= 5) xor (Sys_Mode = -2)) and (NormalPressure_r > -1)));
+-- TIGHT 3:  p1 = (true -> (((NormalPressure_r > 5) or (Sys_Mode <= -2)) xor ((NormalPressure_r > -1) or (Sys_Mode <= -2))));
+-- TIGHT 4:  p1 = (true -> ((NormalPressure_r > -1) and ((NormalPressure_r <= 5) and (Sys_Mode > -1))));
+-- TIGHT 5:  p1 = (true -> (((NormalPressure_r <= 5) or (Sys_Mode = -2)) and ((NormalPressure_r > -1) and (Sys_Mode = 0))));
+

@@ -1,94 +1,295 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ThereExistsQuery;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.LustreAstMapExtnVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.RemoveRepairConstructVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.CounterExampleQuery;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.repair.HolePlugger;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.sketchRepair.FlattenNodes;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.sketchRepair.SketchVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import jkind.api.results.JKindResult;
+import jkind.lustre.Node;
+import jkind.lustre.Program;
+import jkind.lustre.parsing.LustreParseUtil;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.callJkind;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.writeToFile;
 
 public class DiscoverContract {
+    /**
+     * name of the method we want to extract its contract.
+     */
+    public static boolean contractDiscoveryOn = false;
 
-    /* This map is used to populate the spfQuery for z3, for later mainpulation. */
     public static LinkedHashSet<Pair> z3QuerySet = new LinkedHashSet();
 
+    //TODO: These needs to be configured using the .jpf file.
 
-    public static String toSMT(String query, HashSet z3FunDecSet) {
-        assert (query.length() > 0);
+    public static List<String> userSynNodes = new ArrayList<>();
 
-        String newQuery = new String();
-        /*removing the outer solve*/
-        query = query.substring(8, query.length() - 1);
+    //public static HoleRepair holeRepairHolder = new HoleRepair();
+    public static HoleRepairState holeRepairState = new HoleRepairState();
 
-        int startingIndex = 0;
-        int endingIndex = query.length();
-        while (startingIndex < endingIndex) {
-            Pair startEndIndecies = findAssertion(query, startingIndex);
+    public static int loopCount = 0;
+    public static int permutationCount = 0;
 
-            startingIndex = (int) startEndIndecies.getFirst();
-            int assertionEndIndex = (int) startEndIndecies.getSecond();
+    public static int outerLoopRepairNum = -1;
 
-            String assertion = query.substring(startingIndex, assertionEndIndex + 1); //+1 because substring is not inclusive for the endIndex.
-            newQuery += "(assert " + assertion + ")\n";
-            startingIndex = assertionEndIndex + 1;
+/***** begin of unused vars***/
+    /**
+     * currently unused because we assume we have a way to find the input and output.
+     * This later needs to be changed to generalize it by looking only at the method
+     * and the class of interest.
+     */
+    public static String className;
+    public static String packageName;
+    private static boolean repaired;
+    private static String innerDirectory; // directory under ../src/DiscoveryExample
+
+    /***** end of unused vars***/
+
+    public static final void discoverLusterContract(DynamicRegion dynRegion) {
+        fillUserSynNodes();
+        try {
+            while (Config.canSetup()) {
+                long singleTermTime = System.currentTimeMillis();
+
+                System.out.println("-|-|-|-|-|  resetting state and trying repairing: " + currFaultySpec);
+                resetState();
+                assert (userSynNodes.size() > 0);
+                if (Config.specLevelRepair)
+                    repairSpec(dynRegion);
+                else
+                    assert false; //removed definition repair for now.
+                //repairDef(dynRegion);
+                singleTermTime = (System.currentTimeMillis() - singleTermTime) / 1000;
+                System.out.println("The overall time for : " + currFaultySpec + "= " + singleTermTime + " sec");
+            }
+        } catch (IOException e) {
+            System.out.println("Unable to read specification file.! Aborting");
+            assert false;
+            e.printStackTrace();
         }
 
-        newQuery = "  (set-logic QF_BV)\n" +
-                "  (set-info :smt-lib-version 2.0)\n" +
-                "  (set-option :produce-unsat-cores true)\n" +
-                generateFunDec(z3FunDecSet) +
-                newQuery
-                + "(check-sat)\n" +
-                "(get-unsat-core)\n" +
-                "(exit)\n";
-
-        return newQuery;
     }
 
-    private static String generateFunDec(HashSet<String> z3FunDecSet) {
-        String funDec = "";
-        for (String varName : z3FunDecSet) {
-            funDec = funDec + "(declare-fun " + varName + " () (_ BitVec 32))\n";
+    public static void resetState() {
+        loopCount = 0;
+        permutationCount = 0;
+        outerLoopRepairNum = 0;
+        repaired = false;
+        //userSynNodes = new ArrayList<>(); //stop resetting that, now it is entered manually.
+
+        CounterExampleQuery.resetState();
+        ThereExistsQuery.resetState();
+        MinimalRepairDriver.resetState();
+        TestCaseManager.resetState();
+        LustreAstMapExtnVisitor.resetState();
+    }
+
+    private static void repairSpec(DynamicRegion dynRegion) throws IOException {
+        String fileName;
+
+        if (Config.repairInitialValues)
+            System.out.println("Repair includes initial values");
+        else
+            System.out.println("Repair does NOT include initial values");
+
+
+        //print out the translation once, for very first time we hit linearlization for the method of
+        // interest.
+        Contract contract = new Contract();
+
+        //this holds a repair which we might find, but it might not be a tight repair, in which case we'll have to
+        // call on the other pair of thereExists and forAll queries for finding minimal repair.
+        ARepairSynthesis aRepairSynthesis = null;
+        HolePlugger holePlugger = new HolePlugger();
+        Program originalProgram, flatExtendedPgm = null;
+        Program inputExtendedPgm = null; // holds the original program with the extended lustre feature of the
+        // "repair" construct
+
+        NodeRepairKey originalNodeKey;
+
+        if (Config.repairMode == RepairMode.LIBRARY) {
+
+            inputExtendedPgm = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
+                    "UTF-8"));
+
+            originalNodeKey = defineNodeKeys(inputExtendedPgm);
+
+            flatExtendedPgm = FlattenNodes.execute(inputExtendedPgm);
+
+            originalProgram = RemoveRepairConstructVisitor.execute(flatExtendedPgm);
+
+        } else {
+            originalProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
+                    "UTF-8"));
+
+            originalNodeKey = defineNodeKeys(originalProgram);
+
         }
-        return funDec;
+
+        CounterExampleQuery counterExampleQuery = new CounterExampleQuery(dynRegion, originalProgram, contract);
+        String counterExampleQueryStrStr = counterExampleQuery.toString();
+
+        do {
+            fileName = currFaultySpec + "_" + loopCount + ".lus";
+            writeToFile(fileName, counterExampleQueryStrStr, false);
+
+            JKindResult counterExResult = callJkind(fileName, true, -1, false, false);
+            switch (counterExResult.getPropertyResult(tnodeSpecPropertyName).getStatus()) {
+                case VALID: //valid match
+                    System.out.println("^-^Ranger Discovery Result ^-^");
+
+                    if (loopCount > 0) {// we had at least a single repair/synthesis, at that point we want to find
+                        // minimal repair.
+                        outerLoopRepairNum = loopCount;
+                        System.out.println("Initial repair found, in iteration #: " + outerLoopRepairNum);
+                        System.out.println("Trying minimal repair.");
+                        Program minimalRepair = MinimalRepairDriver.execute(counterExampleQuery.getCounterExamplePgm
+                                        (), contract, originalProgram,
+                                aRepairSynthesis, flatExtendedPgm);
+                    } else
+                        System.out.println("Contract Matching! Printing repair and aborting!");
+
+                    //System.out.println(getTnodeFromStr(fileName));
+                    DiscoverContract.repaired = true;
+                    return;
+                case INVALID: //synthesis is needed
+                    if (aRepairSynthesis == null) {
+                        Program holeProgram = null;
+                        ArrayList<Hole> holes = null;
+                        switch (Config.repairMode) {
+                            case CONSTANT:
+                                holeProgram = SpecConstHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
+                                holes = new ArrayList<>(SpecConstHoleVisitor.getHoles());
+                                break;
+                            case PRE:
+                                holeProgram = SpecPreHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
+                                holes = new ArrayList<>(SpecPreHoleVisitor.getHoles());
+                                break;
+                            case LIBRARY:
+                                holeProgram = LustreAstMapExtnVisitor.execute(flatExtendedPgm);
+                                holes = new ArrayList<>(LustreAstMapExtnVisitor.getHoles());
+                                break;
+                            default:
+                                assert false;
+                        }
+                        aRepairSynthesis = new ARepairSynthesis(contract, holeProgram, holes, counterExResult, originalNodeKey);
+                    } else
+                        aRepairSynthesis.collectCounterExample(counterExResult);
+
+                    if (loopCount == 0) //first loop, then setup initial repair values
+                        holeRepairState.createEmptyHoleRepairValues();
+
+                    String synthesisContractStr = aRepairSynthesis.toString();
+                    fileName = currFaultySpec + "_" + loopCount + "_" + "hole.lus";
+                    writeToFile(fileName, synthesisContractStr, false);
+
+                    JKindResult synthesisResult = callJkind(fileName, false, aRepairSynthesis
+                            .getMaxTestCaseK() - 2, false, false);
+                    switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
+                        case VALID:
+                            System.out.println("^-^ Ranger Discovery Result ^-^");
+                            System.out.println("Cannot find a synthesis");
+                            DiscoverContract.repaired = false;
+                            return;
+                        case INVALID:
+                            System.out.println("repairing holes for iteration#:" + loopCount);
+                            if (Config.repairMode != RepairMode.LIBRARY) {
+                                holeRepairState.plugInHoles(synthesisResult);
+                                holePlugger.plugInHoles(synthesisResult, counterExampleQuery
+                                        .getCounterExamplePgm
+                                                (), aRepairSynthesis.getSynthesizedProgram(), aRepairSynthesis.getSynNodeKey());
+                                counterExampleQueryStrStr = holePlugger.toString();
+                                DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
+                                break;
+                            } else {
+                                inputExtendedPgm = SketchVisitor.execute(flatExtendedPgm, synthesisResult, false);
+                                originalProgram = RemoveRepairConstructVisitor.execute(inputExtendedPgm);
+                                fileName = currFaultySpec + "_Extn" + loopCount + 1 + ".lus";
+                                writeToFile(fileName, inputExtendedPgm.toString(), false);
+
+                                counterExampleQuery = new CounterExampleQuery(dynRegion, originalProgram, contract);
+                                counterExampleQueryStrStr = counterExampleQuery.toString();
+                                break;
+                            }
+                        default:
+                            System.out.println("unexpected status for the jkind synthesis query.");
+                            DiscoverContract.repaired = false;
+                            assert false;
+                            break;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            ++loopCount;
+        }
+        while (true);
+    }
+/*
+    public static Program getLustreNoExt(Program origLustreExtPgm) {
+        return RemoveRepairConstructVisitor.execute(origLustreExtPgm);
+
+    }*/
+
+    private static Node getTnodeFromStr(String tFileName) throws IOException {
+        Program program = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(folderName + "/" + tFileName)), "UTF-8"));
+
+        List<Node> nodes = program.nodes;
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i).id.equals(TNODE))
+                return nodes.get(i);
+        }
+
+        return null;
     }
 
     /**
-     * This takes the starting index of an opening bracket for which we want to find a matching closing bracket. It returns the index of the closing bracket.
+     * Initiall node keys are defined on the original program, where the "main" is the only node that needs repair, as well as any other nodes that the user wants to define in userSynNodes
      *
-     * @param query
-     * @param startingIndex
+     * @param program
      * @return
      */
-    private static Pair findAssertion(String query, int startingIndex) {
-        int closingIndex = 0;
-        int bracket = 0;
-        boolean closingBracketFound = false;
-        boolean firstOpenBracketEncountered = false;
-        int walkingIndex = startingIndex;
+    private static NodeRepairKey defineNodeKeys(Program program) {
+        NodeRepairKey nodeRepairKey = new NodeRepairKey();
+        nodeRepairKey.setNodesKey("main", NodeStatus.REPAIR);
+        nodeRepairKey.setNodesKey(userSynNodes, NodeStatus.REPAIR);
 
-        /*This loop tries to find the index of the first opening bracket. At the end of the loop, the walkingIndex will have this index number.*/
-        while (!firstOpenBracketEncountered) {
-            char c = query.charAt(walkingIndex);
-            if (c == '(')
-                firstOpenBracketEncountered = true;
-            else {
-                ++walkingIndex;
-            }
+        for (int i = 0; i < program.nodes.size(); i++) {
+            Node node = program.nodes.get(i);
+            if (!node.id.equals("main"))
+                nodeRepairKey.setNodesKey(node.id, NodeStatus.DONTCARE_SPEC);
         }
 
-        startingIndex = walkingIndex;
-        while (!closingBracketFound) {
-            char c = query.charAt(walkingIndex);
-            if (c == '(')
-                ++bracket;
-            else if (c == ')')
-                --bracket;
+        return nodeRepairKey;
+    }
 
-            if (bracket == 0) {
-                closingBracketFound = true;
-                closingIndex = walkingIndex;
-            }
-            ++walkingIndex;
-        }
-        return new Pair(startingIndex, closingIndex);
+    private static void fillUserSynNodes() {
+        userSynNodes.add("main");
+    }
+
+
+    //ToDo: not sure if this works, I need to test the change.
+    public static String toSMT(String solver, HashSet z3FunDecl) {
+        return Z3Format.toSMT(solver, z3FunDecl);
+    }
+
+
+    public static boolean isRepaired() {
+        return repaired;
     }
 }

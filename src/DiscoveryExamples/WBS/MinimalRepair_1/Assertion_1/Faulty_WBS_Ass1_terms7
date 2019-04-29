@@ -1,0 +1,232 @@
+-- RESULT :
+
+
+-- Tried
+
+-- INITIAL PROPERTY:
+-- TIGHT 1:
+-- TIGHT 2:
+-- TIGHT 3:
+-- TIGHT 4:
+-- TIGHT 5:
+
+repair node discover_binary_Bool_2_Int_4_Terms7(a0: bool; a1:bool; i0:int; i1:int; i2:int;i3:int)
+[valhole_0: inthole;
+valhole_1:inthole;
+valhole_2: inthole;
+valhole_3: inthole;
+valhole_4: inthole;
+valhole_5: inthole;
+valhole_6: inthole;
+
+const_hole0: inthole;
+const_hole1 : inthole;
+const_hole2 :inthole;
+const_hole3 :inthole;
+const_hole4 :inthole;
+const_hole5 :inthole;
+const_hole6 :inthole;
+
+
+level_0_hole:inthole;
+level_1_hole:inthole;
+level_2_hole:inthole;
+level_3_hole:inthole;
+level_4_hole:inthole;
+level_5_hole:inthole;
+level_6_hole:inthole;
+level_7_hole:inthole
+
+]
+
+returns (out: bool);
+var
+
+leaf_0:bool;
+leaf_1:bool;
+leaf_2:bool;
+leaf_3:bool;
+leaf_4:bool;
+leaf_5:bool;
+leaf_6:bool;
+
+bExprlevel_1:bool;
+bExprlevel_2:bool;
+bExprlevel_3:bool;
+bExprlevel_4:bool;
+bExprlevel_5:bool;
+bExprlevel_6:bool;
+
+let
+
+    leaf_0 = if(valhole_0 = 0) then a0
+                   else if(valhole_0 = 1) then i0 <= const_hole0
+                   else if(valhole_0 = 2) then i0 > const_hole0
+                   else if(valhole_0 = 3) then i0 = const_hole0
+                   else if(valhole_0 = 4) then i1 <= const_hole0
+                   else if(valhole_0 = 5) then i1 > const_hole0
+                   else if(valhole_0 = 6) then i1 = const_hole0
+                   else if(valhole_0 = 7) then i2 <= const_hole0
+                   else if(valhole_0 = 8) then i2 > const_hole0
+                   else if(valhole_0 = 9) then i2 = const_hole0
+                   else if(valhole_0 = 10) then i3 <= const_hole0
+                   else if(valhole_0 = 11) then i3 > const_hole0
+                   else if(valhole_0 = 12) then i3 = const_hole0
+                   else a1;
+
+    leaf_1 = if(valhole_1 = 0) then a0
+                   else if(valhole_1 = 1) then i0 <= const_hole1
+                   else if(valhole_1 = 2) then i0 > const_hole1
+                   else if(valhole_1 = 3) then i0 = const_hole1
+                   else if(valhole_1 = 4) then i1 <= const_hole1
+                   else if(valhole_1 = 5) then i1 > const_hole1
+                   else if(valhole_1 = 6) then i1 = const_hole1
+                   else if(valhole_1 = 7) then i2 <= const_hole1
+                   else if(valhole_1 = 8) then i2 > const_hole1
+                   else if(valhole_1 = 9) then i2 = const_hole1
+                   else if(valhole_1 = 10) then i3 <= const_hole1
+                   else if(valhole_1 = 11) then i3 > const_hole1
+                   else if(valhole_1 = 12) then i3 = const_hole1
+                   else a1;
+
+    bExprlevel_1 =  if(level_2_hole = 1) then leaf_0 and leaf_1
+                   else if(level_2_hole = 2) then leaf_0 or leaf_1
+                   else if(level_2_hole = 3) then leaf_0 => leaf_1
+                   else if(level_2_hole = 4) then leaf_0 xor leaf_1
+                   else if(level_2_hole = 5) then not leaf_0
+                   else not leaf_1;
+
+
+
+    leaf_2 = if(valhole_2 = 0) then a0
+                   else if(valhole_2 = 1) then i0 <= const_hole2
+                   else if(valhole_2 = 2) then i0 > const_hole2
+                   else if(valhole_2 = 3) then i0 = const_hole2
+                   else if(valhole_2 = 4) then i1 <= const_hole2
+                   else if(valhole_2 = 5) then i1 > const_hole2
+                   else if(valhole_2 = 6) then i1 = const_hole2
+                   else if(valhole_2 = 7) then i2 <= const_hole2
+                   else if(valhole_2 = 8) then i2 > const_hole2
+                   else if(valhole_2 = 9) then i2 = const_hole2
+                   else if(valhole_2 = 10) then i3 <= const_hole2
+                   else if(valhole_2 = 11) then i3 > const_hole2
+                   else if(valhole_2 = 12) then i3 = const_hole2
+                   else a1;
+
+    bExprlevel_2 =  if(level_3_hole = 1) then bExprlevel_1 and leaf_2
+                     else if(level_3_hole = 2) then bExprlevel_1 or leaf_2
+                     else if(level_3_hole = 3) then bExprlevel_1 => leaf_2
+                     else if(level_3_hole = 4) then bExprlevel_1 xor leaf_2
+                     else not leaf_2;
+
+
+    leaf_3 = if(valhole_3 = 0) then a0
+                   else if(valhole_3 = 1) then i0 <= const_hole3
+                   else if(valhole_3 = 2) then i0 > const_hole3
+                   else if(valhole_3 = 3) then i0 = const_hole3
+                   else if(valhole_3 = 4) then i1 <= const_hole3
+                   else if(valhole_3 = 5) then i1 > const_hole3
+                   else if(valhole_3 = 6) then i1 = const_hole3
+                   else if(valhole_3 = 7) then i2 <= const_hole3
+                   else if(valhole_3 = 8) then i2 > const_hole3
+                   else if(valhole_3 = 9) then i2 = const_hole3
+                   else if(valhole_3 = 10) then i3 <= const_hole3
+                   else if(valhole_3 = 11) then i3 > const_hole3
+                   else if(valhole_3 = 12) then i3 = const_hole3
+                   else a1;
+
+    bExprlevel_3 =  if(level_4_hole = 1) then bExprlevel_2 and leaf_3
+                     else if(level_4_hole = 2) then bExprlevel_2 or leaf_3
+                     else if(level_4_hole = 3) then bExprlevel_2 => leaf_3
+                     else if(level_4_hole = 4) then bExprlevel_2 xor leaf_3
+                     else not leaf_3;
+
+
+    leaf_4 = if(valhole_4 = 0) then a0
+                   else if(valhole_4 = 1) then i0 <= const_hole4
+                   else if(valhole_4 = 2) then i0 > const_hole4
+                   else if(valhole_4 = 3) then i0 = const_hole4
+                   else if(valhole_4 = 4) then i1 <= const_hole4
+                   else if(valhole_4 = 5) then i1 > const_hole4
+                   else if(valhole_4 = 6) then i1 = const_hole4
+                   else if(valhole_4 = 7) then i2 <= const_hole4
+                   else if(valhole_4 = 8) then i2 > const_hole4
+                   else if(valhole_4 = 9) then i2 = const_hole4
+                   else if(valhole_4 = 10) then i3 <= const_hole4
+                   else if(valhole_4 = 11) then i3 > const_hole4
+                   else if(valhole_4 = 12) then i3 = const_hole4
+                   else a1;
+
+    bExprlevel_4 =  if(level_5_hole = 1) then bExprlevel_3 and leaf_4
+                     else if(level_5_hole = 2) then bExprlevel_3 or leaf_4
+                     else if(level_5_hole = 3) then bExprlevel_3 => leaf_4
+                     else if(level_5_hole = 4) then bExprlevel_3 xor leaf_4
+                     else not leaf_4;
+
+
+    leaf_5 = if(valhole_5 = 0) then a0
+                   else if(valhole_5 = 1) then i0 <= const_hole5
+                   else if(valhole_5 = 2) then i0 > const_hole5
+                   else if(valhole_5 = 3) then i0 = const_hole5
+                   else if(valhole_5 = 4) then i1 <= const_hole5
+                   else if(valhole_5 = 5) then i1 > const_hole5
+                   else if(valhole_5 = 6) then i1 = const_hole5
+                   else if(valhole_5 = 7) then i2 <= const_hole5
+                   else if(valhole_5 = 8) then i2 > const_hole5
+                   else if(valhole_5 = 9) then i2 = const_hole5
+                   else if(valhole_5 = 10) then i3 <= const_hole5
+                   else if(valhole_5 = 11) then i3 > const_hole5
+                   else if(valhole_5 = 12) then i3 = const_hole5
+                   else a1;
+
+
+    bExprlevel_5 =  if(level_6_hole = 1) then bExprlevel_4 and leaf_5
+                     else if(level_6_hole = 2) then bExprlevel_4 or leaf_5
+                     else if(level_6_hole = 3) then bExprlevel_4 => leaf_5
+                     else if(level_6_hole = 4) then bExprlevel_4 xor leaf_5
+                     else not leaf_5;
+
+
+    leaf_6 = if(valhole_6 = 0) then a0
+                   else if(valhole_6 = 1) then i0 <= const_hole6
+                   else if(valhole_6 = 2) then i0 > const_hole6
+                   else if(valhole_6 = 3) then i0 = const_hole6
+                   else if(valhole_6 = 4) then i1 <= const_hole6
+                   else if(valhole_6 = 5) then i1 > const_hole6
+                   else if(valhole_6 = 6) then i1 = const_hole6
+                   else if(valhole_6 = 7) then i2 <= const_hole6
+                   else if(valhole_6 = 8) then i2 > const_hole6
+                   else if(valhole_6 = 9) then i2 = const_hole6
+                   else if(valhole_6 = 10) then i3 <= const_hole6
+                   else if(valhole_6 = 11) then i3 > const_hole6
+                   else if(valhole_6 = 12) then i3 = const_hole6
+                   else a1;
+
+
+    bExprlevel_6 =  if(level_7_hole = 1) then bExprlevel_5 and leaf_6
+                     else if(level_7_hole = 2) then bExprlevel_5 or leaf_6
+                     else if(level_7_hole = 3) then bExprlevel_5 => leaf_6
+                     else if(level_7_hole = 4) then bExprlevel_5 xor leaf_6
+                     else if(level_7_hole = 5) then not leaf_6
+                     else if(level_7_hole = 6) then true
+                     else false;
+
+
+    out = bExprlevel_6;
+tel;
+
+
+
+node main(pedal_r: int; autoBreak_r: bool; skid_r: bool; NormalPressure_r:int; AltPressure_r:int; Sys_Mode: int) returns (p1: bool);
+
+
+let
+
+-- introducing a fault in passing assertion #1 in WBS, basically by wrapping the assertion with a not
+    p1 = true -> repair(not(pedal_r > 0 and pedal_r <= 4 and not skid_r) => (AltPressure_r > 0 or NormalPressure_r >
+        0),discover_binary_Bool_2_Int_4_Terms7(autoBreak_r, skid_r, pedal_r, NormalPressure_r, AltPressure_r, Sys_Mode))
+         ;
+
+      --%PROPERTY p1;
+
+tel;

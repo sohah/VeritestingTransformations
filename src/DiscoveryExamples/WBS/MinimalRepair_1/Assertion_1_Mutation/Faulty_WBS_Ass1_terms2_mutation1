@@ -1,0 +1,103 @@
+-- RESULT :
+
+
+-- Tried
+
+-- INITIAL PROPERTY:
+-- TIGHT 1:
+-- TIGHT 2:
+-- TIGHT 3:
+-- TIGHT 4:
+-- TIGHT 5:
+
+
+repair node discover_binary_Bool_2_Int_4_Terms2(a0: bool; a1:bool; i0:int; i1:int; i2:int;i3:int)
+[valhole_0: inthole;
+valhole_1:inthole;
+
+const_hole0: inthole;
+const_hole1 : inthole;
+
+level_0_hole:inthole;
+level_1_hole:inthole;
+level_2_hole:inthole
+
+]
+
+returns (out: bool);
+var
+
+leaf_0:bool;
+leaf_1:bool;
+
+bExprlevel_1:bool;
+
+let
+
+    leaf_0 = if(valhole_0 = 0) then a0
+                   else if(valhole_0 = 1) then i0 <= const_hole0
+                   else if(valhole_0 = 2) then i0 > const_hole0
+                   else if(valhole_0 = 3) then i0 = const_hole0
+                   else if(valhole_0 = 4) then i1 <= const_hole0
+                   else if(valhole_0 = 5) then i1 > const_hole0
+                   else if(valhole_0 = 6) then i1 = const_hole0
+                   else if(valhole_0 = 7) then i2 <= const_hole0
+                   else if(valhole_0 = 8) then i2 > const_hole0
+                   else if(valhole_0 = 9) then i2 = const_hole0
+                   else if(valhole_0 = 10) then i3 <= const_hole0
+                   else if(valhole_0 = 11) then i3 > const_hole0
+                   else if(valhole_0 = 12) then i3 = const_hole0
+                   else a1;
+
+
+    leaf_1 = if(valhole_1 = 0) then a0
+                   else if(valhole_1 = 1) then i0 <= const_hole1
+                   else if(valhole_1 = 2) then i0 > const_hole1
+                   else if(valhole_1 = 3) then i0 = const_hole1
+                   else if(valhole_1 = 4) then i1 <= const_hole1
+                   else if(valhole_1 = 5) then i1 > const_hole1
+                   else if(valhole_1 = 6) then i1 = const_hole1
+                   else if(valhole_1 = 7) then i2 <= const_hole1
+                   else if(valhole_1 = 8) then i2 > const_hole1
+                   else if(valhole_1 = 9) then i2 = const_hole1
+                   else if(valhole_1 = 10) then i3 <= const_hole1
+                   else if(valhole_1 = 11) then i3 > const_hole1
+                   else if(valhole_1 = 12) then i3 = const_hole1
+                   else a1;
+
+
+    bExprlevel_1 =  if(level_2_hole = 1) then leaf_0 and leaf_1
+                   else if(level_2_hole = 2) then leaf_0 or leaf_1
+                   else if(level_2_hole = 3) then leaf_0 => leaf_1
+                   else if(level_2_hole = 4) then leaf_0 xor leaf_1
+                   else if(level_2_hole = 5) then not leaf_0
+                   else if(level_2_hole = 6) then not leaf_1
+                   else if(level_2_hole = 7) then true
+                   else false;
+
+
+    out = bExprlevel_1;
+tel;
+
+node main(pedal_r: int; autoBreak_r: bool; skid_r: bool; NormalPressure_r:int; AltPressure_r:int; Sys_Mode: int) returns (p1: bool);
+
+
+let
+
+-- introducing a fault in passing assertion #1 in WBS, basically by wrapping the assertion with a not
+    --p1 = true -> repair((pedal_r > 0 and pedal_r <= 4 and not skid_r) => (AltPressure_r > 0 or NormalPressure_r >
+        -- 0),discover_binary_Bool_2_Int_4_Terms2(autoBreak_r, skid_r, pedal_r, NormalPressure_r, AltPressure_r,
+        -- Sys_Mode)) ;
+
+    -- mutation "and" => "or"
+    p1 = true -> ((repair(pedal_r > 0 or pedal_r <= 4,
+                                                      discover_binary_Bool_2_Int_4_Terms2(autoBreak_r,
+                                                            skid_r,
+                                                            pedal_r,
+                                                            NormalPressure_r,
+                                                            AltPressure_r,
+                                                            Sys_Mode ))
+                        and not skid_r) => (AltPressure_r > 0 or NormalPressure_r > 0)) ;
+      --%PROPERTY p1;
+
+tel;

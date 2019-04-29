@@ -1,0 +1,42 @@
+target=DiscoveryExamples.DiscoveryVoting
+classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
+sourcepath=${jpf-symbc}/src/examples
+vm.storage.class=nil
+symbolic.debug=true
+
+
+######## miscellaneous  ######
+symbolic.method=DiscoveryExamples.DiscoveryVoting.makeStep(sym#sym#sym#sym#sym#sym)
+
+symbolic.dp=z3
+
+#symbolic.min_int=-1
+#symbolic.max_int=2
+
+#symbolic.min_int=-15
+#symbolic.max_int=16
+
+#symbolic.min_int=-2147483648
+#symbolic.max_int=2147483647
+listener = .symbc.VeritestingListener
+#listener = .symbc.SymbolicListener
+
+#####running test case generation
+#listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
+
+veritestingMode = 3
+simplify = false
+symbolic.lazy = true
+showLocalNames = true
+
+
+################## contract Discovery configurations ###############
+spec = vote
+specRepair = true
+repairMode = 2
+
+contractMethodName = Vote_AND_depth1_Outer_True_False
+SpecDirectory  = Vote/RepairAnd
+contractDiscoveryOn = true
+faultySpec = Vote_AND_depth1_Outer_True_False
+repairInitialValues = false

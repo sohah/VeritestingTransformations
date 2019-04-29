@@ -1,0 +1,19 @@
+
+--This spec is used as a test case for contract discovery. Its main purpose is to ensure that the output is in range 0 to 10 if the we are in an even step of true signal.
+
+
+node main(signal: bool; out: int) returns (p1: bool);
+
+var
+	even: bool;
+let
+	even = true -> if(signal) then
+	                    not pre even
+	               else
+	                    pre even;
+
+    p1 = even => ( 0 < out ) and (out < 10);
+
+  --%PROPERTY p1;
+
+tel;
