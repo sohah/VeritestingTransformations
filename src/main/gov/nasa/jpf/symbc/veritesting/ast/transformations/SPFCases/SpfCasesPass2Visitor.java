@@ -39,8 +39,8 @@ public class SpfCasesPass2Visitor implements AstVisitor<Stmt> {
         Stmt s2 = a.s2.accept(this);
 
         if ((s1 instanceof SPFCaseStmt) && (s2 instanceof SPFCaseStmt)) {
-            spfCaseSet.remove(s1);
-            spfCaseSet.remove(s2);
+            spfCaseSet.remove((SPFCaseStmt) s1);
+            spfCaseSet.remove((SPFCaseStmt) s2);
             SPFCaseStmt stmt = new SPFCaseStmt(spfCondition, SPFCaseStmt.SPFReason.MULTIPLE);
             spfCaseSet.add(stmt);
             return stmt;
