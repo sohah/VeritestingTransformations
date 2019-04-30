@@ -237,17 +237,17 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         boolean isIfInstruction = instructionToExecute instanceof IfInstruction;
         boolean isEmptyRegionHeuristic = HeuristicManager.getRegionHeuristicSize() == 0;
-        boolean isActiveLastRegion = (isEmptyRegionHeuristic)? false:
+        boolean isActiveLastRegion = (isEmptyRegionHeuristic) ? false :
                 HeuristicManager.getRegionHeuristic().getRegionStatus();
 
-        String lastRegionKey = (isEmptyRegionHeuristic)? null: HeuristicManager.getLastRegionKey();
+        String lastRegionKey = (isEmptyRegionHeuristic) ? null : HeuristicManager.getLastRegionKey();
 
 //        runAdapterSynth(ti, curr);
         if (runMode == VeritestingMode.VANILLASPF)
             return;
         else if (isEmptyRegionHeuristic && !isIfInstruction)
             return;
-        else if (! isEmptyRegionHeuristic && !isActiveLastRegion && ! isIfInstruction)
+        else if (!isEmptyRegionHeuristic && !isActiveLastRegion && !isIfInstruction)
             return;
         else if (spfCasesHeuristicsOn
                 && StaticBranchChoiceGenerator.heuristicsCountingMode
@@ -873,21 +873,22 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     }
 
     private void writeRegionDigest() {
-        if (printRegionDigest) {
-            try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream("../logs/regionDigest_" + regionDigestPrintName), "utf-8"))) {
-                writer.write(regionDigest.toString());
-            } catch (Exception e) {
-                System.out.println("problem writing regionDigest out.");
+        if (!performanceMode)
+            if (printRegionDigest) {
+                try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                        new FileOutputStream("../logs/regionDigest_" + regionDigestPrintName), "utf-8"))) {
+                    writer.write(regionDigest.toString());
+                } catch (Exception e) {
+                    System.out.println("problem writing regionDigest out.");
+                }
+                if (jitAnalysis) {
+                    System.out.println("printing methods attempted for jitAnalysis\n");
+                    System.out.println(JITAnalysis.getAttemptedMethods());
+                } else {
+                    System.out.println("printing methods attempted for Static Analysis\n");
+                    System.out.println(VeritestingMain.getAttemptedMethods());
+                }
             }
-            if (jitAnalysis) {
-                System.out.println("printing methods attempted for jitAnalysis\n");
-                System.out.println(JITAnalysis.getAttemptedMethods());
-            } else {
-                System.out.println("printing methods attempted for Static Analysis\n");
-                System.out.println(VeritestingMain.getAttemptedMethods());
-            }
-        }
     }
 
     private String getMetricsVector(long dynRunTime) {
