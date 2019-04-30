@@ -65,9 +65,8 @@ public class VeritestingMain {
         try {
             Map map = System.getenv();
             String appJar = System.getenv("TARGET_CLASSPATH_WALA");// + appJar;
-            /*AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
-                    jitAnalysis == true ? null : (new FileProvider()).getFile(exclusionsFile));*/
-            AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar, (new FileProvider()).getFile(exclusionsFile));
+            AnalysisScope scope = AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar,
+                    jitAnalysis == true ? null : (new FileProvider()).getFile(exclusionsFile));
 //                    (new FileProvider()).getFile(CallGraphTestUtil.REGRESSION_EXCLUSIONS));
             System.out.print("Constructing class hierarchy...");
             cha = ClassHierarchyFactory.make(scope);
