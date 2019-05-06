@@ -56,13 +56,11 @@ public class InOutManager {
     }
 
     private ArrayList<VarDecl> generateLustreDecl(InputOutput stateInput) {
-        return generateLustreDecl(stateOutput);
+        return stateInput.generateVarDecl();
     }
 
     public ArrayList<VarDecl> generateOutputDecl() {
-
-
-        return null;
+        return stateOutput.generateVarDecl();
     }
 
     /**

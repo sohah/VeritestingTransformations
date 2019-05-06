@@ -139,10 +139,10 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
         return null;
     }
 
-    public static ArrayList<Equation> execute(DynamicRegion dynamicRegion, InOutManager inOutManager) {
-        EquationExprVisitor equationExprVisitor = new EquationExprVisitor();
-        EquationVisitor equationVisitor = new EquationVisitor(equationExprVisitor, dynamicRegion, inOutManager);
-        dynamicRegion.dynStmt.accept(equationVisitor);
+    public static ArrayList<Equation> execute(DynamicRegion dynRegion, InOutManager inOutManager) {
+        EquationExprVisitor equationExprVisitor = new EquationExprVisitor(dynRegion);
+        EquationVisitor equationVisitor = new EquationVisitor(equationExprVisitor, dynRegion, inOutManager);
+        dynRegion.dynStmt.accept(equationVisitor);
         return equationVisitor.equationList;
     }
 }
