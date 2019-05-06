@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
+import ia_parser.Exp;
 import jkind.lustre.*;
 import jkind.lustre.Ast;
 import za.ac.sun.cs.green.expr.*;
@@ -38,12 +39,21 @@ public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
     @Override
     public Ast visit(Operation operation) {
         int operationArity = operation.getArity();
-        if(operationArity==1){
+        if (operationArity == 1) {
             Ast lusterOperand = eva.accept(operation.getOperand(0));
-            assert(lusterOperand instanceof Expr);
-            lusterOperand = new UnaryOp(operation.getOperator().toString());
-            return new UnaryExpr(, (Expr)lusterOperand);
+            assert (lusterOperand instanceof Expr);
+            return new UnaryExpr(UnaryOp.fromString(operation.getOperator().toString()), (Expr) lusterOperand);
+        } else if (operationArity == 2) {
+            Ast lusterOperand1 = eva.accept(operation.getOperand(0));
+            Ast lusterOperand2 = eva.accept(operation.getOperand(1));
+            assert (lusterOperand1 instanceof Expr) && (lusterOperand2 instanceof Expr);
+            return new BinaryExpr((Expr) lusterOperand1, BinaryOp.fromString(operation.getOperator().toString()), (Expr)
+                    lusterOperand2);
+        } else {
+            System.out.println("unsupported operator arity");
+            assert false;
         }
+
         return null;
     }
 
