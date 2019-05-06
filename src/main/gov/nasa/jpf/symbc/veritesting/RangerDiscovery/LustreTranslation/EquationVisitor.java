@@ -18,13 +18,13 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
     private final DynamicRegion dynamicRegion;
     private final InOutManager inOutManager;
 
-    protected final ExprVisitor<Expression> exprVisitor;
-    protected final ExprVisitorAdapter<Expression> eva;
+    protected final ExprVisitor<Ast> exprVisitor;
+    protected final ExprVisitorAdapter<Ast> eva;
     private ArrayList<Equation> equationList;
 
 
-    private EquationVisitor(ExprVisitor<Expression> exprVisitor, DynamicRegion dynamicRegion, InOutManager inOutManager) {
-        this.eva = new ExprVisitorAdapter<Expression>(exprVisitor);
+    private EquationVisitor(ExprVisitor<Ast> exprVisitor, DynamicRegion dynamicRegion, InOutManager inOutManager) {
+        this.eva = new ExprVisitorAdapter<Ast>(exprVisitor);
         this.exprVisitor = exprVisitor;
         this.dynamicRegion = dynamicRegion;
         this.inOutManager = inOutManager;
