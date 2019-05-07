@@ -10,11 +10,6 @@ public class Contract {
 
     public final InOutManager inOutManager = new InOutManager();
 
-    public static NamedType lusterBoolType = new NamedType("bool");
-    public static NamedType lusterIntType = new NamedType("int");
-    public static NamedType lusterFloatType = new NamedType("float");
-    public static NamedType lusterStringType = new NamedType("string");
-
     Contract(){
         inOutManager.discoverVars();
     }

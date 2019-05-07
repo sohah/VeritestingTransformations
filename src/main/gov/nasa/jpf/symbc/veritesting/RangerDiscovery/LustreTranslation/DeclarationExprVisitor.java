@@ -1,20 +1,15 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
-import jkind.lustre.Equation;
 import jkind.lustre.NamedType;
 import jkind.lustre.VarDecl;
 import za.ac.sun.cs.green.expr.*;
 
 import java.util.ArrayList;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract.lusterFloatType;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract.lusterIntType;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract.lusterStringType;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.stringToLusterType;
 
 public class DeclarationExprVisitor implements ExprVisitor {
@@ -34,10 +29,10 @@ public class DeclarationExprVisitor implements ExprVisitor {
 
     @Override
     public Object visit(IntVariable expr) {
-        if (inOutManager.isInOutVar(expr.toString(), lusterIntType)) { // if it is not input or output in it is a local var
+        if (inOutManager.isInOutVar(expr.toString(), NamedType.INT)) { // if it is not input or output in it is a local var
             // that
             // we care about adding
-            VarDecl lusterVar = new VarDecl(expr.toString(), lusterIntType);
+            VarDecl lusterVar = new VarDecl(expr.toString(), NamedType.INT);
             declarationList.add(lusterVar);
         }
         return null;
@@ -55,9 +50,9 @@ public class DeclarationExprVisitor implements ExprVisitor {
 
     @Override
     public Object visit(RealVariable expr) {
-        if (inOutManager.isInOutVar(expr.toString(), lusterFloatType)) { // if it is not input or output in it is a local var
+        if (inOutManager.isInOutVar(expr.toString(), NamedType.REAL)) { // if it is not input or output in it is a local var
             // that we care about adding
-            VarDecl lusterVar = new VarDecl(expr.toString(), lusterFloatType);
+            VarDecl lusterVar = new VarDecl(expr.toString(), NamedType.REAL);
             declarationList.add(lusterVar);
         }
         return null;
@@ -70,11 +65,13 @@ public class DeclarationExprVisitor implements ExprVisitor {
 
     @Override
     public Object visit(StringVariable expr) {
-        if (inOutManager.isInOutVar(expr.toString(), lusterStringType)) { // if it is not input or output in it is a local var
+    /*    if (inOutManager.isInOutVar(expr.toString(), lusterStringType)) { // if it is not input or output in it is a local var
             // that we care about adding
             VarDecl lusterVar = new VarDecl(expr.toString(), lusterStringType);
             declarationList.add(lusterVar);
-        }
+        }*/
+        System.out.println("un-supported var type");
+        assert false;
         return null;
     }
 

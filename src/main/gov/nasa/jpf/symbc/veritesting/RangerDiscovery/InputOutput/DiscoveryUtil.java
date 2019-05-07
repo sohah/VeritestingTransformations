@@ -6,21 +6,19 @@ import jkind.lustre.UnaryExpr;
 import jkind.lustre.UnaryOp;
 import za.ac.sun.cs.green.expr.Operation;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract.*;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract.lusterStringType;
 import static jkind.lustre.UnaryOp.NEGATIVE;
 import static jkind.lustre.UnaryOp.NOT;
 
 public class DiscoveryUtil {
     public static NamedType stringToLusterType(String typeName) {
         if (typeName.equals("int"))
-            return lusterIntType;
+            return NamedType.INT;
         else if (typeName.equals("float"))
-            return lusterFloatType;
+            return NamedType.REAL;
         else if (typeName.equals("bool"))
-            return lusterBoolType;
-        else if (typeName.equals("string"))
-            return lusterStringType;
+            return NamedType.BOOL;
+        /*else if (typeName.equals("string"))
+            return lusterStringType;*/
         else {
             System.out.println("unknown type!");
             assert false;

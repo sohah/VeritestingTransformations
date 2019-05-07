@@ -5,14 +5,9 @@ import gov.nasa.jpf.symbc.veritesting.ast.def.IfThenElseExpr;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
-import ia_parser.Exp;
 import jkind.lustre.*;
 import jkind.lustre.Ast;
 import za.ac.sun.cs.green.expr.*;
-
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract.lusterFloatType;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract.lusterIntType;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract.lusterStringType;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.stringToLusterType;
 
 
@@ -33,7 +28,7 @@ public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
 
     @Override
     public Ast visit(IntVariable expr) {
-        return new VarDecl(expr.toString(), lusterIntType);
+        return new VarDecl(expr.toString(), NamedType.INT);
     }
 
     @Override
@@ -66,7 +61,7 @@ public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
 
     @Override
     public Ast visit(RealVariable expr) {
-        return new VarDecl(expr.toString(), lusterFloatType);
+        return new VarDecl(expr.toString(), NamedType.REAL);
 
     }
 
@@ -79,7 +74,10 @@ public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
 
     @Override
     public Ast visit(StringVariable expr) {
-        return new VarDecl(expr.toString(), lusterStringType);
+        System.out.println("unsupported type");
+        assert false;
+        //return new VarDecl(expr.toString(), lusterStringType);
+        return null;
     }
 
     @Override

@@ -577,6 +577,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         LinearizationTransformation linearTrans = new LinearizationTransformation();
         dynRegion = linearTrans.execute(dynRegion);
 
+        /*--------------- Discover Lustre Translation ---------------*/
+        if(contractDiscoveryOn)
+            DiscoverContract.discoverLusterContract(dynRegion);
+
         /*--------------- TO GREEN TRANSFORMATION ---------------*/
         dynRegion = AstToGreenVisitor.execute(dynRegion);
 
