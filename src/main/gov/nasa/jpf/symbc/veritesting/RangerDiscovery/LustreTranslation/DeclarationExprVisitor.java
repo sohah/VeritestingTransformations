@@ -88,6 +88,8 @@ public class DeclarationExprVisitor implements ExprVisitor {
     @Override
     public Object visit(WalaVarExpr expr) {
         Object rangerType = dynRegion.varTypeTable.lookupByName(expr.toString());
+        if(rangerType.equals("boolean")) //converting boolean to spf presentation as int
+            rangerType = "int";
         assert (rangerType instanceof String);
         NamedType lusterType = stringToLusterType((String) rangerType);
         if (!inOutManager.isInOutVar(expr.toString(), lusterType)) { // if it is not input or output in it is a local
@@ -102,6 +104,8 @@ public class DeclarationExprVisitor implements ExprVisitor {
     @Override
     public Object visit(FieldRefVarExpr expr) {
         String rangerType = dynRegion.fieldRefTypeTable.lookupByName(expr.toString());
+        if(rangerType.equals("boolean")) //converting boolean to spf presentation as int
+            rangerType = "int";
         NamedType lusterType = stringToLusterType(rangerType);
         if (!inOutManager.isInOutVar(expr.toString(), lusterType)) { // if it is not input or output in it is a local
             // var that
