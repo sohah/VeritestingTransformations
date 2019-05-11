@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.stringToLusterType;
 
 public class DeclarationExprVisitor implements ExprVisitor {
-    private final DynamicRegion dynamicRegion;
+    private final DynamicRegion dynRegion;
     private final InOutManager inOutManager;
-    public ArrayList<VarDecl> declarationList;
+    public ArrayList<VarDecl> declarationList = new ArrayList<>();
 
-    public DeclarationExprVisitor(DynamicRegion dynamicRegion, InOutManager inOutManager) {
-        this.dynamicRegion = dynamicRegion;
+    public DeclarationExprVisitor(DynamicRegion dynRegion, InOutManager inOutManager) {
+        this.dynRegion = dynRegion;
         this.inOutManager = inOutManager;
     }
 
@@ -87,7 +87,7 @@ public class DeclarationExprVisitor implements ExprVisitor {
 
     @Override
     public Object visit(WalaVarExpr expr) {
-        Object rangerType = dynamicRegion.varTypeTable.lookupByName(expr.toString());
+        Object rangerType = dynRegion.varTypeTable.lookupByName(expr.toString());
         assert (rangerType instanceof String);
         NamedType lusterType = stringToLusterType((String) rangerType);
         if (!inOutManager.isInOutVar(expr.toString(), lusterType)) { // if it is not input or output in it is a local
@@ -101,7 +101,7 @@ public class DeclarationExprVisitor implements ExprVisitor {
 
     @Override
     public Object visit(FieldRefVarExpr expr) {
-        String rangerType = dynamicRegion.fieldRefTypeTable.lookupByName(expr.toString());
+        String rangerType = dynRegion.fieldRefTypeTable.lookupByName(expr.toString());
         NamedType lusterType = stringToLusterType(rangerType);
         if (!inOutManager.isInOutVar(expr.toString(), lusterType)) { // if it is not input or output in it is a local
             // var that

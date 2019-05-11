@@ -15,10 +15,10 @@ public class DynamicTable<V> extends Table<Variable, V> {
     }
 
 
-//    public DynamicTable(String tableName, String label1, String label2, DynamicTable slotParamTable, ArrayList<V> values) {
+    //    public DynamicTable(String tableName, String label1, String label2, DynamicTable slotParamTable, ArrayList<V> values) {
     public DynamicTable(String tableName, String label1, String label2, ArrayList<Variable> keys, ArrayList<V> values) {
         super(tableName, label1, label2);
-        for(int i= 0; i < values.size(); i++){
+        for (int i = 0; i < values.size(); i++) {
             this.add(keys.get(i), values.get(i));
         }
     }
@@ -31,7 +31,7 @@ public class DynamicTable<V> extends Table<Variable, V> {
         Collections.sort(keys);
 //        Collections.reverse(keys);
         Iterator itr = keys.iterator();
-        while(itr.hasNext()){
+        while (itr.hasNext()) {
             Integer oldWalaId = (Integer) itr.next();
             WalaVarExpr newKey = new WalaVarExpr(oldWalaId);
             newKey = newKey.makeUnique(uniqueNum);
@@ -52,6 +52,7 @@ public class DynamicTable<V> extends Table<Variable, V> {
 
     /**
      * Appends a postfix to each key in the table.
+     *
      * @param unique A unique postfix.
      */
     public void makeClonableVarUniqueKey(int unique) throws CloneNotSupportedException, StaticRegionException {
@@ -59,12 +60,12 @@ public class DynamicTable<V> extends Table<Variable, V> {
         Collections.sort(keys);
         Collections.reverse(keys);
         Iterator itr = keys.iterator();
-        while(itr.hasNext()){
+        while (itr.hasNext()) {
             Variable oldKey = (Variable) itr.next();
-            assert(oldKey instanceof CloneableVariable);
-            Variable newKey = ((CloneableVariable)oldKey).clone();
-            assert(newKey instanceof CloneableVariable);
-            newKey = ((CloneableVariable)newKey).makeUnique(unique);
+            assert (oldKey instanceof CloneableVariable);
+            Variable newKey = ((CloneableVariable) oldKey).clone();
+            assert (newKey instanceof CloneableVariable);
+            newKey = ((CloneableVariable) newKey).makeUnique(unique);
             table.put(newKey, table.get(oldKey));
             table.remove(oldKey);
         }
@@ -90,9 +91,10 @@ public class DynamicTable<V> extends Table<Variable, V> {
 
     public V lookupByName(String name) {
         ArrayList<Variable> keys = getKeys();
-        for(Variable var : keys){
-            if(var.getName().equals(name))
-                return lookup(var);
+        for (Object var : keys) {
+            if (var instanceof Variable)
+                if (((Variable)var).toString().equals(name))
+                    return lookup((Variable) var);
         }
 
         return null;

@@ -15,7 +15,7 @@ public class DiscoveryUtil {
             return NamedType.INT;
         else if (typeName.equals("float"))
             return NamedType.REAL;
-        else if (typeName.equals("bool"))
+        else if (typeName.equals("boolean"))
             return NamedType.BOOL;
         /*else if (typeName.equals("string"))
             return lusterStringType;*/
@@ -24,6 +24,23 @@ public class DiscoveryUtil {
             assert false;
         }
         return null;
+    }
+
+    public static BinaryOp translateRangerOptoLusterOp(String s) {
+        BinaryOp op;
+
+        if (s.equals("!="))
+            op = BinaryOp.fromString("<>");
+        else if (s.equals("=="))
+            op = BinaryOp.fromString("=");
+        else if (s.equals("&&"))
+            op = BinaryOp.fromString("and");
+        else if (s.equals("||"))
+            op = BinaryOp.fromString("or");
+        else
+            op = BinaryOp.fromString(s);
+
+        return op;
     }
 
 

@@ -11,9 +11,10 @@ public class ToLutre {
     public static Node generateRnode(DynamicRegion dynamicRegion, Contract contract){
         InOutManager inOutManager = contract.inOutManager;
         ArrayList<VarDecl> localDeclList = DeclarationTranslator.execute(dynamicRegion, inOutManager);
-        ArrayList<Equation> equationList = EquationVisitor.execute(dynamicRegion, inOutManager);
+        ArrayList<Equation> equationList = EquationVisitor.execute(dynamicRegion);
         ArrayList<VarDecl> inputDeclList = inOutManager.generateInputDecl();
         ArrayList<VarDecl> ouputDeclList = inOutManager.generateOutputDecl();
+        inputDeclList.addAll(ouputDeclList);
         return new Node("R_node", inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
                 new ArrayList<>(), new ArrayList<>(), null, null);
     }

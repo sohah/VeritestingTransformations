@@ -53,7 +53,7 @@ public class FieldRefTypeTable extends CloneableVarTable<String> {
     public String lookupByName(String name) {
         Set<CloneableVariable> keys = table.keySet();
         for(Variable var : keys){
-            if(var.getName().equals(name))
+            if(var.toString().equals(name))
                 return table.get(var);
         }
 

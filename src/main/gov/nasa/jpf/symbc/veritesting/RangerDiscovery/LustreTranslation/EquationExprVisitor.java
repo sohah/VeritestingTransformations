@@ -8,7 +8,9 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import jkind.lustre.*;
 import jkind.lustre.Ast;
 import za.ac.sun.cs.green.expr.*;
+
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.stringToLusterType;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.translateRangerOptoLusterOp;
 
 
 public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
@@ -28,7 +30,7 @@ public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
 
     @Override
     public Ast visit(IntVariable expr) {
-        return new VarDecl(expr.toString(), NamedType.INT);
+        return new IdExpr(expr.toString());
     }
 
     @Override
@@ -41,8 +43,10 @@ public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
         } else if (operationArity == 2) {
             Ast lusterOperand1 = eva.accept(operation.getOperand(0));
             Ast lusterOperand2 = eva.accept(operation.getOperand(1));
-            assert (lusterOperand1 instanceof Expr) && (lusterOperand2 instanceof Expr);
-            return new BinaryExpr((Expr) lusterOperand1, BinaryOp.fromString(operation.getOperator().toString()), (Expr)
+            BinaryOp op;
+            op = translateRangerOptoLusterOp(operation.getOperator().toString());
+
+            return new BinaryExpr((Expr) lusterOperand1, op, (Expr)
                     lusterOperand2);
         } else {
             System.out.println("unsupported operator arity");
@@ -61,7 +65,7 @@ public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
 
     @Override
     public Ast visit(RealVariable expr) {
-        return new VarDecl(expr.toString(), NamedType.REAL);
+        return new IdExpr(expr.toString());
 
     }
 
@@ -107,14 +111,14 @@ public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
     public Ast visit(WalaVarExpr expr) {
         String type = (String) dynRegion.varTypeTable.lookupByName(expr.toString());
         assert (type != null);
-        return new VarDecl(expr.toString(), stringToLusterType(type));
+        return new IdExpr(expr.toString());
     }
 
     @Override
     public Ast visit(FieldRefVarExpr expr) {
         String type = dynRegion.fieldRefTypeTable.lookup(expr);
         assert (type != null);
-        return new VarDecl(expr.toString(), stringToLusterType(type));
+        return new IdExpr(expr.toString());
     }
 
     @Override
