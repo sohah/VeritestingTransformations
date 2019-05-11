@@ -141,8 +141,6 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
         EquationExprVisitor equationExprVisitor = new EquationExprVisitor(dynRegion);
         EquationVisitor equationVisitor = new EquationVisitor(equationExprVisitor);
         dynRegion.dynStmt.accept(equationVisitor);
-        Equation rLusterOutput = new Equation(new IdExpr("ok"), new BoolExpr(true));
-        equationVisitor.equationList.add(rLusterOutput);
         return equationVisitor.equationList;
     }
 }

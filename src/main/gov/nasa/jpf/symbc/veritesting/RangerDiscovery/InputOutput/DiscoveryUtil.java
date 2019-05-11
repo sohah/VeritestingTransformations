@@ -1,10 +1,12 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import jkind.lustre.BinaryOp;
 import jkind.lustre.NamedType;
-import jkind.lustre.UnaryExpr;
 import jkind.lustre.UnaryOp;
 import za.ac.sun.cs.green.expr.Operation;
+
+import java.io.*;
 
 import static jkind.lustre.UnaryOp.NEGATIVE;
 import static jkind.lustre.UnaryOp.NOT;
@@ -88,5 +90,27 @@ public class DiscoveryUtil {
             assert false;
         }
         return null;
+    }
+
+
+    public static boolean writeToFile(String fileName, String content){
+        String folderName;
+        if(StatisticManager.veritestingRunning)
+            folderName = "../SolverQueriesVeritesting";
+        else
+            folderName = "../SolverQueriesSPF";
+        fileName = folderName + "/" + fileName;
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(fileName), "utf-8"))) {
+            writer.write(content);
+        }
+        catch (FileNotFoundException e){
+            System.out.println("unable to write to file!");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("unable to write to file!");
+            e.printStackTrace();
+        }
+        return true;
     }
 }

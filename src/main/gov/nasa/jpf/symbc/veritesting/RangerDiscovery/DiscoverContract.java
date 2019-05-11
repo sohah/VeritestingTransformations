@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.writeToFile;
+
 public class DiscoverContract {
     /**
      * name of the method we want to extract its contract.
@@ -37,8 +39,9 @@ public class DiscoverContract {
             // interest.
             Contract contract = new Contract();
             Node rNode = ToLutre.generateRnode(dynamicRegion, contract);
-            System.out.println("^--^ printing lustre translation ^--^");
-            System.out.println(rNode);
+            writeToFile(contractMethodName+".lus", rNode.toString());
+            //System.out.println("^--^ printing lustre translation ^--^");
+            //System.out.println(rNode);
         /*Node rWrapper = ToLutre.generateRwrapper();
         ArrayList<Node> nodeList = new ArrayList<>();
         nodeList.add(rNode);

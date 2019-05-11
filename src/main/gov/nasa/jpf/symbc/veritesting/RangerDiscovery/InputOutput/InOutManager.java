@@ -14,18 +14,18 @@ public class InOutManager {
     InputOutput freeInput = new InputOutput();
     InputOutput stateInput = new InputOutput();
     InputOutput stateOutput = new InputOutput();
-    InputOutput rLusterOutput = new InputOutput();
+    InputOutput methodOutput = new InputOutput();
 
     public void discoverVars(){
         discoverFreeInput();
         discoverStateInput();
         discoverStateOutput();
-        discoverOutput();
-        discoverrLusterOutput();
+        discoverMethodOutput();
     }
 
-    private void discoverrLusterOutput() {
-        rLusterOutput.add("ok", NamedType.BOOL);
+    //entered by hand for now
+    private void discoverMethodOutput() {
+        methodOutput.add("r347.ignition_r.1.7.4", NamedType.INT);
     }
 
     //entered by hand for now
@@ -45,14 +45,8 @@ public class InOutManager {
     private void discoverStateOutput(){
         stateOutput.add("r347.start_btn.1.15.4", NamedType.INT);
         stateOutput.add("r347.launch_btn.1.17.4", NamedType.INT);
-        stateOutput.add("r347.ignition_r.1.7.4", NamedType.INT);
         stateOutput.add("r347.reset_btn.1.9.4", NamedType.INT);
 
-    }
-
-    //entered by hand for now
-    private void discoverOutput(){
-        stateOutput.add("w12$1", NamedType.INT);
     }
 
     public ArrayList<VarDecl> generateInputDecl() {
@@ -75,7 +69,7 @@ public class InOutManager {
      * @return
      */
     public boolean isInOutVar(String s, NamedType type) {
-        return isFreeInVar(s, type) || isStateInVar(s, type) || isStateOutVar(s, type);
+        return isFreeInVar(s, type) || isStateInVar(s, type) || isStateOutVar(s, type) || isMethodOutVar(s, type);
     }
 
 
@@ -91,7 +85,11 @@ public class InOutManager {
         return stateOutput.contains(varName, type);
     }
 
-    public ArrayList<VarDecl> generaterLusterOutDeclList() {
-        return rLusterOutput.generateVarDecl();
+    public boolean isMethodOutVar(String varName, NamedType type){
+        return methodOutput.contains(varName, type);
+    }
+
+    public ArrayList<VarDecl> generaterMethodOutDeclList() {
+        return methodOutput.generateVarDecl();
     }
 }
