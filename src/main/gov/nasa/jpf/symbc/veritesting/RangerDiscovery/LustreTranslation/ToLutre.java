@@ -14,9 +14,10 @@ public class ToLutre {
         ArrayList<Equation> equationList = EquationVisitor.execute(dynamicRegion);
         ArrayList<VarDecl> inputDeclList = inOutManager.generateInputDecl();
         ArrayList<VarDecl> ouputDeclList = inOutManager.generateOutputDecl();
+        ArrayList<VarDecl> rLusterOutDeclList = inOutManager.generaterLusterOutDeclList();
         inputDeclList.addAll(ouputDeclList);
-        return new Node("R_node", inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
-                new ArrayList<>(), new ArrayList<>(), null, null);
+        return new Node("R_node", inputDeclList, rLusterOutDeclList, localDeclList, equationList, new ArrayList<>(),
+                new ArrayList<>(), null, null, null);
     }
 
     //TODO

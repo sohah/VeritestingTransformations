@@ -14,12 +14,18 @@ public class InOutManager {
     InputOutput freeInput = new InputOutput();
     InputOutput stateInput = new InputOutput();
     InputOutput stateOutput = new InputOutput();
+    InputOutput rLusterOutput = new InputOutput();
 
     public void discoverVars(){
         discoverFreeInput();
         discoverStateInput();
         discoverStateOutput();
         discoverOutput();
+        discoverrLusterOutput();
+    }
+
+    private void discoverrLusterOutput() {
+        rLusterOutput.add("ok", NamedType.BOOL);
     }
 
     //entered by hand for now
@@ -85,4 +91,7 @@ public class InOutManager {
         return stateOutput.contains(varName, type);
     }
 
+    public ArrayList<VarDecl> generaterLusterOutDeclList() {
+        return rLusterOutput.generateVarDecl();
+    }
 }

@@ -7,13 +7,12 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.AstVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprMapVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
+import jkind.lustre.*;
 import jkind.lustre.Ast;
-import jkind.lustre.Equation;
-import jkind.lustre.Expr;
-import jkind.lustre.IdExpr;
 import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
 
@@ -29,9 +28,9 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
 
     @Override
     public Ast visit(AssignmentStmt a) {
-        Ast lhs = eva.accept(a.rhs);
-        IdExpr rhs = new IdExpr(lhs.toString());
-        equationList.add(new Equation(rhs, (Expr) lhs));
+        Ast rhs = eva.accept(a.rhs);
+        IdExpr lhs = new IdExpr(a.lhs.toString());
+        equationList.add(new Equation(lhs, (Expr) rhs));
         return null;
     }
 
@@ -142,6 +141,8 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
         EquationExprVisitor equationExprVisitor = new EquationExprVisitor(dynRegion);
         EquationVisitor equationVisitor = new EquationVisitor(equationExprVisitor);
         dynRegion.dynStmt.accept(equationVisitor);
+        Equation rLusterOutput = new Equation(new IdExpr("ok"), new BoolExpr(true));
+        equationVisitor.equationList.add(rLusterOutput);
         return equationVisitor.equationList;
     }
 }
