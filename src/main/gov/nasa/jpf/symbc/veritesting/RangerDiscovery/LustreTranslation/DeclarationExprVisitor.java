@@ -29,7 +29,8 @@ public class DeclarationExprVisitor implements ExprVisitor {
 
     @Override
     public Object visit(IntVariable expr) {
-        if (inOutManager.isInOutVar(expr.toString(), NamedType.INT)) { // if it is not input or output in it is a local var
+        if (!inOutManager.isInOutVar(expr.toString(), NamedType.INT)) { // if it is not input or output in it is a
+            // local var
             // that
             // we care about adding
             VarDecl lusterVar = new VarDecl(expr.toString(), NamedType.INT);
@@ -50,7 +51,8 @@ public class DeclarationExprVisitor implements ExprVisitor {
 
     @Override
     public Object visit(RealVariable expr) {
-        if (inOutManager.isInOutVar(expr.toString(), NamedType.REAL)) { // if it is not input or output in it is a local var
+        if (!inOutManager.isInOutVar(expr.toString(), NamedType.REAL)) { // if it is not input or output in it is a
+            // local var
             // that we care about adding
             VarDecl lusterVar = new VarDecl(expr.toString(), NamedType.REAL);
             declarationList.add(lusterVar);
