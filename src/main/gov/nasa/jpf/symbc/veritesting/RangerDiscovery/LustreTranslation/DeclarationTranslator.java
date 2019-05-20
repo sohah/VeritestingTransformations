@@ -12,7 +12,7 @@ public class DeclarationTranslator {
 
     public static ArrayList<VarDecl> execute(DynamicRegion dynamicRegion, InOutManager inOutManager){
         DeclarationExprVisitor declarationExprVisitor = new DeclarationExprVisitor(dynamicRegion, inOutManager);
-        AstMapVisitor astMapVisitor = new AstMapVisitor(declarationExprVisitor);
+        AstMapVisitor astMapVisitor = new DeclarationStmtVisitor(declarationExprVisitor);
         dynamicRegion.dynStmt.accept(astMapVisitor);
         return declarationExprVisitor.declarationList;
     }

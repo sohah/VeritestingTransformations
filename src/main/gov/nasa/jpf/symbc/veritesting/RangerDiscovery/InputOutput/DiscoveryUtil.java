@@ -50,7 +50,7 @@ public class DiscoveryUtil {
         UnaryOp op = null;
 
         if (s.equals("!"))
-            op = UnaryOp.fromString("<>");
+            op = UnaryOp.fromString("not");
 
         return op;
     }
