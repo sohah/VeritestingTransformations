@@ -39,7 +39,7 @@ public class InputOutput {
             NamedType type = varList.get(i).getSecond();
             if (type == NamedType.BOOL) { //type conversion needed
                 String newVar = var + "_bool";
-                varList.set(i, new Pair(var, NamedType.BOOL));
+                varList.set(i, new Pair(newVar, NamedType.BOOL));
                 IfThenElseExpr ifThenElseExpr = new IfThenElseExpr(new IdExpr(newVar), new IntExpr(1), new IntExpr(0));
                 Equation conversionEq = new Equation(new IdExpr(newVar), ifThenElseExpr);
                 conversionEqList.add(conversionEq);
