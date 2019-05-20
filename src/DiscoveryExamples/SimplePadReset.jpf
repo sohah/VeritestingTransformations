@@ -29,3 +29,6 @@ veritestingMode = 3
 symbolic.lazy = true
 showLocalNames = true
 contractMethodName = runPad(I)Z
+
+simplify = false
+contractDiscoveryOn = true

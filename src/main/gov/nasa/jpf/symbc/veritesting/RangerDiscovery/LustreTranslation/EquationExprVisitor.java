@@ -9,8 +9,7 @@ import jkind.lustre.*;
 import jkind.lustre.Ast;
 import za.ac.sun.cs.green.expr.*;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.stringToLusterType;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.translateRangerOptoLusterOp;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.*;
 
 
 public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
@@ -39,12 +38,14 @@ public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
         if (operationArity == 1) {
             Ast lusterOperand = eva.accept(operation.getOperand(0));
             assert (lusterOperand instanceof Expr);
-            return new UnaryExpr(UnaryOp.fromString(operation.getOperator().toString()), (Expr) lusterOperand);
+            UnaryOp op;
+            op =  rangerUnaryyOptoLusterOp(operation.getOperator().toString());
+            return new UnaryExpr(op, (Expr) lusterOperand);
         } else if (operationArity == 2) {
             Ast lusterOperand1 = eva.accept(operation.getOperand(0));
             Ast lusterOperand2 = eva.accept(operation.getOperand(1));
             BinaryOp op;
-            op = translateRangerOptoLusterOp(operation.getOperator().toString());
+            op =  rangerBinaryOptoLusterOp(operation.getOperator().toString());
 
             return new BinaryExpr((Expr) lusterOperand1, op, (Expr)
                     lusterOperand2);

@@ -25,7 +25,7 @@ public class InOutManager {
 
     //entered by hand for now
     private void discoverMethodOutput() {
-        methodOutput.add("r351.ignition_r.1.7.4", NamedType.INT);
+        methodOutput.add("r347.ignition_r.1.7.4", NamedType.INT);
     }
 
     //entered by hand for now
@@ -43,9 +43,9 @@ public class InOutManager {
 
     //entered by hand for now - order is important, needs to match in order of the input
     private void discoverStateOutput(){
-        stateOutput.add("r351.start_btn.1.15.4", NamedType.INT);
-        stateOutput.add("r351.launch_btn.1.17.4", NamedType.INT);
-        stateOutput.add("r351.reset_btn.1.9.4", NamedType.INT);
+        stateOutput.add("r347.start_btn.1.15.4", NamedType.INT);
+        stateOutput.add("r347.launch_btn.1.17.4", NamedType.INT);
+        stateOutput.add("r347.reset_btn.1.9.4", NamedType.INT);
 
     }
 

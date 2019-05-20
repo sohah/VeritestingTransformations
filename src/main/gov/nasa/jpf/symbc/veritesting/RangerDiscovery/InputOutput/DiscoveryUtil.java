@@ -28,7 +28,7 @@ public class DiscoveryUtil {
         return null;
     }
 
-    public static BinaryOp translateRangerOptoLusterOp(String s) {
+    public static BinaryOp rangerBinaryOptoLusterOp(String s) {
         BinaryOp op;
 
         if (s.equals("!="))
@@ -41,6 +41,16 @@ public class DiscoveryUtil {
             op = BinaryOp.fromString("or");
         else
             op = BinaryOp.fromString(s);
+
+        return op;
+    }
+
+
+    public static UnaryOp rangerUnaryyOptoLusterOp(String s) {
+        UnaryOp op = null;
+
+        if (s.equals("!"))
+            op = UnaryOp.fromString("<>");
 
         return op;
     }
