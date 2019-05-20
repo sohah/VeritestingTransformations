@@ -17,8 +17,8 @@ public class ToLutre {
         ArrayList<VarDecl> inputDeclList = inOutManager.generateInputDecl();
         ArrayList<VarDecl> ouputDeclList = inOutManager.generateOutputDecl();
         ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
-        inputDeclList.addAll(ouputDeclList);
-        return new Node("R_node", inputDeclList, methodOutDeclList, localDeclList, equationList, new ArrayList<>(),
+        ouputDeclList.addAll(methodOutDeclList);
+        return new Node("R_node", inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
                 new ArrayList<>(), null, null, null);
     }
 
@@ -37,4 +37,32 @@ public class ToLutre {
         assert false;
         return null;
     }
+
+    /**
+     * used to remove "." and "$" from the text generated to make it type compatible.
+     * @param node
+     * @return
+     */
+    public static String lustreFriendlyString(Node node){
+        String nodeStr = node.toString();
+        nodeStr = nodeStr.replaceAll("\\.", "_");
+        nodeStr = nodeStr.replaceAll("\\$", "_");
+        return nodeStr;
+    }
+/*
+
+    */
+/**
+     * This method attaches a dummy true property to "node"
+     * @param node
+     * @return
+     *//*
+
+    public static Node addDummyTrueProp(Node node){
+        node.locals.add(new VarDecl("dummyProp", NamedType.BOOL));
+        node.equations.add(new Equation(new IdExpr("dummyProp"), new BoolExpr(true)));
+        node.properties.add("dummyProp");
+        return node;
+    }
+*/
 }
