@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.lustre.Node;
+import jkind.lustre.Program;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,6 +22,9 @@ public class DiscoverContract {
 
     public static LinkedHashSet<Pair> z3QuerySet = new LinkedHashSet();
 
+    //TODO: These needs to be configured using the .jpf file.
+    static String folderName = "../../../ContractDiscoveryProjects/RunPadModel/Contracts/matchingContracts/CEFLP/Pad/";
+    static String tFileName = folderName + "PadModelReset.lus";
 
 /***** begin of unused vars***/
     /**
@@ -41,15 +45,20 @@ public class DiscoverContract {
             Contract contract = new Contract();
             Node rNode = ToLutre.generateRnode(dynamicRegion, contract);
             Node rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
-            String printString = ToLutre.lustreFriendlyString(rNode);
-            printString = printString.concat("\n" + ToLutre.lustreFriendlyString(rWrapper));
+            Program tProgram = ToLutre.generateTnode(tFileName);
+
+            tProgram.nodes.add(rNode);
+            tProgram.nodes.add(rWrapper);
+            String printString = ToLutre.lustreFriendlyString(tProgram);
+
+            //String printString = ToLutre.lustreFriendlyString(rNode);
+            //printString = printString.concat("\n" + ToLutre.lustreFriendlyString(rWrapper));
 
             writeToFile(contractMethodName + ".lus", printString);
 
             //System.out.println("^--^ printing lustre translation ^--^");
             //System.out.println(rNode);
-        /*Node rWrapper = ToLutre.generateRwrapper();
-        ArrayList<Node> nodeList = new ArrayList<>();
+        /*ArrayList<Node> nodeList = new ArrayList<>();
         nodeList.add(rNode);
         nodeList.add(rWrapper);
         return nodeList;*/

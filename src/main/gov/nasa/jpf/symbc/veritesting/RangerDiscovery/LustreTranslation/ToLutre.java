@@ -6,13 +6,18 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.lustre.*;
+import jkind.lustre.parsing.LustreParseUtil;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.varDeclToIdExpr;
 
 public class ToLutre {
+
+
     public static Node generateRnode(DynamicRegion dynamicRegion, Contract contract) {
         InOutManager inOutManager = contract.inOutManager;
         ArrayList<VarDecl> localDeclList = DeclarationTranslator.execute(dynamicRegion, inOutManager);
@@ -76,18 +81,32 @@ public class ToLutre {
         return initPreExprList;
     }
 
+
+    public static Program generateTnode(String tFileName){
+        String programStr = null;
+        try {
+            programStr = new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8");
+
+        } catch (IOException e) {
+            System.out.println("Problem reading file. " + e.getMessage());
+        }
+
+        Program program = LustreParseUtil.program(programStr);
+        return program;
+    }
     /**
      * used to remove "." and "$" from the text generated to make it type compatible.
      *
      * @param node
      * @return
      */
-    public static String lustreFriendlyString(Node node) {
+    public static String lustreFriendlyString(Object node) {
         String nodeStr = node.toString();
         nodeStr = nodeStr.replaceAll("\\.", "_");
         nodeStr = nodeStr.replaceAll("\\$", "_");
         return nodeStr;
     }
+
 /*
 
     */
