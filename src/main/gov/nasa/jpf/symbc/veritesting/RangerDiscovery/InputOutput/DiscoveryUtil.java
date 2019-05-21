@@ -1,12 +1,11 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
-import jkind.lustre.BinaryOp;
-import jkind.lustre.NamedType;
-import jkind.lustre.UnaryOp;
+import jkind.lustre.*;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.io.*;
+import java.util.ArrayList;
 
 import static jkind.lustre.UnaryOp.NEGATIVE;
 import static jkind.lustre.UnaryOp.NOT;
@@ -100,6 +99,20 @@ public class DiscoveryUtil {
             assert false;
         }
         return null;
+    }
+
+    public static ArrayList<IdExpr> varDeclToIdExpr(ArrayList<VarDecl> varDeclList){
+        ArrayList<IdExpr> idExprList = new ArrayList<>();
+
+        for(int i=0; i< varDeclList.size() ; i++){
+            idExprList.add(new IdExpr(varDeclList.get(i).id));
+        }
+
+        return idExprList;
+    }
+
+    public static IdExpr varDeclToIdExpr(VarDecl varDecl){
+        return new IdExpr(varDecl.id);
     }
 
 

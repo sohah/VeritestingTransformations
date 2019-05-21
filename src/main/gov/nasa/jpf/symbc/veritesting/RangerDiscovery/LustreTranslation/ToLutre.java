@@ -1,14 +1,18 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.lustre.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
+
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.varDeclToIdExpr;
 
 public class ToLutre {
-    public static Node generateRnode(DynamicRegion dynamicRegion, Contract contract){
+    public static Node generateRnode(DynamicRegion dynamicRegion, Contract contract) {
         InOutManager inOutManager = contract.inOutManager;
         ArrayList<VarDecl> localDeclList = DeclarationTranslator.execute(dynamicRegion, inOutManager);
         localDeclList.add(addSymVar());
@@ -28,24 +32,56 @@ public class ToLutre {
     private static Equation addSymVarEquation() {
         return new Equation(new IdExpr("symVar"), new IntExpr(1));
     }
+
     //adding symVar declaration, this can be taken out if we do not need symVar wrapper
     private static VarDecl addSymVar() {
         return new VarDecl("symVar", NamedType.INT);
     }
 
     //TODO
-    public static Node generateRwrapper(){
-        System.out.println("not implemented yet!");
-        assert false;
-        return null;
+    public static Node generateRwrapper(InOutManager inOutManager) {
+        ArrayList<VarDecl> freeDeclList = inOutManager.generateFreeInputDecl();
+        ArrayList<VarDecl> stateInDeclList = inOutManager.generateStateInputDecl();
+        ArrayList<VarDecl> stateOutDeclList = inOutManager.generateOutputDecl();
+        ArrayList<VarDecl> methodDeclList = inOutManager.generaterMethodOutDeclList();
+
+        //wrapperLocals are defined as stateInput and stateOutput
+        ArrayList<VarDecl> wrapperLocalDeclList = new ArrayList<>(stateInDeclList);
+        wrapperLocalDeclList.addAll(stateOutDeclList);
+        wrapperLocalDeclList.addAll(methodDeclList);
+
+        ArrayList<Expr> actualParameters = new ArrayList<>();
+        actualParameters.addAll(varDeclToIdExpr(freeDeclList));
+        actualParameters.addAll(initPreTerm(wrapperLocalDeclList));
+
+        NodeCallExpr r_nodeCall = new NodeCallExpr("R_node", actualParameters);
+
+        Equation wrapperEq = new Equation(varDeclToIdExpr(wrapperLocalDeclList), r_nodeCall);
+
+        ArrayList<Equation> wrapperEqList = new ArrayList<Equation>();
+        wrapperEqList.add(wrapperEq);
+
+        return new Node("r_wrapper", freeDeclList, methodDeclList, wrapperLocalDeclList, wrapperEqList
+                , new ArrayList<>(), new ArrayList<>(), null, null, null);
+    }
+
+    private static ArrayList<Expr> initPreTerm(ArrayList<VarDecl> wrapperLocalDeclList) {
+        ArrayList<Expr> initPreExprList = new ArrayList<>();
+
+        for (int i = 0; i < wrapperLocalDeclList.size(); i++) {
+            initPreExprList.add(new BinaryExpr(new BoolExpr(false), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
+                    varDeclToIdExpr(wrapperLocalDeclList.get(i)))));
+        }
+        return initPreExprList;
     }
 
     /**
      * used to remove "." and "$" from the text generated to make it type compatible.
+     *
      * @param node
      * @return
      */
-    public static String lustreFriendlyString(Node node){
+    public static String lustreFriendlyString(Node node) {
         String nodeStr = node.toString();
         nodeStr = nodeStr.replaceAll("\\.", "_");
         nodeStr = nodeStr.replaceAll("\\$", "_");
@@ -55,10 +91,10 @@ public class ToLutre {
 
     */
 /**
-     * This method attaches a dummy true property to "node"
-     * @param node
-     * @return
-     *//*
+ * This method attaches a dummy true property to "node"
+ * @param node
+ * @return
+ *//*
 
     public static Node addDummyTrueProp(Node node){
         node.locals.add(new VarDecl("dummyProp", NamedType.BOOL));

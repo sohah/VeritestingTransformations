@@ -56,8 +56,9 @@ public class InOutManager {
     private void discoverStateInput() {
         stateInput.add("start_btn", NamedType.BOOL);
         stateInput.add("launch_btn", NamedType.BOOL);
-        stateInput.add("ignition", NamedType.BOOL);
         stateInput.add("reset_btn", NamedType.BOOL);
+        stateInput.add("ignition", NamedType.BOOL);
+
         Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = stateInput.convertInput();
         typeConversionEq.addAll(conversionResult.getSecond());
         conversionLocalList.addAll(conversionResult.getFirst());
@@ -68,6 +69,7 @@ public class InOutManager {
         stateOutput.add("r347.start_btn.1.15.4", NamedType.BOOL);
         stateOutput.add("r347.launch_btn.1.17.4", NamedType.BOOL);
         stateOutput.add("r347.reset_btn.1.9.4", NamedType.BOOL);
+
         Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = stateOutput.convertOutput();
         typeConversionEq.addAll(conversionResult.getSecond());
         //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
@@ -75,13 +77,24 @@ public class InOutManager {
     }
 
     public ArrayList<VarDecl> generateInputDecl() {
-        ArrayList<VarDecl> inputDeclList = generateLustreDecl(freeInput);
-        inputDeclList.addAll(generateLustreDecl(stateInput));
+        ArrayList<VarDecl> inputDeclList = generateFreeInputDecl();
+        inputDeclList.addAll(generateStateInputDecl());
         return inputDeclList;
     }
+    public ArrayList<VarDecl> generateFreeInputDecl(){
+        return generateLustreDecl(freeInput);
+    }
 
-    private ArrayList<VarDecl> generateLustreDecl(InputOutput stateInput) {
-        return stateInput.generateVarDecl();
+    public ArrayList<VarDecl> generateStateInputDecl(){
+        return generateLustreDecl(stateInput);
+    }
+
+    private ArrayList<VarDecl> generateLustreDecl(InputOutput inputOutput) {
+        return inputOutput.generateVarDecl();
+    }
+
+    public ArrayList<VarDecl> generaterMethodOutDeclList() {
+        return methodOutput.generateVarDecl();
     }
 
     public ArrayList<VarDecl> generateOutputDecl() {
@@ -115,8 +128,5 @@ public class InOutManager {
         return methodOutput.contains(varName, type);
     }
 
-    public ArrayList<VarDecl> generaterMethodOutDeclList() {
-        return methodOutput.generateVarDecl();
-    }
 
 }

@@ -39,7 +39,12 @@ public class DiscoverContract {
             // interest.
             Contract contract = new Contract();
             Node rNode = ToLutre.generateRnode(dynamicRegion, contract);
-            writeToFile(contractMethodName+".lus", ToLutre.lustreFriendlyString(rNode));
+            Node rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
+            String printString = ToLutre.lustreFriendlyString(rNode);
+            printString = printString.concat(ToLutre.lustreFriendlyString(rWrapper));
+
+            writeToFile(contractMethodName+".lus", printString);
+
             //System.out.println("^--^ printing lustre translation ^--^");
             //System.out.println(rNode);
         /*Node rWrapper = ToLutre.generateRwrapper();
