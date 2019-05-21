@@ -72,4 +72,17 @@ public class InputOutput {
         }
         return new Pair(conversionLocalList, conversionEqList);
     }
+
+    //this is very specific to r_wrapper and is used particularly to replicate the methodOutput, that is part of the state, to become the output of the wrapper.
+    public Pair<VarDecl, Equation> replicateMe(String myNewName) {
+        assert (varList.size() == 1);
+
+        Pair<String, NamedType> methodOutVar = varList.get(0);
+
+        VarDecl out = new VarDecl(myNewName, methodOutVar.getSecond());
+
+        Equation outEq = new Equation(DiscoveryUtil.varDeclToIdExpr(out), new IdExpr(methodOutVar.getFirst()));
+
+        return new Pair(out, outEq);
+    }
 }

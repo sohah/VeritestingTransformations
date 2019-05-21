@@ -31,19 +31,20 @@ public class DiscoverContract {
     public static String contractMethodName;
     public static String className;
     public static String packageName;
-/***** end of unused vars***/
 
-    public static final ArrayList<Node> discoverLusterContract(DynamicRegion dynamicRegion){
+    /***** end of unused vars***/
 
-        if(!called) { //print out the translation once, for very first time we hit linearlization for the method of
+    public static final ArrayList<Node> discoverLusterContract(DynamicRegion dynamicRegion) {
+
+        if (!called) { //print out the translation once, for very first time we hit linearlization for the method of
             // interest.
             Contract contract = new Contract();
             Node rNode = ToLutre.generateRnode(dynamicRegion, contract);
             Node rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
             String printString = ToLutre.lustreFriendlyString(rNode);
-            printString = printString.concat(ToLutre.lustreFriendlyString(rWrapper));
+            printString = printString.concat("\n" + ToLutre.lustreFriendlyString(rWrapper));
 
-            writeToFile(contractMethodName+".lus", printString);
+            writeToFile(contractMethodName + ".lus", printString);
 
             //System.out.println("^--^ printing lustre translation ^--^");
             //System.out.println(rNode);
@@ -59,7 +60,7 @@ public class DiscoverContract {
 
 
     //ToDo: not sure if this works, I need to test the change.
-    public static String toSMT(String solver, HashSet z3FunDecl){
+    public static String toSMT(String solver, HashSet z3FunDecl) {
         return Z3Format.toSMT(solver, z3FunDecl);
     }
 }

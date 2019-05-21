@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.lustre.*;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 
@@ -128,5 +129,8 @@ public class InOutManager {
         return methodOutput.contains(varName, type);
     }
 
+    public Pair<VarDecl, Equation> replicateMethodOutput(String outVarName){
+        return methodOutput.replicateMe(outVarName);
+    }
 
 }

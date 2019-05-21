@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.lustre.*;
 
@@ -38,17 +39,20 @@ public class ToLutre {
         return new VarDecl("symVar", NamedType.INT);
     }
 
-    //TODO
     public static Node generateRwrapper(InOutManager inOutManager) {
         ArrayList<VarDecl> freeDeclList = inOutManager.generateFreeInputDecl();
         ArrayList<VarDecl> stateInDeclList = inOutManager.generateStateInputDecl();
         ArrayList<VarDecl> stateOutDeclList = inOutManager.generateOutputDecl();
-        ArrayList<VarDecl> methodDeclList = inOutManager.generaterMethodOutDeclList();
+        ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
 
         //wrapperLocals are defined as stateInput and stateOutput
         ArrayList<VarDecl> wrapperLocalDeclList = new ArrayList<>(stateInDeclList);
         wrapperLocalDeclList.addAll(stateOutDeclList);
-        wrapperLocalDeclList.addAll(methodDeclList);
+        wrapperLocalDeclList.addAll(methodOutDeclList);
+
+        Pair<VarDecl, Equation> methodOutVarEq = inOutManager.replicateMethodOutput("out");
+        ArrayList<VarDecl> wrapperOutput = new ArrayList<VarDecl>();
+        wrapperOutput.add(methodOutVarEq.getFirst());
 
         ArrayList<Expr> actualParameters = new ArrayList<>();
         actualParameters.addAll(varDeclToIdExpr(freeDeclList));
@@ -60,8 +64,9 @@ public class ToLutre {
 
         ArrayList<Equation> wrapperEqList = new ArrayList<Equation>();
         wrapperEqList.add(wrapperEq);
+        wrapperEqList.add(methodOutVarEq.getSecond()); //adding equation for output
 
-        return new Node("r_wrapper", freeDeclList, methodDeclList, wrapperLocalDeclList, wrapperEqList
+        return new Node("r_wrapper", freeDeclList, wrapperOutput, wrapperLocalDeclList, wrapperEqList
                 , new ArrayList<>(), new ArrayList<>(), null, null, null);
     }
 
