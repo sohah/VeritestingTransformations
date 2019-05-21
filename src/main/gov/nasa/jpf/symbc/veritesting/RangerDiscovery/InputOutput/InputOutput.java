@@ -31,34 +31,38 @@ public class InputOutput {
     }
 
 
-    public ArrayList<Equation> convertInput() { //convertBoolToSpfInt
+    public Pair<ArrayList<VarDecl>, ArrayList<Equation>> convertInput() { //convertBoolToSpfInt
         ArrayList<Equation> conversionEqList = new ArrayList<>();
+        ArrayList<VarDecl> conversionLocalList = new ArrayList<>();
 
         for (int i = 0; i < varList.size(); i++) {
             String var = varList.get(i).getFirst();
             NamedType type = varList.get(i).getSecond();
             if (type == NamedType.BOOL) { //type conversion needed
+                conversionLocalList.add(new VarDecl(var, NamedType.INT));
                 String newVar = var + "_bool";
                 varList.set(i, new Pair(newVar, NamedType.BOOL));
                 IfThenElseExpr ifThenElseExpr = new IfThenElseExpr(new IdExpr(newVar), new IntExpr(1), new IntExpr(0));
-                Equation conversionEq = new Equation(new IdExpr(newVar), ifThenElseExpr);
+                Equation conversionEq = new Equation(new IdExpr(var), ifThenElseExpr);
                 conversionEqList.add(conversionEq);
             }
 
         }
-        return conversionEqList;
+        return new Pair(conversionLocalList, conversionEqList);
     }
 
-    public ArrayList<Equation> convertOutput() { // convertSpfIntToBool
+    public Pair<ArrayList<VarDecl>, ArrayList<Equation>> convertOutput() { // convertSpfIntToBool
         ArrayList<Equation> conversionEqList = new ArrayList<>();
+        ArrayList<VarDecl> conversionLocalList = new ArrayList<>();
 
         for (int i = 0; i < varList.size(); i++) {
             String var = varList.get(i).getFirst();
             NamedType type = varList.get(i).getSecond();
             if (type == NamedType.BOOL) { //type conversion needed
+                conversionLocalList.add(new VarDecl(var, NamedType.INT));
                 String newVar = var + "_bool";
                 varList.set(i, new Pair(newVar, NamedType.BOOL));
-                IfThenElseExpr ifThenElseExpr = new IfThenElseExpr(new BinaryExpr(new IdExpr(var),BinaryOp.EQUAL, new
+                IfThenElseExpr ifThenElseExpr = new IfThenElseExpr(new BinaryExpr(new IdExpr(var), BinaryOp.EQUAL, new
                         IntExpr
                         (1)), new BoolExpr(true), new BoolExpr(false));
                 Equation conversionEq = new Equation(new IdExpr(newVar), ifThenElseExpr);
@@ -66,6 +70,6 @@ public class InputOutput {
             }
 
         }
-        return conversionEqList;
+        return new Pair(conversionLocalList, conversionEqList);
     }
 }

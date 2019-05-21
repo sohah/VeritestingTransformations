@@ -14,6 +14,7 @@ public class ToLutre {
         localDeclList.add(addSymVar());
         ArrayList<Equation> equationList = EquationVisitor.execute(dynamicRegion);
         equationList.addAll(inOutManager.getTypeConversionEq()); // adding type conversion equations.
+        localDeclList.addAll(inOutManager.getConversionLocalList());
         equationList.add(addSymVarEquation());
         ArrayList<VarDecl> inputDeclList = inOutManager.generateInputDecl();
         ArrayList<VarDecl> ouputDeclList = inOutManager.generateOutputDecl();
