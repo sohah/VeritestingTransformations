@@ -41,27 +41,21 @@ public class ToLutre {
 
     public static Node generateRwrapper(InOutManager inOutManager) {
         ArrayList<VarDecl> freeDeclList = inOutManager.generateFreeInputDecl();
+
+        //wrapperLocals are defined as stateInput
         ArrayList<VarDecl> stateInDeclList = inOutManager.generateStateInputDecl();
-        //ArrayList<VarDecl> stateOutDeclList = inOutManager.generateOutputDecl();
-        //ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
-
-        //wrapperLocals are defined as stateInput and stateOutput
         ArrayList<VarDecl> wrapperLocalDeclList = new ArrayList<>(stateInDeclList);
-        //wrapperLocalDeclList.addAll(stateOutDeclList);
-        //wrapperLocalDeclList.addAll(methodOutDeclList);
 
-        //Pair<VarDecl, Equation> methodOutVarEq = inOutManager.replicateMethodOutput("out");
+        //preparing wrapperOutput
         Pair<VarDecl, Equation> methodOutVarEq = DiscoveryUtil.replicateToOut(stateInDeclList.get(stateInDeclList.size()-1),"out");
         ArrayList<VarDecl> wrapperOutput = new ArrayList<VarDecl>();
-
         wrapperOutput.add(methodOutVarEq.getFirst());
 
+        //call node_R
         ArrayList<Expr> actualParameters = new ArrayList<>();
         actualParameters.addAll(varDeclToIdExpr(freeDeclList));
         actualParameters.addAll(initPreTerm(wrapperLocalDeclList));
-
         NodeCallExpr r_nodeCall = new NodeCallExpr("R_node", actualParameters);
-
         Equation wrapperEq = new Equation(varDeclToIdExpr(wrapperLocalDeclList), r_nodeCall);
 
         ArrayList<Equation> wrapperEqList = new ArrayList<Equation>();
