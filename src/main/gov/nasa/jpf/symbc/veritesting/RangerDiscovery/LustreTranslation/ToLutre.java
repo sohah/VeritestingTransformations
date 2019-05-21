@@ -42,16 +42,18 @@ public class ToLutre {
     public static Node generateRwrapper(InOutManager inOutManager) {
         ArrayList<VarDecl> freeDeclList = inOutManager.generateFreeInputDecl();
         ArrayList<VarDecl> stateInDeclList = inOutManager.generateStateInputDecl();
-        ArrayList<VarDecl> stateOutDeclList = inOutManager.generateOutputDecl();
-        ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
+        //ArrayList<VarDecl> stateOutDeclList = inOutManager.generateOutputDecl();
+        //ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
 
         //wrapperLocals are defined as stateInput and stateOutput
         ArrayList<VarDecl> wrapperLocalDeclList = new ArrayList<>(stateInDeclList);
-        wrapperLocalDeclList.addAll(stateOutDeclList);
-        wrapperLocalDeclList.addAll(methodOutDeclList);
+        //wrapperLocalDeclList.addAll(stateOutDeclList);
+        //wrapperLocalDeclList.addAll(methodOutDeclList);
 
-        Pair<VarDecl, Equation> methodOutVarEq = inOutManager.replicateMethodOutput("out");
+        //Pair<VarDecl, Equation> methodOutVarEq = inOutManager.replicateMethodOutput("out");
+        Pair<VarDecl, Equation> methodOutVarEq = DiscoveryUtil.replicateToOut(stateInDeclList.get(stateInDeclList.size()-1),"out");
         ArrayList<VarDecl> wrapperOutput = new ArrayList<VarDecl>();
+
         wrapperOutput.add(methodOutVarEq.getFirst());
 
         ArrayList<Expr> actualParameters = new ArrayList<>();

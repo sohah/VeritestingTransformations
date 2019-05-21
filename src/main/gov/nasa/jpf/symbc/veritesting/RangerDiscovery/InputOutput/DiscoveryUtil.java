@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import jkind.lustre.*;
 import za.ac.sun.cs.green.expr.Operation;
@@ -135,5 +136,14 @@ public class DiscoveryUtil {
             e.printStackTrace();
         }
         return true;
+    }
+
+
+    public static Pair<VarDecl, Equation> replicateToOut(VarDecl varDecl, String stringName){
+        VarDecl newVarDecl = new VarDecl(stringName, varDecl.type);
+
+        Equation eq = new Equation(varDeclToIdExpr(newVarDecl), varDeclToIdExpr(varDecl));
+
+        return new Pair(newVarDecl, eq);
     }
 }
