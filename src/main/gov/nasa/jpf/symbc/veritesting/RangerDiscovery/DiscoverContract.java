@@ -1,94 +1,90 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
-import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import jkind.Main;
+import jkind.lustre.Node;
+import jkind.lustre.Program;
+
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
-public class DiscoverContract {
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.writeToFile;
 
-    /* This map is used to populate the spfQuery for z3, for later mainpulation. */
+public class DiscoverContract {
+    /**
+     * name of the method we want to extract its contract.
+     */
+    public static boolean contractDiscoveryOn = false;
+    public static boolean called = false;
+
     public static LinkedHashSet<Pair> z3QuerySet = new LinkedHashSet();
 
+    //TODO: These needs to be configured using the .jpf file.
+    public static String folderName = "../src/DiscoveryExamples/";
+    static String tFileName = folderName + "ImaginaryPad";
 
-    public static String toSMT(String query, HashSet z3FunDecSet) {
-        assert (query.length() > 0);
-
-        String newQuery = new String();
-        /*removing the outer solve*/
-        query = query.substring(8, query.length() - 1);
-
-        int startingIndex = 0;
-        int endingIndex = query.length();
-        while (startingIndex < endingIndex) {
-            Pair startEndIndecies = findAssertion(query, startingIndex);
-
-            startingIndex = (int) startEndIndecies.getFirst();
-            int assertionEndIndex = (int) startEndIndecies.getSecond();
-
-            String assertion = query.substring(startingIndex, assertionEndIndex + 1); //+1 because substring is not inclusive for the endIndex.
-            newQuery += "(assert " + assertion + ")\n";
-            startingIndex = assertionEndIndex + 1;
-        }
-
-        newQuery = "  (set-logic QF_BV)\n" +
-                "  (set-info :smt-lib-version 2.0)\n" +
-                "  (set-option :produce-unsat-cores true)\n" +
-                generateFunDec(z3FunDecSet) +
-                newQuery
-                + "(check-sat)\n" +
-                "(get-unsat-core)\n" +
-                "(exit)\n";
-
-        return newQuery;
-    }
-
-    private static String generateFunDec(HashSet<String> z3FunDecSet) {
-        String funDec = "";
-        for (String varName : z3FunDecSet) {
-            funDec = funDec + "(declare-fun " + varName + " () (_ BitVec 32))\n";
-        }
-        return funDec;
-    }
-
+/***** begin of unused vars***/
     /**
-     * This takes the starting index of an opening bracket for which we want to find a matching closing bracket. It returns the index of the closing bracket.
-     *
-     * @param query
-     * @param startingIndex
-     * @return
+     * currently unused because we assume we have a way to find the input and output.
+     * This later needs to be changed to generalize it by looking only at the method
+     * and the class of interest.
      */
-    private static Pair findAssertion(String query, int startingIndex) {
-        int closingIndex = 0;
-        int bracket = 0;
-        boolean closingBracketFound = false;
-        boolean firstOpenBracketEncountered = false;
-        int walkingIndex = startingIndex;
+    public static String contractMethodName;
+    public static String className;
+    public static String packageName;
 
-        /*This loop tries to find the index of the first opening bracket. At the end of the loop, the walkingIndex will have this index number.*/
-        while (!firstOpenBracketEncountered) {
-            char c = query.charAt(walkingIndex);
-            if (c == '(')
-                firstOpenBracketEncountered = true;
-            else {
-                ++walkingIndex;
-            }
+    /***** end of unused vars***/
+
+    public static final ArrayList<Node> discoverLusterContract(DynamicRegion dynamicRegion) {
+
+        if (!called) { //print out the translation once, for very first time we hit linearlization for the method of
+            // interest.
+            Contract contract = new Contract();
+            Node rNode = ToLutre.generateRnode(dynamicRegion, contract);
+            Node rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
+            TProgram tProgram = new TProgram(tFileName);
+            //it is always the case the the last node in a tProgram is tNode
+            assert (tProgram.nodes.get(tProgram.nodes.size() - 1).id.equals("T_node"));
+            Node mainNode = tProgram.generateMainNode(tProgram.nodes.get(tProgram.nodes.size() - 1), rWrapper, contract
+                    .inOutManager);
+
+            ArrayList<Node> cdNodeList = new ArrayList<>();
+            cdNodeList.addAll(tProgram.nodes);
+            cdNodeList.add(rNode);
+            cdNodeList.add(rWrapper);
+            cdNodeList.add(mainNode);
+            String rNodeLustreFriendlyStr = ToLutre.lustreFriendlyString(rNode);
+            String rWrapperLustreFriendlyStr = ToLutre.lustreFriendlyString(rWrapper);
+            String mainNodeLustreFriendlyStr = ToLutre.lustreFriendlyString(mainNode);
+
+            String mergedContracts = rNodeLustreFriendlyStr + rWrapperLustreFriendlyStr + tProgram
+                    .toString() + mainNodeLustreFriendlyStr;
+            writeToFile(contractMethodName + ".lus", mergedContracts);
+
+            callJkind();
+
         }
+        called = true;
+        return null;
+    }
 
-        startingIndex = walkingIndex;
-        while (!closingBracketFound) {
-            char c = query.charAt(walkingIndex);
-            if (c == '(')
-                ++bracket;
-            else if (c == ')')
-                --bracket;
+    private static void callJkind() {
+        String[] jkindArgs = new String[5];
+        jkindArgs[0] = "-jkind";
+        jkindArgs[1] = folderName + contractMethodName + ".lus";
+        jkindArgs[2] = "-solver";
+        jkindArgs[3] = "z3";
+        jkindArgs[4] = "-scratch";
+        Main.main(jkindArgs);
+    }
 
-            if (bracket == 0) {
-                closingBracketFound = true;
-                closingIndex = walkingIndex;
-            }
-            ++walkingIndex;
-        }
-        return new Pair(startingIndex, closingIndex);
+
+    //ToDo: not sure if this works, I need to test the change.
+    public static String toSMT(String solver, HashSet z3FunDecl) {
+        return Z3Format.toSMT(solver, z3FunDecl);
     }
 }

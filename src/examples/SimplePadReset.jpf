@@ -1,0 +1,32 @@
+target=SimplePadReset
+classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
+sourcepath=${jpf-symbc}/src/examples
+vm.storage.class=nil
+symbolic.debug=true
+
+
+######## miscellaneous  ######
+symbolic.method=SimplePadReset.runPadSteps(sym#sym#sym#sym#sym#sym)
+#symbolic.method=SimplePadReset.runPad(sym)
+
+symbolic.dp=z3
+
+#symbolic.min_int=-1
+#symbolic.max_int=2
+
+#symbolic.min_int=-15
+#symbolic.max_int=16
+
+#symbolic.min_int=-2147483648
+#symbolic.max_int=2147483647
+listener = .symbc.VeritestingListener
+#listener = .symbc.SymbolicListener
+
+#####running test case generation
+#listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
+
+contractDiscoveryOn=true
+veritestingMode = 3
+symbolic.lazy = true
+showLocalNames = true
+contractMethodName = runPad(I)Z

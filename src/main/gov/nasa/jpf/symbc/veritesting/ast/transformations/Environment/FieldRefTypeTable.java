@@ -3,9 +3,8 @@ package gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.symbc.veritesting.ast.def.CloneableVariable;
 import gov.nasa.jpf.symbc.veritesting.ast.def.FieldRefVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.def.WalaVarExpr;
-import gov.nasa.jpf.symbc.veritesting.ast.transformations.fieldaccess.SubscriptPair;
 import za.ac.sun.cs.green.expr.Expression;
+import za.ac.sun.cs.green.expr.Variable;
 
 import java.util.*;
 
@@ -49,6 +48,16 @@ public class FieldRefTypeTable extends CloneableVarTable<String> {
     public String lookup(Expression expr) {
         if (!FieldRefVarExpr.class.isInstance(expr)) return null;
         else return table.get(expr);
+    }
+
+    public String lookupByName(String name) {
+        Set<CloneableVariable> keys = table.keySet();
+        for(Variable var : keys){
+            if(var.toString().equals(name))
+                return table.get(var);
+        }
+
+        return null;
     }
 }
 
