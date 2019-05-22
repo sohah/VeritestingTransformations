@@ -246,15 +246,22 @@ public class CreateStaticRegions {
             else {
                 Stmt gamma = visitor.convert(ins);
                 // This simplification causes problems in the LocalOutputInvariantVisitor in StaticRegion constructor
-                // that tries to ensure that all local outputs in outputTable have a assignment using a gamma expression
+                // that tries to ensure that all local outputs in outputTable have a assignment using a gamma expression.
+                // This part of the LocalOutputInvariantVisitor is now commented out (04/29/2019).
                 /* Vaibhav: this simplification should not make a correctness difference unless we have a region that
-                * writes the same value to a local variable on both sides of a branch */
-                /*if (gamma instanceof AssignmentStmt && ((AssignmentStmt) gamma).rhs instanceof GammaVarExpr) {
+                * writes the same value to a local variable on both sides of a branch. But, having this simplification
+                * turned on causes the LocalOutputInvariantVisitor to not create a stack output for the lhs of such
+                * gamma expressions. An example of this is in replace.amatch([C[CI)I#56 that ends on the instruction
+                * at offset 62. Using this simplification, we now dont assume that such regions have a stack output and therefore
+                * dont want such regions to end on a stack consuming instruction. These regions appear right before the
+                * beginning of a loop and these gamma expressions are assigning a value that would be modified in the
+                * loop. */
+                if (gamma instanceof AssignmentStmt && ((AssignmentStmt) gamma).rhs instanceof GammaVarExpr) {
                     Expression exp1 = ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).thenExpr;
                     Expression exp2 = ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).elseExpr;
                     if (exp1.equals(exp2))
                         gamma = new AssignmentStmt(((AssignmentStmt) gamma).lhs, ((GammaVarExpr) ((AssignmentStmt) gamma).rhs).thenExpr);
-                }*/
+                }
                 stmt = conjoin(stmt, gamma);
             }
         }
@@ -371,13 +378,11 @@ public class CreateStaticRegions {
 
         visited.add(entry);
         toVisit.addAll(SSAUtil.getNonReturnSuccessors(cfg, entry));
-        ISSABasicBlock lastVisited = entry;
 
         while (!toVisit.isEmpty()) {
             ISSABasicBlock current = toVisit.remove();
             if (!visited.contains(current)) {
                 visited.add(current);
-                lastVisited = current;
                 ISSABasicBlock immediatePreDom = getIDom(current);
                 if (current == terminus) {
                     // because of priority queue, a non-empty queue means we have
@@ -397,11 +402,6 @@ public class CreateStaticRegions {
         }
         // This condition occurs when we have a region terminated by a 'return'
         // We treat these as self-contained.
-        if (lastVisited.getLastInstruction() instanceof SSAThrowInstruction) {
-            // Vaibhav: I am guessing that we dont want to summarize a region that ends with a
-            // throw exception at this point
-            throwException(new StaticRegionException("last visited basic block threw an exception"), STATIC);
-        }
         return true;
     }
 
@@ -512,7 +512,12 @@ public class CreateStaticRegions {
                 returnExpr = new Operation(Operation.Operator.OR, returnExpr, branchExpr);
             }
         }
-        assert (returnExpr != null);
+// Vaibhav: This happens when we have a region like assert (x != 0 ? count == x + 3 : count == 3); which is in
+// FieldTest3. All predecessors of child have a number less than parent because of which the we never run any full
+// iterations through the "for (ISSABasicBlock parent : cfg.getNormalPredecessors(child))" loop. I think it is best to
+// not create such a region. It is also good to not crash Java Ranger on encountering such a region.
+//        assert (returnExpr != null);
+        if (returnExpr == null) throwException(new StaticRegionException("createComplexIfCondition: failed to recover condition"), STATIC);
         return new Pair<>(returnExpr, setupStmt);
     }
 
@@ -723,10 +728,10 @@ public class CreateStaticRegions {
                 new IfThenElseStmt(SSAUtil.getLastBranchInstruction(currentBlock), condExpr, thenStmt, elseStmt),
                 false);
 
-        if (!thenBlock.equals(actualThenBlock))
+        if (!actualThenBlock.equals(thenBlock) &&(!actualThenBlock.equals(elseBlock)))
             populateMissedRegions(cfg, actualThenBlock, terminus);
 
-        if (!elseBlock.equals(actualElseBlock))
+        if (!actualElseBlock.equals(thenBlock) &&(!actualElseBlock.equals(elseBlock)))
             populateMissedRegions(cfg, actualElseBlock, terminus);
 
         return returnStmt;
@@ -1031,6 +1036,8 @@ public class CreateStaticRegions {
 
                 }
             }
+            else
+                populateMissedRegions(cfg, cfg.getNormalSuccessors(currentBlock).iterator().next(), endingBlock);
         }
     }
 

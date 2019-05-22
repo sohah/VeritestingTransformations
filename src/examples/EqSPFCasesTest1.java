@@ -7,8 +7,9 @@ public class EqSPFCasesTest1 extends TestRegionBaseClass {
         if (x) {
             a = 3 + a;
         } else {
-            a = 2 + a;
-            TempClass tempClass2 = new TempClass();
+            if (y) a = 1 + a;
+            else { a = 2 + a;
+            TempClass tempClass2 = new TempClass();}
         }
 
         if (y) {

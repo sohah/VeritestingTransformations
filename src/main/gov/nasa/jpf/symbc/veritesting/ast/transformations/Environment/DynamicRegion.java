@@ -60,6 +60,17 @@ public class DynamicRegion implements Region {
     public final DynamicTable varTypeTable;
 
     /**
+     * Holds the total number of IfThenElseStmts present in this static region
+     */
+    public int maxDepth = -1;
+
+    /**
+     * Holds the total number of execution paths that can be taken through this region
+     */
+    public long totalNumPaths = -1;
+
+
+    /**
      * An environment table that holds the types of all field variables, referenced by FieldRefVarExpr objects, in the region.
      * This table also holds the types of all array references, referenced by ArrayRefVarExpr objects, in the region.
      */
@@ -142,6 +153,8 @@ public class DynamicRegion implements Region {
         this.arrayOutputs = oldDynRegion.arrayOutputs;
         this.constantsTable = oldDynRegion.constantsTable;
         this.stackOutput = oldDynRegion.stackOutput;
+        this.totalNumPaths = oldDynRegion.totalNumPaths;
+        this.maxDepth = oldDynRegion.maxDepth;
     }
 
 

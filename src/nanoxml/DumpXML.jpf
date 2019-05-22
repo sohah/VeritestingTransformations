@@ -13,7 +13,7 @@ vm.storage.class=nil
 #symbolic.debug=on
 
 veritestingMode=5
-performanceMode = false
+performanceMode = true
 
 symbolic.dp=z3bitvectorinc
 listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener

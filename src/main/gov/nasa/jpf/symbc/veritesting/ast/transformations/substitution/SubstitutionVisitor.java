@@ -360,9 +360,13 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                 IntConstant objRef = (IntConstant) dynRegion.constantsTable.lookup((Variable) c.params[0]);
                 currClassName = ti.getHeap().get((objRef).getValue()).getClassInfo().getName();
             } else {
-                if (useVarTable)
-                    currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
-                else
+                if (useVarTable) {
+                    Object type = dynRegion.varTypeTable.lookup(c.params[0]);
+                    if (type != null)
+                        currClassName = type.toString();
+                    else
+                        return null;
+                } else
                     return null;
             }
         } else {
@@ -391,7 +395,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             String jvmMethodName = methodName.toString() + methodSignature; //methodReference.getSignature();
             StaticRegion staticRegion = JITAnalysis.discoverAllClassAndGetRegion(className, jvmMethodName, key);
             if (staticRegion != null) {
-                if (printRegionDigest) VeritestingListener.regionDigest.append("\n" + staticRegion.staticStmt.toString());
+                if (printRegionDigest)
+                    VeritestingListener.regionDigest.append("\n" + staticRegion.staticStmt.toString());
                 return new Pair(key, staticRegion);
             }
         }
@@ -423,9 +428,13 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
                 IntConstant objRef = (IntConstant) dynRegion.constantsTable.lookup((Variable) c.params[0]);
                 currClassName = ti.getHeap().get((objRef).getValue()).getClassInfo().getName();
             } else {
-                if (useVarTable)
-                    currClassName = dynRegion.varTypeTable.lookup(c.params[0]).toString();
-                else
+                if (useVarTable) {
+                    Object type = dynRegion.varTypeTable.lookup(c.params[0]);
+                    if (type != null)
+                        currClassName = type.toString();
+                    else
+                        return null;
+                } else
                     return null;
             }
         } else {
@@ -447,7 +456,8 @@ public class SubstitutionVisitor extends FixedPointAstMapVisitor {
             key = CreateStaticRegions.constructMethodIdentifier(className + "." + methodName + methodSignature);
             StaticRegion staticRegion = VeritestingMain.veriRegions.get(key);
             if (staticRegion != null) {
-                if (printRegionDigest) VeritestingListener.regionDigest.append("\n" + staticRegion.staticStmt.toString());
+                if (printRegionDigest)
+                    VeritestingListener.regionDigest.append("\n" + staticRegion.staticStmt.toString());
                 return new Pair(key, staticRegion);
             }
         }

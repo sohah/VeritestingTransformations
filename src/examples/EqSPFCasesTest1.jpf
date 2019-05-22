@@ -1,5 +1,5 @@
 target=EqSPFCasesTest1
-veritestRegionExpectedCount = 6
+veritestRegionExpectedCount = -1
 
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
@@ -28,3 +28,4 @@ listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.Increme
 symbolic.optimizechoices=false
 
 jitAnalysis = true
+SPFCasesHeuristics=false
