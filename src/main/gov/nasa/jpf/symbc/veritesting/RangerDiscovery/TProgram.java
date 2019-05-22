@@ -57,9 +57,9 @@ public class TProgram extends Ast {
     }
 
     public Node generateMainNode(Node tNode, Node wrapperNode, InOutManager inOutManager) {
-        List<VarDecl> inputsForMain = inOutManager.generateFreeInputDecl();
-        List<Expr> wrapperArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr((ArrayList<VarDecl>) inputsForMain);
-        List<Expr> tNodeArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr((ArrayList<VarDecl>) inputsForMain);
+        List<Expr> wrapperArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
+        List<Expr> tNodeArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
+        wrapperArgs.remove(wrapperArgs.size()-1);
         Expr callRwapper = new NodeCallExpr("R_wrapper", wrapperArgs);
         tNodeArgs.set(tNodeArgs.size() - 1, callRwapper);
         NodeCallExpr callT = new NodeCallExpr("T_node", (List<Expr>) tNodeArgs);
@@ -71,7 +71,7 @@ public class TProgram extends Ast {
         Equation mainEq = new Equation(DiscoveryUtil.varDeclToIdExpr(mainOut), callT);
         List mainEquations = new ArrayList();
         mainEquations.add(mainEq);
-        return new Node("main", inputsForMain, mainOutList, null, mainEquations, null, null, null, null,
+        return new Node("main", tNode.inputs, mainOutList, null, mainEquations, null, null, null, null,
                 null);
 
     }

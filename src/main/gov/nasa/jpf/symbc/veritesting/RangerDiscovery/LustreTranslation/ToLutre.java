@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.varDeclToIdExpr;
 
@@ -45,7 +46,7 @@ public class ToLutre {
     }
 
     public static Node generateRwrapper(InOutManager inOutManager) {
-        ArrayList<VarDecl> freeDeclList = inOutManager.generateFreeInputDecl();
+        List<VarDecl> freeDeclList = inOutManager.generateFreeInputDecl();
 
         //wrapperLocals are defined as stateInput
         ArrayList<VarDecl> stateInDeclList = inOutManager.generateStateInputDecl();

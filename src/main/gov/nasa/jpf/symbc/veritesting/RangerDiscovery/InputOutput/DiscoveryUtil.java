@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import jkind.lustre.*;
@@ -103,7 +104,7 @@ public class DiscoveryUtil {
         return null;
     }
 
-    public static List<IdExpr> varDeclToIdExpr(ArrayList<VarDecl> varDeclList){
+    public static List<IdExpr> varDeclToIdExpr(List<VarDecl> varDeclList){
         ArrayList<IdExpr> idExprList = new ArrayList<>();
 
         for(int i=0; i< varDeclList.size() ; i++){
@@ -119,12 +120,7 @@ public class DiscoveryUtil {
 
 
     public static boolean writeToFile(String fileName, String content){
-        String folderName;
-        if(StatisticManager.veritestingRunning)
-            folderName = "../SolverQueriesVeritesting";
-        else
-            folderName = "../SolverQueriesSPF";
-        fileName = folderName + "/" + fileName;
+        fileName = DiscoverContract.folderName + "/" + fileName;
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(fileName), "utf-8"))) {
             writer.write(content);

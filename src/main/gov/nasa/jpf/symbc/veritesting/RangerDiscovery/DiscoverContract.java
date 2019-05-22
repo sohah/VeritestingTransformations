@@ -4,6 +4,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import jkind.Main;
 import jkind.lustre.Node;
 import jkind.lustre.Program;
 
@@ -23,7 +24,7 @@ public class DiscoverContract {
     public static LinkedHashSet<Pair> z3QuerySet = new LinkedHashSet();
 
     //TODO: These needs to be configured using the .jpf file.
-    static String folderName = "../src/DiscoveryExamples/";
+    public static String folderName = "../src/DiscoveryExamples/";
     static String tFileName = folderName + "ImaginaryPad";
 
 /***** begin of unused vars***/
@@ -60,11 +61,21 @@ public class DiscoverContract {
             String rWrapperLustreFriendlyStr = ToLutre.lustreFriendlyString(rWrapper);
             String mainNodeLustreFriendlyStr = ToLutre.lustreFriendlyString(mainNode);
 
+            String mergedContracts = rNodeLustreFriendlyStr + rWrapperLustreFriendlyStr + tProgram
+                    .toString() + mainNodeLustreFriendlyStr;
+            writeToFile(contractMethodName + ".lus", mergedContracts);
+
+            String[] jkindArgs = new String[5];
+            jkindArgs[0] = "-jkind";
+            jkindArgs[1] = folderName + contractMethodName + ".lus";
+            jkindArgs[2] = "-solver";
+            jkindArgs[3] = "z3";
+            jkindArgs[4] = "-scratch";
+
+            Main.main(jkindArgs);
             //String printString = ToLutre.lustreFriendlyString(rNode);
             //printString = printString.concat("\n" + ToLutre.lustreFriendlyString(rWrapper));
 
-            writeToFile(contractMethodName + ".lus", rNodeLustreFriendlyStr + rWrapperLustreFriendlyStr + tProgram
-                    .toString() + mainNodeLustreFriendlyStr);
 
             //System.out.println("^--^ printing lustre translation ^--^");
             //System.out.println(rNode);
