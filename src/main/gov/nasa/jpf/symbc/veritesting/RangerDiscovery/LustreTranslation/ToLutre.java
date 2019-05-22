@@ -68,7 +68,7 @@ public class ToLutre {
         wrapperEqList.add(wrapperEq);
         wrapperEqList.add(methodOutVarEq.getSecond()); //adding equation for output
 
-        return new Node("r_wrapper", freeDeclList, wrapperOutput, wrapperLocalDeclList, wrapperEqList
+        return new Node("R_wrapper", freeDeclList, wrapperOutput, wrapperLocalDeclList, wrapperEqList
                 , new ArrayList<>(), new ArrayList<>(), null, null, null);
     }
 

@@ -65,27 +65,21 @@ public class DiscoverContract {
                     .toString() + mainNodeLustreFriendlyStr;
             writeToFile(contractMethodName + ".lus", mergedContracts);
 
-            String[] jkindArgs = new String[5];
-            jkindArgs[0] = "-jkind";
-            jkindArgs[1] = folderName + contractMethodName + ".lus";
-            jkindArgs[2] = "-solver";
-            jkindArgs[3] = "z3";
-            jkindArgs[4] = "-scratch";
+            callJkind();
 
-            Main.main(jkindArgs);
-            //String printString = ToLutre.lustreFriendlyString(rNode);
-            //printString = printString.concat("\n" + ToLutre.lustreFriendlyString(rWrapper));
-
-
-            //System.out.println("^--^ printing lustre translation ^--^");
-            //System.out.println(rNode);
-        /*ArrayList<Node> nodeList = new ArrayList<>();
-        nodeList.add(rNode);
-        nodeList.add(rWrapper);
-        return nodeList;*/
         }
         called = true;
         return null;
+    }
+
+    private static void callJkind() {
+        String[] jkindArgs = new String[5];
+        jkindArgs[0] = "-jkind";
+        jkindArgs[1] = folderName + contractMethodName + ".lus";
+        jkindArgs[2] = "-solver";
+        jkindArgs[3] = "z3";
+        jkindArgs[4] = "-scratch";
+        Main.main(jkindArgs);
     }
 
 
