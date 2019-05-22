@@ -46,18 +46,25 @@ public class DiscoverContract {
             Node rNode = ToLutre.generateRnode(dynamicRegion, contract);
             Node rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
             TProgram tProgram = new TProgram(tFileName);
+            //it is always the case the the last node in a tProgram is tNode
+            assert (tProgram.nodes.get(tProgram.nodes.size() - 1).id.equals("T_node"));
+            Node mainNode = tProgram.generateMainNode(tProgram.nodes.get(tProgram.nodes.size() - 1), rWrapper, contract
+                    .inOutManager);
 
             ArrayList<Node> cdNodeList = new ArrayList<>();
             cdNodeList.addAll(tProgram.nodes);
             cdNodeList.add(rNode);
             cdNodeList.add(rWrapper);
+            cdNodeList.add(mainNode);
             String rNodeLustreFriendlyStr = ToLutre.lustreFriendlyString(rNode);
             String rWrapperLustreFriendlyStr = ToLutre.lustreFriendlyString(rWrapper);
+            String mainNodeLustreFriendlyStr = ToLutre.lustreFriendlyString(mainNode);
 
             //String printString = ToLutre.lustreFriendlyString(rNode);
             //printString = printString.concat("\n" + ToLutre.lustreFriendlyString(rWrapper));
 
-            writeToFile(contractMethodName + ".lus", rNodeLustreFriendlyStr + rWrapperLustreFriendlyStr + tProgram.toString());
+            writeToFile(contractMethodName + ".lus", rNodeLustreFriendlyStr + rWrapperLustreFriendlyStr + tProgram
+                    .toString() + mainNodeLustreFriendlyStr);
 
             //System.out.println("^--^ printing lustre translation ^--^");
             //System.out.println(rNode);

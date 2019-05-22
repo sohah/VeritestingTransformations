@@ -7,6 +7,7 @@ import za.ac.sun.cs.green.expr.Operation;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import static jkind.lustre.UnaryOp.NEGATIVE;
 import static jkind.lustre.UnaryOp.NOT;
@@ -102,7 +103,7 @@ public class DiscoveryUtil {
         return null;
     }
 
-    public static ArrayList<IdExpr> varDeclToIdExpr(ArrayList<VarDecl> varDeclList){
+    public static List<IdExpr> varDeclToIdExpr(ArrayList<VarDecl> varDeclList){
         ArrayList<IdExpr> idExprList = new ArrayList<>();
 
         for(int i=0; i< varDeclList.size() ; i++){

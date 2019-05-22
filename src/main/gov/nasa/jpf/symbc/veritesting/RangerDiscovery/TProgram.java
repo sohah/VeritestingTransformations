@@ -1,5 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import jkind.lustre.*;
 import jkind.lustre.parsing.LustreParseUtil;
 import jkind.lustre.visitors.AstVisitor;
@@ -15,7 +17,7 @@ import java.util.List;
 /**
  * This class holds the T program, that can be used for either the counter Example step or the synthesis step.
  */
-public class TProgram extends Ast{
+public class TProgram extends Ast {
     public final List<TypeDef> types;
     public final List<Constant> constants;
     public final List<Function> functions;
@@ -23,9 +25,10 @@ public class TProgram extends Ast{
 
     /**
      * Generates a T program counter example step from a file path, usually this is done in the first time.
+     *
      * @return
      */
-    public TProgram(String tFileName){
+    public TProgram(String tFileName) {
         super(Location.NULL);
         String programStr = null;
         try {
@@ -46,7 +49,6 @@ public class TProgram extends Ast{
         constants.addAll(program.constants);
         functions.addAll(program.functions);
         nodes.addAll(changeMainToTnode(program.nodes, program.main));
-
         this.types = types;
         this.constants = constants;
         this.functions = functions;
@@ -54,13 +56,33 @@ public class TProgram extends Ast{
 
     }
 
+    public Node generateMainNode(Node tNode, Node wrapperNode, InOutManager inOutManager) {
+        List<VarDecl> inputsForMain = inOutManager.generateFreeInputDecl();
+        List<Expr> wrapperArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr((ArrayList<VarDecl>) inputsForMain);
+        List<Expr> tNodeArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr((ArrayList<VarDecl>) inputsForMain);
+        Expr callRwapper = new NodeCallExpr("R_wrapper", wrapperArgs);
+        tNodeArgs.set(tNodeArgs.size() - 1, callRwapper);
+        NodeCallExpr callT = new NodeCallExpr("T_node", (List<Expr>) tNodeArgs);
+        assert (tNode.outputs.size() == 1); //assuming a single output is possible for TNode to indicate constraints are
+        // passing
+        VarDecl mainOut = new VarDecl("out", tNode.outputs.get(0).type);
+        List mainOutList = new ArrayList();
+        mainOutList.add(mainOut);
+        Equation mainEq = new Equation(DiscoveryUtil.varDeclToIdExpr(mainOut), callT);
+        List mainEquations = new ArrayList();
+        mainEquations.add(mainEq);
+        return new Node("main", inputsForMain, mainOutList, null, mainEquations, null, null, null, null,
+                null);
+
+    }
+
     private List<? extends Node> changeMainToTnode(List<Node> nodes, String main) {
         List<Node> newNodes = new ArrayList<>();
-        for(int i = 0; i< nodes.size(); i++){
-            if(nodes.get(i).id.equals(main)){
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i).id.equals(main)) {
                 Node tnode = generateTnode(nodes.get(i));
+                newNodes.addAll(nodes.subList(i + 1, nodes.size()));
                 newNodes.add(tnode);
-                newNodes.addAll(nodes.subList(i+1, nodes.size()));
                 return newNodes;
             }
             newNodes.add(nodes.get(i));
