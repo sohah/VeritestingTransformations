@@ -23,8 +23,8 @@ public class DiscoverContract {
     public static LinkedHashSet<Pair> z3QuerySet = new LinkedHashSet();
 
     //TODO: These needs to be configured using the .jpf file.
-    static String folderName = "../../../ContractDiscoveryProjects/RunPadModel/Contracts/matchingContracts/CEFLP/Pad/";
-    static String tFileName = folderName + "PadModelReset.lus";
+    static String folderName = "../src/DiscoveryExamples/";
+    static String tFileName = folderName + "ImaginaryPad";
 
 /***** begin of unused vars***/
     /**
