@@ -82,7 +82,7 @@ public class ToLutre {
     }
 
 
-    public static Program generateTnode(String tFileName){
+    public static Program generateTprogram(String tFileName){
         String programStr = null;
         try {
             programStr = new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8");

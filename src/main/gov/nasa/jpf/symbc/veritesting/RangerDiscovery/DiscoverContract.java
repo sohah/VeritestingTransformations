@@ -45,16 +45,19 @@ public class DiscoverContract {
             Contract contract = new Contract();
             Node rNode = ToLutre.generateRnode(dynamicRegion, contract);
             Node rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
-            Program tProgram = ToLutre.generateTnode(tFileName);
+            TProgram tProgram = new TProgram(tFileName);
 
-            tProgram.nodes.add(rNode);
-            tProgram.nodes.add(rWrapper);
-            String printString = ToLutre.lustreFriendlyString(tProgram);
+            ArrayList<Node> cdNodeList = new ArrayList<>();
+            cdNodeList.addAll(tProgram.nodes);
+            cdNodeList.add(rNode);
+            cdNodeList.add(rWrapper);
+            String rNodeLustreFriendlyStr = ToLutre.lustreFriendlyString(rNode);
+            String rWrapperLustreFriendlyStr = ToLutre.lustreFriendlyString(rWrapper);
 
             //String printString = ToLutre.lustreFriendlyString(rNode);
             //printString = printString.concat("\n" + ToLutre.lustreFriendlyString(rWrapper));
 
-            writeToFile(contractMethodName + ".lus", printString);
+            writeToFile(contractMethodName + ".lus", rNodeLustreFriendlyStr + rWrapperLustreFriendlyStr + tProgram.toString());
 
             //System.out.println("^--^ printing lustre translation ^--^");
             //System.out.println(rNode);
