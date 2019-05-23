@@ -1,0 +1,14 @@
+target=Racer
+classpath=${jpf-symbc}/build/threadExamples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
+sourcepath=${jpf-symbc}/src/threadsExamples
+vm.storage.class=nil
+symbolic.debug=true
+
+
+######## miscellaneous  ######
+symbolic.method=Racer.setD(sym)
+
+symbolic.dp=z3
+
+#listener = .symbc.VeritestingListener
+listener = .symbc.SymbolicListener
