@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -31,7 +32,7 @@ public class ToLutre {
         ArrayList<VarDecl> ouputDeclList = inOutManager.generateOutputDecl();
         ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
         ouputDeclList.addAll(methodOutDeclList);
-        return new Node("R_node", inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
+        return new Node(DiscoverContract.TNODE, inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
                 new ArrayList<>(), null, null, null);
     }
 
@@ -68,7 +69,7 @@ public class ToLutre {
         wrapperEqList.add(wrapperEq);
         wrapperEqList.add(methodOutVarEq.getSecond()); //adding equation for output
 
-        return new Node("R_wrapper", freeDeclList, wrapperOutput, wrapperLocalDeclList, wrapperEqList
+        return new Node(DiscoverContract.WRAPPERNODE, freeDeclList, wrapperOutput, wrapperLocalDeclList, wrapperEqList
                 , new ArrayList<>(), new ArrayList<>(), null, null, null);
     }
 
@@ -82,19 +83,6 @@ public class ToLutre {
         return initPreExprList;
     }
 
-
-    public static Program generateTprogram(String tFileName){
-        String programStr = null;
-        try {
-            programStr = new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8");
-
-        } catch (IOException e) {
-            System.out.println("Problem reading file. " + e.getMessage());
-        }
-
-        Program program = LustreParseUtil.program(programStr);
-        return program;
-    }
     /**
      * used to remove "." and "$" from the text generated to make it type compatible.
      *

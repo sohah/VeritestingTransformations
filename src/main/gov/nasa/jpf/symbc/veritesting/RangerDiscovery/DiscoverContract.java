@@ -26,6 +26,9 @@ public class DiscoverContract {
     //TODO: These needs to be configured using the .jpf file.
     public static String folderName = "../src/DiscoveryExamples/";
     static String tFileName = folderName + "ImaginaryPad";
+    public static String TNODE = "T_node";
+    public static String RNODE = "R_node";
+    public static String WRAPPERNODE = "R_wrapper";
 
 /***** begin of unused vars***/
     /**
@@ -48,9 +51,8 @@ public class DiscoverContract {
             Node rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
             TProgram tProgram = new TProgram(tFileName);
             //it is always the case the the last node in a tProgram is tNode
-            assert (tProgram.nodes.get(tProgram.nodes.size() - 1).id.equals("T_node"));
-            Node mainNode = tProgram.generateMainNode(tProgram.nodes.get(tProgram.nodes.size() - 1), rWrapper, contract
-                    .inOutManager);
+            assert (tProgram.nodes.get(tProgram.nodes.size() - 1).id.equals(TNODE));
+            Node mainNode = tProgram.generateMainNode(tProgram.nodes.get(tProgram.nodes.size() - 1));
 
             ArrayList<Node> cdNodeList = new ArrayList<>();
             cdNodeList.addAll(tProgram.nodes);
