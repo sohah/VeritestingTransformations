@@ -32,7 +32,7 @@ public class ToLutre {
         ArrayList<VarDecl> ouputDeclList = inOutManager.generateOutputDecl();
         ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
         ouputDeclList.addAll(methodOutDeclList);
-        return new Node(DiscoverContract.TNODE, inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
+        return new Node(DiscoverContract.RNODE, inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
                 new ArrayList<>(), null, null, null);
     }
 

@@ -65,13 +65,13 @@ public class TProgram extends Ast {
     public Node generateMainNode(Node tNode) {
         List<Expr> wrapperArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
         List<Expr> tNodeArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
-        wrapperArgs.remove(wrapperArgs.size()-1);
+        wrapperArgs.remove(wrapperArgs.size()-1); //last argument is the output.
         Expr callRwapper = new NodeCallExpr(DiscoverContract.WRAPPERNODE, wrapperArgs);
-        tNodeArgs.set(tNodeArgs.size() - 1, callRwapper);
+        tNodeArgs.set(tNodeArgs.size() - 1, callRwapper); // settomg the last arguement which is the output, to the output of the wrapper call.
         NodeCallExpr callT = new NodeCallExpr(DiscoverContract.TNODE, (List<Expr>) tNodeArgs);
         assert (tNode.outputs.size() == 1); //assuming a single output is possible for TNode to indicate constraints are
-        // passing
-        VarDecl mainOut = new VarDecl("out", tNode.outputs.get(0).type);
+        // passing, i.e., sat
+        VarDecl mainOut = new VarDecl("discovery_out", tNode.outputs.get(0).type);
         List mainOutList = new ArrayList();
         mainOutList.add(mainOut);
         Equation mainEq = new Equation(DiscoveryUtil.varDeclToIdExpr(mainOut), callT);
@@ -93,7 +93,7 @@ public class TProgram extends Ast {
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes.get(i).id.equals(main)) {
                 Node tnode = generateTnode(nodes.get(i));
-                newNodes.addAll(nodes.subList(i + 1, nodes.size())); //adding the rest of the nodes in the tprogram
+                newNodes.addAll(nodes.subList(i + 1, nodes.size())); //adding the rest of the nodes in the tprogram, so that the tnode is always the last node.
                 newNodes.add(tnode);
                 return newNodes;
             }
