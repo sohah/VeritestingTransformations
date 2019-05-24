@@ -4,9 +4,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import jkind.Main;
 import jkind.lustre.Node;
-import jkind.lustre.Program;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -81,7 +79,8 @@ public class DiscoverContract {
         jkindArgs[2] = "-solver";
         jkindArgs[3] = "z3";
         jkindArgs[4] = "-scratch";
-        Main.main(jkindArgs);
+        //Main.main(jkindArgs);
+
     }
 
 

@@ -2,7 +2,6 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
-import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import jkind.lustre.*;
 import za.ac.sun.cs.green.expr.Operation;
 

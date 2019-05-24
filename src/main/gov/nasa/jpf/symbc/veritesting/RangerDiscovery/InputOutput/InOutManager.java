@@ -3,7 +3,6 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.lustre.*;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 
