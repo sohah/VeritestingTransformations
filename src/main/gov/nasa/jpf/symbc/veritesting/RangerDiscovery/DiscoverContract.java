@@ -4,7 +4,11 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import jkind.SolverOption;
+import jkind.api.JKindApi;
+import jkind.api.results.JKindResult;
 import jkind.lustre.Node;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -65,21 +69,29 @@ public class DiscoverContract {
                     .toString() + mainNodeLustreFriendlyStr;
             writeToFile(contractMethodName + ".lus", mergedContracts);
 
-            callJkind();
+            callJkind(mergedContracts);
 
         }
         called = true;
         return null;
     }
 
-    private static void callJkind() {
+    private static JKindResult callJkind(String mergedContracts) {
         String[] jkindArgs = new String[5];
         jkindArgs[0] = "-jkind";
         jkindArgs[1] = folderName + contractMethodName + ".lus";
         jkindArgs[2] = "-solver";
         jkindArgs[3] = "z3";
         jkindArgs[4] = "-scratch";
-        //Main.main(jkindArgs);
+        JKindApi jKindApi = new JKindApi();
+        jKindApi.setSolver(SolverOption.Z3);
+        jKindApi.setJKindJar("../lib/jkind.jar");
+
+        JKindResult jKindResult = new JKindResult("discovery");
+
+        jKindApi.execute(mergedContracts, jKindResult, new NullProgressMonitor());
+        return jKindResult;
+
 
     }
 
