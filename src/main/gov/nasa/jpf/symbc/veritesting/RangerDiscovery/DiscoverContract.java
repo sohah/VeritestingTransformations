@@ -77,12 +77,12 @@ public class DiscoverContract {
     }
 
     private static JKindResult callJkind(String mergedContracts) {
-        String[] jkindArgs = new String[5];
+        /*String[] jkindArgs = new String[5];
         jkindArgs[0] = "-jkind";
         jkindArgs[1] = folderName + contractMethodName + ".lus";
         jkindArgs[2] = "-solver";
         jkindArgs[3] = "z3";
-        jkindArgs[4] = "-scratch";
+        jkindArgs[4] = "-scratch";*/
         JKindApi jKindApi = new JKindApi();
         jKindApi.setSolver(SolverOption.Z3);
         jKindApi.setJKindJar("../lib/jkind.jar");
