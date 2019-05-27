@@ -2,19 +2,21 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 
 import jkind.lustre.*;
 import jkind.lustre.visitors.AstMapVisitor;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.IdExprToVarDecl;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.isImplementationNode;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.varDeclToIdExpr;
 import static jkind.util.Util.getNodeTable;
 
 /**
  * This is the visitor that creates holes for all contants in the nodes. It starts by the main and if it found a reference to another node, then it does that and comes back. If a node that have a holes defined in it and was called by some another node, then in the signature of the call and also in the declartion of the parameters of the outside node, needs to include those holes which are defined in the inner node.
  */
-public class ConstHoleVisitor extends AstMapVisitor{
+public class ConstHoleVisitor extends AstMapVisitor {
     //accumulates all the varDeclarations for holes that are defined while visiting a specific node, though an instance of this class.
     private List<VarDecl> holeVarDecl = new ArrayList<>();
 
@@ -28,12 +30,11 @@ public class ConstHoleVisitor extends AstMapVisitor{
     private static Map<String, List<VarDecl>> nodeHoleVarDecl = new HashMap<>();
 
     // accumulates all the holes and the old constant value that they are replacing.
-    private static Map<Hole, Ast> holeToConstatnt =  new HashMap<>();
+    private static Map<Hole, Ast> holeToConstatnt = new HashMap<>();
 
-    public void setNodeTable(Map<String,Node> nodeTable) {
+    public void setNodeTable(Map<String, Node> nodeTable) {
         ConstHoleVisitor.nodeTable = nodeTable;
     }
-
 
 
     @Override
@@ -50,9 +51,12 @@ public class ConstHoleVisitor extends AstMapVisitor{
     @Override
     public Expr visit(NodeCallExpr e) {
 
+        if(isImplementationNode(e.node))
+            return e;
+
         Node holeNode = ConstHoleVisitor.execute(nodeTable.get(e.node));
         List<Expr> arguments = visitExprs(e.args);
-        arguments.addAll(varDeclToIdExpr(nodeHoleVarDecl.get(holeNode)));
+        arguments.addAll(varDeclToIdExpr(nodeHoleVarDecl.get(holeNode.id)));
 
         return new NodeCallExpr(e.location, e.node, arguments);
     }
@@ -86,6 +90,7 @@ public class ConstHoleVisitor extends AstMapVisitor{
 
     /**
      * This executes the ConstHoleVisitor on the main node, which might later invoke multiple instances of the ConstHoleVisitor but on other nodes, where the later requires the other execute methode.
+     *
      * @param program
      * @return
      */
@@ -97,28 +102,31 @@ public class ConstHoleVisitor extends AstMapVisitor{
         Node mainNode = program.getMainNode();
         Ast holeNode = mainNode.accept(constHoleVisitor);
 
-        assert(holeNode instanceof Node);
+        assert (holeNode instanceof Node);
 
         holeTable.put(((Node) holeNode).id, (Node) holeNode);
         nodeHoleVarDecl.put(((Node) holeNode).id, constHoleVisitor.holeVarDecl);
 
-        return new Program(Location.NULL, program.types, program.constants, program.functions, (List<Node>) holeTable.values(), mainNode.id);
+        return new Program(Location.NULL, program.types, program.constants, program.functions, new ArrayList<Node>(holeTable.values()), mainNode.id);
     }
 
 
     /**
      * This is used to execute the ConstHoleVisitor on non-main nodes.
+     *
      * @param node
      * @return
      */
     public static Node execute(Node node) {
-        if(holeTable.containsKey(node.id)) //if we already changed the node with constant holes then just return that.
+        if (isImplementationNode(node.id))
+            return node;
+        if (holeTable.containsKey(node.id)) //if we already changed the node with constant holes then just return that.
             return holeTable.get(node.id);
 
         ConstHoleVisitor constHoleVisitor = new ConstHoleVisitor();
         Ast holeNode = node.accept(constHoleVisitor);
 
-        assert(holeNode instanceof Node);
+        assert (holeNode instanceof Node);
 
         holeTable.put(((Node) holeNode).id, (Node) holeNode);
         nodeHoleVarDecl.put(((Node) holeNode).id, constHoleVisitor.holeVarDecl);
