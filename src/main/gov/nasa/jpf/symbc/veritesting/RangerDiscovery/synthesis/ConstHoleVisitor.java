@@ -2,9 +2,6 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 
 import jkind.lustre.*;
 import jkind.lustre.visitors.AstMapVisitor;
-import jkind.lustre.visitors.AstVisitor;
-import jkind.lustre.visitors.ExprMapVisitor;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +57,24 @@ public class ConstHoleVisitor extends AstMapVisitor{
         return new NodeCallExpr(e.location, e.node, arguments);
     }
 
+    @Override
+    public Node visit(Node e) {
+        List<VarDecl> outputs = e.outputs;
+        List<VarDecl> locals = e.locals;
+        List<Equation> equations = visitEquations(e.equations);
+
+        List<VarDecl> inputs = new ArrayList<>();
+        inputs.addAll(e.inputs);
+        inputs.addAll(this.holeVarDecl);
+
+        List<Expr> assertions = visitAssertions(e.assertions);
+        List<String> properties = visitProperties(e.properties);
+        List<String> ivc = e.ivc;
+        List<String> realizabilityInputs = e.realizabilityInputs;
+        Contract contract = e.contract;
+        return new Node(e.location, e.id, inputs, outputs, locals, equations, properties, assertions,
+                realizabilityInputs, contract, ivc);
+    }
 
     private Expr createAndPopulateHole(Expr e, NamedType type) {
         ConstantHole newHole = new ConstantHole("");
@@ -74,7 +89,7 @@ public class ConstHoleVisitor extends AstMapVisitor{
      * @param program
      * @return
      */
-    public static Node executeMain(Program program) {
+    public static Program executeMain(Program program) {
         Map<String, Node> nodeTable = getNodeTable(program.nodes);
 
         ConstHoleVisitor constHoleVisitor = new ConstHoleVisitor();
@@ -86,7 +101,8 @@ public class ConstHoleVisitor extends AstMapVisitor{
 
         holeTable.put(((Node) holeNode).id, (Node) holeNode);
         nodeHoleVarDecl.put(((Node) holeNode).id, constHoleVisitor.holeVarDecl);
-        return (Node) holeNode;
+
+        return new Program(Location.NULL, program.types, program.constants, program.functions, (List<Node>) holeTable.values(), mainNode.id);
     }
 
 

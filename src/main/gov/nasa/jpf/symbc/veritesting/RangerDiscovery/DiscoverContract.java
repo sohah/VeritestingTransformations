@@ -2,12 +2,14 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstHoleVisitor;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.SolverOption;
 import jkind.api.JKindApi;
 import jkind.api.results.JKindResult;
 import jkind.lustre.Node;
+import jkind.lustre.Program;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import java.util.ArrayList;
@@ -68,6 +70,10 @@ public class DiscoverContract {
             String mergedContracts = rNodeLustreFriendlyStr + rWrapperLustreFriendlyStr + tProgram
                     .toString() + mainNodeLustreFriendlyStr;
             writeToFile(contractMethodName + ".lus", mergedContracts);
+
+            Program program = new Program(cdNodeList.toArray(new Node[cdNodeList.size()]));
+            Program holeProgram = ConstHoleVisitor.executeMain(program);
+            writeToFile(contractMethodName + "hole.lus", holeProgram.toString());
 
             callJkind(mergedContracts);
 
