@@ -76,6 +76,9 @@ public class DiscoverContract {
             writeToFile(contractMethodName + "hole.lus", holeProgram.toString());
 
             callJkind(mergedContracts);
+            System.out.println("counter example contract call finished!");
+            callJkind(holeProgram.toString());
+            System.out.println("hole contract call finished!");
 
         }
         called = true;

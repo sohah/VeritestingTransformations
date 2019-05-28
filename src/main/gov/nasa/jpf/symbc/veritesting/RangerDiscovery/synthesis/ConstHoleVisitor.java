@@ -17,6 +17,7 @@ import static jkind.util.Util.getNodeTable;
  * This is the visitor that creates holes for all contants in the nodes. It starts by the main and if it found a reference to another node, then it does that and comes back. If a node that have a holes defined in it and was called by some another node, then in the signature of the call and also in the declartion of the parameters of the outside node, needs to include those holes which are defined in the inner node.
  */
 public class ConstHoleVisitor extends AstMapVisitor {
+    private static List<Node> implementationNodes = new ArrayList<>();
     //accumulates all the varDeclarations for holes that are defined while visiting a specific node, though an instance of this class.
     private List<VarDecl> holeVarDecl = new ArrayList<>();
 
@@ -109,7 +110,10 @@ public class ConstHoleVisitor extends AstMapVisitor {
         holeTable.put(((Node) holeNode).id, (Node) holeNode);
         nodeHoleVarDecl.put(((Node) holeNode).id, constHoleVisitor.holeVarDecl);
 
-        return new Program(Location.NULL, program.types, program.constants, program.functions, new ArrayList<Node>(holeTable.values()), mainNode.id);
+        ArrayList<Node> programNodes = new ArrayList<Node>(holeTable.values());
+        programNodes.addAll(implementationNodes);
+
+        return new Program(Location.NULL, program.types, program.constants, program.functions, programNodes, mainNode.id);
     }
 
 
@@ -120,8 +124,9 @@ public class ConstHoleVisitor extends AstMapVisitor {
      * @return
      */
     public static Node execute(Node node) {
-        if (isImplementationNode(node.id))
-            return node;
+        if (isImplementationNode(node.id)){
+            implementationNodes.add(node);
+            return node;}
         if (holeTable.containsKey(node.id)) //if we already changed the node with constant holes then just return that.
             return holeTable.get(node.id);
 
