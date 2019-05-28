@@ -56,7 +56,9 @@ public class ConstHoleVisitor extends AstMapVisitor {
 
         Node holeNode = ConstHoleVisitor.execute(nodeTable.get(e.node));
         List<Expr> arguments = visitExprs(e.args);
-        arguments.addAll(varDeclToIdExpr(nodeHoleVarDecl.get(holeNode.id)));
+        List<VarDecl> callHoles = nodeHoleVarDecl.get(holeNode.id);
+        arguments.addAll(varDeclToIdExpr(callHoles));
+        holeVarDecl.addAll(callHoles);
 
         return new NodeCallExpr(e.location, e.node, arguments);
     }
