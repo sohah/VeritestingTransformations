@@ -7,6 +7,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.SolverOption;
 import jkind.api.JKindApi;
+import jkind.api.KindApi;
 import jkind.api.results.JKindResult;
 import jkind.lustre.Node;
 import jkind.lustre.Program;
@@ -72,8 +73,8 @@ public class DiscoverContract {
             writeToFile(contractMethodName + ".lus", mergedContracts);
 
             Program program = new Program(cdNodeList.toArray(new Node[cdNodeList.size()]));
-            Program holeProgram = ConstHoleVisitor.executeMain(program);
-            writeToFile(contractMethodName + "hole.lus", holeProgram.toString());
+            Program holeProgram = ConstHoleVisitor.executeMain(program, tProgram);
+            writeToFile(contractMethodName + "hole.lus", ToLutre.lustreFriendlyString(holeProgram.toString()));
 
             callJkind(mergedContracts);
             System.out.println("counter example contract call finished!");
@@ -98,7 +99,15 @@ public class DiscoverContract {
 
         JKindResult jKindResult = new JKindResult("discovery");
 
-        jKindApi.execute(mergedContracts, jKindResult, new NullProgressMonitor());
+        new Thread("Analysis") {
+            @Override
+            public void run() {
+                KindApi api = new JKindApi();
+                api.setTimeout(10);
+                api.execute(mergedContracts, jKindResult, new NullProgressMonitor());
+            }
+        }.start();
+
         return jKindResult;
 
 

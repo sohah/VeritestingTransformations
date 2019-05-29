@@ -147,7 +147,7 @@ public class DiscoveryUtil {
     }
 
     public static boolean isImplementationNode(String nodeId){
-        return (nodeId.equals(DiscoverContract.RNODE) || nodeId.equals(DiscoverContract.WRAPPERNODE));
+        return (nodeId.contains(DiscoverContract.RNODE) || nodeId.contains(DiscoverContract.WRAPPERNODE));
     }
 
 }

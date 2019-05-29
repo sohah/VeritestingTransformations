@@ -1,5 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.TProgram;
 import jkind.lustre.*;
 import jkind.lustre.visitors.AstMapVisitor;
 
@@ -17,7 +19,7 @@ import static jkind.util.Util.getNodeTable;
  * This is the visitor that creates holes for all contants in the nodes. It starts by the main and if it found a reference to another node, then it does that and comes back. If a node that have a holes defined in it and was called by some another node, then in the signature of the call and also in the declartion of the parameters of the outside node, needs to include those holes which are defined in the inner node.
  */
 public class ConstHoleVisitor extends AstMapVisitor {
-    private static List<Node> implementationNodes = new ArrayList<>();
+
     //accumulates all the varDeclarations for holes that are defined while visiting a specific node, though an instance of this class.
     private List<VarDecl> holeVarDecl = new ArrayList<>();
 
@@ -32,6 +34,7 @@ public class ConstHoleVisitor extends AstMapVisitor {
 
     // accumulates all the holes and the old constant value that they are replacing.
     private static Map<Hole, Ast> holeToConstatnt = new HashMap<>();
+
 
     public void setNodeTable(Map<String, Node> nodeTable) {
         ConstHoleVisitor.nodeTable = nodeTable;
@@ -52,14 +55,23 @@ public class ConstHoleVisitor extends AstMapVisitor {
     @Override
     public Expr visit(NodeCallExpr e) {
 
-        if(isImplementationNode(e.node))
+        if (isImplementationNode(e.node))
             return e;
+
 
         Node holeNode = ConstHoleVisitor.execute(nodeTable.get(e.node));
         List<Expr> arguments = visitExprs(e.args);
         List<VarDecl> callHoles = nodeHoleVarDecl.get(holeNode.id);
+
         arguments.addAll(varDeclToIdExpr(callHoles));
-        holeVarDecl.addAll(callHoles);
+
+
+        /**
+         * sort of a hack here, but should work. this is handling the case were the called node has already been called and therefore we have already included its holes in the previous call. Here we are checking that the first hole in the call exist instead of checking all of them.
+         */
+
+        if (!holeVarDecl.contains(callHoles.get(0)))
+            holeVarDecl.addAll(callHoles);
 
         return new NodeCallExpr(e.location, e.node, arguments);
     }
@@ -95,9 +107,10 @@ public class ConstHoleVisitor extends AstMapVisitor {
      * This executes the ConstHoleVisitor on the main node, which might later invoke multiple instances of the ConstHoleVisitor but on other nodes, where the later requires the other execute methode.
      *
      * @param program
+     * @param tProgram
      * @return
      */
-    public static Program executeMain(Program program) {
+    public static Program executeMain(Program program, TProgram tProgram) {
         Map<String, Node> nodeTable = getNodeTable(program.nodes);
 
         ConstHoleVisitor constHoleVisitor = new ConstHoleVisitor();
@@ -111,9 +124,10 @@ public class ConstHoleVisitor extends AstMapVisitor {
         nodeHoleVarDecl.put(((Node) holeNode).id, constHoleVisitor.holeVarDecl);
 
         ArrayList<Node> programNodes = new ArrayList<Node>(holeTable.values());
-        programNodes.addAll(implementationNodes);
+        programNodes.add(nodeTable.get(DiscoverContract.RNODE));
+        programNodes.add(nodeTable.get(DiscoverContract.WRAPPERNODE));
 
-        return new Program(Location.NULL, program.types, program.constants, program.functions, programNodes, mainNode.id);
+        return new Program(Location.NULL, tProgram.types, tProgram.constants, tProgram.functions, programNodes, mainNode.id);
     }
 
 
@@ -124,9 +138,9 @@ public class ConstHoleVisitor extends AstMapVisitor {
      * @return
      */
     public static Node execute(Node node) {
-        if (isImplementationNode(node.id)){
-            implementationNodes.add(node);
-            return node;}
+        if (isImplementationNode(node.id))
+            return node;
+
         if (holeTable.containsKey(node.id)) //if we already changed the node with constant holes then just return that.
             return holeTable.get(node.id);
 
