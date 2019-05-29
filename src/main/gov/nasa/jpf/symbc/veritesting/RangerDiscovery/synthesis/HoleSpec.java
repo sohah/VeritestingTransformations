@@ -2,10 +2,14 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 
 import jkind.lustre.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class NodeSynthesis {
-    Node node;
+public class HoleSpec {
+    List<String> freeInput = new ArrayList<>();
+    List<String> stateInput = new ArrayList<>();
+    List<String> output = new ArrayList<>();
+    List<String> holeInput = new ArrayList<>();
 
     public Node exposeNodeState(Node enclosedStateNode){
 

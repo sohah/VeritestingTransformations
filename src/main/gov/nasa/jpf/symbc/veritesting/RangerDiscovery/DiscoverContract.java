@@ -11,8 +11,12 @@ import jkind.api.KindApi;
 import jkind.api.results.JKindResult;
 import jkind.lustre.Node;
 import jkind.lustre.Program;
+import jkind.lustre.parsing.LustreParseUtil;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -72,8 +76,12 @@ public class DiscoverContract {
                     .toString() + mainNodeLustreFriendlyStr;
             writeToFile(contractMethodName + ".lus", mergedContracts);
 
-            Program program = new Program(cdNodeList.toArray(new Node[cdNodeList.size()]));
-            Program holeProgram = ConstHoleVisitor.executeMain(program, tProgram);
+            Program holeProgram = null;
+            try {
+                holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             writeToFile(contractMethodName + "hole.lus", ToLutre.lustreFriendlyString(holeProgram.toString()));
 
             callJkind(mergedContracts);

@@ -33,7 +33,6 @@ public class TProgram extends Ast {
         String programStr = null;
         try {
             programStr = new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8");
-
         } catch (IOException e) {
             System.out.println("Problem reading file. " + e.getMessage());
         }
@@ -53,7 +52,6 @@ public class TProgram extends Ast {
         this.constants = constants;
         this.functions = functions;
         this.nodes = nodes;
-
     }
 
     /**
