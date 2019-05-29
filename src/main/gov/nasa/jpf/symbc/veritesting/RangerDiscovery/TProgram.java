@@ -33,7 +33,6 @@ public class TProgram extends Ast {
         String programStr = null;
         try {
             programStr = new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8");
-
         } catch (IOException e) {
             System.out.println("Problem reading file. " + e.getMessage());
         }
@@ -53,19 +52,24 @@ public class TProgram extends Ast {
         this.constants = constants;
         this.functions = functions;
         this.nodes = nodes;
-
     }
 
-    public Node generateMainNode(Node tNode, Node wrapperNode, InOutManager inOutManager) {
+    /**
+     * This is used to generate mainNode, that invokes both tNode and rwrapper.
+     * @param tNode
+     * @return
+     */
+
+    public Node generateMainNode(Node tNode) {
         List<Expr> wrapperArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
         List<Expr> tNodeArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
-        wrapperArgs.remove(wrapperArgs.size()-1);
-        Expr callRwapper = new NodeCallExpr("R_wrapper", wrapperArgs);
-        tNodeArgs.set(tNodeArgs.size() - 1, callRwapper);
-        NodeCallExpr callT = new NodeCallExpr("T_node", (List<Expr>) tNodeArgs);
+        wrapperArgs.remove(wrapperArgs.size()-1); //last argument is the output.
+        Expr callRwapper = new NodeCallExpr(DiscoverContract.WRAPPERNODE, wrapperArgs);
+        tNodeArgs.set(tNodeArgs.size() - 1, callRwapper); // settomg the last arguement which is the output, to the output of the wrapper call.
+        NodeCallExpr callT = new NodeCallExpr(DiscoverContract.TNODE, (List<Expr>) tNodeArgs);
         assert (tNode.outputs.size() == 1); //assuming a single output is possible for TNode to indicate constraints are
-        // passing
-        VarDecl mainOut = new VarDecl("out", tNode.outputs.get(0).type);
+        // passing, i.e., sat
+        VarDecl mainOut = new VarDecl("discovery_out", tNode.outputs.get(0).type);
         List mainOutList = new ArrayList();
         mainOutList.add(mainOut);
         Equation mainEq = new Equation(DiscoveryUtil.varDeclToIdExpr(mainOut), callT);
@@ -76,25 +80,31 @@ public class TProgram extends Ast {
 
     }
 
+    /**
+     * This changes the main of the spec to become the T_node.
+     * @param nodes
+     * @param main
+     * @return
+     */
     private List<? extends Node> changeMainToTnode(List<Node> nodes, String main) {
         List<Node> newNodes = new ArrayList<>();
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes.get(i).id.equals(main)) {
                 Node tnode = generateTnode(nodes.get(i));
-                newNodes.addAll(nodes.subList(i + 1, nodes.size()));
+                newNodes.addAll(nodes.subList(i + 1, nodes.size())); //adding the rest of the nodes in the tprogram, so that the tnode is always the last node.
                 newNodes.add(tnode);
                 return newNodes;
             }
             newNodes.add(nodes.get(i));
         }
 
-        System.out.println("cannot find main to convert to T.");
+        System.out.println("cannot find main to convert to T node.");
         assert false;
         return null;
     }
 
     private Node generateTnode(Node node) {
-        return new Node("T_node", node.inputs, node.outputs, node.locals, node.equations, node.properties, node
+        return new Node(DiscoverContract.TNODE, node.inputs, node.outputs, node.locals, node.equations, node.properties, node
                 .assertions, node.realizabilityInputs, node.contract, node.ivc);
     }
 /*
@@ -109,6 +119,6 @@ public class TProgram extends Ast {
 
     @Override
     public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
-        return visitor.visit(new Program(Location.NULL, types, constants, functions, nodes, "T_node"));
+        return visitor.visit(new Program(Location.NULL, types, constants, functions, nodes, DiscoverContract.TNODE));
     }
 }

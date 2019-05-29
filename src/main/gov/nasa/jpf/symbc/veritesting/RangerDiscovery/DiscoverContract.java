@@ -2,12 +2,21 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstHoleVisitor;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import jkind.Main;
+import jkind.SolverOption;
+import jkind.api.JKindApi;
+import jkind.api.KindApi;
+import jkind.api.results.JKindResult;
 import jkind.lustre.Node;
 import jkind.lustre.Program;
+import jkind.lustre.parsing.LustreParseUtil;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -26,6 +35,9 @@ public class DiscoverContract {
     //TODO: These needs to be configured using the .jpf file.
     public static String folderName = "../src/DiscoveryExamples/";
     static String tFileName = folderName + "ImaginaryPad";
+    public static String TNODE = "T_node";
+    public static String RNODE = "R_node";
+    public static String WRAPPERNODE = "R_wrapper";
 
 /***** begin of unused vars***/
     /**
@@ -48,9 +60,8 @@ public class DiscoverContract {
             Node rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
             TProgram tProgram = new TProgram(tFileName);
             //it is always the case the the last node in a tProgram is tNode
-            assert (tProgram.nodes.get(tProgram.nodes.size() - 1).id.equals("T_node"));
-            Node mainNode = tProgram.generateMainNode(tProgram.nodes.get(tProgram.nodes.size() - 1), rWrapper, contract
-                    .inOutManager);
+            assert (tProgram.nodes.get(tProgram.nodes.size() - 1).id.equals(TNODE));
+            Node mainNode = tProgram.generateMainNode(tProgram.nodes.get(tProgram.nodes.size() - 1));
 
             ArrayList<Node> cdNodeList = new ArrayList<>();
             cdNodeList.addAll(tProgram.nodes);
@@ -65,21 +76,49 @@ public class DiscoverContract {
                     .toString() + mainNodeLustreFriendlyStr;
             writeToFile(contractMethodName + ".lus", mergedContracts);
 
-            callJkind();
+            Program holeProgram = null;
+            try {
+                holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            writeToFile(contractMethodName + "hole.lus", ToLutre.lustreFriendlyString(holeProgram.toString()));
+
+            callJkind(mergedContracts);
+            System.out.println("counter example contract call finished!");
+            callJkind(holeProgram.toString());
+            System.out.println("hole contract call finished!");
 
         }
         called = true;
         return null;
     }
 
-    private static void callJkind() {
-        String[] jkindArgs = new String[5];
+    private static JKindResult callJkind(String mergedContracts) {
+        /*String[] jkindArgs = new String[5];
         jkindArgs[0] = "-jkind";
         jkindArgs[1] = folderName + contractMethodName + ".lus";
         jkindArgs[2] = "-solver";
         jkindArgs[3] = "z3";
-        jkindArgs[4] = "-scratch";
-        Main.main(jkindArgs);
+        jkindArgs[4] = "-scratch";*/
+        JKindApi jKindApi = new JKindApi();
+        jKindApi.setSolver(SolverOption.Z3);
+        jKindApi.setJKindJar("../lib/jkind.jar");
+
+        JKindResult jKindResult = new JKindResult("discovery");
+
+        new Thread("Analysis") {
+            @Override
+            public void run() {
+                KindApi api = new JKindApi();
+                api.setTimeout(10);
+                api.execute(mergedContracts, jKindResult, new NullProgressMonitor());
+            }
+        }.start();
+
+        return jKindResult;
+
+
     }
 
 

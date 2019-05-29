@@ -2,7 +2,6 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
-import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.StatisticManager;
 import jkind.lustre.*;
 import za.ac.sun.cs.green.expr.Operation;
 
@@ -87,7 +86,7 @@ public class DiscoveryUtil {
             return BinaryOp.NOTEQUAL;
         else if (operator == Operation.Operator.GT)
             return BinaryOp.GREATER;
-        else if (operator== Operation.Operator.LT)
+        else if (operator == Operation.Operator.LT)
             return BinaryOp.LESS;
         else if (operator == Operation.Operator.GE)
             return BinaryOp.GREATEREQUAL;
@@ -104,28 +103,31 @@ public class DiscoveryUtil {
         return null;
     }
 
-    public static List<IdExpr> varDeclToIdExpr(List<VarDecl> varDeclList){
+    public static List<IdExpr> varDeclToIdExpr(List<VarDecl> varDeclList) {
         ArrayList<IdExpr> idExprList = new ArrayList<>();
 
-        for(int i=0; i< varDeclList.size() ; i++){
+        for (int i = 0; i < varDeclList.size(); i++) {
             idExprList.add(new IdExpr(varDeclList.get(i).id));
         }
 
         return idExprList;
     }
 
-    public static IdExpr varDeclToIdExpr(VarDecl varDecl){
+    public static IdExpr varDeclToIdExpr(VarDecl varDecl) {
         return new IdExpr(varDecl.id);
     }
 
+    public static VarDecl IdExprToVarDecl(IdExpr idExpr, NamedType namedType) {
+        return new VarDecl(idExpr.id, namedType);
+    }
 
-    public static boolean writeToFile(String fileName, String content){
+
+    public static boolean writeToFile(String fileName, String content) {
         fileName = DiscoverContract.folderName + "/" + fileName;
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(fileName), "utf-8"))) {
             writer.write(content);
-        }
-        catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             System.out.println("unable to write to file!");
             e.printStackTrace();
         } catch (IOException e) {
@@ -136,11 +138,16 @@ public class DiscoveryUtil {
     }
 
 
-    public static Pair<VarDecl, Equation> replicateToOut(VarDecl varDecl, String stringName){
+    public static Pair<VarDecl, Equation> replicateToOut(VarDecl varDecl, String stringName) {
         VarDecl newVarDecl = new VarDecl(stringName, varDecl.type);
 
         Equation eq = new Equation(varDeclToIdExpr(newVarDecl), varDeclToIdExpr(varDecl));
 
         return new Pair(newVarDecl, eq);
     }
+
+    public static boolean isImplementationNode(String nodeId){
+        return (nodeId.contains(DiscoverContract.RNODE) || nodeId.contains(DiscoverContract.WRAPPERNODE));
+    }
+
 }
