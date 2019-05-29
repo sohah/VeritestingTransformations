@@ -84,10 +84,10 @@ public class DiscoverContract {
             }
             writeToFile(contractMethodName + "hole.lus", ToLutre.lustreFriendlyString(holeProgram.toString()));
 
-            callJkind(mergedContracts);
-            System.out.println("counter example contract call finished!");
-            callJkind(holeProgram.toString());
-            System.out.println("hole contract call finished!");
+            JKindResult counterExResult = callJkind(mergedContracts);
+            System.out.println("JKIND: counter example contract call finished!");
+            JKindResult synthesisResult = callJkind(holeProgram.toString());
+            System.out.println("JKIND: hole contract call finished!");
 
         }
         called = true;
@@ -104,8 +104,9 @@ public class DiscoverContract {
         JKindApi jKindApi = new JKindApi();
         jKindApi.setSolver(SolverOption.Z3);
         jKindApi.setJKindJar("../lib/jkind.jar");
-
-        JKindResult jKindResult = new JKindResult("discovery");
+        ArrayList<String> propertiesToCheck = new ArrayList<String>();
+        propertiesToCheck.add("ok");
+        JKindResult jKindResult = new JKindResult("discovery", propertiesToCheck);
 
         new Thread("Analysis") {
             @Override
