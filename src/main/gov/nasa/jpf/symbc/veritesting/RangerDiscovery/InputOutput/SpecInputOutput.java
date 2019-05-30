@@ -4,6 +4,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.lustre.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SpecInputOutput {
     public ArrayList<Pair<String, NamedType>> varList = new ArrayList<>();
@@ -18,5 +19,15 @@ public class SpecInputOutput {
                 return true;
         }
         return false;
+    }
+
+    public List<String> getInputNames(){
+        List<String> names = new ArrayList<>();
+
+        for(int i=0; i<varList.size(); i++){
+            names.add(varList.get(i).getFirst());
+        }
+
+        return names;
     }
 }

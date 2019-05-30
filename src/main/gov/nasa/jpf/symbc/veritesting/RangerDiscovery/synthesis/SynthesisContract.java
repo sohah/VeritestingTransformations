@@ -15,14 +15,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.renameMainNode;
 
 public class SynthesisContract {
 
-    public final Program synthesisProgram;
+    private Program synthesisProgram;
     public final Contract contract;
+    private static int testCaseCounter = 0;
+    private static String testCaseVarName = "ok";
 
     public SynthesisContract(gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract contract, String fileName) throws IOException {
         this.contract = contract;
@@ -48,6 +51,14 @@ public class SynthesisContract {
 
         synthesisProgram = new Program(holeProgram.location, types, constants, functions, nodes, "main");
 
+    }
+
+    public static Collection<? extends Expr> getHoleExpr() {
+        List<Expr> holeExpr = new ArrayList<>();
+        for (int i = 0; i < ConstantHole.getCurrentHolePrefix(); i++) {
+            holeExpr.add(new IdExpr(ConstantHole.recreateHoleName(i)));
+        }
+        return holeExpr;
     }
 
     private Node createCheckSpecNode(Node synthesisSpecNode) {
@@ -95,7 +106,7 @@ public class SynthesisContract {
 
         BinaryExpr stepOkCond = new BinaryExpr(stepVarExpr, BinaryOp.LESSEQUAL, kExpr);
 
-        NodeCallExpr thenStmt = new NodeCallExpr(DiscoverContract.SYNTHESISNODE, (ArrayList<Expr>)(ArrayList<?>)DiscoveryUtil.varDeclToIdExpr(synthesisSpecNode.inputs));
+        NodeCallExpr thenStmt = new NodeCallExpr(DiscoverContract.SYNTHESISNODE, (ArrayList<Expr>) (ArrayList<?>) DiscoveryUtil.varDeclToIdExpr(synthesisSpecNode.inputs));
 
         IfThenElseExpr stepOkRhs = new IfThenElseExpr(stepOkCond, thenStmt, new BoolExpr(true));
 
@@ -198,17 +209,108 @@ public class SynthesisContract {
     /**
      * this is basically used to add test cases to synthesis the contract using the counter example values.
      * Here we make a call for every test case and we try to look for the property where !(k_0 /\ k_1 /\ k_2... /\ k_3)
+     *
      * @param counterExResult
      * @param contract
      */
-    public static void collectCounterExample(JKindResult counterExResult, Contract contract) {
+    public void collectCounterExample(JKindResult counterExResult, Contract contract) {
+
         for (PropertyResult pr : counterExResult.getPropertyResults()) {
             if (pr.getProperty() instanceof InvalidProperty) {
                 InvalidProperty ip = (InvalidProperty) pr.getProperty();
                 Counterexample counterExample = ip.getCounterexample();
                 //test cases needs to have the inputs of the main (not the input in the main that are actually output) and the output of the r_wrapper
-                
+
+                List<String> mainFreeInput = contract.tInOutManager.getFreeInputs();
+
+                //contains all the vars to be passed in the call except the hole vars, and it attaches with every one of those its location.
+                List<Pair<String, String>> testCaseInputVars = new ArrayList<>();
+                testCaseInputVars.addAll(collectTestCaseInputs(mainFreeInput, "main"));
+                testCaseInputVars.add(new Pair("out", DiscoverContract.WRAPPERNODE));
+
+                List<Equation> testCaseInputEq = makeTestInput(testCaseInputVars, counterExample);
+
+                Pair<VarDecl, Equation> testCaseCallPair = makeTestCaseEq(testCaseInputVars);
+
+                makeNewProgram(testCaseInputEq, testCaseCallPair);
+
             }
         }
     }
+
+    /**
+     * This creates a new program by changing the main to a new main that contains the test case being generated.
+     * @param testCaseCallPair
+     */
+    private void makeNewProgram(List<Equation> testCaseInputEqs, Pair<VarDecl, Equation> testCaseCallPair) {
+        Node mainNode = synthesisProgram.getMainNode();
+
+
+        String newId = mainNode.id;
+        List<VarDecl> newInputs = mainNode.inputs;
+        List<VarDecl> newOutputs = mainNode.outputs;
+        List<VarDecl> newLocals = new ArrayList<>();
+        newLocals.addAll(mainNode.locals);
+        newLocals.addAll()
+
+        List<Equation> newEquations = new ArrayList<>();
+        newEquations.addAll(mainNode.equations);
+        newEquations.addAll(testCaseInputEqs);
+
+        //need to create a new property for the synthesis query
+        List<String> newProperties = createSynthesisQueryProp();
+
+        List<Expr> newAssertions = mainNode.assertions;
+        List<String> newIvc = mainNode.ivc;
+        List<String> newRealizabilityInputs = mainNode.realizabilityInputs; // Nullable
+        jkind.lustre.Contract newContract = mainNode.contract; // Nullable
+
+        Node newMain = new Node(newId, newInputs, newOutputs, newLocals, newEquations, newProperties, newAssertions, newRealizabilityInputs, newContract, newIvc);
+        List<Node> newNodes = new ArrayList<>();
+        newNodes.addAll(synthesisProgram.nodes);
+        newNodes.set(newNodes.indexOf(mainNode), newMain);
+
+        this.synthesisProgram = new Program(Location.NULL, synthesisProgram.types, synthesisProgram.constants, synthesisProgram.functions, newNodes, "main");
+    }
+
+    private List<String> createSynthesisQueryProp() {
+
+    }
+
+    private static Pair<VarDecl, Equation> makeTestCaseEq(List<Pair<String, String>> testCaseInputVars) {
+        VarDecl testCaseVar = new VarDecl(testCaseVarName + "_" + testCaseCounter, NamedType.BOOL);
+        testCaseCounter++;
+
+        IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(testCaseVar);
+
+        List<Expr> rhsParameters = DiscoveryUtil.createIdExprs(DiscoveryUtil.getFirstPairList(testCaseInputVars));
+        rhsParameters.addAll(getHoleExpr());
+
+        NodeCallExpr rhs = new NodeCallExpr(DiscoverContract.CHECKSPECNODE, rhsParameters);
+
+        Equation testCaseEq = new Equation(lhs, rhs);
+
+        return new Pair<>(testCaseVar, testCaseEq);
+    }
+
+    /**
+     * this should retrun a list of equations that would bind every variable input with its sequence of valusations
+     * @param testCaseInputVars
+     * @param counterexample
+     * @return
+     */
+    private List<Equation> makeTestInput(List<Pair<String, String>> testCaseInputVars, Counterexample counterexample) {
+
+
+    }
+
+    private List<Pair<String, String>> collectTestCaseInputs(List<String> mainFreeInput, String location) {
+        List<Pair<String, String>> inputList = new ArrayList<>();
+
+        for (int i = 0; i < mainFreeInput.size(); i++) {
+            inputList.add(new Pair(mainFreeInput.get(i), location));
+        }
+        return inputList;
+    }
+
 }

@@ -146,13 +146,39 @@ public class DiscoveryUtil {
         return new Pair(newVarDecl, eq);
     }
 
-    public static boolean isImplementationNode(String nodeId){
+    public static boolean isImplementationNode(String nodeId) {
         return (nodeId.contains(DiscoverContract.RNODE) || nodeId.contains(DiscoverContract.WRAPPERNODE));
     }
 
     public static Node renameMainNode(String synthesis_spec, Node node) {
-        return  new Node(synthesis_spec, node.inputs, node.outputs, new ArrayList<>(), node.equations, node.properties, node.assertions, node.realizabilityInputs, node.contract, node.ivc);
+        return new Node(synthesis_spec, node.inputs, node.outputs, new ArrayList<>(), node.equations, node.properties, node.assertions, node.realizabilityInputs, node.contract, node.ivc);
 
     }
 
+    public static List<String> getFirstPairList(List<Pair<String, String>> pairList) {
+        List firstList = new ArrayList();
+        for (int i = 0; i < pairList.size(); i++) {
+            firstList.add(pairList.get(i).getFirst());
+        }
+
+        return firstList;
+    }
+
+
+    public static List<String> getSecondPairList(List<Pair<String, String>> pairList) {
+        List secondList = new ArrayList();
+        for (int i = 0; i < pairList.size(); i++) {
+            secondList.add(pairList.get(i).getSecond());
+        }
+
+        return secondList;
+    }
+
+    public static List<Expr> createIdExprs(List<String> varNames) {
+        List<Expr> idExprs = new ArrayList<>();
+        for (int i = 0; i < varNames.size(); i++) {
+            idExprs.add(new IdExpr(varNames.get(i)));
+        }
+        return idExprs;
+    }
 }

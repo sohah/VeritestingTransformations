@@ -2,6 +2,8 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
 import jkind.lustre.NamedType;
 
+import java.util.List;
+
 
 /**
  * this class manages the input and output of TNODE, RNODE uses another class that inherets from this one and adds a few extra functions.
@@ -10,7 +12,9 @@ public class SpecInOutManager {
 
     SpecInputOutput freeInput = new SpecInputOutput();
     SpecInputOutput stateVars = new SpecInputOutput();
-    SpecInputOutput outputVar = new SpecInputOutput();
+
+    // holds the inputs in the contract which are the outputs, i.e., which constrain the output.
+    SpecInputOutput inOutputVars = new SpecInputOutput();
 
     public void discoverVars() {
         discoverFreeInput();
@@ -29,7 +33,7 @@ public class SpecInOutManager {
     }
 
     private void discoverOutputVar() {
-        outputVar.add("ignition", NamedType.BOOL);
+        inOutputVars.add("ignition", NamedType.BOOL);
     }
 
     /**
@@ -52,8 +56,15 @@ public class SpecInOutManager {
     }
 
     public boolean isStateOutVar(String varName, NamedType type) {
-        return outputVar.contains(varName, type);
+        return inOutputVars.contains(varName, type);
     }
 
 
+    public List<String> getFreeInputs() {
+        return freeInput.getInputNames();
+    }
+
+    public List<String> getInOutput() {
+        return inOutputVars.getInputNames();
+    }
 }
