@@ -51,30 +51,13 @@ public class DiscoverContract {
 
     /***** end of unused vars***/
 
-    public static final ArrayList<Node> discoverLusterContract(DynamicRegion dynamicRegion) {
+    public static final ArrayList<Node> discoverLusterContract(DynamicRegion dynRegion) {
 
         if (!called) { //print out the translation once, for very first time we hit linearlization for the method of
             // interest.
-            Contract contract = new Contract();
-            Node rNode = ToLutre.generateRnode(dynamicRegion, contract);
-            Node rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
-            TProgram tProgram = new TProgram(tFileName);
-            //it is always the case the the last node in a tProgram is tNode
-            assert (tProgram.nodes.get(tProgram.nodes.size() - 1).id.equals(TNODE));
-            Node mainNode = tProgram.generateMainNode(tProgram.nodes.get(tProgram.nodes.size() - 1));
-
-            ArrayList<Node> cdNodeList = new ArrayList<>();
-            cdNodeList.addAll(tProgram.nodes);
-            cdNodeList.add(rNode);
-            cdNodeList.add(rWrapper);
-            cdNodeList.add(mainNode);
-            String rNodeLustreFriendlyStr = ToLutre.lustreFriendlyString(rNode);
-            String rWrapperLustreFriendlyStr = ToLutre.lustreFriendlyString(rWrapper);
-            String mainNodeLustreFriendlyStr = ToLutre.lustreFriendlyString(mainNode);
-
-            String mergedContracts = rNodeLustreFriendlyStr + rWrapperLustreFriendlyStr + tProgram
-                    .toString() + mainNodeLustreFriendlyStr;
-            writeToFile(contractMethodName + ".lus", mergedContracts);
+            CounterExContract counterExContract = new CounterExContract(dynRegion, tFileName);
+            String counterExContractStr = counterExContract.toString();
+            writeToFile(contractMethodName + ".lus", counterExContractStr);
 
             Program holeProgram = null;
             try {
@@ -84,7 +67,7 @@ public class DiscoverContract {
             }
             writeToFile(contractMethodName + "hole.lus", ToLutre.lustreFriendlyString(holeProgram.toString()));
 
-            JKindResult counterExResult = callJkind(mergedContracts);
+            JKindResult counterExResult = callJkind(counterExContractStr);
             System.out.println("JKIND: counter example contract call finished!");
             JKindResult synthesisResult = callJkind(holeProgram.toString());
             System.out.println("JKIND: hole contract call finished!");

@@ -2,6 +2,8 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.lustre.*;
 import jkind.lustre.parsing.LustreParseUtil;
 import jkind.lustre.visitors.AstVisitor;
@@ -13,23 +15,35 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.TNODE;
+
 
 /**
  * This class holds the T program, that can be used for either the counter Example step or the synthesis step.
  */
-public class TProgram extends Ast {
+public class CounterExContract extends Ast {
     public final List<TypeDef> types;
     public final List<Constant> constants;
     public final List<Function> functions;
     public final List<Node> nodes;
 
+    public final Node rNode;
+    public final Node rWrapper;
+    public final Node mainNode;
     /**
      * Generates a T program counter example step from a file path, usually this is done in the first time.
      *
      * @return
      */
-    public TProgram(String tFileName) {
+    public CounterExContract(DynamicRegion dynRegion, String tFileName) {
         super(Location.NULL);
+
+        //generating rNode and rWrapper
+        Contract contract = new Contract();
+        rNode = ToLutre.generateRnode(dynRegion, contract);
+        rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
+
+        //generating nodes, const, types, etc from the spec
         String programStr = null;
         try {
             programStr = new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8");
@@ -52,6 +66,15 @@ public class TProgram extends Ast {
         this.constants = constants;
         this.functions = functions;
         this.nodes = nodes;
+
+        //generating main node
+        assert (this.nodes.get(this.nodes.size() - 1).id.equals(TNODE));
+        mainNode = generateMainNode(this.nodes.get(this.nodes.size() - 1));
+
+        this.nodes.add(rNode);
+        this.nodes.add(rWrapper);
+        this.nodes.add(mainNode);
+
     }
 
     /**
@@ -66,7 +89,7 @@ public class TProgram extends Ast {
         wrapperArgs.remove(wrapperArgs.size()-1); //last argument is the output.
         Expr callRwapper = new NodeCallExpr(DiscoverContract.WRAPPERNODE, wrapperArgs);
         tNodeArgs.set(tNodeArgs.size() - 1, callRwapper); // settomg the last arguement which is the output, to the output of the wrapper call.
-        NodeCallExpr callT = new NodeCallExpr(DiscoverContract.TNODE, (List<Expr>) tNodeArgs);
+        NodeCallExpr callT = new NodeCallExpr(TNODE, (List<Expr>) tNodeArgs);
         assert (tNode.outputs.size() == 1); //assuming a single output is possible for TNode to indicate constraints are
         // passing, i.e., sat
         VarDecl mainOut = new VarDecl("discovery_out", tNode.outputs.get(0).type);
@@ -104,7 +127,7 @@ public class TProgram extends Ast {
     }
 
     private Node generateTnode(Node node) {
-        return new Node(DiscoverContract.TNODE, node.inputs, node.outputs, node.locals, node.equations, node.properties, node
+        return new Node(TNODE, node.inputs, node.outputs, node.locals, node.equations, node.properties, node
                 .assertions, node.realizabilityInputs, node.contract, node.ivc);
     }
 /*
@@ -114,11 +137,17 @@ public class TProgram extends Ast {
 
     @Override
     public String toString() {
-        return super.toString();
+
+        //return super.toString();
+        Program counterExampleProgram = new Program(Location.NULL, types, constants, functions, nodes, "main");
+
+        String programStr = ToLutre.lustreFriendlyString(counterExampleProgram.toString());
+        return programStr;
+
     }
 
     @Override
     public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
-        return visitor.visit(new Program(Location.NULL, types, constants, functions, nodes, DiscoverContract.TNODE));
+        return visitor.visit(new Program(Location.NULL, types, constants, functions, nodes, TNODE));
     }
 }
