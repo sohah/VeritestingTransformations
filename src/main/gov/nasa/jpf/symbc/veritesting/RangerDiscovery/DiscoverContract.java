@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstHoleVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.SolverOption;
@@ -59,17 +60,20 @@ public class DiscoverContract {
             String counterExContractStr = counterExContract.toString();
             writeToFile(contractMethodName + ".lus", counterExContractStr);
 
-            Program holeProgram = null;
+            SynthesisContract synthesisContract = null;
             try {
-                holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8")));
+                synthesisContract = new SynthesisContract(tFileName);
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("problem occured while creating a synthesis contract! aborting!\n" + e.getMessage());
+                assert false;
             }
-            writeToFile(contractMethodName + "hole.lus", ToLutre.lustreFriendlyString(holeProgram.toString()));
+            assert(synthesisContract != null);
+            String synthesisContractStr = synthesisContract.toString();
+            writeToFile(contractMethodName + "hole.lus", synthesisContractStr);
 
             JKindResult counterExResult = callJkind(counterExContractStr);
             System.out.println("JKIND: counter example contract call finished!");
-            JKindResult synthesisResult = callJkind(holeProgram.toString());
+            JKindResult synthesisResult = callJkind(synthesisContractStr);
             System.out.println("JKIND: hole contract call finished!");
 
         }
