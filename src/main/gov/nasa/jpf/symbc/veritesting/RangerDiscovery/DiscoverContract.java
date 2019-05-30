@@ -10,11 +10,13 @@ import jkind.SolverOption;
 import jkind.api.JKindApi;
 import jkind.api.KindApi;
 import jkind.api.results.JKindResult;
+import jkind.api.results.Status;
 import jkind.lustre.Node;
 import jkind.lustre.Program;
 import jkind.lustre.parsing.LustreParseUtil;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -67,13 +69,13 @@ public class DiscoverContract {
                 System.out.println("problem occured while creating a synthesis contract! aborting!\n" + e.getMessage());
                 assert false;
             }
-            assert(synthesisContract != null);
+            assert (synthesisContract != null);
             String synthesisContractStr = synthesisContract.toString();
             writeToFile(contractMethodName + "hole.lus", synthesisContractStr);
 
-            JKindResult counterExResult = callJkind(counterExContractStr);
+            JKindResult counterExResult = callJkind(contractMethodName + ".lus");
             System.out.println("JKIND: counter example contract call finished!");
-            JKindResult synthesisResult = callJkind(synthesisContractStr);
+            JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
             System.out.println("JKIND: hole contract call finished!");
 
         }
@@ -81,32 +83,36 @@ public class DiscoverContract {
         return null;
     }
 
-    private static JKindResult callJkind(String mergedContracts) {
-        /*String[] jkindArgs = new String[5];
-        jkindArgs[0] = "-jkind";
-        jkindArgs[1] = folderName + contractMethodName + ".lus";
-        jkindArgs[2] = "-solver";
-        jkindArgs[3] = "z3";
-        jkindArgs[4] = "-scratch";*/
-        JKindApi jKindApi = new JKindApi();
-        jKindApi.setSolver(SolverOption.Z3);
-        jKindApi.setJKindJar("../lib/jkind.jar");
-        ArrayList<String> propertiesToCheck = new ArrayList<String>();
-        propertiesToCheck.add("ok");
-        JKindResult jKindResult = new JKindResult("discovery", propertiesToCheck);
+    private static JKindResult callJkind(String fileName) {
 
-        new Thread("Analysis") {
+        File file1 = new File(DiscoverContract.folderName + "/" + fileName);
+
+        File file = new File("/Users/sohahussein/git/VeritestingTransformations/src/DiscoveryExamples/runPad_counter" +
+                ".lus");
+        /*ArrayList<String> properties = new ArrayList<>();
+        properties.add("ok");
+
+        final JKindResult jKindResult = new JKindResult(file.getName(), properties);
+
+        new Thread("Discovery") {
             @Override
             public void run() {
                 KindApi api = new JKindApi();
                 api.setTimeout(10);
-                api.execute(mergedContracts, jKindResult, new NullProgressMonitor());
+                api.execute(file, jKindResult, new NullProgressMonitor());
             }
         }.start();
 
-        return jKindResult;
+        return jKindResult;*/
 
+        return runJKind(file1);
+    }
 
+    private static JKindResult runJKind(File file) {
+        JKindApi api = new JKindApi();
+        JKindResult result = new JKindResult("");
+        api.execute(file, result, new NullProgressMonitor());
+        return result;
     }
 
 
