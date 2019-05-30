@@ -10,10 +10,12 @@ import jkind.SolverOption;
 import jkind.api.JKindApi;
 import jkind.api.KindApi;
 import jkind.api.results.JKindResult;
+import jkind.api.results.PropertyResult;
 import jkind.api.results.Status;
 import jkind.lustre.Node;
 import jkind.lustre.Program;
 import jkind.lustre.parsing.LustreParseUtil;
+import jkind.results.InvalidProperty;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import java.io.File;
@@ -75,12 +77,22 @@ public class DiscoverContract {
 
             JKindResult counterExResult = callJkind(contractMethodName + ".lus");
             System.out.println("JKIND: counter example contract call finished!");
+            collectCounterExample(counterExResult);
             JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
             System.out.println("JKIND: hole contract call finished!");
-
+            collectCounterExample(counterExResult);
         }
         called = true;
         return null;
+    }
+
+    private static void collectCounterExample(JKindResult counterExResult) {
+        for (PropertyResult pr : counterExResult.getPropertyResults()) {
+            if (pr.getProperty() instanceof InvalidProperty) {
+                InvalidProperty ip = (InvalidProperty) pr.getProperty();
+                System.out.println(ip.getCounterexample());
+            }
+        }
     }
 
     private static JKindResult callJkind(String fileName) {
