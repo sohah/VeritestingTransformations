@@ -60,13 +60,14 @@ public class DiscoverContract {
 
         if (!called) { //print out the translation once, for very first time we hit linearlization for the method of
             // interest.
-            CounterExContract counterExContract = new CounterExContract(dynRegion, tFileName);
+            Contract contract = new Contract();
+            CounterExContract counterExContract = new CounterExContract(dynRegion, tFileName, contract);
             String counterExContractStr = counterExContract.toString();
             writeToFile(contractMethodName + ".lus", counterExContractStr);
 
             SynthesisContract synthesisContract = null;
             try {
-                synthesisContract = new SynthesisContract(tFileName);
+                synthesisContract = new SynthesisContract(contract, tFileName);
             } catch (IOException e) {
                 System.out.println("problem occured while creating a synthesis contract! aborting!\n" + e.getMessage());
                 assert false;

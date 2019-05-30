@@ -1,7 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.lustre.*;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.TNODE;
@@ -35,13 +33,13 @@ public class CounterExContract extends Ast {
      *
      * @return
      */
-    public CounterExContract(DynamicRegion dynRegion, String tFileName) {
+    public CounterExContract(DynamicRegion dynRegion, String tFileName, Contract contract) {
         super(Location.NULL);
 
         //generating rNode and rWrapper
-        Contract contract = new Contract();
+
         rNode = ToLutre.generateRnode(dynRegion, contract);
-        rWrapper = ToLutre.generateRwrapper(contract.inOutManager);
+        rWrapper = ToLutre.generateRwrapper(contract.rInOutManager);
 
         //generating nodes, const, types, etc from the spec
         String programStr = null;

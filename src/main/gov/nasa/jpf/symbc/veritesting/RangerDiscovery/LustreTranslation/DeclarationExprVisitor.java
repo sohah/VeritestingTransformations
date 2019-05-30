@@ -67,7 +67,7 @@ public class DeclarationExprVisitor implements ExprVisitor {
 
     @Override
     public Object visit(StringVariable expr) {
-    /*    if (inOutManager.isInOutVar(expr.toString(), lusterStringType)) { // if it is not input or output in it is a local var
+    /*    if (rInOutManager.isInOutVar(expr.toString(), lusterStringType)) { // if it is not input or output in it is a local var
             // that we care about adding
             VarDecl lusterVar = new VarDecl(expr.toString(), lusterStringType);
             declarationList.add(lusterVar);

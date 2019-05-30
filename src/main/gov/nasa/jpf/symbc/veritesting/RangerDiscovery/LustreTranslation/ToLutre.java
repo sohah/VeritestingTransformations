@@ -7,11 +7,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.lustre.*;
-import jkind.lustre.parsing.LustreParseUtil;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +17,7 @@ public class ToLutre {
 
 
     public static Node generateRnode(DynamicRegion dynamicRegion, Contract contract) {
-        InOutManager inOutManager = contract.inOutManager;
+        InOutManager inOutManager = contract.rInOutManager;
         ArrayList<VarDecl> localDeclList = DeclarationTranslator.execute(dynamicRegion, inOutManager);
         localDeclList.add(addSymVar());
         ArrayList<Equation> equationList = EquationVisitor.execute(dynamicRegion);

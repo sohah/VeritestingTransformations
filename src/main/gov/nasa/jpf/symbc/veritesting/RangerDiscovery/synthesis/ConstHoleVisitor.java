@@ -1,7 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.TProgram;
 import jkind.lustre.*;
 import jkind.lustre.visitors.AstMapVisitor;
 
