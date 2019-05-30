@@ -71,8 +71,8 @@ public class DiscoverContract {
             JKindResult counterExResult = callJkind(contractMethodName + ".lus");
             System.out.println("JKIND: counter example contract call finished!");
             synthesisContract.collectCounterExample(counterExResult, contract);
-            JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
-            System.out.println("JKIND: hole contract call finished!");
+            //JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
+            //System.out.println("JKIND: hole contract call finished!");
             //collectCounterExample(counterExResult);
         }
         called = true;

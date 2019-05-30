@@ -8,6 +8,7 @@ import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
 import jkind.lustre.*;
 import jkind.lustre.parsing.LustreParseUtil;
+import jkind.results.Counterexample;
 import jkind.results.InvalidProperty;
 
 import java.io.IOException;
@@ -156,16 +157,6 @@ public class SynthesisContract {
     }
 
 
-    public static void collectCounterExample(JKindResult counterExResult, Contract contract) {
-        for (PropertyResult pr : counterExResult.getPropertyResults()) {
-            if (pr.getProperty() instanceof InvalidProperty) {
-                InvalidProperty ip = (InvalidProperty) pr.getProperty();
-                System.out.println(ip.getCounterexample());
-            }
-        }
-    }
-
-
     @Override
     public String toString() {
         return synthesisProgram.toString();
@@ -201,5 +192,23 @@ public class SynthesisContract {
         jkind.lustre.Contract contract = null; // Nullable
 
         return new Node(id, inputs, outputs, locals, equations, properties, assertions, realizabilityInputs, contract, ivc);
+    }
+
+
+    /**
+     * this is basically used to add test cases to synthesis the contract using the counter example values.
+     * Here we make a call for every test case and we try to look for the property where !(k_0 /\ k_1 /\ k_2... /\ k_3)
+     * @param counterExResult
+     * @param contract
+     */
+    public static void collectCounterExample(JKindResult counterExResult, Contract contract) {
+        for (PropertyResult pr : counterExResult.getPropertyResults()) {
+            if (pr.getProperty() instanceof InvalidProperty) {
+                InvalidProperty ip = (InvalidProperty) pr.getProperty();
+                Counterexample counterExample = ip.getCounterexample();
+                //test cases needs to have the inputs of the main (not the input in the main that are actually output) and the output of the r_wrapper
+                
+            }
+        }
     }
 }
