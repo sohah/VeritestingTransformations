@@ -1,27 +1,16 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstHoleVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import jkind.SolverOption;
 import jkind.api.JKindApi;
-import jkind.api.KindApi;
 import jkind.api.results.JKindResult;
-import jkind.api.results.PropertyResult;
-import jkind.api.results.Status;
 import jkind.lustre.Node;
-import jkind.lustre.Program;
-import jkind.lustre.parsing.LustreParseUtil;
-import jkind.results.InvalidProperty;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -43,6 +32,8 @@ public class DiscoverContract {
     public static String TNODE = "T_node";
     public static String RNODE = "R_node";
     public static String WRAPPERNODE = "R_wrapper";
+    public static String SYNTHESISNODE = "Synthesis_spec";
+    public static String CHECKSPECNODE = "Check_spec";
 
 /***** begin of unused vars***/
     /**
@@ -78,45 +69,19 @@ public class DiscoverContract {
 
             JKindResult counterExResult = callJkind(contractMethodName + ".lus");
             System.out.println("JKIND: counter example contract call finished!");
-            collectCounterExample(counterExResult);
+            synthesisContract.collectCounterExample(counterExResult, contract);
             JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
             System.out.println("JKIND: hole contract call finished!");
-            collectCounterExample(counterExResult);
+            //collectCounterExample(counterExResult);
         }
         called = true;
         return null;
     }
 
-    private static void collectCounterExample(JKindResult counterExResult) {
-        for (PropertyResult pr : counterExResult.getPropertyResults()) {
-            if (pr.getProperty() instanceof InvalidProperty) {
-                InvalidProperty ip = (InvalidProperty) pr.getProperty();
-                System.out.println(ip.getCounterexample());
-            }
-        }
-    }
 
     private static JKindResult callJkind(String fileName) {
 
         File file1 = new File(DiscoverContract.folderName + "/" + fileName);
-
-        File file = new File("/Users/sohahussein/git/VeritestingTransformations/src/DiscoveryExamples/runPad_counter" +
-                ".lus");
-        /*ArrayList<String> properties = new ArrayList<>();
-        properties.add("ok");
-
-        final JKindResult jKindResult = new JKindResult(file.getName(), properties);
-
-        new Thread("Discovery") {
-            @Override
-            public void run() {
-                KindApi api = new JKindApi();
-                api.setTimeout(10);
-                api.execute(file, jKindResult, new NullProgressMonitor());
-            }
-        }.start();
-
-        return jKindResult;*/
 
         return runJKind(file1);
     }

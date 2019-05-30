@@ -16,4 +16,12 @@ public class ConstantHole extends IdExpr implements Hole {
         super(holeName + "_" + prefix);
         prefix++;
     }
+
+    public static int getCurrentHolePrefix(){
+        return prefix;
+    }
+
+    public static String recreateHoleName(int id){
+        return holeName + "_" + prefix;
+    }
 }

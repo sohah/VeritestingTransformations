@@ -150,4 +150,9 @@ public class DiscoveryUtil {
         return (nodeId.contains(DiscoverContract.RNODE) || nodeId.contains(DiscoverContract.WRAPPERNODE));
     }
 
+    public static Node renameMainNode(String synthesis_spec, Node node) {
+        return  new Node(synthesis_spec, node.inputs, node.outputs, node.locals, node.equations, node.properties, node.assertions, node.realizabilityInputs, node.contract, node.ivc);
+
+    }
+
 }
