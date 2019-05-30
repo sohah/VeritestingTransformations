@@ -192,6 +192,7 @@ public class SynthesisContract {
         BinaryExpr rhs = new BinaryExpr(inVarExpr, BinaryOp.ARROW, new BinaryExpr(inVarExpr, BinaryOp.AND, new UnaryExpr(UnaryOp.PRE, outVarExpr)));
 
         Equation globallyEq = new Equation(outVarExpr, rhs);
+        equations.add(globallyEq);
 
         List<String> properties = new ArrayList<>();
         List<Expr> assertions = new ArrayList<>();
