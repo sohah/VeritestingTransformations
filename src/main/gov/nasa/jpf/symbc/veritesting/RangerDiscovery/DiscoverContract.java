@@ -34,6 +34,7 @@ public class DiscoverContract {
     public static String WRAPPERNODE = "R_wrapper";
     public static String SYNTHESISNODE = "Synthesis_spec";
     public static String CHECKSPECNODE = "Check_spec";
+    public static String GLOBALYNODE = "H";
 
 /***** begin of unused vars***/
     /**

@@ -31,11 +31,14 @@ public class SynthesisContract {
         List<TypeDef> types = holeProgram.types;
         List<Constant> constants = holeProgram.constants;
         List<Function> functions = holeProgram.functions;
-        List<Node> nodes = holeProgram.nodes;
+        List<Node> nodes = new ArrayList<>();
+        nodes.addAll(holeProgram.nodes);
+        nodes.add(getGloballyNode());
         String main = holeProgram.main;
 
         Node mainNode = holeProgram.getMainNode();
         Node synthesisSpecNode = renameMainNode(DiscoverContract.SYNTHESISNODE, mainNode);
+
         nodes.set(nodes.indexOf(mainNode), synthesisSpecNode);
 
         nodes.add(createCheckSpecNode(synthesisSpecNode));
@@ -106,7 +109,7 @@ public class SynthesisContract {
 
         List<Expr> globalOkParameters = new ArrayList<>();
         globalOkParameters.add(stepOkVarExpr);
-        NodeCallExpr globalOkRhs2 = new NodeCallExpr("globally", globalOkParameters);
+        NodeCallExpr globalOkRhs2 = new NodeCallExpr("H", globalOkParameters);
         Equation globalOkEq = new Equation(globalOkLhs, new BinaryExpr(globalOkRhs1, BinaryOp.AND, globalOkRhs2));
         equations.add(globalOkEq);
 
@@ -166,5 +169,36 @@ public class SynthesisContract {
     @Override
     public String toString() {
         return synthesisProgram.toString();
+    }
+
+    public Node getGloballyNode() {
+        VarDecl inVarDecl = new VarDecl("in", NamedType.BOOL);
+        VarDecl outVarDecl = new VarDecl("out", NamedType.BOOL);
+
+        IdExpr inVarExpr = DiscoveryUtil.varDeclToIdExpr(inVarDecl);
+        IdExpr outVarExpr = DiscoveryUtil.varDeclToIdExpr(outVarDecl);
+
+
+        String id = DiscoverContract.GLOBALYNODE;
+        List<VarDecl> inputs = new ArrayList<>();
+        inputs.add(inVarDecl);
+
+        List<VarDecl> outputs = new ArrayList<>();
+        outputs.add(outVarDecl);
+
+        List<VarDecl> locals = new ArrayList<>();
+
+        List<Equation> equations = new ArrayList<>();
+        BinaryExpr rhs = new BinaryExpr(inVarExpr, BinaryOp.ARROW, new BinaryExpr(inVarExpr, BinaryOp.AND, new UnaryExpr(UnaryOp.PRE, outVarExpr)));
+
+        Equation globallyEq = new Equation(outVarExpr, rhs);
+
+        List<String> properties = new ArrayList<>();
+        List<Expr> assertions = new ArrayList<>();
+        List<String> ivc = new ArrayList<>();
+        List<String> realizabilityInputs = null; // Nullable
+        jkind.lustre.Contract contract = null; // Nullable
+
+        return new Node(id, inputs, outputs, locals, equations, properties, assertions, realizabilityInputs, contract, ivc);
     }
 }
