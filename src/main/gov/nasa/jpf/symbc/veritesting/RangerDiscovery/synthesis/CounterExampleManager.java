@@ -5,10 +5,12 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.SpecInputOutput;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
-import ia_parser.Exp;
 import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
 import jkind.lustre.*;
+import jkind.lustre.values.BooleanValue;
+import jkind.lustre.values.IntegerValue;
+import jkind.lustre.values.Value;
 import jkind.results.Counterexample;
 import jkind.results.InvalidProperty;
 
@@ -67,7 +69,7 @@ public class CounterExampleManager {
         VarDecl localTestCallVars = createVarDeclForOkOutput();
 
         Equation localTestCallEq = makeTestCaseEq(testInputVars, localTestCallVars);
-        List<Equation> localTestInputEqs = makeTestInputEqs();
+        List<Equation> localTestInputEqs = makeTestInputEqs(counterExResult, localTestInputVars);
 
         Equation localPropertyEq = makePropertyEq();
 
@@ -77,6 +79,81 @@ public class CounterExampleManager {
         testCallEqs.add(localTestCallEq);
 
         propertyEq = localPropertyEq;
+    }
+
+    /**
+     * This is used to collect the values of a single input over a stream of inputs that defines different valuations of the input in different k step. Here we use the testCaseNameLoc and testCaseOutputNameLoc, to create the right form of fields in smt form using the location name.
+     *
+     * @param counterExResult
+     * @param localTestInputVars
+     * @return
+     */
+    private List<Equation> makeTestInputEqs(Counterexample counterExResult, List<VarDecl> localTestInputVars) {
+        List<Equation> testInputEqs = new ArrayList<>();
+
+        int varDeclIndex = 0;
+        for (Map.Entry<String, Pair<String, NamedType>> entry : testCaseInputNameLoc.entrySet()) {
+            String varName = entry.getKey();
+            String location = entry.getValue().getFirst();
+            NamedType varType = entry.getValue().getSecond();
+
+            String smtVarName = String.valueOf(createSmtVarName(varName, location));
+
+            List<Value> values = getVarTestValues(counterExResult, smtVarName, varType);
+
+            IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(localTestInputVars.get(varDeclIndex));
+
+            Expr rhs = createValueExpr(varType, values.get(values.size() - 1));
+
+            for (int i = values.size() - 2; i != 0; i--) {
+                rhs = new UnaryExpr(UnaryOp.PRE, rhs);
+                rhs = new BinaryExpr(createValueExpr(varType, values.get(i)), BinaryOp.ARROW, rhs);
+            }
+
+            testInputEqs.add(new Equation(lhs, rhs));
+            varDeclIndex++;
+        }
+
+        return testInputEqs;
+    }
+
+    private Expr createValueExpr(NamedType varType, Value value) {
+        if (varType == NamedType.BOOL)
+            return new BoolExpr(((BooleanValue) value).value);
+        else if (varType == NamedType.INT)
+            return new IntExpr(((IntegerValue) value).value);
+        else {
+            System.out.println("unsupported type");
+            assert false;
+            return null;
+        }
+    }
+
+    private List<Value> getVarTestValues(Counterexample counterExResult, String smtVarName, NamedType varType) {
+        int maxK = counterExResult.getLength();
+
+        List<Value> values = new ArrayList<>();
+
+        for (int i = 0; i < maxK; i++) {
+            if (varType == NamedType.BOOL) {
+                values.add(counterExResult.getBooleanSignal(smtVarName).getValue(i));
+            } else if (varType == NamedType.INT) {
+                values.add(counterExResult.getIntegerSignal(smtVarName).getValue(i));
+            } else
+                assert false; //unsupported type.
+        }
+        return values;
+    }
+
+
+    private String createSmtVarName(String varName, String location) {
+        if (location.equals("main"))
+            return varName;
+        else {
+            assert (location.equals(DiscoverContract.WRAPPERNODE));
+            return DiscoverContract.WRAPPERNODE + "~0" + varName;
+        }
+
     }
 
     private Equation makePropertyEq() {
