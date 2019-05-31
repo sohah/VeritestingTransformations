@@ -65,38 +65,40 @@ public class DiscoverContract {
                 writeToFile(contractMethodName + ".lus", counterExContractStr);
 
                 JKindResult counterExResult = callJkind(contractMethodName + ".lus");
-                if (counterExResult.getPropertyResult("ok").getStatus() == Status.VALID) { //valid match
-                    System.out.println("Contract Matching! Aborting!");
-                    return;
-                } else if (counterExResult.getPropertyResult("ok").getStatus() == Status.INVALID) { //synthesis is needed
-                    if (synthesisContract == null) {
-                        try {
-                            synthesisContract = new SynthesisContract(contract, tFileName, counterExResult);
-                        } catch (IOException e) {
-                            System.out.println("problem occured while creating a synthesis contract! aborting!\n" + e.getMessage());
-                            assert false;
-                        }
-                    } else
-                        synthesisContract.collectCounterExample(counterExResult);
-
-                    String synthesisContractStr = synthesisContract.toString();
-                    writeToFile(contractMethodName + "hole.lus", synthesisContractStr);
-
-
-                    JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
-                    if (synthesisResult.getPropertyResult("ok").getStatus() == Status.INVALID) {//plug in the holes values
-                        System.out.println("plug in holes");
-                        //collectCounterExample(counterExResult);
-                    } else if (synthesisResult.getPropertyResult("ok").getStatus() == Status.VALID) {
-                        System.out.println("Cannot find a synthesis");
+                switch (counterExResult.getPropertyResult("ok").getStatus()) {
+                    case VALID: //valid match
+                        System.out.println("Contract Matching! Aborting!");
                         return;
-                    } else {
-                        System.out.println("unexpected status for the jkind synthesis query.");
-                        assert false;
-                    }
-                } else {
-                    System.out.println("unexpected status for the jkind counter example query.");
-                    assert false;
+                    case INVALID: //synthesis is needed
+                        if (synthesisContract == null) {
+                            try {
+                                synthesisContract = new SynthesisContract(contract, tFileName, counterExResult);
+                            } catch (IOException e) {
+                                System.out.println("problem occured while creating a synthesis contract! aborting!\n" + e.getMessage());
+                                assert false;
+                            }
+                        } else
+                            synthesisContract.collectCounterExample(counterExResult);
+
+                        String synthesisContractStr = synthesisContract.toString();
+                        writeToFile(contractMethodName + "hole.lus", synthesisContractStr);
+
+                        JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
+                        switch (synthesisResult.getPropertyResult("ok").getStatus()) {
+                            case VALID:
+                                System.out.println("Cannot find a synthesis");
+                                return;
+                            case INVALID:
+                                System.out.println("plug in holes");
+                                break;
+                            default:
+                                System.out.println("unexpected status for the jkind synthesis query.");
+                                assert false;
+                                break;
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
             while (true);
