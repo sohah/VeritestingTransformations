@@ -14,10 +14,7 @@ import jkind.lustre.values.Value;
 import jkind.results.Counterexample;
 import jkind.results.InvalidProperty;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract.getHoleExpr;
 
@@ -31,6 +28,9 @@ public class CounterExampleManager {
 
     public final List<Equation> testInputEqs = new ArrayList<>();
     public final List<Equation> testCallEqs = new ArrayList<>();
+
+    //maintains all test cases generated to check that it cant' be repeated
+    public List<TestCase> testCases = new ArrayList<>();
 
     Equation propertyEq;
     private static int testCaseCounter = 0;
@@ -93,6 +93,8 @@ public class CounterExampleManager {
         List<Equation> testInputEqs = new ArrayList<>();
 
         int varDeclIndex = 0;
+        HashMap<String, List<Value>> testCaseMap = new HashMap<>();
+
         for (Map.Entry<String, Pair<String, NamedType>> entry : testCaseInputNameLoc.entrySet()) {
             String varName = entry.getKey();
             String location = entry.getValue().getFirst();
@@ -101,6 +103,8 @@ public class CounterExampleManager {
             String smtVarName = String.valueOf(createSmtVarName(varName, location));
 
             List<Value> values = getVarTestValues(counterExResult, smtVarName, varType);
+
+            testCaseMap.put(varName, values);
 
             IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(localTestInputVars.get(varDeclIndex));
 
@@ -115,7 +119,30 @@ public class CounterExampleManager {
             varDeclIndex++;
         }
 
+        checkAndAddTestCase(new TestCase(testCaseMap));
+
         return testInputEqs;
+    }
+
+    /**
+     * checks if we are encountering a repeated test case.
+     * @param testCase
+     */
+    private void checkAndAddTestCase(TestCase testCase) {
+        Iterator<TestCase> testCasesItr = testCases.iterator();
+        while(testCasesItr.hasNext()){
+            TestCase tc = testCasesItr.next();
+            if(testCase.isEqual(tc)){
+                System.out.println("repeated test case! aborting");
+                assert false;
+            }
+        }
+
+        testCases.add(testCase);
+    }
+
+    private boolean uniqueTestCase() {
+
     }
 
     private Expr createValueExpr(NamedType varType, Value value) {

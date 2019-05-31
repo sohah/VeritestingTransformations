@@ -10,6 +10,10 @@ public class TestCase {
     //a hashmap between the testInput var name and its values in this counterExample
     HashMap<String, List<Value>> testCaseMap;
 
+    public TestCase(HashMap<String, List<Value>> testCaseMap){
+        this.testCaseMap = testCaseMap;
+    }
+
     public boolean isEqual(TestCase testCase){
         if(this.testCaseMap.size() != testCase.testCaseMap.size())
             return false;
