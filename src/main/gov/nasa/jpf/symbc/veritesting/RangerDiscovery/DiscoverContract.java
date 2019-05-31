@@ -6,6 +6,8 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.api.JKindApi;
 import jkind.api.results.JKindResult;
+import jkind.api.results.PropertyResult;
+import jkind.api.results.Status;
 import jkind.lustre.Node;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
@@ -48,35 +50,58 @@ public class DiscoverContract {
 
     /***** end of unused vars***/
 
-    public static final ArrayList<Node> discoverLusterContract(DynamicRegion dynRegion) {
+    public static final void discoverLusterContract(DynamicRegion dynRegion) {
 
         if (!called) { //print out the translation once, for very first time we hit linearlization for the method of
             // interest.
             Contract contract = new Contract();
-            CounterExContract counterExContract = new CounterExContract(dynRegion, tFileName, contract);
-            String counterExContractStr = counterExContract.toString();
-            writeToFile(contractMethodName + ".lus", counterExContractStr);
-
+            CounterExContract counterExContract = null;
             SynthesisContract synthesisContract = null;
-            try {
-                synthesisContract = new SynthesisContract(contract, tFileName);
-            } catch (IOException e) {
-                System.out.println("problem occured while creating a synthesis contract! aborting!\n" + e.getMessage());
-                assert false;
-            }
-            assert (synthesisContract != null);
-            String synthesisContractStr = synthesisContract.toString();
-            writeToFile(contractMethodName + "hole.lus", synthesisContractStr);
 
-            JKindResult counterExResult = callJkind(contractMethodName + ".lus");
-            System.out.println("JKIND: counter example contract call finished!");
-            synthesisContract.collectCounterExample(counterExResult);
-            //JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
-            //System.out.println("JKIND: hole contract call finished!");
-            //collectCounterExample(counterExResult);
+            do {
+                if (counterExContract == null)
+                    counterExContract = new CounterExContract(dynRegion, tFileName, contract);
+                String counterExContractStr = counterExContract.toString();
+                writeToFile(contractMethodName + ".lus", counterExContractStr);
+
+                JKindResult counterExResult = callJkind(contractMethodName + ".lus");
+                if (counterExResult.getPropertyResult("ok").getStatus() == Status.VALID) { //valid match
+                    System.out.println("Contract Matching! Aborting!");
+                    return;
+                } else if (counterExResult.getPropertyResult("ok").getStatus() == Status.INVALID) { //synthesis is needed
+                    if (synthesisContract == null) {
+                        try {
+                            synthesisContract = new SynthesisContract(contract, tFileName, counterExResult);
+                        } catch (IOException e) {
+                            System.out.println("problem occured while creating a synthesis contract! aborting!\n" + e.getMessage());
+                            assert false;
+                        }
+                    } else
+                        synthesisContract.collectCounterExample(counterExResult);
+
+                    String synthesisContractStr = synthesisContract.toString();
+                    writeToFile(contractMethodName + "hole.lus", synthesisContractStr);
+
+
+                    JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
+                    if (synthesisResult.getPropertyResult("ok").getStatus() == Status.INVALID) {//plug in the holes values
+                        System.out.println("plug in holes");
+                        //collectCounterExample(counterExResult);
+                    } else if (synthesisResult.getPropertyResult("ok").getStatus() == Status.VALID) {
+                        System.out.println("Cannot find a synthesis");
+                        return;
+                    } else {
+                        System.out.println("unexpected status for the jkind synthesis query.");
+                        assert false;
+                    }
+                } else {
+                    System.out.println("unexpected status for the jkind counter example query.");
+                    assert false;
+                }
+            }
+            while (true);
         }
         called = true;
-        return null;
     }
 
 

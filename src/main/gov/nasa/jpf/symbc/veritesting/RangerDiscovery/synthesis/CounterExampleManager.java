@@ -45,10 +45,11 @@ public class CounterExampleManager {
     private static String testCaseVarName = "ok";
 
 
-    public CounterExampleManager(Contract contract) {
+    public CounterExampleManager(Contract contract, JKindResult counterExResult) {
         this.contract = contract;
         testCaseInputNameLoc = createNamesofTestInputs();
         testCaseOutputNameLoc = createNamesofTestOutputs();
+        collectCounterExample(counterExResult);
     }
 
 

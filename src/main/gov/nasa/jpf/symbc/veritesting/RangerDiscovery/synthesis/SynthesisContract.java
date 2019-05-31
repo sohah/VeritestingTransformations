@@ -24,18 +24,13 @@ public class SynthesisContract {
     private static CounterExampleManager counterExampleManager;
 
 
-    public SynthesisContract(gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract contract, String fileName) throws IOException {
+    public SynthesisContract(Contract contract, String fileName, JKindResult counterExResult) throws IOException {
         this.contract = contract;
-        Program holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(fileName)
-        ), "UTF-8")));
+        Program holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(fileName)), "UTF-8")));
 
-        List<TypeDef> types = holeProgram.types;
-        List<Constant> constants = holeProgram.constants;
-        List<Function> functions = holeProgram.functions;
         List<Node> nodes = new ArrayList<>();
         nodes.addAll(holeProgram.nodes);
         nodes.add(getGloballyNode());
-        String main = holeProgram.main;
 
         Node mainNode = holeProgram.getMainNode();
         Node synthesisSpecNode = renameMainNode(DiscoverContract.SYNTHESISNODE, mainNode);
@@ -44,11 +39,14 @@ public class SynthesisContract {
 
         nodes.add(createCheckSpecNode(synthesisSpecNode));
 
-        counterExampleManager = new CounterExampleManager(contract);
+        if(counterExampleManager == null)
+            counterExampleManager = new CounterExampleManager(contract, counterExResult);
+        else
+
 
         nodes.add(createSynthesisMain(synthesisSpecNode));
 
-        synthesisProgram = new Program(holeProgram.location, types, constants, functions, nodes, "main");
+        synthesisProgram = new Program(holeProgram.location, holeProgram.types, holeProgram.constants, holeProgram.functions, nodes, "main");
     }
 
     public void collectCounterExample(JKindResult counterExResult) {
