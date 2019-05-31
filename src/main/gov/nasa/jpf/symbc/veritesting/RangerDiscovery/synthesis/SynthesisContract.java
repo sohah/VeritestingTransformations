@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.SpecInputOutput;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
@@ -14,9 +15,7 @@ import jkind.results.InvalidProperty;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.renameMainNode;
 
@@ -24,8 +23,10 @@ public class SynthesisContract {
 
     private Program synthesisProgram;
     public final Contract contract;
-    private static int testCaseCounter = 0;
-    private static String testCaseVarName = "ok";
+
+
+    private static CounterExampleManager counterExampleManager;
+
 
     public SynthesisContract(gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract contract, String fileName) throws IOException {
         this.contract = contract;
@@ -47,11 +48,18 @@ public class SynthesisContract {
 
         nodes.add(createCheckSpecNode(synthesisSpecNode));
 
+        counterExampleManager = new CounterExampleManager(contract);
+
         nodes.add(createSynthesisMain(synthesisSpecNode));
 
         synthesisProgram = new Program(holeProgram.location, types, constants, functions, nodes, "main");
-
     }
+
+    public void collectCounterExample(JKindResult counterExResult) {
+        counterExampleManager.collectCounterExample(counterExResult);
+        synthesisProgram = new Program(holeProgram.location, types, constants, functions, nodes, "main");
+    }
+
 
     public static Collection<? extends Expr> getHoleExpr() {
         List<Expr> holeExpr = new ArrayList<>();
@@ -132,27 +140,20 @@ public class SynthesisContract {
         List<Expr> myAssertions = freezeHolesAssertion();
 
 
-        List<Equation> myEquations = callHoleEquation(synthesisSpecNode);
-        List<String> myProperties = null;
-
-
-        return new Node("main", synthesisSpecNode.inputs, synthesisSpecNode.outputs, synthesisSpecNode.locals, myEquations, myProperties, myAssertions, synthesisSpecNode.realizabilityInputs, synthesisSpecNode.contract, synthesisSpecNode.ivc);
-    }
-
-    private List<Equation> callHoleEquation(Node synthesisSpecNode) {
         List<Equation> myEquations = new ArrayList<>();
+        myEquations.addAll(counterExampleManager.testInputEqs);
+        myEquations.addAll(counterExampleManager.testCallEqs);
 
-        //we are not expecting anything as an output except just ok.
-        assert (synthesisSpecNode.outputs.size() == 1);
+        List<VarDecl> myLocals = new ArrayList<>();
+        myLocals.addAll(synthesisSpecNode.locals);
+        myLocals.addAll(counterExampleManager.testInputVars);
+        myLocals.addAll(counterExampleManager.testCallVars);
 
-        IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(synthesisSpecNode.outputs.get(0));
-        List<IdExpr> rhsParameters = DiscoveryUtil.varDeclToIdExpr(synthesisSpecNode.inputs);
-        NodeCallExpr rhs = new NodeCallExpr(DiscoverContract.SYNTHESISNODE, (ArrayList<Expr>) (ArrayList<?>) rhsParameters);
+        List<String> myProperties = new ArrayList<>();
+        myProperties.add("ok");
 
-        Equation myEquation = new Equation(lhs, rhs);
-        myEquations.add(myEquation);
 
-        return myEquations;
+        return new Node("main", synthesisSpecNode.inputs, synthesisSpecNode.outputs, myLocals, myEquations, myProperties, myAssertions, synthesisSpecNode.realizabilityInputs, synthesisSpecNode.contract, synthesisSpecNode.ivc);
     }
 
     private List<Expr> freezeHolesAssertion() {
@@ -211,51 +212,47 @@ public class SynthesisContract {
      * Here we make a call for every test case and we try to look for the property where !(k_0 /\ k_1 /\ k_2... /\ k_3)
      *
      * @param counterExResult
-     * @param contract
      */
-    public void collectCounterExample(JKindResult counterExResult, Contract contract) {
-
-        for (PropertyResult pr : counterExResult.getPropertyResults()) {
-            if (pr.getProperty() instanceof InvalidProperty) {
-                InvalidProperty ip = (InvalidProperty) pr.getProperty();
-                Counterexample counterExample = ip.getCounterexample();
-                //test cases needs to have the inputs of the main (not the input in the main that are actually output) and the output of the r_wrapper
-
-                List<String> mainFreeInput = contract.tInOutManager.getFreeInputs();
-
-                //contains all the vars to be passed in the call except the hole vars, and it attaches with every one of those its location.
-                List<Pair<String, String>> testCaseInputVars = new ArrayList<>();
-                testCaseInputVars.addAll(collectTestCaseInputs(mainFreeInput, "main"));
-                testCaseInputVars.add(new Pair("out", DiscoverContract.WRAPPERNODE));
-
-                List<Equation> testCaseInputEq = makeTestInput(testCaseInputVars, counterExample);
-
-                Pair<VarDecl, Equation> testCaseCallPair = makeTestCaseEq(testCaseInputVars);
-
-                makeNewProgram(testCaseInputEq, testCaseCallPair);
-
-            }
-        }
-    }
 
     /**
      * This creates a new program by changing the main to a new main that contains the test case being generated.
-     * @param testCaseCallPair
+     *
+     * @param counterExample
+     * @param contract
      */
-    private void makeNewProgram(List<Equation> testCaseInputEqs, Pair<VarDecl, Equation> testCaseCallPair) {
+    private void makeNewProgram(Counterexample counterExample, Contract contract) {
+
         Node mainNode = synthesisProgram.getMainNode();
+
+
+        List<VarDecl> newLocals = new ArrayList<>();
+        List<VarDecl> testInputVars = createVarDeclForTestInput();
+
+        List<VarDecl> okOutputVars = createVarDeclForOkOutput();
+
+        newLocals.addAll(mainNode.locals);
+        newLocals.addAll(testInputVars);
+        newLocals.addAll(okOutputVars);
+
+
+        List<Equation> newEquations = new ArrayList<>();
+        List<Equation> testInputEqs = createTestCaseInputEqs();
+        List<Equation> okOutputEqs = createOkOutEqs();
+
+        newEquations.addAll(mainNode.equations);
+        newEquations.addAll(testInputEqs);
+        newEquations.addAll(testInputEqs);
 
 
         String newId = mainNode.id;
         List<VarDecl> newInputs = mainNode.inputs;
         List<VarDecl> newOutputs = mainNode.outputs;
-        List<VarDecl> newLocals = new ArrayList<>();
-        newLocals.addAll(mainNode.locals);
-        newLocals.addAll()
 
-        List<Equation> newEquations = new ArrayList<>();
-        newEquations.addAll(mainNode.equations);
-        newEquations.addAll(testCaseInputEqs);
+
+        List<Equation> testCaseInputEq = makeTestInput(testCaseInputNameLoc, counterExample);
+
+        Pair<VarDecl, Equation> testCaseCallPair = makeTestCaseEq(testCaseInputNameLoc);
+
 
         //need to create a new property for the synthesis query
         List<String> newProperties = createSynthesisQueryProp();
@@ -273,44 +270,5 @@ public class SynthesisContract {
         this.synthesisProgram = new Program(Location.NULL, synthesisProgram.types, synthesisProgram.constants, synthesisProgram.functions, newNodes, "main");
     }
 
-    private List<String> createSynthesisQueryProp() {
-
-    }
-
-    private static Pair<VarDecl, Equation> makeTestCaseEq(List<Pair<String, String>> testCaseInputVars) {
-        VarDecl testCaseVar = new VarDecl(testCaseVarName + "_" + testCaseCounter, NamedType.BOOL);
-        testCaseCounter++;
-
-        IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(testCaseVar);
-
-        List<Expr> rhsParameters = DiscoveryUtil.createIdExprs(DiscoveryUtil.getFirstPairList(testCaseInputVars));
-        rhsParameters.addAll(getHoleExpr());
-
-        NodeCallExpr rhs = new NodeCallExpr(DiscoverContract.CHECKSPECNODE, rhsParameters);
-
-        Equation testCaseEq = new Equation(lhs, rhs);
-
-        return new Pair<>(testCaseVar, testCaseEq);
-    }
-
-    /**
-     * this should retrun a list of equations that would bind every variable input with its sequence of valusations
-     * @param testCaseInputVars
-     * @param counterexample
-     * @return
-     */
-    private List<Equation> makeTestInput(List<Pair<String, String>> testCaseInputVars, Counterexample counterexample) {
-
-
-    }
-
-    private List<Pair<String, String>> collectTestCaseInputs(List<String> mainFreeInput, String location) {
-        List<Pair<String, String>> inputList = new ArrayList<>();
-
-        for (int i = 0; i < mainFreeInput.size(); i++) {
-            inputList.add(new Pair(mainFreeInput.get(i), location));
-        }
-        return inputList;
-    }
 
 }

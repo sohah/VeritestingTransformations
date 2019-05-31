@@ -60,7 +60,11 @@ public class SpecInOutManager {
     }
 
 
-    public List<String> getFreeInputs() {
+    public SpecInputOutput getFreeInputs() {
+        return freeInput;
+    }
+
+    public List<String> getFreeInputNames() {
         return freeInput.getInputNames();
     }
 

@@ -8,9 +8,12 @@ import java.util.List;
 
 public class SpecInputOutput {
     public ArrayList<Pair<String, NamedType>> varList = new ArrayList<>();
+    int size = 0;
 
     public void add(String start_btn, NamedType type) {
         varList.add(new Pair<>(start_btn, type));
+        size++;
+
     }
 
     public boolean contains(String varName, NamedType type) {
@@ -29,5 +32,9 @@ public class SpecInputOutput {
         }
 
         return names;
+    }
+
+    public int getSize() {
+        return size;
     }
 }
