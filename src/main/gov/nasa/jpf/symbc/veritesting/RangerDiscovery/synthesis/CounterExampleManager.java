@@ -82,7 +82,7 @@ public class CounterExampleManager {
     }
 
     /**
-     * This is used to collect the values of a single input over a stream of inputs that defines different valuations of the input in different k step. Here we use the testCaseNameLoc and testCaseOutputNameLoc, to create the right form of fields in smt form using the location name.
+     * This is used to collect the values of a single input over a stream of inputs that defines different valuations of the input in different k step. Here we use the testCaseNameLoc and testCaseOutputNameLoc, to create the right form of fields in smt form using the location name. This creates the pre and followed by expression of the input.
      *
      * @param counterExResult
      * @param localTestInputVars

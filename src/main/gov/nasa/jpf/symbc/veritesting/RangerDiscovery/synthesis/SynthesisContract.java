@@ -57,7 +57,7 @@ public class SynthesisContract {
 
     public void collectCounterExample(JKindResult counterExResult) {
         counterExampleManager.collectCounterExample(counterExResult);
-        synthesisProgram = new Program(holeProgram.location, types, constants, functions, nodes, "main");
+        synthesisProgram = makeNewProgram();
     }
 
 
@@ -208,67 +208,34 @@ public class SynthesisContract {
 
 
     /**
-     * this is basically used to add test cases to synthesis the contract using the counter example values.
-     * Here we make a call for every test case and we try to look for the property where !(k_0 /\ k_1 /\ k_2... /\ k_3)
-     *
-     * @param counterExResult
+     * This creates a new program by changing the main to a new main that contains the test case being generated using the counterExampleManager
      */
+    private Program makeNewProgram() {
 
-    /**
-     * This creates a new program by changing the main to a new main that contains the test case being generated.
-     *
-     * @param counterExample
-     * @param contract
-     */
-    private void makeNewProgram(Counterexample counterExample, Contract contract) {
+        Node oldMain = synthesisProgram.getMainNode();
+        Node newMain = changeMainNode(oldMain);
 
-        Node mainNode = synthesisProgram.getMainNode();
+        ArrayList<Node> nodes = new ArrayList<>();
+        nodes.addAll(synthesisProgram.nodes);
+        int mainIndex = nodes.indexOf(oldMain);
 
+        nodes.set(mainIndex, newMain);
 
-        List<VarDecl> newLocals = new ArrayList<>();
-        List<VarDecl> testInputVars = createVarDeclForTestInput();
-
-        List<VarDecl> okOutputVars = createVarDeclForOkOutput();
-
-        newLocals.addAll(mainNode.locals);
-        newLocals.addAll(testInputVars);
-        newLocals.addAll(okOutputVars);
-
-
-        List<Equation> newEquations = new ArrayList<>();
-        List<Equation> testInputEqs = createTestCaseInputEqs();
-        List<Equation> okOutputEqs = createOkOutEqs();
-
-        newEquations.addAll(mainNode.equations);
-        newEquations.addAll(testInputEqs);
-        newEquations.addAll(testInputEqs);
-
-
-        String newId = mainNode.id;
-        List<VarDecl> newInputs = mainNode.inputs;
-        List<VarDecl> newOutputs = mainNode.outputs;
-
-
-        List<Equation> testCaseInputEq = makeTestInput(testCaseInputNameLoc, counterExample);
-
-        Pair<VarDecl, Equation> testCaseCallPair = makeTestCaseEq(testCaseInputNameLoc);
-
-
-        //need to create a new property for the synthesis query
-        List<String> newProperties = createSynthesisQueryProp();
-
-        List<Expr> newAssertions = mainNode.assertions;
-        List<String> newIvc = mainNode.ivc;
-        List<String> newRealizabilityInputs = mainNode.realizabilityInputs; // Nullable
-        jkind.lustre.Contract newContract = mainNode.contract; // Nullable
-
-        Node newMain = new Node(newId, newInputs, newOutputs, newLocals, newEquations, newProperties, newAssertions, newRealizabilityInputs, newContract, newIvc);
-        List<Node> newNodes = new ArrayList<>();
-        newNodes.addAll(synthesisProgram.nodes);
-        newNodes.set(newNodes.indexOf(mainNode), newMain);
-
-        this.synthesisProgram = new Program(Location.NULL, synthesisProgram.types, synthesisProgram.constants, synthesisProgram.functions, newNodes, "main");
+        return new Program(Location.NULL, synthesisProgram.types, synthesisProgram.constants, synthesisProgram.functions, nodes, "main");
     }
 
+    private Node changeMainNode(Node mainNode) {
+        List<VarDecl> locals = new ArrayList<>();
+        locals.addAll(mainNode.locals);
+        locals.addAll(counterExampleManager.testCallVars);
+        locals.addAll(counterExampleManager.testInputVars);
 
+        List<Equation> equations = new ArrayList<>();
+        equations.addAll(mainNode.equations);
+        equations.addAll(counterExampleManager.testInputEqs);
+        equations.addAll(counterExampleManager.testCallEqs);
+        equations.add(counterExampleManager.propertyEq);
+
+        return new Node(mainNode.id, mainNode.inputs, mainNode.outputs, locals, equations, mainNode.properties, mainNode.assertions, mainNode.realizabilityInputs, mainNode.contract, mainNode.ivc);
+    }
 }
