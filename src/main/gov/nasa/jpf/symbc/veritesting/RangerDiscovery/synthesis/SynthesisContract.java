@@ -3,14 +3,10 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.SpecInputOutput;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.api.results.JKindResult;
-import jkind.api.results.PropertyResult;
 import jkind.lustre.*;
 import jkind.lustre.parsing.LustreParseUtil;
-import jkind.results.Counterexample;
-import jkind.results.InvalidProperty;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -226,12 +222,10 @@ public class SynthesisContract {
 
     private Node changeMainNode(Node mainNode) {
         List<VarDecl> locals = new ArrayList<>();
-        locals.addAll(mainNode.locals);
         locals.addAll(counterExampleManager.testCallVars);
         locals.addAll(counterExampleManager.testInputVars);
 
         List<Equation> equations = new ArrayList<>();
-        equations.addAll(mainNode.equations);
         equations.addAll(counterExampleManager.testInputEqs);
         equations.addAll(counterExampleManager.testCallEqs);
         equations.add(counterExampleManager.propertyEq);
