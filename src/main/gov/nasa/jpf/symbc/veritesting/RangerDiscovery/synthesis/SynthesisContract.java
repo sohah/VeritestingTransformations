@@ -22,31 +22,39 @@ public class SynthesisContract {
 
 
     private static CounterExampleManager counterExampleManager;
+    private static Node synthesisSpecNode;
 
 
     public SynthesisContract(Contract contract, String fileName, JKindResult counterExResult) throws IOException {
         this.contract = contract;
         Program holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(fileName)), "UTF-8")));
 
+        List<Node> nodes = createFixedNodePart(holeProgram);
+
+        Node newMain = createVariableNodePart(counterExResult); //this creates the new main with the right test cases.
+
+        nodes.add(newMain);
+        synthesisProgram = new Program(holeProgram.location, holeProgram.types, holeProgram.constants, holeProgram.functions, nodes, "main");
+    }
+
+    private Node createVariableNodePart(JKindResult counterExResult) {
+        counterExampleManager = new CounterExampleManager(contract, counterExResult);
+        return createSynthesisMain(synthesisSpecNode);
+    }
+
+    private List<Node> createFixedNodePart(Program holeProgram) {
         List<Node> nodes = new ArrayList<>();
+
         nodes.addAll(holeProgram.nodes);
         nodes.add(getGloballyNode());
 
         Node mainNode = holeProgram.getMainNode();
-        Node synthesisSpecNode = renameMainNode(DiscoverContract.SYNTHESISNODE, mainNode);
+        synthesisSpecNode = renameMainNode(DiscoverContract.SYNTHESISNODE, mainNode);
 
         nodes.set(nodes.indexOf(mainNode), synthesisSpecNode);
 
         nodes.add(createCheckSpecNode(synthesisSpecNode));
-
-        if(counterExampleManager == null)
-            counterExampleManager = new CounterExampleManager(contract, counterExResult);
-        else
-
-
-        nodes.add(createSynthesisMain(synthesisSpecNode));
-
-        synthesisProgram = new Program(holeProgram.location, holeProgram.types, holeProgram.constants, holeProgram.functions, nodes, "main");
+        return nodes;
     }
 
     public void collectCounterExample(JKindResult counterExResult) {
