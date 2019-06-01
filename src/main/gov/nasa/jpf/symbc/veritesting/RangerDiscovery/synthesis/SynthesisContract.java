@@ -63,12 +63,12 @@ public class SynthesisContract {
     }
 
 
-    public static Collection<? extends Expr> getHoleExpr() {
-        List<Expr> holeExpr = new ArrayList<>();
+    public static List<Expr> getHoleExpr() {
+        List<Expr> holeExprs = new ArrayList<>();
         for (int i = 0; i < ConstantHole.getCurrentHolePrefix(); i++) {
-            holeExpr.add(new IdExpr(ConstantHole.recreateHoleName(i)));
+            holeExprs.add(new IdExpr(ConstantHole.recreateHoleName(i)));
         }
-        return holeExpr;
+        return holeExprs;
     }
 
     private Node createCheckSpecNode(Node synthesisSpecNode) {

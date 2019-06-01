@@ -38,17 +38,18 @@ public class CounterExampleManager {
     //this is LinkedHashMap in the form of varName -> pair of location and type
     private static LinkedHashMap<String, Pair<String, NamedType>> testCaseInputNameLoc = new LinkedHashMap<>();
 
-    private static LinkedHashMap<String, Pair<String, NamedType>> testCaseOutputNameLoc = new LinkedHashMap<>();
+    //private static LinkedHashMap<String, Pair<String, NamedType>> testCaseOutputNameLoc = new LinkedHashMap<>();
 
     public final Contract contract;
 
     private static String testCaseVarName = "ok";
+    private static List<Expr> holeExprs;
 
 
     public CounterExampleManager(Contract contract, JKindResult counterExResult) {
         this.contract = contract;
         testCaseInputNameLoc = createNamesofTestInputs();
-        testCaseOutputNameLoc = createNamesofTestOutputs();
+        holeExprs = getHoleExpr();
         collectCounterExample(counterExResult);
     }
 
@@ -67,15 +68,16 @@ public class CounterExampleManager {
 
     public void translateTestCase(Counterexample counterExResult) {
         List<VarDecl> localTestInputVars = createVarDeclForTestInput();
-        VarDecl localTestCallVars = createVarDeclForOkOutput();
+        VarDecl localTestCallVar = createTestCallVars();
 
-        Equation localTestCallEq = makeTestCaseEq(testInputVars, localTestCallVars);
         List<Equation> localTestInputEqs = makeTestInputEqs(counterExResult, localTestInputVars);
+
+        Equation localTestCallEq = makeTestCallEq(localTestInputVars, localTestCallVar);
 
         Equation localPropertyEq = makePropertyEq();
 
         testInputVars.addAll(localTestInputVars);
-        testCallVars.add(localTestCallVars);
+        testCallVars.add(localTestCallVar);
         testInputEqs.addAll(localTestInputEqs);
         testCallEqs.add(localTestCallEq);
 
@@ -141,10 +143,6 @@ public class CounterExampleManager {
         testCases.add(testCase);
     }
 
-    private boolean uniqueTestCase() {
-
-    }
-
     private Expr createValueExpr(NamedType varType, Value value) {
         if (varType == NamedType.BOOL)
             return new BoolExpr(((BooleanValue) value).value);
@@ -204,13 +202,13 @@ public class CounterExampleManager {
     }
 
 
-    private static Equation makeTestCaseEq(List<VarDecl> testInputVars, VarDecl testCaseOkVars) {
+    private static Equation makeTestCallEq(List<VarDecl> testInputVars, VarDecl testCallVar) {
 
-        IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(testCaseOkVars);
+        IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(testCallVar);
 
         List<Expr> rhsParameters = (ArrayList<Expr>) (ArrayList<?>) DiscoveryUtil.varDeclToIdExpr(testInputVars);
 
-        rhsParameters.addAll(getHoleExpr());
+        rhsParameters.addAll(holeExprs);
 
         NodeCallExpr rhs = new NodeCallExpr(DiscoverContract.CHECKSPECNODE, rhsParameters);
 
@@ -220,13 +218,13 @@ public class CounterExampleManager {
 
     }
 
-    private VarDecl createVarDeclForOkOutput() {
+    private VarDecl createTestCallVars() {
         VarDecl testCaseVar = new VarDecl(createTestVarStr(testCaseCounter), NamedType.BOOL);
         return testCaseVar;
     }
 
     /**
-     * usese the populated testCaseInputLoc to generate a VarDecl list for all the enteries.
+     * uses the populated testCaseInputLoc to generate a VarDecl list for all the enteries.
      *
      * @return
      */
@@ -255,17 +253,10 @@ public class CounterExampleManager {
         //contains all the vars to be passed in the call except the hole vars, and it attaches with every one of those its location.
         LinkedHashMap<String, Pair<String, NamedType>> testCaseInputVars = collectTestCaseInputs(mainFreeInput, "main");
 
+        testCaseInputVars.put("out", new Pair("out", DiscoverContract.WRAPPERNODE));
         return testCaseInputVars;
     }
 
-
-    private LinkedHashMap<String, Pair<String, NamedType>> createNamesofTestOutputs() {
-
-        LinkedHashMap<String, Pair<String, NamedType>> testCaseOutVars = new LinkedHashMap<>();
-
-        testCaseOutVars.put("out", new Pair("out", DiscoverContract.WRAPPERNODE));
-        return testCaseOutVars;
-    }
 
 
     /**
