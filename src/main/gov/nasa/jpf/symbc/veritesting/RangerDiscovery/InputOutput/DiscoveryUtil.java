@@ -151,7 +151,7 @@ public class DiscoveryUtil {
     }
 
     public static Node renameMainNode(String synthesis_spec, Node node) {
-        return new Node(synthesis_spec, node.inputs, node.outputs, new ArrayList<>(), node.equations, node.properties, node.assertions, node.realizabilityInputs, node.contract, node.ivc);
+        return new Node(synthesis_spec, node.inputs, node.outputs, node.locals, node.equations, node.properties, node.assertions, node.realizabilityInputs, node.contract, node.ivc);
 
     }
 

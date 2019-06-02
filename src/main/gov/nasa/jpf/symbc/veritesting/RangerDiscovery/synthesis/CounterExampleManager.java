@@ -72,7 +72,7 @@ public class CounterExampleManager {
 
         List<Equation> localTestInputEqs = makeTestInputEqs(counterExResult, localTestInputVars);
 
-        Equation localTestCallEq = makeTestCallEq(localTestInputVars, localTestCallVar);
+        Equation localTestCallEq = makeTestCallEq(counterExResult, localTestInputVars, localTestCallVar);
 
         Equation localPropertyEq = makePropertyEq();
 
@@ -202,13 +202,16 @@ public class CounterExampleManager {
     }
 
 
-    private static Equation makeTestCallEq(List<VarDecl> testInputVars, VarDecl testCallVar) {
+    private static Equation makeTestCallEq(Counterexample counterExResult, List<VarDecl> testInputVars, VarDecl testCallVar) {
 
         IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(testCallVar);
 
         List<Expr> rhsParameters = (ArrayList<Expr>) (ArrayList<?>) DiscoveryUtil.varDeclToIdExpr(testInputVars);
 
         rhsParameters.addAll(holeExprs);
+
+        int k = counterExResult.getLength();
+        rhsParameters.add(new IntExpr(k));
 
         NodeCallExpr rhs = new NodeCallExpr(DiscoverContract.CHECKSPECNODE, rhsParameters);
 
