@@ -67,6 +67,8 @@ public class CounterExampleManager {
 
 
     public void translateTestCase(Counterexample counterExResult) {
+        testCaseCounter++;
+
         List<VarDecl> localTestInputVars = createVarDeclForTestInput();
         VarDecl localTestCallVar = createTestCallVars();
 
@@ -128,13 +130,14 @@ public class CounterExampleManager {
 
     /**
      * checks if we are encountering a repeated test case.
+     *
      * @param testCase
      */
     private void checkAndAddTestCase(TestCase testCase) {
         Iterator<TestCase> testCasesItr = testCases.iterator();
-        while(testCasesItr.hasNext()){
+        while (testCasesItr.hasNext()) {
             TestCase tc = testCasesItr.next();
-            if(testCase.isEqual(tc)){
+            if (testCase.isEqual(tc)) {
                 System.out.println("repeated test case! aborting");
                 assert false;
             }
@@ -184,7 +187,7 @@ public class CounterExampleManager {
 
     private Equation makePropertyEq() {
 
-        assert (testCaseCounter >= 0);
+        assert (testCaseCounter > 0);
 
         IdExpr lhs = new IdExpr(testCaseVarName);
         Expr rhs;
@@ -194,7 +197,7 @@ public class CounterExampleManager {
         else
             rhs = new BinaryExpr(new IdExpr(createTestVarStr(0)), BinaryOp.AND, new IdExpr(createTestVarStr(1)));
 
-        for (int i = 2; i <= testCaseCounter; i++) {
+        for (int i = 2; i < testCaseCounter; i++) {
             rhs = new BinaryExpr(rhs, BinaryOp.AND, new IdExpr(createTestVarStr(i)));
         }
 
@@ -222,7 +225,7 @@ public class CounterExampleManager {
     }
 
     private VarDecl createTestCallVars() {
-        VarDecl testCaseVar = new VarDecl(createTestVarStr(testCaseCounter), NamedType.BOOL);
+        VarDecl testCaseVar = new VarDecl(createTestVarStr(testCaseCounter - 1), NamedType.BOOL);
         return testCaseVar;
     }
 
@@ -235,7 +238,7 @@ public class CounterExampleManager {
         List<VarDecl> testCaseInputVars = new ArrayList<>();
 
         for (Map.Entry<String, Pair<String, NamedType>> entry : testCaseInputNameLoc.entrySet()) {
-            String testCaseVarName = entry.getKey() + testCaseCounter;
+            String testCaseVarName = entry.getKey() + (testCaseCounter - 1);
             testCaseInputVars.add(new VarDecl(testCaseVarName, entry.getValue().getSecond()));
         }
         return testCaseInputVars;
@@ -259,7 +262,6 @@ public class CounterExampleManager {
         testCaseInputVars.put("out", new Pair(DiscoverContract.WRAPPERNODE, NamedType.BOOL));
         return testCaseInputVars;
     }
-
 
 
     /**

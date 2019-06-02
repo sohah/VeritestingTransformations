@@ -145,6 +145,7 @@ public class SynthesisContract {
         List<Equation> myEquations = new ArrayList<>();
         myEquations.addAll(counterExampleManager.testInputEqs);
         myEquations.addAll(counterExampleManager.testCallEqs);
+        myEquations.add(counterExampleManager.propertyEq);
 
         List<VarDecl> myLocals = new ArrayList<>();
         myLocals.addAll(new ArrayList<>());
