@@ -177,14 +177,14 @@ public class CounterExampleManager {
             return varName;
         else {
             assert (location.equals(DiscoverContract.WRAPPERNODE));
-            return DiscoverContract.WRAPPERNODE + "~0" + varName;
+            return DiscoverContract.WRAPPERNODE + "~0." + varName;
         }
 
     }
 
     private Equation makePropertyEq() {
 
-        assert (testCaseCounter > 0);
+        assert (testCaseCounter >= 0);
 
         IdExpr lhs = new IdExpr(testCaseVarName);
         Expr rhs;
@@ -253,7 +253,7 @@ public class CounterExampleManager {
         //contains all the vars to be passed in the call except the hole vars, and it attaches with every one of those its location.
         LinkedHashMap<String, Pair<String, NamedType>> testCaseInputVars = collectTestCaseInputs(mainFreeInput, "main");
 
-        testCaseInputVars.put("out", new Pair("out", DiscoverContract.WRAPPERNODE));
+        testCaseInputVars.put("out", new Pair(DiscoverContract.WRAPPERNODE, NamedType.BOOL));
         return testCaseInputVars;
     }
 
