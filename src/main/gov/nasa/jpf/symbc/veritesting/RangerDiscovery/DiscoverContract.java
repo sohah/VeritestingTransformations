@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.HolePlugger;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -57,11 +58,12 @@ public class DiscoverContract {
             Contract contract = new Contract();
             CounterExContract counterExContract = null;
             SynthesisContract synthesisContract = null;
+            HolePlugger holePlugger = null;
 
+            if (counterExContract == null)
+                counterExContract = new CounterExContract(dynRegion, tFileName, contract);
+            String counterExContractStr = counterExContract.toString();
             do {
-                if (counterExContract == null)
-                    counterExContract = new CounterExContract(dynRegion, tFileName, contract);
-                String counterExContractStr = counterExContract.toString();
                 writeToFile(contractMethodName + ".lus", counterExContractStr);
 
                 JKindResult counterExResult = callJkind(contractMethodName + ".lus");
@@ -89,7 +91,11 @@ public class DiscoverContract {
                                 System.out.println("Cannot find a synthesis");
                                 return;
                             case INVALID:
-                                System.out.println("plug in holes");
+                                System.out.println("plugging in holes");
+                                if(holePlugger == null)
+                                    holePlugger = new HolePlugger(synthesisContract.getHoles());
+                                holePlugger.plugInHoles(synthesisResult, synthesisContract);
+                                counterExContractStr = holePlugger.toString();
                                 break;
                             default:
                                 System.out.println("unexpected status for the jkind synthesis query.");

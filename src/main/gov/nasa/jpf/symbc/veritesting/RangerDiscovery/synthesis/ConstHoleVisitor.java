@@ -1,13 +1,9 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import jkind.lustre.*;
 import jkind.lustre.visitors.AstMapVisitor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.IdExprToVarDecl;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.varDeclToIdExpr;
@@ -33,6 +29,9 @@ public class ConstHoleVisitor extends AstMapVisitor {
     // accumulates all the holes and the old constant value that they are replacing.
     private static Map<Hole, Ast> holeToConstatnt = new HashMap<>();
 
+    public static Set<Hole> getHoles(){
+        return holeToConstatnt.keySet();
+    }
 
     public void setNodeTable(Map<String, Node> nodeTable) {
         ConstHoleVisitor.nodeTable = nodeTable;

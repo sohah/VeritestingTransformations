@@ -9,6 +9,7 @@ import jkind.lustre.*;
 import jkind.lustre.parsing.LustreParseUtil;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -20,6 +21,7 @@ public class SynthesisContract {
     private Program synthesisProgram;
     public final Contract contract;
 
+    private static ArrayList<Hole> holes;
 
     private static CounterExampleManager counterExampleManager;
     private static Node synthesisSpecNode;
@@ -28,6 +30,7 @@ public class SynthesisContract {
     public SynthesisContract(Contract contract, String fileName, JKindResult counterExResult) throws IOException {
         this.contract = contract;
         Program holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(fileName)), "UTF-8")));
+        holes = new ArrayList<>(ConstHoleVisitor.getHoles());
 
         List<Node> nodes = createFixedNodePart(holeProgram);
 
@@ -62,6 +65,9 @@ public class SynthesisContract {
         synthesisProgram = makeNewProgram();
     }
 
+    public Program getSynthesisProgram() {
+        return synthesisProgram;
+    }
 
     public static List<Expr> getHoleExpr() {
         List<Expr> holeExprs = new ArrayList<>();
@@ -238,5 +244,9 @@ public class SynthesisContract {
         equations.add(counterExampleManager.propertyEq);
 
         return new Node(mainNode.id, mainNode.inputs, mainNode.outputs, locals, equations, mainNode.properties, mainNode.assertions, mainNode.realizabilityInputs, mainNode.contract, mainNode.ivc);
+    }
+
+    public ArrayList<Hole> getHoles() {
+        return holes;
     }
 }
