@@ -1,5 +1,7 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.counterExample;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -28,6 +30,8 @@ public class CounterExContract extends Ast {
     public final Node rNode;
     public final Node rWrapper;
     public final Node mainNode;
+
+    private Program counterExamplePgm;
     /**
      * Generates a T program counter example step from a file path, usually this is done in the first time.
      *
@@ -137,11 +141,15 @@ public class CounterExContract extends Ast {
     public String toString() {
 
         //return super.toString();
-        Program counterExampleProgram = new Program(Location.NULL, types, constants, functions, nodes, "main");
+         counterExamplePgm = new Program(Location.NULL, types, constants, functions, nodes, "main");
 
-        String programStr = ToLutre.lustreFriendlyString(counterExampleProgram.toString());
+        String programStr = ToLutre.lustreFriendlyString(counterExamplePgm.toString());
         return programStr;
 
+    }
+
+    public Program getCounterExamplePgm() {
+        return counterExamplePgm;
     }
 
     @Override

@@ -1,12 +1,13 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstantHole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
 import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
 import jkind.lustre.Ast;
-import jkind.lustre.NamedType;
 import jkind.lustre.Program;
-import jkind.lustre.values.BooleanValue;
 import jkind.lustre.values.Value;
 import jkind.results.Counterexample;
 import jkind.results.InvalidProperty;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 public class HolePlugger {
     public final ArrayList<Hole> holes;
-    HashMap<Hole, Value> holeSynValuesMap;
+    HashMap<Hole, Value> holeSynValuesMap = new HashMap<>();
 
     JKindResult synReesult;
 
@@ -29,14 +30,11 @@ public class HolePlugger {
         this.holes = holes;
     }
 
-    public void plugInHoles(JKindResult newResult, SynthesisContract synthesisContract) {
+    public void plugInHoles(JKindResult newResult, Program counterPgm, Program synPgm) {
         this.synReesult = newResult;
         populateValuesForHoles();
-        Program synProgram = synthesisContract.getSynthesisProgram();
 
-        Ast program = ConstPluggerVisitor.execute(holeSynValuesMap, synProgram);
-        assert(program instanceof Program);
-        repairedProgram = (Program) program;
+        repairedProgram = ConstPluggerVisitor.execute(holeSynValuesMap, counterPgm, synPgm);
     }
 
     private void populateValuesForHoles() {
@@ -87,8 +85,7 @@ public class HolePlugger {
 
     @Override
     public String toString(){
-        String programStr = ToLutre.lustreFriendlyString(repairedProgram.toString());
-        return programStr;
+        return repairedProgram.toString();
 
     }
 

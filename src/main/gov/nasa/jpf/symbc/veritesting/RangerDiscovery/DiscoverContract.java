@@ -1,20 +1,17 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.HolePlugger;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.counterExample.CounterExContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair.HolePlugger;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.api.JKindApi;
 import jkind.api.results.JKindResult;
-import jkind.api.results.PropertyResult;
-import jkind.api.results.Status;
-import jkind.lustre.Node;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
@@ -56,13 +53,12 @@ public class DiscoverContract {
         if (!called) { //print out the translation once, for very first time we hit linearlization for the method of
             // interest.
             Contract contract = new Contract();
-            CounterExContract counterExContract = null;
             SynthesisContract synthesisContract = null;
             HolePlugger holePlugger = null;
 
-            if (counterExContract == null)
-                counterExContract = new CounterExContract(dynRegion, tFileName, contract);
+            CounterExContract counterExContract = new CounterExContract(dynRegion, tFileName, contract);
             String counterExContractStr = counterExContract.toString();
+
             do {
                 writeToFile(contractMethodName + ".lus", counterExContractStr);
 
@@ -94,7 +90,7 @@ public class DiscoverContract {
                                 System.out.println("plugging in holes");
                                 if(holePlugger == null)
                                     holePlugger = new HolePlugger(synthesisContract.getHoles());
-                                holePlugger.plugInHoles(synthesisResult, synthesisContract);
+                                holePlugger.plugInHoles(synthesisResult, counterExContract.getCounterExamplePgm(), synthesisContract.getSynthesisProgram());
                                 counterExContractStr = holePlugger.toString();
                                 break;
                             default:
