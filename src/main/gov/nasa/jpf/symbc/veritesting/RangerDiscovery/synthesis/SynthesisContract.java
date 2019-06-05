@@ -9,7 +9,6 @@ import jkind.lustre.*;
 import jkind.lustre.parsing.LustreParseUtil;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -23,7 +22,7 @@ public class SynthesisContract {
 
     private static ArrayList<Hole> holes;
 
-    private static CounterExampleManager counterExampleManager;
+    private static TestCaseManager testCaseManager;
     private static Node synthesisSpecNode;
 
 
@@ -41,7 +40,7 @@ public class SynthesisContract {
     }
 
     private Node createVariableNodePart(JKindResult counterExResult) {
-        counterExampleManager = new CounterExampleManager(contract, counterExResult);
+        testCaseManager = new TestCaseManager(contract, counterExResult);
         return createSynthesisMain(synthesisSpecNode);
     }
 
@@ -52,7 +51,7 @@ public class SynthesisContract {
         nodes.add(getGloballyNode());
 
         Node mainNode = holeProgram.getMainNode();
-        synthesisSpecNode = renameMainNode(DiscoverContract.SYNTHESISNODE, mainNode);
+        synthesisSpecNode = renameMainNode(DiscoverContract.TNODE, mainNode);
 
         nodes.set(nodes.indexOf(mainNode), synthesisSpecNode);
 
@@ -61,7 +60,7 @@ public class SynthesisContract {
     }
 
     public void collectCounterExample(JKindResult counterExResult) {
-        counterExampleManager.collectCounterExample(counterExResult);
+        testCaseManager.collectCounterExample(counterExResult);
         synthesisProgram = makeNewProgram();
     }
 
@@ -122,7 +121,7 @@ public class SynthesisContract {
 
         BinaryExpr stepOkCond = new BinaryExpr(stepVarExpr, BinaryOp.LESSEQUAL, kExpr);
 
-        NodeCallExpr thenStmt = new NodeCallExpr(DiscoverContract.SYNTHESISNODE, (ArrayList<Expr>) (ArrayList<?>) DiscoveryUtil.varDeclToIdExpr(synthesisSpecNode.inputs));
+        NodeCallExpr thenStmt = new NodeCallExpr(DiscoverContract.TNODE, (ArrayList<Expr>) (ArrayList<?>) DiscoveryUtil.varDeclToIdExpr(synthesisSpecNode.inputs));
 
         IfThenElseExpr stepOkRhs = new IfThenElseExpr(stepOkCond, thenStmt, new BoolExpr(true));
 
@@ -149,14 +148,14 @@ public class SynthesisContract {
 
 
         List<Equation> myEquations = new ArrayList<>();
-        myEquations.addAll(counterExampleManager.testInputEqs);
-        myEquations.addAll(counterExampleManager.testCallEqs);
-        myEquations.add(counterExampleManager.propertyEq);
+        myEquations.addAll(testCaseManager.testInputEqs);
+        myEquations.addAll(testCaseManager.testCallEqs);
+        myEquations.add(testCaseManager.propertyEq);
 
         List<VarDecl> myLocals = new ArrayList<>();
         myLocals.addAll(new ArrayList<>());
-        myLocals.addAll(counterExampleManager.testInputVars);
-        myLocals.addAll(counterExampleManager.testCallVars);
+        myLocals.addAll(testCaseManager.testInputVars);
+        myLocals.addAll(testCaseManager.testCallVars);
 
         List<String> myProperties = new ArrayList<>();
         myProperties.add("ok");
@@ -235,13 +234,13 @@ public class SynthesisContract {
 
     private Node changeMainNode(Node mainNode) {
         List<VarDecl> locals = new ArrayList<>();
-        locals.addAll(counterExampleManager.testCallVars);
-        locals.addAll(counterExampleManager.testInputVars);
+        locals.addAll(testCaseManager.testCallVars);
+        locals.addAll(testCaseManager.testInputVars);
 
         List<Equation> equations = new ArrayList<>();
-        equations.addAll(counterExampleManager.testInputEqs);
-        equations.addAll(counterExampleManager.testCallEqs);
-        equations.add(counterExampleManager.propertyEq);
+        equations.addAll(testCaseManager.testInputEqs);
+        equations.addAll(testCaseManager.testCallEqs);
+        equations.add(testCaseManager.propertyEq);
 
         return new Node(mainNode.id, mainNode.inputs, mainNode.outputs, locals, equations, mainNode.properties, mainNode.assertions, mainNode.realizabilityInputs, mainNode.contract, mainNode.ivc);
     }

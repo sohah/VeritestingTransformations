@@ -46,9 +46,9 @@ let
 
    --ignition = false -> pre (launch_bt) and (pre reset_flag);
 
-  p1 = (ignition = Y(launch_bt) and Y (start_bt));
+  p1 = (ignition = (Y(launch_bt) and Y (start_bt)));
 
-  --%PROPERTY ok;
+  --%PROPERTY p1;
 
   ok = true -> p1;
 

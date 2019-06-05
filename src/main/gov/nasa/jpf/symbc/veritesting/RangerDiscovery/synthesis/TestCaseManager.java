@@ -21,7 +21,7 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Synthesis
 /**
  * This is used to increment the test cases equations and locals.
  */
-public class CounterExampleManager {
+public class TestCaseManager {
 
     public final List<VarDecl> testInputVars = new ArrayList<>();
     public final List<VarDecl> testCallVars = new ArrayList<>();
@@ -46,7 +46,7 @@ public class CounterExampleManager {
     private static List<Expr> holeExprs;
 
 
-    public CounterExampleManager(Contract contract, JKindResult counterExResult) {
+    public TestCaseManager(Contract contract, JKindResult counterExResult) {
         this.contract = contract;
         testCaseInputNameLoc = createNamesofTestInputs();
         holeExprs = getHoleExpr();
