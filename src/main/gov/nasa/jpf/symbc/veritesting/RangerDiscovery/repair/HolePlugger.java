@@ -46,6 +46,21 @@ public class HolePlugger {
                 fillEmptyHoles(counterExample);
             }
         }
+        //fillStillEmptyHoles();
+    }
+
+    /**
+     * this is used to populate holes with their initial values for those that the counter example did not provide values for them.
+     */
+    private void fillStillEmptyHoles() {
+        for (int i = 0; i < holes.size(); i++) {
+            Hole hole = holes.get(i);
+            if (holeSynValuesMap.get(hole) == null) {
+                assert (hole instanceof ConstantHole);
+                /*holeSynValuesMap.put(hole, signalValue);
+                DiscoverContract.holeRepairHolder.updateHoleRepairMap(hole, signalValue);*/
+            }
+        }
     }
 
     private void fillEmptyHoles(Counterexample counterExample) {
@@ -87,7 +102,7 @@ public class HolePlugger {
 
     @Override
     public String toString(){
-        return repairedProgram.toString();
+        return ToLutre.lustreFriendlyString(repairedProgram.toString());
 
     }
 
