@@ -72,7 +72,8 @@ public class ConstPluggerVisitor extends AstMapVisitor {
                 newNodes.add(oldNode);
             else { // return the corresponding repaired node.
                 Node repairedNode = findNode(repairedNodes, oldNode);
-                newNodes.add(repairedNode);
+                if (repairedNode != null) //nodes can be null if they are not called from the spec node, i.e., a node that is never used is never bothered to repair or include in the list of nodes, and thus we might get a null if we ever looked for it. Another way is to assert that these null node are in the nodes that have not been included in the repair, this is neater and less error prone.
+                    newNodes.add(repairedNode);
             }
         }
         return newNodes;

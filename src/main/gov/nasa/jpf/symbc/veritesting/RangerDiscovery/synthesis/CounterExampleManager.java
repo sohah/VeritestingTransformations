@@ -114,7 +114,7 @@ public class CounterExampleManager {
 
             Expr rhs = createValueExpr(varType, values.get(values.size() - 1));
 
-            for (int i = values.size() - 2; i != 0; i--) {
+            for (int i = values.size() - 2; i >= 0; i--) {
                 rhs = new UnaryExpr(UnaryOp.PRE, rhs);
                 rhs = new BinaryExpr(createValueExpr(varType, values.get(i)), BinaryOp.ARROW, rhs);
             }
@@ -201,7 +201,7 @@ public class CounterExampleManager {
             rhs = new BinaryExpr(rhs, BinaryOp.AND, new IdExpr(createTestVarStr(i)));
         }
 
-        return new Equation(lhs, rhs);
+        return new Equation(lhs, new UnaryExpr(UnaryOp.NOT, rhs));
     }
 
 

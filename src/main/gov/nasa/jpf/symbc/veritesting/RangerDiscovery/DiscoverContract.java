@@ -63,7 +63,7 @@ public class DiscoverContract {
                 writeToFile(contractMethodName + ".lus", counterExContractStr);
 
                 JKindResult counterExResult = callJkind(contractMethodName + ".lus");
-                switch (counterExResult.getPropertyResult("T_node~0.ok").getStatus()) {
+                switch (counterExResult.getPropertyResult("T_node~0.p1").getStatus()) {
                     case VALID: //valid match
                         System.out.println("Contract Matching! Aborting!");
                         return;
