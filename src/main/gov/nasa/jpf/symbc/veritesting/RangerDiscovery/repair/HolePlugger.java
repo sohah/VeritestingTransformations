@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstantHole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
@@ -67,6 +68,7 @@ public class HolePlugger {
                     assert (sameSignalValuesForSteps(signal.getValues()));
                     Value signalValue = signal.getValue(0); // since all values are the same we can get the first one.
                     holeSynValuesMap.put(hole, signalValue);
+                    DiscoverContract.holeRepairHolder.updateHoleRepairMap(hole, signalValue);
                 }
         }
     }

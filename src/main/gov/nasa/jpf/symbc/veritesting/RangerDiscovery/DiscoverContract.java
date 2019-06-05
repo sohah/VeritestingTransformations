@@ -1,17 +1,26 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair.HolePlugger;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstHoleVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstantHole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import jkind.Main;
+import jkind.api.ApiUtil;
 import jkind.api.JKindApi;
 import jkind.api.results.JKindResult;
+import jkind.lustre.Ast;
+import jkind.lustre.values.Value;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
@@ -29,12 +38,14 @@ public class DiscoverContract {
     //TODO: These needs to be configured using the .jpf file.
     public static String folderName = "../src/DiscoveryExamples/";
     static String tFileName = folderName + "ImaginaryPad";
+    static String holeRepairFileName = folderName + "holeRepair";
     public static String TNODE = "T_node";
     public static String RNODE = "R_node";
     public static String WRAPPERNODE = "R_wrapper";
-    public static String SYNTHESISNODE = "Synthesis_spec";
     public static String CHECKSPECNODE = "Check_spec";
     public static String GLOBALYNODE = "H";
+
+    public static HoleRepair holeRepairHolder = new HoleRepair();
 
 /***** begin of unused vars***/
     /**
@@ -78,6 +89,8 @@ public class DiscoverContract {
                         } else
                             synthesisContract.collectCounterExample(counterExResult);
 
+                        holeRepairHolder.setHoleRepairMap(ConstHoleVisitor.getHoleToConstant());
+
                         String synthesisContractStr = synthesisContract.toString();
                         writeToFile(contractMethodName + "hole.lus", synthesisContractStr);
 
@@ -92,6 +105,7 @@ public class DiscoverContract {
                                     holePlugger = new HolePlugger(synthesisContract.getHoles());
                                 holePlugger.plugInHoles(synthesisResult, counterExContract.getCounterExamplePgm(), synthesisContract.getSynthesisProgram());
                                 counterExContractStr = holePlugger.toString();
+                                DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairHolder.toString());
                                 break;
                             default:
                                 System.out.println("unexpected status for the jkind synthesis query.");
@@ -117,6 +131,18 @@ public class DiscoverContract {
     }
 
     private static JKindResult runJKind(File file) {
+
+/*
+        String[] jkindArgs = new String[5];
+
+        jkindArgs[0] = "-jkind";
+        jkindArgs[1] = folderName + contractMethodName + ".lus";
+        jkindArgs[2] = "-solver";
+        jkindArgs[3] = "z3";
+        jkindArgs[4] = "-scratch";
+        Main.main(jkindArgs);
+*/
+
         JKindApi api = new JKindApi();
         JKindResult result = new JKindResult("");
         api.execute(file, result, new NullProgressMonitor());
@@ -128,4 +154,6 @@ public class DiscoverContract {
     public static String toSMT(String solver, HashSet z3FunDecl) {
         return Z3Format.toSMT(solver, z3FunDecl);
     }
+
+
 }

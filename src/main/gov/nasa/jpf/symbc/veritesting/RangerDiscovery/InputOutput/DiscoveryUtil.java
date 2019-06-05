@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import javafx.print.Printer;
 import jkind.lustre.*;
 import za.ac.sun.cs.green.expr.Operation;
 
@@ -13,6 +14,8 @@ import static jkind.lustre.UnaryOp.NEGATIVE;
 import static jkind.lustre.UnaryOp.NOT;
 
 public class DiscoveryUtil {
+    private static boolean firstTime = true;
+
     public static NamedType stringToLusterType(String typeName) {
         if (typeName.equals("int"))
             return NamedType.INT;
@@ -180,5 +183,22 @@ public class DiscoveryUtil {
             idExprs.add(new IdExpr(varNames.get(i)));
         }
         return idExprs;
+    }
+
+    public static void appendToFile(String fileName, String content) {
+        boolean append;
+        if (firstTime) {
+            append = true;
+            firstTime = false;
+        } else append = false;
+
+        try (FileWriter fw = new FileWriter(fileName, append);
+             BufferedWriter bw = new BufferedWriter(fw);
+             PrintWriter out = new PrintWriter(bw)) {
+            out.println(content);
+        } catch (IOException e) {
+            System.out.println("Problem writing hole repairs to file! aborting!");
+            assert false;
+        }
     }
 }

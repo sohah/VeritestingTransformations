@@ -1,6 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.lustre.*;
+import jkind.lustre.values.Value;
 import jkind.lustre.visitors.AstMapVisitor;
 
 import java.util.*;
@@ -27,10 +29,14 @@ public class ConstHoleVisitor extends AstMapVisitor {
     private static Map<String, List<VarDecl>> nodeHoleVarDecl = new HashMap<>();
 
     // accumulates all the holes and the old constant value that they are replacing.
-    private static Map<Hole, Ast> holeToConstatnt = new HashMap<>();
+    private static HashMap<Hole, Pair<Ast,Value>> holeToConstantMap = new HashMap<>();
 
     public static Set<Hole> getHoles(){
-        return holeToConstatnt.keySet();
+        return holeToConstantMap.keySet();
+    }
+
+    public static HashMap<Hole, Pair<Ast, Value>> getHoleToConstant(){
+        return holeToConstantMap;
     }
 
     public void setNodeTable(Map<String, Node> nodeTable) {
@@ -92,7 +98,7 @@ public class ConstHoleVisitor extends AstMapVisitor {
 
     private Expr createAndPopulateHole(Expr e, NamedType type) {
         ConstantHole newHole = new ConstantHole("");
-        holeToConstatnt.put(newHole, e);
+        holeToConstantMap.put(newHole, new Pair(e, null));
         VarDecl newVarDecl = IdExprToVarDecl(newHole, type);
         this.holeVarDecl.add(newVarDecl);
         return newHole;
