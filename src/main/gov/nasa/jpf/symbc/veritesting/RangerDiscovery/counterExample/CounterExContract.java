@@ -4,14 +4,11 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.lustre.*;
-import jkind.lustre.parsing.LustreParseUtil;
-import jkind.lustre.visitors.AstVisitor;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +18,7 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.TN
 /**
  * This class holds the T program, that can be used for either the counter Example step or the synthesis step.
  */
-public class CounterExContract extends Ast {
+public class CounterExContract {
     public final List<TypeDef> types;
     public final List<Constant> constants;
     public final List<Function> functions;
@@ -32,13 +29,13 @@ public class CounterExContract extends Ast {
     public final Node mainNode;
 
     private Program counterExamplePgm;
+
     /**
      * Generates a T program counter example step from a file path, usually this is done in the first time.
      *
      * @return
      */
-    public CounterExContract(DynamicRegion dynRegion, String tFileName, Contract contract) {
-        super(Location.NULL);
+    public CounterExContract(DynamicRegion dynRegion, Program program, Contract contract) {
 
         //generating rNode and rWrapper
 
@@ -46,14 +43,6 @@ public class CounterExContract extends Ast {
         rWrapper = ToLutre.generateRwrapper(contract.rInOutManager);
 
         //generating nodes, const, types, etc from the spec
-        String programStr = null;
-        try {
-            programStr = new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8");
-        } catch (IOException e) {
-            System.out.println("Problem reading file. " + e.getMessage());
-        }
-
-        Program program = LustreParseUtil.program(programStr);
 
         List<TypeDef> types = new ArrayList<>();
         List<Constant> constants = new ArrayList<>();
@@ -79,8 +68,10 @@ public class CounterExContract extends Ast {
 
     }
 
+
     /**
      * This is used to generate mainNode, that invokes both tNode and rwrapper.
+     *
      * @param tNode
      * @return
      */
@@ -88,7 +79,7 @@ public class CounterExContract extends Ast {
     public Node generateMainNode(Node tNode) {
         List<Expr> wrapperArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
         List<Expr> tNodeArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
-        wrapperArgs.remove(wrapperArgs.size()-1); //last argument is the output.
+        wrapperArgs.remove(wrapperArgs.size() - 1); //last argument is the output.
         Expr callRwapper = new NodeCallExpr(DiscoverContract.WRAPPERNODE, wrapperArgs);
         tNodeArgs.set(tNodeArgs.size() - 1, callRwapper); // settomg the last arguement which is the output, to the output of the wrapper call.
         NodeCallExpr callT = new NodeCallExpr(TNODE, (List<Expr>) tNodeArgs);
@@ -107,6 +98,7 @@ public class CounterExContract extends Ast {
 
     /**
      * This changes the main of the spec to become the T_node.
+     *
      * @param nodes
      * @param main
      * @return
@@ -132,16 +124,12 @@ public class CounterExContract extends Ast {
         return new Node(TNODE, node.inputs, node.outputs, node.locals, node.equations, node.properties, node
                 .assertions, node.realizabilityInputs, node.contract, node.ivc);
     }
-/*
-    public TProgram createSynthesisProg(){
-
-    }*/
 
     @Override
     public String toString() {
 
         //return super.toString();
-         counterExamplePgm = new Program(Location.NULL, types, constants, functions, nodes, "main");
+        counterExamplePgm = new Program(Location.NULL, types, constants, functions, nodes, "main");
 
         String programStr = ToLutre.lustreFriendlyString(counterExamplePgm.toString());
         return programStr;
@@ -152,8 +140,4 @@ public class CounterExContract extends Ast {
         return counterExamplePgm;
     }
 
-    @Override
-    public <T, S extends T> T accept(AstVisitor<T, S> visitor) {
-        return visitor.visit(new Program(Location.NULL, types, constants, functions, nodes, TNODE));
-    }
 }

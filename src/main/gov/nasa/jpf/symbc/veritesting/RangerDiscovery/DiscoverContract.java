@@ -10,13 +10,19 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.api.JKindApi;
 import jkind.api.results.JKindResult;
+import jkind.lustre.Node;
+import jkind.lustre.Program;
+import jkind.lustre.parsing.LustreParseUtil;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.writeToFile;
 
@@ -39,7 +45,7 @@ public class DiscoverContract {
     public static String CHECKSPECNODE = "Check_spec";
     public static String GLOBALYNODE = "H";
 
-    public static ArrayList<String> userSynNodes = new ArrayList<>();
+    public static List<String> userSynNodes = new ArrayList<>();
 
     public static HoleRepair holeRepairHolder = new HoleRepair();
 
@@ -58,66 +64,95 @@ public class DiscoverContract {
     public static final void discoverLusterContract(DynamicRegion dynRegion) {
         fillUserSynNodes();
         assert (userSynNodes.size() > 0);
+        try {
+            if (!called) { //print out the translation once, for very first time we hit linearlization for the method of
+                // interest.
+                Contract contract = new Contract();
+                SynthesisContract synthesisContract = null;
+                HolePlugger holePlugger = null;
+                Program originalProgram;
 
-        if (!called) { //print out the translation once, for very first time we hit linearlization for the method of
-            // interest.
-            Contract contract = new Contract();
-            SynthesisContract synthesisContract = null;
-            HolePlugger holePlugger = null;
+                originalProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8"));
+                NodeRepairKey originalNodeKey = defineNodeKeys(originalProgram);
 
-            CounterExContract counterExContract = new CounterExContract(dynRegion, tFileName, contract);
-            String counterExContractStr = counterExContract.toString();
+                CounterExContract counterExContract = new CounterExContract(dynRegion, originalProgram, contract);
+                String counterExContractStr = counterExContract.toString();
 
-            do {
-                writeToFile(contractMethodName + ".lus", counterExContractStr);
+                do {
+                    writeToFile(contractMethodName + ".lus", counterExContractStr);
 
-                JKindResult counterExResult = callJkind(contractMethodName + ".lus");
-                switch (counterExResult.getPropertyResult("T_node~0.p1").getStatus()) {
-                    case VALID: //valid match
-                        System.out.println("Contract Matching! Aborting!");
-                        return;
-                    case INVALID: //synthesis is needed
-                        if (synthesisContract == null) {
-                            try {
-                                synthesisContract = new SynthesisContract(contract, tFileName, counterExResult);
-                            } catch (IOException e) {
-                                System.out.println("problem occured while creating a synthesis contract! aborting!\n" + e.getMessage());
-                                assert false;
+                    JKindResult counterExResult = callJkind(contractMethodName + ".lus");
+                    switch (counterExResult.getPropertyResult("T_node~0.p1").getStatus()) {
+                        case VALID: //valid match
+                            System.out.println("Contract Matching! Aborting!");
+                            return;
+                        case INVALID: //synthesis is needed
+                            if (synthesisContract == null) {
+                                try {
+                                    synthesisContract = new SynthesisContract(contract, originalProgram, counterExResult, originalNodeKey);
+                                } catch (IOException e) {
+                                    System.out.println("problem occured while creating a synthesis contract! aborting!\n" + e.getMessage());
+                                    assert false;
+                                }
+                            } else
+                                synthesisContract.collectCounterExample(counterExResult);
+
+                            holeRepairHolder.setHoleRepairMap(ConstHoleVisitor.getHoleToConstant());
+
+                            String synthesisContractStr = synthesisContract.toString();
+                            writeToFile(contractMethodName + "hole.lus", synthesisContractStr);
+
+                            JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
+                            switch (synthesisResult.getPropertyResult("ok").getStatus()) {
+                                case VALID:
+                                    System.out.println("Cannot find a synthesis");
+                                    return;
+                                case INVALID:
+                                    System.out.println("plugging in holes");
+                                    if (holePlugger == null)
+                                        holePlugger = new HolePlugger(synthesisContract.getHoles());
+                                    holePlugger.plugInHoles(synthesisResult, counterExContract.getCounterExamplePgm(), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
+                                    counterExContractStr = holePlugger.toString();
+                                    DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairHolder.toString());
+                                    break;
+                                default:
+                                    System.out.println("unexpected status for the jkind synthesis query.");
+                                    assert false;
+                                    break;
                             }
-                        } else
-                            synthesisContract.collectCounterExample(counterExResult);
-
-                        holeRepairHolder.setHoleRepairMap(ConstHoleVisitor.getHoleToConstant());
-
-                        String synthesisContractStr = synthesisContract.toString();
-                        writeToFile(contractMethodName + "hole.lus", synthesisContractStr);
-
-                        JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
-                        switch (synthesisResult.getPropertyResult("ok").getStatus()) {
-                            case VALID:
-                                System.out.println("Cannot find a synthesis");
-                                return;
-                            case INVALID:
-                                System.out.println("plugging in holes");
-                                if (holePlugger == null)
-                                    holePlugger = new HolePlugger(synthesisContract.getHoles());
-                                holePlugger.plugInHoles(synthesisResult, counterExContract.getCounterExamplePgm(), synthesisContract.getSynthesisProgram());
-                                counterExContractStr = holePlugger.toString();
-                                DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairHolder.toString());
-                                break;
-                            default:
-                                System.out.println("unexpected status for the jkind synthesis query.");
-                                assert false;
-                                break;
-                        }
-                        break;
-                    default:
-                        break;
+                            break;
+                        default:
+                            break;
+                    }
                 }
+                while (true);
             }
-            while (true);
+            called = true;
+        } catch (IOException e) {
+            System.out.println("Unable to read specification file.! Aborting");
+            assert false;
+            e.printStackTrace();
         }
-        called = true;
+
+    }
+
+    /**
+     * Initiall node keys are defined on the original program, where the "main" is the only node that needs repair, as well as any other nodes that the user wants to define in userSynNodes
+     * @param program
+     * @return
+     */
+    private static NodeRepairKey defineNodeKeys(Program program) {
+        NodeRepairKey nodeRepairKey = new NodeRepairKey();
+        nodeRepairKey.setNodesKey("main", NodeStatus.REPAIR);
+        nodeRepairKey.setNodesKey(userSynNodes, NodeStatus.REPAIR);
+
+        for (int i = 0; i < program.nodes.size(); i++) {
+            Node node = program.nodes.get(i);
+            if(!node.id.equals("main"))
+                nodeRepairKey.setNodesKey(node.id, NodeStatus.DONTCARE_SPEC);
+        }
+
+        return nodeRepairKey;
     }
 
     private static void fillUserSynNodes() {
@@ -149,13 +184,6 @@ public class DiscoverContract {
         JKindResult result = new JKindResult("");
         api.execute(file, result, new NullProgressMonitor());
         return result;
-    }
-
-    /**
-     * this is used to change the name of the repair node of the main to become the TNODE name. This is used initially when in the synthesis step we create the holes, using the fixed part.
-     */
-    public static void changeMainToTNODE(){
-        userSynNodes.set(userSynNodes.indexOf("main"), TNODE);
     }
 
 

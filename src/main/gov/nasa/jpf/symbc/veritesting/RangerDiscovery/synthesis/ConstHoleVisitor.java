@@ -2,6 +2,8 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.lustre.*;
 import jkind.lustre.values.Value;
@@ -37,6 +39,7 @@ public class ConstHoleVisitor extends AstMapVisitor {
 
     // accumulates all the holes and the old constant value that they are replacing.
     private static HashMap<Hole, Pair<Ast, Value>> holeToConstantMap = new HashMap<>();
+    private NodeRepairKey nodeKey;
 
     public static Set<Hole> getHoles() {
         return holeToConstantMap.keySet();
@@ -66,8 +69,8 @@ public class ConstHoleVisitor extends AstMapVisitor {
     public Expr visit(NodeCallExpr e) {
 
         Node nodeDefinition = nodeTable.get(e.node);
-        if (DiscoverContract.userSynNodes.contains(nodeDefinition.id)) {
-            Node holeNode = ConstHoleVisitor.execute(nodeDefinition);
+        if (nodeKey.getStatus(nodeDefinition.id) == NodeStatus.REPAIR) {
+            Node holeNode = ConstHoleVisitor.execute(nodeDefinition, this.nodeKey);
             List<Expr> arguments = visitExprs(e.args);
             List<VarDecl> callHoles = nodeHoleVarDecl.get(holeNode.id);
 
@@ -84,7 +87,7 @@ public class ConstHoleVisitor extends AstMapVisitor {
 
             return new NodeCallExpr(e.location, e.node, arguments);
         } else {
-            ConstHoleVisitor.execute(nodeDefinition);
+            ConstHoleVisitor.execute(nodeDefinition, this.nodeKey);
             return new NodeCallExpr(e.location, e.node, visitExprs(e.args));
         }
     }
@@ -101,7 +104,7 @@ public class ConstHoleVisitor extends AstMapVisitor {
         List<VarDecl> inputs = new ArrayList<>();
 
         List<Equation> equations;
-        if (DiscoverContract.userSynNodes.contains(e.id)) {
+        if (nodeKey.getStatus(e.id) == NodeStatus.REPAIR) {
             equations = visitEquations(e.equations);
             inputs.addAll(e.inputs);
             inputs.addAll(this.holeVarDecl);
@@ -132,12 +135,15 @@ public class ConstHoleVisitor extends AstMapVisitor {
      * This executes the ConstHoleVisitor on the main node, which might later invoke multiple instances of the ConstHoleVisitor but on other nodes, where the later requires the other execute methode.
      *
      * @param program
+     * @param originalNodeKey
      * @return
      */
-    public static Program executeMain(Program program) {
+    public static Program executeMain(Program program, NodeRepairKey originalNodeKey) {
         Map<String, Node> nodeTable = getNodeTable(program.nodes);
 
         ConstHoleVisitor constHoleVisitor = new ConstHoleVisitor();
+        constHoleVisitor.nodeKey = originalNodeKey;
+
         constHoleVisitor.setNodeTable(nodeTable);
         Node mainNode = program.getMainNode();
         Ast holeNode = mainNode.accept(constHoleVisitor);
@@ -160,9 +166,11 @@ public class ConstHoleVisitor extends AstMapVisitor {
      * @param node
      * @return
      */
-    public static Node execute(Node node) {
+    public static Node execute(Node node, NodeRepairKey originalNodeKey) {
 
         ConstHoleVisitor constHoleVisitor = new ConstHoleVisitor();
+        constHoleVisitor.nodeKey = originalNodeKey;
+
         if (DiscoverContract.userSynNodes.contains(node.id)) {
             if (holeTable.containsKey(node.id)) //if we already changed the node with constant holes then just return that.
                 return holeTable.get(node.id);

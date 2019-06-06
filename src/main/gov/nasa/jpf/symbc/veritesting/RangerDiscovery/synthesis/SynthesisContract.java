@@ -3,6 +3,8 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.api.results.JKindResult;
 import jkind.lustre.*;
@@ -15,6 +17,11 @@ import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.renameMainNode;
 
+
+/**
+ * This takes in the original program and build holes in the nodes we want to repair.
+ * When repeatedly called, only the variable part is changed to contain the new test cases.
+ */
 public class SynthesisContract {
 
     private Program synthesisProgram;
@@ -26,17 +33,27 @@ public class SynthesisContract {
     private static Node synthesisSpecNode;
 
 
-    public SynthesisContract(Contract contract, String fileName, JKindResult counterExResult) throws IOException {
+    private NodeRepairKey synNodeKey = new NodeRepairKey();
+
+    public SynthesisContract(Contract contract, Program originalProgram, JKindResult counterExResult, NodeRepairKey originalNodeKey) throws IOException {
         this.contract = contract;
-        Program holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(fileName)), "UTF-8")));
+        Program holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
         holes = new ArrayList<>(ConstHoleVisitor.getHoles());
 
         List<Node> nodes = createFixedNodePart(holeProgram);
-        DiscoverContract.changeMainToTNODE();
+        synNodeKey = originalNodeKey;
+
+        synNodeKey.setNodesKey("main", NodeStatus.ARTIFICIAL);
+        synNodeKey.setNodesKey(DiscoverContract.TNODE, NodeStatus.REPAIR);
+
         Node newMain = createVariableNodePart(counterExResult); //this creates the new main with the right test cases.
 
         nodes.add(newMain);
         synthesisProgram = new Program(holeProgram.location, holeProgram.types, holeProgram.constants, holeProgram.functions, nodes, "main");
+    }
+
+    public NodeRepairKey getSynNodeKey() {
+        return synNodeKey;
     }
 
     private Node createVariableNodePart(JKindResult counterExResult) {

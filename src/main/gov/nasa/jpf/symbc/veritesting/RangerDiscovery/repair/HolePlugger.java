@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstantHole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
@@ -31,11 +32,11 @@ public class HolePlugger {
         this.holes = holes;
     }
 
-    public void plugInHoles(JKindResult newResult, Program counterPgm, Program synPgm) {
+    public void plugInHoles(JKindResult newResult, Program counterPgm, Program synPgm, NodeRepairKey nodeRepairKey) {
         this.synReesult = newResult;
         populateValuesForHoles();
 
-        repairedProgram = ConstPluggerVisitor.execute(holeSynValuesMap, counterPgm, synPgm);
+        repairedProgram = ConstPluggerVisitor.execute(holeSynValuesMap, counterPgm, synPgm, nodeRepairKey);
     }
 
     private void populateValuesForHoles() {

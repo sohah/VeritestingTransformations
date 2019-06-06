@@ -1,6 +1,8 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstantHole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
 import jkind.lustre.*;
@@ -14,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.findNode;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus.REPAIR;
 
 /**
  * This visitor puts back the values of the holes into the specification of T.
@@ -21,15 +24,14 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.Discove
 
 public class ConstPluggerVisitor extends AstMapVisitor {
     private final Program counterExamplePgm;
-    private final Program synthesisPgm;
 
     HashMap<Hole, Value> holeSynValuesMap;
 
 
-    public ConstPluggerVisitor(HashMap<Hole, Value> holeSynValuesMap, Program counterExamplePgm, Program synthesisPgm) {
+
+    public ConstPluggerVisitor(HashMap<Hole, Value> holeSynValuesMap, Program counterExamplePgm) {
         this.holeSynValuesMap = holeSynValuesMap;
         this.counterExamplePgm = counterExamplePgm;
-        this.synthesisPgm = synthesisPgm;
     }
 
     @Override
@@ -82,13 +84,13 @@ public class ConstPluggerVisitor extends AstMapVisitor {
     }
 
 
-    public static Program execute(HashMap<Hole, Value> holeSynValuesMap, Program counterExamplePgm, Program synthesisPgm) {
+    public static Program execute(HashMap<Hole, Value> holeSynValuesMap, Program counterExamplePgm, Program synthesisPgm, NodeRepairKey nodeRepairKey) {
 
 
-        List<Node> toRepairNodes = getToRepairNodes(counterExamplePgm);
+        List<Node> toRepairNodes = getToRepairNodes(counterExamplePgm, nodeRepairKey);
         List<Node> repairedNodes = new ArrayList<>();
 
-        ConstPluggerVisitor constPluggerVisitor = new ConstPluggerVisitor(holeSynValuesMap, counterExamplePgm, synthesisPgm);
+        ConstPluggerVisitor constPluggerVisitor = new ConstPluggerVisitor(holeSynValuesMap, counterExamplePgm);
 
         for (int i = 0; i < toRepairNodes.size(); i++) {
             Node holeNode = findNode(synthesisPgm.nodes, toRepairNodes.get(i));
@@ -99,17 +101,17 @@ public class ConstPluggerVisitor extends AstMapVisitor {
             }
         }
 
-        List<Node> repairedPgmNodes = replaceOldNodes(counterExamplePgm, repairedNodes);
+        List<Node> repairedPgmNodes = replaceOldNodes(counterExamplePgm, repairedNodes, nodeRepairKey);
 
         return new Program(Location.NULL, counterExamplePgm.types, counterExamplePgm.constants, counterExamplePgm.functions, repairedPgmNodes, counterExamplePgm.main);
     }
 
-    private static List<Node> replaceOldNodes(Program counterExamplePgm, List<Node> repairedNodes) {
+    private static List<Node> replaceOldNodes(Program counterExamplePgm, List<Node> repairedNodes, NodeRepairKey nodeRepairKey) {
         List<Node> newNodes = new ArrayList<>();
         List<Node> oldNodes = counterExamplePgm.nodes;
         for (int i = 0; i < oldNodes.size(); i++) {
             Node oldNode = oldNodes.get(i);
-            if (!needsRepairNode(oldNode))
+            if (!(nodeRepairKey.getStatus(oldNode.id) == REPAIR))
                 newNodes.add(oldNode);
             else { // return the corresponding repaired node.
                 Node repairedNode = findNode(repairedNodes, oldNode);
@@ -125,26 +127,18 @@ public class ConstPluggerVisitor extends AstMapVisitor {
      * finds the spec nodes that we need to repair
      *
      * @param program
+     * @param nodeRepairKey
      * @return
      */
-    private static List<Node> getToRepairNodes(Program program) {
+    private static List<Node> getToRepairNodes(Program program, NodeRepairKey nodeRepairKey) {
         List<Node> toRepairNodes = new ArrayList<>();
         List<Node> allNodes = program.nodes;
         for (int i = 0; i < allNodes.size(); i++) {
             Node node = allNodes.get(i);
             //if (isSpecNode(node))
-            if (DiscoverContract.userSynNodes.contains(node.id)) //repair if the user has specified it to be a repair node.
+            if (nodeRepairKey.getStatus(node.id) == REPAIR) //repair if the user has specified it to be a repair node.
                 toRepairNodes.add(node);
         }
         return toRepairNodes;
     }
-
-    private static boolean needsRepairNode(Node node) {
-        String nodeName = node.id;
-        if (nodeName.equals("main") || nodeName.equals(DiscoverContract.WRAPPERNODE) || nodeName.equals(DiscoverContract.RNODE))
-            return false;
-        else
-            return true;
-    }
-
 }
