@@ -32,7 +32,7 @@ public class SynthesisContract {
         holes = new ArrayList<>(ConstHoleVisitor.getHoles());
 
         List<Node> nodes = createFixedNodePart(holeProgram);
-
+        DiscoverContract.changeMainToTNODE();
         Node newMain = createVariableNodePart(counterExResult); //this creates the new main with the right test cases.
 
         nodes.add(newMain);
@@ -41,7 +41,8 @@ public class SynthesisContract {
 
     private Node createVariableNodePart(JKindResult counterExResult) {
         testCaseManager = new TestCaseManager(contract, counterExResult);
-        return createSynthesisMain(synthesisSpecNode);
+        Node holeMainNode = createSynthesisMain(synthesisSpecNode);
+        return holeMainNode;
     }
 
     private List<Node> createFixedNodePart(Program holeProgram) {

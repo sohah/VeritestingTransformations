@@ -4,18 +4,6 @@ const LAUNCH_SIG = 1;
 	-- the Y operator for yesterday which is the dual of the X operator:
 	node Y(in: bool) returns (out: bool); let out = false -> pre in; tel;
 
-	-- the Z operator which is the same as Y except for being true at initial step:
-	node Z(in: bool) returns (out: bool); let out = true -> pre in; tel;
-
-	-- the H operator for history which is the dual of the G operator:
-	node H(in: bool) returns (out: bool); let out = in -> (in and pre out); tel;
-
-	-- the O operator for once which is the dual of the F operator:
-	node O(in: bool) returns (out: bool);	let out = in -> (in or pre out); tel;
-
-	-- the S operator for since which is the dual of the U operator:
-	node S(p, q: bool) returns (out: bool);	let out = q or (false -> (p and pre out)); tel;
-
 node main(sig: int; ignition: bool) returns (ok: bool);
 
 var

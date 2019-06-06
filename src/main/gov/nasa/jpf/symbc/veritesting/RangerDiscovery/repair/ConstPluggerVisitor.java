@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.findNode;
+
 /**
  * This visitor puts back the values of the holes into the specification of T.
  */
@@ -53,6 +55,17 @@ public class ConstPluggerVisitor extends AstMapVisitor {
 
 
     @Override
+    public Expr visit(NodeCallExpr e) {
+        List<Expr> newArgs = new ArrayList<>();
+        for (int i = 0; i < e.args.size(); i++) {
+            if (!e.args.toString().contains("hole"))
+                newArgs.add((e.args.get(i).accept(this)));
+        }
+        return new NodeCallExpr(e.location, e.node, visitExprs(e.args));
+    }
+
+
+    @Override
     public Node visit(Node e) {
         Node oldSpecNode = findNode(counterExamplePgm.nodes, e);
         List<VarDecl> inputs = visitVarDecls(oldSpecNode.inputs);
@@ -73,7 +86,6 @@ public class ConstPluggerVisitor extends AstMapVisitor {
 
 
         List<Node> toRepairNodes = getToRepairNodes(counterExamplePgm);
-        //List<Node> repairedSigNodes = repairNodes(toRepairNodes, synthesisPgm); // nodes whose signtures are repaired but not yet their equations.
         List<Node> repairedNodes = new ArrayList<>();
 
         ConstPluggerVisitor constPluggerVisitor = new ConstPluggerVisitor(holeSynValuesMap, counterExamplePgm, synthesisPgm);
@@ -90,24 +102,6 @@ public class ConstPluggerVisitor extends AstMapVisitor {
         List<Node> repairedPgmNodes = replaceOldNodes(counterExamplePgm, repairedNodes);
 
         return new Program(Location.NULL, counterExamplePgm.types, counterExamplePgm.constants, counterExamplePgm.functions, repairedPgmNodes, counterExamplePgm.main);
-
-
-/*
-
-        List<Node> toRepairNodes = getToRepairNodes(counterExamplePgm);
-        List<Node> repairedSigNodes = repairNodes(toRepairNodes, synthesisPgm); // nodes whose signtures are repaired but not yet their equations.
-        ArrayList<Node> repairedNodes = new ArrayList<>();
-
-        ConstPluggerVisitor constPluggerVisitor = new ConstPluggerVisitor(holeSynValuesMap, counterExamplePgm, synthesisPgm);
-
-        for (int i = 0; i < repairedSigNodes.size(); i++) {
-            repairedNodes.add((Node) repairedSigNodes.get(i).accept(constPluggerVisitor));
-        }
-
-        List<Node> repairedPgmNodes = replaceOldNodes(counterExamplePgm, repairedNodes);
-
-        return new Program(Location.NULL, counterExamplePgm.types, counterExamplePgm.constants, counterExamplePgm.functions, repairedPgmNodes, counterExamplePgm.main);
-*/
     }
 
     private static List<Node> replaceOldNodes(Program counterExamplePgm, List<Node> repairedNodes) {
@@ -115,7 +109,7 @@ public class ConstPluggerVisitor extends AstMapVisitor {
         List<Node> oldNodes = counterExamplePgm.nodes;
         for (int i = 0; i < oldNodes.size(); i++) {
             Node oldNode = oldNodes.get(i);
-            if (!isSpecNode(oldNode))
+            if (!needsRepairNode(oldNode))
                 newNodes.add(oldNode);
             else { // return the corresponding repaired node.
                 Node repairedNode = findNode(repairedNodes, oldNode);
@@ -126,33 +120,6 @@ public class ConstPluggerVisitor extends AstMapVisitor {
         return newNodes;
     }
 
-    /**
-     * This gets the nodes that needs repair from the SynthesisProgram and also change everything back to the way it was in the counter example step, except for the equations, which needs to be filled out by the constPluggerVisitor that should take care of that part.
-     *
-     * @param toRepairNodes
-     * @param synthesisPgm
-     * @return
-     */
-    private static List<Node> repairNodes(List<Node> toRepairNodes, Program synthesisPgm) {
-        List<Node> repairedSignatureNodes = new ArrayList<>();
-        List<Node> synthesisNodes = synthesisPgm.nodes;
-        for (int i = 0; i < toRepairNodes.size(); i++) {
-            Node nodeToRepair = toRepairNodes.get(i);
-            Node synthesisNode = findNode(synthesisNodes, nodeToRepair);
-            if (synthesisNode != null) //it can be null if the node was part of the spec but was never really used, i.e., not called.
-                repairedSignatureNodes.add(new Node(nodeToRepair.id, nodeToRepair.inputs, nodeToRepair.outputs, nodeToRepair.locals, synthesisNode.equations, nodeToRepair.properties, nodeToRepair.assertions, nodeToRepair.realizabilityInputs, nodeToRepair.contract, nodeToRepair.ivc));
-        }
-        return repairedSignatureNodes;
-    }
-
-    private static Node findNode(List<Node> nodes, Node node) {
-        for (int i = 0; i < nodes.size(); i++) {
-            if (nodes.get(i).id.equals(node.id))
-                return nodes.get(i);
-        }
-        System.out.println("problem finding the node to repair!");
-        return null;
-    }
 
     /**
      * finds the spec nodes that we need to repair
@@ -165,13 +132,14 @@ public class ConstPluggerVisitor extends AstMapVisitor {
         List<Node> allNodes = program.nodes;
         for (int i = 0; i < allNodes.size(); i++) {
             Node node = allNodes.get(i);
-            if (isSpecNode(node))
+            //if (isSpecNode(node))
+            if (DiscoverContract.userSynNodes.contains(node.id)) //repair if the user has specified it to be a repair node.
                 toRepairNodes.add(node);
         }
         return toRepairNodes;
     }
 
-    private static boolean isSpecNode(Node node) {
+    private static boolean needsRepairNode(Node node) {
         String nodeName = node.id;
         if (nodeName.equals("main") || nodeName.equals(DiscoverContract.WRAPPERNODE) || nodeName.equals(DiscoverContract.RNODE))
             return false;

@@ -5,22 +5,16 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair.HolePlugger;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstHoleVisitor;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstantHole;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import jkind.Main;
-import jkind.api.ApiUtil;
 import jkind.api.JKindApi;
 import jkind.api.results.JKindResult;
-import jkind.lustre.Ast;
-import jkind.lustre.values.Value;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
@@ -45,6 +39,8 @@ public class DiscoverContract {
     public static String CHECKSPECNODE = "Check_spec";
     public static String GLOBALYNODE = "H";
 
+    public static ArrayList<String> userSynNodes = new ArrayList<>();
+
     public static HoleRepair holeRepairHolder = new HoleRepair();
 
 /***** begin of unused vars***/
@@ -60,6 +56,8 @@ public class DiscoverContract {
     /***** end of unused vars***/
 
     public static final void discoverLusterContract(DynamicRegion dynRegion) {
+        fillUserSynNodes();
+        assert (userSynNodes.size() > 0);
 
         if (!called) { //print out the translation once, for very first time we hit linearlization for the method of
             // interest.
@@ -101,7 +99,7 @@ public class DiscoverContract {
                                 return;
                             case INVALID:
                                 System.out.println("plugging in holes");
-                                if(holePlugger == null)
+                                if (holePlugger == null)
                                     holePlugger = new HolePlugger(synthesisContract.getHoles());
                                 holePlugger.plugInHoles(synthesisResult, counterExContract.getCounterExamplePgm(), synthesisContract.getSynthesisProgram());
                                 counterExContractStr = holePlugger.toString();
@@ -120,6 +118,10 @@ public class DiscoverContract {
             while (true);
         }
         called = true;
+    }
+
+    private static void fillUserSynNodes() {
+        userSynNodes.add("main");
     }
 
 
@@ -147,6 +149,13 @@ public class DiscoverContract {
         JKindResult result = new JKindResult("");
         api.execute(file, result, new NullProgressMonitor());
         return result;
+    }
+
+    /**
+     * this is used to change the name of the repair node of the main to become the TNODE name. This is used initially when in the synthesis step we create the holes, using the fixed part.
+     */
+    public static void changeMainToTNODE(){
+        userSynNodes.set(userSynNodes.indexOf("main"), TNODE);
     }
 
 
