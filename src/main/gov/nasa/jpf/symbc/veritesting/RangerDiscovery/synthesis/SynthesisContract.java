@@ -162,7 +162,7 @@ public class SynthesisContract {
     private Node createSynthesisMain(Node synthesisSpecNode) {
         List<Expr> myAssertions = freezeHolesAssertion();
 
-
+        List<VarDecl> myInputs = extractHoleEnteries(synthesisSpecNode.inputs);
         List<Equation> myEquations = new ArrayList<>();
         myEquations.addAll(testCaseManager.testInputEqs);
         myEquations.addAll(testCaseManager.testCallEqs);
@@ -177,8 +177,25 @@ public class SynthesisContract {
         myProperties.add("ok");
 
 
-        return new Node("main", synthesisSpecNode.inputs, synthesisSpecNode.outputs, myLocals, myEquations, myProperties, myAssertions, synthesisSpecNode.realizabilityInputs, synthesisSpecNode.contract, synthesisSpecNode.ivc);
+        return new Node("main", myInputs, synthesisSpecNode.outputs, myLocals, myEquations, myProperties, myAssertions, synthesisSpecNode.realizabilityInputs, synthesisSpecNode.contract, synthesisSpecNode.ivc);
     }
+
+    /**
+     * This method is used to extract the hole enteries from a list of VarDecls.
+     *
+     * @param allIputs
+     * @return
+     */
+    public List<VarDecl> extractHoleEnteries(List<VarDecl> allIputs) {
+        List<VarDecl> holeEnteries = new ArrayList<>();
+        for (int i = 0; i < allIputs.size(); i++) {
+            if (allIputs.get(i).toString().contains("hole"))
+                holeEnteries.add(allIputs.get(i));
+        }
+        return holeEnteries;
+
+    }
+
 
     private List<Expr> freezeHolesAssertion() {
         List<Expr> freezeAssertions = new ArrayList<>();

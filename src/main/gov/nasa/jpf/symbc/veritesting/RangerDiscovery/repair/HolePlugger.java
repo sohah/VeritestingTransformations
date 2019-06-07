@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstantHole;
@@ -19,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 
 public class HolePlugger {
     public final ArrayList<Hole> holes;
@@ -44,6 +47,11 @@ public class HolePlugger {
             if (pr.getProperty() instanceof InvalidProperty) {
                 InvalidProperty ip = (InvalidProperty) pr.getProperty();
                 Counterexample counterExample = ip.getCounterexample();
+
+                String fileName = contractMethodName + DiscoverContract.loopCount + "CEX.lus";
+
+                DiscoveryUtil.writeToFile(fileName, counterExample.toString());
+
                 fillEmptyHoles(counterExample);
             }
         }
