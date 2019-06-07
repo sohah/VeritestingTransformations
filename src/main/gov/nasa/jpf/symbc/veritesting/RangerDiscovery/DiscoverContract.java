@@ -131,6 +131,7 @@ public class DiscoverContract {
                         default:
                             break;
                     }
+                    ++loopCount;
                 }
                 while (true);
             }
@@ -148,7 +149,7 @@ public class DiscoverContract {
 
         List<Node> nodes = program.nodes;
         for (int i = 0; i < nodes.size(); i++) {
-            if(nodes.get(i).id.equals(DiscoverContract.TNODE))
+            if (nodes.get(i).id.equals(DiscoverContract.TNODE))
                 return nodes.get(i);
         }
 

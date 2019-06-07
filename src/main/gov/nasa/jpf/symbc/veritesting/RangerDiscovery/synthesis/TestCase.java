@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 import jkind.lustre.values.Value;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -19,8 +20,9 @@ public class TestCase {
             return false;
         else{// we need to do more checks to make sure that the test cases are the same.
             Set<String> myKeySet = this.testCaseMap.keySet();
-            while(myKeySet.iterator().hasNext()){
-                String var = myKeySet.iterator().next();
+            Iterator<String> keySetItr = myKeySet.iterator();
+            while(keySetItr.hasNext()){
+                String var = keySetItr.next();
                 if(!valuesEquals(this.testCaseMap.get(var), testCase.testCaseMap.get(var)))
                     return false;
             }

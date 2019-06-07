@@ -4,6 +4,10 @@ const LAUNCH_SIG = 1;
 	-- the Y operator for yesterday which is the dual of the X operator:
 	node Y(in: bool) returns (out: bool); let out = false -> pre in; tel;
 
+-- the H operator for history which is the dual of the G operator:
+	node H(in: bool) returns (out: bool); let out = in -> (in and pre out); tel;
+
+
 node main(sig: int; ignition: bool) returns (ok: bool);
 
 var
@@ -12,6 +16,7 @@ var
     reset_flag: bool;
 	--ignition: bool;
 	p1: bool;
+	p2: bool;
 
 let
 	start_bt = false -> if(reset_flag) then
@@ -34,10 +39,14 @@ let
 
    --ignition = false -> pre (launch_bt) and (pre reset_flag);
 
-  p1 = (ignition = (Y(launch_bt) and Y (start_bt)));
+  p2 = (ignition = ((pre launch_bt) and (not (pre ignition) and (not pre reset_flag))));
 
-  --%PROPERTY p1;
+  p1 = H(reset_flag => Y(ignition));
 
-  ok = true -> p1;
+  --%PROPERTY p2;
+
+--  --%PROPERTY p1;
+
+  ok = true -> p1 and p2;
 
 tel;
