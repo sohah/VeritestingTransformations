@@ -43,7 +43,8 @@ public class DiscoverContract {
     public static String RNODE = "R_node";
     public static String WRAPPERNODE = "R_wrapper";
     public static String CHECKSPECNODE = "Check_spec";
-    public static String GLOBALYNODE = "H";
+    public static String H_discovery = "H_discovery";
+    public static int loopCount = 0;
 
     public static List<String> userSynNodes = new ArrayList<>();
 
@@ -62,6 +63,7 @@ public class DiscoverContract {
     /***** end of unused vars***/
 
     public static final void discoverLusterContract(DynamicRegion dynRegion) {
+        String fileName;
         fillUserSynNodes();
         assert (userSynNodes.size() > 0);
         try {
@@ -79,12 +81,15 @@ public class DiscoverContract {
                 String counterExContractStr = counterExContract.toString();
 
                 do {
-                    writeToFile(contractMethodName + ".lus", counterExContractStr);
+                    fileName = contractMethodName + loopCount + ".lus";
+                    writeToFile(fileName, counterExContractStr);
 
-                    JKindResult counterExResult = callJkind(contractMethodName + ".lus");
-                    switch (counterExResult.getPropertyResult("T_node~0.p1").getStatus()) {
+                    JKindResult counterExResult = callJkind(fileName);
+                    switch (counterExResult.getPropertyResult("T_node~0.p2").getStatus()) {
                         case VALID: //valid match
-                            System.out.println("Contract Matching! Aborting!");
+                            System.out.println("Ranger Discovery Result");
+                            System.out.println("Contract Matching! Printing repair and aborting!");
+                            System.out.println(getTnodeFromStr(fileName));
                             return;
                         case INVALID: //synthesis is needed
                             if (synthesisContract == null) {
@@ -100,11 +105,13 @@ public class DiscoverContract {
                             holeRepairHolder.setHoleRepairMap(ConstHoleVisitor.getHoleToConstant());
 
                             String synthesisContractStr = synthesisContract.toString();
-                            writeToFile(contractMethodName + "hole.lus", synthesisContractStr);
+                            fileName = contractMethodName + loopCount + "hole.lus";
+                            writeToFile(fileName, synthesisContractStr);
 
-                            JKindResult synthesisResult = callJkind(contractMethodName + "hole.lus");
+                            JKindResult synthesisResult = callJkind(fileName);
                             switch (synthesisResult.getPropertyResult("ok").getStatus()) {
                                 case VALID:
+                                    System.out.println("Ranger Discovery Result");
                                     System.out.println("Cannot find a synthesis");
                                     return;
                                 case INVALID:
@@ -136,8 +143,21 @@ public class DiscoverContract {
 
     }
 
+    private static Node getTnodeFromStr(String tFileName) throws IOException {
+        Program program = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8"));
+
+        List<Node> nodes = program.nodes;
+        for (int i = 0; i < nodes.size(); i++) {
+            if(nodes.get(i).id.equals(DiscoverContract.TNODE))
+                return nodes.get(i);
+        }
+
+        return null;
+    }
+
     /**
      * Initiall node keys are defined on the original program, where the "main" is the only node that needs repair, as well as any other nodes that the user wants to define in userSynNodes
+     *
      * @param program
      * @return
      */
@@ -148,7 +168,7 @@ public class DiscoverContract {
 
         for (int i = 0; i < program.nodes.size(); i++) {
             Node node = program.nodes.get(i);
-            if(!node.id.equals("main"))
+            if (!node.id.equals("main"))
                 nodeRepairKey.setNodesKey(node.id, NodeStatus.DONTCARE_SPEC);
         }
 

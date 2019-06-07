@@ -11,8 +11,6 @@ import jkind.lustre.*;
 import jkind.lustre.parsing.LustreParseUtil;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.renameMainNode;
@@ -154,7 +152,7 @@ public class SynthesisContract {
 
         List<Expr> globalOkParameters = new ArrayList<>();
         globalOkParameters.add(stepOkVarExpr);
-        NodeCallExpr globalOkRhs2 = new NodeCallExpr("H", globalOkParameters);
+        NodeCallExpr globalOkRhs2 = new NodeCallExpr(DiscoverContract.H_discovery, globalOkParameters);
         Equation globalOkEq = new Equation(globalOkLhs, new BinaryExpr(globalOkRhs1, BinaryOp.AND, globalOkRhs2));
         equations.add(globalOkEq);
 
@@ -208,7 +206,7 @@ public class SynthesisContract {
         IdExpr outVarExpr = DiscoveryUtil.varDeclToIdExpr(outVarDecl);
 
 
-        String id = DiscoverContract.GLOBALYNODE;
+        String id = DiscoverContract.H_discovery;
         List<VarDecl> inputs = new ArrayList<>();
         inputs.add(inVarDecl);
 

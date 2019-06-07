@@ -198,9 +198,9 @@ public class DiscoveryUtil {
     public static void appendToFile(String fileName, String content) {
         boolean append;
         if (firstTime) {
-            append = true;
+            append = false;
             firstTime = false;
-        } else append = false;
+        } else append = true;
 
         try (FileWriter fw = new FileWriter(fileName, append);
              BufferedWriter bw = new BufferedWriter(fw);
