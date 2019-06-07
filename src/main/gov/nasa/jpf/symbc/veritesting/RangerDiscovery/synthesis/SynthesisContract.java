@@ -33,6 +33,10 @@ public class SynthesisContract {
 
     private NodeRepairKey synNodeKey = new NodeRepairKey();
 
+    public int getMaxTestCaseK() {
+        return testCaseManager.getMaxK();
+    }
+
     public SynthesisContract(Contract contract, Program originalProgram, JKindResult counterExResult, NodeRepairKey originalNodeKey) throws IOException {
         this.contract = contract;
         Program holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);

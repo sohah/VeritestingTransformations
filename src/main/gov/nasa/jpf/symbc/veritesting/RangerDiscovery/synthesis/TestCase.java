@@ -11,19 +11,19 @@ public class TestCase {
     //a hashmap between the testInput var name and its values in this counterExample
     HashMap<String, List<Value>> testCaseMap;
 
-    public TestCase(HashMap<String, List<Value>> testCaseMap){
+    public TestCase(HashMap<String, List<Value>> testCaseMap) {
         this.testCaseMap = testCaseMap;
     }
 
-    public boolean isEqual(TestCase testCase){
-        if(this.testCaseMap.size() != testCase.testCaseMap.size())
+    public boolean isEqual(TestCase testCase) {
+        if (this.testCaseMap.size() != testCase.testCaseMap.size())
             return false;
-        else{// we need to do more checks to make sure that the test cases are the same.
+        else {// we need to do more checks to make sure that the test cases are the same.
             Set<String> myKeySet = this.testCaseMap.keySet();
             Iterator<String> keySetItr = myKeySet.iterator();
-            while(keySetItr.hasNext()){
+            while (keySetItr.hasNext()) {
                 String var = keySetItr.next();
-                if(!valuesEquals(this.testCaseMap.get(var), testCase.testCaseMap.get(var)))
+                if (!valuesEquals(this.testCaseMap.get(var), testCase.testCaseMap.get(var)))
                     return false;
             }
             return true;
@@ -31,15 +31,24 @@ public class TestCase {
     }
 
     private boolean valuesEquals(List<Value> values1, List<Value> values2) {
-        if(values1.size() != values2.size())
+        if (values1.size() != values2.size())
             return false;
-        else{
-            for(int i=0; i<values1.size(); i++){
-                if(!values1.get(i).equals(values2.get(i)))
+        else {
+            for (int i = 0; i < values1.size(); i++) {
+                if (!values1.get(i).equals(values2.get(i)))
                     return false;
             }
             return true;
         }
+    }
+
+    public String toString() {
+        String myStr ="\n";
+        for (HashMap.Entry e : testCaseMap.entrySet()) {
+            String input = (String) e.getKey();
+            myStr += input + ":" + e.getValue().toString()+"\n";
+        }
+        return myStr;
     }
 
 }

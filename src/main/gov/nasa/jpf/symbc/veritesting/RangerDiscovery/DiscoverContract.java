@@ -84,7 +84,7 @@ public class DiscoverContract {
                     fileName = contractMethodName + loopCount + ".lus";
                     writeToFile(fileName, counterExContractStr);
 
-                    JKindResult counterExResult = callJkind(fileName);
+                    JKindResult counterExResult = callJkind(fileName, true, -1);
                     switch (counterExResult.getPropertyResult("T_node~0.p2").getStatus()) {
                         case VALID: //valid match
                             System.out.println("Ranger Discovery Result");
@@ -108,7 +108,7 @@ public class DiscoverContract {
                             fileName = contractMethodName + loopCount + "hole.lus";
                             writeToFile(fileName, synthesisContractStr);
 
-                            JKindResult synthesisResult = callJkind(fileName);
+                            JKindResult synthesisResult = callJkind(fileName, true, synthesisContract.getMaxTestCaseK());
                             switch (synthesisResult.getPropertyResult("ok").getStatus()) {
                                 case VALID:
                                     System.out.println("Ranger Discovery Result");
@@ -181,14 +181,14 @@ public class DiscoverContract {
     }
 
 
-    private static JKindResult callJkind(String fileName) {
+    private static JKindResult callJkind(String fileName, boolean kInductionOn, int maxK) {
 
         File file1 = new File(DiscoverContract.folderName + "/" + fileName);
 
-        return runJKind(file1);
+        return runJKind(file1, kInductionOn, maxK);
     }
 
-    private static JKindResult runJKind(File file) {
+    private static JKindResult runJKind(File file, boolean kInductionOn, int maxK) {
 
 /*
         String[] jkindArgs = new String[5];
@@ -203,6 +203,12 @@ public class DiscoverContract {
 
         JKindApi api = new JKindApi();
         JKindResult result = new JKindResult("");
+        if (!kInductionOn)
+            api.disableKInduction();
+
+        if (maxK != -1) //if not set
+            api.setN(maxK);
+
         api.execute(file, result, new NullProgressMonitor());
         return result;
     }

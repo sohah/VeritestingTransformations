@@ -47,15 +47,9 @@ public class HolePlugger {
             if (pr.getProperty() instanceof InvalidProperty) {
                 InvalidProperty ip = (InvalidProperty) pr.getProperty();
                 Counterexample counterExample = ip.getCounterexample();
-
-                String fileName = contractMethodName + DiscoverContract.loopCount + "CEX.lus";
-
-                DiscoveryUtil.writeToFile(fileName, counterExample.toString());
-
                 fillEmptyHoles(counterExample);
             }
         }
-        //fillStillEmptyHoles();
     }
 
     /**

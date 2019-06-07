@@ -16,6 +16,7 @@ import jkind.results.InvalidProperty;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract.getHoleExpr;
 
 /**
@@ -44,6 +45,7 @@ public class TestCaseManager {
 
     private static String testCaseVarName = "ok";
     private static List<Expr> holeExprs;
+    public static int maxK;
 
 
     public TestCaseManager(Contract contract, JKindResult counterExResult) {
@@ -60,6 +62,9 @@ public class TestCaseManager {
             if (pr.getProperty() instanceof InvalidProperty) {
                 InvalidProperty ip = (InvalidProperty) pr.getProperty();
                 Counterexample counterExample = ip.getCounterexample();
+                String fileName = contractMethodName + DiscoverContract.loopCount + "CEX.lus";
+
+                DiscoveryUtil.writeToFile(fileName, counterExample.toString());
                 translateTestCase(counterExample);
             }
         }
@@ -138,11 +143,13 @@ public class TestCaseManager {
         while (testCasesItr.hasNext()) {
             TestCase tc = testCasesItr.next();
             if (testCase.isEqual(tc)) {
-                System.out.println("repeated test case! aborting");
+                System.out.println("repeated test case! printing and aborting");
+                System.out.println("new test case:" + testCase.toString());
+                System.out.println("old test case" + tc.toString());
+
                 assert false;
             }
         }
-
         testCases.add(testCase);
     }
 
@@ -204,8 +211,15 @@ public class TestCaseManager {
         return new Equation(lhs, new UnaryExpr(UnaryOp.NOT, rhs));
     }
 
+    private void updateMaxK(int newK) {
+        maxK = (newK > maxK) ? newK : maxK;
+    }
 
-    private static Equation makeTestCallEq(Counterexample counterExResult, List<VarDecl> testInputVars, VarDecl testCallVar) {
+    public int getMaxK(){
+        return maxK;
+    }
+
+    private Equation makeTestCallEq(Counterexample counterExResult, List<VarDecl> testInputVars, VarDecl testCallVar) {
 
         IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(testCallVar);
 
@@ -215,6 +229,8 @@ public class TestCaseManager {
 
         int k = counterExResult.getLength();
         rhsParameters.add(new IntExpr(k));
+
+        updateMaxK(k);
 
         NodeCallExpr rhs = new NodeCallExpr(DiscoverContract.CHECKSPECNODE, rhsParameters);
 
