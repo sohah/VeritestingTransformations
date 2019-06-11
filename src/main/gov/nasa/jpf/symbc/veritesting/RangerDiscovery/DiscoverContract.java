@@ -84,8 +84,8 @@ public class DiscoverContract {
                     fileName = contractMethodName + loopCount + ".lus";
                     writeToFile(fileName, counterExContractStr);
 
-                    JKindResult counterExResult = callJkind(fileName, true, -1);
-                    switch (counterExResult.getPropertyResult("T_node~0.p2").getStatus()) {
+                    JKindResult counterExResult = callJkind(fileName, false, -1);
+                    switch (counterExResult.getPropertyResult("T_node~0.p1").getStatus()) {
                         case VALID: //valid match
                             System.out.println("Ranger Discovery Result");
                             System.out.println("Contract Matching! Printing repair and aborting!");
@@ -102,13 +102,13 @@ public class DiscoverContract {
                             } else
                                 synthesisContract.collectCounterExample(counterExResult);
 
-                            holeRepairHolder.setHoleRepairMap(ConstHoleVisitor.getHoleToConstant());
+                              holeRepairHolder.setHoleRepairMap(ConstHoleVisitor.getHoleToConstant());
 
                             String synthesisContractStr = synthesisContract.toString();
                             fileName = contractMethodName + loopCount + "hole.lus";
                             writeToFile(fileName, synthesisContractStr);
 
-                            JKindResult synthesisResult = callJkind(fileName, true, synthesisContract.getMaxTestCaseK());
+                            JKindResult synthesisResult = callJkind(fileName, false, synthesisContract.getMaxTestCaseK());
                             switch (synthesisResult.getPropertyResult("ok").getStatus()) {
                                 case VALID:
                                     System.out.println("Ranger Discovery Result");
