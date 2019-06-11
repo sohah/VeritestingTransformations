@@ -24,31 +24,63 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus.REPAIR;
 
 public class ConstPluggerVisitor extends AstMapVisitor {
     private final Program counterExamplePgm;
+    private final Program synthesisPgm;
 
     HashMap<Hole, Value> holeSynValuesMap;
 
 
-
-    public ConstPluggerVisitor(HashMap<Hole, Value> holeSynValuesMap, Program counterExamplePgm) {
+    public ConstPluggerVisitor(HashMap<Hole, Value> holeSynValuesMap, Program counterExamplePgm, Program synthesisPgm) {
         this.holeSynValuesMap = holeSynValuesMap;
         this.counterExamplePgm = counterExamplePgm;
+        this.synthesisPgm = synthesisPgm;
     }
 
     @Override
     public Expr visit(IdExpr e) {
         if (e instanceof ConstantHole) {
             Value value = holeSynValuesMap.get(e);
-            return translateValueToExpr(value);
+            VarDecl holVarDecl = getHoleVarDecl(e);
+            return translateValueToExpr(value, holVarDecl);
         } else
             return e;
     }
 
-    private Expr translateValueToExpr(Value value) {
+    /**
+     * uses the synthesisPgm to find the VarDecl of the hole and returns that.
+     *
+     * @param e
+     * @return
+     */
+    private VarDecl getHoleVarDecl(IdExpr e) {
+        List<VarDecl> inputs = synthesisPgm.getMainNode().inputs;
+        for (int i = 0; i < inputs.size(); i++) {
+            if (inputs.get(i).id.equals(e.id)) {
+                VarDecl myVarDecl = inputs.get(i);
+                return myVarDecl;
+            }
+        }
+        System.out.println("unable to find the VarDecl for a variable.");
+        assert false;
+        return null;
+    }
+
+    private Expr translateValueToExpr(Value value, VarDecl holVarDecl) {
         if (value instanceof BooleanValue)
             return new BoolExpr(((BooleanValue) value).value);
         else if (value instanceof IntegerValue)
             return new IntExpr(((IntegerValue) value).value);
-        else {
+        else if (value == null) {
+            System.out.println("assuming default value");
+            if (holVarDecl.type == NamedType.BOOL)
+                return new BoolExpr(false);
+            else if (holVarDecl.type == NamedType.INT)
+                return new IntExpr(0);
+            else {
+                System.out.println("unsupported values type");
+                assert false;
+                return null;
+            }
+        } else {
             System.out.println("unsupported values type");
             assert false;
             return null;
@@ -75,7 +107,8 @@ public class ConstPluggerVisitor extends AstMapVisitor {
         List<VarDecl> locals = visitVarDecls(oldSpecNode.locals);
         List<Equation> equations = visitEquations(e.equations);
         List<Expr> assertions = visitAssertions(e.assertions);
-        List<String> properties = visitProperties(e.properties);
+        //if it is the T_node we need to have the old property from the counterExample form, otherwise we proceed with what we have from the repaired spec.
+        List<String> properties = (e.id.equals(DiscoverContract.TNODE)) ? visitProperties(oldSpecNode.properties) : visitProperties(e.properties);
         List<String> ivc = visitIvc(oldSpecNode.ivc);
         List<String> realizabilityInputs = visitRealizabilityInputs(oldSpecNode.realizabilityInputs);
         Contract contract = visit(oldSpecNode.contract);
@@ -90,7 +123,7 @@ public class ConstPluggerVisitor extends AstMapVisitor {
         List<Node> toRepairNodes = getToRepairNodes(counterExamplePgm, nodeRepairKey);
         List<Node> repairedNodes = new ArrayList<>();
 
-        ConstPluggerVisitor constPluggerVisitor = new ConstPluggerVisitor(holeSynValuesMap, counterExamplePgm);
+        ConstPluggerVisitor constPluggerVisitor = new ConstPluggerVisitor(holeSynValuesMap, counterExamplePgm, synthesisPgm);
 
         for (int i = 0; i < toRepairNodes.size(); i++) {
             Node holeNode = findNode(synthesisPgm.nodes, toRepairNodes.get(i));

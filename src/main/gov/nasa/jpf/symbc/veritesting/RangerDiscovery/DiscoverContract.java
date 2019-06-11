@@ -87,7 +87,7 @@ public class DiscoverContract {
                     JKindResult counterExResult = callJkind(fileName, false, -1);
                     switch (counterExResult.getPropertyResult("T_node~0.p1").getStatus()) {
                         case VALID: //valid match
-                            System.out.println("Ranger Discovery Result");
+                            System.out.println("^-^ Ranger Discovery Result ^-^");
                             System.out.println("Contract Matching! Printing repair and aborting!");
                             System.out.println(getTnodeFromStr(fileName));
                             return;
@@ -111,13 +111,13 @@ public class DiscoverContract {
                             JKindResult synthesisResult = callJkind(fileName, false, synthesisContract.getMaxTestCaseK());
                             switch (synthesisResult.getPropertyResult("ok").getStatus()) {
                                 case VALID:
-                                    System.out.println("Ranger Discovery Result");
+                                    System.out.println("^-^ Ranger Discovery Result ^-^");
                                     System.out.println("Cannot find a synthesis");
                                     return;
                                 case INVALID:
                                     System.out.println("plugging in holes");
                                     if (holePlugger == null)
-                                        holePlugger = new HolePlugger(synthesisContract.getHoles());
+                                        holePlugger = new HolePlugger(synthesisContract.getHoles(), counterExContract.getCounterExamplePgm());
                                     holePlugger.plugInHoles(synthesisResult, counterExContract.getCounterExamplePgm(), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
                                     counterExContractStr = holePlugger.toString();
                                     DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairHolder.toString());
@@ -145,7 +145,7 @@ public class DiscoverContract {
     }
 
     private static Node getTnodeFromStr(String tFileName) throws IOException {
-        Program program = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8"));
+        Program program = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(DiscoverContract.folderName + "/" + tFileName)), "UTF-8"));
 
         List<Node> nodes = program.nodes;
         for (int i = 0; i < nodes.size(); i++) {

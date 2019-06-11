@@ -10,12 +10,14 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContrac
 import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
 import jkind.lustre.Ast;
+import jkind.lustre.Node;
 import jkind.lustre.Program;
 import jkind.lustre.values.Value;
 import jkind.results.Counterexample;
 import jkind.results.InvalidProperty;
 import jkind.results.Signal;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,14 +27,17 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.co
 
 public class HolePlugger {
     public final ArrayList<Hole> holes;
+    private final Program counterExamplePgm;
+
     HashMap<Hole, Value> holeSynValuesMap = new HashMap<>();
 
     JKindResult synReesult;
 
     Program repairedProgram;
 
-    public HolePlugger(ArrayList<Hole> holes) {
+    public HolePlugger(ArrayList<Hole> holes, Program counterExamplePgm) {
         this.holes = holes;
+        this.counterExamplePgm = counterExamplePgm;
     }
 
     public void plugInHoles(JKindResult newResult, Program counterPgm, Program synPgm, NodeRepairKey nodeRepairKey) {
@@ -46,22 +51,10 @@ public class HolePlugger {
         for (PropertyResult pr : synReesult.getPropertyResults()) {
             if (pr.getProperty() instanceof InvalidProperty) {
                 InvalidProperty ip = (InvalidProperty) pr.getProperty();
-                Counterexample counterExample = ip.getCounterexample();
-                fillEmptyHoles(counterExample);
-            }
-        }
-    }
-
-    /**
-     * this is used to populate holes with their initial values for those that the counter example did not provide values for them.
-     */
-    private void fillStillEmptyHoles() {
-        for (int i = 0; i < holes.size(); i++) {
-            Hole hole = holes.get(i);
-            if (holeSynValuesMap.get(hole) == null) {
-                assert (hole instanceof ConstantHole);
-                /*holeSynValuesMap.put(hole, signalValue);
-                DiscoverContract.holeRepairHolder.updateHoleRepairMap(hole, signalValue);*/
+                if (ip.getName().equals("ok")) {
+                    Counterexample counterExample = ip.getCounterexample();
+                    fillEmptyHoles(counterExample);
+                }
             }
         }
     }
@@ -104,9 +97,7 @@ public class HolePlugger {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return ToLutre.lustreFriendlyString(repairedProgram.toString());
-
     }
-
 }
