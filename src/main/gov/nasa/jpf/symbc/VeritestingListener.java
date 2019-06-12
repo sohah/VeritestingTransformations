@@ -595,7 +595,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         dynRegion = linearTrans.execute(dynRegion);
 
         /*--------------- Discover Lustre Translation ---------------*/
-        if(contractDiscoveryOn)
+        if (contractDiscoveryOn)
             DiscoverContract.discoverLusterContract(dynRegion);
 
         /*--------------- TO GREEN TRANSFORMATION ---------------*/
@@ -692,7 +692,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     /**
      * This method checks that the current PathCondition and after appending the summarized region is satisfiable.
      *
-     * @param ti            Currently running thread.
+     * @param ti        Currently running thread.
      * @param dynRegion Finaly summary of the region, after all transformations has been successfully completed.
      * @return PathCondition is still satisfiable or not.
      * @throws StaticRegionException Exception to indicate a problem while checking SAT of the updated PathCondition.
@@ -713,10 +713,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         // if we're trying to run fast, then assume that the region summary is satisfiable in any non-SPFCASES mode or
         // if the static choice is the only feasible choice.
-        boolean cond1 =performanceMode && (runMode == VeritestingMode.VERITESTING ||
+        boolean cond1 = performanceMode && (runMode == VeritestingMode.VERITESTING ||
                 runMode == VeritestingMode.HIGHORDER ||
                 (choice != null && choice == STATIC_CHOICE && isOnlyStaticChoiceSat(dynRegion)));
-        if ( cond1 || isPCSat(pc)) {
+        if (cond1 || isPCSat(pc)) {
             currCG.setCurrentPC(pc);
             long t1 = System.nanoTime();
             // if we're running in incremental solving mode, then we need to ask this region summary to be
@@ -889,6 +889,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         if (spfCasesHeuristicsOn)
             statisticManager.printHeuristicStatistics();
+
+        if (DiscoverContract.isRepaired())
+            pw.print("Contract is repaired in iteration number:" + DiscoverContract.loopCount);
+        else
+            pw.print("Contract is NOT repaired");
     }
 
     private void writeRegionDigest() {

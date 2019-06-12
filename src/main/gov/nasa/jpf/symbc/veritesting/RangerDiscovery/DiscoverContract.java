@@ -59,6 +59,7 @@ public class DiscoverContract {
     public static String contractMethodName;
     public static String className;
     public static String packageName;
+    private static boolean repaired;
 
     /***** end of unused vars***/
 
@@ -89,7 +90,8 @@ public class DiscoverContract {
                         case VALID: //valid match
                             System.out.println("^-^ Ranger Discovery Result ^-^");
                             System.out.println("Contract Matching! Printing repair and aborting!");
-                            System.out.println(getTnodeFromStr(fileName));
+                            //System.out.println(getTnodeFromStr(fileName));
+                            DiscoverContract.repaired = true;
                             return;
                         case INVALID: //synthesis is needed
                             if (synthesisContract == null) {
@@ -97,12 +99,13 @@ public class DiscoverContract {
                                     synthesisContract = new SynthesisContract(contract, originalProgram, counterExResult, originalNodeKey);
                                 } catch (IOException e) {
                                     System.out.println("problem occured while creating a synthesis contract! aborting!\n" + e.getMessage());
+                                    DiscoverContract.repaired = false;
                                     assert false;
                                 }
                             } else
                                 synthesisContract.collectCounterExample(counterExResult);
 
-                              holeRepairHolder.setHoleRepairMap(ConstHoleVisitor.getHoleToConstant());
+                            holeRepairHolder.setHoleRepairMap(ConstHoleVisitor.getHoleToConstant());
 
                             String synthesisContractStr = synthesisContract.toString();
                             fileName = contractMethodName + loopCount + "hole.lus";
@@ -113,6 +116,7 @@ public class DiscoverContract {
                                 case VALID:
                                     System.out.println("^-^ Ranger Discovery Result ^-^");
                                     System.out.println("Cannot find a synthesis");
+                                    DiscoverContract.repaired = false;
                                     return;
                                 case INVALID:
                                     System.out.println("plugging in holes");
@@ -124,6 +128,7 @@ public class DiscoverContract {
                                     break;
                                 default:
                                     System.out.println("unexpected status for the jkind synthesis query.");
+                                    DiscoverContract.repaired = false;
                                     assert false;
                                     break;
                             }
@@ -209,6 +214,8 @@ public class DiscoverContract {
         if (maxK != -1) //if not set
             api.setN(maxK);
 
+        api.disableSlicing();
+
         api.execute(file, result, new NullProgressMonitor());
         return result;
     }
@@ -220,4 +227,7 @@ public class DiscoverContract {
     }
 
 
+    public static boolean isRepaired() {
+        return repaired;
+    }
 }
