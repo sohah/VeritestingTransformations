@@ -27,7 +27,6 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.co
 
 public class HolePlugger {
     public final ArrayList<Hole> holes;
-    private final Program counterExamplePgm;
 
     HashMap<Hole, Value> holeSynValuesMap = new HashMap<>();
 
@@ -35,9 +34,8 @@ public class HolePlugger {
 
     Program repairedProgram;
 
-    public HolePlugger(ArrayList<Hole> holes, Program counterExamplePgm) {
+    public HolePlugger(ArrayList<Hole> holes) {
         this.holes = holes;
-        this.counterExamplePgm = counterExamplePgm;
     }
 
     public void plugInHoles(JKindResult newResult, Program counterPgm, Program synPgm, NodeRepairKey nodeRepairKey) {

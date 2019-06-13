@@ -121,7 +121,7 @@ public class DiscoverContract {
                                 case INVALID:
                                     System.out.println("plugging in holes");
                                     if (holePlugger == null)
-                                        holePlugger = new HolePlugger(synthesisContract.getHoles(), counterExContract.getCounterExamplePgm());
+                                        holePlugger = new HolePlugger(synthesisContract.getHoles());
                                     holePlugger.plugInHoles(synthesisResult, counterExContract.getCounterExamplePgm(), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
                                     counterExContractStr = holePlugger.toString();
                                     DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairHolder.toString());
