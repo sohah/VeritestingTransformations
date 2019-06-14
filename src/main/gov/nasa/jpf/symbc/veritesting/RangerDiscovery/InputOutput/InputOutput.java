@@ -52,7 +52,8 @@ public class InputOutput extends SpecInputOutput {
                 IfThenElseExpr ifThenElseExpr = new IfThenElseExpr(new BinaryExpr(new IdExpr(var), BinaryOp.EQUAL, new
                         IntExpr
                         (1)), new BoolExpr(true), new BoolExpr(false));
-                Equation conversionEq = new Equation(new IdExpr(newVar), ifThenElseExpr);
+                BinaryExpr initExpr = new BinaryExpr(new BoolExpr(false), BinaryOp.ARROW, ifThenElseExpr);
+                Equation conversionEq = new Equation(new IdExpr(newVar), initExpr);
                 conversionEqList.add(conversionEq);
             }
 
