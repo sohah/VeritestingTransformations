@@ -18,7 +18,7 @@ var
 	--p2: bool;
 
 let
-	start_bt = false -> if(reset_flag) then
+	start_bt = false -> if(pre reset_flag) then
 											false
 										else if(not(pre start_bt) and (not (pre launch_bt))) and (sig = START_SIG) then
 									    		true
@@ -26,7 +26,7 @@ let
 												pre start_bt;
 
 
-	launch_bt = false -> if(reset_flag) then
+	launch_bt = false -> if(pre reset_flag) then
 										    false
 										else if((pre start_bt) and (not (pre launch_bt ))) and (sig = LAUNCH_SIG) then
 										    	true
@@ -34,7 +34,7 @@ let
 											    pre launch_bt;
 
 
-  reset_flag = false -> pre launch_bt;
+  reset_flag = false -> pre ignition;
 
    --ignition = false -> pre (launch_bt) and (pre reset_flag);
 
@@ -42,7 +42,7 @@ let
 
 --  p1 = H(reset_flag => (Y(ignition) and Y(Y(launch_bt))));
 
-  p1 = (ignition = (false -> (pre launch_bt and not( pre reset_flag))));
+    p1 = (ignition = (false -> ((pre launch_bt) and (not reset_flag) and (not pre reset_flag))));
 
  -- --%PROPERTY p2;
 
