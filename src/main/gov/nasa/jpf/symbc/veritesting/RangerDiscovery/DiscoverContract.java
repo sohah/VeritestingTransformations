@@ -111,7 +111,8 @@ public class DiscoverContract {
                             fileName = contractMethodName + loopCount + "hole.lus";
                             writeToFile(fileName, synthesisContractStr);
 
-                            JKindResult synthesisResult = callJkind(fileName, false, synthesisContract.getMaxTestCaseK());
+                            JKindResult synthesisResult = callJkind(fileName, false, synthesisContract
+                                    .getMaxTestCaseK()-2);
                             switch (synthesisResult.getPropertyResult("ok").getStatus()) {
                                 case VALID:
                                     System.out.println("^-^ Ranger Discovery Result ^-^");
@@ -120,6 +121,7 @@ public class DiscoverContract {
                                     return;
                                 case INVALID:
                                     System.out.println("plugging in holes");
+
                                     if (holePlugger == null)
                                         holePlugger = new HolePlugger(synthesisContract.getHoles());
                                     holePlugger.plugInHoles(synthesisResult, counterExContract.getCounterExamplePgm(), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());

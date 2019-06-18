@@ -52,6 +52,9 @@ public class HolePlugger {
                 if (ip.getName().equals("ok")) {
                     Counterexample counterExample = ip.getCounterexample();
                     fillEmptyHoles(counterExample);
+                    String fileName = contractMethodName + DiscoverContract.loopCount + "HoleCEX.lus";
+
+                    DiscoveryUtil.writeToFile(fileName, counterExample.toString());
                 }
             }
         }

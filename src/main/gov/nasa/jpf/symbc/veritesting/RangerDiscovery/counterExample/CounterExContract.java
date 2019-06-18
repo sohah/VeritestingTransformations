@@ -85,13 +85,18 @@ public class CounterExContract {
         NodeCallExpr callT = new NodeCallExpr(TNODE, (List<Expr>) tNodeArgs);
         assert (tNode.outputs.size() == 1); //assuming a single output is possible for TNode to indicate constraints are
         // passing, i.e., sat
+        List mainInList = new ArrayList();
+        mainInList.addAll(tNode.inputs);
+        mainInList.remove(mainInList.size()-1); //removing the last element because that is an output
+
         VarDecl mainOut = new VarDecl("discovery_out", tNode.outputs.get(0).type);
         List mainOutList = new ArrayList();
         mainOutList.add(mainOut);
         Equation mainEq = new Equation(DiscoveryUtil.varDeclToIdExpr(mainOut), callT);
         List mainEquations = new ArrayList();
         mainEquations.add(mainEq);
-        return new Node("main", tNode.inputs, mainOutList, null, mainEquations, null, null, null, null,
+
+        return new Node("main", mainInList, mainOutList, null, mainEquations, null, null, null, null,
                 null);
 
     }

@@ -228,7 +228,7 @@ public class TestCaseManager {
         rhsParameters.addAll(holeExprs);
 
         int k = counterExResult.getLength();
-        rhsParameters.add(new IntExpr(k));
+        rhsParameters.add(new IntExpr(k-2));
 
         updateMaxK(k);
 
