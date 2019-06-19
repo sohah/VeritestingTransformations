@@ -27,24 +27,17 @@ let
 
 
 	launch_bt = false -> if(pre reset_flag) then
-										    false
+										    true
 										else if((pre start_bt) and (not (pre launch_bt ))) and (sig = LAUNCH_SIG) then
 										    	true
 											else
 											    pre launch_bt;
 
 
-  reset_flag = false -> pre ignition;
-
-   --ignition = false -> pre (launch_bt) and (pre reset_flag);
-
-  -- p1 = (ignition = (false -> pre (launch_bt) and (pre reset_flag)));
-
---  p1 = H(reset_flag => (Y(ignition) and Y(Y(launch_bt))));
+    reset_flag = false -> pre ignition;
 
     p1 = (ignition = (false -> ((pre launch_bt) and (not reset_flag) and (not pre reset_flag))));
 
- -- --%PROPERTY p2;
 
   --%PROPERTY p1;
 
