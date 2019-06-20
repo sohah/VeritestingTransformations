@@ -215,7 +215,7 @@ public class TestCaseManager {
         maxK = (newK > maxK) ? newK : maxK;
     }
 
-    public int getMaxK(){
+    public int getMaxK() {
         return maxK;
     }
 
@@ -228,7 +228,7 @@ public class TestCaseManager {
         rhsParameters.addAll(holeExprs);
 
         int k = counterExResult.getLength();
-        rhsParameters.add(new IntExpr(k-2));
+        rhsParameters.add(new IntExpr(k - 1));
 
         updateMaxK(k);
 
