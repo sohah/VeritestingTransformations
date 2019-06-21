@@ -79,28 +79,28 @@ var
   r347_launch_btn_1_5_4 : int;
   r347_start_btn_1_5_4 : int;
   r347_launch_btn_1_7_4 : int;
-  r347_launch_btn_1_9_4 : int;
   r347_start_btn_1_7_4 : int;
+  r347_launch_btn_1_9_4 : int;
   r347_launch_btn_1_10_4 : int;
   r347_start_btn_1_8_4 : int;
   r347_reset_btn_1_2_4 : int;
-  r347_launch_btn_1_11_4 : int;
   r347_start_btn_1_9_4 : int;
+  r347_launch_btn_1_11_4 : int;
   r347_reset_btn_1_4_4 : int;
-  r347_ignition_r_1_4_4 : int;
   r347_reset_btn_1_5_4 : int;
-  r347_launch_btn_1_13_4 : int;
+  r347_ignition_r_1_4_4 : int;
   r347_start_btn_1_11_4 : int;
+  r347_launch_btn_1_13_4 : int;
   r347_ignition_r_1_5_4 : int;
+  r347_start_btn_1_13_4 : int;
   r347_launch_btn_1_15_4 : int;
   r347_reset_btn_1_7_4 : int;
-  r347_start_btn_1_13_4 : int;
   w17_2 : int;
   w11_1 : int;
-  r347_launch_btn_1_17_4 : int;
   r347_ignition_r_1_7_4 : int;
-  r347_reset_btn_1_9_4 : int;
   r347_start_btn_1_15_4 : int;
+  r347_launch_btn_1_17_4 : int;
+  r347_reset_btn_1_9_4 : int;
   w12_1 : int;
   symVar : int;
   start_btn : int;
@@ -146,9 +146,9 @@ let
 
   r347_launch_btn_1_7_4 = (if (not (w5_2 <> 1)) then launch_btn else r347_launch_btn_1_5_4);
 
-  r347_launch_btn_1_9_4 = (if (not (w14_2 = 0)) then r347_launch_btn_1_7_4 else launch_btn);
-
   r347_start_btn_1_7_4 = (if (not (w14_2 = 0)) then r347_start_btn_1_5_4 else start_btn);
+
+  r347_launch_btn_1_9_4 = (if (not (w14_2 = 0)) then r347_launch_btn_1_7_4 else launch_btn);
 
   r347_launch_btn_1_10_4 = 0;
 
@@ -156,39 +156,39 @@ let
 
   r347_reset_btn_1_2_4 = 0;
 
-  r347_launch_btn_1_11_4 = (if ((not (w5_2 = 5)) and (w5_2 <> 7)) then r347_launch_btn_1_9_4 else r347_launch_btn_1_10_4);
-
   r347_start_btn_1_9_4 = (if ((not (w5_2 = 5)) and (w5_2 <> 7)) then r347_start_btn_1_7_4 else r347_start_btn_1_8_4);
+
+  r347_launch_btn_1_11_4 = (if ((not (w5_2 = 5)) and (w5_2 <> 7)) then r347_launch_btn_1_9_4 else r347_launch_btn_1_10_4);
 
   r347_reset_btn_1_4_4 = (if ((not (w5_2 = 5)) and (w5_2 <> 7)) then reset_btn else r347_reset_btn_1_2_4);
 
-  r347_ignition_r_1_4_4 = (if (not (w5_2 <> 4)) then r347_ignition_r_1_2_4 else ignition);
-
   r347_reset_btn_1_5_4 = (if (not (w5_2 <> 4)) then r347_reset_btn_1_1_4 else r347_reset_btn_1_4_4);
 
-  r347_launch_btn_1_13_4 = (if (not (w5_2 <> 4)) then launch_btn else r347_launch_btn_1_11_4);
+  r347_ignition_r_1_4_4 = (if (not (w5_2 <> 4)) then r347_ignition_r_1_2_4 else ignition);
 
   r347_start_btn_1_11_4 = (if (not (w5_2 <> 4)) then start_btn else r347_start_btn_1_9_4);
 
+  r347_launch_btn_1_13_4 = (if (not (w5_2 <> 4)) then launch_btn else r347_launch_btn_1_11_4);
+
   r347_ignition_r_1_5_4 = (if (not (w5_2 <> 3)) then r347_ignition_r_1_1_4 else r347_ignition_r_1_4_4);
+
+  r347_start_btn_1_13_4 = (if (not (w5_2 <> 3)) then start_btn else r347_start_btn_1_11_4);
 
   r347_launch_btn_1_15_4 = (if (not (w5_2 <> 3)) then launch_btn else r347_launch_btn_1_13_4);
 
   r347_reset_btn_1_7_4 = (if (not (w5_2 <> 3)) then reset_btn else r347_reset_btn_1_5_4);
 
-  r347_start_btn_1_13_4 = (if (not (w5_2 <> 3)) then start_btn else r347_start_btn_1_11_4);
-
   w17_2 = r347_ignition_r_1_5_4;
 
   w11_1 = w17_2;
 
-  r347_launch_btn_1_17_4 = (if (not (symVar = 0)) then r347_launch_btn_1_15_4 else launch_btn);
-
   r347_ignition_r_1_7_4 = (if (not (symVar = 0)) then r347_ignition_r_1_5_4 else ignition);
 
-  r347_reset_btn_1_9_4 = (if (not (symVar = 0)) then r347_reset_btn_1_7_4 else reset_btn);
-
   r347_start_btn_1_15_4 = (if (not (symVar = 0)) then r347_start_btn_1_13_4 else start_btn);
+
+  r347_launch_btn_1_17_4 = (if (not (symVar = 0)) then r347_launch_btn_1_15_4 else launch_btn);
+
+  r347_reset_btn_1_9_4 = (if (not (symVar = 0)) then r347_reset_btn_1_7_4 else reset_btn);
 
   w12_1 = (if (not (symVar = 0)) then w11_1 else 0);
 
