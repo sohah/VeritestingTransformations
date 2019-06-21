@@ -148,7 +148,7 @@ public class SynthesisContract {
         Equation stepOkEq = new Equation(stepOkVarExpr, stepOkRhs);
         equations.add(stepOkEq);
 
-        BinaryExpr globalOkRhs1 = new BinaryExpr(stepVarExpr, BinaryOp.GREATER, kExpr);
+        BinaryExpr globalOkRhs1 = new BinaryExpr(stepVarExpr, BinaryOp.GREATEREQUAL, kExpr);
 
         assert (synthesisSpecNode.outputs.size() == 1);
 

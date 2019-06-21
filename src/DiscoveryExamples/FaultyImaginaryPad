@@ -8,17 +8,16 @@ const LAUNCH_SIG = 1;
 	node H(in: bool) returns (out: bool); let out = in -> (in and pre out); tel;
 
 
-node main(sig: int; ignition: bool) returns (ok: bool);
+node main(sig: int; ignition: bool) returns (p1: bool);
 
 var
 	start_bt: bool;
 	launch_bt: bool;
     reset_flag: bool;
-	p1: bool;
 	--p2: bool;
 
 let
-	start_bt = false -> if(pre reset_flag) then
+	start_bt = true -> if(pre reset_flag) then
 											false
 										else if(not(pre start_bt) and (not (pre launch_bt))) and (sig = START_SIG) then
 									    		false
@@ -40,7 +39,5 @@ let
 
 
   --%PROPERTY p1;
-
-  ok = true -> p1;
 
 tel;

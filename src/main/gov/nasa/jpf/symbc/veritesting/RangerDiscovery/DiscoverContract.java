@@ -46,7 +46,7 @@ public class DiscoverContract {
     public static String CHECKSPECNODE = "Check_spec";
     public static String H_discovery = "H_discovery";
     public static int loopCount = 0;
-    public static boolean repairInitialValues = false;
+    public static boolean repairInitialValues = true;
 
     public static List<String> userSynNodes = new ArrayList<>();
 
