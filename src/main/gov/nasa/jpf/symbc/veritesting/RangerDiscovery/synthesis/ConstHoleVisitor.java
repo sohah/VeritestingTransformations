@@ -59,6 +59,22 @@ public class ConstHoleVisitor extends AstMapVisitor {
         return createAndPopulateHole(e, NamedType.BOOL);
     }
 
+    @Override
+    public Expr visit(BinaryExpr e) {
+        Expr left;
+        Expr right = e.right.accept(this);
+
+        if (!DiscoverContract.repairInitialValues && e.op == BinaryOp.ARROW) { //do not repair initial values if the repair of initial values is not set.
+            left = e.left;
+        } else {
+            left = e.left.accept(this);
+        }
+        if (e.left == left && e.right == right) {
+            return e;
+        }
+        return new BinaryExpr(e.location, left, e.op, right);
+    }
+
 
     @Override
     public Expr visit(IntExpr e) {

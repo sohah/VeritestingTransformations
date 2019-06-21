@@ -37,7 +37,8 @@ public class DiscoverContract {
 
     //TODO: These needs to be configured using the .jpf file.
     public static String folderName = "../src/DiscoveryExamples/";
-    static String tFileName = folderName + "FaultyImaginaryPad";
+    //static String tFileName = folderName + "FaultyImaginaryPad";
+    static String tFileName = folderName + "EvenOrigSpec";
     static String holeRepairFileName = folderName + "holeRepair";
     public static String TNODE = "T_node";
     public static String RNODE = "R_node";
@@ -45,6 +46,7 @@ public class DiscoverContract {
     public static String CHECKSPECNODE = "Check_spec";
     public static String H_discovery = "H_discovery";
     public static int loopCount = 0;
+    public static boolean repairInitialValues = false;
 
     public static List<String> userSynNodes = new ArrayList<>();
 

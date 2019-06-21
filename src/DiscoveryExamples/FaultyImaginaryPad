@@ -21,13 +21,13 @@ let
 	start_bt = false -> if(pre reset_flag) then
 											false
 										else if(not(pre start_bt) and (not (pre launch_bt))) and (sig = START_SIG) then
-									    		true
+									    		false
 											else
 												pre start_bt;
 
 
 	launch_bt = false -> if(pre reset_flag) then
-										    true
+										    false
 										else if((pre start_bt) and (not (pre launch_bt ))) and (sig = LAUNCH_SIG) then
 										    	true
 											else
