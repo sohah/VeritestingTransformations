@@ -1,0 +1,97 @@
+const START_SIG = 0;
+const LAUNCH_SIG = 1;
+
+node T_node(
+  sig : int;
+  ignition : bool;
+  hole_0 : bool;
+  hole_1 : bool;
+  hole_2 : bool;
+  hole_3 : bool
+) returns (
+  ok : bool
+);
+var
+  start_bt : bool;
+  launch_bt : bool;
+  reset_flag : bool;
+  p1 : bool;
+let
+  start_bt = (false -> (if (pre reset_flag) then hole_0 else (if (((not (pre start_bt)) and (not (pre launch_bt))) and (sig = START_SIG)) then hole_1 else (pre start_bt))));
+
+  launch_bt = (false -> (if (pre reset_flag) then hole_2 else (if (((pre start_bt) and (not (pre launch_bt))) and (sig = LAUNCH_SIG)) then hole_3 else (pre launch_bt))));
+
+  reset_flag = (false -> (pre ignition));
+
+  p1 = (ignition = (false -> (((pre launch_bt) and (not reset_flag)) and (not (pre reset_flag)))));
+
+  ok = (true -> p1);
+
+tel;
+
+node H_discovery(
+  in : bool
+) returns (
+  out : bool
+);
+let
+  out = (in -> (in and (pre out)));
+
+tel;
+
+node Check_spec(
+  sig : int;
+  ignition : bool;
+  hole_0 : bool;
+  hole_1 : bool;
+  hole_2 : bool;
+  hole_3 : bool;
+  k : int
+) returns (
+  ok : bool
+);
+var
+  step : int;
+  stepOK : bool;
+let
+  step = (0 -> (1 + (pre step)));
+
+  stepOK = (if (step < k) then T_node(sig, ignition, hole_0, hole_1, hole_2, hole_3) else true);
+
+  ok = ((step >= k) and H_discovery(stepOK));
+
+tel;
+
+node main(
+  hole_0 : bool;
+  hole_1 : bool;
+  hole_2 : bool;
+  hole_3 : bool
+) returns (
+  ok : bool
+);
+var
+  sig0 : int;
+  out0 : bool;
+  ok_0 : bool;
+let
+  --%MAIN;
+  sig0 = (1 -> (pre (0 -> (pre (1 -> (pre 0))))));
+
+  out0 = (false -> (pre (false -> (pre (false -> (pre true))))));
+
+  ok_0 = Check_spec(sig0, out0, hole_0, hole_1, hole_2, hole_3, 3);
+
+  ok = (not ok_0);
+
+  assert (true -> (hole_0 = (pre hole_0)));
+
+  assert (true -> (hole_1 = (pre hole_1)));
+
+  assert (true -> (hole_2 = (pre hole_2)));
+
+  assert (true -> (hole_3 = (pre hole_3)));
+
+  --%PROPERTY ok;
+
+tel;

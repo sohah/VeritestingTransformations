@@ -1,0 +1,241 @@
+const START_SIG = 0;
+const LAUNCH_SIG = 1;
+
+node Y(
+  in : bool
+) returns (
+  out : bool
+);
+let
+  out = (false -> (pre in));
+
+tel;
+
+node H(
+  in : bool
+) returns (
+  out : bool
+);
+let
+  out = (in -> (in and (pre out)));
+
+tel;
+
+node T_node(
+  sig : int;
+  ignition : bool
+) returns (
+  ok : bool
+);
+var
+  start_bt : bool;
+  launch_bt : bool;
+  reset_flag : bool;
+  p1 : bool;
+let
+  start_bt = (false -> (if (pre reset_flag) then false else (if (((not (pre start_bt)) and (not (pre launch_bt))) and (sig = START_SIG)) then false else (pre start_bt))));
+
+  launch_bt = (false -> (if (pre reset_flag) then false else (if (((pre start_bt) and (not (pre launch_bt))) and (sig = LAUNCH_SIG)) then false else (pre launch_bt))));
+
+  reset_flag = (false -> (pre ignition));
+
+  p1 = (ignition = (false -> (((pre launch_bt) and (not reset_flag)) and (not (pre reset_flag)))));
+
+  ok = (true -> p1);
+
+  --%PROPERTY p1;
+
+tel;
+
+node R_node(
+  signal : int;
+  start_btn_bool : bool;
+  launch_btn_bool : bool;
+  reset_btn_bool : bool;
+  ignition_bool : bool
+) returns (
+  r347_start_btn_1_15_4_bool : bool;
+  r347_launch_btn_1_17_4_bool : bool;
+  r347_reset_btn_1_9_4_bool : bool;
+  r347_ignition_r_1_7_4_bool : bool
+);
+var
+  w3_3 : int;
+  w4_3 : int;
+  w5_3 : int;
+  w6_3 : int;
+  w14_3 : int;
+  w5_2 : int;
+  r347_ignition_r_1_1_4 : int;
+  r347_reset_btn_1_1_4 : int;
+  r347_ignition_r_1_2_4 : int;
+  w12_2 : int;
+  w13_2 : int;
+  w14_2 : int;
+  r347_start_btn_1_1_4 : int;
+  r347_start_btn_1_3_4 : int;
+  r347_launch_btn_1_1_4 : int;
+  r347_launch_btn_1_3_4 : int;
+  r347_launch_btn_1_5_4 : int;
+  r347_start_btn_1_5_4 : int;
+  r347_launch_btn_1_7_4 : int;
+  r347_launch_btn_1_9_4 : int;
+  r347_start_btn_1_7_4 : int;
+  r347_launch_btn_1_10_4 : int;
+  r347_start_btn_1_8_4 : int;
+  r347_reset_btn_1_2_4 : int;
+  r347_launch_btn_1_11_4 : int;
+  r347_start_btn_1_9_4 : int;
+  r347_reset_btn_1_4_4 : int;
+  r347_ignition_r_1_4_4 : int;
+  r347_reset_btn_1_5_4 : int;
+  r347_launch_btn_1_13_4 : int;
+  r347_start_btn_1_11_4 : int;
+  r347_ignition_r_1_5_4 : int;
+  r347_launch_btn_1_15_4 : int;
+  r347_reset_btn_1_7_4 : int;
+  r347_start_btn_1_13_4 : int;
+  w17_2 : int;
+  w11_1 : int;
+  r347_launch_btn_1_17_4 : int;
+  r347_ignition_r_1_7_4 : int;
+  r347_reset_btn_1_9_4 : int;
+  r347_start_btn_1_15_4 : int;
+  w12_1 : int;
+  symVar : int;
+  start_btn : int;
+  launch_btn : int;
+  reset_btn : int;
+  ignition : int;
+let
+  w3_3 = start_btn;
+
+  w4_3 = launch_btn;
+
+  w5_3 = ignition;
+
+  w6_3 = reset_btn;
+
+  w14_3 = (if ((((w3_3 <> 0) or ((not (w3_3 <> 0)) and (w4_3 <> 0))) or (((not (w3_3 <> 0)) and (not (w4_3 <> 0))) and (w5_3 <> 0))) or ((((not (w3_3 <> 0)) and (not (w4_3 <> 0))) and (not (w5_3 <> 0))) and (w6_3 <> 0))) then (if ((((w3_3 = 0) or ((not (w3_3 = 0)) and (w4_3 <> 0))) or (((not (w3_3 = 0)) and (not (w4_3 <> 0))) and (w5_3 <> 0))) or ((((not (w3_3 = 0)) and (not (w4_3 <> 0))) and (not (w5_3 <> 0))) and (w6_3 <> 0))) then (if ((((not (w3_3 = 0)) and (not (w4_3 = 0))) and (not (w5_3 <> 0))) and (not (w6_3 <> 0))) then 3 else (if ((((w3_3 = 0) or ((not (w3_3 = 0)) and (w4_3 = 0))) or (((not (w3_3 = 0)) and (not (w4_3 = 0))) and (w5_3 = 0))) or ((((not (w3_3 = 0)) and (not (w4_3 = 0))) and (not (w5_3 = 0))) and (w6_3 <> 0))) then (if ((((w3_3 = 0) or ((not (w3_3 = 0)) and (w4_3 = 0))) or (((not (w3_3 = 0)) and (not (w4_3 = 0))) and (w5_3 <> 0))) or ((((not (w3_3 = 0)) and (not (w4_3 = 0))) and (not (w5_3 <> 0))) and (w6_3 = 0))) then 7 else 5) else 4)) else 2) else 1);
+
+  w5_2 = w14_3;
+
+  r347_ignition_r_1_1_4 = 1;
+
+  r347_reset_btn_1_1_4 = 1;
+
+  r347_ignition_r_1_2_4 = 0;
+
+  w12_2 = (if (signal <> 0) then 0 else 1);
+
+  w13_2 = (if (signal <> 1) then 0 else 1);
+
+  w14_2 = (if ((w12_2 <> 0) or ((not (w12_2 <> 0)) and (not (w13_2 = 0)))) then 1 else 0);
+
+  r347_start_btn_1_1_4 = 1;
+
+  r347_start_btn_1_3_4 = (if (not (w12_2 = 0)) then r347_start_btn_1_1_4 else start_btn);
+
+  r347_launch_btn_1_1_4 = 1;
+
+  r347_launch_btn_1_3_4 = (if (not (w13_2 = 0)) then r347_launch_btn_1_1_4 else launch_btn);
+
+  r347_launch_btn_1_5_4 = (if (not (w5_2 <> 2)) then r347_launch_btn_1_3_4 else launch_btn);
+
+  r347_start_btn_1_5_4 = (if (not (w5_2 <> 1)) then r347_start_btn_1_3_4 else start_btn);
+
+  r347_launch_btn_1_7_4 = (if (not (w5_2 <> 1)) then launch_btn else r347_launch_btn_1_5_4);
+
+  r347_launch_btn_1_9_4 = (if (not (w14_2 = 0)) then r347_launch_btn_1_7_4 else launch_btn);
+
+  r347_start_btn_1_7_4 = (if (not (w14_2 = 0)) then r347_start_btn_1_5_4 else start_btn);
+
+  r347_launch_btn_1_10_4 = 0;
+
+  r347_start_btn_1_8_4 = 0;
+
+  r347_reset_btn_1_2_4 = 0;
+
+  r347_launch_btn_1_11_4 = (if ((not (w5_2 = 5)) and (w5_2 <> 7)) then r347_launch_btn_1_9_4 else r347_launch_btn_1_10_4);
+
+  r347_start_btn_1_9_4 = (if ((not (w5_2 = 5)) and (w5_2 <> 7)) then r347_start_btn_1_7_4 else r347_start_btn_1_8_4);
+
+  r347_reset_btn_1_4_4 = (if ((not (w5_2 = 5)) and (w5_2 <> 7)) then reset_btn else r347_reset_btn_1_2_4);
+
+  r347_ignition_r_1_4_4 = (if (not (w5_2 <> 4)) then r347_ignition_r_1_2_4 else ignition);
+
+  r347_reset_btn_1_5_4 = (if (not (w5_2 <> 4)) then r347_reset_btn_1_1_4 else r347_reset_btn_1_4_4);
+
+  r347_launch_btn_1_13_4 = (if (not (w5_2 <> 4)) then launch_btn else r347_launch_btn_1_11_4);
+
+  r347_start_btn_1_11_4 = (if (not (w5_2 <> 4)) then start_btn else r347_start_btn_1_9_4);
+
+  r347_ignition_r_1_5_4 = (if (not (w5_2 <> 3)) then r347_ignition_r_1_1_4 else r347_ignition_r_1_4_4);
+
+  r347_launch_btn_1_15_4 = (if (not (w5_2 <> 3)) then launch_btn else r347_launch_btn_1_13_4);
+
+  r347_reset_btn_1_7_4 = (if (not (w5_2 <> 3)) then reset_btn else r347_reset_btn_1_5_4);
+
+  r347_start_btn_1_13_4 = (if (not (w5_2 <> 3)) then start_btn else r347_start_btn_1_11_4);
+
+  w17_2 = r347_ignition_r_1_5_4;
+
+  w11_1 = w17_2;
+
+  r347_launch_btn_1_17_4 = (if (not (symVar = 0)) then r347_launch_btn_1_15_4 else launch_btn);
+
+  r347_ignition_r_1_7_4 = (if (not (symVar = 0)) then r347_ignition_r_1_5_4 else ignition);
+
+  r347_reset_btn_1_9_4 = (if (not (symVar = 0)) then r347_reset_btn_1_7_4 else reset_btn);
+
+  r347_start_btn_1_15_4 = (if (not (symVar = 0)) then r347_start_btn_1_13_4 else start_btn);
+
+  w12_1 = (if (not (symVar = 0)) then w11_1 else 0);
+
+  start_btn = (if start_btn_bool then 1 else 0);
+
+  launch_btn = (if launch_btn_bool then 1 else 0);
+
+  reset_btn = (if reset_btn_bool then 1 else 0);
+
+  ignition = (if ignition_bool then 1 else 0);
+
+  r347_start_btn_1_15_4_bool = (false -> (if (r347_start_btn_1_15_4 = 1) then true else false));
+
+  r347_launch_btn_1_17_4_bool = (false -> (if (r347_launch_btn_1_17_4 = 1) then true else false));
+
+  r347_reset_btn_1_9_4_bool = (false -> (if (r347_reset_btn_1_9_4 = 1) then true else false));
+
+  r347_ignition_r_1_7_4_bool = (false -> (if (r347_ignition_r_1_7_4 = 1) then true else false));
+
+  symVar = 1;
+
+tel;
+
+node R_wrapper(
+  signal : int
+) returns (
+  out : bool
+);
+var
+  start_btn_bool : bool;
+  launch_btn_bool : bool;
+  reset_btn_bool : bool;
+  ignition_bool : bool;
+let
+  start_btn_bool, launch_btn_bool, reset_btn_bool, ignition_bool = R_node(signal, (false -> (pre start_btn_bool)), (false -> (pre launch_btn_bool)), (false -> (pre reset_btn_bool)), (false -> (pre ignition_bool)));
+
+  out = ignition_bool;
+
+tel;
+
+node main(
+  sig : int
+) returns (
+  discovery_out : bool
+);
+let
+  --%MAIN;
+  discovery_out = T_node(sig, R_wrapper(sig));
+
+tel;
