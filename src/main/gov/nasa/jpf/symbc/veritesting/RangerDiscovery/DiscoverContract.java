@@ -120,12 +120,13 @@ public class DiscoverContract {
                                     return;
                                 case INVALID:
                                     System.out.println("plugging in holes");
-
+                                    holeRepairState.plugInHoles(synthesisResult, counterExContract
+                                            .getCounterExamplePgm(), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
                                     holeRepairState.plugInHoles(synthesisResult, counterExContract
                                             .getCounterExamplePgm(), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
                                     holePlugger.plugInHoles(synthesisResult, counterExContract
                                             .getCounterExamplePgm
-                                            (), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
+                                                    (), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
                                     counterExContractStr = holePlugger.toString();
                                     DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
                                     break;

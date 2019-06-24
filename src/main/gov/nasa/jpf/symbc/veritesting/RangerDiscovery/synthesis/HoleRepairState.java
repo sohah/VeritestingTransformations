@@ -161,9 +161,9 @@ public class HoleRepairState {
     public String toString() {
         String mapStr = "";
         for (HashMap.Entry entry : holeRepairValuesMap.entrySet()) {
-            Ast value = (Ast) entry.getValue();
+            List<Ast> valueList = (List<Ast>) entry.getValue();
             Ast initialValue = holeIntialValueMap.get(entry.getKey());
-            mapStr += entry.getKey().toString() + " -> (" + initialValue + value + ")\n";
+            mapStr += entry.getKey().toString() + " -> (" + initialValue + "," + valueList + ")\n";
         }
         return mapStr;
     }
