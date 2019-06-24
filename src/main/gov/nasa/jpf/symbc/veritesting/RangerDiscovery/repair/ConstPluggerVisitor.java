@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
@@ -38,7 +39,9 @@ public class ConstPluggerVisitor extends AstMapVisitor {
     @Override
     public Expr visit(IdExpr e) {
         if (e instanceof ConstantHole) {
-            return (Expr) DiscoverContract.holeRepairState.getLastRepairOrDefaultValue((Hole) e);
+            Ast repairExpr = DiscoverContract.holeRepairState.getRepairValue((Hole) e);
+            assert repairExpr instanceof Expr;
+            return (Expr) repairExpr;
         } else
             return e;
     }

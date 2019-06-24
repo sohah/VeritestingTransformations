@@ -55,7 +55,7 @@ public class HoleRepairState {
     }
 */
 
-    public void plugInHoles(JKindResult synResult, Program counterPgm, Program synPgm, NodeRepairKey nodeRepairKey) {
+    public void plugInHoles(JKindResult synResult) {
         for (PropertyResult pr : synResult.getPropertyResults()) {
             if (pr.getProperty() instanceof InvalidProperty) {
                 InvalidProperty ip = (InvalidProperty) pr.getProperty();
@@ -76,8 +76,13 @@ public class HoleRepairState {
             Hole hole = (Hole) entry.getKey();
             assert hole instanceof ConstantHole; // currently only supporting constants
             Ast repairValue = getVarTestValues(counterExample, (ConstantHole) hole);
-            if (repairValue != null)
-                updateRepairValue(hole, repairValue);
+            if (repairValue == null)
+                if (Config.useInitialSpecValues) {
+                    repairValue = getLastRepairOrInitial(hole);
+                } else {
+                    repairValue = getLastRepairOrDefaultValue(hole);
+                }
+            updateRepairValue(hole, repairValue);
         }
     }
 
@@ -86,10 +91,11 @@ public class HoleRepairState {
 
         for (int i = 0; i < signals.size(); i++) {
             Signal<Value> signal = signals.get(i);
-            if (signal.getName().contains(hole.getMyHoleName()))
+            if (signal.getName().contains(hole.getMyHoleName())) {
                 assert (sameSignalValuesForSteps(signal.getValues()));
-            Value signalValue = signal.getValue(0); // since all values are the same we can get the first one.
-            return DiscoveryUtil.valueToExpr(signalValue, holeTypeMap.get(hole));
+                Value signalValue = signal.getValue(0); // since all values are the same we can get the first one.
+                return DiscoveryUtil.valueToExpr(signalValue, holeTypeMap.get(hole));
+            }
         }
         return null;
     }
@@ -132,6 +138,11 @@ public class HoleRepairState {
         List<Ast> repairValues = holeRepairValuesMap.get(hole);
         repairValues.add(newRepair);
         return;
+    }
+
+    public Ast getRepairValue(Hole hole) {
+        List<Ast> repairs = holeRepairValuesMap.get(hole);
+        return repairs.get(repairs.size() - 1);
     }
 
     //returns the last repair value for a hole if it exists, otherwise assume default value

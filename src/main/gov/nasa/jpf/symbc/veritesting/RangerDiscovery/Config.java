@@ -22,5 +22,6 @@ public class Config {
 
     public static Ast defaultHoleValBool = new BoolExpr(false);
     public static Ast defaultHoleValInt = new IntExpr(1);
+    public static boolean useInitialSpecValues = true;
 
 }

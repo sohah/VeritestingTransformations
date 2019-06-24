@@ -120,10 +120,7 @@ public class DiscoverContract {
                                     return;
                                 case INVALID:
                                     System.out.println("plugging in holes");
-                                    holeRepairState.plugInHoles(synthesisResult, counterExContract
-                                            .getCounterExamplePgm(), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
-                                    holeRepairState.plugInHoles(synthesisResult, counterExContract
-                                            .getCounterExamplePgm(), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
+                                    holeRepairState.plugInHoles(synthesisResult);
                                     holePlugger.plugInHoles(synthesisResult, counterExContract
                                             .getCounterExamplePgm
                                                     (), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
