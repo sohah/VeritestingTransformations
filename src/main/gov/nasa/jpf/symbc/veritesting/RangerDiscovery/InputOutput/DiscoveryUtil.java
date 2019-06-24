@@ -1,14 +1,19 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import javafx.print.Printer;
 import jkind.lustre.*;
+import jkind.lustre.values.BooleanValue;
+import jkind.lustre.values.IntegerValue;
+import jkind.lustre.values.Value;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.RNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.WRAPPERNODE;
@@ -213,5 +218,36 @@ public class DiscoveryUtil {
             System.out.println("Problem writing hole repairs to file! aborting!");
             assert false;
         }
+    }
+
+    public static Expr valueToExpr(Value value, Type type){
+        if (value instanceof BooleanValue)
+            return new BoolExpr(((BooleanValue) value).value);
+        else if (value instanceof IntegerValue)
+            return new IntExpr(((IntegerValue) value).value);
+        else if (value == null) {
+            System.out.println("assuming default value");
+            if (type == NamedType.BOOL)
+                return new BoolExpr(false);
+            else if (type == NamedType.INT)
+                return new IntExpr(0);
+            else {
+                System.out.println("unsupported values type");
+                assert false;
+                return null;
+            }
+        } else {
+            System.out.println("unsupported values type");
+            assert false;
+            return null;
+        }
+    }
+
+    public static Ast getLastElementInMap(Map<Hole, List<Ast>> map, Object o){
+        List<Ast> value = map.get(o);
+        if (value.size() != 0) // there has been a repair for the hole.
+            return value.get(value.size() - 1);
+        else
+            return null;
     }
 }

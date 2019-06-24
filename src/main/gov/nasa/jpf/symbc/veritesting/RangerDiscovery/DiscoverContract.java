@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair.HolePlugger;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstHoleVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.HoleRepairState;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.TestCaseManager;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -41,7 +42,9 @@ public class DiscoverContract {
 
     public static List<String> userSynNodes = new ArrayList<>();
 
-    public static HoleRepair holeRepairHolder = new HoleRepair();
+    //public static HoleRepair holeRepairHolder = new HoleRepair();
+    public static HoleRepairState holeRepairState = new HoleRepairState();
+
 
 /***** begin of unused vars***/
     /**
@@ -65,7 +68,7 @@ public class DiscoverContract {
                 // interest.
                 Contract contract = new Contract();
                 SynthesisContract synthesisContract = null;
-                HolePlugger holePlugger = null;
+                HolePlugger holePlugger = new HolePlugger();
                 Program originalProgram;
 
                 originalProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8"));
@@ -98,14 +101,17 @@ public class DiscoverContract {
                             } else
                                 synthesisContract.collectCounterExample(counterExResult);
 
-                            holeRepairHolder.setHoleRepairMap(ConstHoleVisitor.getHoleToConstant());
+                            //holeRepairHolder.setHoleRepairMap(ConstHoleVisitor.getHoleToConstant());
+
+                            if (Config.loopCount == 0) //first loop, then setup initial repair values
+                                holeRepairState.createEmptyHoleRepairValues();
 
                             String synthesisContractStr = synthesisContract.toString();
                             fileName = contractMethodName + loopCount + "hole.lus";
                             writeToFile(fileName, synthesisContractStr);
 
                             JKindResult synthesisResult = callJkind(fileName, false, synthesisContract
-                                    .getMaxTestCaseK()-2);
+                                    .getMaxTestCaseK() - 2);
                             switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
                                 case VALID:
                                     System.out.println("^-^ Ranger Discovery Result ^-^");
@@ -115,11 +121,13 @@ public class DiscoverContract {
                                 case INVALID:
                                     System.out.println("plugging in holes");
 
-                                    if (holePlugger == null)
-                                        holePlugger = new HolePlugger(synthesisContract.getHoles());
-                                    holePlugger.plugInHoles(synthesisResult, counterExContract.getCounterExamplePgm(), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
+                                    holeRepairState.plugInHoles(synthesisResult, counterExContract
+                                            .getCounterExamplePgm(), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
+                                    holePlugger.plugInHoles(synthesisResult, counterExContract
+                                            .getCounterExamplePgm
+                                            (), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
                                     counterExContractStr = holePlugger.toString();
-                                    DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairHolder.toString());
+                                    DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
                                     break;
                                 default:
                                     System.out.println("unexpected status for the jkind synthesis query.");

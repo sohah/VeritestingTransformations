@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
@@ -63,13 +64,16 @@ public class ConstHoleVisitor extends AstMapVisitor {
     @Override
     public Expr visit(BinaryExpr e) {
         Expr left;
-        Expr right = e.right.accept(this);
+
 
         if (!repairInitialValues && e.op == BinaryOp.ARROW) { //do not repair initial values if the repair of initial values is not set.
             left = e.left;
         } else {
             left = e.left.accept(this);
         }
+
+        Expr right = e.right.accept(this);
+
         if (e.left == left && e.right == right) {
             return e;
         }
@@ -144,6 +148,8 @@ public class ConstHoleVisitor extends AstMapVisitor {
         ConstantHole newHole = new ConstantHole("");
         holeToConstantMap.put(newHole, new Pair(e, null));
         VarDecl newVarDecl = IdExprToVarDecl(newHole, type);
+        if (Config.loopCount == 0) //initial run, then setup the holes.
+            DiscoverContract.holeRepairState.createNewHole(newHole, e, type);
         this.holeVarDecl.add(newVarDecl);
         return newHole;
     }

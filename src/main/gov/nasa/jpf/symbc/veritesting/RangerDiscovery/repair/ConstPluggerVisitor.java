@@ -1,10 +1,12 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstantHole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.HoleRepairState;
 import jkind.lustre.*;
 import jkind.lustre.values.BooleanValue;
 import jkind.lustre.values.IntegerValue;
@@ -27,11 +29,8 @@ public class ConstPluggerVisitor extends AstMapVisitor {
     private final Program counterExamplePgm;
     private final Program synthesisPgm;
 
-    HashMap<Hole, Value> holeSynValuesMap;
 
-
-    public ConstPluggerVisitor(HashMap<Hole, Value> holeSynValuesMap, Program counterExamplePgm, Program synthesisPgm) {
-        this.holeSynValuesMap = holeSynValuesMap;
+    public ConstPluggerVisitor(Program counterExamplePgm, Program synthesisPgm) {
         this.counterExamplePgm = counterExamplePgm;
         this.synthesisPgm = synthesisPgm;
     }
@@ -39,9 +38,7 @@ public class ConstPluggerVisitor extends AstMapVisitor {
     @Override
     public Expr visit(IdExpr e) {
         if (e instanceof ConstantHole) {
-            Value value = holeSynValuesMap.get(e);
-            VarDecl holVarDecl = getHoleVarDecl(e);
-            return translateValueToExpr(value, holVarDecl);
+            return (Expr) DiscoverContract.holeRepairState.getLastRepairOrDefaultValue((Hole) e);
         } else
             return e;
     }
@@ -66,26 +63,8 @@ public class ConstPluggerVisitor extends AstMapVisitor {
     }
 
     private Expr translateValueToExpr(Value value, VarDecl holVarDecl) {
-        if (value instanceof BooleanValue)
-            return new BoolExpr(((BooleanValue) value).value);
-        else if (value instanceof IntegerValue)
-            return new IntExpr(((IntegerValue) value).value);
-        else if (value == null) {
-            System.out.println("assuming default value");
-            if (holVarDecl.type == NamedType.BOOL)
-                return new BoolExpr(false);
-            else if (holVarDecl.type == NamedType.INT)
-                return new IntExpr(0);
-            else {
-                System.out.println("unsupported values type");
-                assert false;
-                return null;
-            }
-        } else {
-            System.out.println("unsupported values type");
-            assert false;
-            return null;
-        }
+        return DiscoveryUtil.valueToExpr(value, holVarDecl.type);
+
     }
 
 
@@ -118,13 +97,13 @@ public class ConstPluggerVisitor extends AstMapVisitor {
     }
 
 
-    public static Program execute(HashMap<Hole, Value> holeSynValuesMap, Program counterExamplePgm, Program synthesisPgm, NodeRepairKey nodeRepairKey) {
+    public static Program execute(Program counterExamplePgm, Program synthesisPgm, NodeRepairKey nodeRepairKey) {
 
 
         List<Node> toRepairNodes = getToRepairNodes(counterExamplePgm, nodeRepairKey);
         List<Node> repairedNodes = new ArrayList<>();
 
-        ConstPluggerVisitor constPluggerVisitor = new ConstPluggerVisitor(holeSynValuesMap, counterExamplePgm, synthesisPgm);
+        ConstPluggerVisitor constPluggerVisitor = new ConstPluggerVisitor(counterExamplePgm, synthesisPgm);
 
         for (int i = 0; i < toRepairNodes.size(); i++) {
             Node holeNode = findNode(synthesisPgm.nodes, toRepairNodes.get(i));

@@ -28,6 +28,5 @@ public class HoleRepair {
     public void updateHoleRepairMap(ConstantHole hole, Value signalValue) {
         Pair<Ast, Value> holeValue = this.holeRepairMap.get(hole);
         holeValue.putSecond(signalValue);
-
     }
 }

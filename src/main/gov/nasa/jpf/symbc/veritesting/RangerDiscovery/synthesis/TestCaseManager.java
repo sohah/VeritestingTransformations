@@ -146,8 +146,8 @@ public class TestCaseManager {
             TestCase tc = testCasesItr.next();
             if (testCase.isEqual(tc)) {
                 System.out.println("repeated test case! printing and aborting");
-                System.out.println("new test case:" + testCase.toString());
-                System.out.println("old test case" + tc.toString());
+                //System.out.println("new test case:" + testCase.toString());
+                //System.out.println("old test case" + tc.toString());
 
                 assert false;
             }
