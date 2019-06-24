@@ -198,7 +198,7 @@ public class TestCaseManager {
 
         assert (testCaseCounter > 0);
 
-        IdExpr lhs = new IdExpr(propertyName);
+        IdExpr lhs = new IdExpr(counterExPropertyName);
         Expr rhs;
 
         if (testCaseCounter == 1)

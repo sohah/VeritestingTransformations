@@ -1,7 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 public class Config {
-    public static String propertyName = "fail";
+    public static String counterExPropertyName = "fail";
     public static String folderName = "../src/DiscoveryExamples/";
     static String tFileName = folderName + "FaultyImaginaryPad";
     //static String tFileName = folderName + "EvenOrigSpec";
@@ -13,5 +13,7 @@ public class Config {
     public static String H_discovery = "H_discovery";
     public static int loopCount = 0;
     public static boolean repairInitialValues = true;
+    public static String specPropertyName = "ok";
+    public static String tnodeSpecPropertyName = "T_node~0.p1";
 
 }

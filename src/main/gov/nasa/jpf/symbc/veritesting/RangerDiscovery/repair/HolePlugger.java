@@ -23,7 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.counterExPropertyName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.loopCount;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.specPropertyName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 
 public class HolePlugger {
@@ -50,7 +52,7 @@ public class HolePlugger {
         for (PropertyResult pr : synReesult.getPropertyResults()) {
             if (pr.getProperty() instanceof InvalidProperty) {
                 InvalidProperty ip = (InvalidProperty) pr.getProperty();
-                if (ip.getName().equals("ok")) {
+                if (ip.getName().equals(counterExPropertyName)) {
                     Counterexample counterExample = ip.getCounterexample();
                     fillEmptyHoles(counterExample);
                     String fileName = contractMethodName + loopCount + "HoleCEX.lus";

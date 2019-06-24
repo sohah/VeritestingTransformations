@@ -79,7 +79,7 @@ public class DiscoverContract {
                     writeToFile(fileName, counterExContractStr);
 
                     JKindResult counterExResult = callJkind(fileName, false, -1);
-                    switch (counterExResult.getPropertyResult("T_node~0.p1").getStatus()) {
+                    switch (counterExResult.getPropertyResult(tnodeSpecPropertyName).getStatus()) {
                         case VALID: //valid match
                             System.out.println("^-^ Ranger Discovery Result ^-^");
                             System.out.println("Contract Matching! Printing repair and aborting!");
@@ -106,7 +106,7 @@ public class DiscoverContract {
 
                             JKindResult synthesisResult = callJkind(fileName, false, synthesisContract
                                     .getMaxTestCaseK()-2);
-                            switch (synthesisResult.getPropertyResult(propertyName).getStatus()) {
+                            switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
                                 case VALID:
                                     System.out.println("^-^ Ranger Discovery Result ^-^");
                                     System.out.println("Cannot find a synthesis");
