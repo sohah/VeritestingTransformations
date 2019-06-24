@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.findNode;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus.REPAIR;
 
@@ -108,7 +109,7 @@ public class ConstPluggerVisitor extends AstMapVisitor {
         List<Equation> equations = visitEquations(e.equations);
         List<Expr> assertions = visitAssertions(e.assertions);
         //if it is the T_node we need to have the old property from the counterExample form, otherwise we proceed with what we have from the repaired spec.
-        List<String> properties = (e.id.equals(DiscoverContract.TNODE)) ? visitProperties(oldSpecNode.properties) : visitProperties(e.properties);
+        List<String> properties = (e.id.equals(TNODE)) ? visitProperties(oldSpecNode.properties) : visitProperties(e.properties);
         List<String> ivc = visitIvc(oldSpecNode.ivc);
         List<String> realizabilityInputs = visitRealizabilityInputs(oldSpecNode.realizabilityInputs);
         Contract contract = visit(oldSpecNode.contract);

@@ -11,6 +11,8 @@ import jkind.lustre.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.RNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.WRAPPERNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.varDeclToIdExpr;
 
 public class ToLutre {
@@ -28,7 +30,7 @@ public class ToLutre {
         ArrayList<VarDecl> ouputDeclList = inOutManager.generateOutputDecl();
         ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
         ouputDeclList.addAll(methodOutDeclList);
-        return new Node(DiscoverContract.RNODE, inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
+        return new Node(RNODE, inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
                 new ArrayList<>(), null, null, null);
     }
 
@@ -65,7 +67,7 @@ public class ToLutre {
         wrapperEqList.add(wrapperEq);
         wrapperEqList.add(methodOutVarEq.getSecond()); //adding equation for output
 
-        return new Node(DiscoverContract.WRAPPERNODE, freeDeclList, wrapperOutput, wrapperLocalDeclList, wrapperEqList
+        return new Node(WRAPPERNODE, freeDeclList, wrapperOutput, wrapperLocalDeclList, wrapperEqList
                 , new ArrayList<>(), new ArrayList<>(), null, null, null);
     }
 

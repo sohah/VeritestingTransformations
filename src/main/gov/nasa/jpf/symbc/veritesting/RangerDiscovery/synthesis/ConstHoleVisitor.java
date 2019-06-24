@@ -11,6 +11,7 @@ import jkind.lustre.visitors.AstMapVisitor;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairInitialValues;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.IdExprToVarDecl;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.varDeclToIdExpr;
 import static jkind.util.Util.getNodeTable;
@@ -64,7 +65,7 @@ public class ConstHoleVisitor extends AstMapVisitor {
         Expr left;
         Expr right = e.right.accept(this);
 
-        if (!DiscoverContract.repairInitialValues && e.op == BinaryOp.ARROW) { //do not repair initial values if the repair of initial values is not set.
+        if (!repairInitialValues && e.op == BinaryOp.ARROW) { //do not repair initial values if the repair of initial values is not set.
             left = e.left;
         } else {
             left = e.left.accept(this);

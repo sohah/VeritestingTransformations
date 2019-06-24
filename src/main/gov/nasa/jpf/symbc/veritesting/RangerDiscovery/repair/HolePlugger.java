@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 
 public class HolePlugger {
@@ -52,7 +53,7 @@ public class HolePlugger {
                 if (ip.getName().equals("ok")) {
                     Counterexample counterExample = ip.getCounterexample();
                     fillEmptyHoles(counterExample);
-                    String fileName = contractMethodName + DiscoverContract.loopCount + "HoleCEX.lus";
+                    String fileName = contractMethodName + loopCount + "HoleCEX.lus";
 
                     DiscoveryUtil.writeToFile(fileName, counterExample.toString());
                 }

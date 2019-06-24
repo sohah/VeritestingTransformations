@@ -13,6 +13,9 @@ import jkind.lustre.parsing.LustreParseUtil;
 import java.io.IOException;
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.CHECKSPECNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.H_discovery;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.renameMainNode;
 
 
@@ -46,7 +49,7 @@ public class SynthesisContract {
         synNodeKey = originalNodeKey;
 
         synNodeKey.setNodesKey("main", NodeStatus.ARTIFICIAL);
-        synNodeKey.setNodesKey(DiscoverContract.TNODE, NodeStatus.REPAIR);
+        synNodeKey.setNodesKey(TNODE, NodeStatus.REPAIR);
 
         Node newMain = createVariableNodePart(counterExResult); //this creates the new main with the right test cases.
 
@@ -71,7 +74,7 @@ public class SynthesisContract {
         nodes.add(getGloballyNode());
 
         Node mainNode = holeProgram.getMainNode();
-        synthesisSpecNode = renameMainNode(DiscoverContract.TNODE, mainNode);
+        synthesisSpecNode = renameMainNode(TNODE, mainNode);
 
         nodes.set(nodes.indexOf(mainNode), synthesisSpecNode);
 
@@ -97,7 +100,7 @@ public class SynthesisContract {
     }
 
     private Node createCheckSpecNode(Node synthesisSpecNode) {
-        String id = DiscoverContract.CHECKSPECNODE;
+        String id = CHECKSPECNODE;
         List<VarDecl> inputs = createSynthesisInput(synthesisSpecNode.inputs);
         List<VarDecl> outputs = synthesisSpecNode.outputs;
         Pair<List<VarDecl>, List<Equation>> localsEqPair = createCheckSpeckLocals(synthesisSpecNode);
@@ -141,7 +144,7 @@ public class SynthesisContract {
 
         BinaryExpr stepOkCond = new BinaryExpr(stepVarExpr, BinaryOp.LESSEQUAL, kExpr);
 
-        NodeCallExpr thenStmt = new NodeCallExpr(DiscoverContract.TNODE, (ArrayList<Expr>) (ArrayList<?>) DiscoveryUtil.varDeclToIdExpr(synthesisSpecNode.inputs));
+        NodeCallExpr thenStmt = new NodeCallExpr(TNODE, (ArrayList<Expr>) (ArrayList<?>) DiscoveryUtil.varDeclToIdExpr(synthesisSpecNode.inputs));
 
         IfThenElseExpr stepOkRhs = new IfThenElseExpr(stepOkCond, thenStmt, new BoolExpr(true));
 
@@ -156,7 +159,7 @@ public class SynthesisContract {
 
         List<Expr> globalOkParameters = new ArrayList<>();
         globalOkParameters.add(stepOkVarExpr);
-        NodeCallExpr globalOkRhs2 = new NodeCallExpr(DiscoverContract.H_discovery, globalOkParameters);
+        NodeCallExpr globalOkRhs2 = new NodeCallExpr(H_discovery, globalOkParameters);
         Equation globalOkEq = new Equation(globalOkLhs, new BinaryExpr(globalOkRhs1, BinaryOp.AND, globalOkRhs2));
         equations.add(globalOkEq);
 
@@ -177,11 +180,15 @@ public class SynthesisContract {
         myLocals.addAll(testCaseManager.testInputVars);
         myLocals.addAll(testCaseManager.testCallVars);
 
+        List<VarDecl> myOutput = new ArrayList<>();
+        myOutput.add(new VarDecl("fail", NamedType.BOOL));
+
         List<String> myProperties = new ArrayList<>();
-        myProperties.add("ok");
+        myProperties.add("fail");
 
 
-        return new Node("main", myInputs, synthesisSpecNode.outputs, myLocals, myEquations, myProperties, myAssertions, synthesisSpecNode.realizabilityInputs, synthesisSpecNode.contract, synthesisSpecNode.ivc);
+        return new Node("main", myInputs, myOutput, myLocals, myEquations, myProperties, myAssertions, synthesisSpecNode
+                .realizabilityInputs, synthesisSpecNode.contract, synthesisSpecNode.ivc);
     }
 
     /**
@@ -227,7 +234,7 @@ public class SynthesisContract {
         IdExpr outVarExpr = DiscoveryUtil.varDeclToIdExpr(outVarDecl);
 
 
-        String id = DiscoverContract.H_discovery;
+        String id = H_discovery;
         List<VarDecl> inputs = new ArrayList<>();
         inputs.add(inVarDecl);
 

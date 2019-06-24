@@ -1,18 +1,16 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.counterExample;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.lustre.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.TNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.WRAPPERNODE;
 
 
 /**
@@ -80,7 +78,7 @@ public class CounterExContract {
         List<Expr> wrapperArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
         List<Expr> tNodeArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
         wrapperArgs.remove(wrapperArgs.size() - 1); //last argument is the output.
-        Expr callRwapper = new NodeCallExpr(DiscoverContract.WRAPPERNODE, wrapperArgs);
+        Expr callRwapper = new NodeCallExpr(WRAPPERNODE, wrapperArgs);
         tNodeArgs.set(tNodeArgs.size() - 1, callRwapper); // settomg the last arguement which is the output, to the output of the wrapper call.
         NodeCallExpr callT = new NodeCallExpr(TNODE, (List<Expr>) tNodeArgs);
         assert (tNode.outputs.size() == 1); //assuming a single output is possible for TNode to indicate constraints are

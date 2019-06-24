@@ -10,6 +10,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.RNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.WRAPPERNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.folderName;
 import static jkind.lustre.UnaryOp.NEGATIVE;
 import static jkind.lustre.UnaryOp.NOT;
 
@@ -126,7 +129,7 @@ public class DiscoveryUtil {
 
 
     public static boolean writeToFile(String fileName, String content) {
-        fileName = DiscoverContract.folderName + "/" + fileName;
+        fileName = folderName + "/" + fileName;
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(fileName), "utf-8"))) {
             writer.write(content);
@@ -150,7 +153,7 @@ public class DiscoveryUtil {
     }
 
     public static boolean isImplementationNode(String nodeId) {
-        return (nodeId.contains(DiscoverContract.RNODE) || nodeId.contains(DiscoverContract.WRAPPERNODE));
+        return (nodeId.contains(RNODE) || nodeId.contains(WRAPPERNODE));
     }
 
     public static Node renameMainNode(String synthesis_spec, Node node) {

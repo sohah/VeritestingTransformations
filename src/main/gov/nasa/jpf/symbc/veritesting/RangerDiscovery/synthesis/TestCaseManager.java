@@ -16,6 +16,7 @@ import jkind.results.InvalidProperty;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract.getHoleExpr;
 
@@ -44,6 +45,7 @@ public class TestCaseManager {
     public final Contract contract;
 
     private static String testCaseVarName = "ok";
+
     private static List<Expr> holeExprs;
     public static int maxK;
 
@@ -62,7 +64,7 @@ public class TestCaseManager {
             if (pr.getProperty() instanceof InvalidProperty) {
                 InvalidProperty ip = (InvalidProperty) pr.getProperty();
                 Counterexample counterExample = ip.getCounterexample();
-                String fileName = contractMethodName + DiscoverContract.loopCount + "CEX.lus";
+                String fileName = contractMethodName + loopCount + "CEX.lus";
 
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString());
                 translateTestCase(counterExample);
@@ -186,8 +188,8 @@ public class TestCaseManager {
         if (location.equals("main"))
             return varName;
         else {
-            assert (location.equals(DiscoverContract.WRAPPERNODE));
-            return DiscoverContract.WRAPPERNODE + "~0." + varName;
+            assert (location.equals(WRAPPERNODE));
+            return WRAPPERNODE + "~0." + varName;
         }
 
     }
@@ -196,7 +198,7 @@ public class TestCaseManager {
 
         assert (testCaseCounter > 0);
 
-        IdExpr lhs = new IdExpr(testCaseVarName);
+        IdExpr lhs = new IdExpr(propertyName);
         Expr rhs;
 
         if (testCaseCounter == 1)
@@ -232,7 +234,7 @@ public class TestCaseManager {
 
         updateMaxK(k);
 
-        NodeCallExpr rhs = new NodeCallExpr(DiscoverContract.CHECKSPECNODE, rhsParameters);
+        NodeCallExpr rhs = new NodeCallExpr(CHECKSPECNODE, rhsParameters);
 
         Equation testCaseEq = new Equation(lhs, rhs);
 
@@ -275,7 +277,7 @@ public class TestCaseManager {
         //contains all the vars to be passed in the call except the hole vars, and it attaches with every one of those its location.
         LinkedHashMap<String, Pair<String, NamedType>> testCaseInputVars = collectTestCaseInputs(mainFreeInput, "main");
 
-        testCaseInputVars.put("out", new Pair(DiscoverContract.WRAPPERNODE, NamedType.BOOL));
+        testCaseInputVars.put("out", new Pair(WRAPPERNODE, NamedType.BOOL));
         return testCaseInputVars;
     }
 

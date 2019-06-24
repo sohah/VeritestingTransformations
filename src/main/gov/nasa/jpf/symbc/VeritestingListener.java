@@ -50,6 +50,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractDiscoveryOn;
 import static gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator.*;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
@@ -891,7 +892,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             statisticManager.printHeuristicStatistics();
 
         if (DiscoverContract.isRepaired())
-            pw.print("Contract is repaired in iteration number:" + DiscoverContract.loopCount);
+            pw.print("Contract is repaired in iteration number:" + loopCount);
         else
             pw.print("Contract is NOT repaired");
     }

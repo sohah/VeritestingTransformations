@@ -6,6 +6,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.counterExample.CounterExCo
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair.HolePlugger;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstHoleVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.TestCaseManager;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.api.JKindApi;
@@ -24,6 +25,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.writeToFile;
 
 public class DiscoverContract {
@@ -36,17 +38,6 @@ public class DiscoverContract {
     public static LinkedHashSet<Pair> z3QuerySet = new LinkedHashSet();
 
     //TODO: These needs to be configured using the .jpf file.
-    public static String folderName = "../src/DiscoveryExamples/";
-    static String tFileName = folderName + "FaultyImaginaryPad";
-    //static String tFileName = folderName + "EvenOrigSpec";
-    static String holeRepairFileName = folderName + "holeRepair";
-    public static String TNODE = "T_node";
-    public static String RNODE = "R_node";
-    public static String WRAPPERNODE = "R_wrapper";
-    public static String CHECKSPECNODE = "Check_spec";
-    public static String H_discovery = "H_discovery";
-    public static int loopCount = 0;
-    public static boolean repairInitialValues = true;
 
     public static List<String> userSynNodes = new ArrayList<>();
 
@@ -115,7 +106,7 @@ public class DiscoverContract {
 
                             JKindResult synthesisResult = callJkind(fileName, false, synthesisContract
                                     .getMaxTestCaseK()-2);
-                            switch (synthesisResult.getPropertyResult("ok").getStatus()) {
+                            switch (synthesisResult.getPropertyResult(propertyName).getStatus()) {
                                 case VALID:
                                     System.out.println("^-^ Ranger Discovery Result ^-^");
                                     System.out.println("Cannot find a synthesis");
@@ -154,11 +145,11 @@ public class DiscoverContract {
     }
 
     private static Node getTnodeFromStr(String tFileName) throws IOException {
-        Program program = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(DiscoverContract.folderName + "/" + tFileName)), "UTF-8"));
+        Program program = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(folderName + "/" + tFileName)), "UTF-8"));
 
         List<Node> nodes = program.nodes;
         for (int i = 0; i < nodes.size(); i++) {
-            if (nodes.get(i).id.equals(DiscoverContract.TNODE))
+            if (nodes.get(i).id.equals(TNODE))
                 return nodes.get(i);
         }
 
@@ -192,7 +183,7 @@ public class DiscoverContract {
 
     private static JKindResult callJkind(String fileName, boolean kInductionOn, int maxK) {
 
-        File file1 = new File(DiscoverContract.folderName + "/" + fileName);
+        File file1 = new File(folderName + "/" + fileName);
 
         return runJKind(file1, kInductionOn, maxK);
     }
