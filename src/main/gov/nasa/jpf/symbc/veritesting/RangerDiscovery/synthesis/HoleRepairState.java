@@ -21,7 +21,13 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 
 /**
- * maintains the last value of repair for each hole.
+ * This is the main class that maintains the holes we want to repair. Initially it is populated with the holes and
+ * their initial values and the type for each hole. In every iteration, one entry in the list of its
+ * holeRepairValuesMap gets added to indicate the next repair.
+ * The repaired values is first selected from the counter example, if not found then selected from the last repair,
+ * if there was any, if not found then it is selected from either some default value that the tool sets in the Config
+ * or it is set to the initial value associated with the hole in the original spec. This is also setup in the Config
+ * option useInitialSpecValues.
  */
 public class HoleRepairState {
 
