@@ -62,6 +62,7 @@ public class DiscoverContract {
     public static final void discoverLusterContract(DynamicRegion dynRegion) {
         String fileName;
         fillUserSynNodes();
+        Config.setup();
         assert (userSynNodes.size() > 0);
         try {
             if (!called) { //print out the translation once, for very first time we hit linearlization for the method of

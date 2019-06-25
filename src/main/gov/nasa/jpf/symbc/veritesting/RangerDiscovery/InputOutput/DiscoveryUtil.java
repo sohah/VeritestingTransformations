@@ -1,9 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
-import javafx.print.Printer;
 import jkind.lustre.*;
 import jkind.lustre.values.BooleanValue;
 import jkind.lustre.values.IntegerValue;

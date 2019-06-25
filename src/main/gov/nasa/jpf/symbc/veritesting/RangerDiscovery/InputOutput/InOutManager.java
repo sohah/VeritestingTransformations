@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.lustre.*;
 
@@ -32,14 +33,23 @@ public class InOutManager {
     }
 
     public void discoverVars() {
-        discoverFreeInput();
-        discoverStateInput();
-        discoverStateOutput();
-        discoverMethodOutput();
+        if (Config.spec.equals("pad")) {
+            discoverFreeInputPad();
+            discoverStateInputPad();
+            discoverStateOutputPad();
+            discoverMethodOutputPad();
+        } else if (Config.spec.equals("even")) {
+            discoverFreeInputEven();
+            discoverStateInputEven();
+            discoverStateOutputEven();
+            discoverMethodOutputEven();
+        } else {
+            System.out.println("unexpected spec to run.!");
+        }
     }
 
     //entered by hand for now
-    private void discoverMethodOutput() {
+    private void discoverMethodOutputPad() {
         methodOutput.add("r347.ignition_r.1.7.4", NamedType.BOOL);
         Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = methodOutput.convertOutput();
         typeConversionEq.addAll(conversionResult.getSecond());
@@ -48,12 +58,12 @@ public class InOutManager {
     }
 
     //entered by hand for now
-    private void discoverFreeInput() {
+    private void discoverFreeInputPad() {
         freeInput.add("signal", NamedType.INT);
     }
 
     //entered by hand for now
-    private void discoverStateInput() {
+    private void discoverStateInputPad() {
         stateInput.add("start_btn", NamedType.BOOL);
         stateInput.add("launch_btn", NamedType.BOOL);
         stateInput.add("reset_btn", NamedType.BOOL);
@@ -65,7 +75,7 @@ public class InOutManager {
     }
 
     //entered by hand for now - order is important, needs to match in order of the input
-    private void discoverStateOutput() {
+    private void discoverStateOutputPad() {
         stateOutput.add("r347.start_btn.1.15.4", NamedType.BOOL);
         stateOutput.add("r347.launch_btn.1.17.4", NamedType.BOOL);
         stateOutput.add("r347.reset_btn.1.9.4", NamedType.BOOL);
@@ -76,16 +86,44 @@ public class InOutManager {
         // def in the dynStmt
     }
 
+
+    //entered by hand for now
+    private void discoverMethodOutputEven() {
+        methodOutput.add("r347.ignition_r.1.7.4", NamedType.BOOL);
+        Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = methodOutput.convertOutput();
+        typeConversionEq.addAll(conversionResult.getSecond());
+        //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
+        // def in the dynStmt
+    }
+
+    //entered by hand for now
+    private void discoverFreeInputEven() {
+        freeInput.add("signal", NamedType.INT);
+    }
+
+    //entered by hand for now
+    private void discoverStateInputEven() {
+        stateInput.add("countState", NamedType.INT);
+    }
+
+    //entered by hand for now - order is important, needs to match in order of the input
+    private void discoverStateOutputEven() {
+        stateOutput.add("r351.countState.1.3.2", NamedType.INT);
+
+    }
+
+
     public ArrayList<VarDecl> generateInputDecl() {
         ArrayList<VarDecl> inputDeclList = generateFreeInputDecl();
         inputDeclList.addAll(generateStateInputDecl());
         return inputDeclList;
     }
-    public ArrayList<VarDecl> generateFreeInputDecl(){
+
+    public ArrayList<VarDecl> generateFreeInputDecl() {
         return generateLustreDecl(freeInput);
     }
 
-    public ArrayList<VarDecl> generateStateInputDecl(){
+    public ArrayList<VarDecl> generateStateInputDecl() {
         return generateLustreDecl(stateInput);
     }
 
@@ -128,7 +166,7 @@ public class InOutManager {
         return methodOutput.contains(varName, type);
     }
 
-    public Pair<VarDecl, Equation> replicateMethodOutput(String outVarName){
+    public Pair<VarDecl, Equation> replicateMethodOutput(String outVarName) {
         return methodOutput.replicateMe(outVarName);
     }
 

@@ -2,15 +2,14 @@ public class EvenImplementation {
     int countState = 0;
 
     public static void main(String[] args) {
-
-
         EvenImplementation evenImpl = new EvenImplementation();
         boolean signal = false;
-        evenImpl.makeStep(signal, true);
+        evenImpl.makeStep(signal, 1,true);
     }
 
-    private void makeStep(boolean signal, boolean symVar) {
+    private void makeStep(boolean signal, int countState, boolean symVar) {
         int output = 0;
+        this.countState = countState;
 
         if (symVar)
             output = run(signal);
