@@ -97,7 +97,7 @@ public class InOutManager {
 
     //entered by hand for now
     private void discoverMethodOutputEven() {
-        stateOutput.add(referenceObjectName + ".countState.1.3.2", NamedType.INT);
+        methodOutput.add(referenceObjectName + ".countState.1.3.2", NamedType.INT);
         //  Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = methodOutput.convertOutput();
         //  typeConversionEq.addAll(conversionResult.getSecond());
         //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
