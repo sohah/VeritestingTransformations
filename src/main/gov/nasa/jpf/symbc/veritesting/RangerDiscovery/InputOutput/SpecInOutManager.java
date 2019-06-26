@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import jkind.lustre.NamedType;
 
 import java.util.List;
@@ -17,24 +18,46 @@ public class SpecInOutManager {
     SpecInputOutput inOutputVars = new SpecInputOutput();
 
     public void discoverVars() {
-        discoverFreeInput();
-        discoverStateVars();
-        discoverOutputVar();
+        if (Config.spec.equals("pad")) {
+            discoverFreeInputPad();
+            discoverStateVarsPad();
+            discoverOutputVarPad();
+        } else if (Config.spec.equals("even")) {
+            discoverFreeInputEven();
+            discoverStateVarsEven();
+            discoverOutputVarEven();
+        } else {
+            System.out.println("unexpected spec to run.!");
+        }
     }
 
-    private void discoverFreeInput() {
+    private void discoverFreeInputPad() {
         freeInput.add("sig", NamedType.INT);
     }
 
-    private void discoverStateVars() {
+    private void discoverStateVarsPad() {
         stateVars.add("start_bt", NamedType.BOOL);
         stateVars.add("launch_bt", NamedType.BOOL);
         stateVars.add("reset_bt", NamedType.BOOL);
     }
 
-    private void discoverOutputVar() {
+    private void discoverOutputVarPad() {
         inOutputVars.add("ignition", NamedType.BOOL);
     }
+
+
+    private void discoverOutputVarEven() {
+        inOutputVars.add("out", NamedType.INT);
+    }
+
+    private void discoverFreeInputEven() {
+        freeInput.add("signal", NamedType.BOOL);
+    }
+
+    private void discoverStateVarsEven() {
+        stateVars.add("step", NamedType.INT);
+    }
+
 
     /**
      * searches in all in input and output arrays to check if it is one in them
@@ -68,7 +91,7 @@ public class SpecInOutManager {
         return freeInput.getInputNames();
     }
 
-    public List<String> getInOutput() {
-        return inOutputVars.getInputNames();
+    public SpecInputOutput getInOutput() {
+        return inOutputVars;
     }
 }

@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
@@ -75,8 +76,16 @@ public class ToLutre {
         ArrayList<Expr> initPreExprList = new ArrayList<>();
 
         for (int i = 0; i < wrapperLocalDeclList.size(); i++) {
-            initPreExprList.add(new BinaryExpr(new BoolExpr(false), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
+            if(wrapperLocalDeclList.get(i).type == NamedType.BOOL)
+            initPreExprList.add(new BinaryExpr(new BoolExpr(Config.defaultBoolValue), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
                     varDeclToIdExpr(wrapperLocalDeclList.get(i)))));
+            else if(wrapperLocalDeclList.get(i).type == NamedType.INT)
+                initPreExprList.add(new BinaryExpr(new IntExpr(Config.initialIntValue), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
+                        varDeclToIdExpr(wrapperLocalDeclList.get(i)))));
+            else{
+                System.out.println("unsupported type for initial value in the wrapper");
+                assert false;
+            }
         }
         return initPreExprList;
     }

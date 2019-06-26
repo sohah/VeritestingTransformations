@@ -13,8 +13,16 @@ import java.util.ArrayList;
  * should match the signature of the step function. Type conversion is needed sometimes, if so then the variable
  * names in the arraylist will change to the new var being created, in this case there will be as well a side effect
  * for the equations needed for conversion between the original var and the new var being created for conversion.
+ * <p>
+ * An important thing to note here is that the signature of the different input, output, or state are reflecting those
+ * in the implementation type.
  */
 public class InOutManager {
+
+    //for now we are adding the reference object by hand, it changes from lunix to mac, so I am adding this here to avoid having to repeatedly change the code
+    private String referenceObjectName = "r351"; //for lunix
+
+    //private String referenceObjectName = "r347"; //for mac
 
     InputOutput freeInput = new InputOutput();
     InputOutput stateInput = new InputOutput();
@@ -50,7 +58,7 @@ public class InOutManager {
 
     //entered by hand for now
     private void discoverMethodOutputPad() {
-        methodOutput.add("r347.ignition_r.1.7.4", NamedType.BOOL);
+        methodOutput.add(referenceObjectName + ".ignition_r.1.7.4", NamedType.BOOL);
         Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = methodOutput.convertOutput();
         typeConversionEq.addAll(conversionResult.getSecond());
         //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
@@ -76,9 +84,9 @@ public class InOutManager {
 
     //entered by hand for now - order is important, needs to match in order of the input
     private void discoverStateOutputPad() {
-        stateOutput.add("r347.start_btn.1.15.4", NamedType.BOOL);
-        stateOutput.add("r347.launch_btn.1.17.4", NamedType.BOOL);
-        stateOutput.add("r347.reset_btn.1.9.4", NamedType.BOOL);
+        stateOutput.add(referenceObjectName + ".start_btn.1.15.4", NamedType.BOOL);
+        stateOutput.add(referenceObjectName + ".launch_btn.1.17.4", NamedType.BOOL);
+        stateOutput.add(referenceObjectName + ".reset_btn.1.9.4", NamedType.BOOL);
 
         Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = stateOutput.convertOutput();
         typeConversionEq.addAll(conversionResult.getSecond());
@@ -89,16 +97,19 @@ public class InOutManager {
 
     //entered by hand for now
     private void discoverMethodOutputEven() {
-        methodOutput.add("r347.ignition_r.1.7.4", NamedType.BOOL);
-        Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = methodOutput.convertOutput();
-        typeConversionEq.addAll(conversionResult.getSecond());
+        stateOutput.add(referenceObjectName + ".countState.1.3.2", NamedType.INT);
+        //  Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = methodOutput.convertOutput();
+        //  typeConversionEq.addAll(conversionResult.getSecond());
         //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
         // def in the dynStmt
     }
 
     //entered by hand for now
     private void discoverFreeInputEven() {
-        freeInput.add("signal", NamedType.INT);
+        freeInput.add("signal", NamedType.BOOL);
+        Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
+        typeConversionEq.addAll(conversionResult.getSecond());
+        conversionLocalList.addAll(conversionResult.getFirst());
     }
 
     //entered by hand for now
@@ -108,7 +119,7 @@ public class InOutManager {
 
     //entered by hand for now - order is important, needs to match in order of the input
     private void discoverStateOutputEven() {
-        stateOutput.add("r351.countState.1.3.2", NamedType.INT);
+        //       stateOutput.add("r351.countState.1.3.2", NamedType.INT);
 
     }
 
@@ -170,4 +181,11 @@ public class InOutManager {
         return methodOutput.replicateMe(outVarName);
     }
 
+    public NamedType getMethodOutType() {
+        if (methodOutput.varList.size() == 0) {
+            System.out.println("Method has no output, this is unexpected method signature for R! Aborting!");
+            assert false;
+        }
+        return methodOutput.varList.get(0).getSecond();
+    }
 }

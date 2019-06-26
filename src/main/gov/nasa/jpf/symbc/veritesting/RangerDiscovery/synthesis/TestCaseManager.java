@@ -277,7 +277,17 @@ public class TestCaseManager {
         //contains all the vars to be passed in the call except the hole vars, and it attaches with every one of those its location.
         LinkedHashMap<String, Pair<String, NamedType>> testCaseInputVars = collectTestCaseInputs(mainFreeInput, "main");
 
-        testCaseInputVars.put("out", new Pair(WRAPPERNODE, NamedType.BOOL));
+/*
+        SpecInputOutput mainInOut = this.contract.tInOutManager.getInOutput();
+
+        //contains all the vars to be passed in the call except the hole vars, and it attaches with every one of those its location.
+        LinkedHashMap<String, Pair<String, NamedType>> testCaseInputOutVars = collectTestCaseInputs(mainInOut, WRAPPERNODE);
+
+*/
+    //the output is exactly the output of the wrapper which has the same type as the method output of the R node
+        testCaseInputVars.put("out", new Pair(WRAPPERNODE, this.contract.rInOutManager.getMethodOutType()));
+  //      testCaseInputVars.putAll(testCaseInputOutVars);
+
         return testCaseInputVars;
     }
 

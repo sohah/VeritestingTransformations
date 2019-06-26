@@ -64,15 +64,17 @@ public class ConstHoleVisitor extends AstMapVisitor {
     @Override
     public Expr visit(BinaryExpr e) {
         Expr left;
-
-
+        Expr right;
+        
         if (!repairInitialValues && e.op == BinaryOp.ARROW) { //do not repair initial values if the repair of initial values is not set.
             left = e.left;
         } else {
             left = e.left.accept(this);
         }
-
-        Expr right = e.right.accept(this);
+        if (e.op == BinaryOp.MODULUS) { //do not repair modulus number, lustre error if we do that.
+            right = e.right;
+        } else
+            right = e.right.accept(this);
 
         if (e.left == left && e.right == right) {
             return e;

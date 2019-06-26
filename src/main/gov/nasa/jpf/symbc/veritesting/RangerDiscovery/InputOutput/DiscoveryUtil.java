@@ -49,6 +49,8 @@ public class DiscoveryUtil {
             op = BinaryOp.fromString("and");
         else if (s.equals("||"))
             op = BinaryOp.fromString("or");
+        else if (s.equals("%"))
+            op = BinaryOp.fromString("mod");
         else
             op = BinaryOp.fromString(s);
 

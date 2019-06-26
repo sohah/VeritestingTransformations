@@ -12,12 +12,12 @@ public class EvenImplementation {
         this.countState = countState;
 
         if (symVar)
-            output = run(signal);
+            output = runEven(signal);
 
         System.out.println("output value = " + output);
     }
 
-    private int run(boolean signal) {
+    private int runEven(boolean signal) {
         if (signal)
             ++this.countState;
         if (countState % 2 == 0)
