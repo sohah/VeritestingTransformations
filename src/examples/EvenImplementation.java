@@ -1,6 +1,7 @@
 public class EvenImplementation {
     int countState = 0;
 
+    int output = 8;
     public static void main(String[] args) {
         EvenImplementation evenImpl = new EvenImplementation();
         boolean signal = false;
@@ -21,9 +22,11 @@ public class EvenImplementation {
         if (signal)
             ++this.countState;
         if (countState % 2 == 0)
-            return 7;
+            output = 7;
         else
-            return 20;
+            output = 20;
+
+        return output;
     }
 
 }
