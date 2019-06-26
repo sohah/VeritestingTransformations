@@ -120,7 +120,7 @@ public class DiscoverContract {
                                     DiscoverContract.repaired = false;
                                     return;
                                 case INVALID:
-                                    System.out.println("plugging in holes");
+                                    System.out.println("repairing holes for iteration#:" + loopCount);
                                     holeRepairState.plugInHoles(synthesisResult);
                                     holePlugger.plugInHoles(synthesisResult, counterExContract
                                             .getCounterExamplePgm

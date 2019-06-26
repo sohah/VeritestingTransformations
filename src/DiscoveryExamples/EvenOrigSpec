@@ -7,8 +7,8 @@ node main(signal: bool; out: int) returns (p1: bool);
 var
 	step : int;
 let
-	step = if(signal) then
-	               ( 0 -> (1 + (pre step)))
+	step = 0 -> if(signal) then
+	               (1 + (pre step))
 	        else (pre step);
 
     p1 = ((step mod 2) = 0) -> ( 0 < out ) and (out < 10);
