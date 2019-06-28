@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.lustre.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 
 /**
@@ -20,17 +21,23 @@ import java.util.ArrayList;
 public class InOutManager {
 
     //for now we are adding the reference object by hand, it changes from lunix to mac, so I am adding this here to avoid having to repeatedly change the code
-    private String referenceObjectName = "r351"; //for lunix
+    //private String referenceObjectName = "r351"; //for lunix
 
-    //private String referenceObjectName = "r347"; //for mac
+    private String referenceObjectName = "r347"; //for mac
 
-    InputOutput freeInput = new InputOutput();
-    InputOutput stateInput = new InputOutput();
-    InputOutput stateOutput = new InputOutput();
-    InputOutput methodOutput = new InputOutput();
+    Input freeInput = new Input();
+    Input stateInput = new Input();
+    Output stateOutput = new Output();
+    MethodOutput methodOutput = new MethodOutput();
 
+    // carries the output equation of the method, which includes the initial value in case that the output does have an initial value in its related state
+    ArrayList<Equation> methodOutEq = new ArrayList<>();
+
+    //carries any type conversion equation which can be triggered both in case of the input and the output
     ArrayList<Equation> typeConversionEq = new ArrayList<>();
+
     ArrayList<VarDecl> conversionLocalList = new ArrayList<>();
+    private Expr methodReturnInit;
 
     public ArrayList<Equation> getTypeConversionEq() {
         return typeConversionEq;
@@ -56,11 +63,19 @@ public class InOutManager {
         }
     }
 
-    //entered by hand for now
+    //entered by hand for now -- this is a singleton, I need to enforce this everywhere.
     private void discoverMethodOutputPad() {
         methodOutput.add(referenceObjectName + ".ignition_r.1.7.4", NamedType.BOOL);
-        Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = methodOutput.convertOutput();
-        typeConversionEq.addAll(conversionResult.getSecond());
+        methodOutput.addInit(referenceObjectName + ".ignition_r.1.7.4", new BoolExpr(false));
+        if (methodOutput.containsBool()) { // isn't that replicated with the state output.
+            assert methodOutput.size == 1; // a method can only have a single output
+            ArrayList<Equation> conversionResult = methodOutput.convertOutput();
+            //typeConversionEq.addAll(conversionResult);
+            assert conversionResult.size() == 1;
+            Equation outputEq = methodOutput.addInitToEq(conversionResult.get(0));
+            methodOutEq.add(outputEq); //this creates a proceeded value for the initial value
+        } else
+            methodOutEq.add(methodOutput.makeInitEq()); // this creates the initial value in case there is no type conversion needed
         //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
         // def in the dynStmt
     }
@@ -68,6 +83,11 @@ public class InOutManager {
     //entered by hand for now
     private void discoverFreeInputPad() {
         freeInput.add("signal", NamedType.INT);
+        if (freeInput.containsBool()) {
+            Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
+            methodOutEq.addAll(conversionResult.getSecond());
+            conversionLocalList.addAll(conversionResult.getFirst());
+        }
     }
 
     //entered by hand for now
@@ -77,9 +97,11 @@ public class InOutManager {
         stateInput.add("reset_btn", NamedType.BOOL);
         stateInput.add("ignition", NamedType.BOOL);
 
-        Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = stateInput.convertInput();
-        typeConversionEq.addAll(conversionResult.getSecond());
-        conversionLocalList.addAll(conversionResult.getFirst());
+        if (stateInput.containsBool()) { //type conversion to spf int type is needed
+            Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = stateInput.convertInput();
+            typeConversionEq.addAll(conversionResult.getSecond());
+            conversionLocalList.addAll(conversionResult.getFirst());
+        }
     }
 
     //entered by hand for now - order is important, needs to match in order of the input
@@ -88,14 +110,17 @@ public class InOutManager {
         stateOutput.add(referenceObjectName + ".launch_btn.1.17.4", NamedType.BOOL);
         stateOutput.add(referenceObjectName + ".reset_btn.1.9.4", NamedType.BOOL);
 
-        Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = stateOutput.convertOutput();
-        typeConversionEq.addAll(conversionResult.getSecond());
-        //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
-        // def in the dynStmt
+        if (stateOutput.containsBool()) {
+            ArrayList<Equation> conversionResult = stateOutput.convertOutput();
+            typeConversionEq.addAll(conversionResult);
+            //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
+            // def in the dynStmt
+        }
     }
 
 
     //entered by hand for now
+
     private void discoverMethodOutputEven() {
         //methodOutput.add(referenceObjectName + ".countState.1.3.2", NamedType.INT);
         methodOutput.add(referenceObjectName + ".output.1.5.2", NamedType.INT);
@@ -108,9 +133,11 @@ public class InOutManager {
     //entered by hand for now
     private void discoverFreeInputEven() {
         freeInput.add("signal", NamedType.BOOL);
-        Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
-        typeConversionEq.addAll(conversionResult.getSecond());
-        conversionLocalList.addAll(conversionResult.getFirst());
+        if (freeInput.containsBool()) {
+            Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
+            typeConversionEq.addAll(conversionResult.getSecond());
+            conversionLocalList.addAll(conversionResult.getFirst());
+        }
     }
 
     //entered by hand for now
@@ -139,7 +166,7 @@ public class InOutManager {
         return generateLustreDecl(stateInput);
     }
 
-    private ArrayList<VarDecl> generateLustreDecl(InputOutput inputOutput) {
+    private ArrayList<VarDecl> generateLustreDecl(SpecInputOutput inputOutput) {
         return inputOutput.generateVarDecl();
     }
 
@@ -178,6 +205,11 @@ public class InOutManager {
         return methodOutput.contains(varName, type);
     }
 
+    public boolean isMethodReturnVar(String name){
+        return methodOutput.hasName(name);
+    }
+
+
     public Pair<VarDecl, Equation> replicateMethodOutput(String outVarName) {
         return methodOutput.replicateMe(outVarName);
     }
@@ -188,5 +220,13 @@ public class InOutManager {
             assert false;
         }
         return methodOutput.varList.get(0).getSecond();
+    }
+
+    public Collection<? extends Equation> getMethoudOutEq() {
+        return methodOutEq;
+    }
+
+    public Expr getMethodReturnInit() {
+        return methodOutput.getReturnInitVal();
     }
 }

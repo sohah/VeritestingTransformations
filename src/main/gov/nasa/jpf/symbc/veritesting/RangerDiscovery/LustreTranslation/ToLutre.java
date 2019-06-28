@@ -23,8 +23,9 @@ public class ToLutre {
         InOutManager inOutManager = contract.rInOutManager;
         ArrayList<VarDecl> localDeclList = DeclarationTranslator.execute(dynamicRegion, inOutManager);
         localDeclList.add(addSymVar());
-        ArrayList<Equation> equationList = EquationVisitor.execute(dynamicRegion);
+        ArrayList<Equation> equationList = EquationVisitor.execute(dynamicRegion, contract.rInOutManager);
         equationList.addAll(inOutManager.getTypeConversionEq()); // adding type conversion equations.
+        equationList.addAll(inOutManager.getMethoudOutEq());
         localDeclList.addAll(inOutManager.getConversionLocalList());
         equationList.add(addSymVarEquation());
         ArrayList<VarDecl> inputDeclList = inOutManager.generateInputDecl();

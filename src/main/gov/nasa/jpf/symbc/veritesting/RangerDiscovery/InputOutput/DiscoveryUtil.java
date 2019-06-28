@@ -250,4 +250,12 @@ public class DiscoveryUtil {
         else
             return null;
     }
+
+    /**
+     assigns initial value to a given equation.
+     */
+    public static Equation addInitToEq(Equation equation, Expr initialValue) {
+        return new Equation(equation.lhs.get(0), new BinaryExpr(initialValue, BinaryOp.ARROW, equation.expr));
+    }
+
 }

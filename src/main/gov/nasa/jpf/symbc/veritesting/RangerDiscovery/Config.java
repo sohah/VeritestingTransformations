@@ -23,9 +23,11 @@ public class Config {
     public static Ast defaultHoleValInt = new IntExpr(1);
     public static boolean useInitialSpecValues = true;
 
-    public static String spec = "even";
+    public static String spec = "pad";
     public static boolean defaultBoolValue = false;
     public static int initialIntValue = 0;
+
+    public static String methodReturnName = "result";
 
     public static void setup(){
         if(spec.equals("pad")){

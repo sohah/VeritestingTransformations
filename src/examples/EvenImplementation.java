@@ -1,7 +1,8 @@
 public class EvenImplementation {
     int countState = 0;
-
     int output = 8;
+
+
     public static void main(String[] args) {
         EvenImplementation evenImpl = new EvenImplementation();
         boolean signal = false;

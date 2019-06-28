@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import gov.nasa.jpf.symbc.veritesting.ast.def.*;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -9,19 +10,19 @@ import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitor;
 import gov.nasa.jpf.symbc.veritesting.ast.visitors.ExprVisitorAdapter;
 import jkind.lustre.*;
 import jkind.lustre.Ast;
-import za.ac.sun.cs.green.expr.Expression;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
 
     protected final ExprVisitor<Ast> exprVisitor;
     protected final ExprVisitorAdapter<Ast> eva;
+    private final InOutManager rInOutManager;
     private ArrayList<Equation> equationList = new ArrayList<>();
 
 
-    private EquationVisitor(ExprVisitor<Ast> exprVisitor) {
+    private EquationVisitor(ExprVisitor<Ast> exprVisitor, InOutManager rInOutManager) {
+        this.rInOutManager = rInOutManager;
         this.eva = new ExprVisitorAdapter<Ast>(exprVisitor);
         this.exprVisitor = exprVisitor;
     }
@@ -30,8 +31,21 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
     public Ast visit(AssignmentStmt a) {
         Ast rhs = eva.accept(a.rhs);
         IdExpr lhs = new IdExpr(a.lhs.toString());
-        equationList.add(new Equation(lhs, (Expr) rhs));
+        equationList.add(addMethodReturnInit(new Equation(lhs, (Expr) rhs)));
         return null;
+    }
+
+    /**
+     * adds an initial value to the equation if it is the equation of the method output.
+     * @param equation
+     * @return
+     */
+    private Equation addMethodReturnInit(Equation equation) {
+        IdExpr lhs = equation.lhs.get(0);
+        if(rInOutManager.isMethodReturnVar(lhs.id)) //if it is a method retrun equation, then proceed it with the initial value
+            return DiscoveryUtil.addInitToEq(equation, rInOutManager.getMethodReturnInit());
+
+        return equation;
     }
 
     @Override
@@ -137,9 +151,9 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
         return null;
     }
 
-    public static ArrayList<Equation> execute(DynamicRegion dynRegion) {
+    public static ArrayList<Equation> execute(DynamicRegion dynRegion, InOutManager rInOutManager) {
         EquationExprVisitor equationExprVisitor = new EquationExprVisitor(dynRegion);
-        EquationVisitor equationVisitor = new EquationVisitor(equationExprVisitor);
+        EquationVisitor equationVisitor = new EquationVisitor(equationExprVisitor, rInOutManager);
         dynRegion.dynStmt.accept(equationVisitor);
         return equationVisitor.equationList;
     }
