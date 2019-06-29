@@ -30,14 +30,12 @@ public class InOutManager {
     Output stateOutput = new Output();
     MethodOutput methodOutput = new MethodOutput();
 
-    // carries the output equation of the method, which includes the initial value in case that the output does have an initial value in its related state
-    ArrayList<Equation> methodOutEq = new ArrayList<>();
+    boolean isOutputConverted = false;
 
     //carries any type conversion equation which can be triggered both in case of the input and the output
     ArrayList<Equation> typeConversionEq = new ArrayList<>();
 
     ArrayList<VarDecl> conversionLocalList = new ArrayList<>();
-    private Expr methodReturnInit;
 
     public ArrayList<Equation> getTypeConversionEq() {
         return typeConversionEq;
@@ -45,6 +43,10 @@ public class InOutManager {
 
     public ArrayList<VarDecl> getConversionLocalList() {
         return conversionLocalList;
+    }
+
+    public boolean isOutputConverted() {
+        return isOutputConverted;
     }
 
     public void discoverVars() {
@@ -70,14 +72,10 @@ public class InOutManager {
         if (methodOutput.containsBool()) { // isn't that replicated with the state output.
             assert methodOutput.size == 1; // a method can only have a single output
             ArrayList<Equation> conversionResult = methodOutput.convertOutput();
-            //typeConversionEq.addAll(conversionResult);
             assert conversionResult.size() == 1;
-            Equation outputEq = methodOutput.addInitToEq(conversionResult.get(0));
-            methodOutEq.add(outputEq); //this creates a proceeded value for the initial value
-        } else
-            methodOutEq.add(methodOutput.makeInitEq()); // this creates the initial value in case there is no type conversion needed
-        //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
-        // def in the dynStmt
+            typeConversionEq.addAll(conversionResult);
+            isOutputConverted = true;
+        }
     }
 
     //entered by hand for now
@@ -85,7 +83,7 @@ public class InOutManager {
         freeInput.add("signal", NamedType.INT);
         if (freeInput.containsBool()) {
             Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
-            methodOutEq.addAll(conversionResult.getSecond());
+            typeConversionEq.addAll(conversionResult.getSecond());
             conversionLocalList.addAll(conversionResult.getFirst());
         }
     }
@@ -115,6 +113,7 @@ public class InOutManager {
             typeConversionEq.addAll(conversionResult);
             //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
             // def in the dynStmt
+            isOutputConverted = true;
         }
     }
 
@@ -205,7 +204,7 @@ public class InOutManager {
         return methodOutput.contains(varName, type);
     }
 
-    public boolean isMethodReturnVar(String name){
+    public boolean isMethodReturnVar(String name) {
         return methodOutput.hasName(name);
     }
 
@@ -220,10 +219,6 @@ public class InOutManager {
             assert false;
         }
         return methodOutput.varList.get(0).getSecond();
-    }
-
-    public Collection<? extends Equation> getMethoudOutEq() {
-        return methodOutEq;
     }
 
     public Expr getMethodReturnInit() {

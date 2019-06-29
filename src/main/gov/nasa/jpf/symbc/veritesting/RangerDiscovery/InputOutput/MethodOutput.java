@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 // it is always the case that there is only a single element in the method output, i.e., it is a singleton.
 public class MethodOutput extends Output {
-    public boolean hasConversion;
 
     public void addInit(String var, Expr expr) {
         varInitValuePair = new Pair<>(var, expr);
@@ -31,12 +30,10 @@ public class MethodOutput extends Output {
         return new Equation(new IdExpr(Config.methodReturnName), new BinaryExpr(initialValue, BinaryOp.ARROW, new IdExpr(varInitValueList.get(0).getFirst())));
     }
 
-
+*/
     public Equation addInitToEq(Equation eq) {
-        assert varInitValueList.size() ==1 && varList.size() ==1;
-        Expr initialValue = varInitValueList.get(0).getSecond();
-
+        Expr initialValue = varInitValuePair.getSecond();
         return DiscoveryUtil.addInitToEq(eq, initialValue);
 
-    }*/
+    }
 }

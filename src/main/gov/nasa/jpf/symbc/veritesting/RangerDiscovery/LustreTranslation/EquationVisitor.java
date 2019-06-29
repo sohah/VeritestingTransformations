@@ -31,18 +31,22 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
     public Ast visit(AssignmentStmt a) {
         Ast rhs = eva.accept(a.rhs);
         IdExpr lhs = new IdExpr(a.lhs.toString());
-        equationList.add(addMethodReturnInit(new Equation(lhs, (Expr) rhs)));
+        if (!rInOutManager.isOutputConverted())
+            equationList.add(addMethodReturnInit(new Equation(lhs, (Expr) rhs)));
+        else
+            equationList.add(new Equation(lhs, (Expr) rhs));
         return null;
     }
 
     /**
      * adds an initial value to the equation if it is the equation of the method output.
+     *
      * @param equation
      * @return
      */
     private Equation addMethodReturnInit(Equation equation) {
         IdExpr lhs = equation.lhs.get(0);
-        if(rInOutManager.isMethodReturnVar(lhs.id)) //if it is a method retrun equation, then proceed it with the initial value
+        if (rInOutManager.isMethodReturnVar(lhs.id)) //if it is a method retrun equation, then proceed it with the initial value
             return DiscoveryUtil.addInitToEq(equation, rInOutManager.getMethodReturnInit());
 
         return equation;

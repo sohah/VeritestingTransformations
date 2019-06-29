@@ -9,7 +9,11 @@ import java.util.Collection;
 public class Input extends SpecInputOutput {
 
 
-
+    /**
+     * converts bool to int form for SPF, it does not pre append initial value since this is really the input, we need to maintain the initial value for the output really of the first step.
+     *
+     * @return
+     */
     public Pair<ArrayList<VarDecl>, ArrayList<Equation>> convertInput() { //convertBoolToSpfInt
         ArrayList<Equation> conversionEqList = new ArrayList<>();
         ArrayList<VarDecl> conversionLocalList = new ArrayList<>();
