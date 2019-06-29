@@ -46,7 +46,7 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
      */
     private Equation addMethodReturnInit(Equation equation) {
         IdExpr lhs = equation.lhs.get(0);
-        if (rInOutManager.isMethodReturnVar(lhs.id)) //if it is a method retrun equation, then proceed it with the initial value
+        if (rInOutManager.isMethodReturnVar(lhs.id) || (rInOutManager.isStateOutVar(lhs.id))) //if it is a method retrun equation, then proceed it with the initial value
             return DiscoveryUtil.addInitToEq(equation, rInOutManager.getMethodReturnInit());
 
         return equation;

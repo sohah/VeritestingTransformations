@@ -6,7 +6,7 @@ symbolic.debug=true
 
 
 ######## miscellaneous  ######
-symbolic.method=EvenImplementation.makeStep(sym#sym#sym)
+symbolic.method=EvenImplementation.makeStep(sym#sym#sym#sym)
 
 symbolic.dp=z3
 

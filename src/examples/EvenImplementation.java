@@ -6,12 +6,12 @@ public class EvenImplementation {
     public static void main(String[] args) {
         EvenImplementation evenImpl = new EvenImplementation();
         boolean signal = false;
-        evenImpl.makeStep(signal, 1,true);
+        evenImpl.makeStep(signal, 1, 1, true);
     }
 
-    private void makeStep(boolean signal, int countState, boolean symVar) {
-        int output = 0;
+    private void makeStep(boolean signal, int countState, int output, boolean symVar) {
         this.countState = countState;
+        this.output = output;
 
         if (symVar)
             output = runEven(signal);

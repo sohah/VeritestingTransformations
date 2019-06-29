@@ -123,10 +123,7 @@ public class InOutManager {
     private void discoverMethodOutputEven() {
         //methodOutput.add(referenceObjectName + ".countState.1.3.2", NamedType.INT);
         methodOutput.add(referenceObjectName + ".output.1.5.2", NamedType.INT);
-        //  Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = methodOutput.convertOutput();
-        //  typeConversionEq.addAll(conversionResult.getSecond());
-        //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
-        // def in the dynStmt
+        methodOutput.addInit(referenceObjectName + ".output.1.5.2", new IntExpr(8));
     }
 
     //entered by hand for now
@@ -142,12 +139,12 @@ public class InOutManager {
     //entered by hand for now
     private void discoverStateInputEven() {
         stateInput.add("countState", NamedType.INT);
+        stateInput.add("output", NamedType.INT);
     }
 
     //entered by hand for now - order is important, needs to match in order of the input
     private void discoverStateOutputEven() {
-        //       stateOutput.add("r351.countState.1.3.2", NamedType.INT);
-
+        stateOutput.add(referenceObjectName + ".countState.1.5.2", NamedType.INT);
     }
 
 
@@ -208,8 +205,11 @@ public class InOutManager {
         return methodOutput.hasName(name);
     }
 
+    public boolean isStateOutVar(String name) {
+        return stateOutput.hasName(name);
+    }
 
-    public Pair<VarDecl, Equation> replicateMethodOutput(String outVarName) {
+        public Pair<VarDecl, Equation> replicateMethodOutput(String outVarName) {
         return methodOutput.replicateMe(outVarName);
     }
 
@@ -224,4 +224,5 @@ public class InOutManager {
     public Expr getMethodReturnInit() {
         return methodOutput.getReturnInitVal();
     }
+
 }
