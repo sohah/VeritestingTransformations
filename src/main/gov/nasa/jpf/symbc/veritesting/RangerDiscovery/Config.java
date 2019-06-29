@@ -15,7 +15,7 @@ public class Config {
     public static String CHECKSPECNODE = "Check_spec";
     public static String H_discovery = "H_discovery";
     public static int loopCount = 0;
-    public static boolean repairInitialValues = true;
+    public static boolean repairInitialValues = false;
     public static String specPropertyName = "ok";
     public static String tnodeSpecPropertyName;
 

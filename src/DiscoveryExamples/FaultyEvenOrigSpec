@@ -12,7 +12,7 @@ let
 	               else
 	                    pre even;
 
-    p1 = even => ( 0 < out ) and (out < 10);
+    p1 = even => ( 0 < out ) and (out < 5);
 
   --%PROPERTY p1;
 
