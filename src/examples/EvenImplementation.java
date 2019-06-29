@@ -25,7 +25,7 @@ public class EvenImplementation {
         if (countState % 2 == 0)
             output = 7;
         else
-            output = 20;
+            output = 15;
 
         return output;
     }

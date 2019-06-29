@@ -34,7 +34,7 @@ public class Config {
             tFileName = folderName + "FaultyImaginaryPad";
             tnodeSpecPropertyName = "T_node~0.p1";
         } else if(spec.equals("even")){
-            tFileName = folderName + "EvenOrigSpec";
+            tFileName = folderName + "FaultyEvenOrigSpec";
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
         }else{
             System.out.println("unsupported spec, you need to setup input and output of the spec before usage!");
