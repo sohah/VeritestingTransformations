@@ -1,19 +1,47 @@
 
---This spec is used as a test case for contract discovery. Its main purpose is to ensure that the output is in range 0 to 10 if the we are in an even step of true signal.
+--This is the repair library of nodes that could be used in the repair.
 
 
-node main(signal: bool; out: int) returns (p1: bool);
+const depth = 0;
 
-var
-	even: bool;
+type operation = enum  {PLUS, MINUS, AND, OR};
+
+node gather_1_Wrapper(flag:operation; h1:int; h2:int) returns (val:int);
+
 let
-	even = true -> if(signal) then
-	                    not pre even
-	               else
-	                    pre even;
-
-    p1 = even => ( 0 < out ) and (out < 10);
-
-  --%PROPERTY p1;
-
+	val = gather_1(flag, h1, h2, depth);
 tel;
+
+
+node gather_1(flag:operation; h1:int; h2:int; depth_1:int) returns (val:int);
+
+let
+	val = if(depth = 0) then
+	           if (flag = PLUS)
+	           then h1 + h2
+	           else h1 - h2     -- assuming minus is the second and the only other option
+	       else
+            0;
+tel;
+
+
+node gather_2_Wrapper(flag:operation; h1:bool; h2:bool) returns (val:bool);
+
+let
+	val = gather_2(flag, h1, h2, depth);
+tel;
+
+
+node gather_2(flag:operation; h1:bool; h2:bool; depth_2:int) returns (val:bool);
+
+let
+	val = if(depth = 0) then
+	           if (flag = AND)
+	           then h1 and h2
+	           else h1 or h2        -- assuming or is the second and the only other option.
+	       else
+            false;
+tel;
+
+
+
