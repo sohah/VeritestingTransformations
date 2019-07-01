@@ -3,6 +3,12 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 import jkind.lustre.Ast;
 import jkind.lustre.BoolExpr;
 import jkind.lustre.IntExpr;
+import jkind.lustre.Program;
+import jkind.lustre.parsing.LustreParseUtil;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Config {
     public static String counterExPropertyName = "fail";
@@ -15,7 +21,7 @@ public class Config {
     public static String CHECKSPECNODE = "Check_spec";
     public static String H_discovery = "H_discovery";
     public static int loopCount = 0;
-    public static boolean repairInitialValues = false;
+    public static boolean repairInitialValues = true;
     public static String specPropertyName = "ok";
     public static String tnodeSpecPropertyName;
 
@@ -23,13 +29,17 @@ public class Config {
     public static Ast defaultHoleValInt = new IntExpr(1);
     public static boolean useInitialSpecValues = true;
 
-    public static String spec = "even";
+    public static String spec = "pad";
     public static boolean defaultBoolValue = false;
     public static int initialIntValue = 0;
 
     public static String methodReturnName = "result";
 
-    public static void setup(){
+    public static Program repairProgram;
+
+    public static String repairLustreFileName = "RepairLibrary";
+
+    public static void setup() throws IOException {
         if(spec.equals("pad")){
             tFileName = folderName + "FaultyImaginaryPad";
             tnodeSpecPropertyName = "T_node~0.p1";
@@ -40,5 +50,7 @@ public class Config {
             System.out.println("unsupported spec, you need to setup input and output of the spec before usage!");
             assert false;
         }
+        repairProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(repairLustreFileName)), "UTF-8"));
     }
+
 }

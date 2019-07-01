@@ -4,10 +4,8 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair.HolePlugger;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstHoleVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.HoleRepairState;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.TestCaseManager;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.api.JKindApi;
@@ -62,9 +60,9 @@ public class DiscoverContract {
     public static final void discoverLusterContract(DynamicRegion dynRegion) {
         String fileName;
         fillUserSynNodes();
-        Config.setup();
-        assert (userSynNodes.size() > 0);
         try {
+            Config.setup();
+            assert (userSynNodes.size() > 0);
             if (!called) { //print out the translation once, for very first time we hit linearlization for the method of
                 // interest.
                 Contract contract = new Contract();
