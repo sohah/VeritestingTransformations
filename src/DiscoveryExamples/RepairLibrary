@@ -2,45 +2,17 @@
 --This is the repair library of nodes that could be used in the repair.
 
 
-const depth = 0;
 
-type operation = enum  {PLUS, MINUS, AND, OR};
-
-node gather_1_Wrapper(flag:operation; h1:int; h2:int) returns (val:int);
+node gather_1_Wrapper(e1:int; e2: int; flag:operation; hole1:int; hole2:int) returns (val:int);
 
 let
-	val = gather_1(flag, h1, h2, depth);
-tel;
+	val = gather_1(e1, e2, flag, hole1, hole2);
 
 
-node gather_1(flag:operation; h1:int; h2:int; depth_1:int) returns (val:int);
-
-let
-	val = if(depth = 0) then
-	           if (flag = PLUS)
-	           then h1 + h2
-	           else h1 - h2     -- assuming minus is the second and the only other option
-	       else
-            0;
-tel;
-
-
-node gather_2_Wrapper(flag:operation; h1:bool; h2:bool) returns (val:bool);
+node gather_1(e1:int; e2: int; flag:operation; hole1:int; hole2:int) returns (val:int);
 
 let
-	val = gather_2(flag, h1, h2, depth);
-tel;
-
-
-node gather_2(flag:operation; h1:bool; h2:bool; depth_2:int) returns (val:bool);
-
-let
-	val = if(depth = 0) then
-	           if (flag = AND)
-	           then h1 and h2
-	           else h1 or h2        -- assuming or is the second and the only other option.
-	       else
-            false;
+	val = (e1 * hole1) + (e2 * hole2);
 tel;
 
 
