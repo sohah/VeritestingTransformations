@@ -39,6 +39,8 @@ public class Config {
 
     public static String repairLustreFileName = "RepairLibrary";
 
+    public static int costLimit = 10; // value entered by hand for now
+
     public static void setup() throws IOException {
         if(spec.equals("pad")){
             tFileName = folderName + "FaultyImaginaryPad";

@@ -157,41 +157,11 @@ public class DiscoveryUtil {
         return new Pair(newVarDecl, eq);
     }
 
-    public static boolean isImplementationNode(String nodeId) {
-        return (nodeId.contains(RNODE) || nodeId.contains(WRAPPERNODE));
-    }
-
     public static Node renameMainNode(String synthesis_spec, Node node) {
         return new Node(synthesis_spec, node.inputs, node.outputs, node.locals, node.equations, new ArrayList<>(), node.assertions, node.realizabilityInputs, node.contract, node.ivc);
 
     }
 
-    public static List<String> getFirstPairList(List<Pair<String, String>> pairList) {
-        List firstList = new ArrayList();
-        for (int i = 0; i < pairList.size(); i++) {
-            firstList.add(pairList.get(i).getFirst());
-        }
-
-        return firstList;
-    }
-
-
-    public static List<String> getSecondPairList(List<Pair<String, String>> pairList) {
-        List secondList = new ArrayList();
-        for (int i = 0; i < pairList.size(); i++) {
-            secondList.add(pairList.get(i).getSecond());
-        }
-
-        return secondList;
-    }
-
-    public static List<Expr> createIdExprs(List<String> varNames) {
-        List<Expr> idExprs = new ArrayList<>();
-        for (int i = 0; i < varNames.size(); i++) {
-            idExprs.add(new IdExpr(varNames.get(i)));
-        }
-        return idExprs;
-    }
 
     public static Node findNode(List<Node> nodes, Node node) {
         for (int i = 0; i < nodes.size(); i++) {
@@ -220,7 +190,7 @@ public class DiscoveryUtil {
         }
     }
 
-    public static Expr valueToExpr(Value value, Type type){
+    public static Expr valueToExpr(Value value, Type type) {
         if (value instanceof BooleanValue)
             return new BoolExpr(((BooleanValue) value).value);
         else if (value instanceof IntegerValue)
@@ -243,7 +213,7 @@ public class DiscoveryUtil {
         }
     }
 
-    public static Ast getLastElementInMap(Map<Hole, List<Ast>> map, Object o){
+    public static Ast getLastElementInMap(Map<Hole, List<Ast>> map, Object o) {
         List<Ast> value = map.get(o);
         if (value.size() != 0) // there has been a repair for the hole.
             return value.get(value.size() - 1);
@@ -252,10 +222,48 @@ public class DiscoveryUtil {
     }
 
     /**
-     assigns initial value to a given equation.
+     * assigns initial value to a given equation.
      */
     public static Equation addInitToEq(Equation equation, Expr initialValue) {
         return new Equation(equation.lhs.get(0), new BinaryExpr(initialValue, BinaryOp.ARROW, equation.expr));
     }
+
+    //tries to find the type of an expr inside a node.
+    public static Type findExprType(Expr def, Node node) {
+        if (def instanceof IntExpr)
+            return NamedType.INT;
+        else if (def instanceof BoolExpr)
+            return NamedType.BOOL;
+        else if (def instanceof IdExpr)
+            return lookupExprType(def, node);
+        else {
+            System.out.println("unknown type for expr. Aborting!");
+            assert false;
+            return null;
+        }
+    }
+
+    //looks up the type of a def by first looking into the inputs of the node then by checking the locals of the node.
+    private static Type lookupExprType(Expr def, Node node) {
+        VarDecl exprVarDecl = findInList(node.inputs, def);
+        if (exprVarDecl == null) {
+            exprVarDecl = findInList(node.locals, def);
+            if (exprVarDecl == null) {
+                System.out.println("unable to find the right type for expr. Aborting!");
+                assert false;
+            }
+        }
+        return exprVarDecl.type;
+    }
+
+    //takes an expr and tries to find its correponding type in the declartion list.
+    private static VarDecl findInList(List<VarDecl> inputs, Expr def) {
+        for (int i = 0; i < inputs.size() - 1; i++) {
+            if (inputs.get(i).toString().equals(def.toString()))
+                return inputs.get(i);
+        }
+        return null;
+    }
+
 
 }
