@@ -3,7 +3,6 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repairbuilders;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import jkind.lustre.*;
-
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,11 +28,11 @@ public class FaultyEquation {
         this.def = eq.lhs.get(0);
         this.defType = DiscoveryUtil.findExprType(def, node);
         this.rhs = eq.expr;
-        fillUseTypeMap(useTypeMap);
-        maximumCost = CostFunction.computeMaximumCost(rhs);
+        fillUseTypeMap(); // has the side effect of populating the useTypeMap
+        maximumCost = MaxCostFunction.compute(rhs);
     }
 
-    private void fillUseTypeMap(HashMap<IdExpr, Type> useTypeMap) {
+    private void fillUseTypeMap() {
         List<IdExpr> useList = discoverUse(rhs);
         for (int i = 0; i < useList.size(); i++) {
             IdExpr useExpr = useList.get(i);

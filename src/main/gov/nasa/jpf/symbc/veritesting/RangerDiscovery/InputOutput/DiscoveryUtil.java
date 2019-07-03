@@ -12,9 +12,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.RNODE;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.WRAPPERNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.folderName;
 import static jkind.lustre.UnaryOp.NEGATIVE;
 import static jkind.lustre.UnaryOp.NOT;
@@ -263,6 +262,28 @@ public class DiscoveryUtil {
                 return inputs.get(i);
         }
         return null;
+    }
+
+    /**
+     * computes the permutation of a specific size, where each entry has a corresponding value of 1 or zero.
+     * all possible permutations are added to the permutation list.
+     *
+     * @param size
+     * @return
+     */
+    public static List<List<Character>> computePermutation(int size) {
+        if (size < 1) {
+            System.out.println("cannot compute permutation over an empty list");
+            assert false;
+        }
+
+        List<List<Character>> permutationList = new ArrayList<>();
+        for (int i = 0; i < size - 1; i++) {
+            String permutation = String.format("%3s", Integer.toBinaryString(i)).replace(' ', '0');
+            permutationList.add(permutation.chars().mapToObj(e -> (char) e).collect(Collectors.toList()));
+        }
+
+        return permutationList;
     }
 
 

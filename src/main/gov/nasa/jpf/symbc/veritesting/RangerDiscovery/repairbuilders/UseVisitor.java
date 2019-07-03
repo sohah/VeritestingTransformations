@@ -6,6 +6,10 @@ import jkind.lustre.visitors.ExprMapVisitor;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The invariant here, even though it is not checked, that the expressions are visited and populated in the list in
+ * left most-depth-first order.
+ */
 public class UseVisitor extends ExprMapVisitor {
     List<IdExpr> useList = new ArrayList<>();
 
