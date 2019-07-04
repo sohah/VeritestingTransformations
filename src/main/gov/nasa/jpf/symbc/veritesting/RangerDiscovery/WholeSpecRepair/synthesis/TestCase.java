@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
 import jkind.lustre.values.Value;
 

@@ -1,7 +1,9 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.SubstitutionVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.CandidateRepairExpr;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.FaultyEquation;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
@@ -16,6 +18,7 @@ import java.util.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.CHECKSPECNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.H_discovery;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.faultyEquation;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.renameMainNode;
 
 
@@ -35,6 +38,24 @@ public class SynthesisContract {
 
 
     private NodeRepairKey synNodeKey = new NodeRepairKey();
+
+    public SynthesisContract(Contract contract, Program pgmT, JKindResult counterExResult, NodeRepairKey originalNodeKey, CandidateRepairExpr candidateRepairExpr) {
+        this.contract = contract;
+
+        holes = new ArrayList<Hole>(candidateRepairExpr.getHoleList().keySet());
+
+        Program holeProgram = SubstitutionVisitor.substitute(pgmT, candidateRepairExpr, faultyEquation);
+        List<Node> nodes = createFixedNodePart(holeProgram);
+        synNodeKey = originalNodeKey;
+
+        synNodeKey.setNodesKey("main", NodeStatus.ARTIFICIAL);
+        synNodeKey.setNodesKey(TNODE, NodeStatus.REPAIR);
+
+        Node newMain = createVariableNodePart(counterExResult); //this creates the new main with the right test cases.
+
+        nodes.add(newMain);
+        synthesisProgram = new Program(holeProgram.location, holeProgram.types, holeProgram.constants, holeProgram.functions, nodes, "main");
+    }
 
     public int getMaxTestCaseK() {
         return testCaseManager.getMaxK();

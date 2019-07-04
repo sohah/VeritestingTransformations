@@ -1,9 +1,10 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.counterExample;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.counterExample;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
+import jkind.api.results.JKindResult;
 import jkind.lustre.*;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.WRAPPERNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.writeToFile;
 
 
 /**
@@ -74,7 +76,7 @@ public class CounterExContract {
      * @return
      */
 
-    public Node generateMainNode(Node tNode) {
+    public static Node generateMainNode(Node tNode) {
         List<Expr> wrapperArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
         List<Expr> tNodeArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
         wrapperArgs.remove(wrapperArgs.size() - 1); //last argument is the output.
@@ -106,7 +108,7 @@ public class CounterExContract {
      * @param main
      * @return
      */
-    private List<? extends Node> changeMainToTnode(List<Node> nodes, String main) {
+    private static List<? extends Node> changeMainToTnode(List<Node> nodes, String main) {
         List<Node> newNodes = new ArrayList<>();
         for (int i = 0; i < nodes.size(); i++) {
             if (nodes.get(i).id.equals(main)) {
@@ -123,7 +125,7 @@ public class CounterExContract {
         return null;
     }
 
-    private Node generateTnode(Node node) {
+    private static Node generateTnode(Node node) {
         return new Node(TNODE, node.inputs, node.outputs, node.locals, node.equations, node.properties, node
                 .assertions, node.realizabilityInputs, node.contract, node.ivc);
     }
@@ -142,5 +144,33 @@ public class CounterExContract {
     public Program getCounterExamplePgm() {
         return counterExamplePgm;
     }
+
+
+    public static JKindResult search(String fileName, Program pgmT, Node rNode, Node rWrapper) {
+        List<TypeDef> types = new ArrayList<>();
+        List<Constant> constants = new ArrayList<>();
+        List<Function> functions = new ArrayList<>();
+        List<Node> nodes = new ArrayList<>();
+
+        types.addAll(pgmT.types);
+        constants.addAll(pgmT.constants);
+        functions.addAll(pgmT.functions);
+        nodes.addAll(changeMainToTnode(pgmT.nodes, pgmT.main));
+
+        //generating main node
+        assert (nodes.get(nodes.size() - 1).id.equals(TNODE));
+        Node mainNode = generateMainNode(nodes.get(nodes.size() - 1));
+
+        nodes.add(rNode);
+        nodes.add(rWrapper);
+        nodes.add(mainNode);
+
+        Program counterExamplePgm = new Program(Location.NULL, types, constants, functions, nodes, "main");
+
+        String programStr = ToLutre.lustreFriendlyString(counterExamplePgm.toString());
+        writeToFile(fileName, programStr);
+        return DiscoveryUtil.callJkind(fileName, false, -1);
+    }
+
 
 }

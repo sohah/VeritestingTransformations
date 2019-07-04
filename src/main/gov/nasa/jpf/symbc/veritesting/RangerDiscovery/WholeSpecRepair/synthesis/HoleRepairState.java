@@ -1,8 +1,7 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
 import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
 import jkind.lustre.*;

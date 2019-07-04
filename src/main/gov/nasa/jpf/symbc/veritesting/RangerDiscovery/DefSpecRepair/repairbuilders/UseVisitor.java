@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repairbuilders;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders;
 
 import jkind.lustre.*;
 import jkind.lustre.visitors.ExprMapVisitor;

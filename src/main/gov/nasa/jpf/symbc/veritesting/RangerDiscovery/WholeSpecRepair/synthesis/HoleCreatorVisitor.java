@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;

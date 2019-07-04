@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.FaultyEquation;
 import jkind.lustre.Ast;
 import jkind.lustre.BoolExpr;
 import jkind.lustre.IntExpr;
@@ -35,24 +36,35 @@ public class Config {
 
     public static String methodReturnName = "result";
 
-    public static Program repairProgram;
+    public static Program auxilaryRepairProgram;
 
     public static String repairLustreFileName = "RepairLibrary";
 
     public static int costLimit = 10; // value entered by hand for now
 
+    //this boolean toggles between equation based repair and whole spec repair.
+    public static boolean specLevelRepair = false;
+
+    public static int faultyEquationNumber = 1;
+
+    private static FaultyEquation faultyEquation;
+
     public static void setup() throws IOException {
-        if(spec.equals("pad")){
+        if (spec.equals("pad")) {
             tFileName = folderName + "FaultyImaginaryPad";
             tnodeSpecPropertyName = "T_node~0.p1";
-        } else if(spec.equals("even")){
+        } else if (spec.equals("even")) {
             tFileName = folderName + "FaultyEvenOrigSpec";
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
-        }else{
+        } else {
             System.out.println("unsupported spec, you need to setup input and output of the spec before usage!");
             assert false;
         }
-        repairProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(repairLustreFileName)), "UTF-8"));
+        auxilaryRepairProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(folderName + repairLustreFileName)), "UTF-8"));
+
     }
 
+    public static FaultyEquation getFaultyEquation(Program pgmT) { //assuming that the faulty equation is in the main of the T node.
+        return new FaultyEquation(pgmT, pgmT.getMainNode().equations.get(faultyEquationNumber), pgmT.getMainNode());
+    }
 }

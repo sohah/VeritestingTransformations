@@ -3,13 +3,13 @@
 
 
 
-node gather_1_Wrapper(e1:int; e2: int; flag:operation; hole1:int; hole2:int) returns (val:int);
+node gather_1_Wrapper(e1:int; e2: int; hole1:int; hole2:int) returns (val:int);
 
 let
-	val = gather_1(e1, e2, flag, hole1, hole2);
+	val = gather_1(e1, e2, hole1, hole2);
+tel;
 
-
-node gather_1(e1:int; e2: int; flag:operation; hole1:int; hole2:int) returns (val:int);
+node gather_1(e1:int; e2: int; hole1:int; hole2:int) returns (val:int);
 
 let
 	val = (e1 * hole1) + (e2 * hole2);

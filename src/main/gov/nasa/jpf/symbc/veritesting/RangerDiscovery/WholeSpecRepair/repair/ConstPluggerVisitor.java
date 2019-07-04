@@ -1,21 +1,15 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repair;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.repair;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstantHole;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.HoleRepairState;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.ConstantHole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
 import jkind.lustre.*;
-import jkind.lustre.values.BooleanValue;
-import jkind.lustre.values.IntegerValue;
 import jkind.lustre.values.Value;
 import jkind.lustre.visitors.AstMapVisitor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;

@@ -1,7 +1,6 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.SpecInputOutput;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -18,7 +17,7 @@ import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.SynthesisContract.getHoleExpr;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.SynthesisContract.getHoleExpr;
 
 /**
  * This is used to increment the test cases equations and locals.

@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.repairbuilders;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders;
 
 
 import java.util.PriorityQueue;
@@ -6,8 +6,8 @@ import java.util.PriorityQueue;
 public interface ExprHoleBuilder {
     PriorityQueue<CandidateRepairExpr> candidateQueue = new PriorityQueue<>(10);
 
-    public void buildHoleCandidates();
+    public void createBuilder();
 
-    public void translateRepair();
+    public void build();
 
 }

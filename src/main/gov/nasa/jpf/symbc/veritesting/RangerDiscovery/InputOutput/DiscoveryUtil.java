@@ -1,11 +1,14 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import jkind.api.JKindApi;
+import jkind.api.results.JKindResult;
 import jkind.lustre.*;
 import jkind.lustre.values.BooleanValue;
 import jkind.lustre.values.IntegerValue;
 import jkind.lustre.values.Value;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.io.*;
@@ -228,13 +231,13 @@ public class DiscoveryUtil {
     }
 
     //tries to find the type of an expr inside a node.
-    public static Type findExprType(Expr def, Node node) {
+    public static Type findExprType(Expr def, Node node, Program pgm) {
         if (def instanceof IntExpr)
             return NamedType.INT;
         else if (def instanceof BoolExpr)
             return NamedType.BOOL;
         else if (def instanceof IdExpr)
-            return lookupExprType(def, node);
+            return lookupExprType(def, node, pgm);
         else {
             System.out.println("unknown type for expr. Aborting!");
             assert false;
@@ -243,10 +246,12 @@ public class DiscoveryUtil {
     }
 
     //looks up the type of a def by first looking into the inputs of the node then by checking the locals of the node.
-    private static Type lookupExprType(Expr def, Node node) {
+    private static Type lookupExprType(Expr def, Node node, Program pgm) {
         VarDecl exprVarDecl = findInList(node.inputs, def);
         if (exprVarDecl == null) {
             exprVarDecl = findInList(node.locals, def);
+            if (exprVarDecl == null)
+                exprVarDecl = findConstInList(pgm.constants, def);
             if (exprVarDecl == null) {
                 System.out.println("unable to find the right type for expr. Aborting!");
                 assert false;
@@ -257,9 +262,24 @@ public class DiscoveryUtil {
 
     //takes an expr and tries to find its correponding type in the declartion list.
     private static VarDecl findInList(List<VarDecl> inputs, Expr def) {
-        for (int i = 0; i < inputs.size() - 1; i++) {
-            if (inputs.get(i).toString().equals(def.toString()))
+        for (int i = 0; i < inputs.size(); i++) {
+            if (inputs.get(i).id.equals(def.toString()))
                 return inputs.get(i);
+        }
+        return null;
+    }
+
+    //takes an expr and tries to find its correponding type in the declartion list.
+    private static VarDecl findConstInList(List<Constant> inputs, Expr def) {
+        for (int i = 0; i < inputs.size(); i++) {
+            if (inputs.get(i).id.equals(def.toString())) {
+                if (inputs.get(i).type != null)
+                    return new VarDecl(inputs.get(i).id, inputs.get(i).type);
+                else if (inputs.get(i).expr instanceof IntExpr)
+                    return new VarDecl(inputs.get(i).id, NamedType.INT);
+                else if (inputs.get(i).expr instanceof BoolExpr)
+                    return new VarDecl(inputs.get(i).id, NamedType.BOOL);
+            }
         }
         return null;
     }
@@ -278,12 +298,46 @@ public class DiscoveryUtil {
         }
 
         List<List<Character>> permutationList = new ArrayList<>();
-        for (int i = 0; i < size - 1; i++) {
-            String permutation = String.format("%3s", Integer.toBinaryString(i)).replace(' ', '0');
+        for (int i = 0; i < Math.pow(2, size); i++) {
+            String permutation = String.format("%" + size + "s", Integer.toBinaryString(i)).replace(' ', '0');
             permutationList.add(permutation.chars().mapToObj(e -> (char) e).collect(Collectors.toList()));
         }
 
         return permutationList;
+    }
+
+    public static JKindResult callJkind(String fileName, boolean kInductionOn, int maxK) {
+
+        File file1 = new File(folderName + "/" + fileName);
+
+        return runJKind(file1, kInductionOn, maxK);
+    }
+
+    private static JKindResult runJKind(File file, boolean kInductionOn, int maxK) {
+
+/*
+        String[] jkindArgs = new String[5];
+
+        jkindArgs[0] = "-jkind";
+        jkindArgs[1] = folderName + contractMethodName + ".lus";
+        jkindArgs[2] = "-solver";
+        jkindArgs[3] = "z3";
+        jkindArgs[4] = "-scratch";
+        Main.main(jkindArgs);
+*/
+
+        JKindApi api = new JKindApi();
+        JKindResult result = new JKindResult("");
+        if (!kInductionOn)
+            api.disableKInduction();
+
+        if (maxK != -1) //if not set
+            api.setN(maxK);
+
+        api.disableSlicing();
+
+        api.execute(file, result, new NullProgressMonitor());
+        return result;
     }
 
 

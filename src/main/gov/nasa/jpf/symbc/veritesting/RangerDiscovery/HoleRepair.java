@@ -1,7 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.ConstantHole;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis.Hole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.ConstantHole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.lustre.Ast;
 import jkind.lustre.values.Value;

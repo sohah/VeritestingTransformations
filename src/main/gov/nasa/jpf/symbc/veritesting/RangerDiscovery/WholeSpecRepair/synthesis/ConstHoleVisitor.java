@@ -1,4 +1,4 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.synthesis;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
@@ -19,7 +19,7 @@ import static jkind.util.Util.getNodeTable;
 /**
  * This is the visitor that creates holes for all contants in the nodes. It starts by the main and if it found a reference to another node, then it does that and comes back. If a node that have a holes defined in it and was called by some another node, then in the signature of the call and also in the declartion of the parameters of the outside node, needs to include those holes which are defined in the inner node.
  */
-public class BinaryHoleCreatorVisitor extends AstMapVisitor {
+public class ConstHoleVisitor extends AstMapVisitor {
 
     //accumulates all the varDeclarations for holes that are defined while visiting a specific node, though an instance of this class.
     private List<VarDecl> holeVarDecl = new ArrayList<>();
@@ -46,12 +46,9 @@ public class BinaryHoleCreatorVisitor extends AstMapVisitor {
         return holeToConstantMap.keySet();
     }
 
-    public static HashMap<Hole, Pair<Ast, Value>> getHoleToConstant() {
-        return holeToConstantMap;
-    }
 
     public void setNodeTable(Map<String, Node> nodeTable) {
-        BinaryHoleCreatorVisitor.nodeTable = nodeTable;
+        ConstHoleVisitor.nodeTable = nodeTable;
     }
 
 
@@ -92,7 +89,7 @@ public class BinaryHoleCreatorVisitor extends AstMapVisitor {
 
         Node nodeDefinition = nodeTable.get(e.node);
         if (nodeKey.getStatus(nodeDefinition.id) == NodeStatus.REPAIR) {
-            Node holeNode = BinaryHoleCreatorVisitor.execute(nodeDefinition, this.nodeKey);
+            Node holeNode = ConstHoleVisitor.execute(nodeDefinition, this.nodeKey);
             List<Expr> arguments = visitExprs(e.args);
             List<VarDecl> callHoles = nodeHoleVarDecl.get(holeNode.id);
 
@@ -109,7 +106,7 @@ public class BinaryHoleCreatorVisitor extends AstMapVisitor {
 
             return new NodeCallExpr(e.location, e.node, arguments);
         } else {
-            BinaryHoleCreatorVisitor.execute(nodeDefinition, this.nodeKey);
+            ConstHoleVisitor.execute(nodeDefinition, this.nodeKey);
             return new NodeCallExpr(e.location, e.node, visitExprs(e.args));
         }
     }
@@ -165,7 +162,7 @@ public class BinaryHoleCreatorVisitor extends AstMapVisitor {
     public static Program executeMain(Program program, NodeRepairKey originalNodeKey) {
         Map<String, Node> nodeTable = getNodeTable(program.nodes);
 
-        BinaryHoleCreatorVisitor constHoleVisitor = new BinaryHoleCreatorVisitor();
+        ConstHoleVisitor constHoleVisitor = new ConstHoleVisitor();
         constHoleVisitor.nodeKey = originalNodeKey;
 
         constHoleVisitor.setNodeTable(nodeTable);
@@ -192,7 +189,7 @@ public class BinaryHoleCreatorVisitor extends AstMapVisitor {
      */
     public static Node execute(Node node, NodeRepairKey originalNodeKey) {
 
-        BinaryHoleCreatorVisitor constHoleVisitor = new BinaryHoleCreatorVisitor();
+        ConstHoleVisitor constHoleVisitor = new ConstHoleVisitor();
         constHoleVisitor.nodeKey = originalNodeKey;
 
         if (DiscoverContract.userSynNodes.contains(node.id)) {
