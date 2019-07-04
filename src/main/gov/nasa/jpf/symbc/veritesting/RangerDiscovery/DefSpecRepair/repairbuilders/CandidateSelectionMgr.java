@@ -9,6 +9,7 @@ public class CandidateSelectionMgr {
         populateTheQueue();
     }
 
+    //we can have many builders, constant builders, idExpr builders, pre builders, linear combination builders.
     private void populateTheQueue(){
         ConstantHoleBuilder constantHoleBuilder = new ConstantHoleBuilder();
     }

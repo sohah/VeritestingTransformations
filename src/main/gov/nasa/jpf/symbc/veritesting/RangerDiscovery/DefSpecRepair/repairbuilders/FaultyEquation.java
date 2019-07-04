@@ -4,8 +4,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuild
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import jkind.lustre.*;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * contains the definition of some term for which the user/tool wants to repair with respect to some implementation.
@@ -17,7 +16,10 @@ public class FaultyEquation {
     Expr def;
     Type defType;
     Expr rhs;
-    HashMap<IdExpr, Type> useTypeMap = new HashMap<>();
+
+    private LinkedHashMap<IdExpr, Type> useTypeMap = new LinkedHashMap<>();
+    List<IdExpr> nonUniqueUseList = new ArrayList<>();
+
     int maximumCost;
 
     public FaultyEquation(Program pgm, Equation eq, Node node) {
@@ -36,18 +38,33 @@ public class FaultyEquation {
     }
 
     private void fillUseTypeMap() {
-        List<IdExpr> useList = discoverUse(rhs);
-        for (int i = 0; i < useList.size(); i++) {
-            IdExpr useExpr = useList.get(i);
-            this.useTypeMap.put(useExpr, DiscoveryUtil.findExprType(useExpr, node, pgm));
+        nonUniqueUseList = discoverUse(rhs);
+        for (int i = 0; i < nonUniqueUseList.size(); i++) {
+            IdExpr useExpr = nonUniqueUseList.get(i);
+            if (isInUseMap(useExpr) == -1) //filtering already entered keys.
+                this.useTypeMap.put(useExpr, DiscoveryUtil.findExprType(useExpr, node, pgm));
         }
     }
 
-    public HashMap<IdExpr, Type> getUseTypeMap() {
-        return useTypeMap;
+    private List<IdExpr> discoverUse(Expr rhs) {
+        UseVisitor useVisitor = new UseVisitor();
+        rhs.accept(useVisitor);
+        return useVisitor.getUseList();
     }
 
-    private List<IdExpr> discoverUse(Expr rhs) {
-        return UseVisitor.execute(rhs);
+    // since IdExpr does not define equals or hashcode, we can't keep them in the map and relay on the default way of java of fetching them. That is why this datastructure should not be accessable but operation on it can be accessable.
+    public int isInUseMap(IdExpr idExpr) {
+        int i = 0;
+        for (Map.Entry e : useTypeMap.entrySet()) {
+            if (e.getKey().toString().equals(idExpr.toString()))
+                return i;
+            ++i;
+        }
+        return -1; // indicating not found.
     }
+
+    public int getNonUniqueUseListSize(){
+        return nonUniqueUseList.size();
+    }
+
 }

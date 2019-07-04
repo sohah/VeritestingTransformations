@@ -6,7 +6,7 @@ import java.util.PriorityQueue;
 public interface ExprHoleBuilder {
     PriorityQueue<CandidateRepairExpr> candidateQueue = new PriorityQueue<>(10);
 
-    public void createBuilder();
+    public void computeCost();
 
     public void build();
 
