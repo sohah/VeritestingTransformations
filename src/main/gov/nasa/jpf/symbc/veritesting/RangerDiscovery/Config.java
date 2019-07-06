@@ -21,7 +21,6 @@ public class Config {
     public static String WRAPPERNODE = "R_wrapper";
     public static String CHECKSPECNODE = "Check_spec";
     public static String H_discovery = "H_discovery";
-    public static int loopCount = 0;
     public static boolean repairInitialValues = true;
     public static String specPropertyName = "ok";
     public static String tnodeSpecPropertyName;
@@ -51,7 +50,7 @@ public class Config {
 
     public static void setup() throws IOException {
         if (spec.equals("pad")) {
-            tFileName = folderName + "FaultyImaginaryPad";
+            tFileName = folderName + "FaultyDefImaginaryPad";
             tnodeSpecPropertyName = "T_node~0.p1";
         } else if (spec.equals("even")) {
             tFileName = folderName + "FaultyEvenOrigSpec";

@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders;
 
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.ConstantHole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
@@ -10,14 +11,16 @@ import jkind.lustre.values.Value;
 
 import java.util.*;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairInitialValues;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.faultyEquation;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.IdExprToVarDecl;
 
 /**
  * This class permutes all possible permutation of holes for constants and populates the queue depending on these values.
  * it extends UseVisitor to gaurantee the same traversal and use that to find the current permutation value for that index.
  */
-public class ConstantHoleBuilder extends UseVisitor implements ExprHoleBuilder {
+public class DefConstantHoleBuilder extends UseVisitor implements ExprHoleBuilder {
 
 
     private final List<Character> currentPermutation;
@@ -28,9 +31,30 @@ public class ConstantHoleBuilder extends UseVisitor implements ExprHoleBuilder {
     // accumulates all the holes and the old constant value that they are replacing.
     private static HashMap<Hole, Pair<Ast, Value>> holeToConstantMap = new HashMap<>();
 
-    public ConstantHoleBuilder(List<Character> currentPermutation) {
+    public DefConstantHoleBuilder(List<Character> currentPermutation) {
         super();
         this.currentPermutation = currentPermutation;
+    }
+
+    @Override
+    public Expr visit(BinaryExpr e) {
+        Expr left;
+        Expr right;
+
+        if (!repairInitialValues && e.op == BinaryOp.ARROW) { //do not repair initial values if the repair of initial values is not set.
+            left = e.left;
+        } else {
+            left = e.left.accept(this);
+        }
+        if (e.op == BinaryOp.MODULUS) { //do not repair modulus number, lustre error if we do that.
+            right = e.right;
+        } else
+            right = e.right.accept(this);
+
+        if (e.left == left && e.right == right) {
+            return e;
+        }
+        return new BinaryExpr(e.location, left, e.op, right);
     }
 
     @Override
@@ -56,8 +80,8 @@ public class ConstantHoleBuilder extends UseVisitor implements ExprHoleBuilder {
         ConstantHole newHole = new ConstantHole("");
         holeToConstantMap.put(newHole, new Pair(e, null));
         VarDecl newVarDecl = IdExprToVarDecl(newHole, type);
-        /*if (Config.loopCount == 0) //initial run, then setup the holes.
-            DiscoverContract.holeRepairState.createNewHole(newHole, e, type);*/
+        if (loopCount == 0) //initial run, then setup the holes.
+            DiscoverContract.holeRepairState.createNewHole(newHole, e, type);
         this.holeVarDecl.put(newHole, newVarDecl);
         return newHole;
     }
@@ -83,8 +107,8 @@ public class ConstantHoleBuilder extends UseVisitor implements ExprHoleBuilder {
         for (int i = 1; i < permutation.size(); i++) {//enqueue one expression for each permutation with the right cost
             ConstantHole.resetCount(); //resets the numbering of holes.
             List<Character> currentPermutation = permutation.get(i);
-            ConstantHoleBuilder constantHoleBuilder = new ConstantHoleBuilder(currentPermutation);
-            CandidateRepairExpr candidateExpr = constantHoleBuilder.build();
+            DefConstantHoleBuilder defConstantHoleBuilder = new DefConstantHoleBuilder(currentPermutation);
+            CandidateRepairExpr candidateExpr = defConstantHoleBuilder.build();
             candidateQueue.add(candidateExpr);
         }
         return candidateQueue;

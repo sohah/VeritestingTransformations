@@ -1,6 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
@@ -12,14 +11,16 @@ import jkind.lustre.visitors.AstMapVisitor;
 import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairInitialValues;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.IdExprToVarDecl;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.varDeclToIdExpr;
 import static jkind.util.Util.getNodeTable;
 
 /**
- * This is the visitor that creates holes for all contants in the nodes. It starts by the main and if it found a reference to another node, then it does that and comes back. If a node that have a holes defined in it and was called by some another node, then in the signature of the call and also in the declartion of the parameters of the outside node, needs to include those holes which are defined in the inner node.
+ * This is the visitor that creates holes for all contants in the nodes.
+ * This is different than It starts by the main and if it found a reference to another node, then it does that and comes back. If a node that have a holes defined in it and was called by some another node, then in the signature of the call and also in the declartion of the parameters of the outside node, needs to include those holes which are defined in the inner node.
  */
-public class HoleCreatorVisitor extends AstMapVisitor {
+public class SpecConstHoleVisitor extends AstMapVisitor {
 
     //accumulates all the varDeclarations for holes that are defined while visiting a specific node, though an instance of this class.
     private List<VarDecl> holeVarDecl = new ArrayList<>();
@@ -39,19 +40,16 @@ public class HoleCreatorVisitor extends AstMapVisitor {
     private static Map<String, List<VarDecl>> nodeHoleVarDecl = new HashMap<>();
 
     // accumulates all the holes and the old constant value that they are replacing.
-    private static HashMap<Hole, Pair<Ast, Value>> holeToRepairMap = new HashMap<>();
+    private static HashMap<Hole, Pair<Ast, Value>> holeToConstantMap = new HashMap<>();
     private NodeRepairKey nodeKey;
 
     public static Set<Hole> getHoles() {
-        return holeToRepairMap.keySet();
+        return holeToConstantMap.keySet();
     }
 
-    public static HashMap<Hole, Pair<Ast, Value>> getHoleToConstant() {
-        return holeToRepairMap;
-    }
 
     public void setNodeTable(Map<String, Node> nodeTable) {
-        HoleCreatorVisitor.nodeTable = nodeTable;
+        SpecConstHoleVisitor.nodeTable = nodeTable;
     }
 
 
@@ -87,34 +85,33 @@ public class HoleCreatorVisitor extends AstMapVisitor {
         return createAndPopulateHole(e, NamedType.INT);
     }
 
-    //@Override
-    /*public Expr visit(NodeCallExpr e) {
+    @Override
+    public Expr visit(NodeCallExpr e) {
 
         Node nodeDefinition = nodeTable.get(e.node);
         if (nodeKey.getStatus(nodeDefinition.id) == NodeStatus.REPAIR) {
-            Node holeNode = HoleCreatorVisitor.execute(nodeDefinition, this.nodeKey, new HoleCreatorVisitor());
+            Node holeNode = SpecConstHoleVisitor.execute(nodeDefinition, this.nodeKey);
             List<Expr> arguments = visitExprs(e.args);
             List<VarDecl> callHoles = nodeHoleVarDecl.get(holeNode.id);
 
             arguments.addAll(varDeclToIdExpr(callHoles));
 
 
-            *//**
+            /**
              * sort of a hack here, but should work. this is handling the case were the called node has already been called and therefore we have already included its holes in the previous call. Here we are checking that the first hole in the call exist instead of checking all of them.
              * This should only be done if the node is indeed a node we want to repair.
-             *//*
+             */
 
             if (!holeVarDecl.contains(callHoles.get(0)))
                 holeVarDecl.addAll(callHoles);
 
             return new NodeCallExpr(e.location, e.node, arguments);
         } else {
-
-            HoleCreatorVisitor.execute(nodeDefinition, this.nodeKey, new HoleCreatorVisitor());
+            SpecConstHoleVisitor.execute(nodeDefinition, this.nodeKey);
             return new NodeCallExpr(e.location, e.node, visitExprs(e.args));
         }
     }
-*/
+
     @Override
     public Node visit(Node e) {
         List<VarDecl> outputs = e.outputs;
@@ -148,9 +145,9 @@ public class HoleCreatorVisitor extends AstMapVisitor {
 
     private Expr createAndPopulateHole(Expr e, NamedType type) {
         ConstantHole newHole = new ConstantHole("");
-        holeToRepairMap.put(newHole, new Pair(e, null));
+        holeToConstantMap.put(newHole, new Pair(e, null));
         VarDecl newVarDecl = IdExprToVarDecl(newHole, type);
-        if (Config.loopCount == 0) //initial run, then setup the holes.
+        if (loopCount == 0) //initial run, then setup the holes.
             DiscoverContract.holeRepairState.createNewHole(newHole, e, type);
         this.holeVarDecl.add(newVarDecl);
         return newHole;
@@ -163,19 +160,20 @@ public class HoleCreatorVisitor extends AstMapVisitor {
      * @param originalNodeKey
      * @return
      */
-    public static Program executeMain(Program program, NodeRepairKey originalNodeKey, HoleCreatorVisitor holeCreatorVisitor) {
+    public static Program executeMain(Program program, NodeRepairKey originalNodeKey) {
         Map<String, Node> nodeTable = getNodeTable(program.nodes);
 
-        holeCreatorVisitor.nodeKey = originalNodeKey;
+        SpecConstHoleVisitor constHoleVisitor = new SpecConstHoleVisitor();
+        constHoleVisitor.nodeKey = originalNodeKey;
 
-        holeCreatorVisitor.setNodeTable(nodeTable);
+        constHoleVisitor.setNodeTable(nodeTable);
         Node mainNode = program.getMainNode();
-        Ast holeNode = mainNode.accept(holeCreatorVisitor);
+        Ast holeNode = mainNode.accept(constHoleVisitor);
 
         assert (holeNode instanceof Node);
 
         holeTable.put(((Node) holeNode).id, (Node) holeNode);
-        nodeHoleVarDecl.put(((Node) holeNode).id, holeCreatorVisitor.holeVarDecl);
+        nodeHoleVarDecl.put(((Node) holeNode).id, constHoleVisitor.holeVarDecl);
 
         ArrayList<Node> programNodes = new ArrayList<Node>(holeTable.values());
         programNodes.addAll(nonRepairNodes);
@@ -190,26 +188,27 @@ public class HoleCreatorVisitor extends AstMapVisitor {
      * @param node
      * @return
      */
-    public static Node execute(Node node, NodeRepairKey originalNodeKey, HoleCreatorVisitor holeCreatorVisitor) {
+    public static Node execute(Node node, NodeRepairKey originalNodeKey) {
 
-        holeCreatorVisitor.nodeKey = originalNodeKey;
+        SpecConstHoleVisitor constHoleVisitor = new SpecConstHoleVisitor();
+        constHoleVisitor.nodeKey = originalNodeKey;
 
         if (DiscoverContract.userSynNodes.contains(node.id)) {
             if (holeTable.containsKey(node.id)) //if we already changed the node with constant holes then just return that.
                 return holeTable.get(node.id);
 
 
-            Ast holeNode = node.accept(holeCreatorVisitor);
+            Ast holeNode = node.accept(constHoleVisitor);
 
             assert (holeNode instanceof Node);
 
             holeTable.put(((Node) holeNode).id, (Node) holeNode);
-            nodeHoleVarDecl.put(((Node) holeNode).id, holeCreatorVisitor.holeVarDecl);
+            nodeHoleVarDecl.put(((Node) holeNode).id, constHoleVisitor.holeVarDecl);
             return (Node) holeNode;
         } else { //adding the node in its non-repair form because it is not defined by the user to being of interest to repair.
             if (!nonRepairNodes.contains(node))
                 nonRepairNodes.add(node);
-            return (Node) node.accept(holeCreatorVisitor);
+            return (Node) node.accept(constHoleVisitor);
         }
 
     }

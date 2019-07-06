@@ -1,8 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.SubstitutionVisitor;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.CandidateRepairExpr;import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -16,7 +15,6 @@ import java.util.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.CHECKSPECNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.H_discovery;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.faultyEquation;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.renameMainNode;
 
 
@@ -58,7 +56,7 @@ public class SynthesisContract {
         return testCaseManager.getMaxK();
     }
 
-    public SynthesisContract(Contract contract, Program originalProgram, JKindResult counterExResult, NodeRepairKey originalNodeKey) throws IOException {
+    /*public SynthesisContract(Contract contract, Program originalProgram, JKindResult counterExResult, NodeRepairKey originalNodeKey) {
         this.contract = contract;
         Program holeProgram = ConstHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
         holes = new ArrayList<>(ConstHoleVisitor.getHoles());
@@ -74,7 +72,7 @@ public class SynthesisContract {
         nodes.add(newMain);
         synthesisProgram = new Program(holeProgram.location, holeProgram.types, holeProgram.constants, holeProgram.functions, nodes, "main");
     }
-
+*/
     public NodeRepairKey getSynNodeKey() {
         return synNodeKey;
     }

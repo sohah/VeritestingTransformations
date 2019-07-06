@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.SpecInputOutput;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -17,6 +18,7 @@ import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.SynthesisContract.getHoleExpr;
 
 /**
@@ -34,7 +36,7 @@ public class TestCaseManager {
     public List<TestCase> testCases = new ArrayList<>();
 
     Equation propertyEq;
-    private static int testCaseCounter = 0;
+    private int testCaseCounter = 0;
 
     //this is LinkedHashMap in the form of varName -> pair of location and type
     private static LinkedHashMap<String, Pair<String, NamedType>> testCaseInputNameLoc = new LinkedHashMap<>();
@@ -52,7 +54,7 @@ public class TestCaseManager {
     public TestCaseManager(Contract contract, ArrayList<Hole> holes, JKindResult counterExResult) {
         this.contract = contract;
         testCaseInputNameLoc = createNamesofTestInputs();
-        if(!(holes.get(0) instanceof Expr)){
+        if (!(holes.get(0) instanceof Expr)) {
             System.out.print("holes here must be their expression version. Aborting");
             assert false;
         }
@@ -68,7 +70,7 @@ public class TestCaseManager {
             if (pr.getProperty() instanceof InvalidProperty) {
                 InvalidProperty ip = (InvalidProperty) pr.getProperty();
                 Counterexample counterExample = ip.getCounterexample();
-                String fileName = contractMethodName + loopCount + "CEX.lus";
+                String fileName = contractMethodName + DiscoverContract.permutationCount + "_" + loopCount + "CEX.lus";
 
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString());
                 translateTestCase(counterExample);

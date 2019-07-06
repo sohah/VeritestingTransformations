@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.counterExPropertyName;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 
 /**
  * This is the main class that maintains the holes we want to repair. Initially it is populated with the holes and
@@ -40,7 +40,7 @@ public class HoleRepairState {
 
 
     public void createNewHole(Hole hole, Ast initialValue, Type type) {
-        assert Config.loopCount == 0; // creating holes should only happen in the initial step
+        assert loopCount == 0; // creating holes should only happen in the initial step
         holeIntialValueMap.put(hole, initialValue);
         holeTypeMap.put(hole, type);
     }

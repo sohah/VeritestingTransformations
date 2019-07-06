@@ -12,6 +12,7 @@ import jkind.lustre.visitors.AstMapVisitor;
 import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairInitialValues;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.IdExprToVarDecl;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.varDeclToIdExpr;
 import static jkind.util.Util.getNodeTable;
@@ -149,7 +150,7 @@ public class BinaryHoleCreatorVisitor extends AstMapVisitor {
         ConstantHole newHole = new ConstantHole("");
         holeToConstantMap.put(newHole, new Pair(e, null));
         VarDecl newVarDecl = IdExprToVarDecl(newHole, type);
-        if (Config.loopCount == 0) //initial run, then setup the holes.
+        if (loopCount == 0) //initial run, then setup the holes.
             DiscoverContract.holeRepairState.createNewHole(newHole, e, type);
         this.holeVarDecl.add(newVarDecl);
         return newHole;
