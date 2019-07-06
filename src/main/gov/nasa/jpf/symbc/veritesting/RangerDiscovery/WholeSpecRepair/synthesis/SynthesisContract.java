@@ -2,9 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.SubstitutionVisitor;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.CandidateRepairExpr;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.FaultyEquation;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.CandidateRepairExpr;import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -39,12 +37,11 @@ public class SynthesisContract {
 
     private NodeRepairKey synNodeKey = new NodeRepairKey();
 
-    public SynthesisContract(Contract contract, Program pgmT, JKindResult counterExResult, NodeRepairKey originalNodeKey, CandidateRepairExpr candidateRepairExpr) {
+    public SynthesisContract(Contract contract, Program holeProgram, ArrayList<Hole> holes, JKindResult counterExResult, NodeRepairKey originalNodeKey) {
         this.contract = contract;
 
-        holes = new ArrayList<Hole>(candidateRepairExpr.getHoleList().keySet());
+        this.holes =holes;
 
-        Program holeProgram = SubstitutionVisitor.substitute(pgmT, candidateRepairExpr, faultyEquation);
         List<Node> nodes = createFixedNodePart(holeProgram);
         synNodeKey = originalNodeKey;
 
@@ -83,7 +80,7 @@ public class SynthesisContract {
     }
 
     private Node createVariableNodePart(JKindResult counterExResult) {
-        testCaseManager = new TestCaseManager(contract, counterExResult);
+        testCaseManager = new TestCaseManager(contract, holes, counterExResult);
         Node holeMainNode = createSynthesisMain(synthesisSpecNode);
         return holeMainNode;
     }
@@ -232,8 +229,8 @@ public class SynthesisContract {
     private List<Expr> freezeHolesAssertion() {
         List<Expr> freezeAssertions = new ArrayList<>();
 
-        for (int i = 0; i < ConstantHole.getCurrentHolePrefix(); i++) {
-            String holeName = ConstantHole.recreateHoleName(i);
+        for (int i = 0; i < holes.size(); i++) {
+            String holeName = holes.get(i).toString();
             BinaryExpr currentEqPreExr = new BinaryExpr(new IdExpr(holeName), BinaryOp.EQUAL, new UnaryExpr(UnaryOp.PRE, new IdExpr(holeName)));
             BinaryExpr assertion = new BinaryExpr(new BoolExpr(true), BinaryOp.ARROW, currentEqPreExr);
             freezeAssertions.add(assertion);

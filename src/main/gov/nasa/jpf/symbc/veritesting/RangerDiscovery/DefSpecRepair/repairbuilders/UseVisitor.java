@@ -12,6 +12,7 @@ import java.util.List;
  */
 public class UseVisitor extends ExprMapVisitor {
     List<IdExpr> useList = new ArrayList<>();
+    List<Expr> contantUseList = new ArrayList<>();
 
     @Override
     public Expr visit(IdExpr e) { //adding the list of uses even if it is repeated.
@@ -19,7 +20,24 @@ public class UseVisitor extends ExprMapVisitor {
         return e;
     }
 
+    @Override
+    public Expr visit(IntExpr e) { //adding the list of uses even if it is repeated.
+        contantUseList.add(e);
+        return e;
+    }
+
+    @Override
+    public Expr visit(BoolExpr e) { //adding the list of uses even if it is repeated.
+        contantUseList.add(e);
+        return e;
+    }
+
+
     public List<IdExpr> getUseList() {
         return useList;
+    }
+
+    public List<Expr> getConstantList() {
+        return contantUseList;
     }
 }

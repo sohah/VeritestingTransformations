@@ -49,10 +49,15 @@ public class TestCaseManager {
     public static int maxK;
 
 
-    public TestCaseManager(Contract contract, JKindResult counterExResult) {
+    public TestCaseManager(Contract contract, ArrayList<Hole> holes, JKindResult counterExResult) {
         this.contract = contract;
         testCaseInputNameLoc = createNamesofTestInputs();
-        holeExprs = getHoleExpr();
+        if(!(holes.get(0) instanceof Expr)){
+            System.out.print("holes here must be their expression version. Aborting");
+            assert false;
+        }
+
+        holeExprs = (ArrayList<Expr>) (ArrayList<?>) (holes);
         collectCounterExample(counterExResult);
     }
 
@@ -283,9 +288,9 @@ public class TestCaseManager {
         LinkedHashMap<String, Pair<String, NamedType>> testCaseInputOutVars = collectTestCaseInputs(mainInOut, WRAPPERNODE);
 
 */
-    //the output is exactly the output of the wrapper which has the same type as the method output of the R node
+        //the output is exactly the output of the wrapper which has the same type as the method output of the R node
         testCaseInputVars.put("out", new Pair(WRAPPERNODE, this.contract.rInOutManager.getMethodOutType()));
-  //      testCaseInputVars.putAll(testCaseInputOutVars);
+        //      testCaseInputVars.putAll(testCaseInputOutVars);
 
         return testCaseInputVars;
     }

@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.SubstitutionVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.CandidateRepairExpr;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.CandidateSelectionMgr;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.FaultyEquation;
@@ -8,18 +9,16 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.repair.HolePlugger;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.HoleRepairState;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.SynthesisContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
-import jkind.api.JKindApi;
 import jkind.api.results.JKindResult;
 import jkind.lustre.Node;
 import jkind.lustre.Program;
 import jkind.lustre.parsing.LustreParseUtil;
-import org.eclipse.core.runtime.NullProgressMonitor;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -119,11 +118,14 @@ public class DiscoverContract {
                     while (!candidateRepairFailed) {
                         if (synthesis == null) {
                             //try {
-                            synthesis = new SynthesisContract(contract, pgmT, counterExResult, originalNodeKey, candidateExpr);
+                            //separating the creation of the hole program from the Synthesis of the contract.
+                            Program holeProgram = SubstitutionVisitor.substitute(pgmT, candidateExpr, faultyEquation);
+
+                            synthesis = new SynthesisContract(contract, holeProgram, new ArrayList(candidateExpr.getHoleMap().keySet()), counterExResult, originalNodeKey);
                             //} catch (IOException e) {
                             //System.out.println("problem occurred while creating a synthesis contract! aborting!\n" + e.getMessage());
-                            DiscoverContract.repaired = false;
-                            assert false;
+        //                    DiscoverContract.repaired = false;
+        //                    assert false;
                             //}
                         } else
                             synthesis.collectCounterExample(counterExResult);
@@ -143,8 +145,8 @@ public class DiscoverContract {
                             case VALID:
                                 System.out.println("^-^ Ranger Discovery Result ^-^");
                                 System.out.println("Cannot find a synthesis");
-                                DiscoverContract.repaired = false;
-                                return;
+                                candidateRepairFailed = true;
+                                break;
                             case INVALID:
                            /*     System.out.println("repairing holes for iteration#:" + loopCount);
                                 holeRepairState.plugInHoles(synthesisResult);

@@ -6,19 +6,26 @@ import jkind.lustre.VarDecl;
 import jkind.results.Counterexample;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The invariant here is that at least one Hole expression exists as a leaf somewhere in expr.
  */
 public class CandidateRepairExpr implements Comparable<CandidateRepairExpr> {
-    Expr expr;
-    int cost;
-    Map<Hole, VarDecl> holeVarDeclMap;
+    public final Expr expr;
+    public final int cost;
 
+    // this is unordered should not be used for order related holes, but could be used as a lookup for the varDecl of the hole. Since Hole is implementing hashCode this data structure contains non-repeated elements.
+    Map<Hole, VarDecl> holeVarDeclLookup;
+
+    /*// contains the set of holes inside the expression, ordering here is not important because it the holes is already created.
+    Set<Hole> holeSet;
+*/
     public CandidateRepairExpr(Expr expr, int cost, Map<Hole, VarDecl> holeVarDeclMap) {
         this.expr = expr;
         this.cost = cost;
-        this.holeVarDeclMap = holeVarDeclMap;
+        this.holeVarDeclLookup = holeVarDeclMap;
+  //      this.holeSet = holeSet;
     }
 
     @Override
@@ -62,7 +69,11 @@ public class CandidateRepairExpr implements Comparable<CandidateRepairExpr> {
         return null;
     }
 
-    public Map<Hole, VarDecl> getHoleList() {
-        return holeVarDeclMap;
+    public Map<Hole, VarDecl> getHoleMap() {
+        return holeVarDeclLookup;
     }
+
+    /*public Set<Hole> getHoleSet() {
+        return holeSet;
+    }*/
 }

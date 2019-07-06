@@ -22,6 +22,9 @@ public class ConstantHole extends IdExpr implements Hole , Cloneable{
         prefix++;
     }
 
+    public static void resetCount(){
+        prefix = 0;
+    }
     public static int getCurrentHolePrefix(){
         return prefix;
     }
