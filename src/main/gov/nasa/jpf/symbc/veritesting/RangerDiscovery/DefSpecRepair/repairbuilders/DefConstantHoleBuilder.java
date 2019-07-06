@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.ConstantHole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.HoleRepairState;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.lustre.*;
 import jkind.lustre.values.Value;
@@ -24,6 +25,8 @@ public class DefConstantHoleBuilder extends UseVisitor implements ExprHoleBuilde
 
 
     private final List<Character> currentPermutation;
+
+    public HoleRepairState holeRepairState = new HoleRepairState();
 
     //accumulates all the varDeclarations for holes that are defined while visiting a specific node, though an instance of this class.
     private Map<Hole, VarDecl> holeVarDecl = new HashMap<>();
@@ -81,7 +84,7 @@ public class DefConstantHoleBuilder extends UseVisitor implements ExprHoleBuilde
         holeToConstantMap.put(newHole, new Pair(e, null));
         VarDecl newVarDecl = IdExprToVarDecl(newHole, type);
         if (loopCount == 0) //initial run, then setup the holes.
-            DiscoverContract.holeRepairState.createNewHole(newHole, e, type);
+            holeRepairState.createNewHole(newHole, e, type);
         this.holeVarDecl.put(newHole, newVarDecl);
         return newHole;
     }
@@ -97,7 +100,7 @@ public class DefConstantHoleBuilder extends UseVisitor implements ExprHoleBuilde
     public CandidateRepairExpr build() {
         Expr candidateRepairExpr = faultyEquation.rhs.accept(this);
         int cost = computeCost();
-        return new CandidateRepairExpr(candidateRepairExpr, cost, holeVarDecl);
+        return new CandidateRepairExpr(candidateRepairExpr, cost, holeVarDecl, holeRepairState);
     }
 
     public static PriorityQueue<CandidateRepairExpr> execute() {

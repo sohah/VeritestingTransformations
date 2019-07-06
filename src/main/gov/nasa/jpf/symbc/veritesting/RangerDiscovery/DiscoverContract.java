@@ -88,7 +88,7 @@ public class DiscoverContract {
 
     private static void repairDef(DynamicRegion dynRegion) throws IOException {
         String fileName;
-
+        CandidateSelectionMgr candidateSelectionMgr = null;
 
         //print out the translation once, for very first time we hit linearlization for the method of
         // interest.
@@ -116,13 +116,16 @@ public class DiscoverContract {
                     DiscoverContract.repaired = true;
                     return;
                 case INVALID: //synthesis is needed
-                    faultyEquation = Config.getFaultyEquation(pgmT);
-                    assert (faultyEquation != null);
-                    holeRepairState = new HoleRepairState();
-                    CandidateSelectionMgr candidateSelectionMgr = new CandidateSelectionMgr();
+                    if (permutationCount == 0) { //initialization of faulty equation and permutation options
+                        faultyEquation = Config.getFaultyEquation(pgmT);
+                        assert (faultyEquation != null);
+                        candidateSelectionMgr = new CandidateSelectionMgr();
+                    }
+                    assert(candidateSelectionMgr != null);
                     while (candidateSelectionMgr.queueSize() > 0) {
                         loopCount = 0; //resetting loopCount.
                         CandidateRepairExpr candidateExpr = candidateSelectionMgr.poll();
+                        holeRepairState = candidateExpr.holeRepairState;
                         HolePlugger holePlugger = new HolePlugger();
                         boolean candidateRepairFailed = false;
                         SynthesisContract synthesis = null;

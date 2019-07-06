@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.HoleRepairState;
 import jkind.lustre.Expr;
 import jkind.lustre.VarDecl;
 import jkind.results.Counterexample;
@@ -18,14 +19,16 @@ public class CandidateRepairExpr implements Comparable<CandidateRepairExpr> {
     // this is unordered should not be used for order related holes, but could be used as a lookup for the varDecl of the hole. Since Hole is implementing hashCode this data structure contains non-repeated elements.
     Map<Hole, VarDecl> holeVarDeclLookup;
 
+    public final HoleRepairState holeRepairState;
+
     /*// contains the set of holes inside the expression, ordering here is not important because it the holes is already created.
     Set<Hole> holeSet;
 */
-    public CandidateRepairExpr(Expr expr, int cost, Map<Hole, VarDecl> holeVarDeclMap) {
+    public CandidateRepairExpr(Expr expr, int cost, Map<Hole, VarDecl> holeVarDeclMap, HoleRepairState holeRepairState) {
         this.expr = expr;
         this.cost = cost;
         this.holeVarDeclLookup = holeVarDeclMap;
-  //      this.holeSet = holeSet;
+        this.holeRepairState = holeRepairState;
     }
 
     @Override
