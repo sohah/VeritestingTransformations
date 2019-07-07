@@ -93,7 +93,8 @@ public class DefConstantHoleBuilder extends UseVisitor implements ExprHoleBuilde
     public int computeCost() { // cost is computed as every change of delete and insert.
         String currentPermutationStr = currentPermutation.stream().map(e -> e.toString()).reduce((acc, e) -> acc + e).get();
         int numberOfOnes = currentPermutationStr.length() - currentPermutationStr.replaceAll("1", "").length();
-        return Integer.bitCount(numberOfOnes);
+        //return Integer.bitCount(numberOfOnes);
+        return numberOfOnes;
     }
 
     @Override

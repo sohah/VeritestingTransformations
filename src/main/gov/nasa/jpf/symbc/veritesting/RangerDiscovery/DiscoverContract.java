@@ -88,7 +88,6 @@ public class DiscoverContract {
 
     private static void repairDef(DynamicRegion dynRegion) throws IOException {
         String fileName;
-        CandidateSelectionMgr candidateSelectionMgr = null;
 
         //print out the translation once, for very first time we hit linearlization for the method of
         // interest.
@@ -96,7 +95,6 @@ public class DiscoverContract {
         Program pgmT;
 
         pgmT = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8"));
-        NodeRepairKey originalNodeKey = defineNodeKeys(pgmT);
 
 
         do {
@@ -116,76 +114,112 @@ public class DiscoverContract {
                     DiscoverContract.repaired = true;
                     return;
                 case INVALID: //synthesis is needed
-                    if (permutationCount == 0) { //initialization of faulty equation and permutation options
-                        faultyEquation = Config.getFaultyEquation(pgmT);
-                        assert (faultyEquation != null);
-                        candidateSelectionMgr = new CandidateSelectionMgr();
-                    }
-                    assert(candidateSelectionMgr != null);
-                    while (candidateSelectionMgr.queueSize() > 0) {
-                        loopCount = 0; //resetting loopCount.
-                        CandidateRepairExpr candidateExpr = candidateSelectionMgr.poll();
-                        holeRepairState = candidateExpr.holeRepairState;
-                        HolePlugger holePlugger = new HolePlugger();
-                        boolean candidateRepairFailed = false;
-                        SynthesisContract synthesis = null;
-
-                        while (!candidateRepairFailed) {
-                            if (synthesis == null) {
-                                //try {
-                                //separating the creation of the hole program from the Synthesis of the contract.
-                                Program holeProgram = SubstitutionVisitor.substitute(pgmT, candidateExpr, faultyEquation);
-
-                                synthesis = new SynthesisContract(contract, holeProgram, new ArrayList(candidateExpr.getHoleMap().keySet()), counterExResult, originalNodeKey);
-                                //} catch (IOException e) {
-                                //System.out.println("problem occurred while creating a synthesis contract! aborting!\n" + e.getMessage());
-                                //                    DiscoverContract.repaired = false;
-                                //                    assert false;
-                                //}
-                            } else
-                                synthesis.collectCounterExample(counterExResult);
-
-                            if (loopCount == 0) //first loop, then setup initial repair values
-                                holeRepairState.createEmptyHoleRepairValues();
-
-                            String synthesisContractStr = synthesis.toString();
-                            fileName = contractMethodName + permutationCount + "_" + loopCount + "hole.lus";
-                            writeToFile(fileName, synthesisContractStr);
-
-                            JKindResult synthesisResult = callJkind(fileName, false, synthesis
-                                    .getMaxTestCaseK() - 2);
-                            switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
-                                case VALID:
-                                    System.out.println("^-^ Ranger Discovery Result ^-^");
-                                    System.out.println("Cannot find a synthesis. Trying a different permutation.");
-                                    candidateRepairFailed = true;
-                                    break;
-                                case INVALID:
-                                    System.out.println("repairing holes for iteration#:" + loopCount);
-                                    holeRepairState.plugInHoles(synthesisResult);
-                                    holePlugger.plugInHoles(synthesisResult, counterExContract
-                                            .getCounterExamplePgm
-                                                    (), synthesis.getSynthesisProgram(), synthesis.getSynNodeKey());
-                                    counterExContractStr = holePlugger.toString();
-                                    DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
-                                    break;
-                                default:
-                                    System.out.println("unexpected status for the jkind synthesis query.");
-                                    DiscoverContract.repaired = false;
-                                    assert false;
-                                    break;
-                            }
-                            ++loopCount;
-                            ++permutationCount;
-                        }
-                    }
-                    System.out.print("No more candidate hole expression to use. No repair! Aborting");
+                    if (tryToRepair(contract, pgmT, counterExContract, counterExResult))
+                        return;
+                    else
+                        System.out.print("No more candidate hole expression to use. No repair! Aborting");
                     return;
                 default:
                     break;
             }
         }
         while (true);
+    }
+
+    private static boolean tryToRepair(Contract contract, Program pgmT, CounterExContract counterExContract, JKindResult counterExResult) {
+        String fileName;
+        String counterExContractStr = counterExContract.toString();
+
+        CandidateSelectionMgr candidateSelectionMgr = null;
+        NodeRepairKey originalNodeKey = defineNodeKeys(pgmT);
+
+
+        if (permutationCount == 0) { //initialization of faulty equation and permutation options
+            faultyEquation = Config.getFaultyEquation(pgmT);
+            assert (faultyEquation != null);
+            candidateSelectionMgr = new CandidateSelectionMgr();
+        }
+        assert (candidateSelectionMgr != null);
+
+        while (candidateSelectionMgr.queueSize() > 0) {
+            loopCount = 0; //resetting loopCount.
+            CandidateRepairExpr candidateExpr = candidateSelectionMgr.poll();
+            holeRepairState = candidateExpr.holeRepairState;
+            HolePlugger holePlugger = new HolePlugger();
+            boolean candidateRepairFailed = false;
+            SynthesisContract synthesis = null;
+
+            while (!candidateRepairFailed) {
+
+                if (loopCount != 0) { //used to check the new specification after repair, valid only after at least one repair/synthesis is done.
+                    fileName = contractMethodName + permutationCount + "_" + loopCount + ".lus";
+                    writeToFile(fileName, counterExContractStr);
+                    counterExResult = callJkind(fileName, false, -1);
+                    switch (counterExResult.getPropertyResult(tnodeSpecPropertyName).getStatus()) {
+                        case VALID: //valid match
+                            System.out.println("^-^ Ranger Discovery Result ^-^");
+                            System.out.println("Contract Matching! Printing repair and aborting!");
+                            DiscoverContract.repaired = true;
+                            return true;
+                        case INVALID: //synthesis is needed
+                            break;
+                        default:
+                            System.out.println("unexpected status for the jkind synthesis query.");
+                            DiscoverContract.repaired = false;
+                            assert false;
+                            break;
+                    }
+                }
+
+                if (synthesis == null) { // building the synthesis
+                    //separating the creation of the hole program from the Synthesis of the contract.
+                    Program holeProgram = SubstitutionVisitor.substitute(pgmT, candidateExpr, faultyEquation);
+                    synthesis = new SynthesisContract(contract, holeProgram, new ArrayList(candidateExpr.getHoleMap().keySet()), counterExResult, originalNodeKey);
+                } else
+                    synthesis.collectCounterExample(counterExResult);
+
+
+                if (loopCount == 0) //first iteration of the loop, then setup initial repair values
+                    holeRepairState.createEmptyHoleRepairValues();
+
+                String synthesisContractStr = synthesis.toString();
+                fileName = contractMethodName + permutationCount + "_" + loopCount + "hole.lus";
+                writeToFile(fileName, synthesisContractStr);
+
+                JKindResult synthesisResult = callJkind(fileName, false, synthesis
+                        .getMaxTestCaseK() - 2);
+                switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
+                    case VALID:
+                    case UNKNOWN:
+                    case WAITING:
+                    case WORKING:
+                    case INCONSISTENT:
+                    case ERROR:
+                    case CANCELED:
+                        System.out.println("^-^ Ranger Discovery Result ^-^");
+                        System.out.println("Cannot find a synthesis. Trying a different permutation.");
+                        candidateRepairFailed = true;
+                        break;
+                    case INVALID:
+                        System.out.println("repairing holes for iteration#:" + loopCount);
+                        holeRepairState.plugInHoles(synthesisResult);
+                        holePlugger.plugInHoles(synthesisResult, counterExContract
+                                .getCounterExamplePgm
+                                        (), synthesis.getSynthesisProgram(), synthesis.getSynNodeKey());
+                        counterExContractStr = holePlugger.toString();
+                        DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
+                        break;
+                    default:
+                        System.out.println("unexpected status for the jkind synthesis query.");
+                        DiscoverContract.repaired = false;
+                        assert false;
+                        break;
+                }
+                ++loopCount;
+            }
+            ++permutationCount;
+        }
+        return false;
     }
 
 
