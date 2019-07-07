@@ -21,7 +21,7 @@ public class Config {
     public static String WRAPPERNODE = "R_wrapper";
     public static String CHECKSPECNODE = "Check_spec";
     public static String H_discovery = "H_discovery";
-    public static boolean repairInitialValues = true;
+    public static boolean repairInitialValues = false;
     public static String specPropertyName = "ok";
     public static String tnodeSpecPropertyName;
 

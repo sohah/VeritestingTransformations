@@ -75,7 +75,7 @@ public class TestCaseManager {
                 if (Config.specLevelRepair)
                     fileName = contractMethodName + "_" + loopCount + "_" + "CEX.lus";
                 else
-                    fileName = contractMethodName + "_" + DiscoverContract.permutationCount + "_" + loopCount + "_" + "CEX.lus";
+                    fileName = "def_" + contractMethodName + "_" + DiscoverContract.permutationCount + "_" + loopCount + "_" + "CEX.lus";
 
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString());
                 translateTestCase(counterExample);

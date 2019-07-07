@@ -101,7 +101,7 @@ public class DiscoverContract {
             CounterExContract counterExContract = new CounterExContract(dynRegion, pgmT, contract);
             String counterExContractStr = counterExContract.toString();
 
-            fileName = contractMethodName + permutationCount + "_" + loopCount + ".lus";
+            fileName = "def_" + contractMethodName + permutationCount + "_" + loopCount + ".lus";
             //JKindResult counterExResult = CounterExContract.search(fileName, pgmT, rNode, rWrapper);
             writeToFile(fileName, counterExContractStr);
 
@@ -152,7 +152,7 @@ public class DiscoverContract {
             while (!candidateRepairFailed) {
 
                 if (loopCount != 0) { //used to check the new specification after repair, valid only after at least one repair/synthesis is done.
-                    fileName = contractMethodName + permutationCount + "_" + loopCount + ".lus";
+                    fileName = "def_" + contractMethodName + "_" + permutationCount + "_" + loopCount + ".lus";
                     writeToFile(fileName, counterExContractStr);
                     counterExResult = callJkind(fileName, false, -1);
                     switch (counterExResult.getPropertyResult(tnodeSpecPropertyName).getStatus()) {
@@ -183,7 +183,7 @@ public class DiscoverContract {
                     holeRepairState.createEmptyHoleRepairValues();
 
                 String synthesisContractStr = synthesis.toString();
-                fileName = contractMethodName + permutationCount + "_" + loopCount + "hole.lus";
+                fileName = "def_" + contractMethodName + "_" + permutationCount + "_" + loopCount + "hole.lus";
                 writeToFile(fileName, synthesisContractStr);
 
                 JKindResult synthesisResult = callJkind(fileName, false, synthesis
