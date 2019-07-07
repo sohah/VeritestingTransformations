@@ -29,7 +29,10 @@ public class Config {
     public static Ast defaultHoleValInt = new IntExpr(1);
     public static boolean useInitialSpecValues = true;
 
-    public static String spec = "pad";
+    //this boolean toggles between equation based repair and whole spec repair.
+    public static boolean specLevelRepair;// = false;
+
+    public static String spec;// = "even";
     public static boolean defaultBoolValue = false;
     public static int initialIntValue = 0;
 
@@ -41,8 +44,6 @@ public class Config {
 
     public static int costLimit = 10; // value entered by hand for now
 
-    //this boolean toggles between equation based repair and whole spec repair.
-    public static boolean specLevelRepair = false;
 
     public static int faultyEquationNumber = 1;
 

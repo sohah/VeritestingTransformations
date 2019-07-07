@@ -46,7 +46,7 @@ public class DiscoverContract {
     public static List<String> userSynNodes = new ArrayList<>();
 
     //public static HoleRepair holeRepairHolder = new HoleRepair();
-    public static HoleRepairState holeRepairState;
+    public static HoleRepairState holeRepairState = new HoleRepairState();
 
     public static FaultyEquation faultyEquation;
 
@@ -110,7 +110,7 @@ public class DiscoverContract {
             switch (counterExResult.getPropertyResult(tnodeSpecPropertyName).getStatus()) {
                 case VALID: //valid match
                     System.out.println("^-^ Ranger Discovery Result ^-^");
-                    System.out.println("Contract Matching! Printing repair and aborting!");
+                    System.out.println("Contract Matching!!");
                     DiscoverContract.repaired = true;
                     return;
                 case INVALID: //synthesis is needed
@@ -158,7 +158,7 @@ public class DiscoverContract {
                     switch (counterExResult.getPropertyResult(tnodeSpecPropertyName).getStatus()) {
                         case VALID: //valid match
                             System.out.println("^-^ Ranger Discovery Result ^-^");
-                            System.out.println("Contract Matching! Printing repair and aborting!");
+                            System.out.println("Contract Matching!!");
                             DiscoverContract.repaired = true;
                             return true;
                         case INVALID: //synthesis is needed
@@ -240,7 +240,7 @@ public class DiscoverContract {
         String counterExContractStr = counterExContract.toString();
 
         do {
-            fileName = contractMethodName + loopCount + ".lus";
+            fileName = contractMethodName + "_" + loopCount + ".lus";
             writeToFile(fileName, counterExContractStr);
 
             JKindResult counterExResult = callJkind(fileName, false, -1);
@@ -263,7 +263,7 @@ public class DiscoverContract {
                         holeRepairState.createEmptyHoleRepairValues();
 
                     String synthesisContractStr = synthesisContract.toString();
-                    fileName = contractMethodName + loopCount + "hole.lus";
+                    fileName = contractMethodName + "_" + loopCount + "_" + "hole.lus";
                     writeToFile(fileName, synthesisContractStr);
 
                     JKindResult synthesisResult = callJkind(fileName, false, synthesisContract

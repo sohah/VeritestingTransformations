@@ -32,3 +32,8 @@ contractMethodName = runPad(I)Z
 
 simplify = false
 contractDiscoveryOn = true
+
+specRepair = true
+spec = even
+
+#spec = pad

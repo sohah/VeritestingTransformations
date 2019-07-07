@@ -18,6 +18,7 @@ import java.util.Map;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.counterExPropertyName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.permutationCount;
 
 /**
  * This is the main class that maintains the holes we want to repair. Initially it is populated with the holes and
@@ -67,7 +68,11 @@ public class HoleRepairState {
                 if (ip.getName().equals(counterExPropertyName)) {
                     Counterexample counterExample = ip.getCounterexample();
                     fillHolesWithRepairs(counterExample);
-                    String fileName = contractMethodName + loopCount + "HoleCEX.txt";
+                    String fileName;
+                    if (Config.specLevelRepair)
+                        fileName = contractMethodName + "_" + loopCount + "_" + "holeCEX.txt";
+                    else
+                        fileName = contractMethodName + "_" + permutationCount + "_" + loopCount + "_" + "holeCEX.txt";
                     DiscoveryUtil.writeToFile(fileName, counterExample.toString());
                 }
             }

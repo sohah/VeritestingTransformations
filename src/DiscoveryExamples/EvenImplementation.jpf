@@ -31,3 +31,6 @@ contractMethodName = runEven(Z)I
 
 simplify = false
 contractDiscoveryOn = true
+specRepair = true
+spec = even
+#spec = pad

@@ -216,9 +216,14 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 timeout_mins = Integer.parseInt(System.getenv("TIMEOUT_MINS"));
             }
 
-            if (contractDiscoveryOn)
+            if (contractDiscoveryOn) {
                 if (conf.hasValue("contractMethodName"))
                     DiscoverContract.contractMethodName = conf.getString("contractMethodName");
+                if (conf.hasValue("specRepair"))
+                    gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.specLevelRepair = conf.getBoolean("specInt");
+                if (conf.hasValue("spec"))
+                    gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.spec = conf.getString("spec");
+            }
         }
     }
 

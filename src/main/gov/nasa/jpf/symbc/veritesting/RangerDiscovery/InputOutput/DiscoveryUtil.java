@@ -252,6 +252,8 @@ public class DiscoveryUtil {
             exprVarDecl = findInList(node.locals, def);
             if (exprVarDecl == null)
                 exprVarDecl = findConstInList(pgm.constants, def);
+            if (exprVarDecl == null)
+                exprVarDecl = findInList(node.outputs, def);
             if (exprVarDecl == null) {
                 System.out.println("unable to find the right type for expr. Aborting!");
                 assert false;
@@ -261,6 +263,7 @@ public class DiscoveryUtil {
     }
 
     //takes an expr and tries to find its correponding type in the declartion list.
+
     private static VarDecl findInList(List<VarDecl> inputs, Expr def) {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).id.equals(def.toString()))

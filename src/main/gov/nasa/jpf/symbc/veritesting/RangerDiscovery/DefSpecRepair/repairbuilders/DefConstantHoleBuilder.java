@@ -63,7 +63,7 @@ public class DefConstantHoleBuilder extends UseVisitor implements ExprHoleBuilde
     @Override
     public Expr visit(IntExpr e) {
         super.visit(e);
-        if (currentPermutation.get(contantUseList.size() - 1).equals("1"))
+        if (currentPermutation.get(contantUseList.size() - 1).charValue() == '1')
             return createAndPopulateHole(e, NamedType.INT);
         else
             return e;

@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
@@ -70,7 +71,11 @@ public class TestCaseManager {
             if (pr.getProperty() instanceof InvalidProperty) {
                 InvalidProperty ip = (InvalidProperty) pr.getProperty();
                 Counterexample counterExample = ip.getCounterexample();
-                String fileName = contractMethodName + DiscoverContract.permutationCount + "_" + loopCount + "CEX.lus";
+                String fileName;
+                if (Config.specLevelRepair)
+                    fileName = contractMethodName + "_" + loopCount + "_" + "CEX.lus";
+                else
+                    fileName = contractMethodName + "_" + DiscoverContract.permutationCount + "_" + loopCount + "_" + "CEX.lus";
 
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString());
                 translateTestCase(counterExample);
