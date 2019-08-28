@@ -246,7 +246,7 @@ public class DiscoveryUtil {
     }
 
     //looks up the type of a def by first looking into the inputs of the node then by checking the locals of the node.
-    private static Type lookupExprType(Expr def, Node node, Program pgm) {
+    public static Type lookupExprType(Expr def, Node node, Program pgm) {
         VarDecl exprVarDecl = findInList(node.inputs, def);
         if (exprVarDecl == null) {
             exprVarDecl = findInList(node.locals, def);

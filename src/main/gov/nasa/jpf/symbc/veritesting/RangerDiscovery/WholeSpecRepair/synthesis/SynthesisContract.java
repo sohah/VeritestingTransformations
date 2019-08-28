@@ -7,9 +7,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.api.results.JKindResult;
 import jkind.lustre.*;
-import jkind.lustre.parsing.LustreParseUtil;
 
-import java.io.IOException;
 import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.CHECKSPECNODE;

@@ -9,10 +9,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.repair.HolePlugger;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.HoleRepairState;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.SpecConstHoleVisitor;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.SynthesisContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.api.results.JKindResult;
@@ -259,8 +256,11 @@ public class DiscoverContract {
                     return;
                 case INVALID: //synthesis is needed
                     if (synthesisContract == null) {
-                        Program holeProgram = SpecConstHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
-                        ArrayList<Hole> holes = new ArrayList<>(SpecConstHoleVisitor.getHoles());
+                        //Program holeProgram = SpecConstHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
+//                        ArrayList<Hole> holes = new ArrayList<>(SpecConstHoleVisitor.getHoles());
+
+                        Program holeProgram = SpecPreHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
+                        ArrayList<Hole> holes = new ArrayList<>(SpecPreHoleVisitor.getHoles());
                         synthesisContract = new SynthesisContract(contract, holeProgram, holes, counterExResult, originalNodeKey);
                     } else
                         synthesisContract.collectCounterExample(counterExResult);

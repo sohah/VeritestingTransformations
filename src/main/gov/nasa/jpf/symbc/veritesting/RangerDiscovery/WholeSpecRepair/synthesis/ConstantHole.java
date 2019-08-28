@@ -46,4 +46,5 @@ public class ConstantHole extends IdExpr implements Hole , Cloneable{
     public int hashCode(){
         return Objects.hashCode(myPrefix);
     }
+
 }
