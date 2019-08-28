@@ -1,10 +1,10 @@
-public class EvenImplementation {
+public class EvenImplementationRistrictive {
     int countState = 0;
-    int output = 8;
+    int output = 0;
 
 
     public static void main(String[] args) {
-        EvenImplementation evenImpl = new EvenImplementation();
+        EvenImplementationRistrictive evenImpl = new EvenImplementationRistrictive();
         boolean signal = false;
         evenImpl.makeStep(signal, 1, 1, true);
     }
@@ -23,9 +23,21 @@ public class EvenImplementation {
         if (signal)
             ++this.countState;
         if (countState % 2 == 0)
-            output = 7;
+            output = computeOutput();
         else
-            output = 15;
+            output = computeOutput();
+
+        return output;
+    }
+
+    //constraints the output to be from 1 to 9 and excluding the number 9.
+    private int computeOutput() {
+        ++output;
+        if (output == 5)
+            ++output;
+
+        if (output == 10)
+            output = 0;
 
         return output;
     }

@@ -34,6 +34,4 @@ simplify = false
 contractDiscoveryOn = true
 
 specRepair = true
-spec = even
-
-#spec = pad
+spec = pad

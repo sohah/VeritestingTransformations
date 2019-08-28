@@ -17,25 +17,25 @@ var
 	--p2: bool;
 
 let
-	start_bt = true -> if(pre reset_flag) then
-											true
+	start_bt = false -> if(pre reset_flag) then
+											false
 										else if(not(pre start_bt) and (not (pre launch_bt))) and (sig = START_SIG) then
-									    		false
+									    		true
 											else
 												pre start_bt;
 
 
-	launch_bt = true -> if(pre reset_flag) then
-										    true
+	launch_bt = false -> if(pre reset_flag) then
+										    false
 										else if((pre start_bt) and (not (pre launch_bt ))) and (sig = LAUNCH_SIG) then
-										    	false
+										    	true
 											else
 											    pre launch_bt;
 
 
-    reset_flag = true -> pre ignition;
+    reset_flag = false -> pre ignition;
 
-    p1 = (ignition = (true -> ((pre launch_bt) and (not reset_flag) and (not pre reset_flag))));
+    p1 = (ignition = (false -> ((pre launch_bt) and (not reset_flag) and (not pre reset_flag))));
 
 
   --%PROPERTY p1;
