@@ -21,7 +21,7 @@ public class Config {
     public static String WRAPPERNODE = "R_wrapper";
     public static String CHECKSPECNODE = "Check_spec";
     public static String H_discovery = "H_discovery";
-    public static boolean repairInitialValues = false;
+    public static boolean repairInitialValues = true;
     public static String specPropertyName = "ok";
     public static String tnodeSpecPropertyName;
 
@@ -51,10 +51,13 @@ public class Config {
 
     public static void setup() throws IOException {
         if (spec.equals("pad")) {
-            tFileName = folderName + "FaultyDefImaginaryPad";
+            tFileName = folderName + "FaultyRestirctiveImaginaryPad";
             tnodeSpecPropertyName = "T_node~0.p1";
         } else if (spec.equals("even")) {
-            tFileName = folderName + "FaultyEvenOrigSpec";
+            tFileName = folderName + "FaultyEvenSpec";
+            tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
+        } else if (spec.equals("evenRestrictive")) {
+            tFileName = folderName + "FaultyEvenRestrictiveSpec";
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
         } else {
             System.out.println("unsupported spec, you need to setup input and output of the spec before usage!");

@@ -55,7 +55,7 @@ public class InOutManager {
             discoverStateInputPad();
             discoverStateOutputPad();
             discoverMethodOutputPad();
-        } else if (Config.spec.equals("even")) {
+        } else if (Config.spec.equals("even") || (Config.spec.equals("evenRestrictive"))) {
             discoverFreeInputEven();
             discoverStateInputEven();
             discoverStateOutputEven();

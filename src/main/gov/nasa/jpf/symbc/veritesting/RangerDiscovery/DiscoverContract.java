@@ -226,6 +226,12 @@ public class DiscoverContract {
     private static void repairSpec(DynamicRegion dynRegion) throws IOException {
         String fileName;
 
+        if(Config.repairInitialValues)
+            System.out.println("Repair includes initial values");
+        else
+            System.out.println("Repair does NOT include initial values");
+
+
         //print out the translation once, for very first time we hit linearlization for the method of
         // interest.
         Contract contract = new Contract();
