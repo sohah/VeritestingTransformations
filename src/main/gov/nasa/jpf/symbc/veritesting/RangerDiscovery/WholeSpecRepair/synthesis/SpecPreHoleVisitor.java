@@ -9,7 +9,9 @@ import jkind.lustre.*;
 import jkind.lustre.values.Value;
 import jkind.lustre.visitors.AstMapVisitor;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.IdExprToVarDecl;
@@ -23,6 +25,8 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
 
     //accumulates all the varDeclarations for holes that are defined while visiting a specific node, though an instance of this class.
     private List<VarDecl> holeVarDecl = new ArrayList<>();
+
+    private List<VarDecl> containerVarDecl = new ArrayList<>();
 
     //original nodes before replacing constants with holes.
     private static Map<String, Node> nodeTable;
@@ -38,16 +42,28 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
     //this defines the varDecl associated with every nodeHole
     private static Map<String, List<VarDecl>> nodeHoleVarDecl = new HashMap<>();
 
-    // accumulates all the holes and the old constant value that they are replacing.
-    private static HashMap<Hole, Pair<Ast, Value>> holeToConstantMap = new HashMap<>();
+    // accumulates all the containers and their old values.
+    private static HashMap<HoleContainer, Pair<Ast, Value>> containerToConstMap = new HashMap<>();
+
+    //collects holes defined through all containers.
+    private static ArrayList<Hole> definedHoles = new ArrayList<>();
+
     private NodeRepairKey nodeKey;
 
     private static Program currentPgm;
     private Node currentNode;
     private Collection<? extends VarDecl> holeHelperVarDecl;
 
+    // this contains the current IdExpr for the equation we are trying to add holes in. In this visitor we should
+    // avoid making pre holes for IdExprs that refer to the same definition, this causing algeberic loop.
+    private IdExpr currentEqLhs = null;
+
     public static Set<Hole> getHoles() {
-        return holeToConstantMap.keySet();
+        return new HashSet<>(definedHoles);
+    }
+
+    public static Set<HoleContainer> getContainers() {
+        return containerToConstMap.keySet();
     }
 
 
@@ -59,19 +75,59 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
     //TODO: needs to be supported
     @Override
     public Expr visit(UnaryExpr e) {
-        Expr expr = e.expr.accept(this);
-        if (e.expr == expr) {
-            return e;
+
+        if ((e.expr instanceof IdExpr) && (e.op == UnaryOp.PRE)) {
+            if (!e.expr.toString().equals(currentEqLhs.toString())) {
+
+                NamedType type = NamedType.get((DiscoveryUtil.lookupExprType(e.expr, currentNode, currentPgm)).toString());
+
+
+                ArrayList<Hole> holes = new ArrayList<>();
+                ConstantHole hole1 = new ConstantHole("", NamedType.BOOL);
+                ConstantHole hole2 = new ConstantHole("", type);
+                holes.add(hole2);
+
+
+                holes.add(hole1);
+                this.holeVarDecl.add(IdExprToVarDecl(hole1, hole1.myType));
+                holeVarDecl.add(IdExprToVarDecl(hole2, hole2.myType));
+
+                return createAndPopulateHole(e, type, holes);
+            } else
+                return e;
+        } else {
+            Expr expr = e.expr.accept(this);
+            if (e.expr == expr) {
+                return e;
+            }
+            return new UnaryExpr(e.location, e.op, expr);
         }
-        return new UnaryExpr(e.location, e.op, expr);
+
     }
 
 
     @Override
     public Expr visit(IdExpr e) {
-        return createAndPopulateHole(e, NamedType.get((DiscoveryUtil.lookupExprType(e, currentNode, currentPgm)).toString()));
-    }
 
+        if (!e.toString().equals(currentEqLhs.toString())) {
+            NamedType type = NamedType.get((DiscoveryUtil.lookupExprType(e, currentNode, currentPgm))
+                    .toString());
+
+
+            ArrayList<Hole> holes = new ArrayList<>();
+
+            ConstantHole hole1 = new ConstantHole("", NamedType.BOOL);
+            ConstantHole hole2 = new ConstantHole("", type);
+
+            holes.add(hole1);
+            holes.add(hole2);
+            holeVarDecl.add(IdExprToVarDecl(hole1, hole1.myType));
+            holeVarDecl.add(IdExprToVarDecl(hole2, hole2.myType));
+
+            return createAndPopulateHole(e, type, holes);
+        } else
+            return e;
+    }
 
     @Override
     public Expr visit(NodeCallExpr e) {
@@ -101,6 +157,16 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
 
 
     @Override
+    public Equation visit(Equation e) {
+        // Do not traverse e.lhs since they do not really act like Exprs
+        currentEqLhs = e.lhs.get(0);
+        Expr newRhs = e.expr.accept(this);
+        currentEqLhs = null;
+
+        return new Equation(e.location, e.lhs, newRhs);
+    }
+
+    @Override
     public Node visit(Node e) {
         Node oldNode = currentNode;
         this.currentNode = e;
@@ -122,11 +188,11 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
 
             inputs.addAll(e.inputs);
             inputs.addAll(this.holeVarDecl);
-            locals.addAll(getHoleHelperVarDecl());
+            locals.addAll(getHoleContainerVarDecl());
 
             assertions = visitAssertions(e.assertions);
 
-            assertions.addAll(getHolesConstraints());   //adding constraints on holes
+            //assertions.addAll(getHolesConstraints());   //adding constraints on holes
 
             properties = visitProperties(e.properties);
 
@@ -143,27 +209,20 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
                 realizabilityInputs, contract, ivc);
     }
 
-    private Expr createAndPopulateHole(Expr e, NamedType type) {
-        EqConstraintHole newHole = new EqConstraintHole("");
-
-        //sets up the equality values of pre e or just e for each hole.
-        setupPreEqualityValues(newHole, e);
-
-
-        holeToConstantMap.put(newHole, new Pair(e, null));
-        VarDecl newVarDecl = IdExprToVarDecl(newHole, type);
-        if (loopCount == 0) //initial run, then setup the holes.
-            DiscoverContract.holeRepairState.createNewHole(newHole, e, type);
-        this.holeVarDecl.add(newVarDecl);
-        return newHole;
+    private Expr createAndPopulateHole(Expr e, NamedType type, ArrayList<Hole> holes) {
+        HoleContainer holeContainer = new PreHoleContainer("", type, e, holes);
+        containerToConstMap.put(holeContainer, new Pair(e, null));
+        VarDecl containerVarDecl = IdExprToVarDecl(holeContainer, type);
+        if (loopCount == 0) { //initial run, then setup the holes.
+            for (int i = 0; i < holes.size(); i++) {
+                DiscoverContract.holeRepairState.createNewHole(holes.get(i), e, ((ConstantHole) holes.get(i)).myType);
+                definedHoles.add(holes.get(i));
+            }
+        }
+        this.containerVarDecl.add(containerVarDecl);
+        return holeContainer;
     }
 
-    private void setupPreEqualityValues(EqConstraintHole newHole, Expr e) {
-        ArrayList<Expr> equalityExprValues = new ArrayList<>();
-        equalityExprValues.add(e);
-        equalityExprValues.add(new UnaryExpr(UnaryOp.PRE, e));
-        newHole.setEqualityExprValues(equalityExprValues);
-    }
 
     /**
      * This executes the ConstHoleVisitor on the main node, which might later invoke multiple instances of the ConstHoleVisitor but on other nodes, where the later requires the other execute methode.
@@ -176,17 +235,17 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
         Map<String, Node> nodeTable = getNodeTable(program.nodes);
 
         SpecPreHoleVisitor.currentPgm = program;
-        SpecPreHoleVisitor constHoleVisitor = new SpecPreHoleVisitor();
-        constHoleVisitor.nodeKey = originalNodeKey;
+        SpecPreHoleVisitor preHoleVisitor = new SpecPreHoleVisitor();
+        preHoleVisitor.nodeKey = originalNodeKey;
 
-        constHoleVisitor.setNodeTable(nodeTable);
+        preHoleVisitor.setNodeTable(nodeTable);
         Node mainNode = program.getMainNode();
-        Ast holeNode = mainNode.accept(constHoleVisitor);
+        Ast holeNode = mainNode.accept(preHoleVisitor);
 
         assert (holeNode instanceof Node);
 
         holeTable.put(((Node) holeNode).id, (Node) holeNode);
-        nodeHoleVarDecl.put(((Node) holeNode).id, constHoleVisitor.holeVarDecl);
+        nodeHoleVarDecl.put(((Node) holeNode).id, preHoleVisitor.holeVarDecl);
 
         ArrayList<Node> programNodes = new ArrayList<Node>(holeTable.values());
         programNodes.addAll(nonRepairNodes);
@@ -226,7 +285,7 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
 
     }
 
-    public Collection<? extends Expr> getHolesConstraints() {
+    /*public Collection<? extends Expr> getHolesConstraints() {
         ArrayList<Expr> holesConstraintsEq = new ArrayList<>();
         Set<Hole> holes = SpecPreHoleVisitor.getHoles();
 
@@ -239,38 +298,38 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
             holesConstraintsEq.add(((EqConstraintHole) hole).getHoleConstraint());
         }
         return holesConstraintsEq;
-    }
+    }*/
 
     public ArrayList<Equation> getHelperEqs() {
-        ArrayList<Equation> holesConstraintsEqs = new ArrayList<>();
-        Set<Hole> holes = SpecPreHoleVisitor.getHoles();
+        ArrayList<Equation> containerEqs = new ArrayList<>();
+        Set<HoleContainer> containers = SpecPreHoleVisitor.getContainers();
 
-        Iterator<Hole> itr = holes.iterator();
+        Iterator<HoleContainer> itr = containers.iterator();
         while (itr.hasNext()) {
-            Hole hole = itr.next();
+            HoleContainer container = itr.next();
 
-            assert (hole instanceof EqConstraintHole);
+            assert (container instanceof PreHoleContainer);
 
-            holesConstraintsEqs.add(((EqConstraintHole) hole).getHelperConstraint());
+            containerEqs.add(((PreHoleContainer) container).getContainerEquation());
         }
-        return holesConstraintsEqs;
+        return containerEqs;
 
     }
 
-    public Collection<? extends VarDecl> getHoleHelperVarDecl() {
-        ArrayList<VarDecl> helperVarDecls = new ArrayList<>();
-        Set<Hole> holes = SpecPreHoleVisitor.getHoles();
+    public Collection<? extends VarDecl> getHoleContainerVarDecl() {
+        ArrayList<VarDecl> containerVarDecls = new ArrayList<>();
+        Set<HoleContainer> containers = SpecPreHoleVisitor.getContainers();
 
 
-        Iterator<Hole> itr = holes.iterator();
+        Iterator<HoleContainer> itr = containers.iterator();
         while (itr.hasNext()) {
-            Hole hole = itr.next();
+            HoleContainer container = itr.next();
 
-            assert (hole instanceof EqConstraintHole);
+            assert (container instanceof PreHoleContainer);
 
-            helperVarDecls.add(((EqConstraintHole) hole).getHelperVarDecl());
+            containerVarDecls.add(((PreHoleContainer) container).getContainerVarDecl());
         }
 
-        return helperVarDecls;
+        return containerVarDecls;
     }
 }

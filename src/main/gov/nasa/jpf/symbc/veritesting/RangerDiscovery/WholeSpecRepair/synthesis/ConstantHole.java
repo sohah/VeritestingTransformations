@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis
 
 import jkind.lustre.IdExpr;
 import jkind.lustre.Location;
+import jkind.lustre.NamedType;
 
 import java.util.Objects;
 
@@ -9,16 +10,12 @@ public class ConstantHole extends IdExpr implements Hole , Cloneable{
     private static int prefix = 0;
     private static String holeName = "hole";
     public final int myPrefix;
+    public final NamedType myType;
 
-    public ConstantHole(Location location, String id) {
-        super(location, (holeName + "_" + prefix));
-        myPrefix = prefix;
-        prefix++;
-    }
-
-    public ConstantHole(String id) {
+    public ConstantHole(String id, NamedType type) {
         super(holeName + "_" + prefix);
         myPrefix = prefix;
+        myType = type;
         prefix++;
     }
 

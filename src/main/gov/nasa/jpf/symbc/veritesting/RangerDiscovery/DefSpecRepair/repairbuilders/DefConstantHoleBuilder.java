@@ -79,7 +79,7 @@ public class DefConstantHoleBuilder extends UseVisitor implements ExprHoleBuilde
 
 
     private Expr createAndPopulateHole(Expr e, NamedType type) {
-        ConstantHole newHole = new ConstantHole("");
+        ConstantHole newHole = new ConstantHole("", type);
         holeToConstantMap.put(newHole, new Pair(e, null));
         VarDecl newVarDecl = IdExprToVarDecl(newHole, type);
         if (loopCount == 0) //initial run, then setup the holes.
