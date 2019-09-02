@@ -49,6 +49,8 @@ public class Config {
 
     private static FaultyEquation faultyEquation;
 
+    public static RepairMode repairMode = RepairMode.PRE ;
+
     public static void setup() throws IOException {
         if (spec.equals("pad")) {
             tFileName = folderName + "FaultyRestirctiveImaginaryPad";

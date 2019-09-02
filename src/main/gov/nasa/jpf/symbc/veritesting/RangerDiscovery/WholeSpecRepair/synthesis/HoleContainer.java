@@ -1,6 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import jkind.lustre.*;
 
 import java.util.ArrayList;
@@ -25,21 +24,13 @@ public class HoleContainer extends IdExpr implements Hole, Cloneable {
         prefix++;
     }
 
-    /*public static int getCurrentHolePrefix() {
-        return prefix;
-    }
-*/
-    /*public static String recreateHoleName(int id) {
-        return containerName + "_" + id;
-    }*/
-
     public String getContainerName() {
         return containerName + "_" + myPrefix;
     }
 
     @Override
     public boolean isEqual(Hole holeContainer) {
-        assert (holeContainer instanceof  HoleContainer);
+        assert (holeContainer instanceof HoleContainer);
 
         return (this.getContainerName().equals(((HoleContainer) holeContainer).getContainerName()));
     }
@@ -47,6 +38,12 @@ public class HoleContainer extends IdExpr implements Hole, Cloneable {
     @Override
     public int hashCode() {
         return Objects.hashCode(getContainerName());
+    }
+
+    public Expr getContainerFreezeAssertion() {
+        return new jkind.lustre.BinaryExpr(new BoolExpr(true), BinaryOp.ARROW, (new jkind.lustre.BinaryExpr(new IdExpr
+                (getContainerName()), BinaryOp.EQUAL, new
+                UnaryExpr(UnaryOp.PRE, new IdExpr(getContainerName())))));
     }
 
 }

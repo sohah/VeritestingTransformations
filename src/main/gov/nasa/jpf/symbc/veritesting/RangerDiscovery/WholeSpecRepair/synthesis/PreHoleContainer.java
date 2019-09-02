@@ -16,10 +16,22 @@ public class PreHoleContainer extends HoleContainer implements Hole, Cloneable {
     //this contains the original expression that we are now trying to find repair for.
     Expr originalExpr;
 
+    Expr thenExpr;
+    Expr elseExpr;
+
     //an invariant here is that the first element
     public PreHoleContainer(String id, NamedType type, Expr originalExpr, ArrayList<Hole> holes) {
         super(id, type, holes);
         this.originalExpr = originalExpr;
+
+        if ((originalExpr instanceof UnaryExpr) && (((UnaryExpr) originalExpr).op == UnaryOp.PRE)) {
+            thenExpr = new BinaryExpr((IdExpr) myHoles.get(1), BinaryOp.ARROW, originalExpr);
+            elseExpr = ((UnaryExpr) originalExpr).expr;
+        } else {
+            thenExpr = originalExpr;
+            elseExpr = new BinaryExpr((IdExpr) myHoles.get(1), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
+                    originalExpr));
+        }
     }
 
 
@@ -28,12 +40,9 @@ public class PreHoleContainer extends HoleContainer implements Hole, Cloneable {
         assert (myHoles.size() == 2);
         Expr rhs = null;
         if ((originalExpr instanceof UnaryExpr) && (((UnaryExpr) originalExpr).op == UnaryOp.PRE)) {
-            rhs = new IfThenElseExpr(new IdExpr(myHoles.get(0).toString()),
-                    new BinaryExpr((IdExpr) myHoles.get(1), BinaryOp.ARROW, originalExpr), ((UnaryExpr) originalExpr).expr);
+            rhs = new IfThenElseExpr(new IdExpr(myHoles.get(0).toString()), thenExpr, elseExpr);
         } else {
-            rhs = new IfThenElseExpr(new IdExpr(myHoles.get(0).toString()),
-                    originalExpr, new BinaryExpr((IdExpr) myHoles.get(1), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
-                    originalExpr)));
+            rhs = new IfThenElseExpr(new IdExpr(myHoles.get(0).toString()), thenExpr, elseExpr);
         }
         return new Equation(new IdExpr(getContainerName()), rhs);
     }

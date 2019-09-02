@@ -192,7 +192,7 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
 
             assertions = visitAssertions(e.assertions);
 
-            //assertions.addAll(getHolesConstraints());   //adding constraints on holes
+//            assertions.addAll(getHolesConstraints());   //adding constraints on holes
 
             properties = visitProperties(e.properties);
 
@@ -213,12 +213,16 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
         HoleContainer holeContainer = new PreHoleContainer("", type, e, holes);
         containerToConstMap.put(holeContainer, new Pair(e, null));
         VarDecl containerVarDecl = IdExprToVarDecl(holeContainer, type);
+
         if (loopCount == 0) { //initial run, then setup the holes.
             for (int i = 0; i < holes.size(); i++) {
-                DiscoverContract.holeRepairState.createNewHole(holes.get(i), e, ((ConstantHole) holes.get(i)).myType);
+                //DiscoverContract.holeRepairState.createNewHole(holes.get(i), e, ((ConstantHole) holes.get(i)).myType);
                 definedHoles.add(holes.get(i));
             }
         }
+
+        DiscoverContract.holeRepairState.createNewHole(holeContainer, e, holeContainer.myType);
+
         this.containerVarDecl.add(containerVarDecl);
         return holeContainer;
     }
@@ -285,20 +289,20 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
 
     }
 
-    /*public Collection<? extends Expr> getHolesConstraints() {
-        ArrayList<Expr> holesConstraintsEq = new ArrayList<>();
+    public Collection<? extends Expr> getHolesConstraints() {
+        ArrayList<Expr> holesConstraints = new ArrayList<>();
         Set<Hole> holes = SpecPreHoleVisitor.getHoles();
 
         Iterator<Hole> itr = holes.iterator();
         while (itr.hasNext()) {
             Hole hole = itr.next();
 
-            assert (hole instanceof EqConstraintHole);
+            assert (hole instanceof PreHoleContainer);
 
-            holesConstraintsEq.add(((EqConstraintHole) hole).getHoleConstraint());
+            holesConstraints.add(((PreHoleContainer) hole).getContainerFreezeAssertion());
         }
-        return holesConstraintsEq;
-    }*/
+        return holesConstraints;
+    }
 
     public ArrayList<Equation> getHelperEqs() {
         ArrayList<Equation> containerEqs = new ArrayList<>();

@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
 import jkind.lustre.*;
+import jkind.lustre.values.BooleanValue;
 import jkind.lustre.values.Value;
 import jkind.results.Counterexample;
 import jkind.results.InvalidProperty;
@@ -84,14 +85,25 @@ public class HoleRepairState {
 
         for (Map.Entry entry : holeRepairValuesMap.entrySet()) {
             Hole hole = (Hole) entry.getKey();
-            assert hole instanceof ConstantHole; // currently only supporting constants
-            Ast repairValue = getVarTestValues(counterExample, (ConstantHole) hole);
-            if (repairValue == null)
-                if (Config.useInitialSpecValues) {
-                    repairValue = getLastRepairOrInitial(hole);
-                } else {
-                    repairValue = getLastRepairOrDefaultValue(hole);
-                }
+            Ast repairValue = null;
+            if (hole instanceof ConstantHole) {
+                repairValue = getVarTestValues(counterExample, (ConstantHole) hole);
+                if (repairValue == null)
+                    if (Config.useInitialSpecValues) {
+                        repairValue = getLastRepairOrInitial(hole);
+                    } else {
+                        repairValue = getLastRepairOrDefaultValue(hole);
+                    }
+            } else if (hole instanceof PreHoleContainer) {
+                repairValue = getVarTestValues(counterExample, (PreHoleContainer) hole);
+                if (repairValue == null)
+                    if (Config.useInitialSpecValues) {
+                        repairValue = getLastRepairOrInitial(hole);
+                    } else {
+                        repairValue = getLastRepairOrDefaultValue(hole);
+                    }
+            } else
+                assert false; //no other types of repairs are defined yet.
             updateRepairValue(hole, repairValue);
         }
     }
@@ -106,6 +118,76 @@ public class HoleRepairState {
                 Value signalValue = signal.getValue(0); // since all values are the same we can get the first one.
                 return DiscoveryUtil.valueToExpr(signalValue, holeTypeMap.get(hole));
             }
+        }
+        return null;
+    }
+
+
+    private Ast getVarTestValues(Counterexample counterexample, PreHoleContainer holeContainer) {
+        List<Signal<Value>> signals = counterexample.getSignals();
+
+        for (int i = 0; i < signals.size(); i++) {
+            Signal<Value> signal = signals.get(i);
+            if (signal.getName().contains(holeContainer.getContainerName())) {
+                // assert (sameSignalValuesForSteps(signal.getValues())); TODO:this actaully applies on the same hole
+                // but ot the same container.
+                // checking that.
+
+                ConstantHole conditionHole = (ConstantHole) holeContainer.myHoles.get(0);
+
+                Integer signalIndex = findSignalIndex(signals, conditionHole.getMyHoleName());
+                Signal<Value> conditionSignal = signals.get(signalIndex);
+
+                assert (sameSignalValuesForSteps(conditionSignal.getValues()));
+
+                Value conditionSignalValue = conditionSignal.getValue(0); // since all values are the same we can get the
+                // first
+                // one.
+                assert (conditionSignalValue instanceof BooleanValue);
+                if (((BooleanValue) conditionSignalValue).value)
+                    return getRepairedPreContainerExpr(holeContainer.thenExpr, signals); // indicating the thenExpr
+                else
+                    return getRepairedPreContainerExpr(holeContainer.elseExpr, signals); // indicating the elseExpr
+            }
+        }
+        return null;
+    }
+
+    /**
+     * this tries to rebuild the expression of repair
+     *
+     * @param expr
+     * @param signals
+     * @return
+     */
+    private Ast getRepairedPreContainerExpr(Expr expr, List<Signal<Value>> signals) {
+        if ((expr instanceof IdExpr) || ((expr instanceof UnaryExpr) && (((UnaryExpr) expr).op == UnaryOp.PRE)))
+            return expr;
+        else if ((expr instanceof BinaryExpr) && (((BinaryExpr) expr).op == BinaryOp.ARROW)) { // then the left
+            // handside of the arrow must be a hole that represents the init value
+            assert (((BinaryExpr) expr).left instanceof ConstantHole);
+            ConstantHole initHole = (ConstantHole) ((BinaryExpr) expr).left;
+            Integer index = findSignalIndex(signals, initHole.getMyHoleName());
+
+            if (index != null) {
+                Signal<Value> initSignal = signals.get(index - 1);
+                assert (sameSignalValuesForSteps(initSignal.getValues()));
+                Value signalValue = initSignal.getValue(0); // since all values are the same we can get the first one.
+                DiscoveryUtil.valueToExpr(signalValue, holeTypeMap.get(initHole));
+            }
+        } else // we are not expecting other forms for preExpressions
+            assert false;
+        return null;
+    }
+
+
+    private Integer findSignalIndex(List<Signal<Value>> signals, String name) {
+        int i = 0;
+        while (i < signals.size()) {
+            Signal<Value> signal = signals.get(i);
+            if (signal.getName().contains(name))
+                return i;
+            i++;
         }
         return null;
     }

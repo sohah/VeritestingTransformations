@@ -223,7 +223,7 @@ public class DiscoverContract {
     private static void repairSpec(DynamicRegion dynRegion) throws IOException {
         String fileName;
 
-        if(Config.repairInitialValues)
+        if (Config.repairInitialValues)
             System.out.println("Repair includes initial values");
         else
             System.out.println("Repair does NOT include initial values");
@@ -256,11 +256,18 @@ public class DiscoverContract {
                     return;
                 case INVALID: //synthesis is needed
                     if (synthesisContract == null) {
-                        //Program holeProgram = SpecConstHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
-//                        ArrayList<Hole> holes = new ArrayList<>(SpecConstHoleVisitor.getHoles());
-
-                        Program holeProgram = SpecPreHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
-                        ArrayList<Hole> holes = new ArrayList<>(SpecPreHoleVisitor.getHoles());
+                        Program holeProgram = null;
+                        ArrayList<Hole> holes = null;
+                        switch (Config.repairMode) {
+                            case CONSTANT:
+                                holeProgram = SpecConstHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
+                                holes = new ArrayList<>(SpecConstHoleVisitor.getHoles());
+                                break;
+                            case PRE:
+                                holeProgram = SpecPreHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
+                                holes = new ArrayList<>(SpecPreHoleVisitor.getHoles());
+                                break;
+                        }
                         synthesisContract = new SynthesisContract(contract, holeProgram, holes, counterExResult, originalNodeKey);
                     } else
                         synthesisContract.collectCounterExample(counterExResult);
