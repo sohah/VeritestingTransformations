@@ -53,7 +53,7 @@ public class Config {
 
     public static void setup() throws IOException {
         if (spec.equals("pad")) {
-            tFileName = folderName + "FaultyRestirctiveImaginaryPad";
+            tFileName = folderName + "FaultyPreImaginaryPad";
             tnodeSpecPropertyName = "T_node~0.p1";
         } else if (spec.equals("even")) {
             tFileName = folderName + "FaultyEvenSpec";
