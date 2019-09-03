@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
@@ -166,6 +167,23 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
 
         return new Equation(e.location, e.lhs, newRhs);
     }
+
+
+    @Override
+    protected List<Equation> visitEquations(List<Equation> es) { // only visit to replace equations whose number are included in the Config.equationNumToRepair
+        List<Equation> holeEquations = new ArrayList<>();
+        Iterator<Equation> equationItr = es.iterator();
+        int i = 0;
+        while (equationItr.hasNext()) {
+            Equation equation = equationItr.next();
+            if (Arrays.asList(Config.equationNumToRepair).indexOf(i) >= 0)  //finds if this current equation is an equation we want to create holes in.
+                holeEquations.add(visit(equation));
+            else holeEquations.add(equation);
+            ++i;
+        }
+        return holeEquations;
+    }
+
 
     @Override
     public Node visit(Node e) {

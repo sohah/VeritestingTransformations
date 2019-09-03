@@ -44,7 +44,7 @@ public class ConstPluggerVisitor extends AstMapVisitor {
             return e;
     }
 
-
+    @Override
     protected List<Equation> visitEquations(List<Equation> es) {
         if (Config.repairMode == RepairMode.PRE) {
             List<Equation> repairedEquations = new ArrayList<>();

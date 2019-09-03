@@ -51,17 +51,24 @@ public class Config {
 
     public static RepairMode repairMode = RepairMode.PRE ;
 
+    //this contains specific equations we would like to repair, instead of repairing the whole thing. This is now used for testing only.
+    public static Integer[] equationNumToRepair = {0};
+
+
     public static void setup() throws IOException {
         if (spec.equals("pad")) {
             tFileName = folderName + "FaultyPreImaginaryPad";
             tnodeSpecPropertyName = "T_node~0.p1";
         } else if (spec.equals("even")) {
-            tFileName = folderName + "FaultyEvenSpec";
+            tFileName = folderName + "FaultyPreEvenSpec";
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
-        } else if (spec.equals("evenRestrictive")) {
+        } /*else if (spec.equals("evenRestrictive")) {
             tFileName = folderName + "FaultyEvenRestrictiveSpec";
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
-        } else {
+        } else if (spec.equals("FaultyPreEvenSpec")) {
+            tFileName = folderName + "FaultyPreEvenSpec";
+            tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
+        } */else {
             System.out.println("unsupported spec, you need to setup input and output of the spec before usage!");
             assert false;
         }

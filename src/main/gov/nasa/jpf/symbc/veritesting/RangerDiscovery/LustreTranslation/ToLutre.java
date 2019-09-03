@@ -50,10 +50,11 @@ public class ToLutre {
 
         //wrapperLocals are defined as stateInput
         ArrayList<VarDecl> stateInDeclList = inOutManager.generateStateInputDecl();
+        assert (stateInDeclList.size() > 0);
         ArrayList<VarDecl> wrapperLocalDeclList = new ArrayList<>(stateInDeclList);
 
         //preparing wrapperOutput
-        Pair<VarDecl, Equation> methodOutVarEq = DiscoveryUtil.replicateToOut(stateInDeclList.get(stateInDeclList.size()-1),"out");
+        Pair<VarDecl, Equation> methodOutVarEq = DiscoveryUtil.replicateToOut(stateInDeclList.get(stateInDeclList.size() - 1), "out");
         ArrayList<VarDecl> wrapperOutput = new ArrayList<VarDecl>();
         wrapperOutput.add(methodOutVarEq.getFirst());
 
@@ -76,13 +77,13 @@ public class ToLutre {
         ArrayList<Expr> initPreExprList = new ArrayList<>();
 
         for (int i = 0; i < wrapperLocalDeclList.size(); i++) {
-            if(wrapperLocalDeclList.get(i).type == NamedType.BOOL)
-            initPreExprList.add(new BinaryExpr(new BoolExpr(Config.defaultBoolValue), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
-                    varDeclToIdExpr(wrapperLocalDeclList.get(i)))));
-            else if(wrapperLocalDeclList.get(i).type == NamedType.INT)
+            if (wrapperLocalDeclList.get(i).type == NamedType.BOOL)
+                initPreExprList.add(new BinaryExpr(new BoolExpr(Config.defaultBoolValue), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
+                        varDeclToIdExpr(wrapperLocalDeclList.get(i)))));
+            else if (wrapperLocalDeclList.get(i).type == NamedType.INT)
                 initPreExprList.add(new BinaryExpr(new IntExpr(Config.initialIntValue), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
                         varDeclToIdExpr(wrapperLocalDeclList.get(i)))));
-            else{
+            else {
                 System.out.println("unsupported type for initial value in the wrapper");
                 assert false;
             }
