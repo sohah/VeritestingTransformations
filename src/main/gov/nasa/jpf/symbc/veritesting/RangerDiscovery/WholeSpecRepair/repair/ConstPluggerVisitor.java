@@ -1,15 +1,19 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.repair;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.RepairMode;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.ConstantHole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.PreHoleContainer;
 import jkind.lustre.*;
 import jkind.lustre.values.Value;
 import jkind.lustre.visitors.AstMapVisitor;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
@@ -32,13 +36,31 @@ public class ConstPluggerVisitor extends AstMapVisitor {
 
     @Override
     public Expr visit(IdExpr e) {
-        if (e instanceof ConstantHole) {
+        if ((e instanceof ConstantHole) || (e instanceof PreHoleContainer)) {
             Ast repairExpr = DiscoverContract.holeRepairState.getRepairValue((Hole) e);
             assert repairExpr instanceof Expr;
             return (Expr) repairExpr;
         } else
             return e;
     }
+
+
+    protected List<Equation> visitEquations(List<Equation> es) {
+        if (Config.repairMode == RepairMode.PRE) {
+            List<Equation> repairedEquations = new ArrayList<>();
+            Iterator<Equation> equationItr = es.iterator();
+
+            while (equationItr.hasNext()) {
+                Equation equation = equationItr.next();
+                if (!equation.lhs.toString().contains("container")) { //skip constrainted equations made for containers
+                    repairedEquations.add(visit(equation));
+                }
+            }
+            return repairedEquations;
+        } else
+            return map(this::visit, es);
+    }
+
 
     /**
      * uses the synthesisPgm to find the VarDecl of the hole and returns that.

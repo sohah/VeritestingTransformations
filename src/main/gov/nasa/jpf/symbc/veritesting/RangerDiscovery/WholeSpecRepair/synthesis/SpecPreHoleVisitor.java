@@ -85,10 +85,11 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
                 ArrayList<Hole> holes = new ArrayList<>();
                 ConstantHole hole1 = new ConstantHole("", NamedType.BOOL);
                 ConstantHole hole2 = new ConstantHole("", type);
-                holes.add(hole2);
 
 
                 holes.add(hole1);
+                holes.add(hole2);
+
                 this.holeVarDecl.add(IdExprToVarDecl(hole1, hole1.myType));
                 holeVarDecl.add(IdExprToVarDecl(hole2, hole2.myType));
 

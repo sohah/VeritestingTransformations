@@ -129,9 +129,6 @@ public class HoleRepairState {
         for (int i = 0; i < signals.size(); i++) {
             Signal<Value> signal = signals.get(i);
             if (signal.getName().contains(holeContainer.getContainerName())) {
-                // assert (sameSignalValuesForSteps(signal.getValues())); TODO:this actaully applies on the same hole
-                // but ot the same container.
-                // checking that.
 
                 ConstantHole conditionHole = (ConstantHole) holeContainer.myHoles.get(0);
 
@@ -170,10 +167,11 @@ public class HoleRepairState {
             Integer index = findSignalIndex(signals, initHole.getMyHoleName());
 
             if (index != null) {
-                Signal<Value> initSignal = signals.get(index - 1);
+                Signal<Value> initSignal = signals.get(index);
                 assert (sameSignalValuesForSteps(initSignal.getValues()));
                 Value signalValue = initSignal.getValue(0); // since all values are the same we can get the first one.
-                DiscoveryUtil.valueToExpr(signalValue, holeTypeMap.get(initHole));
+                Expr initHoleRepairExpr = DiscoveryUtil.valueToExpr(signalValue, holeTypeMap.get(initHole));
+                return new BinaryExpr(initHoleRepairExpr, BinaryOp.ARROW, ((BinaryExpr) expr).right);
             }
         } else // we are not expecting other forms for preExpressions
             assert false;
