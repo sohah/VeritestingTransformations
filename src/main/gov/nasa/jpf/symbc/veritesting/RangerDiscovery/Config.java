@@ -52,8 +52,8 @@ public class Config {
     public static RepairMode repairMode = RepairMode.PRE ;
 
     //this contains specific equations we would like to repair, instead of repairing the whole thing. This is now used for testing only.
-    public static Integer[] equationNumToRepair = {0};
-    public static boolean allEqRepair = true;
+    public static Integer[] equationNumToRepair = {1};
+    public static boolean allEqRepair = false;
 
 
     public static void setup() throws IOException {
