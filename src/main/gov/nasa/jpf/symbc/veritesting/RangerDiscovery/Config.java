@@ -53,6 +53,7 @@ public class Config {
 
     //this contains specific equations we would like to repair, instead of repairing the whole thing. This is now used for testing only.
     public static Integer[] equationNumToRepair = {0};
+    public static boolean allEqRepair = true;
 
 
     public static void setup() throws IOException {

@@ -176,7 +176,7 @@ public class SpecPreHoleVisitor extends AstMapVisitor {
         int i = 0;
         while (equationItr.hasNext()) {
             Equation equation = equationItr.next();
-            if (Arrays.asList(Config.equationNumToRepair).indexOf(i) >= 0)  //finds if this current equation is an equation we want to create holes in.
+            if (Config.allEqRepair || Arrays.asList(Config.equationNumToRepair).indexOf(i) >= 0)  //finds if this current equation is an equation we want to create holes in.
                 holeEquations.add(visit(equation));
             else holeEquations.add(equation);
             ++i;
