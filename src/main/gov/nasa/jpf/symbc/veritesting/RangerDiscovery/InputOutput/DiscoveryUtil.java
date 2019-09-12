@@ -40,6 +40,7 @@ public class DiscoveryUtil {
         return null;
     }
 
+
     public static BinaryOp rangerBinaryOptoLusterOp(String s) {
         BinaryOp op;
 

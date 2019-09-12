@@ -30,6 +30,8 @@ public class ToLutre {
         ArrayList<VarDecl> inputDeclList = inOutManager.generateInputDecl();
         ArrayList<VarDecl> ouputDeclList = inOutManager.generateOutputDecl();
         ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
+
+        //this line assumes that the setup of in the InOutManager for the program has not included the method output as a state output, we need to add some mechanism to enforce that or avoid adding existing values.
         ouputDeclList.addAll(methodOutDeclList);
         return new Node(RNODE, inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
                 new ArrayList<>(), null, null, null);
