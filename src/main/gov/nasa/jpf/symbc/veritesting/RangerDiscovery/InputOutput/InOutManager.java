@@ -268,7 +268,7 @@ public class InOutManager {
         return methodOutput.replicateMe(outVarName);
     }
 
-    public NamedType getMethodOutTwype() {
+    public NamedType getMethodOutType() {
         if (methodOutput.varList.size() == 0) {
             System.out.println("Method has no output, this is unexpected method signature for R! Aborting!");
             assert false;
