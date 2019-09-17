@@ -48,7 +48,10 @@ public class InOutManager {
     //This is the state output of the class in the implementation.
     ContractOutput stateOutput = new ContractOutput();
 
-    //This describes the output that is going to be validated with the specification
+    //This describes the output that is going to be validated with the specification, they are usually part of the
+    // state but should NOT be mistaken as a stateOutput, a stateOutput are only those needed internally for R node
+    // and are not validated by the spec, for those that needs to be  validated by the sepc we call the
+    // contractOutput and must be populated there.
     ContractOutput contractOutput = new ContractOutput();
 
     boolean isOutputConverted = false;
@@ -89,6 +92,17 @@ public class InOutManager {
         } else {
             System.out.println("unexpected spec to run.!");
         }
+        wrapperOutputNum = contractOutput.size;
+
+        checkAsserts();
+    }
+
+    private void checkAsserts() {
+        assert contractOutput.varInitValuePair.size() == contractOutput.varList.size();
+        assert stateOutput.varInitValuePair.size() == stateOutput.varList.size();
+        assert freeInput.size > 0;
+        assert wrapperOutputNum == contractOutput.size;
+
     }
 
     //entered by hand for now -- this is a singleton, I need to enforce this everywhere.
@@ -130,8 +144,13 @@ public class InOutManager {
     //entered by hand for now - order is important, needs to match in order of the input
     private void discoverStateOutputPad() {
         stateOutput.add(referenceObjectName + ".start_btn.1.15.4", NamedType.BOOL);
+        stateOutput.addInit(referenceObjectName + ".start_btn.1.15.4", new BoolExpr(false));
+
         stateOutput.add(referenceObjectName + ".launch_btn.1.17.4", NamedType.BOOL);
+        stateOutput.addInit(referenceObjectName + ".start_btn.1.15.4", new BoolExpr(false));
+
         stateOutput.add(referenceObjectName + ".reset_btn.1.9.4", NamedType.BOOL);
+        stateOutput.addInit(referenceObjectName + ".start_btn.1.15.4", new BoolExpr(false));
 
         if (stateOutput.containsBool()) {
             ArrayList<Equation> conversionResult = stateOutput.convertOutput();
@@ -158,7 +177,6 @@ public class InOutManager {
         contractOutput.add(referenceObjectName + ".Sys_Mode.1.5.2", NamedType.INT);
         contractOutput.addInit(referenceObjectName + ".Sys_Mode.1.5.2", new IntExpr(0));
 
-        wrapperOutputNum = contractOutput.size;
     }
 
     //entered by hand for now
@@ -228,6 +246,8 @@ public class InOutManager {
     //entered by hand for now - order is important, needs to match in order of the input
     private void discoverStateOutputEven() {
         stateOutput.add(referenceObjectName + ".countState.1.5.2", NamedType.INT);
+        stateOutput.addInit(referenceObjectName + ".countState.1.5.2", new IntExpr(0));
+
     }
 
 
