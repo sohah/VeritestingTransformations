@@ -18,6 +18,20 @@ import java.util.Collection;
  * An important thing to note here is that the signature of the different input, output, or state are reflecting those
  * in the implementation type.
  */
+
+/**
+ * State output refers to any state variable that the class keeps track of in each iteration, it really depends on
+ * the implementation.
+ * Method output on the other hand refers to outputs that the specification are going to use to check specific
+ * constraints. With this definition, method output has nothing to do with the actual output of the method in the
+ * implementation, for the specification can be checking really multiple things.
+ *
+ * There is an overlap between state output and method output, when plugging in things we need to be careful about
+ * what each term means. i.e., for those state variables that are going to be checked with the specification, even
+ * though they are part of the state and therefore might be considered as state output, they are however checked by
+ * the sepecification and with this regard they are defined as method output instead. They should not be included as
+ * a state output, only as a method output.
+ */
 public class InOutManager {
 
     //for now we are adding the reference object by hand, it changes from lunix to mac, so I am adding this here to avoid having to repeatedly change the code
@@ -25,9 +39,13 @@ public class InOutManager {
 
     private String referenceObjectName = "r347"; //for mac
 
+    //this number is very important it should be the same between the passed inputs into the spec that we think is an
+    // output of the model and it must also be the same size as the list in methodOutput
+    public static int wrapperOutputNum;
+
     Input freeInput = new Input();
     Input stateInput = new Input();
-    Output stateOutput = new Output();
+    MethodOutput stateOutput = new MethodOutput();
     MethodOutput methodOutput = new MethodOutput();
 
     boolean isOutputConverted = false;
@@ -124,7 +142,9 @@ public class InOutManager {
     }
 
 
-    //entered by hand for now
+    //entered by hand for now - this defines the output that we expect to validate with the T_node,i.e, this is the
+    // output of the wrapper that gets plugged in the T_node to  validate it. Therefore it is not directly reflecting
+    // the method output of the implementation, instead it is the output of the to-be-created r_wrapper node.
 
     private void discoverMethodOutputWBS() { //WBS has not output for the method, it is void.
         //methodOutput.add(referenceObjectName + ".countState.1.3.2", NamedType.INT);
@@ -132,12 +152,20 @@ public class InOutManager {
         methodOutput.addInit(referenceObjectName + ".output.1.5.2", new IntExpr(8));*/
 
         methodOutput.add(referenceObjectName + ".Nor_Pressure.1.13.2", NamedType.INT);
-        methodOutput.addInit(referenceObjectName + ".Nor_Pressure.1.13.2", new IntExpr(80));
+        methodOutput.addInit(referenceObjectName + ".Nor_Pressure.1.13.2", new IntExpr(0));
+
+        methodOutput.add(referenceObjectName + ".Alt_Pressure.1.13.2", NamedType.INT);
+        methodOutput.addInit(referenceObjectName + ".Alt_Pressure.1.13.2", new IntExpr(0));
+
+        methodOutput.add(referenceObjectName + ".Sys_Mode.1.5.2", NamedType.INT);
+        methodOutput.addInit(referenceObjectName + ".Sys_Mode.1.5.2", new IntExpr(0));
+
+        wrapperOutputNum = methodOutput.size;
     }
 
     //entered by hand for now
     private void discoverFreeInputWBS() {
-        freeInput.add("padal", NamedType.INT);
+        freeInput.add("pedal", NamedType.INT);
         freeInput.add("autoBrake", NamedType.BOOL);
         freeInput.add("skid", NamedType.BOOL);
 
@@ -162,14 +190,22 @@ public class InOutManager {
     //entered by hand for now - order is important, needs to match in order of the input
     private void discoverStateOutputWBS() {
 
-        stateOutput.add(referenceObjectName + ".WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2 ", NamedType.INT);
+        stateOutput.add(referenceObjectName + ".WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2", NamedType.INT);
+        stateOutput.addInit(referenceObjectName + ".WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2", new IntExpr(0));
+
+
         stateOutput.add(referenceObjectName + ".WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2", NamedType.INT);
+        stateOutput.addInit(referenceObjectName + ".WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2", new IntExpr(0));
+
+
         stateOutput.add(referenceObjectName + ".WBS_Node_WBS_rlt_PRE2.1.3.2", NamedType.INT);
+        stateOutput.addInit(referenceObjectName + ".WBS_Node_WBS_rlt_PRE2.1.3.2", new IntExpr(0));
+
 
         //commenting this state output since it is included as a method output.
         //stateOutput.add(referenceObjectName + ".Nor_Pressure.1.13.2", NamedType.INT);
-        stateOutput.add(referenceObjectName + ".Alt_Pressure.1.13.2", NamedType.INT);
-        stateOutput.add(referenceObjectName + ".Sys_Mode.1.5.2", NamedType.INT);
+        //stateOutput.add(referenceObjectName + ".Alt_Pressure.1.13.2", NamedType.INT);
+        //stateOutput.add(referenceObjectName + ".Sys_Mode.1.5.2", NamedType.INT);
     }
 
 
@@ -276,8 +312,16 @@ public class InOutManager {
         return methodOutput.varList.get(0).getSecond();
     }
 
-    public Expr getMethodReturnInit() {
-        return methodOutput.getReturnInitVal();
+    //gets the initial value of a method/wrapper output.
+    public Expr getMethodReturnInit(String name) {
+        return methodOutput.getReturnInitVal(name);
     }
 
+    public Expr getStateOutInit(String name) {
+        return stateOutput.getReturnInitVal(name);
+    }
+
+    public int getMethodOutCount() {
+        return methodOutput.size;
+    }
 }

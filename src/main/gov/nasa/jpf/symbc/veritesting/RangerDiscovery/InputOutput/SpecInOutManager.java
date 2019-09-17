@@ -26,6 +26,9 @@ public class SpecInOutManager {
             discoverFreeInputEven();
             discoverStateVarsEven();
             discoverOutputVarEven();
+        } else if (Config.spec.equals("wbs")) {
+            discoverFreeInputWbs();
+            discoverOutputVarWbs();
         } else {
             System.out.println("unexpected spec to run.!");
         }
@@ -56,6 +59,19 @@ public class SpecInOutManager {
 
     private void discoverStateVarsEven() {
         stateVars.add("step", NamedType.INT);
+    }
+
+
+    private void discoverFreeInputWbs() {
+        freeInput.add("pedal_r", NamedType.INT);
+        freeInput.add("autoBreak_r", NamedType.BOOL);
+        freeInput.add("skid_r", NamedType.BOOL);
+    }
+
+
+    private void discoverOutputVarWbs() {
+        inOutputVars.add("NormalPressure_r", NamedType.INT);
+        inOutputVars.add("AltPressure_r", NamedType.INT);
     }
 
 

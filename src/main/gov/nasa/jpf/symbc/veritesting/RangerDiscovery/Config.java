@@ -23,6 +23,8 @@ public class Config {
     public static String H_discovery = "H_discovery";
     public static boolean repairInitialValues = true;
     public static String specPropertyName = "ok";
+    public static String wrapperOutpuName = "out";
+
     public static String tnodeSpecPropertyName;
 
     public static Ast defaultHoleValBool = new BoolExpr(false);
@@ -64,7 +66,7 @@ public class Config {
             tFileName = folderName + "FaultyPreEvenSpec";
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
         } else if (spec.equals("wbs")) {
-            tFileName = folderName + "FaultyPreEvenSpec"; // TODO: step this up
+            tFileName = folderName + "ImaginaryWBS"; //
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
         }
         /*else if (spec.equals("evenRestrictive")) {

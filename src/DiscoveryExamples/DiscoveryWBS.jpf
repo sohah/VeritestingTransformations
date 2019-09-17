@@ -27,7 +27,7 @@ listener = .symbc.VeritestingListener
 veritestingMode = 3
 symbolic.lazy = true
 showLocalNames = true
-contractMethodName = runEven(Z)I
+contractMethodName = wbs.update
 
 simplify = false
 contractDiscoveryOn = true

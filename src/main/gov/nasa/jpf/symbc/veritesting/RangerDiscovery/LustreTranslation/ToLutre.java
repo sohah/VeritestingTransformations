@@ -2,7 +2,6 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -55,10 +54,11 @@ public class ToLutre {
         assert (stateInDeclList.size() > 0);
         ArrayList<VarDecl> wrapperLocalDeclList = new ArrayList<>(stateInDeclList);
 
-        //preparing wrapperOutput
-        Pair<VarDecl, Equation> methodOutVarEq = DiscoveryUtil.replicateToOut(stateInDeclList.get(stateInDeclList.size() - 1), "out");
+        //preparing wrapperOutput which should be a record that contains as many as method outputs.
+        ArrayList<Pair<VarDecl, Equation>> methodOutVarEqs = makeWrapperOutput(stateInDeclList, inOutManager
+                .getMethodOutCount());
         ArrayList<VarDecl> wrapperOutput = new ArrayList<VarDecl>();
-        wrapperOutput.add(methodOutVarEq.getFirst());
+        wrapperOutput.addAll(collectFirst(methodOutVarEqs));
 
         //call node_R
         ArrayList<Expr> actualParameters = new ArrayList<>();
@@ -69,10 +69,38 @@ public class ToLutre {
 
         ArrayList<Equation> wrapperEqList = new ArrayList<Equation>();
         wrapperEqList.add(wrapperEq);
-        wrapperEqList.add(methodOutVarEq.getSecond()); //adding equation for output
+        wrapperEqList.addAll(collectSecond(methodOutVarEqs)); //adding equation for output
 
         return new Node(WRAPPERNODE, freeDeclList, wrapperOutput, wrapperLocalDeclList, wrapperEqList
                 , new ArrayList<>(), new ArrayList<>(), null, null, null);
+    }
+
+    private static ArrayList collectFirst(ArrayList<Pair<VarDecl, Equation>> listOfPair) {
+        ArrayList varDecls = new ArrayList();
+        for (Pair<VarDecl, Equation> pair : listOfPair) {
+            varDecls.add(pair.getFirst());
+        }
+        return varDecls;
+    }
+
+    private static ArrayList<Equation> collectSecond(ArrayList<Pair<VarDecl, Equation>> listOfPair) {
+        ArrayList<Equation> eqs = new ArrayList();
+        for (Pair<VarDecl, Equation> pair : listOfPair) {
+            eqs.add(pair.getSecond());
+        }
+        return eqs;
+    }
+
+    public static ArrayList<Pair<VarDecl, Equation>> makeWrapperOutput(ArrayList<VarDecl> stateInDeclList, int methodOutCount) {
+        ArrayList outputList = new ArrayList();
+        int listSize = stateInDeclList.size();
+
+        int outIndex = 0;
+        for (int i = listSize - methodOutCount; i < listSize; i++) {
+            outputList.add(DiscoveryUtil.replicateToOut(stateInDeclList.get(i), "out_" + outIndex));
+            ++outIndex;
+        }
+        return outputList;
     }
 
     private static ArrayList<Expr> initPreTerm(ArrayList<VarDecl> wrapperLocalDeclList) {

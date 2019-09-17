@@ -2,7 +2,9 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.counterEx
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.api.results.JKindResult;
 import jkind.lustre.*;
@@ -60,7 +62,7 @@ public class CounterExContract {
 
         //generating main node
         assert (this.nodes.get(this.nodes.size() - 1).id.equals(TNODE));
-        mainNode = generateMainNode(this.nodes.get(this.nodes.size() - 1));
+        mainNode = generateMainNode(this.nodes.get(this.nodes.size() - 1), program);
 
         this.nodes.add(rNode);
         this.nodes.add(rWrapper);
@@ -76,29 +78,63 @@ public class CounterExContract {
      * @return
      */
 
-    public static Node generateMainNode(Node tNode) {
+    public static Node generateMainNode(Node tNode, Program program) {
         List<Expr> wrapperArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
         List<Expr> tNodeArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(tNode.inputs);
-        wrapperArgs.remove(wrapperArgs.size() - 1); //last argument is the output.
-        Expr callRwapper = new NodeCallExpr(WRAPPERNODE, wrapperArgs);
-        tNodeArgs.set(tNodeArgs.size() - 1, callRwapper); // settomg the last arguement which is the output, to the output of the wrapper call.
-        NodeCallExpr callT = new NodeCallExpr(TNODE, (List<Expr>) tNodeArgs);
+        Pair<List<Expr>, List<IdExpr>> wrapperArgsAndRemovedPair = removeOutput(wrapperArgs, InOutManager
+                .wrapperOutputNum); //last argument is the
+        // output.
+        Expr callRwapper = new NodeCallExpr(WRAPPERNODE, wrapperArgsAndRemovedPair.getFirst());
+
+        Equation wrapperCallEq = new Equation(wrapperArgsAndRemovedPair.getSecond(), callRwapper);
+        //tNodeArgs.set(tNodeArgs.size() - 1, callRwapper); // settomg the last arguement which is the output, to the
+        // output of the wrapper call.
+        NodeCallExpr callT = new NodeCallExpr(TNODE, tNodeArgs);
         assert (tNode.outputs.size() == 1); //assuming a single output is possible for TNode to indicate constraints are
         // passing, i.e., sat
-        List mainInList = new ArrayList();
-        mainInList.addAll(tNode.inputs);
-        mainInList.remove(mainInList.size()-1); //removing the last element because that is an output
+        List<VarDecl> mainInList = collectDeclarations((List<IdExpr>) (List<?>) wrapperArgs, tNode, program);
 
         VarDecl mainOut = new VarDecl("discovery_out", tNode.outputs.get(0).type);
         List mainOutList = new ArrayList();
         mainOutList.add(mainOut);
         Equation mainEq = new Equation(DiscoveryUtil.varDeclToIdExpr(mainOut), callT);
         List mainEquations = new ArrayList();
+        mainEquations.add(wrapperCallEq);
         mainEquations.add(mainEq);
 
-        return new Node("main", mainInList, mainOutList, null, mainEquations, null, null, null, null,
+        ArrayList<VarDecl> locals = collectDeclarations(wrapperArgsAndRemovedPair.getSecond(), tNode, program);
+
+        return new Node("main", mainInList, mainOutList, locals, mainEquations, null, null, null, null,
                 null);
 
+    }
+
+    private static ArrayList<VarDecl> collectDeclarations(List<IdExpr> idExprs, Node tnode, Program program) {
+        assert idExprs.size() > 0; //there must be some locals defined in the main to capture the output of the
+        // R_wrapper.
+
+        ArrayList<VarDecl> locals = new ArrayList<>();
+        for (IdExpr expr : idExprs) {
+            locals.add(new VarDecl(expr.id, DiscoveryUtil.lookupExprType(expr, tnode, program)));
+        }
+        return locals;
+    }
+
+    private static Pair<List<Expr>, List<IdExpr>> removeOutput(List<Expr> wrapperArgs, int wrapperOutputNum) {
+        int wrapperSize = wrapperArgs.size();
+        assert wrapperSize >= wrapperOutputNum; //arguments must be greater than the number of output expected
+        // from the wrapper.
+
+        ArrayList<IdExpr> wrapperRemoveOutput = new ArrayList<>();
+        for (int i = wrapperSize - wrapperOutputNum; i < wrapperSize; i++) {
+            wrapperRemoveOutput.add((IdExpr) wrapperArgs.get(i));
+        }
+
+        for (int i = wrapperSize - wrapperOutputNum; i < wrapperSize; i++) {
+            wrapperArgs.remove(wrapperArgs.size() - 1);
+        }
+
+        return new Pair(wrapperArgs, wrapperRemoveOutput);
     }
 
     /**
@@ -159,7 +195,7 @@ public class CounterExContract {
 
         //generating main node
         assert (nodes.get(nodes.size() - 1).id.equals(TNODE));
-        Node mainNode = generateMainNode(nodes.get(nodes.size() - 1));
+        Node mainNode = generateMainNode(nodes.get(nodes.size() - 1), pgmT);
 
         nodes.add(rNode);
         nodes.add(rWrapper);

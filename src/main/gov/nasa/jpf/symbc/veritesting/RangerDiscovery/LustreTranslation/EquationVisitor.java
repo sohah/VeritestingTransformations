@@ -31,8 +31,10 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
     public Ast visit(AssignmentStmt a) {
         Ast rhs = eva.accept(a.rhs);
         IdExpr lhs = new IdExpr(a.lhs.toString());
-        if (!rInOutManager.isOutputConverted())
+        if ((rInOutManager.isMethodReturnVar(lhs.id)) && (!rInOutManager.isOutputConverted()))
             equationList.add(addMethodReturnInit(new Equation(lhs, (Expr) rhs)));
+        else if ((rInOutManager.isStateOutVar(lhs.id)) && (!rInOutManager.isOutputConverted()))
+            equationList.add(addStateOutInit(new Equation(lhs, (Expr) rhs)));
         else
             equationList.add(new Equation(lhs, (Expr) rhs));
         return null;
@@ -46,11 +48,23 @@ public class EquationVisitor extends ExprMapVisitor implements AstVisitor<Ast> {
      */
     private Equation addMethodReturnInit(Equation equation) {
         IdExpr lhs = equation.lhs.get(0);
-        if (rInOutManager.isMethodReturnVar(lhs.id) || (rInOutManager.isStateOutVar(lhs.id))) //if it is a method retrun equation, then proceed it with the initial value
-            return DiscoveryUtil.addInitToEq(equation, rInOutManager.getMethodReturnInit());
+        if (rInOutManager.isMethodReturnVar(lhs.id)) //if it is a method retrun equation, then proceed it with the initial value
+            return DiscoveryUtil.addInitToEq(equation, rInOutManager.getMethodReturnInit(lhs.id));
 
-        return equation;
+        assert false; //there must be an init value for a method output
+        return null;
     }
+
+
+    private Equation addStateOutInit(Equation equation) {
+        IdExpr lhs = equation.lhs.get(0);
+        if (rInOutManager.isStateOutVar(lhs.id)) //if it is state output, then proceed it with the initial value
+            return DiscoveryUtil.addInitToEq(equation, rInOutManager.getStateOutInit(lhs.id));
+
+        assert false; //there must be an init value for a state output
+        return null;
+    }
+
 
     @Override
     public Ast visit(CompositionStmt a) {

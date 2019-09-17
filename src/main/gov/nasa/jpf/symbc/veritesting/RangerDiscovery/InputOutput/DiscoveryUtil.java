@@ -54,6 +54,8 @@ public class DiscoveryUtil {
             op = BinaryOp.fromString("or");
         else if (s.equals("%"))
             op = BinaryOp.fromString("mod");
+        else  if (s.equals("/")) //supporting only integer division.
+            op = BinaryOp.fromString("div");
         else
             op = BinaryOp.fromString(s);
 

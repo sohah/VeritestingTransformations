@@ -17,7 +17,6 @@
  */
 
 
-import com.ibm.wala.cast.tree.pattern.Alt;
 import gov.nasa.jpf.symbc.Debug;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.vm.Verify;
@@ -344,8 +343,11 @@ public class DiscoveryWBS {
         wbs.Alt_Pressure = Alt_Pressure;
         wbs.Sys_Mode = Sys_Mode;
 
-        if (symVar)
+        if (symVar) {
             wbs.update(pedal, autoBrake, skid);
+
+            //assert ((pedal > 0 && pedal <= 4 && !skid) ? (wbs.Alt_Pressure > 0 || wbs.Nor_Pressure > 0) : true);
+        }
     }
 
 
