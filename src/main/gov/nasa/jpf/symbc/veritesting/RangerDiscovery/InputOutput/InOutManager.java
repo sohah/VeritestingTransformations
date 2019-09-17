@@ -97,7 +97,6 @@ public class InOutManager {
         contractOutput.add(referenceObjectName + ".ignition_r.1.7.4", NamedType.BOOL);
         contractOutput.addInit(referenceObjectName + ".ignition_r.1.7.4", new BoolExpr(false));
         if (contractOutput.containsBool()) { // isn't that replicated with the state output.
-            assert contractOutput.size == 1; // a method can only have a single output
             ArrayList<Equation> conversionResult = contractOutput.convertOutput();
             assert conversionResult.size() == 1;
             typeConversionEq.addAll(conversionResult);
@@ -149,10 +148,7 @@ public class InOutManager {
     // output of the wrapper that gets plugged in the T_node to  validate it. Therefore it is not directly reflecting
     // the method output of the implementation, instead it is the output of the to-be-created r_wrapper node.
 
-    private void discoverContractOutputWBS() { //WBS has not output for the method, it is void.
-        //methodOutput.add(referenceObjectName + ".countState.1.3.2", NamedType.INT);
-        /*methodOutput.add(referenceObjectName + ".output.1.5.2", NamedType.INT);
-        methodOutput.addInit(referenceObjectName + ".output.1.5.2", new IntExpr(8));*/
+    private void discoverContractOutputWBS() {
 
         contractOutput.add(referenceObjectName + ".Nor_Pressure.1.13.2", NamedType.INT);
         contractOutput.addInit(referenceObjectName + ".Nor_Pressure.1.13.2", new IntExpr(0));
@@ -204,18 +200,12 @@ public class InOutManager {
         stateOutput.add(referenceObjectName + ".WBS_Node_WBS_rlt_PRE2.1.3.2", NamedType.INT);
         stateOutput.addInit(referenceObjectName + ".WBS_Node_WBS_rlt_PRE2.1.3.2", new IntExpr(0));
 
-
-        //commenting this state output since it is included as a method output.
-        //stateOutput.add(referenceObjectName + ".Nor_Pressure.1.13.2", NamedType.INT);
-        //stateOutput.add(referenceObjectName + ".Alt_Pressure.1.13.2", NamedType.INT);
-        //stateOutput.add(referenceObjectName + ".Sys_Mode.1.5.2", NamedType.INT);
     }
 
 
     //entered by hand for now
 
     private void discoverContractOutputEven() {
-        //methodOutput.add(referenceObjectName + ".countState.1.3.2", NamedType.INT);
         contractOutput.add(referenceObjectName + ".output.1.5.2", NamedType.INT);
         contractOutput.addInit(referenceObjectName + ".output.1.5.2", new IntExpr(8));
     }
