@@ -51,7 +51,7 @@ public class Config {
 
     private static FaultyEquation faultyEquation;
 
-    public static RepairMode repairMode = RepairMode.CONSTANT;
+    public static RepairMode repairMode = RepairMode.PRE;
 
     //this contains specific equations we would like to repair, instead of repairing the whole thing. This is now used for testing only.
     public static Integer[] equationNumToRepair = {1};
@@ -66,7 +66,7 @@ public class Config {
             tFileName = folderName + "FaultyPreEvenSpec";
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
         } else if (spec.equals("wbs")) {
-            tFileName = folderName + "FaultyImaginaryWBS"; //
+            tFileName = folderName + "FaultyPreImaginaryWBS"; //
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
         }
         /*else if (spec.equals("evenRestrictive")) {

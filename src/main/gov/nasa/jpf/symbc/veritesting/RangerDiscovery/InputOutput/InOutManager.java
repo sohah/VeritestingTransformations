@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * Contract output on the other hand refers to outputs that the specification are going to use to check specific
  * constraints. With this definition, contract output has nothing to do with the actual output of the contract in the
  * implementation, for the specification can be checking really multiple things.
- *
+ * <p>
  * There is an overlap between state output and contract output, when plugging in things we need to be careful about
  * what each term means. i.e., for those state variables that are going to be checked with the specification, even
  * though they are part of the state and therefore might be considered as state output, they are however checked by
@@ -86,8 +86,7 @@ public class InOutManager {
             discoverStateInputWBS();
             discoverStateOutputWBS();
             discoverContractOutputWBS();
-        }
-        {
+        } else {
             System.out.println("unexpected spec to run.!");
         }
     }
