@@ -5,6 +5,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.SpecInputOutput;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
@@ -296,10 +297,22 @@ public class TestCaseManager {
 
 */
         //the output is exactly the output of the wrapper which has the same type as the method output of the R node
-        testCaseInputVars.put("out", new Pair(WRAPPERNODE, this.contract.rInOutManager.getMethodOutType()));
+        //testCaseInputVars.put("out", new Pair(WRAPPERNODE, this.contract.rInOutManager.getMethodOutType()));
+        testCaseInputVars.putAll(getWrapperOutput());
+
+
         //      testCaseInputVars.putAll(testCaseInputOutVars);
 
         return testCaseInputVars;
+    }
+
+    private Map<? extends String,? extends Pair<String,NamedType>> getWrapperOutput() {
+        LinkedHashMap<String, Pair<String, NamedType>> wrapperOutputTCvars = new LinkedHashMap<>();
+
+        for(VarDecl out : CounterExContract.rWrapper.outputs){
+            wrapperOutputTCvars.put(out.id, new Pair(WRAPPERNODE, out.type));
+        }
+        return wrapperOutputTCvars;
     }
 
 

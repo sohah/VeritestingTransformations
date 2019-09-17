@@ -26,11 +26,12 @@ public class CounterExContract {
     public final List<Function> functions;
     public final List<Node> nodes;
 
-    public final Node rNode;
-    public final Node rWrapper;
-    public final Node mainNode;
+    public static Node rNode;
+    public static Node rWrapper;
+    public static Node mainNode;
 
     private Program counterExamplePgm;
+
 
     /**
      * Generates a T program counter example step from a file path, usually this is done in the first time.
@@ -67,7 +68,6 @@ public class CounterExContract {
         this.nodes.add(rNode);
         this.nodes.add(rWrapper);
         this.nodes.add(mainNode);
-
     }
 
 
@@ -182,7 +182,8 @@ public class CounterExContract {
     }
 
 
-    public static JKindResult search(String fileName, Program pgmT, Node rNode, Node rWrapper) {
+    /*
+    public static JKindResult search(String fileName, Program pgmT) {
         List<TypeDef> types = new ArrayList<>();
         List<Constant> constants = new ArrayList<>();
         List<Function> functions = new ArrayList<>();
@@ -193,9 +194,15 @@ public class CounterExContract {
         functions.addAll(pgmT.functions);
         nodes.addAll(changeMainToTnode(pgmT.nodes, pgmT.main));
 
+        *//* commenting this for now, since our rNode, rWrapper are now static.
         //generating main node
         assert (nodes.get(nodes.size() - 1).id.equals(TNODE));
         Node mainNode = generateMainNode(nodes.get(nodes.size() - 1), pgmT);
+
+        nodes.add(rNode);
+        nodes.add(rWrapper);
+        nodes.add(mainNode);
+*//*
 
         nodes.add(rNode);
         nodes.add(rWrapper);
@@ -207,6 +214,6 @@ public class CounterExContract {
         writeToFile(fileName, programStr);
         return DiscoveryUtil.callJkind(fileName, false, -1);
     }
-
+*/
 
 }
