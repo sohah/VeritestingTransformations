@@ -28,7 +28,7 @@ public class ToLutre {
         equationList.add(addSymVarEquation());
         ArrayList<VarDecl> inputDeclList = inOutManager.generateInputDecl();
         ArrayList<VarDecl> ouputDeclList = inOutManager.generateOutputDecl();
-        ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
+        ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterContractOutDeclList();
 
         //this line assumes that the setup of in the InOutManager for the program has not included the method output as a state output, we need to add some mechanism to enforce that or avoid adding existing values.
         ouputDeclList.addAll(methodOutDeclList);
@@ -56,7 +56,7 @@ public class ToLutre {
 
         //preparing wrapperOutput which should be a record that contains as many as method outputs.
         ArrayList<Pair<VarDecl, Equation>> methodOutVarEqs = makeWrapperOutput(stateInDeclList, inOutManager
-                .getMethodOutCount());
+                .getContractOutputCount());
         ArrayList<VarDecl> wrapperOutput = new ArrayList<VarDecl>();
         wrapperOutput.addAll(collectFirst(methodOutVarEqs));
 

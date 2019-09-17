@@ -5,12 +5,11 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.lustre.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 
 /**
  * this class manages the input and output of RNode, it assumes that the input and the output of the "step" function is
- * provided, it is divided into 4 types, freeInput, stateInput, stateOutput and methodOutput. The type of those
+ * provided, it is divided into 4 types, freeInput, stateInput, stateOutput and contractOutput. The type of those
  * should match the signature of the step function. Type conversion is needed sometimes, if so then the variable
  * names in the arraylist will change to the new var being created, in this case there will be as well a side effect
  * for the equations needed for conversion between the original var and the new var being created for conversion.
@@ -22,15 +21,15 @@ import java.util.Collection;
 /**
  * State output refers to any state variable that the class keeps track of in each iteration, it really depends on
  * the implementation.
- * Method output on the other hand refers to outputs that the specification are going to use to check specific
- * constraints. With this definition, method output has nothing to do with the actual output of the method in the
+ * Contract output on the other hand refers to outputs that the specification are going to use to check specific
+ * constraints. With this definition, contract output has nothing to do with the actual output of the contract in the
  * implementation, for the specification can be checking really multiple things.
  *
- * There is an overlap between state output and method output, when plugging in things we need to be careful about
+ * There is an overlap between state output and contract output, when plugging in things we need to be careful about
  * what each term means. i.e., for those state variables that are going to be checked with the specification, even
  * though they are part of the state and therefore might be considered as state output, they are however checked by
- * the sepecification and with this regard they are defined as method output instead. They should not be included as
- * a state output, only as a method output.
+ * the sepecification and with this regard they are defined as contract output instead. They should not be included as
+ * a state output, only as a contract output.
  */
 public class InOutManager {
 
@@ -40,13 +39,17 @@ public class InOutManager {
     private String referenceObjectName = "r347"; //for mac
 
     //this number is very important it should be the same between the passed inputs into the spec that we think is an
-    // output of the model and it must also be the same size as the list in methodOutput
+    // output of the model and it must also be the same size as the list in contractOutput
     public static int wrapperOutputNum;
 
     Input freeInput = new Input();
     Input stateInput = new Input();
-    MethodOutput stateOutput = new MethodOutput();
-    MethodOutput methodOutput = new MethodOutput();
+
+    //This is the state output of the class in the implementation.
+    ContractOutput stateOutput = new ContractOutput();
+
+    //This describes the output that is going to be validated with the specification
+    ContractOutput contractOutput = new ContractOutput();
 
     boolean isOutputConverted = false;
 
@@ -72,17 +75,17 @@ public class InOutManager {
             discoverFreeInputPad();
             discoverStateInputPad();
             discoverStateOutputPad();
-            discoverMethodOutputPad();
+            discoverContractOutputPad();
         } else if (Config.spec.equals("even")) {
             discoverFreeInputEven();
             discoverStateInputEven();
             discoverStateOutputEven();
-            discoverMethodOutputEven();
+            discoverContractOutputEven();
         } else if (Config.spec.equals("wbs")) {
             discoverFreeInputWBS();
             discoverStateInputWBS();
             discoverStateOutputWBS();
-            discoverMethodOutputWBS();
+            discoverContractOutputWBS();
         }
         {
             System.out.println("unexpected spec to run.!");
@@ -90,12 +93,12 @@ public class InOutManager {
     }
 
     //entered by hand for now -- this is a singleton, I need to enforce this everywhere.
-    private void discoverMethodOutputPad() {
-        methodOutput.add(referenceObjectName + ".ignition_r.1.7.4", NamedType.BOOL);
-        methodOutput.addInit(referenceObjectName + ".ignition_r.1.7.4", new BoolExpr(false));
-        if (methodOutput.containsBool()) { // isn't that replicated with the state output.
-            assert methodOutput.size == 1; // a method can only have a single output
-            ArrayList<Equation> conversionResult = methodOutput.convertOutput();
+    private void discoverContractOutputPad() {
+        contractOutput.add(referenceObjectName + ".ignition_r.1.7.4", NamedType.BOOL);
+        contractOutput.addInit(referenceObjectName + ".ignition_r.1.7.4", new BoolExpr(false));
+        if (contractOutput.containsBool()) { // isn't that replicated with the state output.
+            assert contractOutput.size == 1; // a method can only have a single output
+            ArrayList<Equation> conversionResult = contractOutput.convertOutput();
             assert conversionResult.size() == 1;
             typeConversionEq.addAll(conversionResult);
             isOutputConverted = true;
@@ -146,21 +149,21 @@ public class InOutManager {
     // output of the wrapper that gets plugged in the T_node to  validate it. Therefore it is not directly reflecting
     // the method output of the implementation, instead it is the output of the to-be-created r_wrapper node.
 
-    private void discoverMethodOutputWBS() { //WBS has not output for the method, it is void.
+    private void discoverContractOutputWBS() { //WBS has not output for the method, it is void.
         //methodOutput.add(referenceObjectName + ".countState.1.3.2", NamedType.INT);
         /*methodOutput.add(referenceObjectName + ".output.1.5.2", NamedType.INT);
         methodOutput.addInit(referenceObjectName + ".output.1.5.2", new IntExpr(8));*/
 
-        methodOutput.add(referenceObjectName + ".Nor_Pressure.1.13.2", NamedType.INT);
-        methodOutput.addInit(referenceObjectName + ".Nor_Pressure.1.13.2", new IntExpr(0));
+        contractOutput.add(referenceObjectName + ".Nor_Pressure.1.13.2", NamedType.INT);
+        contractOutput.addInit(referenceObjectName + ".Nor_Pressure.1.13.2", new IntExpr(0));
 
-        methodOutput.add(referenceObjectName + ".Alt_Pressure.1.13.2", NamedType.INT);
-        methodOutput.addInit(referenceObjectName + ".Alt_Pressure.1.13.2", new IntExpr(0));
+        contractOutput.add(referenceObjectName + ".Alt_Pressure.1.13.2", NamedType.INT);
+        contractOutput.addInit(referenceObjectName + ".Alt_Pressure.1.13.2", new IntExpr(0));
 
-        methodOutput.add(referenceObjectName + ".Sys_Mode.1.5.2", NamedType.INT);
-        methodOutput.addInit(referenceObjectName + ".Sys_Mode.1.5.2", new IntExpr(0));
+        contractOutput.add(referenceObjectName + ".Sys_Mode.1.5.2", NamedType.INT);
+        contractOutput.addInit(referenceObjectName + ".Sys_Mode.1.5.2", new IntExpr(0));
 
-        wrapperOutputNum = methodOutput.size;
+        wrapperOutputNum = contractOutput.size;
     }
 
     //entered by hand for now
@@ -211,10 +214,10 @@ public class InOutManager {
 
     //entered by hand for now
 
-    private void discoverMethodOutputEven() {
+    private void discoverContractOutputEven() {
         //methodOutput.add(referenceObjectName + ".countState.1.3.2", NamedType.INT);
-        methodOutput.add(referenceObjectName + ".output.1.5.2", NamedType.INT);
-        methodOutput.addInit(referenceObjectName + ".output.1.5.2", new IntExpr(8));
+        contractOutput.add(referenceObjectName + ".output.1.5.2", NamedType.INT);
+        contractOutput.addInit(referenceObjectName + ".output.1.5.2", new IntExpr(8));
     }
 
     //entered by hand for now
@@ -257,8 +260,8 @@ public class InOutManager {
         return inputOutput.generateVarDecl();
     }
 
-    public ArrayList<VarDecl> generaterMethodOutDeclList() {
-        return methodOutput.generateVarDecl();
+    public ArrayList<VarDecl> generaterContractOutDeclList() {
+        return contractOutput.generateVarDecl();
     }
 
     public ArrayList<VarDecl> generateOutputDecl() {
@@ -272,7 +275,7 @@ public class InOutManager {
      * @return
      */
     public boolean isInOutVar(String s, NamedType type) {
-        return isFreeInVar(s, type) || isStateInVar(s, type) || isStateOutVar(s, type) || isMethodOutVar(s, type);
+        return isFreeInVar(s, type) || isStateInVar(s, type) || isStateOutVar(s, type) || isContractOutputVar(s, type);
     }
 
 
@@ -288,40 +291,40 @@ public class InOutManager {
         return stateOutput.contains(varName, type);
     }
 
-    public boolean isMethodOutVar(String varName, NamedType type) {
-        return methodOutput.contains(varName, type);
+    public boolean isContractOutputVar(String varName, NamedType type) {
+        return contractOutput.contains(varName, type);
     }
 
-    public boolean isMethodReturnVar(String name) {
-        return methodOutput.hasName(name);
+    public boolean isContractOutputStr(String name) {
+        return contractOutput.hasName(name);
     }
 
     public boolean isStateOutVar(String name) {
         return stateOutput.hasName(name);
     }
 
-    public Pair<VarDecl, Equation> replicateMethodOutput(String outVarName) {
-        return methodOutput.replicateMe(outVarName);
+    public Pair<VarDecl, Equation> replicateContractOutput(String outVarName) {
+        return contractOutput.replicateMe(outVarName);
     }
 
-    public NamedType getMethodOutType() {
-        if (methodOutput.varList.size() == 0) {
-            System.out.println("Method has no output, this is unexpected method signature for R! Aborting!");
+    public NamedType getContractOutType() {
+        if (contractOutput.varList.size() == 0) {
+            System.out.println("Contract has no output, this is unexpected signature for contract R! Aborting!");
             assert false;
         }
-        return methodOutput.varList.get(0).getSecond();
+        return contractOutput.varList.get(0).getSecond();
     }
 
-    //gets the initial value of a method/wrapper output.
-    public Expr getMethodReturnInit(String name) {
-        return methodOutput.getReturnInitVal(name);
+    //gets the initial value of a wrapper output.
+    public Expr getContractOutputInit(String name) {
+        return contractOutput.getReturnInitVal(name);
     }
 
     public Expr getStateOutInit(String name) {
         return stateOutput.getReturnInitVal(name);
     }
 
-    public int getMethodOutCount() {
-        return methodOutput.size;
+    public int getContractOutputCount() {
+        return contractOutput.size;
     }
 }

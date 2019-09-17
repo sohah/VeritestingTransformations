@@ -6,7 +6,7 @@ import jkind.lustre.*;
 
 import java.util.ArrayList;
 
-public class MethodOutput extends Output {
+public class ContractOutput extends Output {
 
     public void addInit(String var, Expr expr) {
         varInitValuePair.add(new Pair<>(var, expr));
