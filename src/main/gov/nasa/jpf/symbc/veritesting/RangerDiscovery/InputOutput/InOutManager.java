@@ -128,6 +128,7 @@ public class InOutManager {
 
         } else {
             System.out.println("unexpected spec to run.!");
+            assert false;
         }
         wrapperOutputNum = contractOutput.size;
 
