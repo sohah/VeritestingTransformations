@@ -32,5 +32,16 @@ contractMethodName = wbs.update
 simplify = false
 contractDiscoveryOn = true
 specRepair = true
+spec = FaultyImaginaryWBS
+
+
+
+################## contract Discovery configurations ###############
 spec = wbs
-#spec = pad
+specRepair = true
+repairMode = 0
+
+contractMethodName = FaultyWbs_Const
+contractDiscoveryOn = true
+faultySpec = FaultyWbs_Const
+repairInitialValues = true
