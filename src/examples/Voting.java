@@ -6,7 +6,7 @@ public class Voting {
     }
 
     public void vote2(boolean a, boolean b, boolean c, int threshold) {
-        out = ((a && b) || (b && c) || (a && c)) && (threshold > 5);
+        out = ((a && b) || (b && c) || (a && c)) && (threshold < 10) && (threshold > 5);
     }
 
     public void vote3(boolean a, boolean b, boolean c) {
