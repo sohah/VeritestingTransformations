@@ -3,16 +3,19 @@
 
 
 
-node gather_1_Wrapper(e1:int; e2: int; hole1:int; hole2:int) returns (val:int);
+
+node discoverLogicalOperand(in1:bool; in2:bool; in3:bool; myHole:intHole) returns (out:bool);
 
 let
-	val = gather_1(e1, e2, hole1, hole2);
-tel;
-
-node gather_1(e1:int; e2: int; hole1:int; hole2:int) returns (val:int);
-
-let
-	val = (e1 * hole1) + (e2 * hole2);
+	out = if(myHole = 0)
+	      then in1 and in2
+	      else if(myHole=1)
+	           then in1 and in3
+	           else if (myHole=2)
+	                 then in2 and in3
+	                 else if(myHole=3)
+	                      then in1 and in3
+	                      else in1 and in2 and in3;
 tel;
 
 
