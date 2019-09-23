@@ -8,7 +8,7 @@ class PadUnit
     public int name;
     public PadUnit(int name) //Constructor
     {
-        AnMain.controller.registerPad(this);
+        AnMainSymbolic.controller.registerPad(this);
         this.name = name;
     }
 

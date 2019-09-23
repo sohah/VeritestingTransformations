@@ -89,6 +89,11 @@ public class InOutManager {
             discoverStateInputWBS();
             discoverStateOutputWBS();
             discoverContractOutputWBS();
+        } else if (Config.spec.equals("vote")) {
+            discoverFreeInputVote();
+            discoverStateInputVote();
+            discoverStateOutputVote();
+            discoverContractOutputVote();
         } else {
             System.out.println("unexpected spec to run.!");
         }
@@ -105,6 +110,8 @@ public class InOutManager {
 
     }
 
+
+    //================================= Pad ========================
     //entered by hand for now -- this is a singleton, I need to enforce this everywhere.
     private void discoverContractOutputPad() {
         contractOutput.add(referenceObjectName + ".ignition_r.1.7.4", NamedType.BOOL);
@@ -161,6 +168,8 @@ public class InOutManager {
         }
     }
 
+
+    //====================== WBS ====================================
 
     //entered by hand for now - this defines the output that we expect to validate with the T_node,i.e, this is the
     // output of the wrapper that gets plugged in the T_node to  validate it. Therefore it is not directly reflecting
@@ -220,6 +229,8 @@ public class InOutManager {
     }
 
 
+
+    //=========================== Even ============================
     //entered by hand for now
 
     private void discoverContractOutputEven() {
@@ -249,6 +260,39 @@ public class InOutManager {
         stateOutput.addInit(referenceObjectName + ".countState.1.5.2", new IntExpr(0));
 
     }
+
+
+    //=========================== Vote ===========================
+
+    private void discoverContractOutputVote() {
+
+        contractOutput.add(referenceObjectName + ".out.1.3.2", NamedType.BOOL);
+        contractOutput.addInit(referenceObjectName + ".out.1.3.2", new BoolExpr(false));
+    }
+
+    //entered by hand for now
+    private void discoverFreeInputVote() {
+        freeInput.add("a", NamedType.BOOL);
+        freeInput.add("b", NamedType.BOOL);
+        freeInput.add("c", NamedType.BOOL);
+        freeInput.add("threshold", NamedType.INT);
+
+        if (freeInput.containsBool()) {
+            Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
+            typeConversionEq.addAll(conversionResult.getSecond());
+            conversionLocalList.addAll(conversionResult.getFirst());
+        }
+    }
+
+    //entered by hand for now
+    private void discoverStateInputVote() {
+        stateInput.add("stateVar", NamedType.BOOL);
+    }
+
+    //entered by hand for now - order is important, needs to match in order of the input
+    private void discoverStateOutputVote() {
+    }
+
 
 
     public ArrayList<VarDecl> generateInputDecl() {

@@ -29,10 +29,14 @@ public class SpecInOutManager {
         } else if (Config.spec.equals("wbs")) {
             discoverFreeInputWbs();
             discoverOutputVarWbs();
+        } else if (Config.spec.equals("vote")) {
+            discoverFreeInputVote();
+            discoverOutputVarVote();
         } else {
             System.out.println("unexpected spec to run.!");
         }
     }
+    //=========================== Pad ===========================
 
     private void discoverFreeInputPad() {
         freeInput.add("sig", NamedType.INT);
@@ -49,6 +53,8 @@ public class SpecInOutManager {
     }
 
 
+    //=========================== Even ===========================
+
     private void discoverOutputVarEven() {
         inOutputVars.add("out", NamedType.INT);
     }
@@ -62,6 +68,8 @@ public class SpecInOutManager {
     }
 
 
+    //=========================== WBS ===========================
+
     private void discoverFreeInputWbs() {
         freeInput.add("pedal_r", NamedType.INT);
         freeInput.add("autoBreak_r", NamedType.BOOL);
@@ -72,6 +80,20 @@ public class SpecInOutManager {
     private void discoverOutputVarWbs() {
         inOutputVars.add("NormalPressure_r", NamedType.INT);
         inOutputVars.add("AltPressure_r", NamedType.INT);
+    }
+
+
+    //=========================== Vote ===========================
+    private void discoverFreeInputVote() {
+        freeInput.add("a", NamedType.BOOL);
+        freeInput.add("b", NamedType.BOOL);
+        freeInput.add("c", NamedType.BOOL);
+        freeInput.add("threshold", NamedType.BOOL);
+    }
+
+
+    private void discoverOutputVarVote() {
+        inOutputVars.add("out", NamedType.INT);
     }
 
 

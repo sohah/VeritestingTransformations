@@ -49,7 +49,7 @@ public class ToLutre {
     public static Node generateRwrapper(InOutManager inOutManager) {
         List<VarDecl> freeDeclList = inOutManager.generateFreeInputDecl();
 
-        //wrapperLocals are defined as stateInput
+        //wrapperLocals are defined as stateInput TODO:this assumption needs to be changed, see simple vote example.
         ArrayList<VarDecl> stateInDeclList = inOutManager.generateStateInputDecl();
         assert (stateInDeclList.size() > 0);
         ArrayList<VarDecl> wrapperLocalDeclList = new ArrayList<>(stateInDeclList);
