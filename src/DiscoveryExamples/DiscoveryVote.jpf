@@ -6,7 +6,7 @@ symbolic.debug=true
 
 
 ######## miscellaneous  ######
-symbolic.method=Voting.discoveryVote(sym#sym#sym#sym#sym#sym)
+symbolic.method=Voting.makeStep(sym#sym#sym#sym#sym#sym)
 
 symbolic.dp=z3
 

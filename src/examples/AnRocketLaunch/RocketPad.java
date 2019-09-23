@@ -25,7 +25,7 @@ class RocketPad
     {
         //Send signal to PadUnit
         activateButton.activate();
-        AnMain.controller.activateControlButton(pad,rocketName);//throw InvalidInputException here
+        AnMainSymbolic.controller.activateControlButton(pad,rocketName);//throw InvalidInputException here
     }
 
     void getRelayState()
