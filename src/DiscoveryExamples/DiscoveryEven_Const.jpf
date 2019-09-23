@@ -33,9 +33,9 @@ simplify = false
 ################## contract Discovery configurations ###############
 spec = even
 specRepair = true
-repairMode = 1
+repairMode = 0
 
-contractMethodName = FaultyEven_
+contractMethodName = FaultyEven_Const
 contractDiscoveryOn = true
 faultySpec = FaultyEven_Const
 repairInitialValues = false

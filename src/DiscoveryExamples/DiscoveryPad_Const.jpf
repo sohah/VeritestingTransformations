@@ -34,9 +34,9 @@ showLocalNames = true
 ################## contract Discovery configurations ###############
 spec = pad
 specRepair = true
-repairMode = 1
+repairMode = 0
 
-contractMethodName = FaultyPad_Pre
+contractMethodName = FaultyPad_Const
 contractDiscoveryOn = true
-faultySpec = FaultyPad_Pre
-repairInitialValues = false
+faultySpec = FaultyPad_Const
+repairInitialValues = true
