@@ -27,10 +27,15 @@ listener = .symbc.VeritestingListener
 veritestingMode = 3
 symbolic.lazy = true
 showLocalNames = true
-contractMethodName = runEven(Z)I
-
 simplify = false
-contractDiscoveryOn = true
+
+
+################## contract Discovery configurations ###############
+spec = even
 specRepair = true
-spec = evenRestrictive
-#spec = pad
+repairMode = 1
+
+contractMethodName = FaultyEven_Pre
+contractDiscoveryOn = true
+faultySpec = FaultyEven_Pre
+repairInitialValues = false

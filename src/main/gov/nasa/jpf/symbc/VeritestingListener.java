@@ -5,6 +5,7 @@ import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.veritesting.Heuristics.HeuristicManager;
 import gov.nasa.jpf.symbc.veritesting.Heuristics.PathStatus;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.RepairMode;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
@@ -223,6 +224,23 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.specLevelRepair = conf.getBoolean("specRepair");
                 if (conf.hasValue("spec"))
                     gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.spec = conf.getString("spec");
+                if (conf.hasValue("faultySpec"))
+                    gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.faultySpec = conf.getString("faultySpec");
+                if (conf.hasValue("repairInitialValues"))
+                    gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairInitialValues = conf.getBoolean("repairInitialValues");
+                if (conf.hasValue("repairMode")) {
+                    int repairMode = conf.getInt("repairMode");
+                    if (repairMode == 0)
+                        gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairMode = RepairMode.CONSTANT;
+                    else if (repairMode == 1)
+                        gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairMode = RepairMode.PRE;
+                    else if (repairMode == 2)
+                        gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairMode = RepairMode.LIBRARY;
+                    else {
+                        System.out.println("No other mode is supported");
+                        assert false;
+                    }
+                }
             }
         }
     }

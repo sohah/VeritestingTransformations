@@ -76,24 +76,56 @@ public class InOutManager {
     public void discoverVars() {
         if (Config.spec.equals("pad")) {
             discoverFreeInputPad();
+            doFreeTypeConversion();
+
             discoverStateInputPad();
+            doStateInputTypeConversion();
+
             discoverStateOutputPad();
+            doStateOutputTypeConversion();
+
             discoverContractOutputPad();
+            doContractOutputTypeConversion();
+
         } else if (Config.spec.equals("even")) {
             discoverFreeInputEven();
+            doFreeTypeConversion();
+
             discoverStateInputEven();
+            doStateInputTypeConversion();
+
             discoverStateOutputEven();
+            doStateOutputTypeConversion();
+
             discoverContractOutputEven();
+            doContractOutputTypeConversion();
+
         } else if (Config.spec.equals("wbs")) {
             discoverFreeInputWBS();
+            doFreeTypeConversion();
+
             discoverStateInputWBS();
+            doStateInputTypeConversion();
+
             discoverStateOutputWBS();
+            doStateOutputTypeConversion();
+
             discoverContractOutputWBS();
+            doContractOutputTypeConversion();
+
         } else if (Config.spec.equals("vote")) {
             discoverFreeInputVote();
+            doFreeTypeConversion();
+
             discoverStateInputVote();
+            doStateInputTypeConversion();
+
             discoverStateOutputVote();
+            doStateOutputTypeConversion();
+
             discoverContractOutputVote();
+            doContractOutputTypeConversion();
+
         } else {
             System.out.println("unexpected spec to run.!");
         }
@@ -110,12 +142,9 @@ public class InOutManager {
 
     }
 
+    //================================= Type Conversion ========================
 
-    //================================= Pad ========================
-    //entered by hand for now -- this is a singleton, I need to enforce this everywhere.
-    private void discoverContractOutputPad() {
-        contractOutput.add(referenceObjectName + ".ignition_r.1.7.4", NamedType.BOOL);
-        contractOutput.addInit(referenceObjectName + ".ignition_r.1.7.4", new BoolExpr(false));
+    private void doContractOutputTypeConversion() {
         if (contractOutput.containsBool()) { // isn't that replicated with the state output.
             ArrayList<Equation> conversionResult = contractOutput.convertOutput();
             assert conversionResult.size() == 1;
@@ -124,15 +153,49 @@ public class InOutManager {
         }
     }
 
-    //entered by hand for now
-    private void discoverFreeInputPad() {
-        freeInput.add("signal", NamedType.INT);
+    private void doFreeTypeConversion() {
         if (freeInput.containsBool()) {
             Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
             typeConversionEq.addAll(conversionResult.getSecond());
             conversionLocalList.addAll(conversionResult.getFirst());
         }
     }
+
+    private void doStateInputTypeConversion() {
+        if (stateInput.containsBool()) { //type conversion to spf int type is needed
+            Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = stateInput.convertInput();
+            typeConversionEq.addAll(conversionResult.getSecond());
+            conversionLocalList.addAll(conversionResult.getFirst());
+        }
+    }
+
+    private void doStateOutputTypeConversion() {
+        if (stateOutput.containsBool()) {
+            ArrayList<Equation> conversionResult = stateOutput.convertOutput();
+            typeConversionEq.addAll(conversionResult);
+            //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
+            // def in the dynStmt
+            isOutputConverted = true;
+        }
+    }
+
+    //================================= end Type Conversion ========================
+
+
+    //================================= Pad ========================
+    //entered by hand for now -- this is a singleton, I need to enforce this everywhere.
+    private void discoverContractOutputPad() {
+        contractOutput.add(referenceObjectName + ".ignition_r.1.7.4", NamedType.BOOL);
+        contractOutput.addInit(referenceObjectName + ".ignition_r.1.7.4", new BoolExpr(false));
+    }
+
+
+    //entered by hand for now
+    private void discoverFreeInputPad() {
+        freeInput.add("signal", NamedType.INT);
+    }
+
+
 
     //entered by hand for now
     private void discoverStateInputPad() {
@@ -141,11 +204,6 @@ public class InOutManager {
         stateInput.add("reset_btn", NamedType.BOOL);
         stateInput.add("ignition", NamedType.BOOL);
 
-        if (stateInput.containsBool()) { //type conversion to spf int type is needed
-            Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = stateInput.convertInput();
-            typeConversionEq.addAll(conversionResult.getSecond());
-            conversionLocalList.addAll(conversionResult.getFirst());
-        }
     }
 
     //entered by hand for now - order is important, needs to match in order of the input
@@ -159,14 +217,8 @@ public class InOutManager {
         stateOutput.add(referenceObjectName + ".reset_btn.1.9.4", NamedType.BOOL);
         stateOutput.addInit(referenceObjectName + ".start_btn.1.15.4", new BoolExpr(false));
 
-        if (stateOutput.containsBool()) {
-            ArrayList<Equation> conversionResult = stateOutput.convertOutput();
-            typeConversionEq.addAll(conversionResult);
-            //conversionLocalList.addAll(conversionResult.getFirst()); // no need to add this, since these are already as
-            // def in the dynStmt
-            isOutputConverted = true;
-        }
     }
+
 
 
     //====================== WBS ====================================
@@ -194,11 +246,11 @@ public class InOutManager {
         freeInput.add("autoBrake", NamedType.BOOL);
         freeInput.add("skid", NamedType.BOOL);
 
-        if (freeInput.containsBool()) {
+        /*if (freeInput.containsBool()) {
             Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
             typeConversionEq.addAll(conversionResult.getSecond());
             conversionLocalList.addAll(conversionResult.getFirst());
-        }
+        }*/
     }
 
     //entered by hand for now
@@ -210,6 +262,7 @@ public class InOutManager {
         stateInput.add("Nor_Pressure", NamedType.INT);
         stateInput.add("Alt_Pressure", NamedType.INT);
         stateInput.add("Sys_Mode", NamedType.INT);
+
     }
 
     //entered by hand for now - order is important, needs to match in order of the input
@@ -241,11 +294,11 @@ public class InOutManager {
     //entered by hand for now
     private void discoverFreeInputEven() {
         freeInput.add("signal", NamedType.BOOL);
-        if (freeInput.containsBool()) {
+        /*if (freeInput.containsBool()) {
             Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
             typeConversionEq.addAll(conversionResult.getSecond());
             conversionLocalList.addAll(conversionResult.getFirst());
-        }
+        }*/
     }
 
     //entered by hand for now
@@ -268,12 +321,12 @@ public class InOutManager {
 
         contractOutput.add(referenceObjectName + ".out.1.3.2", NamedType.BOOL);
         contractOutput.addInit(referenceObjectName + ".out.1.3.2", new BoolExpr(false));
-        if (contractOutput.containsBool()) { // isn't that replicated with the state output.
+        /*if (contractOutput.containsBool()) { // isn't that replicated with the state output.
             ArrayList<Equation> conversionResult = contractOutput.convertOutput();
             assert conversionResult.size() == 1;
             typeConversionEq.addAll(conversionResult);
             isOutputConverted = true;
-        }
+        }*/
     }
 
     //entered by hand for now
@@ -283,21 +336,21 @@ public class InOutManager {
         freeInput.add("c", NamedType.BOOL);
         freeInput.add("threshold", NamedType.INT);
 
-        if (freeInput.containsBool()) {
+        /*if (freeInput.containsBool()) {
             Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
             typeConversionEq.addAll(conversionResult.getSecond());
             conversionLocalList.addAll(conversionResult.getFirst());
-        }
+        }*/
     }
 
     //entered by hand for now
     private void discoverStateInputVote() {
         stateInput.add("out", NamedType.BOOL);
-        if (stateInput.containsBool()) { //type conversion to spf int type is needed
+        /*if (stateInput.containsBool()) { //type conversion to spf int type is needed
             Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = stateInput.convertInput();
             typeConversionEq.addAll(conversionResult.getSecond());
             conversionLocalList.addAll(conversionResult.getFirst());
-        }
+        }*/
     }
 
     //entered by hand for now - order is important, needs to match in order of the input

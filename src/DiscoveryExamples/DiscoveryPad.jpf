@@ -1,4 +1,4 @@
-target=EvenImplementation
+target=SimplePadReset
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil
@@ -6,7 +6,8 @@ symbolic.debug=true
 
 
 ######## miscellaneous  ######
-symbolic.method=EvenImplementation.makeStep(sym#sym#sym#sym)
+symbolic.method=SimplePadReset.runPadSteps(sym#sym#sym#sym#sym#sym)
+#symbolic.method=SimplePadReset.runPad(sym)
 
 symbolic.dp=z3
 
@@ -27,9 +28,10 @@ listener = .symbc.VeritestingListener
 veritestingMode = 3
 symbolic.lazy = true
 showLocalNames = true
-contractMethodName = runEven(Z)I
+contractMethodName = runPad(I)Z
 
 simplify = false
 contractDiscoveryOn = true
+
 specRepair = true
-spec = even
+spec = FaultyPreImaginaryPad

@@ -21,7 +21,6 @@ public class Config {
     public static String WRAPPERNODE = "R_wrapper";
     public static String CHECKSPECNODE = "Check_spec";
     public static String H_discovery = "H_discovery";
-    public static boolean repairInitialValues = true;
     public static String specPropertyName = "ok";
     public static String wrapperOutpuName = "out";
 
@@ -35,6 +34,9 @@ public class Config {
     public static boolean specLevelRepair;// = false;
 
     public static String spec;// = "even";
+
+    public static String faultySpec;
+
     public static boolean defaultBoolValue = false;
     public static int initialIntValue = 0;
 
@@ -51,7 +53,8 @@ public class Config {
 
     private static FaultyEquation faultyEquation;
 
-    public static RepairMode repairMode = RepairMode.CONSTANT;
+    public static RepairMode repairMode;
+    public static boolean repairInitialValues;
 
     //this contains specific equations we would like to repair, instead of repairing the whole thing. This is now used for testing only.
     public static Integer[] equationNumToRepair = {1};
@@ -59,19 +62,19 @@ public class Config {
 
 
     public static void setup() throws IOException {
-        if (spec.equals("pad")) {
+
+        tFileName = folderName + faultySpec;
+        tnodeSpecPropertyName = "T_node~0.p1";
+
+        /*if (spec.equals("pad")) {
             tFileName = folderName + "FaultyPreImaginaryPad";
-            tnodeSpecPropertyName = "T_node~0.p1";
         } else if (spec.equals("even")) {
             tFileName = folderName + "FaultyPreEvenSpec";
-            tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
         } else if (spec.equals("wbs")) {
             tFileName = folderName + "FaultyImaginaryWBS"; //
-            tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
         } else if (spec.equals("vote")) {
             tFileName = folderName + "vote"; //
-            tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
-        }
+        }*/
         /*else if (spec.equals("evenRestrictive")) {
             tFileName = folderName + "FaultyEvenRestrictiveSpec";
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
@@ -79,10 +82,10 @@ public class Config {
             tFileName = folderName + "FaultyPreEvenSpec";
             tnodeSpecPropertyName = "T_node~0.p1"; // we do not know yet!
         } */
-        else {
+        /*else {
             System.out.println("unsupported spec, you need to setup input and output of the spec before usage!");
             assert false;
-        }
+        }*/
         auxilaryRepairProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(folderName + repairLustreFileName)), "UTF-8"));
 
     }
