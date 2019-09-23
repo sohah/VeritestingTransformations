@@ -88,12 +88,12 @@ public class SpecInOutManager {
         freeInput.add("a", NamedType.BOOL);
         freeInput.add("b", NamedType.BOOL);
         freeInput.add("c", NamedType.BOOL);
-        freeInput.add("threshold", NamedType.BOOL);
+        freeInput.add("threshold", NamedType.INT);
     }
 
 
     private void discoverOutputVarVote() {
-        inOutputVars.add("out", NamedType.INT);
+        inOutputVars.add("out", NamedType.BOOL);
     }
 
 

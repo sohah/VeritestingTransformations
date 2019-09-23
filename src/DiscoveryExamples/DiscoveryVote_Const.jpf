@@ -25,11 +25,17 @@ listener = .symbc.VeritestingListener
 #listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
 
 veritestingMode = 3
+simplify = false
 symbolic.lazy = true
 showLocalNames = true
-contractMethodName = discoveryVote
 
-simplify = false
-contractDiscoveryOn = true
-specRepair = true
+
+################## contract Discovery configurations ###############
 spec = vote
+specRepair = true
+repairMode = 0
+
+contractMethodName = FaultyVote_Const
+contractDiscoveryOn = true
+faultySpec = FaultyVote_Const
+repairInitialValues = false

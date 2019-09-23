@@ -3,7 +3,7 @@ node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool)
 
 let
 
-    p1 = true -> out => (((a and b) or (b and c) or (a and c)) and (threshold > 5));
+    p1 = true -> out => (((a and b) or (b and c) or (a and c)) and (threshold > 10));
 
   --%PROPERTY p1;
 
