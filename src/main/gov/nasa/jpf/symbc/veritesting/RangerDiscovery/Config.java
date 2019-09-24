@@ -53,7 +53,7 @@ public class Config {
 
     private static FaultyEquation faultyEquation;
 
-    public static RepairMode repairMode;
+    public static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.RepairMode repairMode;
     public static boolean repairInitialValues;
 
     //this contains specific equations we would like to repair, instead of repairing the whole thing. This is now used for testing only.
