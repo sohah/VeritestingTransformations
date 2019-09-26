@@ -7,35 +7,57 @@ class Controller {
 
     public Controller() {
     }
-
-    public void takeAction(PadUnit[] pad, int padNumber, int rocketName, int action, boolean actionIsTimeout) throws InvalidInputException {
-        if (pad[padNumber] != null) {
-            if (!actionIsTimeout) {
-                {
-                    if (rocketName == 1) {
-                        if (action == 2) {
+    public int takeAction(int inputNumOfPad, PadUnit[] pad,int padNumber, int rocketName, int action, boolean actionIsTimeout) {
+        if (!actionIsTimeout) {
+            {
+                if (rocketName == 1) {
+                    if (action == 2) {
+                        try {
                             armedLaunchButtonPressed(pad[padNumber], 1);
-                        } else if (action == 3) {
+                            return 1;
+                        }
+                        catch (InvalidInputException e) {
+                            return 6;
+                        }
+                    } else if (action == 3) {
+                        try {
                             launchButtonPressed(pad[padNumber], 1);
-                        } else if (action == 4) {
+                            return 1;
+                        }
+                        catch (InvalidInputException e) {
+                            return 5;
+                        }
+                    } else if (action == 4) {
                             reset(pad[padNumber], 1);
-                        }
-                        pad[padNumber].rocket1.getRelayState();
-                    } else {
-                        if (action == 2) {
-                            armedLaunchButtonPressed(pad[padNumber], 2);
-                        } else if (action == 3) {
-                            launchButtonPressed(pad[padNumber], 2);
-                        } else if (action == 4) {
-                            reset(pad[padNumber], 2);
-                        }
-                        pad[padNumber].rocket2.getRelayState();
+                            return 1;
                     }
+                    pad[padNumber].rocket1.getRelayState();
+                } else {
+                    if (action == 2) {
+                        try {
+                            armedLaunchButtonPressed(pad[padNumber], 2);
+                            return 1;
+                        }
+                        catch (InvalidInputException e) {
+                            return 6;
+                        }
+                    } else if (action == 3) {
+                        try {
+                            launchButtonPressed(pad[padNumber], 2);
+                            return 1;
+                        }
+                        catch (InvalidInputException e) {
+                            return 5;
+                        }
+                    } else if (action == 4) {
+                        reset(pad[padNumber], 2);
+                    }
+                    pad[padNumber].rocket2.getRelayState();
                 }
             }
         }
+        return 1;
     }
-
     public void registerPad(PadUnit pad) {
         ControlButton controlButton = new ControlButton();
         //Create control button for Pad
@@ -57,7 +79,7 @@ class Controller {
                 System.out.println("Control Buttons were activated");
                 //System.out.println("Pad " + pad.name + ": Rocket " + rocketName + "- Current Control Button state: " + state);
             } else if (state == ControlButtonState.armedLaunchAvailable) {
-                throw new InvalidInputException("Control Buttons are activated already");
+                throw new InvalidInputException("Control Buttons are activated already");//exception code: 7
             } else if (state == ControlButtonState.launchAvailable) {
                 throw new InvalidInputException("Control Buttons are activated already");
             } else if (state == ControlButtonState.launched) {
@@ -95,7 +117,7 @@ class Controller {
             ControlButtonState state = map.get(pad).getState1();
             //check state
             if (state == ControlButtonState.inactive) {
-                throw new InvalidInputException("armed button is unavaiable now");
+                throw new InvalidInputException("armed button is unavaiable now");//code exception: 6
             } else if (state == ControlButtonState.armedLaunchAvailable) {
                 map.get(pad).armedLaunchButtonPressed(pad, rocketName);
                 System.out.println("armed pressed");
@@ -111,7 +133,7 @@ class Controller {
             ControlButtonState state = map.get(pad).getState2();
             //check state
             if (state == ControlButtonState.inactive) {
-                throw new InvalidInputException("Buttons unavaiable now");
+                throw new InvalidInputException("armed button is unavaiable now");
             } else if (state == ControlButtonState.armedLaunchAvailable) {
                 map.get(pad).armedLaunchButtonPressed(pad, rocketName);
                 System.out.println("armed pressed");
@@ -131,7 +153,7 @@ class Controller {
             ControlButtonState state = map.get(pad).getState1();
             //check state
             if (state == ControlButtonState.inactive) {
-                throw new InvalidInputException("Launch button is inactive unavaiable now");
+                throw new InvalidInputException("Launch button is inactive unavaiable now"); // code exception: 5
             } else if (state == ControlButtonState.armedLaunchAvailable) {
                 throw new InvalidInputException("Launch button is inactive unavaiable now");
             } else if (state == ControlButtonState.launchAvailable) {

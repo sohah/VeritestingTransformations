@@ -14,15 +14,6 @@ class PadUnitManager {
         return false;
     }
 
-    public boolean numberOfPadValidity(int numOfPad) throws InvalidInputException {
-
-        for (int k = 0; k <= 8; k++) {//may be null pointer is here. k can start from 0 to fix the problem
-            if (numOfPad == k)
-                return true;
-        }
-        return false;
-    }
-
     public PadUnitManager(String inputNumberOfPads) throws InvalidInputException// Constructor
     {
         int NumberOfPad = Integer.parseInt(inputNumberOfPads);
@@ -49,35 +40,13 @@ class PadUnitManager {
         }
     }
 
-    public PadUnitManager(int NumberOfPad) throws InvalidInputException// Constructor
-    {
-        String padRegisterSuccessful = NumberOfPad + " pads are registered successfully";
-        boolean runWhileLoopOnce1 = true;
-
-        while ((numberOfPadValidity(NumberOfPad) == false) && runWhileLoopOnce1) {
-            runWhileLoopOnce1 = false;
-            throw new InvalidInputException("Invalid number of pads");
+    public int takeAction(int inputNumOfPad, int inputPadName, int rocketName) {
+        try {
+            padArray[inputPadName].activateButtonRocketPressed(rocketName);
+            return 1;
+        } catch (InvalidInputException e) {
+            return 7;
         }
-        boolean runWhileLoopOnce2 = true;
-        while (runWhileLoopOnce1 == true && runWhileLoopOnce2) {
-            //PadUnit[] padArray = new PadUnit[NumberOfPad + 1];// create array of PadUnit
-            System.out.println(padRegisterSuccessful);
-
-            for (int i = 1; i < (NumberOfPad + 1); i++) {
-                padArray[i] = new PadUnit(i); //Create instance of PadUnit
-                //Only show Pad from 1
-
-                System.out.println("Pad" + i + ": on");
-
-            }
-            runWhileLoopOnce2 = false;
-        }
-    }
-
-    public void takeAction(int inputPadNumber, int rocketName) throws InvalidInputException {
-
-        if ((padArray != null) && (padArray[inputPadNumber] != null))
-            padArray[inputPadNumber].activateButtonRocketPressed(rocketName);
 
 
     }
