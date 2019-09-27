@@ -1,0 +1,64 @@
+
+const START_SIG = 0;
+const LAUNCH_SIG = 1;
+
+
+node T_node_orig(sig: int; ignition: bool) returns (start_bt: bool;
+                                                    	launch_bt: bool;
+                                                        reset_flag: bool);
+
+let
+	start_bt = false -> if(pre reset_flag) then
+											false
+										else if(not(pre start_bt) and (not (pre launch_bt))) and (sig = START_SIG) then
+									    		true
+											else
+												pre start_bt;
+
+
+	launch_bt = false -> if(pre reset_flag) then
+										    false
+										else if((pre start_bt) and (not (pre launch_bt ))) and (sig = LAUNCH_SIG) then
+										    	true
+											else
+											    pre launch_bt;
+
+
+    reset_flag = false -> pre ignition;
+
+
+tel;
+
+
+node T_node_repaired(
+  sig : int;
+  ignition : bool
+) returns (
+ start_bt: bool;
+ 	launch_bt: bool;
+     reset_flag: bool
+);
+let
+  start_bt = (false -> (if (false -> (pre reset_flag)) then false else (if (((not (pre start_bt)) and (not launch_bt)) and (sig = (0 -> (pre START_SIG)))) then true else (pre start_bt))));
+
+  launch_bt = (false -> (if reset_flag then false else (if ((start_bt and (not (pre launch_bt))) and (sig = (1 -> (pre LAUNCH_SIG)))) then true else (pre launch_bt))));
+
+  reset_flag = (false -> (false -> (pre ignition)));
+
+tel;
+
+
+-- this is where we are doing equivalence.
+
+node main(signal : int; ignition:bool) returns (ok:bool);
+var
+    start1, launch1, reset_flag1:bool;
+    start2, launch2, reset_flag2:bool;
+
+let
+    (start1, launch1, reset_flag1)  = T_node_orig(signal, ignition);
+    (start2, launch2, reset_flag2) = T_node_repaired(signal, ignition);
+    ok = (start1=start2) and (launch1=launch2) and (reset_flag1=reset_flag2);
+
+    --%PROPERTY ok;
+tel;

@@ -1,17 +1,18 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InputOutput;
-import jkind.lustre.NamedType;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.SpecInOutManager;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractDiscoveryOn;
 
 public class Contract {
 
-    public final InOutManager inOutManager = new InOutManager();
+    public final InOutManager rInOutManager = new InOutManager();
+    public final SpecInOutManager tInOutManager = new SpecInOutManager();
 
     Contract(){
-        inOutManager.discoverVars();
+        rInOutManager.discoverVars();
+        tInOutManager.discoverVars();
     }
 
     /**

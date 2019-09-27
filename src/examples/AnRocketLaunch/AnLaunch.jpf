@@ -1,0 +1,14 @@
+target=AnRocketLaunch.AnMainSymbolic
+classpath=${jpf-symbc}/build/examples
+sourcepath=${jpf-symbc}/src/examples/AnRocketLaunch
+symbolic.method = AnRocketLaunch.AnMainSymbolic.makeStep(con#sym#con#sym#sym#sym)
+#symbolic.method = AnRocketLaunch.AnMainSymbolic.makeStep(con#con#con#con#con#con)
+#symbolic.minint=-100
+#symbolic.maxint=100
+vm.storage.class=nil
+#coverage.include=WBSV
+listener = .symbc.SymbolicListener
+#listener = .symbc.VeritestingListener
+#,gov.nasa.jpf.listener.CoverageAnalyzer
+#listener = .listener.ChoiceTracker
+symbolic.dp=z3bitvector

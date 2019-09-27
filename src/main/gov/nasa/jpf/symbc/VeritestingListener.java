@@ -5,6 +5,7 @@ import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.symbc.veritesting.Heuristics.HeuristicManager;
 import gov.nasa.jpf.symbc.veritesting.Heuristics.PathStatus;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.RepairMode;
 import gov.nasa.jpf.symbc.veritesting.StaticRegionException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
@@ -49,9 +50,9 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractDiscoveryOn;
 import static gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator.*;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.ExceptionPhase.INSTANTIATION;
 import static gov.nasa.jpf.symbc.veritesting.StaticRegionException.throwException;
 import static gov.nasa.jpf.symbc.veritesting.VeritestingMain.skipRegionStrings;
@@ -216,9 +217,31 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 timeout_mins = Integer.parseInt(System.getenv("TIMEOUT_MINS"));
             }
 
-            if (contractDiscoveryOn)
+            if (contractDiscoveryOn) {
                 if (conf.hasValue("contractMethodName"))
                     DiscoverContract.contractMethodName = conf.getString("contractMethodName");
+                if (conf.hasValue("specRepair"))
+                    gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.specLevelRepair = conf.getBoolean("specRepair");
+                if (conf.hasValue("spec"))
+                    gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.spec = conf.getString("spec");
+                if (conf.hasValue("faultySpec"))
+                    gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.faultySpec = conf.getString("faultySpec");
+                if (conf.hasValue("repairInitialValues"))
+                    gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairInitialValues = conf.getBoolean("repairInitialValues");
+                if (conf.hasValue("repairMode")) {
+                    int repairMode = conf.getInt("repairMode");
+                    if (repairMode == 0)
+                        gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairMode = RepairMode.CONSTANT;
+                    else if (repairMode == 1)
+                        gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairMode = RepairMode.PRE;
+                    else if (repairMode == 2)
+                        gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairMode = RepairMode.LIBRARY;
+                    else {
+                        System.out.println("No other mode is supported");
+                        assert false;
+                    }
+                }
+            }
         }
     }
 
@@ -595,7 +618,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
         dynRegion = linearTrans.execute(dynRegion);
 
         /*--------------- Discover Lustre Translation ---------------*/
-        if(contractDiscoveryOn)
+        if (contractDiscoveryOn)
             DiscoverContract.discoverLusterContract(dynRegion);
 
         /*--------------- TO GREEN TRANSFORMATION ---------------*/
@@ -692,7 +715,7 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
     /**
      * This method checks that the current PathCondition and after appending the summarized region is satisfiable.
      *
-     * @param ti            Currently running thread.
+     * @param ti        Currently running thread.
      * @param dynRegion Finaly summary of the region, after all transformations has been successfully completed.
      * @return PathCondition is still satisfiable or not.
      * @throws StaticRegionException Exception to indicate a problem while checking SAT of the updated PathCondition.
@@ -713,10 +736,10 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         // if we're trying to run fast, then assume that the region summary is satisfiable in any non-SPFCASES mode or
         // if the static choice is the only feasible choice.
-        boolean cond1 =performanceMode && (runMode == VeritestingMode.VERITESTING ||
+        boolean cond1 = performanceMode && (runMode == VeritestingMode.VERITESTING ||
                 runMode == VeritestingMode.HIGHORDER ||
                 (choice != null && choice == STATIC_CHOICE && isOnlyStaticChoiceSat(dynRegion)));
-        if ( cond1 || isPCSat(pc)) {
+        if (cond1 || isPCSat(pc)) {
             currCG.setCurrentPC(pc);
             long t1 = System.nanoTime();
             // if we're running in incremental solving mode, then we need to ask this region summary to be
@@ -889,6 +912,11 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
 
         if (spfCasesHeuristicsOn)
             statisticManager.printHeuristicStatistics();
+
+        if (DiscoverContract.isRepaired())
+            pw.print("Contract is repaired in iteration number:" + loopCount);
+        else
+            pw.print("Contract is NOT repaired");
     }
 
     private void writeRegionDigest() {

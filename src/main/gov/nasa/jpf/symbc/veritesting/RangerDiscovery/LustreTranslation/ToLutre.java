@@ -1,37 +1,38 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.InOutManager;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
 import jkind.lustre.*;
-import jkind.lustre.parsing.LustreParseUtil;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.RNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.WRAPPERNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.varDeclToIdExpr;
 
 public class ToLutre {
 
 
     public static Node generateRnode(DynamicRegion dynamicRegion, Contract contract) {
-        InOutManager inOutManager = contract.inOutManager;
+        InOutManager inOutManager = contract.rInOutManager;
         ArrayList<VarDecl> localDeclList = DeclarationTranslator.execute(dynamicRegion, inOutManager);
         localDeclList.add(addSymVar());
-        ArrayList<Equation> equationList = EquationVisitor.execute(dynamicRegion);
+        ArrayList<Equation> equationList = EquationVisitor.execute(dynamicRegion, contract.rInOutManager);
         equationList.addAll(inOutManager.getTypeConversionEq()); // adding type conversion equations.
         localDeclList.addAll(inOutManager.getConversionLocalList());
         equationList.add(addSymVarEquation());
         ArrayList<VarDecl> inputDeclList = inOutManager.generateInputDecl();
         ArrayList<VarDecl> ouputDeclList = inOutManager.generateOutputDecl();
-        ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterMethodOutDeclList();
+        ArrayList<VarDecl> methodOutDeclList = inOutManager.generaterContractOutDeclList();
+
+        //this line assumes that the setup of in the InOutManager for the program has not included the method output as a state output, we need to add some mechanism to enforce that or avoid adding existing values.
         ouputDeclList.addAll(methodOutDeclList);
-        return new Node("R_node", inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
+        return new Node(RNODE, inputDeclList, ouputDeclList, localDeclList, equationList, new ArrayList<>(),
                 new ArrayList<>(), null, null, null);
     }
 
@@ -48,14 +49,16 @@ public class ToLutre {
     public static Node generateRwrapper(InOutManager inOutManager) {
         List<VarDecl> freeDeclList = inOutManager.generateFreeInputDecl();
 
-        //wrapperLocals are defined as stateInput
+        //wrapperLocals are defined as stateInput TODO:this assumption needs to be changed, see simple vote example.
         ArrayList<VarDecl> stateInDeclList = inOutManager.generateStateInputDecl();
+        assert (stateInDeclList.size() > 0);
         ArrayList<VarDecl> wrapperLocalDeclList = new ArrayList<>(stateInDeclList);
 
-        //preparing wrapperOutput
-        Pair<VarDecl, Equation> methodOutVarEq = DiscoveryUtil.replicateToOut(stateInDeclList.get(stateInDeclList.size()-1),"out");
+        //preparing wrapperOutput which should be a record that contains as many as method outputs.
+        ArrayList<Pair<VarDecl, Equation>> methodOutVarEqs = makeWrapperOutput(stateInDeclList, inOutManager
+                .getContractOutputCount());
         ArrayList<VarDecl> wrapperOutput = new ArrayList<VarDecl>();
-        wrapperOutput.add(methodOutVarEq.getFirst());
+        wrapperOutput.addAll(collectFirst(methodOutVarEqs));
 
         //call node_R
         ArrayList<Expr> actualParameters = new ArrayList<>();
@@ -66,35 +69,58 @@ public class ToLutre {
 
         ArrayList<Equation> wrapperEqList = new ArrayList<Equation>();
         wrapperEqList.add(wrapperEq);
-        wrapperEqList.add(methodOutVarEq.getSecond()); //adding equation for output
+        wrapperEqList.addAll(collectSecond(methodOutVarEqs)); //adding equation for output
 
-        return new Node("R_wrapper", freeDeclList, wrapperOutput, wrapperLocalDeclList, wrapperEqList
+        return new Node(WRAPPERNODE, freeDeclList, wrapperOutput, wrapperLocalDeclList, wrapperEqList
                 , new ArrayList<>(), new ArrayList<>(), null, null, null);
+    }
+
+    private static ArrayList collectFirst(ArrayList<Pair<VarDecl, Equation>> listOfPair) {
+        ArrayList varDecls = new ArrayList();
+        for (Pair<VarDecl, Equation> pair : listOfPair) {
+            varDecls.add(pair.getFirst());
+        }
+        return varDecls;
+    }
+
+    private static ArrayList<Equation> collectSecond(ArrayList<Pair<VarDecl, Equation>> listOfPair) {
+        ArrayList<Equation> eqs = new ArrayList();
+        for (Pair<VarDecl, Equation> pair : listOfPair) {
+            eqs.add(pair.getSecond());
+        }
+        return eqs;
+    }
+
+    public static ArrayList<Pair<VarDecl, Equation>> makeWrapperOutput(ArrayList<VarDecl> stateInDeclList, int methodOutCount) {
+        ArrayList outputList = new ArrayList();
+        int listSize = stateInDeclList.size();
+
+        int outIndex = 0;
+        for (int i = listSize - methodOutCount; i < listSize; i++) {
+            outputList.add(DiscoveryUtil.replicateToOut(stateInDeclList.get(i), "out_" + outIndex));
+            ++outIndex;
+        }
+        return outputList;
     }
 
     private static ArrayList<Expr> initPreTerm(ArrayList<VarDecl> wrapperLocalDeclList) {
         ArrayList<Expr> initPreExprList = new ArrayList<>();
 
         for (int i = 0; i < wrapperLocalDeclList.size(); i++) {
-            initPreExprList.add(new BinaryExpr(new BoolExpr(false), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
-                    varDeclToIdExpr(wrapperLocalDeclList.get(i)))));
+            if (wrapperLocalDeclList.get(i).type == NamedType.BOOL)
+                initPreExprList.add(new BinaryExpr(new BoolExpr(Config.defaultBoolValue), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
+                        varDeclToIdExpr(wrapperLocalDeclList.get(i)))));
+            else if (wrapperLocalDeclList.get(i).type == NamedType.INT)
+                initPreExprList.add(new BinaryExpr(new IntExpr(Config.initialIntValue), BinaryOp.ARROW, new UnaryExpr(UnaryOp.PRE,
+                        varDeclToIdExpr(wrapperLocalDeclList.get(i)))));
+            else {
+                System.out.println("unsupported type for initial value in the wrapper");
+                assert false;
+            }
         }
         return initPreExprList;
     }
 
-
-    public static Program generateTprogram(String tFileName){
-        String programStr = null;
-        try {
-            programStr = new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8");
-
-        } catch (IOException e) {
-            System.out.println("Problem reading file. " + e.getMessage());
-        }
-
-        Program program = LustreParseUtil.program(programStr);
-        return program;
-    }
     /**
      * used to remove "." and "$" from the text generated to make it type compatible.
      *

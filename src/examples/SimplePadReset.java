@@ -1,14 +1,14 @@
 import gov.nasa.jpf.symbc.Debug;
 /**
  * This implementation is match, the pad with the following requirements:
- *
+ * <p>
  * -- this pad has the following requirements for states:
- -- 1. if current launch_bt is true then it must be the case that the start_bt is on now and also in the previous step.
- -- 2. if ignition is true for only one step after launch_bt is true. That is ignition is true only if the previous
- --	 step launch was on and it wasn't the case that in the previous step that iginition was on nore was the reset.
- -- 3. there will be one state where start_bt, launch_bt, ignition are on, followed by a step where
- -- 	start_bt, launch_bt and reset_btn are on, while the ignition is off. The following step would be
- --	reseting everything, that is all buttons are false.
+ * -- 1. if current launch_bt is true then it must be the case that the start_bt is on now and also in the previous step.
+ * -- 2. if ignition is true for only one step after launch_bt is true. That is ignition is true only if the previous
+ * --	 step launch was on and it wasn't the case that in the previous step that iginition was on nore was the reset.
+ * -- 3. there will be one state where start_bt, launch_bt, ignition are on, followed by a step where
+ * -- 	start_bt, launch_bt and reset_btn are on, while the ignition is off. The following step would be
+ * --	reseting everything, that is all buttons are false.
  */
 
 /**
@@ -116,11 +116,10 @@ public class SimplePadReset {
 
         if (previousState == LAUNCH) { //state needs to change regardless of the signal.
             ignition_r = true;
-        } else if (previousState == IGNITION){
+        } else if (previousState == IGNITION) {
             reset_btn = true;
             ignition_r = false;
-        }
-        else if (previousState == RESET || (previousState == INVALIDSTATE))
+        } else if (previousState == RESET || (previousState == INVALIDSTATE))
             resetPad();
         else {
             boolean startSignal;
