@@ -6,7 +6,6 @@ dist/*
 *.class
 *~
 *.DS_Store
-out/
 logs/
 logs/tcas.log
 logs/wbs.log
