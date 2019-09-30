@@ -1,15 +1,12 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.FaultyEquation;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.UserLibrary.parsing.LustreParseUtil;
 import jkind.lustre.Ast;
 import jkind.lustre.BoolExpr;
 import jkind.lustre.IntExpr;
 import jkind.lustre.Program;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class Config {
     public static String counterExPropertyName = "fail";

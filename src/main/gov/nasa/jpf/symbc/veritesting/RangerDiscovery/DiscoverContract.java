@@ -6,7 +6,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilde
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.CandidateSelectionMgr;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.FaultyEquation;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.NoExtLustreVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.repair.HolePlugger;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.*;
@@ -236,8 +236,16 @@ public class DiscoverContract {
         HolePlugger holePlugger = new HolePlugger();
         Program originalProgram;
 
-        originalProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8"));
-        NodeRepairKey originalNodeKey = defineNodeKeys(originalProgram);
+        Program origLustreExtPgm; // holds the original program with the extended lustre feature
+
+        origLustreExtPgm = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
+                "UTF-8"));
+
+
+        NodeRepairKey originalNodeKey = defineNodeKeys(origLustreExtPgm);
+
+        originalProgram = getLustreNoExt(origLustreExtPgm);
+
 
         CounterExContract counterExContract = new CounterExContract(dynRegion, originalProgram, contract);
         String counterExContractStr = counterExContract.toString();
@@ -309,6 +317,11 @@ public class DiscoverContract {
             ++loopCount;
         }
         while (true);
+    }
+
+    private static Program getLustreNoExt(Program origLustreExtPgm) {
+        return NoExtLustreVisitor.execute(origLustreExtPgm);
+
     }
 
     private static Node getTnodeFromStr(String tFileName) throws IOException {
