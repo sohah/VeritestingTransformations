@@ -135,7 +135,8 @@ public class ConstPluggerVisitor extends AstMapVisitor {
 
         List<Node> repairedPgmNodes = replaceOldNodes(counterExamplePgm, repairedNodes, nodeRepairKey);
 
-        return new Program(Location.NULL, counterExamplePgm.types, counterExamplePgm.constants, counterExamplePgm.functions, repairedPgmNodes, counterExamplePgm.main);
+        return new Program(Location.NULL, counterExamplePgm.types, counterExamplePgm.constants, counterExamplePgm
+                .functions, repairedPgmNodes, null, counterExamplePgm.main);
     }
 
     private static List<Node> replaceOldNodes(Program counterExamplePgm, List<Node> repairedNodes, NodeRepairKey nodeRepairKey) {

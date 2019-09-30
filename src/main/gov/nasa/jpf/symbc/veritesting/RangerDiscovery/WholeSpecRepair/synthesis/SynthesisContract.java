@@ -47,7 +47,8 @@ public class SynthesisContract {
         Node newMain = createVariableNodePart(counterExResult); //this creates the new main with the right test cases.
 
         nodes.add(newMain);
-        synthesisProgram = new Program(holeProgram.location, holeProgram.types, holeProgram.constants, holeProgram.functions, nodes, "main");
+        synthesisProgram = new Program(holeProgram.location, holeProgram.types, holeProgram.constants, holeProgram
+                .functions, nodes, null, "main");
     }
 
     public int getMaxTestCaseK() {
@@ -287,7 +288,8 @@ public class SynthesisContract {
 
         nodes.set(mainIndex, newMain);
 
-        return new Program(Location.NULL, synthesisProgram.types, synthesisProgram.constants, synthesisProgram.functions, nodes, "main");
+        return new Program(Location.NULL, synthesisProgram.types, synthesisProgram.constants, synthesisProgram
+                .functions, nodes, null, "main");
     }
 
     private Node changeMainNode(Node mainNode) {

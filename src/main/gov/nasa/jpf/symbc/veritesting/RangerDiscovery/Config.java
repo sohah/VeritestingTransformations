@@ -86,11 +86,13 @@ public class Config {
             System.out.println("unsupported spec, you need to setup input and output of the spec before usage!");
             assert false;
         }*/
+/*
         auxilaryRepairProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(folderName +
                 repairLustreFileName)), "UTF-8"));
 
-        System.out.println(auxilaryRepairProgram);
 
+        System.out.println(auxilaryRepairProgram);
+*/
     }
 
     public static FaultyEquation getFaultyEquation(Program pgmT) { //assuming that the faulty equation is in the main of the T node.

@@ -23,7 +23,7 @@ public class LustreToAstVisitor extends LustreBaseVisitor<Object> {
 		List<Constant> constants = constants(ctx.constant());
 		List<Function> functions = functions(ctx.function());
 		List<Node> nodes = nodes(ctx.node());
-		return new Program(loc(ctx), types, constants, functions, nodes, main);
+		return new Program(loc(ctx), types, constants, functions, nodes, null, main);
 	}
 
 	private List<TypeDef> types(List<TypedefContext> ctxs) {

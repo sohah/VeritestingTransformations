@@ -178,7 +178,8 @@ public class SpecConstHoleVisitor extends AstMapVisitor {
         ArrayList<Node> programNodes = new ArrayList<Node>(holeTable.values());
         programNodes.addAll(nonRepairNodes);
 
-        return new Program(Location.NULL, program.types, program.constants, program.functions, programNodes, mainNode.id);
+        return new Program(Location.NULL, program.types, program.constants, program.functions, programNodes,
+                null, mainNode.id);
     }
 
 

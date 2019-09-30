@@ -238,6 +238,12 @@ public class LustreBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitBinaryExpr(@NotNull LustreParser.BinaryExprContext ctx) { return visitChildren(ctx); }
+
+	@Override
+	public T visitRepairExpr(LustreParser.RepairExprContext ctx) {
+		return visitChildren(ctx);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 *
@@ -266,6 +272,12 @@ public class LustreBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitNode(@NotNull LustreParser.NodeContext ctx) { return visitChildren(ctx); }
+
+	@Override
+	public T visitRepairnode(LustreParser.RepairnodeContext ctx) {
+		return visitChildren(ctx);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 *
