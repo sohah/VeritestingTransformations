@@ -139,7 +139,7 @@ public class DiscoveryUtil {
 
 
     public static boolean writeToFile(String fileName, String content) {
-        fileName = folderName + "/out/" + fileName;
+        fileName = folderName + "/output/" + fileName;
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(fileName), "utf-8"))) {
             writer.write(content);
@@ -314,7 +314,7 @@ public class DiscoveryUtil {
 
     public static JKindResult callJkind(String fileName, boolean kInductionOn, int maxK) {
 
-        File file1 = new File(folderName + "/out/" + fileName);
+        File file1 = new File(folderName + "/output/" + fileName);
 
         return runJKind(file1, kInductionOn, maxK);
     }

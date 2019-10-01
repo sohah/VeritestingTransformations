@@ -1,0 +1,1096 @@
+<?xml version="1.0"?>
+<Results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Progress source="bmc" trueFor="1">
+    <PropertyProgress name="fail"/>
+  </Progress>
+  <Progress source="bmc" trueFor="2">
+    <PropertyProgress name="fail"/>
+  </Progress>
+  <Progress source="bmc" trueFor="3">
+    <PropertyProgress name="fail"/>
+  </Progress>
+  <Progress source="bmc" trueFor="4">
+    <PropertyProgress name="fail"/>
+  </Progress>
+  <Progress source="bmc" trueFor="5">
+    <PropertyProgress name="fail"/>
+  </Progress>
+  <Property name="fail">
+    <Runtime unit="sec">1.353</Runtime>
+    <Answer source="pdr">falsifiable</Answer>
+    <K>7</K>
+    <Counterexample>
+      <Signal name="Check_spec~0.H_discovery~0.in" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.H_discovery~0.out" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_0" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">1</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_1" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_2" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">0</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">2</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_3" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_4" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">1</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_5" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_6" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">0</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">2</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_7" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_8" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">1</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_9" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">1</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_10" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_11" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">1</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.container_12" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">1</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_0" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_1" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_2" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_3" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_4" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_5" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_6" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_7" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_8" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_9" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_10" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_11" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_12" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_13" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_14" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_15" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_16" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_17" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_18" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_19" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_20" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_21" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_22" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_23" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_24" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.hole_25" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.ignition" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">1</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.launch_bt" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.p1" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.reset_flag" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">1</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.sig" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">0</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">2</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.T_node~0.start_bt" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_0" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_1" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_2" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_3" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_4" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_5" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_6" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_7" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_8" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_9" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_10" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_11" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_12" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_13" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_14" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_15" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_16" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_17" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_18" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_19" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_20" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_21" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_22" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_23" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_24" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.hole_25" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.ignition" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">1</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="Check_spec~0.k" type="int">
+        <Value time="0">6</Value>
+        <Value time="1">6</Value>
+        <Value time="2">6</Value>
+        <Value time="3">6</Value>
+        <Value time="4">6</Value>
+        <Value time="5">6</Value>
+        <Value time="6">6</Value>
+      </Signal>
+      <Signal name="Check_spec~0.p1" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.sig" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">0</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">2</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="Check_spec~0.step" type="int">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+        <Value time="2">2</Value>
+        <Value time="3">3</Value>
+        <Value time="4">4</Value>
+        <Value time="5">5</Value>
+        <Value time="6">6</Value>
+      </Signal>
+      <Signal name="Check_spec~0.stepOK" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="fail" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_0" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_1" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_2" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_3" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_4" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="hole_5" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="hole_6" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_7" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="hole_8" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_9" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_10" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="hole_11" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_12" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_13" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="hole_14" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_15" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="hole_16" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="hole_17" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_18" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="hole_19" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_20" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_21" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_22" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_23" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_24" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="hole_25" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="ok_0" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="out_00" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">1</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="sig0" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">0</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">2</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="~flatten0" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="~flatten1" type="int">
+        <Value time="0">2</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="~flatten2" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">2</Value>
+        <Value time="2">1</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="~flatten3" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+        <Value time="2">2</Value>
+        <Value time="3">1</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="~flatten4" type="int">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+        <Value time="2">1</Value>
+        <Value time="3">2</Value>
+        <Value time="4">1</Value>
+        <Value time="5">1</Value>
+        <Value time="6">1</Value>
+      </Signal>
+      <Signal name="~flatten5" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="~flatten6" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="~flatten7" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">0</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="~flatten8" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+        <Value time="2">0</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+      <Signal name="~flatten9" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+        <Value time="2">1</Value>
+        <Value time="3">0</Value>
+        <Value time="4">0</Value>
+        <Value time="5">0</Value>
+        <Value time="6">0</Value>
+      </Signal>
+    </Counterexample>
+  </Property>
+</Results>

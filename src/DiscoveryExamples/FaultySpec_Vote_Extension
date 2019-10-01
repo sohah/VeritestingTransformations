@@ -1,4 +1,4 @@
-repair node discover_binary_op(a:bool; b:bool) [hole1: boolHole] returns (out: bool);
+repair node discover_binary_op(a:bool; b:bool) [hole1: boolhole] returns (out: bool);
 
 let
     out = if (hole1 = 0) then a and b

@@ -1,0 +1,243 @@
+const START_SIG = 0;
+const LAUNCH_SIG = 1;
+
+node T_node(
+  sig : int;
+  ignition : bool;
+  hole_0 : bool;
+  hole_1 : bool;
+  hole_2 : bool;
+  hole_3 : bool;
+  hole_4 : bool;
+  hole_5 : int;
+  hole_6 : bool;
+  hole_7 : int;
+  hole_8 : bool;
+  hole_9 : bool;
+  hole_10 : bool;
+  hole_11 : bool;
+  hole_12 : bool;
+  hole_13 : int;
+  hole_14 : bool;
+  hole_15 : int;
+  hole_16 : bool;
+  hole_17 : bool;
+  hole_18 : bool;
+  hole_19 : bool;
+  hole_20 : bool;
+  hole_21 : bool;
+  hole_22 : bool;
+  hole_23 : bool;
+  hole_24 : bool;
+  hole_25 : bool
+) returns (
+  p1 : bool
+);
+var
+  start_bt : bool;
+  launch_bt : bool;
+  reset_flag : bool;
+  container_0 : bool;
+  container_1 : bool;
+  container_2 : int;
+  container_3 : int;
+  container_4 : bool;
+  container_5 : bool;
+  container_6 : int;
+  container_12 : bool;
+  container_7 : int;
+  container_11 : bool;
+  container_8 : bool;
+  container_10 : bool;
+  container_9 : bool;
+let
+  start_bt = (false -> (if container_0 then false else (if (((not (pre start_bt)) and (not container_1)) and (container_2 = container_3)) then true else (pre start_bt))));
+
+  launch_bt = (false -> (if container_4 then false else (if ((container_5 and (not (pre launch_bt))) and (container_6 = container_7)) then true else (pre launch_bt))));
+
+  reset_flag = (false -> container_8);
+
+  p1 = (container_9 = (false -> ((container_10 and (not container_11)) and (not container_12))));
+
+  container_0 = (if hole_0 then (hole_1 -> (pre reset_flag)) else reset_flag);
+
+  container_1 = (if hole_2 then (hole_3 -> (pre launch_bt)) else launch_bt);
+
+  container_2 = (if hole_4 then sig else (hole_5 -> (pre sig)));
+
+  container_3 = (if hole_6 then START_SIG else (hole_7 -> (pre START_SIG)));
+
+  container_4 = (if hole_8 then reset_flag else (hole_9 -> (pre reset_flag)));
+
+  container_5 = (if hole_10 then (hole_11 -> (pre start_bt)) else start_bt);
+
+  container_6 = (if hole_12 then sig else (hole_13 -> (pre sig)));
+
+  container_12 = (if hole_24 then (hole_25 -> (pre reset_flag)) else reset_flag);
+
+  container_7 = (if hole_14 then LAUNCH_SIG else (hole_15 -> (pre LAUNCH_SIG)));
+
+  container_11 = (if hole_22 then reset_flag else (hole_23 -> (pre reset_flag)));
+
+  container_8 = (if hole_16 then (hole_17 -> (pre ignition)) else ignition);
+
+  container_10 = (if hole_20 then (hole_21 -> (pre launch_bt)) else launch_bt);
+
+  container_9 = (if hole_18 then ignition else (hole_19 -> (pre ignition)));
+
+tel;
+
+node H_discovery(
+  in : bool
+) returns (
+  out : bool
+);
+let
+  out = (in -> (in and (pre out)));
+
+tel;
+
+node Check_spec(
+  sig : int;
+  ignition : bool;
+  hole_0 : bool;
+  hole_1 : bool;
+  hole_2 : bool;
+  hole_3 : bool;
+  hole_4 : bool;
+  hole_5 : int;
+  hole_6 : bool;
+  hole_7 : int;
+  hole_8 : bool;
+  hole_9 : bool;
+  hole_10 : bool;
+  hole_11 : bool;
+  hole_12 : bool;
+  hole_13 : int;
+  hole_14 : bool;
+  hole_15 : int;
+  hole_16 : bool;
+  hole_17 : bool;
+  hole_18 : bool;
+  hole_19 : bool;
+  hole_20 : bool;
+  hole_21 : bool;
+  hole_22 : bool;
+  hole_23 : bool;
+  hole_24 : bool;
+  hole_25 : bool;
+  k : int
+) returns (
+  p1 : bool
+);
+var
+  step : int;
+  stepOK : bool;
+let
+  step = (0 -> (1 + (pre step)));
+
+  stepOK = (if (step <= k) then T_node(sig, ignition, hole_0, hole_1, hole_2, hole_3, hole_4, hole_5, hole_6, hole_7, hole_8, hole_9, hole_10, hole_11, hole_12, hole_13, hole_14, hole_15, hole_16, hole_17, hole_18, hole_19, hole_20, hole_21, hole_22, hole_23, hole_24, hole_25) else true);
+
+  p1 = ((step >= k) and H_discovery(stepOK));
+
+tel;
+
+node main(
+  hole_0 : bool;
+  hole_1 : bool;
+  hole_2 : bool;
+  hole_3 : bool;
+  hole_4 : bool;
+  hole_5 : int;
+  hole_6 : bool;
+  hole_7 : int;
+  hole_8 : bool;
+  hole_9 : bool;
+  hole_10 : bool;
+  hole_11 : bool;
+  hole_12 : bool;
+  hole_13 : int;
+  hole_14 : bool;
+  hole_15 : int;
+  hole_16 : bool;
+  hole_17 : bool;
+  hole_18 : bool;
+  hole_19 : bool;
+  hole_20 : bool;
+  hole_21 : bool;
+  hole_22 : bool;
+  hole_23 : bool;
+  hole_24 : bool;
+  hole_25 : bool
+) returns (
+  fail : bool
+);
+var
+  sig0 : int;
+  out_00 : bool;
+  ok_0 : bool;
+let
+  --%MAIN;
+  sig0 = (1 -> (pre (0 -> (pre (1 -> (pre (1 -> (pre (2 -> (pre (1 -> (pre 1))))))))))));
+
+  out_00 = (false -> (pre (false -> (pre (false -> (pre (true -> (pre (false -> (pre (false -> (pre false))))))))))));
+
+  ok_0 = Check_spec(sig0, out_00, hole_0, hole_1, hole_2, hole_3, hole_4, hole_5, hole_6, hole_7, hole_8, hole_9, hole_10, hole_11, hole_12, hole_13, hole_14, hole_15, hole_16, hole_17, hole_18, hole_19, hole_20, hole_21, hole_22, hole_23, hole_24, hole_25, 6);
+
+  fail = (not ok_0);
+
+  assert (true -> (hole_0 = (pre hole_0)));
+
+  assert (true -> (hole_1 = (pre hole_1)));
+
+  assert (true -> (hole_2 = (pre hole_2)));
+
+  assert (true -> (hole_3 = (pre hole_3)));
+
+  assert (true -> (hole_4 = (pre hole_4)));
+
+  assert (true -> (hole_5 = (pre hole_5)));
+
+  assert (true -> (hole_6 = (pre hole_6)));
+
+  assert (true -> (hole_7 = (pre hole_7)));
+
+  assert (true -> (hole_8 = (pre hole_8)));
+
+  assert (true -> (hole_9 = (pre hole_9)));
+
+  assert (true -> (hole_10 = (pre hole_10)));
+
+  assert (true -> (hole_11 = (pre hole_11)));
+
+  assert (true -> (hole_12 = (pre hole_12)));
+
+  assert (true -> (hole_13 = (pre hole_13)));
+
+  assert (true -> (hole_14 = (pre hole_14)));
+
+  assert (true -> (hole_15 = (pre hole_15)));
+
+  assert (true -> (hole_16 = (pre hole_16)));
+
+  assert (true -> (hole_17 = (pre hole_17)));
+
+  assert (true -> (hole_18 = (pre hole_18)));
+
+  assert (true -> (hole_19 = (pre hole_19)));
+
+  assert (true -> (hole_20 = (pre hole_20)));
+
+  assert (true -> (hole_21 = (pre hole_21)));
+
+  assert (true -> (hole_22 = (pre hole_22)));
+
+  assert (true -> (hole_23 = (pre hole_23)));
+
+  assert (true -> (hole_24 = (pre hole_24)));
+
+  assert (true -> (hole_25 = (pre hole_25)));
+
+  --%PROPERTY fail;
+
+tel;
