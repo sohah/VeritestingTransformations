@@ -8,16 +8,16 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension;
  */
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.ConstantHoleExtn;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
 import jkind.lustre.*;
 import jkind.lustre.visitors.AstMapVisitor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
 
-public class LustreAstMapVisitor extends AstMapVisitor  {
-    public static HashMap<String, List<VarDecl>> nodeToHoleVarDeclMap = new HashMap<>();
+public class LustreAstMapExtnVisitor extends AstMapVisitor {
+    public static HashMap<String, List<VarDecl>> nodeToHoleVarDeclMap = new HashMap<String, List<VarDecl>>();
     List<Node> newNodes = new ArrayList<>();
     public static List<RepairNode> existingRepairNodes = new ArrayList<>();
 
@@ -205,8 +205,27 @@ public class LustreAstMapVisitor extends AstMapVisitor  {
     }
 
     public static Program execute(Program origLustreExtPgm) {
-        Ast newProgram = origLustreExtPgm.accept(new LustreAstMapVisitor());
+        Ast newProgram = origLustreExtPgm.accept(new LustreAstMapExtnVisitor());
         assert (newProgram instanceof Program);
-        return (Program) newProgram ;
+        return (Program) newProgram;
+    }
+
+    public static ArrayList<Hole> getHoles() {
+        ArrayList<Hole> holes = new ArrayList<>();
+
+        Iterator<Map.Entry<String, List<VarDecl>>> mapItr = nodeToHoleVarDeclMap.entrySet().iterator();
+
+        while (mapItr.hasNext()) {
+            Map.Entry<String, List<VarDecl>> nodeVarDecls = mapItr.next();
+            for (VarDecl var : nodeVarDecls.getValue()) {
+                ConstantHoleExtn holeExtn = new ConstantHoleExtn(var.id, NamedType.get(var.type.toString()));
+                if (holes.contains(holeExtn)) {
+                    System.out.println("duplicate expression Ids are found for holes with library extension, the assumption is that the holes are uniquely defined by the user among all the nodes! Aborting");
+                    assert false;
+                }
+                holes.add(holeExtn);
+            }
+        }
+        return holes;
     }
 }

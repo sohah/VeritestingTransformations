@@ -6,7 +6,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilde
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.CandidateSelectionMgr;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.FaultyEquation;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.LustreAstMapVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.LustreAstMapExtnVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.NoExtLustreVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.repair.HolePlugger;
@@ -277,7 +277,8 @@ public class DiscoverContract {
                                 holes = new ArrayList<>(SpecPreHoleVisitor.getHoles());
                                 break;
                             case LIBRARY:
-                                holeProgram = LustreAstMapVisitor.execute(origLustreExtPgm);
+                                holeProgram = LustreAstMapExtnVisitor.execute(origLustreExtPgm);
+                                holes = new ArrayList<>(LustreAstMapExtnVisitor.getHoles());
                                 break;
                             default:
                                 assert false;
