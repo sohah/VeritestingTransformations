@@ -178,6 +178,15 @@ public class DiscoveryUtil {
     }
 
 
+    public static RepairNode findRepairNodeDef(List<RepairNode> nodes, String node) {
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i).id.equals(node))
+                return nodes.get(i);
+        }
+        System.out.println("problem finding the node to repair!");
+        return null;
+    }
+
     public static void appendToFile(String fileName, String content) {
         boolean append;
         if (firstTime) {
