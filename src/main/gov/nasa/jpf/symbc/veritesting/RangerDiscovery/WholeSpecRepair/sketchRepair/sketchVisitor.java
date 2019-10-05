@@ -1,11 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.sketchRepair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.*;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.SubstitutionVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.ConstantHole;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.PreHoleContainer;
 import jkind.lustre.*;
 import jkind.lustre.Contract;
 import jkind.lustre.values.Value;
@@ -15,10 +11,8 @@ import jkind.results.Signal;
 
 import java.util.*;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.findNode;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.findNodeDefByName;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus.REPAIR;
 
 /**
  * This visitor puts back the values of the holes into the specification of T.
@@ -69,7 +63,9 @@ public class sketchVisitor extends AstMapVisitor {
 
         Ast repairNodeBinded = SketchSubsVisitor.execute(repairNodeDef, paramToActualBindMap);
 
-        Expr evaluatedExpr = SketchPartialEval.execute(repairNodeBinded);
+        Ast partEvalNode = PartialEvalVistor.execute(repairNodeBinded);
+
+        Expr evaluatedExpr = CollapseExprvisitor.execute(partEvalNode);
 
         return new RepairExpr(e.location, evaluatedExpr, e.repairNode);
     }
