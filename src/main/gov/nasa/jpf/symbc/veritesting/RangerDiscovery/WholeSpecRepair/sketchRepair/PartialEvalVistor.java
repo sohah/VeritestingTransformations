@@ -147,10 +147,10 @@ public class PartialEvalVistor extends AstMapVisitor {
                 return null;
             case NOT:
                 return new BoolExpr(!((BoolExpr) e.expr).value);
-            break;
             case PRE:
                 return null;
         }
+        return null;
     }
 
 
