@@ -6,6 +6,7 @@ import jkind.lustre.BoolExpr;
 import jkind.lustre.IntExpr;
 import jkind.lustre.Program;
 
+import java.io.File;
 import java.io.IOException;
 
 public class Config {
@@ -62,6 +63,9 @@ public class Config {
 
         tFileName = folderName + faultySpec;
         tnodeSpecPropertyName = "T_node~0.p1";
+
+        //make a new directory for the output of that spec
+        new File(folderName + "/output/" + Config.spec).mkdirs();
 
         /*if (spec.equals("pad")) {
             tFileName = folderName + "FaultyPreImaginaryPad";
