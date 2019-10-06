@@ -10,16 +10,16 @@ import java.util.HashMap;
 
 public class SketchSubsVisitor extends AstMapVisitor {
 
-    private HashMap<Expr, Expr> paramToActualBindMap;
+    private HashMap<String, Expr> paramToActualBindMap;
 
-    public SketchSubsVisitor(HashMap<Expr, Expr> paramToActualBindMap) {
+    public SketchSubsVisitor(HashMap<String, Expr> paramToActualBindMap) {
         this.paramToActualBindMap = paramToActualBindMap;
     }
 
 
     @Override
     public Expr visit(IdExpr e) { // this is where the substitution takes place.
-        Expr actualBinding = paramToActualBindMap.get(e);
+        Expr actualBinding = paramToActualBindMap.get(e.id);
         boolean isInput = actualBinding != null;
         if (isInput)
             return actualBinding;
@@ -28,7 +28,7 @@ public class SketchSubsVisitor extends AstMapVisitor {
     }
 
 
-    public static Ast execute(RepairNode repairNode, HashMap<Expr, Expr> paramToActualBindMap) {
+    public static Ast execute(RepairNode repairNode, HashMap<String, Expr> paramToActualBindMap) {
         assert (paramToActualBindMap != null);
         SketchSubsVisitor mySketchVisitor = new SketchSubsVisitor(paramToActualBindMap);
         return repairNode.accept(mySketchVisitor);

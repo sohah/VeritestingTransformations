@@ -1,6 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.sketchRepair;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.*;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
@@ -25,18 +24,16 @@ public class SketchVisitor extends AstMapVisitor {
 
     private final Program originalExtnPgm;
     private final Counterexample counterexample;
-    private NodeRepairKey nodeRepairKey;
 
-    public SketchVisitor(Program originalExtnPgm, Counterexample counterexample, NodeRepairKey nodeRepairKey) {
+    public SketchVisitor(Program originalExtnPgm, Counterexample counterexample) {
         this.originalExtnPgm = originalExtnPgm;
         this.counterexample = counterexample;
-        this.nodeRepairKey = nodeRepairKey;
     }
 
 
     @Override
     public Node visit(Node e) {
-        if (nodeRepairKey.getStatus(e.id) == NodeStatus.REPAIR) {
+        if (e.id.equals("main")) { //repairing main node
             List<VarDecl> inputs = visitVarDecls(e.inputs);
             List<VarDecl> outputs = visitVarDecls(e.outputs);
             List<VarDecl> locals = visitVarDecls(e.locals);
@@ -60,32 +57,33 @@ public class SketchVisitor extends AstMapVisitor {
     public Expr visit(RepairExpr e) {
         RepairNode repairNodeDef = DiscoveryUtil.findRepairNodeDef(originalExtnPgm.repairNodes, e.repairNode.node);
 
-        HashMap<Expr, Expr> paramToActualBindMap = prepareNodeInput(e.repairNode, repairNodeDef);
+        HashMap<String, Expr> paramToActualBindMap = prepareNodeInput(e.repairNode, repairNodeDef);
 
 
         Ast repairNodeBinded = SketchSubsVisitor.execute(repairNodeDef, paramToActualBindMap);
 
         Ast partEvalNode = PartialEvalVisitor.execute(repairNodeBinded);
 
-        Expr evaluatedExpr = CollapseExprVisitor.execute(partEvalNode, paramToActualBindMap.values());
+        Expr evaluatedExpr = CollapseExprVisitor.execute(partEvalNode, new HashSet<>(paramToActualBindMap.values()));
 
         return new RepairExpr(e.location, evaluatedExpr, e.repairNode);
     }
 
     // this method collects the binding for the input of the repair nodes.
-    private HashMap<Expr, Expr> prepareNodeInput(NodeCallExpr repairNodeCall, RepairNode repairNodeDef) {
-        HashMap<Expr, Expr> paramToInputMap = new LinkedHashMap<>();
+    private HashMap<String, Expr> prepareNodeInput(NodeCallExpr repairNodeCall, RepairNode repairNodeDef) {
+        HashMap<String, Expr> paramToInputMap = new LinkedHashMap<>();
 
         assert (repairNodeCall.args.size() == repairNodeDef.inputs.size());
 
         //this fills in the binding: formal binding -> actual binding
         for (int i = 0; i < repairNodeCall.args.size(); i++) {
-            paramToInputMap.put(DiscoveryUtil.varDeclToIdExpr(repairNodeDef.inputs.get(i)), repairNodeCall.args.get(i));
+            paramToInputMap.put(DiscoveryUtil.varDeclToIdExpr(repairNodeDef.inputs.get(i)).id, repairNodeCall.args.get
+                    (i));
         }
 
         //this adds the binding for the holes using the counter example generated.
         for (VarDecl holeVarDecl : repairNodeDef.holeinputs) {
-            paramToInputMap.put(DiscoveryUtil.varDeclToIdExpr(holeVarDecl), getVarTestValues(holeVarDecl));
+            paramToInputMap.put(DiscoveryUtil.varDeclToIdExpr(holeVarDecl).id, getVarTestValues(holeVarDecl));
         }
 
         return paramToInputMap;
@@ -119,7 +117,7 @@ public class SketchVisitor extends AstMapVisitor {
     }
 
 
-    public static Program execute(Program originalExtPgm, JKindResult synResult, NodeRepairKey nodeRepairKey) {
+    public static Program execute(Program originalExtPgm, JKindResult synResult) {
 
         Counterexample counterExample = null;
         for (PropertyResult pr : synResult.getPropertyResults()) {
@@ -133,7 +131,7 @@ public class SketchVisitor extends AstMapVisitor {
 
         assert (counterExample != null);
 
-        SketchVisitor sketchVisitor = new SketchVisitor(originalExtPgm, counterExample, nodeRepairKey);
+        SketchVisitor sketchVisitor = new SketchVisitor(originalExtPgm, counterExample);
 
         Ast newProgram = originalExtPgm.accept(sketchVisitor);
         assert newProgram instanceof Program;

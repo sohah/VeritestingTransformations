@@ -314,13 +314,14 @@ public class DiscoverContract {
                                 DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
                                 break;
                             } else {
-                                origLustreExtPgm = SketchVisitor.execute(origLustreExtPgm, synthesisResult, originalNodeKey);
+                                origLustreExtPgm = SketchVisitor.execute(origLustreExtPgm, synthesisResult);
                                 originalProgram = getLustreNoExt(origLustreExtPgm);
                                 fileName = contractMethodName + "_Extn" + loopCount + ".lus";
                                 writeToFile(fileName, origLustreExtPgm.toString());
 
                                 counterExContract = new CounterExContract(dynRegion, originalProgram, contract);
                                 counterExContractStr = counterExContract.toString();
+                                break;
                             }
                         default:
                             System.out.println("unexpected status for the jkind synthesis query.");

@@ -16,9 +16,9 @@ public class CollapseExprVisitor extends AstMapVisitor {
 
     HashSet<Expr> binds;
 
-    public CollapseExprVisitor(List<Equation> equations, Collection<Expr> binds) {
+    public CollapseExprVisitor(List<Equation> equations, HashSet<Expr> binds) {
         this.repairNodeEqs = equations;
-        this.binds = (HashSet<Expr>) binds;
+        this.binds = binds;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class CollapseExprVisitor extends AstMapVisitor {
         return e;
     }
 
-    public static Expr execute(Ast partEvalNode, Collection<Expr> binds) {
+    public static Expr execute(Ast partEvalNode, HashSet<Expr> binds) {
         assert (partEvalNode instanceof RepairNode);
 
         List<Equation> equations = ((RepairNode) partEvalNode).equations;
@@ -62,7 +62,7 @@ public class CollapseExprVisitor extends AstMapVisitor {
 
         VarDecl output = partEvalNode.outputs.get(0);
         for (Equation eq : partEvalNode.equations) {
-            if (eq.lhs.toString().equals(output.id))
+            if (eq.lhs.get(0).toString().equals(output.id))
                 return eq.expr;
         }
         return null;
