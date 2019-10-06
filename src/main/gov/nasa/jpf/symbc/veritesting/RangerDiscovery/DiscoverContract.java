@@ -10,6 +10,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.LustreAstM
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.NoExtLustreVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.repair.HolePlugger;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.sketchRepair.SketchVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -304,13 +305,23 @@ public class DiscoverContract {
                             return;
                         case INVALID:
                             System.out.println("repairing holes for iteration#:" + loopCount);
-                            holeRepairState.plugInHoles(synthesisResult);
-                            holePlugger.plugInHoles(synthesisResult, counterExContract
-                                    .getCounterExamplePgm
-                                            (), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
-                            counterExContractStr = holePlugger.toString();
-                            DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
-                            break;
+                            if (Config.repairMode != RepairMode.LIBRARY) {
+                                holeRepairState.plugInHoles(synthesisResult);
+                                holePlugger.plugInHoles(synthesisResult, counterExContract
+                                        .getCounterExamplePgm
+                                                (), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
+                                counterExContractStr = holePlugger.toString();
+                                DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
+                                break;
+                            } else {
+                                origLustreExtPgm = SketchVisitor.execute(origLustreExtPgm, synthesisResult, originalNodeKey);
+                                originalProgram = getLustreNoExt(origLustreExtPgm);
+                                fileName = contractMethodName + "_Extn" + loopCount + ".lus";
+                                writeToFile(fileName, origLustreExtPgm.toString());
+
+                                counterExContract = new CounterExContract(dynRegion, originalProgram, contract);
+                                counterExContractStr = counterExContract.toString();
+                            }
                         default:
                             System.out.println("unexpected status for the jkind synthesis query.");
                             DiscoverContract.repaired = false;

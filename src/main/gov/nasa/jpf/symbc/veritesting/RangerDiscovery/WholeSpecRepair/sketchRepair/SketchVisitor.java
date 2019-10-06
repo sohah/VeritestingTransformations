@@ -2,30 +2,32 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.sketchRep
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.*;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
+import jkind.api.results.JKindResult;
+import jkind.api.results.PropertyResult;
 import jkind.lustre.*;
 import jkind.lustre.Contract;
 import jkind.lustre.values.Value;
 import jkind.lustre.visitors.AstMapVisitor;
 import jkind.results.Counterexample;
+import jkind.results.InvalidProperty;
 import jkind.results.Signal;
 
 import java.util.*;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.findNode;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.findNodeDefByName;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.counterExPropertyName;
 
 /**
  * This visitor puts back the values of the holes into the specification of T.
  */
 
-public class sketchVisitor extends AstMapVisitor {
+public class SketchVisitor extends AstMapVisitor {
 
 
     private final Program originalExtnPgm;
     private final Counterexample counterexample;
     private NodeRepairKey nodeRepairKey;
 
-    public sketchVisitor(Program originalExtnPgm, Counterexample counterexample, NodeRepairKey nodeRepairKey) {
+    public SketchVisitor(Program originalExtnPgm, Counterexample counterexample, NodeRepairKey nodeRepairKey) {
         this.originalExtnPgm = originalExtnPgm;
         this.counterexample = counterexample;
         this.nodeRepairKey = nodeRepairKey;
@@ -63,26 +65,26 @@ public class sketchVisitor extends AstMapVisitor {
 
         Ast repairNodeBinded = SketchSubsVisitor.execute(repairNodeDef, paramToActualBindMap);
 
-        Ast partEvalNode = PartialEvalVistor.execute(repairNodeBinded);
+        Ast partEvalNode = PartialEvalVisitor.execute(repairNodeBinded);
 
-        Expr evaluatedExpr = CollapseExprvisitor.execute(partEvalNode);
+        Expr evaluatedExpr = CollapseExprVisitor.execute(partEvalNode, paramToActualBindMap.values());
 
         return new RepairExpr(e.location, evaluatedExpr, e.repairNode);
     }
 
     // this method collects the binding for the input of the repair nodes.
-    private HashMap<Expr,Expr> prepareNodeInput(NodeCallExpr repairNodeCall, RepairNode repairNodeDef) {
+    private HashMap<Expr, Expr> prepareNodeInput(NodeCallExpr repairNodeCall, RepairNode repairNodeDef) {
         HashMap<Expr, Expr> paramToInputMap = new LinkedHashMap<>();
 
-        assert(repairNodeCall.args.size() == repairNodeDef.inputs.size());
+        assert (repairNodeCall.args.size() == repairNodeDef.inputs.size());
 
         //this fills in the binding: formal binding -> actual binding
-        for(int i=0; i<repairNodeCall.args.size(); i++){
+        for (int i = 0; i < repairNodeCall.args.size(); i++) {
             paramToInputMap.put(DiscoveryUtil.varDeclToIdExpr(repairNodeDef.inputs.get(i)), repairNodeCall.args.get(i));
         }
 
         //this adds the binding for the holes using the counter example generated.
-        for(VarDecl holeVarDecl: repairNodeDef.holeinputs){
+        for (VarDecl holeVarDecl : repairNodeDef.holeinputs) {
             paramToInputMap.put(DiscoveryUtil.varDeclToIdExpr(holeVarDecl), getVarTestValues(holeVarDecl));
         }
 
@@ -117,26 +119,25 @@ public class sketchVisitor extends AstMapVisitor {
     }
 
 
-    public static Program execute(Program counterExamplePgm, Program synthesisPgm, NodeRepairKey nodeRepairKey) {
+    public static Program execute(Program originalExtPgm, JKindResult synResult, NodeRepairKey nodeRepairKey) {
 
-
-        List<Node> toRepairNodes = getToRepairNodes(counterExamplePgm, nodeRepairKey);
-        List<Node> repairedNodes = new ArrayList<>();
-
-        sketchVisitor constPluggerVisitor = new sketchVisitor(counterExamplePgm, synthesisPgm);
-
-        for (int i = 0; i < toRepairNodes.size(); i++) {
-            Node holeNode = findNode(synthesisPgm.nodes, toRepairNodes.get(i));
-            if (holeNode != null) {//a node that is in the spec but not really used, i.e, called. So it is not part of the synthesis.
-                Ast repairedHole = holeNode.accept(constPluggerVisitor);
-                assert (repairedHole instanceof Node);
-                repairedNodes.add((Node) repairedHole);
+        Counterexample counterExample = null;
+        for (PropertyResult pr : synResult.getPropertyResults()) {
+            if (pr.getProperty() instanceof InvalidProperty) {
+                InvalidProperty ip = (InvalidProperty) pr.getProperty();
+                if (ip.getName().equals(counterExPropertyName)) {
+                    counterExample = ip.getCounterexample();
+                }
             }
         }
 
-        List<Node> repairedPgmNodes = replaceOldNodes(counterExamplePgm, repairedNodes, nodeRepairKey);
+        assert (counterExample != null);
 
-        return new Program(Location.NULL, counterExamplePgm.types, counterExamplePgm.constants, counterExamplePgm
-                .functions, repairedPgmNodes, null, counterExamplePgm.main);
+        SketchVisitor sketchVisitor = new SketchVisitor(originalExtPgm, counterExample, nodeRepairKey);
+
+        Ast newProgram = originalExtPgm.accept(sketchVisitor);
+        assert newProgram instanceof Program;
+
+        return (Program) newProgram;
     }
 }

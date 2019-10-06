@@ -1,12 +1,11 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.sketchRepair;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import jkind.lustre.*;
 import jkind.lustre.visitors.AstMapVisitor;
 
 import java.math.BigInteger;
 
-public class PartialEvalVistor extends AstMapVisitor {
+public class PartialEvalVisitor extends AstMapVisitor {
 
 
     @Override
@@ -174,7 +173,7 @@ public class PartialEvalVistor extends AstMapVisitor {
 
 
     public static Ast execute(Ast repairNodeBinded) {
-        return repairNodeBinded.accept(new PartialEvalVistor());
+        return repairNodeBinded.accept(new PartialEvalVisitor());
 
     }
 }
