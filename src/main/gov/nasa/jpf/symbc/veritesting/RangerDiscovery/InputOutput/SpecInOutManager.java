@@ -32,6 +32,9 @@ public class SpecInOutManager {
         } else if (Config.spec.equals("vote")) {
             discoverFreeInputVote();
             discoverOutputVarVote();
+        } else if (Config.spec.equals("vote2")) {
+            discoverFreeInputVote2();
+            discoverOutputVarVote2();
         } else {
             System.out.println("unexpected spec to run.!");
         }
@@ -91,8 +94,19 @@ public class SpecInOutManager {
         freeInput.add("threshold", NamedType.INT);
     }
 
-
     private void discoverOutputVarVote() {
+        inOutputVars.add("out", NamedType.BOOL);
+    }
+
+    //=========================== Vote2 ===========================
+    private void discoverFreeInputVote2() {
+        freeInput.add("a", NamedType.INT);
+        freeInput.add("b", NamedType.INT);
+        freeInput.add("c", NamedType.INT);
+        freeInput.add("threshold", NamedType.INT);
+    }
+
+    private void discoverOutputVarVote2() {
         inOutputVars.add("out", NamedType.BOOL);
     }
 

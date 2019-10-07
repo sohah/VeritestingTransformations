@@ -1,0 +1,25 @@
+
+
+
+repair node discover_increment(in1:int; in2:int; in3:int; myHole:intHole; myHole1:intHole; myHole2:intHole) returns
+(out:int);
+
+let
+	out = if(myHole = 0)
+	       then (in2 + myHole1)
+	       else (in3 + myHole2);
+tel;
+
+
+
+
+node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool);
+
+let
+
+    p1 = true -> out => (((a and b) or (b and c) or (a and c)) and (repair(threshold > 5, discover_increment(a,b,c,
+    threshold, 2))));
+
+  --%PROPERTY p1;
+
+tel;
