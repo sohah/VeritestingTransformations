@@ -65,7 +65,7 @@ public class Config {
         tnodeSpecPropertyName = "T_node~0.p1";
 
         //make a new directory for the output of that spec
-        new File(folderName + "/output/" + Config.spec).mkdirs();
+        new File(folderName + "/output/" + Config.faultySpec).mkdirs();
 
         /*if (spec.equals("pad")) {
             tFileName = folderName + "FaultyPreImaginaryPad";

@@ -1,4 +1,4 @@
-target=Voting
+target=SimplePadReset
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil
@@ -6,7 +6,8 @@ symbolic.debug=true
 
 
 ######## miscellaneous  ######
-symbolic.method=Voting.makeStep(sym#sym#sym#sym#sym#sym)
+symbolic.method=SimplePadReset.runPadSteps(sym#sym#sym#sym#sym#sym)
+#symbolic.method=SimplePadReset.runPad(sym)
 
 symbolic.dp=z3
 
@@ -31,11 +32,11 @@ showLocalNames = true
 
 
 ################## contract Discovery configurations ###############
-spec = vote
+spec = pad
 specRepair = true
 repairMode = 2
 
-contractMethodName = FaultySpec_Vote_Extension3
+contractMethodName = Faulty_Pad_Extension
 contractDiscoveryOn = true
-faultySpec = FaultySpec_Vote_Extension3
-repairInitialValues = false
+faultySpec = Faulty_Pad_Extension
+repairInitialValues = true

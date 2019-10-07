@@ -237,17 +237,25 @@ public class DiscoverContract {
         SynthesisContract synthesisContract = null;
         HolePlugger holePlugger = new HolePlugger();
         Program originalProgram;
+        Program origLustreExtPgm = null; // holds the original program with the extended lustre feature
+        NodeRepairKey originalNodeKey;
 
-        Program origLustreExtPgm; // holds the original program with the extended lustre feature
+        if (Config.repairMode == RepairMode.LIBRARY) {
 
-        origLustreExtPgm = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
-                "UTF-8"));
+            origLustreExtPgm = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
+                    "UTF-8"));
 
 
-        NodeRepairKey originalNodeKey = defineNodeKeys(origLustreExtPgm);
+            originalNodeKey = defineNodeKeys(origLustreExtPgm);
 
-        originalProgram = getLustreNoExt(origLustreExtPgm);
+            originalProgram = getLustreNoExt(origLustreExtPgm);
+        } else {
+            originalProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
+                    "UTF-8"));
 
+            originalNodeKey = defineNodeKeys(originalProgram);
+
+        }
 
         CounterExContract counterExContract = new CounterExContract(dynRegion, originalProgram, contract);
         String counterExContractStr = counterExContract.toString();
