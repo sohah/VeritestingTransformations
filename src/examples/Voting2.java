@@ -6,19 +6,19 @@ public class Voting2 {
 
         if(a>2)
             if(b<(a+40))
-                if(threshold < (a+b+c)+10)
-                    if(threshold > (a+b+c -5))
+                if(threshold < (a+b)+10)
+                    if(threshold > (b+c -5))
                         out = true;
         if(b>10)
             if(c>(b+10))
-                if(threshold < (a+b+c)+10)
-                    if(threshold > (a+b+c -5))
+                if(threshold < (a+b)+10)
+                    if(threshold > (b+c -5))
                         out = true;
 
         if(a>0)
             if(c>0)
-                if(threshold < (a+b+c)+10)
-                    if(threshold > (a+b+c -5))
+                if(threshold < (a+b)+10)
+                    if(threshold > (b+c -5))
                         out = true;
     }
 

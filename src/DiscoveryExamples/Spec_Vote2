@@ -5,8 +5,8 @@ let
 
     p1 = true -> out => (((a > 2) and b < (a + 40)) or ((b > 10) and (c > (b + 10))) or ((a > 0) and (c > 0))) and
     (threshold <
-                                        (a + b + c) + 10) and
-                                        (threshold > (a + b + c) - 5);
+                                        (a + b) + 10) and
+                                        (threshold > (b + c) - 5);
 
   --%PROPERTY p1;
 
