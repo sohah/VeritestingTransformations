@@ -126,6 +126,19 @@ public class InOutManager {
             discoverContractOutputVote();
             doContractOutputTypeConversion();
 
+        } else if (Config.spec.equals("vote2")) {
+            discoverFreeInputVote2();
+            doFreeTypeConversion();
+
+            discoverStateInputVote2();
+            doStateInputTypeConversion();
+
+            discoverStateOutputVote2();
+            doStateOutputTypeConversion();
+
+            discoverContractOutputVote2();
+            doContractOutputTypeConversion();
+
         } else {
             System.out.println("unexpected spec to run.!");
             assert false;
@@ -356,6 +369,50 @@ public class InOutManager {
 
     //entered by hand for now - order is important, needs to match in order of the input
     private void discoverStateOutputVote() {
+    }
+
+
+
+    //=========================== Vote2 ===========================
+
+    private void discoverContractOutputVote2() {
+
+        contractOutput.add(referenceObjectName + ".out.1.18.2", NamedType.BOOL);
+        contractOutput.addInit(referenceObjectName + ".out.1.18.2", new BoolExpr(false));
+        /*if (contractOutput.containsBool()) { // isn't that replicated with the state output.
+            ArrayList<Equation> conversionResult = contractOutput.convertOutput();
+            assert conversionResult.size() == 1;
+            typeConversionEq.addAll(conversionResult);
+            isOutputConverted = true;
+        }*/
+    }
+
+    //entered by hand for now
+    private void discoverFreeInputVote2() {
+        freeInput.add("a", NamedType.INT);
+        freeInput.add("b", NamedType.INT);
+        freeInput.add("c", NamedType.INT);
+        freeInput.add("threshold", NamedType.INT);
+
+        /*if (freeInput.containsBool()) {
+            Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
+            typeConversionEq.addAll(conversionResult.getSecond());
+            conversionLocalList.addAll(conversionResult.getFirst());
+        }*/
+    }
+
+    //entered by hand for now
+    private void discoverStateInputVote2() {
+        stateInput.add("out", NamedType.BOOL);
+        /*if (stateInput.containsBool()) { //type conversion to spf int type is needed
+            Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = stateInput.convertInput();
+            typeConversionEq.addAll(conversionResult.getSecond());
+            conversionLocalList.addAll(conversionResult.getFirst());
+        }*/
+    }
+
+    //entered by hand for now - order is important, needs to match in order of the input
+    private void discoverStateOutputVote2() {
     }
 
 

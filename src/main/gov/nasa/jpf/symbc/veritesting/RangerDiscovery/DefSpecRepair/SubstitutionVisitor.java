@@ -12,7 +12,7 @@ public class SubstitutionVisitor {
         List<Node> nodes = substituteInNode(pgmT.nodes, candidateRepairExpr, faultyEquation);
 
         //Program
-        return new Program(pgmT.location, pgmT.types, pgmT.constants, pgmT.functions, nodes, pgmT.main);
+        return new Program(pgmT.location, pgmT.types, pgmT.constants, pgmT.functions, nodes, null, pgmT.main);
 
     }
 

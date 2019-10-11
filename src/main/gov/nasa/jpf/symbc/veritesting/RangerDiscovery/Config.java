@@ -1,15 +1,13 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.FaultyEquation;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.UserLibrary.parsing.LustreParseUtil;
 import jkind.lustre.Ast;
 import jkind.lustre.BoolExpr;
 import jkind.lustre.IntExpr;
 import jkind.lustre.Program;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class Config {
     public static String counterExPropertyName = "fail";
@@ -66,6 +64,9 @@ public class Config {
         tFileName = folderName + faultySpec;
         tnodeSpecPropertyName = "T_node~0.p1";
 
+        //make a new directory for the output of that spec
+        new File(folderName + "/output/" + Config.faultySpec).mkdirs();
+
         /*if (spec.equals("pad")) {
             tFileName = folderName + "FaultyPreImaginaryPad";
         } else if (spec.equals("even")) {
@@ -86,11 +87,13 @@ public class Config {
             System.out.println("unsupported spec, you need to setup input and output of the spec before usage!");
             assert false;
         }*/
+/*
         auxilaryRepairProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(folderName +
                 repairLustreFileName)), "UTF-8"));
 
-        System.out.println(auxilaryRepairProgram);
 
+        System.out.println(auxilaryRepairProgram);
+*/
     }
 
     public static FaultyEquation getFaultyEquation(Program pgmT) { //assuming that the faulty equation is in the main of the T node.

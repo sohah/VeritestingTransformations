@@ -8,11 +8,10 @@ import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.api.results.JKindResult;
 import jkind.lustre.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.CHECKSPECNODE;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.H_discovery;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.renameMainNode;
 
 
@@ -20,7 +19,7 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.Discove
  * This takes in the original program and build holes in the nodes we want to repair.
  * When repeatedly called, only the variable part is changed to contain the new test cases.
  */
-public class SynthesisContract {
+public class SynthesisContractExtn {
 
     private Program synthesisProgram;
     public final Contract contract;
@@ -33,10 +32,10 @@ public class SynthesisContract {
 
     private NodeRepairKey synNodeKey = new NodeRepairKey();
 
-    public SynthesisContract(Contract contract, Program holeProgram, ArrayList<Hole> holes, JKindResult counterExResult, NodeRepairKey originalNodeKey) {
+    public SynthesisContractExtn(Contract contract, Program holeProgram, ArrayList<Hole> holes, JKindResult counterExResult, NodeRepairKey originalNodeKey) {
         this.contract = contract;
 
-        this.holes =holes;
+        this.holes = holes;
 
         List<Node> nodes = createFixedNodePart(holeProgram);
         synNodeKey = originalNodeKey;

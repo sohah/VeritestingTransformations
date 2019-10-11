@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.api.JKindApi;
@@ -54,7 +55,7 @@ public class DiscoveryUtil {
             op = BinaryOp.fromString("or");
         else if (s.equals("%"))
             op = BinaryOp.fromString("mod");
-        else  if (s.equals("/")) //supporting only integer division.
+        else if (s.equals("/")) //supporting only integer division.
             op = BinaryOp.fromString("div");
         else
             op = BinaryOp.fromString(s);
@@ -139,7 +140,7 @@ public class DiscoveryUtil {
 
 
     public static boolean writeToFile(String fileName, String content) {
-        fileName = folderName + "/" + fileName;
+        fileName = folderName + "/output/" + Config.faultySpec + "/" + fileName;
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(fileName), "utf-8"))) {
             writer.write(content);
@@ -177,6 +178,15 @@ public class DiscoveryUtil {
         return null;
     }
 
+
+    public static RepairNode findRepairNodeDef(List<RepairNode> nodes, String node) {
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i).id.equals(node))
+                return nodes.get(i);
+        }
+        System.out.println("problem finding the node to repair!");
+        return null;
+    }
 
     public static void appendToFile(String fileName, String content) {
         boolean append;
@@ -314,7 +324,7 @@ public class DiscoveryUtil {
 
     public static JKindResult callJkind(String fileName, boolean kInductionOn, int maxK) {
 
-        File file1 = new File(folderName + "/" + fileName);
+        File file1 = new File(folderName + "/output/" + Config.faultySpec + "/" + fileName);
 
         return runJKind(file1, kInductionOn, maxK);
     }

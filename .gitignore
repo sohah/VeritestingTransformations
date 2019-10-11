@@ -6,10 +6,10 @@ dist/*
 *.class
 *~
 *.DS_Store
-out/
 logs/
 logs/tcas.log
 logs/wbs.log
+VeritestingTransformations.iml
 src/examples/VeritestingPerf.java
 src/examples/VeritestingPerf.jpf
 .idea/jpf-symbc-veritesting.iml

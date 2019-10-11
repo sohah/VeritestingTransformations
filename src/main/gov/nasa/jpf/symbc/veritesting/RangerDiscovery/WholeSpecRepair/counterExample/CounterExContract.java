@@ -170,7 +170,7 @@ public class CounterExContract {
     public String toString() {
 
         //return super.toString();
-        counterExamplePgm = new Program(Location.NULL, types, constants, functions, nodes, "main");
+        counterExamplePgm = new Program(Location.NULL, types, constants, functions, nodes, null, "main");
 
         String programStr = ToLutre.lustreFriendlyString(counterExamplePgm.toString());
         return programStr;

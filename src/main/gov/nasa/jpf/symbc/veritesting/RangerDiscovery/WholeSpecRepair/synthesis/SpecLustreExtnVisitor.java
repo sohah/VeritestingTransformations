@@ -20,7 +20,7 @@ import static jkind.util.Util.getNodeTable;
  * This is the visitor that creates holes for all contants in the nodes.
  * This is different than It starts by the main and if it found a reference to another node, then it does that and comes back. If a node that have a holes defined in it and was called by some another node, then in the signature of the call and also in the declartion of the parameters of the outside node, needs to include those holes which are defined in the inner node.
  */
-public class SpecConstHoleVisitor extends AstMapVisitor {
+public class SpecLustreExtnVisitor extends AstMapVisitor {
 
     //accumulates all the varDeclarations for holes that are defined while visiting a specific node, though an instance of this class.
     private List<VarDecl> holeVarDecl = new ArrayList<>();
@@ -49,7 +49,7 @@ public class SpecConstHoleVisitor extends AstMapVisitor {
 
 
     public void setNodeTable(Map<String, Node> nodeTable) {
-        SpecConstHoleVisitor.nodeTable = nodeTable;
+        SpecLustreExtnVisitor.nodeTable = nodeTable;
     }
 
 
@@ -90,7 +90,7 @@ public class SpecConstHoleVisitor extends AstMapVisitor {
 
         Node nodeDefinition = nodeTable.get(e.node);
         if (nodeKey.getStatus(nodeDefinition.id) == NodeStatus.REPAIR) {
-            Node holeNode = SpecConstHoleVisitor.execute(nodeDefinition, this.nodeKey);
+            Node holeNode = SpecLustreExtnVisitor.execute(nodeDefinition, this.nodeKey);
             List<Expr> arguments = visitExprs(e.args);
             List<VarDecl> callHoles = nodeHoleVarDecl.get(holeNode.id);
 
@@ -107,7 +107,7 @@ public class SpecConstHoleVisitor extends AstMapVisitor {
 
             return new NodeCallExpr(e.location, e.node, arguments);
         } else {
-            SpecConstHoleVisitor.execute(nodeDefinition, this.nodeKey);
+            SpecLustreExtnVisitor.execute(nodeDefinition, this.nodeKey);
             return new NodeCallExpr(e.location, e.node, visitExprs(e.args));
         }
     }
@@ -163,7 +163,7 @@ public class SpecConstHoleVisitor extends AstMapVisitor {
     public static Program executeMain(Program program, NodeRepairKey originalNodeKey) {
         Map<String, Node> nodeTable = getNodeTable(program.nodes);
 
-        SpecConstHoleVisitor constHoleVisitor = new SpecConstHoleVisitor();
+        SpecLustreExtnVisitor constHoleVisitor = new SpecLustreExtnVisitor();
         constHoleVisitor.nodeKey = originalNodeKey;
 
         constHoleVisitor.setNodeTable(nodeTable);
@@ -191,7 +191,7 @@ public class SpecConstHoleVisitor extends AstMapVisitor {
      */
     public static Node execute(Node node, NodeRepairKey originalNodeKey) {
 
-        SpecConstHoleVisitor constHoleVisitor = new SpecConstHoleVisitor();
+        SpecLustreExtnVisitor constHoleVisitor = new SpecLustreExtnVisitor();
         constHoleVisitor.nodeKey = originalNodeKey;
 
         if (DiscoverContract.userSynNodes.contains(node.id)) {

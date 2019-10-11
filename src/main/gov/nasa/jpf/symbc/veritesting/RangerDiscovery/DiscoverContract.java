@@ -6,9 +6,11 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilde
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.CandidateSelectionMgr;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.FaultyEquation;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.LustreAstMapExtnVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.NoExtLustreVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.repair.HolePlugger;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.sketchRepair.SketchVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import gov.nasa.jpf.symbc.veritesting.ast.transformations.Environment.DynamicRegion;
@@ -235,9 +237,25 @@ public class DiscoverContract {
         SynthesisContract synthesisContract = null;
         HolePlugger holePlugger = new HolePlugger();
         Program originalProgram;
+        Program origLustreExtPgm = null; // holds the original program with the extended lustre feature
+        NodeRepairKey originalNodeKey;
 
-        originalProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)), "UTF-8"));
-        NodeRepairKey originalNodeKey = defineNodeKeys(originalProgram);
+        if (Config.repairMode == RepairMode.LIBRARY) {
+
+            origLustreExtPgm = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
+                    "UTF-8"));
+
+
+            originalNodeKey = defineNodeKeys(origLustreExtPgm);
+
+            originalProgram = getLustreNoExt(origLustreExtPgm);
+        } else {
+            originalProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
+                    "UTF-8"));
+
+            originalNodeKey = defineNodeKeys(originalProgram);
+
+        }
 
         CounterExContract counterExContract = new CounterExContract(dynRegion, originalProgram, contract);
         String counterExContractStr = counterExContract.toString();
@@ -267,6 +285,12 @@ public class DiscoverContract {
                                 holeProgram = SpecPreHoleVisitor.executeMain(LustreParseUtil.program(originalProgram.toString()), originalNodeKey);
                                 holes = new ArrayList<>(SpecPreHoleVisitor.getHoles());
                                 break;
+                            case LIBRARY:
+                                holeProgram = LustreAstMapExtnVisitor.execute(origLustreExtPgm);
+                                holes = new ArrayList<>(LustreAstMapExtnVisitor.getHoles());
+                                break;
+                            default:
+                                assert false;
                         }
                         synthesisContract = new SynthesisContract(contract, holeProgram, holes, counterExResult, originalNodeKey);
                     } else
@@ -289,13 +313,24 @@ public class DiscoverContract {
                             return;
                         case INVALID:
                             System.out.println("repairing holes for iteration#:" + loopCount);
-                            holeRepairState.plugInHoles(synthesisResult);
-                            holePlugger.plugInHoles(synthesisResult, counterExContract
-                                    .getCounterExamplePgm
-                                            (), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
-                            counterExContractStr = holePlugger.toString();
-                            DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
-                            break;
+                            if (Config.repairMode != RepairMode.LIBRARY) {
+                                holeRepairState.plugInHoles(synthesisResult);
+                                holePlugger.plugInHoles(synthesisResult, counterExContract
+                                        .getCounterExamplePgm
+                                                (), synthesisContract.getSynthesisProgram(), synthesisContract.getSynNodeKey());
+                                counterExContractStr = holePlugger.toString();
+                                DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
+                                break;
+                            } else {
+                                origLustreExtPgm = SketchVisitor.execute(origLustreExtPgm, synthesisResult);
+                                originalProgram = getLustreNoExt(origLustreExtPgm);
+                                fileName = contractMethodName + "_Extn" + loopCount + ".lus";
+                                writeToFile(fileName, origLustreExtPgm.toString());
+
+                                counterExContract = new CounterExContract(dynRegion, originalProgram, contract);
+                                counterExContractStr = counterExContract.toString();
+                                break;
+                            }
                         default:
                             System.out.println("unexpected status for the jkind synthesis query.");
                             DiscoverContract.repaired = false;
@@ -309,6 +344,11 @@ public class DiscoverContract {
             ++loopCount;
         }
         while (true);
+    }
+
+    private static Program getLustreNoExt(Program origLustreExtPgm) {
+        return NoExtLustreVisitor.execute(origLustreExtPgm);
+
     }
 
     private static Node getTnodeFromStr(String tFileName) throws IOException {
