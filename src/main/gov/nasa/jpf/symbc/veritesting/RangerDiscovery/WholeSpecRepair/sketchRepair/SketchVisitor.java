@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.sketchRepair;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
 import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
@@ -14,6 +15,9 @@ import jkind.results.Signal;
 import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.counterExPropertyName;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.permutationCount;
 
 /**
  * This visitor puts back the values of the holes into the specification of T.
@@ -130,6 +134,10 @@ public class SketchVisitor extends AstMapVisitor {
         }
 
         assert (counterExample != null);
+
+        //logging
+        String fileName = contractMethodName + "_" + loopCount + "_" + "holeCEX.txt";
+        DiscoveryUtil.writeToFile(fileName, counterExample.toString());
 
         SketchVisitor sketchVisitor = new SketchVisitor(originalExtPgm, counterExample);
 

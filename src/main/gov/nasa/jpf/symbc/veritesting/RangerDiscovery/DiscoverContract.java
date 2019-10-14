@@ -237,7 +237,7 @@ public class DiscoverContract {
         Contract contract = new Contract();
         SynthesisContract synthesisContract = null;
         HolePlugger holePlugger = new HolePlugger();
-        Program originalProgram;
+        Program originalProgram, flatPgm = null;
         Program origLustreExtPgm = null; // holds the original program with the extended lustre feature
         NodeRepairKey originalNodeKey;
 
@@ -248,7 +248,7 @@ public class DiscoverContract {
 
             originalNodeKey = defineNodeKeys(origLustreExtPgm);
 
-            Program flatPgm = FlattenNodes.execute(origLustreExtPgm);
+            flatPgm = FlattenNodes.execute(origLustreExtPgm);
 
             originalProgram = getLustreNoExt(flatPgm);
 
@@ -289,7 +289,7 @@ public class DiscoverContract {
                                 holes = new ArrayList<>(SpecPreHoleVisitor.getHoles());
                                 break;
                             case LIBRARY:
-                                holeProgram = LustreAstMapExtnVisitor.execute(origLustreExtPgm);
+                                holeProgram = LustreAstMapExtnVisitor.execute(flatPgm);
                                 holes = new ArrayList<>(LustreAstMapExtnVisitor.getHoles());
                                 break;
                             default:
@@ -325,7 +325,7 @@ public class DiscoverContract {
                                 DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
                                 break;
                             } else {
-                                origLustreExtPgm = SketchVisitor.execute(origLustreExtPgm, synthesisResult);
+                                origLustreExtPgm = SketchVisitor.execute(flatPgm, synthesisResult);
                                 originalProgram = getLustreNoExt(origLustreExtPgm);
                                 fileName = contractMethodName + "_Extn" + loopCount + ".lus";
                                 writeToFile(fileName, origLustreExtPgm.toString());
