@@ -10,6 +10,7 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.LustreAstM
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.NoExtLustreVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.counterExample.CounterExContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.repair.HolePlugger;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.sketchRepair.FlattenNodes;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.sketchRepair.SketchVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.*;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -245,10 +246,12 @@ public class DiscoverContract {
             origLustreExtPgm = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
                     "UTF-8"));
 
-
             originalNodeKey = defineNodeKeys(origLustreExtPgm);
 
-            originalProgram = getLustreNoExt(origLustreExtPgm);
+            Program flatPgm = FlattenNodes.execute(origLustreExtPgm);
+
+            originalProgram = getLustreNoExt(flatPgm);
+
         } else {
             originalProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
                     "UTF-8"));

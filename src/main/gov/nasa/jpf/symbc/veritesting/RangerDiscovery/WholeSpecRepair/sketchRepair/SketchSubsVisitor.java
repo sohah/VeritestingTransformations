@@ -1,12 +1,10 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.sketchRepair;
 
-import jkind.lustre.Ast;
-import jkind.lustre.Expr;
-import jkind.lustre.IdExpr;
-import jkind.lustre.RepairNode;
+import jkind.lustre.*;
 import jkind.lustre.visitors.AstMapVisitor;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class SketchSubsVisitor extends AstMapVisitor {
 
@@ -32,5 +30,11 @@ public class SketchSubsVisitor extends AstMapVisitor {
         assert (paramToActualBindMap != null);
         SketchSubsVisitor mySketchVisitor = new SketchSubsVisitor(paramToActualBindMap);
         return repairNode.accept(mySketchVisitor);
+    }
+
+    public static List<Equation> execute(List<Equation> equations, HashMap<String, Expr> paramToActualBindMap) {
+        assert (paramToActualBindMap != null);
+        SketchSubsVisitor mySketchVisitor = new SketchSubsVisitor(paramToActualBindMap);
+        return mySketchVisitor.visitEquations(equations);
     }
 }
