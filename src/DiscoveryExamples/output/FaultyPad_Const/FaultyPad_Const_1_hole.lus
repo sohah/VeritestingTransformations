@@ -1,0 +1,123 @@
+const START_SIG = 0;
+const LAUNCH_SIG = 1;
+
+node T_node(
+  sig : int;
+  ignition : bool;
+  hole_0 : bool;
+  hole_1 : bool;
+  hole_2 : bool;
+  hole_3 : bool;
+  hole_4 : bool;
+  hole_5 : bool;
+  hole_6 : bool;
+  hole_7 : bool
+) returns (
+  p1 : bool
+);
+var
+  start_bt : bool;
+  launch_bt : bool;
+  reset_flag : bool;
+let
+  start_bt = (hole_0 -> (if (pre reset_flag) then hole_1 else (if (((not (pre start_bt)) and (not (pre launch_bt))) and (sig = START_SIG)) then hole_2 else (pre start_bt))));
+
+  launch_bt = (hole_3 -> (if (pre reset_flag) then hole_4 else (if (((pre start_bt) and (not (pre launch_bt))) and (sig = LAUNCH_SIG)) then hole_5 else (pre launch_bt))));
+
+  reset_flag = (hole_6 -> (pre ignition));
+
+  p1 = (ignition = (hole_7 -> (((pre launch_bt) and (not reset_flag)) and (not (pre reset_flag)))));
+
+tel;
+
+node H_discovery(
+  in : bool
+) returns (
+  out : bool
+);
+let
+  out = (in -> (in and (pre out)));
+
+tel;
+
+node Check_spec(
+  sig : int;
+  ignition : bool;
+  hole_0 : bool;
+  hole_1 : bool;
+  hole_2 : bool;
+  hole_3 : bool;
+  hole_4 : bool;
+  hole_5 : bool;
+  hole_6 : bool;
+  hole_7 : bool;
+  k : int
+) returns (
+  p1 : bool
+);
+var
+  step : int;
+  stepOK : bool;
+let
+  step = (0 -> (1 + (pre step)));
+
+  stepOK = (if (step <= k) then T_node(sig, ignition, hole_0, hole_1, hole_2, hole_3, hole_4, hole_5, hole_6, hole_7) else true);
+
+  p1 = ((step >= k) and H_discovery(stepOK));
+
+tel;
+
+node main(
+  hole_0 : bool;
+  hole_1 : bool;
+  hole_2 : bool;
+  hole_3 : bool;
+  hole_4 : bool;
+  hole_5 : bool;
+  hole_6 : bool;
+  hole_7 : bool
+) returns (
+  fail : bool
+);
+var
+  ok_0 : bool;
+  ok_1 : bool;
+  sig0 : int;
+  out_00 : bool;
+  sig1 : int;
+  out_01 : bool;
+let
+  --%MAIN;
+  sig0 = 2;
+
+  out_00 = false;
+
+  sig1 = (0 -> (pre (0 -> (pre (1 -> (pre 1))))));
+
+  out_01 = (false -> (pre (false -> (pre (false -> (pre true))))));
+
+  ok_0 = Check_spec(sig0, out_00, hole_0, hole_1, hole_2, hole_3, hole_4, hole_5, hole_6, hole_7, 0);
+
+  ok_1 = Check_spec(sig1, out_01, hole_0, hole_1, hole_2, hole_3, hole_4, hole_5, hole_6, hole_7, 3);
+
+  fail = (not (ok_0 and ok_1));
+
+  assert (true -> (hole_0 = (pre hole_0)));
+
+  assert (true -> (hole_1 = (pre hole_1)));
+
+  assert (true -> (hole_2 = (pre hole_2)));
+
+  assert (true -> (hole_3 = (pre hole_3)));
+
+  assert (true -> (hole_4 = (pre hole_4)));
+
+  assert (true -> (hole_5 = (pre hole_5)));
+
+  assert (true -> (hole_6 = (pre hole_6)));
+
+  assert (true -> (hole_7 = (pre hole_7)));
+
+  --%PROPERTY fail;
+
+tel;

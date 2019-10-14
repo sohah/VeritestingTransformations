@@ -1,0 +1,45 @@
+                                      Step 
+variable                                 0     1 
+
+SIGNALS                              
+Check_spec~0.H_discovery~0.in         true  true 
+Check_spec~0.H_discovery~0.out        true  true 
+Check_spec~0.T_node~0.even            true  true 
+Check_spec~0.T_node~0.hole_0             0     0 
+Check_spec~0.T_node~0.hole_1             9     9 
+Check_spec~0.T_node~0.out                8     8 
+Check_spec~0.T_node~0.p1              true  true 
+Check_spec~0.T_node~0.signal         false false 
+Check_spec~0.hole_0                      0     0 
+Check_spec~0.hole_1                      9     9 
+Check_spec~0.k                           0     0 
+Check_spec~0.out                         8     8 
+Check_spec~0.p1                       true  true 
+Check_spec~0.signal                  false false 
+Check_spec~0.step                        0     1 
+Check_spec~0.stepOK                   true  true 
+Check_spec~1.H_discovery~0.in         true  true 
+Check_spec~1.H_discovery~0.out        true  true 
+Check_spec~1.T_node~0.even            true  true 
+Check_spec~1.T_node~0.hole_0             0     0 
+Check_spec~1.T_node~0.hole_1             9     9 
+Check_spec~1.T_node~0.out                8     7 
+Check_spec~1.T_node~0.p1              true  true 
+Check_spec~1.T_node~0.signal          true false 
+Check_spec~1.hole_0                      0     0 
+Check_spec~1.hole_1                      9     9 
+Check_spec~1.k                           1     1 
+Check_spec~1.out                         8     7 
+Check_spec~1.p1                      false  true 
+Check_spec~1.signal                   true false 
+Check_spec~1.step                        0     1 
+Check_spec~1.stepOK                   true  true 
+fail                                  true false 
+hole_0                                   0     0 
+hole_1                                   9     9 
+ok_0                                  true  true 
+ok_1                                 false  true 
+out_00                                   8     8 
+out_01                                   8     7 
+signal0                              false false 
+signal1                               true false 

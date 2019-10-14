@@ -1,0 +1,71 @@
+node main(
+  a : bool;
+  b : bool;
+  c : bool;
+  threshold : int;
+  out : bool
+) returns (
+  p1 : bool
+);
+let
+  --%MAIN;
+  p1 = (true -> (out => (((repair( ((a xor a) => (a xor a)) , discover_binary_op_0(a, b, c) )  or repair( (b xor b) , discover_binary_op_1(a, b, c) ) ) or (a and c)) and (threshold > 5))));
+
+  --%PROPERTY p1;
+
+tel;
+node discover_binary_op_0(
+  a : bool;
+  b : bool;
+  c : bool[  valhole_0 : inthole;
+  level_1_hole_1 : inthole;
+  level_2_hole_2 : inthole;
+  level_3_hole_3 : inthole]
+) returns (
+  out : bool
+);
+var
+  bExprlevel_0 : bool;
+  bExprlevel_1 : bool;
+  bExprlevel_2 : bool;
+  bExprlevel_3 : bool;
+let
+  bExprlevel_0 = (if (valhole_0 = 0) then a else (if (valhole_0 = 1) then b else c));
+
+  bExprlevel_1 = (if (level_1_hole_1 = 0) then (not bExprlevel_0) else (if (level_1_hole_1 = 1) then (bExprlevel_0 and bExprlevel_0) else (if (level_1_hole_1 = 2) then (bExprlevel_0 or bExprlevel_0) else (if (level_1_hole_1 = 3) then (bExprlevel_0 xor bExprlevel_0) else (if (level_1_hole_1 = 4) then (bExprlevel_0 => bExprlevel_0) else bExprlevel_0)))));
+
+  bExprlevel_2 = (if (level_2_hole_2 = 0) then (not bExprlevel_1) else (if (level_2_hole_2 = 1) then (bExprlevel_1 and bExprlevel_1) else (if (level_2_hole_2 = 2) then (bExprlevel_1 or bExprlevel_1) else (if (level_2_hole_2 = 3) then (bExprlevel_1 xor bExprlevel_1) else (if (level_2_hole_2 = 4) then (bExprlevel_1 => bExprlevel_1) else bExprlevel_1)))));
+
+  bExprlevel_3 = (if (level_3_hole_3 = 0) then (not bExprlevel_1) else (if (level_3_hole_3 = 1) then (bExprlevel_2 and bExprlevel_2) else (if (level_3_hole_3 = 2) then (bExprlevel_2 or bExprlevel_2) else (if (level_3_hole_3 = 3) then (bExprlevel_2 xor bExprlevel_2) else (if (level_3_hole_3 = 4) then (bExprlevel_2 => bExprlevel_2) else bExprlevel_2)))));
+
+  out = bExprlevel_3;
+
+tel;
+
+node discover_binary_op_1(
+  a : bool;
+  b : bool;
+  c : bool[  valhole_4 : inthole;
+  level_1_hole_5 : inthole;
+  level_2_hole_6 : inthole;
+  level_3_hole_7 : inthole]
+) returns (
+  out : bool
+);
+var
+  bExprlevel_0 : bool;
+  bExprlevel_1 : bool;
+  bExprlevel_2 : bool;
+  bExprlevel_3 : bool;
+let
+  bExprlevel_0 = (if (valhole_4 = 0) then a else (if (valhole_4 = 1) then b else c));
+
+  bExprlevel_1 = (if (level_1_hole_5 = 0) then (not bExprlevel_0) else (if (level_1_hole_5 = 1) then (bExprlevel_0 and bExprlevel_0) else (if (level_1_hole_5 = 2) then (bExprlevel_0 or bExprlevel_0) else (if (level_1_hole_5 = 3) then (bExprlevel_0 xor bExprlevel_0) else (if (level_1_hole_5 = 4) then (bExprlevel_0 => bExprlevel_0) else bExprlevel_0)))));
+
+  bExprlevel_2 = (if (level_2_hole_6 = 0) then (not bExprlevel_1) else (if (level_2_hole_6 = 1) then (bExprlevel_1 and bExprlevel_1) else (if (level_2_hole_6 = 2) then (bExprlevel_1 or bExprlevel_1) else (if (level_2_hole_6 = 3) then (bExprlevel_1 xor bExprlevel_1) else (if (level_2_hole_6 = 4) then (bExprlevel_1 => bExprlevel_1) else bExprlevel_1)))));
+
+  bExprlevel_3 = (if (level_3_hole_7 = 0) then (not bExprlevel_1) else (if (level_3_hole_7 = 1) then (bExprlevel_2 and bExprlevel_2) else (if (level_3_hole_7 = 2) then (bExprlevel_2 or bExprlevel_2) else (if (level_3_hole_7 = 3) then (bExprlevel_2 xor bExprlevel_2) else (if (level_3_hole_7 = 4) then (bExprlevel_2 => bExprlevel_2) else bExprlevel_2)))));
+
+  out = bExprlevel_3;
+
+tel;

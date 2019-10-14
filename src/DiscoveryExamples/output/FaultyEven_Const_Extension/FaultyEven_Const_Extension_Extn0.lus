@@ -1,0 +1,36 @@
+node main(
+  signal : bool;
+  out : int
+) returns (
+  p1 : bool
+);
+var
+  even : bool;
+let
+  --%MAIN;
+  even = (true -> (if signal then (not (pre even)) else (pre even)));
+
+  p1 = (even => ((repair( 7 , discover_const1(1) )  < out) and (out < repair( 9 , discover_const2(1) ) )));
+
+  --%PROPERTY p1;
+
+tel;
+node discover_const1(
+  in : int[  hole1 : inthole]
+) returns (
+  out : int
+);
+let
+  out = hole1;
+
+tel;
+
+node discover_const2(
+  in : int[  hole2 : inthole]
+) returns (
+  out : int
+);
+let
+  out = hole2;
+
+tel;

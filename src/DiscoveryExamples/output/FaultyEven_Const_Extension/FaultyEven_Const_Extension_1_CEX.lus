@@ -1,0 +1,34 @@
+                                                 Step 
+variable                                            0     1 
+
+SIGNALS                                          
+R_wrapper~0.R_node~0.countState                     0     0 
+R_wrapper~0.R_node~0.output                         0     8 
+R_wrapper~0.R_node~0.r347_countState_1_1_2          1     1 
+R_wrapper~0.R_node~0.r347_countState_1_3_2          1     0 
+R_wrapper~0.R_node~0.r347_countState_1_5_2          0     0 
+R_wrapper~0.R_node~0.r347_output_1_1_2              7     7 
+R_wrapper~0.R_node~0.r347_output_1_2_2             15    15 
+R_wrapper~0.R_node~0.r347_output_1_3_2             15     7 
+R_wrapper~0.R_node~0.r347_output_1_5_2              8     7 
+R_wrapper~0.R_node~0.signal                         1     0 
+R_wrapper~0.R_node~0.signal_bool                 true false 
+R_wrapper~0.R_node~0.symVar                         1     1 
+R_wrapper~0.R_node~0.w5_2                           0     0 
+R_wrapper~0.R_node~0.w7_2                           1     1 
+R_wrapper~0.R_node~0.w8_2                           1     0 
+R_wrapper~0.R_node~0.w9_1                          15     7 
+R_wrapper~0.R_node~0.w10_1                         15     7 
+R_wrapper~0.R_node~0.w10_2                          1     0 
+R_wrapper~0.R_node~0.w13_2                         15     7 
+R_wrapper~0.countState                              0     0 
+R_wrapper~0.out_0                                   8     7 
+R_wrapper~0.output                                  8     7 
+R_wrapper~0.signal_bool                          true false 
+T_node~0.even                                    true  true 
+T_node~0.out                                        8     7 
+T_node~0.p1                                      true false 
+T_node~0.signal                                  true false 
+discovery_out                                    true false 
+out                                                 8     7 
+signal                                           true false 

@@ -1,0 +1,26 @@
+                                      Step 
+variable                                 0 
+
+SIGNALS                              
+Check_spec~0.H_discovery~0.in         true 
+Check_spec~0.H_discovery~0.out        true 
+Check_spec~0.T_node~0.even            true 
+Check_spec~0.T_node~0.hole_0             7 
+Check_spec~0.T_node~0.hole_1             9 
+Check_spec~0.T_node~0.out                8 
+Check_spec~0.T_node~0.p1              true 
+Check_spec~0.T_node~0.signal         false 
+Check_spec~0.hole_0                      7 
+Check_spec~0.hole_1                      9 
+Check_spec~0.k                           0 
+Check_spec~0.out                         8 
+Check_spec~0.p1                       true 
+Check_spec~0.signal                  false 
+Check_spec~0.step                        0 
+Check_spec~0.stepOK                   true 
+fail                                 false 
+hole_0                                   7 
+hole_1                                   9 
+ok_0                                  true 
+out_00                                   8 
+signal0                              false 
