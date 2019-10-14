@@ -36,18 +36,3 @@ let
 
     out = bExprlevel_3;
 tel;
-
-node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool);
-
-let
-
-    p1 = true -> out => ((repair((a and b), discover_binary_op(a,b,c)) or repair((a and b and c),discover_binary_op(a,b,
-    c
-    ))
-    or (a
-     and c))
-    and (threshold > 5));
-
-  --%PROPERTY p1;
-
-tel;

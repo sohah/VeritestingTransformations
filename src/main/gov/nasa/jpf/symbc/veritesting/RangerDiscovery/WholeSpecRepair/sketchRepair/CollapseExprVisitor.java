@@ -75,7 +75,8 @@ public class CollapseExprVisitor extends AstMapVisitor {
         }
 
         for (Equation eq : repairNodeEqs) {
-            if (eq.lhs.toString().equals(((IdExpr) expr).id))
+            assert eq.lhs.size() == 1; //we can handle equation that assigns more than one var at the moment.
+            if (eq.lhs.get(0).toString().equals(((IdExpr) expr).id))
                 return eq.expr;
         }
         return null;
