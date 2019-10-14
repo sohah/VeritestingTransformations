@@ -1,4 +1,4 @@
-repair node discover_binary_op(a:bool; b:bool) [hole1: boolhole] returns (out: bool);
+repair node discover_binary_op(a:bool; b:bool) [hole1: inthole] returns (out: bool);
 
 let
     out = if (hole1 = 0) then a and b
@@ -13,7 +13,9 @@ node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool)
 
 let
 
-    p1 = true -> out => ((repair((a and b), discover_binary_op(a,b)) or (b and c) or (a and c)) and (threshold > 5));
+    p1 = true -> out => ((repair((a and b), discover_binary_op(a,b)) or repair((b and c),discover_binary_op(a,b)) or (a
+     and c))
+    and (threshold > 5));
 
   --%PROPERTY p1;
 

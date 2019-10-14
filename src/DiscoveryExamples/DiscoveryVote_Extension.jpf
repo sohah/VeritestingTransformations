@@ -35,7 +35,7 @@ spec = vote
 specRepair = true
 repairMode = 2
 
-contractMethodName = FaultySpec_Vote_Extension3
+contractMethodName = FaultySpec_Vote_ExtensionUnflat
 contractDiscoveryOn = true
-faultySpec = FaultySpec_Vote_Extension3
+faultySpec = FaultySpec_Vote_ExtensionUnflat
 repairInitialValues = false
