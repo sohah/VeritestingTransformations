@@ -1,3 +1,4 @@
+-- we want to see exactly four levels, restrict to four, "no nop"
 repair node discover_binary_Bool_1_Int_5(a:bool; i0:int; i1:int; i2:int;i3:int) [valhole_0: inthole; valhole_1: inthole;
 valhole_2: inthole;
 valhole_3: inthole;
@@ -114,7 +115,7 @@ let
 
 
 
-    bExprlevel_3 = if(level_3_hole = 0) then not bExprlevel_1
+    bExprlevel_3 = if(level_3_hole = 0) then not bExprlevel_2
                    else if(level_3_hole = 1) then bExprlevel_2 and bExprlevel_2
                    else if(level_3_hole = 2) then bExprlevel_2 or bExprlevel_2
                    else if(level_3_hole = 3) then bExprlevel_2 xor bExprlevel_2

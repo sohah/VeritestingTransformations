@@ -9,7 +9,7 @@ node T_node(
   p1 : bool
 );
 let
-  p1 = (true -> (((skid_r and (pedal_r = 5)) xor (skid_r and (pedal_r = 5))) => ((skid_r and (pedal_r = 5)) xor (skid_r and (pedal_r = 5)))));
+  p1 = (true -> (not ((pedal_r <= 8) and (NormalPressure_r = -6))));
 
   --%PROPERTY p1;
 

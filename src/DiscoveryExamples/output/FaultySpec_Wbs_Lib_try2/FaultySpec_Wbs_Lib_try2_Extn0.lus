@@ -10,7 +10,7 @@ node main(
 );
 let
   --%MAIN;
-  p1 = (true -> repair( (not ((pedal_r <= 5) => (pedal_r = 7))) , discover_binary_Bool_1_Int_5_0(skid_r, pedal_r, pedal_r, AltPressure_r, NormalPressure_r) ) );
+  p1 = (true -> repair( (not ((skid_r => (AltPressure_r = 9)) xor (skid_r => (AltPressure_r = 9)))) , discover_binary_Bool_1_Int_5_0(skid_r, pedal_r, pedal_r, AltPressure_r, NormalPressure_r) ) );
 
   --%PROPERTY p1;
 
@@ -59,7 +59,7 @@ let
 
   bExprlevel_2 = (if (level_2_hole_10 = 0) then (not bExprlevel_1) else (if (level_2_hole_10 = 1) then (bExprlevel_1 and bExprlevel_1) else (if (level_2_hole_10 = 2) then (bExprlevel_1 or bExprlevel_1) else (if (level_2_hole_10 = 3) then (bExprlevel_1 xor bExprlevel_1) else (bExprlevel_1 => bExprlevel_1)))));
 
-  bExprlevel_3 = (if (level_3_hole_11 = 0) then (not bExprlevel_1) else (if (level_3_hole_11 = 1) then (bExprlevel_2 and bExprlevel_2) else (if (level_3_hole_11 = 2) then (bExprlevel_2 or bExprlevel_2) else (if (level_3_hole_11 = 3) then (bExprlevel_2 xor bExprlevel_2) else (bExprlevel_2 => bExprlevel_2)))));
+  bExprlevel_3 = (if (level_3_hole_11 = 0) then (not bExprlevel_2) else (if (level_3_hole_11 = 1) then (bExprlevel_2 and bExprlevel_2) else (if (level_3_hole_11 = 2) then (bExprlevel_2 or bExprlevel_2) else (if (level_3_hole_11 = 3) then (bExprlevel_2 xor bExprlevel_2) else (bExprlevel_2 => bExprlevel_2)))));
 
   out = bExprlevel_3;
 
