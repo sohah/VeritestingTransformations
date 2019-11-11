@@ -7,13 +7,12 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension;
  * 2. populating the RepairNode
  */
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.ConstantHoleExtn;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.WholeSpecRepair.synthesis.Hole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.ConstantHoleExtn;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.Hole;
 import jkind.lustre.*;
 import jkind.lustre.visitors.AstMapVisitor;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class LustreAstMapExtnVisitor extends AstMapVisitor {

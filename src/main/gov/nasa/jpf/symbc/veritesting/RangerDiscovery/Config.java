@@ -1,6 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DefSpecRepair.repairbuilders.FaultyEquation;
 import jkind.lustre.Ast;
 import jkind.lustre.BoolExpr;
 import jkind.lustre.IntExpr;
@@ -49,8 +48,6 @@ public class Config {
 
     public static int faultyEquationNumber = 1;
 
-    private static FaultyEquation faultyEquation;
-
     public static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.RepairMode repairMode;
     public static boolean repairInitialValues;
 
@@ -94,9 +91,5 @@ public class Config {
 
         System.out.println(auxilaryRepairProgram);
 */
-    }
-
-    public static FaultyEquation getFaultyEquation(Program pgmT) { //assuming that the faulty equation is in the main of the T node.
-        return new FaultyEquation(pgmT, pgmT.getMainNode().equations.get(faultyEquationNumber), pgmT.getMainNode());
     }
 }

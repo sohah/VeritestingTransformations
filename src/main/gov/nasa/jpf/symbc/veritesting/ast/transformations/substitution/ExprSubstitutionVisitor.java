@@ -33,7 +33,7 @@ public class ExprSubstitutionVisitor extends ExprMapVisitor implements ExprVisit
 
     public DynamicTable getValueSymbolTable(){return valueSymbolTable;}
 
-    public ExprSubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
+    public  ExprSubstitutionVisitor(ThreadInfo ti, DynamicRegion dynRegion,
                                    DynamicTable valueSymbolTable) {
         super();
         this.ti = ti;

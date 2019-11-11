@@ -10,7 +10,7 @@ import za.ac.sun.cs.green.expr.*;
 
 import java.util.ArrayList;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.stringToLusterType;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.stringToLusterType;
 
 public class DeclarationExprVisitor implements ExprVisitor {
     private final DynamicRegion dynRegion;

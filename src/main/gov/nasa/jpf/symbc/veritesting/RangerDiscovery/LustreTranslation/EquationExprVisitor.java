@@ -9,7 +9,7 @@ import jkind.lustre.*;
 import jkind.lustre.Ast;
 import za.ac.sun.cs.green.expr.*;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil.*;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.*;
 
 
 public class EquationExprVisitor implements ExprVisitor<jkind.lustre.Ast> {
