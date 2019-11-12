@@ -1,15 +1,19 @@
-package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis;
+package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ThereExistsQuery;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.ARepairSynthesis;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.Hole;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.TestCaseManager;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ThereExistsQuery;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
 import jkind.api.results.JKindResult;
 import jkind.lustre.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.H_discovery;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
@@ -17,60 +21,78 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.
 
 
 /**
- * This takes in the original program and build holes in the nodes we want to repair.
- * When repeatedly called, only the variable part is changed to contain the new test cases.
- * It implements the first query for the ThereExists that tries to find ARepair
+ * This is used to synthize a tighter different repair, using the other part of the query for the forall, we ensure
+ * that the repair is actually included in the old repair and is matching the specification.
  */
-public class ARepairSynthesis extends ThereExistsQuery {
+public class MinimalRepairSynthesis extends ThereExistsQuery {
+    private Node lastKnownRepair;
 
+    //these are the tighter holes that we are trying to find, these are different from "holes" which just hold the
+    // to be repaired expressions.
 
-    public ARepairSynthesis(Contract contract, Program holeProgram, ArrayList<Hole> holes, JKindResult counterExResult, NodeRepairKey originalNodeKey) {
-        ThereExistsQuery.contract = contract;
-
-        ThereExistsQuery.holes = holes;
-
-        //allnodes except main
-        List<Node> nodes = createFixedNodePart(holeProgram);
-        synNodeKey = originalNodeKey;
-
-        synNodeKey.setNodesKey("main", NodeStatus.ARTIFICIAL);
-        synNodeKey.setNodesKey(TNODE, NodeStatus.REPAIR);
-
-        Node newMain = createVariableNodePart(counterExResult); //this creates the new main with the right test cases.
-
-        nodes.add(newMain);
-        synthesizedProgram = new Program(holeProgram.location, holeProgram.types, holeProgram.constants, holeProgram
-                .functions, nodes, null, "main");
-    }
-
-
-    protected List<Node> createFixedNodePart(Program holeProgram) {
-        List<Node> nodes = new ArrayList<>();
-
-        nodes.addAll(holeProgram.nodes);
-        nodes.add(getGloballyNode());
-
-        Node mainNode = holeProgram.getMainNode();
-        synthesisSpecNode = renameMainNode(TNODE, mainNode);
-
-        nodes.set(nodes.indexOf(mainNode), synthesisSpecNode);
-
-        nodes.add(createCheckSpecNode(synthesisSpecNode));
-        return nodes;
-    }
-
+    List<Hole> tighterHolesInput = new ArrayList<>();
+    List<Hole> tighterHolesOutput = new ArrayList<>();
 
     /**
-     * freezing all holes for this query.
-     * @return
+     * initial minimal repair is made from the last known good repair, not test cases yet, just new free variables as
+     * well as a fixed node for last known repair.
+     * @param aRepairSynthesis
+     * @param lastRepairNode
      */
-    private List<Expr> freezeHolesAssertion() {
-        List<Expr> freezeAssertions = new ArrayList<>();
-        for (int i = 0; i < holes.size(); i++)
-            freezeAssertions.add(makeFreezeSingleAssertion(holes.get(i).toString()));
+    public MinimalRepairSynthesis(ARepairSynthesis aRepairSynthesis, Node lastRepairNode) {
+        //this is the initial synthesized program that we need to update with the new I', O' call.
 
-        return freezeAssertions;
+        this.lastKnownRepair = lastRepairNode;
+        List<Node> newNodes = createFixedNodePart(aRepairSynthesis.getSynthesizedProgram());
+        newNodes.add(lastRepairNode); //this adds the constant R that we have found previously
+
+
+
+        synthesizedProgram = aRepairSynthesis.getSynthesizedProgram();
+        Pair<List<Hole>, List<Hole>>  tighterHolePair = makeNewTighterHoles(contract);
+        tighterHolesInput = tighterHolePair.getFirst();
+        tighterHolesOutput = tighterHolePair.getSecond();
+
+        synNodeKey = aRepairSynthesis.getSynNodeKey();
+
+        Node newMain = updateMain(synthesisSpecNode, tighterHolePair);
+
+        List<Node> newNodes = new ArrayList<>();
+
+
+
+        synthesizedProgram = new Program(synthesizedProgram.location, synthesizedProgram.types, synthesizedProgram
+                .constants, synthesizedProgram
+                .functions, newNodes, null, "main");
     }
+
+    @Override
+    protected List<Node> createFixedNodePart(Program holeProgram) {
+        return holeProgram.nodes;
+    }
+
+
+    @Override
+    protected Pair<List<VarDecl>, List<Equation>> createCheckSpeckLocals(Node synthesisSpecNode) {
+        return null;
+    }
+
+    @Override
+    protected Node createVariableNodePart(JKindResult counterExResult) {
+        return null;
+    }
+
+    @Override
+    protected List<VarDecl> createCheckSpecInput(List<VarDecl> synthesisInputs) {
+        return null;
+    }
+
+    @Override
+    protected Node createSynthesisMain(Node synthesisSpecNode) {
+        return null;
+    }
+
+/*
 
     protected Node createVariableNodePart(JKindResult counterExResult) {
         testCaseManager = new TestCaseManager(contract, holes, counterExResult);
@@ -153,6 +175,7 @@ public class ARepairSynthesis extends ThereExistsQuery {
         return new Node("main", myInputs, myOutput, myLocals, myEquations, myProperties, myAssertions, synthesisSpecNode
                 .realizabilityInputs, synthesisSpecNode.contract, synthesisSpecNode.ivc);
     }
+*/
 
 
 }

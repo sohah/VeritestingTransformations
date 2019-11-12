@@ -26,7 +26,7 @@ public abstract class ThereExistsQuery {
     // synthesized/repaired program
 
     //original contract mapping
-    public Contract contract;
+    public static Contract contract;
 
     //these are all the nodes in the program
     protected static ArrayList<Hole> holes;
@@ -34,8 +34,8 @@ public abstract class ThereExistsQuery {
     //this is the test case manager that manages all test cases
     protected static TestCaseManager testCaseManager;
 
-    //this the synthesized node
-    protected static Node synthesisSpecNode; //new synthensized node that we are trying to create.
+    //this is the T_node that we want to synthesize its inner expressions.
+    protected static Node synthesisSpecNode;
 
     protected NodeRepairKey synNodeKey = new NodeRepairKey();
 
