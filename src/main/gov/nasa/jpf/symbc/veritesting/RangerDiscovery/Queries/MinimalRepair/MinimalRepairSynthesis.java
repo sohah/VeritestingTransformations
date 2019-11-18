@@ -44,12 +44,13 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
         newNodes.add(this.lastRepairNode); //this adds the constant R that we have found previously
         synNodeKey = aRepairSynthesis.getSynNodeKey();
 
-        Node newMain = createVariableNodePart(aRepairSynthesis.getSynthesizedProgram());
+        Program oldSynthesisPgm = aRepairSynthesis.getSynthesizedProgram();
+        Node newMain = createVariableNodePart(oldSynthesisPgm);
 
         newNodes.add(newMain);
 
-        synthesizedProgram = new Program(synthesizedProgram.location, synthesizedProgram.types, synthesizedProgram
-                .constants, synthesizedProgram
+        synthesizedProgram = new Program(oldSynthesisPgm.location, oldSynthesisPgm.types, oldSynthesisPgm
+                .constants, oldSynthesisPgm
                 .functions, newNodes, null, "main");
     }
 
@@ -110,11 +111,17 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
     protected Node createSynthesisMain(Node exisingMain) {
         List<VarDecl> freeInputOutputDecl = this.lastRepairNode.inputs;
 
-        //input paramters of the main, are all the input in the synthesis, which should be the holes as well as the new I',O' that we want to create to bind R and R'
-        List<VarDecl> inputs = new ArrayList<>(exisingMain.inputs);
-        inputs.addAll(freeInputOutputDecl);
 
-        List<Expr> freeExpArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(inputs);
+        //these are the inputs that are going to be passed to FixedR, there we do not need any holes passed
+        List<VarDecl> rInputs = new ArrayList<>(freeInputOutputDecl);
+
+        //input parameters of the main, are all the input in the synthesis, which should be the holes as well as the
+        // new I',O' that we want to create to bind R and R'
+        List<VarDecl> allInputs = new ArrayList<>(freeInputOutputDecl);
+        allInputs.addAll(exisingMain.inputs);
+
+
+        List<Expr> freeExpArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(rInputs);
 
         // R here is the fixed R that we discovered.
         List<VarDecl> locals = new ArrayList<>(exisingMain.locals);
@@ -136,32 +143,51 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
 
         //creating the call to the current checkspec which we refer to as R'
         List actualExpArgsCheckSpec = new ArrayList();
-        actualExpArgsCheckSpec.add(freeExpArgs);
+        actualExpArgsCheckSpec.addAll(freeExpArgs);
         actualExpArgsCheckSpec.addAll(holes);
+        actualExpArgsCheckSpec.add(new IntExpr(getMaxTestCaseK()));
         NodeCallExpr callCheckSpec = new NodeCallExpr(CHECKSPECNODE, actualExpArgsCheckSpec);
         Equation checkSpecCall = new Equation(outputOfRPrimeCallExp,callCheckSpec);
         equations.add(checkSpecCall); // to find the R'
 
         //creating the equation of the property we want to check.
-        Equation newFailPropEq= makeNewFailProp(outputOfRCallExp,outputOfRPrimeCallExp, exisingMain.equations);
+        equations = makeNewFailPropEqs(outputOfRCallExp,outputOfRPrimeCallExp, equations);
 
 
-        return new Node("main", inputs, exisingMain.outputs, locals, equations, exisingMain.properties, exisingMain.assertions, exisingMain
+
+        return new Node("main", allInputs, exisingMain.outputs, locals, equations, exisingMain.properties, exisingMain
+                .assertions, exisingMain
                 .realizabilityInputs, exisingMain.contract, exisingMain.ivc);
     }
 
     /**
-     * finds the fail equation and replaes its condition with R and !R', where R' is the output of the checkspec
+     * finds the fail equation and replaces its condition with R and !R', where R' is the output of the checkspec
+     * It also updates the list of equations to have the updated fail eq instead of the old one.
      * @param outputOfRCallExp
      * @param outputOfRPrimeCallExp
      * @param equations
      * @return
      */
-    private Equation makeNewFailProp(IdExpr outputOfRCallExp, IdExpr outputOfRPrimeCallExp, List<Equation> equations) {
-        Equation oldFailEq = DiscoveryUtil.findEqInList(equations, FAIL);
-        BinaryExpr newProperty = new BinaryExpr(outputOfRCallExp, BinaryOp.AND, new UnaryExpr(UnaryOp.NOT, outputOfRPrimeCallExp));
-        Equation newFailEq = new Equation(oldFailEq.lhs, new BinaryExpr(oldFailEq.expr, BinaryOp.AND, newProperty));
-        return newFailEq;
+    private List<Equation> makeNewFailPropEqs(IdExpr outputOfRCallExp, IdExpr outputOfRPrimeCallExp, List<Equation>
+            equations) {
+
+        List<Equation> newEquations = new ArrayList<>(equations);
+        //oldFailEq should be in the form of unary not, with a bunch of conjunct ok expressions.
+        Equation oldFailEq = DiscoveryUtil.findEqInList(newEquations, FAIL);
+        newEquations.remove(oldFailEq);
+
+        assert oldFailEq.lhs.size() == 1;
+        assert oldFailEq.expr instanceof UnaryExpr;
+        assert ((UnaryExpr) oldFailEq.expr).op.equals(UnaryOp.NOT);
+        // not(ok and R and !R')
+        Expr newProperty = new BinaryExpr(outputOfRCallExp, BinaryOp.AND, new UnaryExpr(UnaryOp.NOT,
+                outputOfRPrimeCallExp));
+        newProperty = new BinaryExpr(((UnaryExpr) oldFailEq.expr).expr, BinaryOp
+                .AND, newProperty);
+        newProperty = new UnaryExpr(UnaryOp.NOT, newProperty);
+        Equation newFailEq = new Equation(oldFailEq.lhs, newProperty);
+        newEquations.add(newFailEq);
+        return newEquations;
     }
 
 /*

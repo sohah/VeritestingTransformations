@@ -288,7 +288,7 @@ public class DiscoveryUtil {
 
     public static Equation findEqInList(List<Equation> eqs, String lhs) {
         for (int i = 0; i < eqs.size(); i++) {
-            if (eqs.get(i).lhs.get(0).equals(lhs))
+            if (eqs.get(i).lhs.get(0).toString().equals(lhs))
                 return eqs.get(i);
         }
         return null;

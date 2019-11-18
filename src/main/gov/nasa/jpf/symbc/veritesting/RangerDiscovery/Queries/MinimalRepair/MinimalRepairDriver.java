@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.NoExtLustreVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.ARepairSynthesis;
 import jkind.lustre.Program;
 
@@ -24,6 +25,9 @@ public class MinimalRepairDriver {
             lastSynthizedContract) {
         MinimalRepairDriver.repairedProgram = repairedProgram;
         MinimalRepairDriver.lastSynthizedContract = lastSynthizedContract;
+
+        //removing the repair expression keeping only the repair value included
+        repairedProgram = NoExtLustreVisitor.execute(repairedProgram);
 
         MinimalRepairSynthesis rPrimeExistsQ = new MinimalRepairSynthesis(lastSynthizedContract, repairedProgram.getMainNode());
         System.out.println(rPrimeExistsQ);
