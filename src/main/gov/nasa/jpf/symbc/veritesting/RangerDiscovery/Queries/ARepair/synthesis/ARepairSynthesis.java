@@ -13,7 +13,7 @@ import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.H_discovery;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.renameMainNode;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.renameNode;
 
 
 /**
@@ -51,7 +51,7 @@ public class ARepairSynthesis extends ThereExistsQuery {
         nodes.add(getGloballyNode());
 
         Node mainNode = holeProgram.getMainNode();
-        synthesisSpecNode = renameMainNode(TNODE, mainNode);
+        synthesisSpecNode = renameNode(TNODE, mainNode);
 
         nodes.set(nodes.indexOf(mainNode), synthesisSpecNode);
 
@@ -144,10 +144,10 @@ public class ARepairSynthesis extends ThereExistsQuery {
         myLocals.addAll(testCaseManager.testCallVars);
 
         List<VarDecl> myOutput = new ArrayList<>();
-        myOutput.add(new VarDecl("fail", NamedType.BOOL));
+        myOutput.add(new VarDecl(FAIL, NamedType.BOOL));
 
         List<String> myProperties = new ArrayList<>();
-        myProperties.add("fail");
+        myProperties.add(FAIL);
 
 
         return new Node("main", myInputs, myOutput, myLocals, myEquations, myProperties, myAssertions, synthesisSpecNode

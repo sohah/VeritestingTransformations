@@ -58,6 +58,7 @@ public abstract class ThereExistsQuery {
 
 
 
+    public final static String FAIL = "fail";
 
     public int getMaxTestCaseK() {
         return testCaseManager.getMaxK();

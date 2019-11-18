@@ -18,6 +18,7 @@ public class Config {
     public static String WRAPPERNODE = "R_wrapper";
     public static String CHECKSPECNODE = "Check_spec";
     public static String H_discovery = "H_discovery";
+    public static String FIXEDR = "Fixed_R";
     public static String specPropertyName = "ok";
     public static String wrapperOutpuName = "out";
 

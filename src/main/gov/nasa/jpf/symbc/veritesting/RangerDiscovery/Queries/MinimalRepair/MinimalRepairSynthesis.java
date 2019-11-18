@@ -1,8 +1,5 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair;
 
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeRepairKey;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.NodeStatus;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.ARepairSynthesis;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.TestCaseManager;
@@ -15,9 +12,8 @@ import jkind.lustre.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.H_discovery;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.renameMainNode;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.renameNode;
 
 
 /**
@@ -25,7 +21,7 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.
  * that the repair is actually included in the old repair and is matching the specification.
  */
 public class MinimalRepairSynthesis extends ThereExistsQuery {
-    private Node lastKnownRepair;
+    private Node lastRepairNode;
 
     //these are the tighter holes that we are trying to find, these are different from "holes" which just hold the
     // to be repaired expressions.
@@ -36,39 +32,48 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
     /**
      * initial minimal repair is made from the last known good repair, not test cases yet, just new free variables as
      * well as a fixed node for last known repair.
+     *
      * @param aRepairSynthesis
      * @param lastRepairNode
      */
     public MinimalRepairSynthesis(ARepairSynthesis aRepairSynthesis, Node lastRepairNode) {
         //this is the initial synthesized program that we need to update with the new I', O' call.
 
-        this.lastKnownRepair = lastRepairNode;
+        this.lastRepairNode = renameNode(FIXEDR, lastRepairNode); //rename it to R so we can call it again
         List<Node> newNodes = createFixedNodePart(aRepairSynthesis.getSynthesizedProgram());
-        newNodes.add(lastRepairNode); //this adds the constant R that we have found previously
-
-
-
-        synthesizedProgram = aRepairSynthesis.getSynthesizedProgram();
-        Pair<List<Hole>, List<Hole>>  tighterHolePair = makeNewTighterHoles(contract);
-        tighterHolesInput = tighterHolePair.getFirst();
-        tighterHolesOutput = tighterHolePair.getSecond();
-
+        newNodes.add(this.lastRepairNode); //this adds the constant R that we have found previously
         synNodeKey = aRepairSynthesis.getSynNodeKey();
 
-        Node newMain = updateMain(synthesisSpecNode, tighterHolePair);
+        Node newMain = createVariableNodePart(aRepairSynthesis.getSynthesizedProgram());
 
-        List<Node> newNodes = new ArrayList<>();
-
-
+        newNodes.add(newMain);
 
         synthesizedProgram = new Program(synthesizedProgram.location, synthesizedProgram.types, synthesizedProgram
                 .constants, synthesizedProgram
                 .functions, newNodes, null, "main");
     }
 
+    private Node createVariableNodePart(Program synthesizedProgram) {
+        Node existingMain = synthesizedProgram.getMainNode();
+        Node updatedMain = createSynthesisMain(existingMain);
+        return updatedMain;
+    }
+
+
+    /**
+     * For this ThereExists query we need the fixed part is defined exactly ast the synthesized program except for the main which is considered as a variable part. Therefore at this point we create the fixed part only that does not contain the main node.
+     *
+     * @param holeProgram
+     * @return
+     */
     @Override
     protected List<Node> createFixedNodePart(Program holeProgram) {
-        return holeProgram.nodes;
+        Node mainNode = holeProgram.getMainNode();
+
+        List noMainNodes = new ArrayList<>(holeProgram.nodes);
+        noMainNodes.remove(mainNode);
+
+        return noMainNodes;
     }
 
 
@@ -77,19 +82,86 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
         return null;
     }
 
+    /**
+     * This creates the variable part which is the main, based on the test cases generated, in the first step we have no counter Example yet, thus this is not called/used in the initial creation of R'
+     *
+     * @param counterExResult
+     * @return
+     */
     @Override
     protected Node createVariableNodePart(JKindResult counterExResult) {
+        assert false; //not yet implemented
         return null;
     }
 
     @Override
     protected List<VarDecl> createCheckSpecInput(List<VarDecl> synthesisInputs) {
+        assert false; //not yet implemented
         return null;
     }
 
+    /**
+     * It takes a main of the original synthesized program, and changes it to contain the new free input and output vars, as well as the calls to the R and to checkspec (which we call the R'). It uses the definitions of the lastRepairNode to make the variables bindings.
+     *
+     * @param exisingMain
+     * @return
+     */
     @Override
-    protected Node createSynthesisMain(Node synthesisSpecNode) {
-        return null;
+    protected Node createSynthesisMain(Node exisingMain) {
+        List<VarDecl> freeInputOutputDecl = this.lastRepairNode.inputs;
+
+        //input paramters of the main, are all the input in the synthesis, which should be the holes as well as the new I',O' that we want to create to bind R and R'
+        List<VarDecl> inputs = new ArrayList<>(exisingMain.inputs);
+        inputs.addAll(freeInputOutputDecl);
+
+        List<Expr> freeExpArgs = (List<Expr>) (List<?>) DiscoveryUtil.varDeclToIdExpr(inputs);
+
+        // R here is the fixed R that we discovered.
+        List<VarDecl> locals = new ArrayList<>(exisingMain.locals);
+        VarDecl outputOfRCallVar = new VarDecl("fixedRout", NamedType.BOOL);
+        VarDecl outputOfRPrimeCallVar = new VarDecl("rPrimeOut", NamedType.BOOL);
+        locals.add(outputOfRCallVar);
+        locals.add(outputOfRPrimeCallVar);
+
+
+        List<Equation> equations = new ArrayList<>(exisingMain.equations);
+        IdExpr outputOfRCallExp = DiscoveryUtil.varDeclToIdExpr(outputOfRCallVar);
+        IdExpr outputOfRPrimeCallExp = DiscoveryUtil.varDeclToIdExpr(outputOfRPrimeCallVar);
+
+        //creating the call to the fixed R
+        NodeCallExpr callR = new NodeCallExpr(FIXEDR, freeExpArgs);
+        Equation rCallEq = new Equation(outputOfRCallExp,callR);
+        equations.add(rCallEq);
+
+
+        //creating the call to the current checkspec which we refer to as R'
+        List actualExpArgsCheckSpec = new ArrayList();
+        actualExpArgsCheckSpec.add(freeExpArgs);
+        actualExpArgsCheckSpec.addAll(holes);
+        NodeCallExpr callCheckSpec = new NodeCallExpr(CHECKSPECNODE, actualExpArgsCheckSpec);
+        Equation checkSpecCall = new Equation(outputOfRPrimeCallExp,callCheckSpec);
+        equations.add(checkSpecCall); // to find the R'
+
+        //creating the equation of the property we want to check.
+        Equation newFailPropEq= makeNewFailProp(outputOfRCallExp,outputOfRPrimeCallExp, exisingMain.equations);
+
+
+        return new Node("main", inputs, exisingMain.outputs, locals, equations, exisingMain.properties, exisingMain.assertions, exisingMain
+                .realizabilityInputs, exisingMain.contract, exisingMain.ivc);
+    }
+
+    /**
+     * finds the fail equation and replaes its condition with R and !R', where R' is the output of the checkspec
+     * @param outputOfRCallExp
+     * @param outputOfRPrimeCallExp
+     * @param equations
+     * @return
+     */
+    private Equation makeNewFailProp(IdExpr outputOfRCallExp, IdExpr outputOfRPrimeCallExp, List<Equation> equations) {
+        Equation oldFailEq = DiscoveryUtil.findEqInList(equations, FAIL);
+        BinaryExpr newProperty = new BinaryExpr(outputOfRCallExp, BinaryOp.AND, new UnaryExpr(UnaryOp.NOT, outputOfRPrimeCallExp));
+        Equation newFailEq = new Equation(oldFailEq.lhs, new BinaryExpr(oldFailEq.expr, BinaryOp.AND, newProperty));
+        return newFailEq;
     }
 
 /*

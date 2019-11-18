@@ -332,7 +332,7 @@ public class TestCaseManager {
         return inputList;
     }
 
-    private String createTestVarStr(int prefix) {
+    public static String createTestVarStr(int prefix) {
         return (testCaseVarName + "_" + prefix);
     }
 

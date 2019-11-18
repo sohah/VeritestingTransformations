@@ -137,7 +137,7 @@ public class DiscoverContract {
 
                     if (loopCount > 0) {// we had at least a single repair/synthesis, at that point we want to find
                         // minimal repair.
-                        Program minimalRepair = MinimalRepairDriver.execute(contract, inputExtendedPgm,
+                        Program minimalRepair = MinimalRepairDriver.execute(inputExtendedPgm,
                                 ARepairSynthesis);
                         System.out.println("Minimal Repair found, aborting!");
                     } else

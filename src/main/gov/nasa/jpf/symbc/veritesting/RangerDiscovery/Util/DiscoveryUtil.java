@@ -163,7 +163,7 @@ public class DiscoveryUtil {
         return new Pair(newVarDecl, eq);
     }
 
-    public static Node renameMainNode(String synthesis_spec, Node node) {
+    public static Node renameNode(String synthesis_spec, Node node) {
         return new Node(synthesis_spec, node.inputs, node.outputs, node.locals, node.equations, new ArrayList<>(), node.assertions, node.realizabilityInputs, node.contract, node.ivc);
 
     }
@@ -281,6 +281,15 @@ public class DiscoveryUtil {
         for (int i = 0; i < inputs.size(); i++) {
             if (inputs.get(i).id.equals(def.toString()))
                 return inputs.get(i);
+        }
+        return null;
+    }
+
+
+    public static Equation findEqInList(List<Equation> eqs, String lhs) {
+        for (int i = 0; i < eqs.size(); i++) {
+            if (eqs.get(i).lhs.get(0).equals(lhs))
+                return eqs.get(i);
         }
         return null;
     }
