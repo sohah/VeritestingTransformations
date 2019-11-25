@@ -70,7 +70,7 @@ public class DiscoverContract {
                     repairSpec(dynRegion);
                 else
                     assert false; //removed definition repair for now.
-                    //repairDef(dynRegion);
+                //repairDef(dynRegion);
             }
             called = true;
         } catch (IOException e) {
@@ -138,8 +138,7 @@ public class DiscoverContract {
                     if (loopCount > 0) {// we had at least a single repair/synthesis, at that point we want to find
                         // minimal repair.
                         Program minimalRepair = MinimalRepairDriver.execute(inputExtendedPgm,
-                                ARepairSynthesis);
-                        System.out.println("Minimal Repair found, aborting!");
+                                ARepairSynthesis, flatExtendedPgm);
                     } else
                         System.out.println("Contract Matching! Printing repair and aborting!");
 
@@ -220,7 +219,7 @@ public class DiscoverContract {
         while (true);
     }
 
-    private static Program getLustreNoExt(Program origLustreExtPgm) {
+    public static Program getLustreNoExt(Program origLustreExtPgm) {
         return NoExtLustreVisitor.execute(origLustreExtPgm);
 
     }
