@@ -15,6 +15,7 @@ import jkind.lustre.values.IntegerValue;
 import jkind.lustre.values.Value;
 import jkind.results.Counterexample;
 import jkind.results.InvalidProperty;
+import jkind.results.Signal;
 
 import java.util.*;
 
@@ -22,6 +23,7 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.minimalLoopCount;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.findEqWithLhs;
 
 /**
  * This is used to increment the test cases equations and locals.
@@ -85,7 +87,7 @@ public class TestCaseManager {
     }
 
 
-    public void collectCounterExampleMinimal(JKindResult counterExResult) {
+    public void collectCounterExampleMinimal(JKindResult counterExResult, Node lastSynMainNode) {
 
         for (PropertyResult pr : counterExResult.getPropertyResults()) {
             if (pr.getProperty().getName().equals(Config.candidateSpecPropertyName)) {
@@ -97,7 +99,7 @@ public class TestCaseManager {
 
                 fileName = contractMethodName + "_" + minimalLoopCount + "_" + "MinimalCEX.lus";
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString(), true);
-                translateTestCaseMinimal(counterExample);
+                translateTestCaseMinimal(counterExample, lastSynMainNode);
                 return;
             }
         }
@@ -125,9 +127,10 @@ public class TestCaseManager {
     }
 
 
-    public void translateTestCaseMinimal(Counterexample counterExResult) {
+    public void translateTestCaseMinimal(Counterexample counterExResult, Node lastSynMainNode) {
 
-
+        Signal<BooleanValue> isMatchImpl = findCEXvarOut(counterExResult, "isMatchImpl");
+        Signal<BooleanValue> isTighter = findCEXvarOut(counterExResult, "isTighter");
         testCaseCounter++;
 
         List<VarDecl> localTestInputVars = createVarDeclForTestInput();
@@ -137,7 +140,7 @@ public class TestCaseManager {
 
         Equation localTestCallEq = makeTestCallEq(counterExResult, localTestInputVars, localTestCallVar);
 
-        Equation localPropertyEq = makePropertyEq();
+        Equation localPropertyEq = makeMinimalPropertyEq(isMatchImpl.getValue(counterExResult.getLength() - 1), isTighter.getValue(counterExResult.getLength() - 1), localTestCallVar, lastSynMainNode);
 
         testInputVars.addAll(localTestInputVars);
         testCallVars.add(localTestCallVar);
@@ -145,6 +148,35 @@ public class TestCaseManager {
         testCallEqs.add(localTestCallEq);
 
         propertyEq = localPropertyEq;
+    }
+
+    private Equation makeMinimalPropertyEq(BooleanValue isMatchImpl, BooleanValue isTighter, VarDecl localTestCallVar, Node lastSynMainNode) {
+        Equation oldFailEq = findEqWithLhs(lastSynMainNode.equations, "fail");
+
+        Equation newFailEq;
+
+        assert oldFailEq.expr instanceof UnaryExpr;
+
+        Expr oldInnerExpr = ((UnaryExpr) oldFailEq.expr).expr;
+
+        Expr newInnerExpr = null;
+
+        if (!isMatchImpl.value) //then add the new test case in affirmative form
+            newInnerExpr = new BinaryExpr(DiscoveryUtil.varDeclToIdExpr(localTestCallVar), BinaryOp.AND, oldInnerExpr);
+        else if (!isTighter.value)
+            newInnerExpr = new BinaryExpr(new UnaryExpr(UnaryOp.NOT, DiscoveryUtil.varDeclToIdExpr(localTestCallVar)), BinaryOp.AND, oldInnerExpr);
+        else {
+            System.out.print("this can't happen, both isMatchImpl and isTighter are true yet we are collecting the counter example!");
+            assert false;
+        }
+
+        newFailEq = new Equation(oldFailEq.lhs, new UnaryExpr(UnaryOp.NOT, newInnerExpr));
+        return newFailEq;
+    }
+
+
+    private Signal<BooleanValue> findCEXvarOut(Counterexample counterExResult, String isMatchImpl) {
+        return counterExResult.getBooleanSignal(isMatchImpl);
     }
 
     /**
@@ -348,10 +380,10 @@ public class TestCaseManager {
         return testCaseInputVars;
     }
 
-    private Map<? extends String,? extends Pair<String,NamedType>> getWrapperOutput() {
+    private Map<? extends String, ? extends Pair<String, NamedType>> getWrapperOutput() {
         LinkedHashMap<String, Pair<String, NamedType>> wrapperOutputTCvars = new LinkedHashMap<>();
 
-        for(VarDecl out : CounterExampleQuery.rWrapper.outputs){
+        for (VarDecl out : CounterExampleQuery.rWrapper.outputs) {
             wrapperOutputTCvars.put(out.id, new Pair(WRAPPERNODE, out.type));
         }
         return wrapperOutputTCvars;

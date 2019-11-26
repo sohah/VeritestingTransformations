@@ -50,55 +50,53 @@ public class MinimalRepairDriver {
 
         MinimalRepairSynthesis tPrimeExistsQ = new MinimalRepairSynthesis(lastSynthizedContract, laskKnwnGoodRepairPgm.getMainNode());
 
-        String fileName = contractMethodName + "_" + minimalLoopCount + "_" + "rPrimeExists.lus";
-        writeToFile(fileName, tPrimeExistsQ.toString(), true);
+
+        while (true) {
+            String fileName = contractMethodName + "_" + minimalLoopCount + "_" + "rPrimeExists.lus";
+            writeToFile(fileName, tPrimeExistsQ.toString(), true);
 
 
-        JKindResult synthesisResult = callJkind(fileName, false, tPrimeExistsQ
-                .getMaxTestCaseK() - 2, true);
-        switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
-            case VALID:
-                System.out.println("^-^ Ranger Discovery Result ^-^");
-                System.out.println("No more R' can be found, returning last known good repair.");
-                return laskKnwnGoodRepairPgm; // returning the last known good repair.
-            case INVALID:
-                Program candTPrimePgm = RemoveRepairConstructVisitor.execute(SketchVisitor.execute(flatExtendedPgm, synthesisResult, true));
+            JKindResult synthesisResult = callJkind(fileName, false, tPrimeExistsQ
+                    .getMaxTestCaseK() - 2, true);
+            switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
+                case VALID:
+                    System.out.println("^-^ Ranger Discovery Result ^-^");
+                    System.out.println("No more R' can be found, returning last known good repair.");
+                    return laskKnwnGoodRepairPgm; // returning the last known good repair.
+                case INVALID:
+                    Program candTPrimePgm = RemoveRepairConstructVisitor.execute(SketchVisitor.execute(flatExtendedPgm, synthesisResult, true));
 
-                fileName = contractMethodName + "_" + minimalLoopCount + "_" + "rPrimeCandidate.lus";
-                writeToFile(fileName, candTPrimePgm.toString(), true);
+                    fileName = contractMethodName + "_" + minimalLoopCount + "_" + "rPrimeCandidate.lus";
+                    writeToFile(fileName, candTPrimePgm.toString(), true);
 
-                Program forAllQ = MinimalRepairCheck.execute(contract, counterExamplePgm, laskKnwnGoodRepairPgm.getMainNode(), candTPrimePgm.getMainNode());
+                    Program forAllQ = MinimalRepairCheck.execute(contract, counterExamplePgm, laskKnwnGoodRepairPgm.getMainNode(), candTPrimePgm.getMainNode());
 
-                fileName = contractMethodName + "_" + minimalLoopCount + "_" + "forAllMinimal.lus";
-                writeToFile(fileName, ToLutre.lustreFriendlyString(forAllQ.toString()), true);
+                    fileName = contractMethodName + "_" + minimalLoopCount + "_" + "forAllMinimal.lus";
+                    writeToFile(fileName, ToLutre.lustreFriendlyString(forAllQ.toString()), true);
 
-                JKindResult counterExampleResult = callJkind(fileName, false, -1, true);
+                    JKindResult counterExampleResult = callJkind(fileName, false, -1, true);
 
-                switch (counterExampleResult.getPropertyResult(candidateSpecPropertyName).getStatus()) {
-                    case VALID:
-                        System.out.print("Great! a tighter repair was found!");
-                        return candTPrimePgm;
-                    case INVALID:
-                    case WORKING:
-                    case UNKNOWN:
-                    case INCONSISTENT:
-                    case CANCELED:
-                    case ERROR:
-                    case WAITING:
-                    case VALID_REFINED:
-                        tPrimeExistsQ.collectCounterExample(counterExampleResult);
-                        Program newSynthesis = tPrimeExistsQ.getSynthesizedProgram();
-                        break;
-                }
-
-                System.out.println("^-^ Ranger Discovery Result ^-^");
-                System.out.println("No more R' can be found, returning last known good repair.");
-                return laskKnwnGoodRepairPgm; // returning the last known good repair.
-            default:
-                System.out.println("^-^ Ranger Discovery Result ^-^");
-                System.out.println("No more R' can be found, returning last known good repair.");
-                return laskKnwnGoodRepairPgm; // returning the last known good repair.
-        }
+                    switch (counterExampleResult.getPropertyResult(candidateSpecPropertyName).getStatus()) {
+                        case VALID:
+                            System.out.print("Great! a tighter repair was found!");
+                            laskKnwnGoodRepairPgm = candTPrimePgm;
+                            return candTPrimePgm;
+                        case INVALID:
+                            tPrimeExistsQ.collectCounterExample(counterExampleResult, tPrimeExistsQ.getSynthesizedProgram().getMainNode());
+                            //Program newSynthesis = tPrimeExistsQ.getSynthesizedProgram();
+                            ++minimalLoopCount;
+                            break;
+                        default:
+                            System.out.println("^-^ Ranger Discovery Result ^-^");
+                            System.out.println("Unknown solver output, No more R' can be found, returning last known good repair.");
+                            return laskKnwnGoodRepairPgm; // returning the last known good repair.
+                    }
+                default:
+                    System.out.println("^-^ Ranger Discovery Result ^-^");
+                    System.out.println("Unknown solver output , No more R' can be found, returning last known good repair.");
+                    return laskKnwnGoodRepairPgm; // returning the last known good repair.
+            }
 //            return rPrimeExistsQ.getSynthesizedProgram();
+        }
     }
 }

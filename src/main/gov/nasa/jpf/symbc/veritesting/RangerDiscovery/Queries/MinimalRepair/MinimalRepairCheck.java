@@ -1,5 +1,6 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair;
 
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil;
 import jkind.lustre.*;
@@ -91,8 +92,10 @@ public class MinimalRepairCheck {
         newEquations.add(tighterEq);
         newEquations.add(newDiscoveryOut);
 
+        List<String> newProperties = new ArrayList<>();
+        newProperties.add(Config.candidateSpecPropertyName);
 
-        return new Node("main", newInputs, mainNode.outputs, newLocals, newEquations, mainNode.properties, mainNode.assertions, mainNode.realizabilityInputs, mainNode.contract, mainNode.ivc);
+        return new Node("main", newInputs, mainNode.outputs, newLocals, newEquations, newProperties, mainNode.assertions, mainNode.realizabilityInputs, mainNode.contract, mainNode.ivc);
     }
 
     private static List<VarDecl> createNewFreeOutVars(Node mainNode) {

@@ -246,6 +246,16 @@ public class DiscoveryUtil {
         return null;
     }
 
+
+    public static Equation findEqWithLhs(List<Equation> equations, String lhs) {
+        for (int i = 0; i < equations.size(); i++) {
+            if (equations.get(i).lhs.get(0).toString().equals(lhs))
+                return equations.get(i);
+        }
+        return null;
+    }
+
+
     public static void appendToFile(String fileName, String content) {
         boolean append;
         if (firstTime) {

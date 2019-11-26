@@ -25,7 +25,7 @@ public class Config {
 
     public static String tnodeSpecPropertyName;
 
-    public static String candidateSpecPropertyName ="Candidate_T_Prime~0.p1";
+    public static String candidateSpecPropertyName ="discovery_out";
 
     public static Ast defaultHoleValBool = new BoolExpr(false);
     public static Ast defaultHoleValInt = new IntExpr(1);
