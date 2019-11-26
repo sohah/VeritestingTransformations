@@ -6,7 +6,7 @@ import jkind.lustre.visitors.AstMapVisitor;
 import java.util.List;
 
 //removes the repair expression and keeps the initial value of the suggested repair.
-public class NoExtLustreVisitor extends AstMapVisitor {
+public class RemoveRepairConstructVisitor extends AstMapVisitor {
 
     @Override
     public Program visit(Program e) {
@@ -29,7 +29,7 @@ public class NoExtLustreVisitor extends AstMapVisitor {
 
 
     public static Program execute(Program originalPgm){
-        NoExtLustreVisitor noExtLustreVisitor = new NoExtLustreVisitor();
-        return noExtLustreVisitor.visit(originalPgm);
+        RemoveRepairConstructVisitor removeRepairConstructVisitor = new RemoveRepairConstructVisitor();
+        return removeRepairConstructVisitor.visit(originalPgm);
     }
 }

@@ -2,7 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.LustreAstMapExtnVisitor;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.NoExtLustreVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.RemoveRepairConstructVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.CounterExampleQuery;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.repair.HolePlugger;
@@ -113,7 +113,7 @@ public class DiscoverContract {
 
             flatExtendedPgm = FlattenNodes.execute(inputExtendedPgm);
 
-            originalProgram = getLustreNoExt(flatExtendedPgm);
+            originalProgram = RemoveRepairConstructVisitor.execute(flatExtendedPgm);
 
         } else {
             originalProgram = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(tFileName)),
@@ -137,7 +137,7 @@ public class DiscoverContract {
 
                     if (loopCount > 0) {// we had at least a single repair/synthesis, at that point we want to find
                         // minimal repair.
-                        Program minimalRepair = MinimalRepairDriver.execute(counterExampleQuery.getCounterExamplePgm(), inputExtendedPgm,
+                        Program minimalRepair = MinimalRepairDriver.execute(counterExampleQuery.getCounterExamplePgm(), contract, inputExtendedPgm,
                                 ARepairSynthesis, flatExtendedPgm);
                     } else
                         System.out.println("Contract Matching! Printing repair and aborting!");
@@ -196,7 +196,7 @@ public class DiscoverContract {
                                 break;
                             } else {
                                 inputExtendedPgm = SketchVisitor.execute(flatExtendedPgm, synthesisResult);
-                                originalProgram = getLustreNoExt(inputExtendedPgm);
+                                originalProgram = RemoveRepairConstructVisitor.execute(inputExtendedPgm);
                                 fileName = contractMethodName + "_Extn" + loopCount + ".lus";
                                 writeToFile(fileName, inputExtendedPgm.toString());
 
@@ -218,11 +218,11 @@ public class DiscoverContract {
         }
         while (true);
     }
-
+/*
     public static Program getLustreNoExt(Program origLustreExtPgm) {
-        return NoExtLustreVisitor.execute(origLustreExtPgm);
+        return RemoveRepairConstructVisitor.execute(origLustreExtPgm);
 
-    }
+    }*/
 
     private static Node getTnodeFromStr(String tFileName) throws IOException {
         Program program = LustreParseUtil.program(new String(Files.readAllBytes(Paths.get(folderName + "/" + tFileName)), "UTF-8"));
