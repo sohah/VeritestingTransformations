@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.addProperty;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.removeNodeStr;
 
 public class MinimalRepairCheck {
@@ -18,9 +19,9 @@ public class MinimalRepairCheck {
 
     public static Program execute(Contract contract, Program origCounterEx, Node fixedTNode, Node candTnode) {
 
-        Node tNode = DiscoveryUtil.renameNode(TNODE, fixedTNode); //rename it to R so we can call it again
+        Node tNode = addProperty("p1", DiscoveryUtil.renameNode(TNODE, fixedTNode)); //rename it to R so we can call it again
 
-        Node tPrimeNode = DiscoveryUtil.renameNode(CAND_T_PRIME, candTnode); //rename it to R so we can call it again
+        Node tPrimeNode = addProperty("p1", DiscoveryUtil.renameNode(CAND_T_PRIME, candTnode)); //rename it to R so we can call it again
 
         List<Node> newNodes = new ArrayList<>(origCounterEx.nodes);
 

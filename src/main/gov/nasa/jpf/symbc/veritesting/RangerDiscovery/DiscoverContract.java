@@ -128,15 +128,16 @@ public class DiscoverContract {
 
         do {
             fileName = contractMethodName + "_" + loopCount + ".lus";
-            writeToFile(fileName, counterExampleQueryStrStr);
+            writeToFile(fileName, counterExampleQueryStrStr, false);
 
-            JKindResult counterExResult = callJkind(fileName, false, -1);
+            JKindResult counterExResult = callJkind(fileName, false, -1, false);
             switch (counterExResult.getPropertyResult(tnodeSpecPropertyName).getStatus()) {
                 case VALID: //valid match
-                    System.out.println("^-^ Ranger Discovery Result ^-^");
+                    System.out.println("^-^Ranger Discovery Result ^-^");
 
                     if (loopCount > 0) {// we had at least a single repair/synthesis, at that point we want to find
                         // minimal repair.
+                        System.out.print("Initial repair found, trying minimal repair.");
                         Program minimalRepair = MinimalRepairDriver.execute(counterExampleQuery.getCounterExamplePgm(), contract, inputExtendedPgm,
                                 ARepairSynthesis, flatExtendedPgm);
                     } else
@@ -174,10 +175,10 @@ public class DiscoverContract {
 
                     String synthesisContractStr = ARepairSynthesis.toString();
                     fileName = contractMethodName + "_" + loopCount + "_" + "hole.lus";
-                    writeToFile(fileName, synthesisContractStr);
+                    writeToFile(fileName, synthesisContractStr, false);
 
                     JKindResult synthesisResult = callJkind(fileName, false, ARepairSynthesis
-                            .getMaxTestCaseK() - 2);
+                            .getMaxTestCaseK() - 2, false);
                     switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
                         case VALID:
                             System.out.println("^-^ Ranger Discovery Result ^-^");
@@ -195,10 +196,10 @@ public class DiscoverContract {
                                 DiscoveryUtil.appendToFile(holeRepairFileName, holeRepairState.toString());
                                 break;
                             } else {
-                                inputExtendedPgm = SketchVisitor.execute(flatExtendedPgm, synthesisResult);
+                                inputExtendedPgm = SketchVisitor.execute(flatExtendedPgm, synthesisResult, false);
                                 originalProgram = RemoveRepairConstructVisitor.execute(inputExtendedPgm);
                                 fileName = contractMethodName + "_Extn" + loopCount + ".lus";
-                                writeToFile(fileName, inputExtendedPgm.toString());
+                                writeToFile(fileName, inputExtendedPgm.toString(),false);
 
                                 counterExampleQuery = new CounterExampleQuery(dynRegion, originalProgram, contract);
                                 counterExampleQueryStrStr = counterExampleQuery.toString();

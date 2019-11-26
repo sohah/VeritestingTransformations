@@ -98,19 +98,12 @@ public abstract class ThereExistsQuery {
     }
 
 
-
-    public void collectCounterExample(JKindResult counterExResult) {
-        testCaseManager.collectCounterExample(counterExResult);
-        synthesizedProgram = makeNewProgram();
-    }
-
-
     /**
      * This creates a new program with the new main that now exists in in the synthesis program.
      *
      * @return
      */
-    private Program makeNewProgram() {
+    protected Program makeNewProgram() {
 
         Node oldMain = synthesizedProgram.getMainNode();
         Node newMain = changeMainNode(oldMain);

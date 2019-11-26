@@ -119,7 +119,7 @@ public class SketchVisitor extends AstMapVisitor {
     }
 
 
-    public static Program execute(Program originalExtPgm, JKindResult synResult) {
+    public static Program execute(Program originalExtPgm, JKindResult synResult, boolean isMinimal) {
 
         Counterexample counterExample = null;
         for (PropertyResult pr : synResult.getPropertyResults()) {
@@ -135,7 +135,7 @@ public class SketchVisitor extends AstMapVisitor {
 
         //logging
         String fileName = contractMethodName + "_" + loopCount + "_" + "holeCEX.txt";
-        DiscoveryUtil.writeToFile(fileName, counterExample.toString());
+        DiscoveryUtil.writeToFile(fileName, counterExample.toString(), isMinimal);
 
         SketchVisitor sketchVisitor = new SketchVisitor(originalExtPgm, counterExample);
 

@@ -154,5 +154,9 @@ public class ARepairSynthesis extends ThereExistsQuery {
                 .realizabilityInputs, synthesisSpecNode.contract, synthesisSpecNode.ivc);
     }
 
+    public void collectCounterExample(JKindResult counterExResult) {
+        testCaseManager.collectCounterExample(counterExResult);
+        synthesizedProgram = makeNewProgram();
+    }
 
 }

@@ -2,6 +2,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.RemoveRepairConstructVisitor;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.ARepairSynthesis;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.sketchRepair.SketchVisitor;
 import jkind.api.results.JKindResult;
@@ -50,34 +51,34 @@ public class MinimalRepairDriver {
         MinimalRepairSynthesis tPrimeExistsQ = new MinimalRepairSynthesis(lastSynthizedContract, laskKnwnGoodRepairPgm.getMainNode());
 
         String fileName = contractMethodName + "_" + minimalLoopCount + "_" + "rPrimeExists.lus";
-        writeToFile(fileName, tPrimeExistsQ.toString());
+        writeToFile(fileName, tPrimeExistsQ.toString(), true);
 
 
         JKindResult synthesisResult = callJkind(fileName, false, tPrimeExistsQ
-                .getMaxTestCaseK() - 2);
+                .getMaxTestCaseK() - 2, true);
         switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
             case VALID:
                 System.out.println("^-^ Ranger Discovery Result ^-^");
                 System.out.println("No more R' can be found, returning last known good repair.");
                 return laskKnwnGoodRepairPgm; // returning the last known good repair.
             case INVALID:
-                Program candTPrimePgm = RemoveRepairConstructVisitor.execute(SketchVisitor.execute(flatExtendedPgm, synthesisResult));
+                Program candTPrimePgm = RemoveRepairConstructVisitor.execute(SketchVisitor.execute(flatExtendedPgm, synthesisResult, true));
 
                 fileName = contractMethodName + "_" + minimalLoopCount + "_" + "rPrimeCandidate.lus";
-                writeToFile(fileName, candTPrimePgm.toString());
+                writeToFile(fileName, candTPrimePgm.toString(), true);
 
                 Program forAllQ = MinimalRepairCheck.execute(contract, counterExamplePgm, laskKnwnGoodRepairPgm.getMainNode(), candTPrimePgm.getMainNode());
 
                 fileName = contractMethodName + "_" + minimalLoopCount + "_" + "forAllMinimal.lus";
-                writeToFile(fileName, candTPrimePgm.toString());
+                writeToFile(fileName, ToLutre.lustreFriendlyString(forAllQ.toString()), true);
 
-                JKindResult counterExampleResult = callJkind(fileName, false, -1);
+                JKindResult counterExampleResult = callJkind(fileName, false, -1, true);
 
-                switch (counterExampleResult.getPropertyResult(tnodeSpecPropertyName).getStatus()) {
+                switch (counterExampleResult.getPropertyResult(candidateSpecPropertyName).getStatus()) {
                     case VALID:
-                        break;
+                        System.out.print("Great! a tighter repair was found!");
+                        return candTPrimePgm;
                     case INVALID:
-                        break;
                     case WORKING:
                     case UNKNOWN:
                     case INCONSISTENT:
@@ -85,6 +86,8 @@ public class MinimalRepairDriver {
                     case ERROR:
                     case WAITING:
                     case VALID_REFINED:
+                        tPrimeExistsQ.collectCounterExample(counterExampleResult);
+                        Program newSynthesis = tPrimeExistsQ.getSynthesizedProgram();
                         break;
                 }
 

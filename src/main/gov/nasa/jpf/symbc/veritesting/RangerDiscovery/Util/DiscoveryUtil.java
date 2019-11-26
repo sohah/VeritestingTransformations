@@ -13,6 +13,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import za.ac.sun.cs.green.expr.Operation;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -139,11 +141,26 @@ public class DiscoveryUtil {
     }
 
 
-    public static boolean writeToFile(String fileName, String content) {
-        fileName = folderName + "/output/" + Config.faultySpec + "/" + fileName;
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(fileName), "utf-8"))) {
+    public static boolean writeToFile(String fileName, String content, boolean minimal) {
+        String directory;
+
+        if (minimal)
+            directory = folderName + "output/" + Config.faultySpec + "/minimal/";
+
+        else
+            directory = folderName + "output/" + Config.faultySpec + "/";
+
+
+        fileName = directory + fileName;
+
+        try {
+
+            if (!Files.exists(Paths.get(directory)))
+                Files.createDirectories(Paths.get(directory));
+
+            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"));
             writer.write(content);
+            writer.close();
         } catch (FileNotFoundException e) {
             System.out.println("unable to write to file!");
             e.printStackTrace();
@@ -165,6 +182,13 @@ public class DiscoveryUtil {
 
     public static Node renameNode(String synthesis_spec, Node node) {
         return new Node(synthesis_spec, node.inputs, node.outputs, node.locals, node.equations, new ArrayList<>(), node.assertions, node.realizabilityInputs, node.contract, node.ivc);
+
+    }
+
+    public static Node addProperty(String property, Node node) {
+        List<String> newProperties = new ArrayList<>();
+        newProperties.add(property);
+        return new Node(node.id, node.inputs, node.outputs, node.locals, node.equations, newProperties, node.assertions, node.realizabilityInputs, node.contract, node.ivc);
 
     }
 
@@ -365,9 +389,13 @@ public class DiscoveryUtil {
         return permutationList;
     }
 
-    public static JKindResult callJkind(String fileName, boolean kInductionOn, int maxK) {
+    public static JKindResult callJkind(String fileName, boolean kInductionOn, int maxK, boolean minimal) {
+        File file1;
 
-        File file1 = new File(folderName + "/output/" + Config.faultySpec + "/" + fileName);
+        if (!minimal)
+            file1 = new File(folderName + "/output/" + Config.faultySpec + "/" + fileName);
+        else
+            file1 = new File(folderName + "/output/" + Config.faultySpec + "/minimal/" + fileName);
 
         return runJKind(file1, kInductionOn, maxK);
     }

@@ -136,7 +136,7 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
 
         //creating the call to the fixed R
         NodeCallExpr callR = new NodeCallExpr(FIXED_T, freeExpArgs);
-        Equation rCallEq = new Equation(outputOfRCallExp,callR);
+        Equation rCallEq = new Equation(outputOfRCallExp, callR);
         equations.add(rCallEq);
 
 
@@ -146,12 +146,11 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
         actualExpArgsCheckSpec.addAll(holes);
         actualExpArgsCheckSpec.add(new IntExpr(getMaxTestCaseK()));
         NodeCallExpr callCheckSpec = new NodeCallExpr(CHECKSPECNODE, actualExpArgsCheckSpec);
-        Equation checkSpecCall = new Equation(outputOfRPrimeCallExp,callCheckSpec);
+        Equation checkSpecCall = new Equation(outputOfRPrimeCallExp, callCheckSpec);
         equations.add(checkSpecCall); // to find the R'
 
         //creating the equation of the property we want to check.
-        equations = makeNewFailPropEqs(outputOfRCallExp,outputOfRPrimeCallExp, equations);
-
+        equations = makeNewFailPropEqs(outputOfRCallExp, outputOfRPrimeCallExp, equations);
 
 
         return new Node("main", allInputs, exisingMain.outputs, locals, equations, exisingMain.properties, exisingMain
@@ -162,6 +161,7 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
     /**
      * finds the fail equation and replaces its condition with R and !R', where R' is the output of the checkspec
      * It also updates the list of equations to have the updated fail eq instead of the old one.
+     *
      * @param outputOfRCallExp
      * @param outputOfRPrimeCallExp
      * @param equations
@@ -187,6 +187,11 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
         Equation newFailEq = new Equation(oldFailEq.lhs, newProperty);
         newEquations.add(newFailEq);
         return newEquations;
+    }
+
+    public void collectCounterExample(JKindResult counterExampleResult) {
+        testCaseManager.collectCounterExampleMinimal(counterExampleResult);
+        synthesizedProgram = makeNewProgram();
     }
 
 /*

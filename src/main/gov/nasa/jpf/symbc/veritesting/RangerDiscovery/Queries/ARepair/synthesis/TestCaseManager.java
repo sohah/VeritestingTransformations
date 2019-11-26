@@ -21,6 +21,7 @@ import java.util.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.minimalLoopCount;
 
 /**
  * This is used to increment the test cases equations and locals.
@@ -77,14 +78,56 @@ public class TestCaseManager {
                 else
                     fileName = "def_" + contractMethodName + "_" + DiscoverContract.permutationCount + "_" + loopCount + "_" + "CEX.lus";
 
-                DiscoveryUtil.writeToFile(fileName, counterExample.toString());
+                DiscoveryUtil.writeToFile(fileName, counterExample.toString(), false);
                 translateTestCase(counterExample);
             }
         }
     }
 
 
+    public void collectCounterExampleMinimal(JKindResult counterExResult) {
+
+        for (PropertyResult pr : counterExResult.getPropertyResults()) {
+            if (pr.getProperty().getName().equals(Config.candidateSpecPropertyName)) {
+                assert pr.getProperty() instanceof InvalidProperty;
+
+                InvalidProperty ip = (InvalidProperty) pr.getProperty();
+                Counterexample counterExample = ip.getCounterexample();
+                String fileName;
+
+                fileName = contractMethodName + "_" + minimalLoopCount + "_" + "MinimalCEX.lus";
+                DiscoveryUtil.writeToFile(fileName, counterExample.toString(), true);
+                translateTestCaseMinimal(counterExample);
+                return;
+            }
+        }
+    }
+
+
     public void translateTestCase(Counterexample counterExResult) {
+        testCaseCounter++;
+
+        List<VarDecl> localTestInputVars = createVarDeclForTestInput();
+        VarDecl localTestCallVar = createTestCallVars();
+
+        List<Equation> localTestInputEqs = makeTestInputEqs(counterExResult, localTestInputVars);
+
+        Equation localTestCallEq = makeTestCallEq(counterExResult, localTestInputVars, localTestCallVar);
+
+        Equation localPropertyEq = makePropertyEq();
+
+        testInputVars.addAll(localTestInputVars);
+        testCallVars.add(localTestCallVar);
+        testInputEqs.addAll(localTestInputEqs);
+        testCallEqs.add(localTestCallEq);
+
+        propertyEq = localPropertyEq;
+    }
+
+
+    public void translateTestCaseMinimal(Counterexample counterExResult) {
+
+
         testCaseCounter++;
 
         List<VarDecl> localTestInputVars = createVarDeclForTestInput();

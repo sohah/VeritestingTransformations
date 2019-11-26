@@ -74,7 +74,7 @@ public class HoleRepairState {
                         fileName = contractMethodName + "_" + loopCount + "_" + "holeCEX.txt";
                     else
                         fileName = "def_" + contractMethodName + "_" + permutationCount + "_" + loopCount + "_" + "holeCEX.txt";
-                    DiscoveryUtil.writeToFile(fileName, counterExample.toString());
+                    DiscoveryUtil.writeToFile(fileName, counterExample.toString(),false);
                 }
             }
         }
