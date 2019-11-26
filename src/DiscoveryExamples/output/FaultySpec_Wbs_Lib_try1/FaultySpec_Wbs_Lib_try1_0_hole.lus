@@ -147,13 +147,13 @@ var
   ok_0 : bool;
 let
   --%MAIN;
-  pedal_r0 = (6 -> (pre 4));
+  pedal_r0 = (3 -> (pre 2));
 
-  autoBreak_r0 = (false -> (pre false));
+  autoBreak_r0 = (false -> (pre true));
 
   skid_r0 = (false -> (pre false));
 
-  out_00 = (0 -> (pre 5));
+  out_00 = (0 -> (pre 3));
 
   out_10 = (0 -> (pre 0));
 
