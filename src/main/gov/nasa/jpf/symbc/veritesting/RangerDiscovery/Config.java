@@ -13,12 +13,13 @@ public class Config {
     public static String folderName = "../src/DiscoveryExamples/";
     static String tFileName;
     static String holeRepairFileName = folderName + "holeRepair";
-    public static String TNODE = "T_node";
-    public static String RNODE = "R_node";
-    public static String WRAPPERNODE = "R_wrapper";
+    public static String TNODE = "T_node"; // also refers to the R_prime in the refinement loop.
+    public static String RNODE = "Ranger_node";
+    public static String WRAPPERNODE = "Ranger_wrapper";
     public static String CHECKSPECNODE = "Check_spec";
     public static String H_discovery = "H_discovery";
-    public static String FIXEDR = "Fixed_R";
+    public static String FIXED_T = "Fixed_T";
+    public static String CAND_T_PRIME = "Candidate_T_Prime";
     public static String specPropertyName = "ok";
     public static String wrapperOutpuName = "out";
 

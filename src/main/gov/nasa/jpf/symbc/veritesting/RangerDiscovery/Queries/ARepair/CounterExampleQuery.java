@@ -14,6 +14,7 @@ import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.TNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.WRAPPERNODE;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.counterExPropertyName;
 
 
 /**
@@ -30,7 +31,6 @@ public class CounterExampleQuery extends ForAllQuery {
     public static Node mainNode;
 
     private Program counterExamplePgm;
-
 
     /**
      * Generates a T program counter example step from a file path, usually this is done in the first time.

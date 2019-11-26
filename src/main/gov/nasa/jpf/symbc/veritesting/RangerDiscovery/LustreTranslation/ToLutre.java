@@ -64,7 +64,7 @@ public class ToLutre {
         ArrayList<Expr> actualParameters = new ArrayList<>();
         actualParameters.addAll(varDeclToIdExpr(freeDeclList));
         actualParameters.addAll(initPreTerm(wrapperLocalDeclList));
-        NodeCallExpr r_nodeCall = new NodeCallExpr("R_node", actualParameters);
+        NodeCallExpr r_nodeCall = new NodeCallExpr(RNODE, actualParameters);
         Equation wrapperEq = new Equation(varDeclToIdExpr(wrapperLocalDeclList), r_nodeCall);
 
         ArrayList<Equation> wrapperEqList = new ArrayList<Equation>();

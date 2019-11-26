@@ -168,6 +168,40 @@ public class DiscoveryUtil {
 
     }
 
+    public static Program addNode(Program pgm, Node newNode) {
+        List<Node> newNodes = new ArrayList(pgm.nodes);
+        newNodes.add(newNode);
+        return new Program(pgm.location, pgm.types, pgm.constants, pgm.functions, newNodes, pgm.repairNodes, pgm.main);
+    }
+
+    public static List<Node> removeNode(Program pgm, Node node) {
+        List<Node> newNodes = new ArrayList<>();
+        List<Node> oldNodes = pgm.nodes;
+        for (int i = 0; i < oldNodes.size(); i++) { //filtering away unwanted nodes.
+            if (!oldNodes.get(i).id.equals(node.id))
+                newNodes.add(oldNodes.get(i));
+        }
+        return newNodes;
+    }
+
+
+    public static List<Node> removeNodeStr(List<Node> oldNodes, String nodeName) {
+        List<Node> newNodes = new ArrayList<>();
+        for (int i = 0; i < oldNodes.size(); i++) { //filtering away unwanted nodes.
+            if (!oldNodes.get(i).id.equals(nodeName))
+                newNodes.add(oldNodes.get(i));
+        }
+        return newNodes;
+    }
+
+    public static Node findNodeStr(List<Node> nodes, String nodeName) {
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i).id.equals(nodeName))
+                return nodes.get(i);
+        }
+        return null;
+    }
+
 
     public static Node findNode(List<Node> nodes, Node node) {
         for (int i = 0; i < nodes.size(); i++) {

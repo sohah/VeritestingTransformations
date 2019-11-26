@@ -137,7 +137,7 @@ public class DiscoverContract {
 
                     if (loopCount > 0) {// we had at least a single repair/synthesis, at that point we want to find
                         // minimal repair.
-                        Program minimalRepair = MinimalRepairDriver.execute(inputExtendedPgm,
+                        Program minimalRepair = MinimalRepairDriver.execute(counterExampleQuery.getCounterExamplePgm(), inputExtendedPgm,
                                 ARepairSynthesis, flatExtendedPgm);
                     } else
                         System.out.println("Contract Matching! Printing repair and aborting!");

@@ -2,7 +2,6 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.ARepairSynthesis;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.Hole;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.TestCaseManager;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ThereExistsQuery;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
@@ -39,7 +38,7 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
     public MinimalRepairSynthesis(ARepairSynthesis aRepairSynthesis, Node lastRepairNode) {
         //this is the initial synthesized program that we need to update with the new I', O' call.
 
-        this.lastRepairNode = renameNode(FIXEDR, lastRepairNode); //rename it to R so we can call it again
+        this.lastRepairNode = renameNode(FIXED_T, lastRepairNode); //rename it to R so we can call it again
         List<Node> newNodes = createFixedNodePart(aRepairSynthesis.getSynthesizedProgram());
         newNodes.add(this.lastRepairNode); //this adds the constant R that we have found previously
         synNodeKey = aRepairSynthesis.getSynNodeKey();
@@ -136,7 +135,7 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
         IdExpr outputOfRPrimeCallExp = DiscoveryUtil.varDeclToIdExpr(outputOfRPrimeCallVar);
 
         //creating the call to the fixed R
-        NodeCallExpr callR = new NodeCallExpr(FIXEDR, freeExpArgs);
+        NodeCallExpr callR = new NodeCallExpr(FIXED_T, freeExpArgs);
         Equation rCallEq = new Equation(outputOfRCallExp,callR);
         equations.add(rCallEq);
 
