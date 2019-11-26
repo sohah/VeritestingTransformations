@@ -14,6 +14,8 @@ import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.CHECKSPECNODE;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.H_discovery;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.findEqWithLhs;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.removeEqWithLhs;
 
 
 /**
@@ -55,7 +57,6 @@ public abstract class ThereExistsQuery {
 
     //this creates the new main node for the syntheized program.
     protected abstract Node createSynthesisMain(Node synthesisSpecNode);
-
 
 
     public final static String FAIL = "fail";
@@ -103,10 +104,10 @@ public abstract class ThereExistsQuery {
      *
      * @return
      */
-    protected Program makeNewProgram() {
+    protected Program makeNewProgram(boolean isMinimal) {
 
         Node oldMain = synthesizedProgram.getMainNode();
-        Node newMain = changeMainNode(oldMain);
+        Node newMain = changeMainNode(oldMain, isMinimal);
 
         ArrayList<Node> nodes = new ArrayList<>();
         nodes.addAll(synthesizedProgram.nodes);
@@ -122,7 +123,8 @@ public abstract class ThereExistsQuery {
      * This creates a new program by changing the main to a new main that contains the test case being generated using the counterExampleManager
      */
 
-    private Node changeMainNode(Node mainNode) {
+    private Node changeMainNode(Node mainNode, boolean minimal) {
+
         List<VarDecl> locals = new ArrayList<>();
         locals.addAll(testCaseManager.testCallVars);
         locals.addAll(testCaseManager.testInputVars);
@@ -132,9 +134,45 @@ public abstract class ThereExistsQuery {
         equations.addAll(testCaseManager.testCallEqs);
         equations.add(testCaseManager.propertyEq);
 
+        if (minimal) {
+            locals.add(new VarDecl("fixedRout", NamedType.BOOL));
+            locals.add(new VarDecl("rPrimeOut", NamedType.BOOL));
+
+            Equation fixedRoutEq = findEqWithLhs(mainNode.equations, "fixedRout");
+            Equation rPrimeOut = findEqWithLhs(mainNode.equations, "rPrimeOut");
+
+            equations.add(fixedRoutEq);
+            equations.add(rPrimeOut);
+        }
         return new Node(mainNode.id, mainNode.inputs, mainNode.outputs, locals, equations, mainNode.properties, mainNode.assertions, mainNode.realizabilityInputs, mainNode.contract, mainNode.ivc);
     }
 
+
+    /*private Node changeMinimalMainNode(Node mainNode) {
+        int currentIndex = testCaseManager.testCallVars.size();
+
+        List<VarDecl> locals = new ArrayList<>(mainNode.locals);
+        locals.add(testCaseManager.testCallVars.get(currentIndex));
+
+        locals = addAllIfNotExists(locals, testCaseManager.testInputVars);
+
+        List<Equation> equations = removeEqWithLhs(mainNode.equations, "fail");
+
+        equations.add(testCaseManager.testInputEqs.get(currentIndex));
+        equations.addAll(testCaseManager.testCallEqs);
+        equations.add(testCaseManager.propertyEq);
+
+        return new Node(mainNode.id, mainNode.inputs, mainNode.outputs, locals, equations, mainNode.properties, mainNode.assertions, mainNode.realizabilityInputs, mainNode.contract, mainNode.ivc);
+    }
+
+    private List<VarDecl> addAllIfNotExists(List<VarDecl> locals, List<VarDecl> testInputVars) {
+        for (VarDecl var : testInputVars) {
+            if (!locals.contains(var))
+                locals.add(var);
+        }
+        return locals;
+    }
+*/
 
     /**
      * This creates the H (Historically node).

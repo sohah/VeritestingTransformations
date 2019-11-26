@@ -191,7 +191,7 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
 
     public void collectCounterExample(JKindResult counterExampleResult, Node lastSynMainNode) {
         testCaseManager.collectCounterExampleMinimal(counterExampleResult, lastSynMainNode);
-        synthesizedProgram = makeNewProgram();
+        synthesizedProgram = makeNewProgram(true);
     }
 
 /*

@@ -156,7 +156,7 @@ public class ARepairSynthesis extends ThereExistsQuery {
 
     public void collectCounterExample(JKindResult counterExResult) {
         testCaseManager.collectCounterExample(counterExResult);
-        synthesizedProgram = makeNewProgram();
+        synthesizedProgram = makeNewProgram(false);
     }
 
 }

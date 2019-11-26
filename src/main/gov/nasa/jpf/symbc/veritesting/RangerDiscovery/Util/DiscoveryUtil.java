@@ -256,6 +256,16 @@ public class DiscoveryUtil {
     }
 
 
+    public static List<Equation> removeEqWithLhs(List<Equation> equations, String lhs) {
+        List<Equation> newEquation = new ArrayList<>();
+
+        for (int i = 0; i < equations.size(); i++) {
+            if (!equations.get(i).lhs.get(0).toString().equals(lhs))
+                newEquation.add(equations.get(i));
+        }
+        return newEquation;
+    }
+
     public static void appendToFile(String fileName, String content) {
         boolean append;
         if (firstTime) {

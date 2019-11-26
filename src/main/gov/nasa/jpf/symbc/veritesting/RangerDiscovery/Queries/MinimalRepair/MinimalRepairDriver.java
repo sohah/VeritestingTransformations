@@ -91,6 +91,7 @@ public class MinimalRepairDriver {
                             System.out.println("Unknown solver output, No more R' can be found, returning last known good repair.");
                             return laskKnwnGoodRepairPgm; // returning the last known good repair.
                     }
+                    break;
                 default:
                     System.out.println("^-^ Ranger Discovery Result ^-^");
                     System.out.println("Unknown solver output , No more R' can be found, returning last known good repair.");
