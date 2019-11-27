@@ -45,13 +45,15 @@ public class MinimalRepairDriver {
         MinimalRepairDriver.lastSynthizedContract = lastSynthizedContract;
         MinimalRepairDriver.contract = contract;
 
-        //removing the repair expression keeping only the repair value included
+        /*//removing the repair expression keeping only the repair value included
         laskKnwnGoodRepairPgm = RemoveRepairConstructVisitor.execute(repairedProgram);
-
+*/
         MinimalRepairSynthesis tPrimeExistsQ = new MinimalRepairSynthesis(lastSynthizedContract, laskKnwnGoodRepairPgm.getMainNode());
 
 
         while (true) {
+            System.out.println("Trying minimal repair iteration #: " + minimalLoopCount);
+
             String fileName = contractMethodName + "_" + minimalLoopCount + "_" + "rPrimeExists.lus";
             writeToFile(fileName, tPrimeExistsQ.toString(), true);
 

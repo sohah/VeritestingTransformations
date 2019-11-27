@@ -138,7 +138,8 @@ public class DiscoverContract {
                     if (loopCount > 0) {// we had at least a single repair/synthesis, at that point we want to find
                         // minimal repair.
                         System.out.print("Initial repair found, trying minimal repair.");
-                        Program minimalRepair = MinimalRepairDriver.execute(counterExampleQuery.getCounterExamplePgm(), contract, inputExtendedPgm,
+                        Program minimalRepair = MinimalRepairDriver.execute(counterExampleQuery.getCounterExamplePgm
+                                        (), contract, originalProgram,
                                 ARepairSynthesis, flatExtendedPgm);
                     } else
                         System.out.println("Contract Matching! Printing repair and aborting!");
@@ -199,7 +200,7 @@ public class DiscoverContract {
                                 inputExtendedPgm = SketchVisitor.execute(flatExtendedPgm, synthesisResult, false);
                                 originalProgram = RemoveRepairConstructVisitor.execute(inputExtendedPgm);
                                 fileName = contractMethodName + "_Extn" + loopCount + ".lus";
-                                writeToFile(fileName, inputExtendedPgm.toString(),false);
+                                writeToFile(fileName, inputExtendedPgm.toString(), false);
 
                                 counterExampleQuery = new CounterExampleQuery(dynRegion, originalProgram, contract);
                                 counterExampleQueryStrStr = counterExampleQuery.toString();

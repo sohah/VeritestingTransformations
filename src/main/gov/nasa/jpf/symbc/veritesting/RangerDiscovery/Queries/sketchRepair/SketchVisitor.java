@@ -16,6 +16,7 @@ import java.util.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.counterExPropertyName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.minimalLoopCount;
 
 /**
  * This visitor puts back the values of the holes into the specification of T.
@@ -134,7 +135,12 @@ public class SketchVisitor extends AstMapVisitor {
         assert (counterExample != null);
 
         //logging
-        String fileName = contractMethodName + "_" + loopCount + "_" + "holeCEX.txt";
+        String fileName;
+        if (isMinimal)
+            fileName = contractMethodName + "_" + minimalLoopCount + "_" + "holeCEX.txt";
+        else
+            fileName = contractMethodName + "_" + loopCount + "_" + "holeCEX.txt";
+
         DiscoveryUtil.writeToFile(fileName, counterExample.toString(), isMinimal);
 
         SketchVisitor sketchVisitor = new SketchVisitor(originalExtPgm, counterExample);
