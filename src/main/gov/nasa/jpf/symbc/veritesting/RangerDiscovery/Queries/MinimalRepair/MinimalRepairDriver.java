@@ -1,6 +1,7 @@
 package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair;
 
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Contract;
+import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreExtension.RemoveRepairConstructVisitor;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.ARepairSynthesis;
@@ -22,6 +23,8 @@ public class MinimalRepairDriver {
     private static Program counterExamplePgm;
 
     public static int minimalLoopCount = 0;
+
+    public static int minimalRepairLoopCount = -1;
 
     /**
      * This method initiates the discovery of finding minimal repair enclosed in the repairedProgram. It starts by
@@ -63,7 +66,8 @@ public class MinimalRepairDriver {
             switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
                 case VALID:
                     System.out.println("^-^ Ranger Discovery Result ^-^");
-                    System.out.println("No more R' can be found, returning last known good repair.");
+                    System.out.println("No more R' can be found, last known good repair was found at, outer loop # = " +
+                            DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + minimalRepairLoopCount);
                     return laskKnwnGoodRepairPgm; // returning the last known good repair.
                 case INVALID:
                     Program candTPrimePgm = RemoveRepairConstructVisitor.execute(SketchVisitor.execute(flatExtendedPgm, synthesisResult, true));
@@ -82,6 +86,8 @@ public class MinimalRepairDriver {
                         case VALID:
                             System.out.print("Great! a tighter repair was found!");
                             laskKnwnGoodRepairPgm = candTPrimePgm;
+                            minimalLoopCount = minimalRepairLoopCount; //storing the current loop count where a
+                            // minimal repair was found.
                             return candTPrimePgm;
                         case INVALID:
                             tPrimeExistsQ.collectCounterExample(counterExampleResult, tPrimeExistsQ.getSynthesizedProgram().getMainNode());

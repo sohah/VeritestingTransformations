@@ -47,6 +47,8 @@ public class DiscoverContract {
     public static int loopCount = 0;
     public static int permutationCount = 0;
 
+    public static int outerLoopRepairNum = -1;
+
 /***** begin of unused vars***/
     /**
      * currently unused because we assume we have a way to find the input and output.
@@ -137,7 +139,9 @@ public class DiscoverContract {
 
                     if (loopCount > 0) {// we had at least a single repair/synthesis, at that point we want to find
                         // minimal repair.
-                        System.out.print("Initial repair found, trying minimal repair.");
+                        outerLoopRepairNum = loopCount;
+                        System.out.println("Initial repair found, in iteration #: " + outerLoopRepairNum);
+                        System.out.println("Trying minimal repair.");
                         Program minimalRepair = MinimalRepairDriver.execute(counterExampleQuery.getCounterExamplePgm
                                         (), contract, originalProgram,
                                 ARepairSynthesis, flatExtendedPgm);
@@ -199,7 +203,7 @@ public class DiscoverContract {
                             } else {
                                 inputExtendedPgm = SketchVisitor.execute(flatExtendedPgm, synthesisResult, false);
                                 originalProgram = RemoveRepairConstructVisitor.execute(inputExtendedPgm);
-                                fileName = contractMethodName + "_Extn" + loopCount + ".lus";
+                                fileName = contractMethodName + "_Extn" + loopCount + 1 + ".lus";
                                 writeToFile(fileName, inputExtendedPgm.toString(), false);
 
                                 counterExampleQuery = new CounterExampleQuery(dynRegion, originalProgram, contract);

@@ -1,0 +1,47 @@
+target=DiscoveryWBS
+classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
+sourcepath=${jpf-symbc}/src/examples
+vm.storage.class=nil
+symbolic.debug=true
+
+
+######## miscellaneous  ######
+symbolic.method=DiscoveryWBS.discoveryLaunch(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+
+symbolic.dp=z3
+
+#symbolic.min_int=-1
+#symbolic.max_int=2
+
+#symbolic.min_int=-15
+#symbolic.max_int=16
+
+#symbolic.min_int=-2147483648
+#symbolic.max_int=2147483647
+listener = .symbc.VeritestingListener
+#listener = .symbc.SymbolicListener
+
+#####running test case generation
+#listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
+
+veritestingMode = 3
+symbolic.lazy = true
+showLocalNames = true
+contractMethodName = wbs.update
+
+simplify = false
+contractDiscoveryOn = true
+specRepair = true
+spec = FaultyImaginaryWBS
+
+
+
+################## contract Discovery configurations ###############
+spec = wbs
+specRepair = true
+repairMode = 0
+
+contractMethodName = FaultyWbs_Const
+contractDiscoveryOn = true
+faultySpec = FaultyWbs_Const
+repairInitialValues = true
