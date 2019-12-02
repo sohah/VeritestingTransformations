@@ -75,7 +75,8 @@ public class MinimalRepairCheck {
 
         Equation newDiscoveryOut = new Equation(oldT_nodeCallEq.lhs, new BinaryExpr(isMatchImplExpr, BinaryOp.AND, isTighterExpr));
 
-        Equation isMatchImpEq = new Equation(isMatchImplExpr, oldT_nodeCallEq.expr);
+        Equation isMatchImpEq = new Equation(isMatchImplExpr, new NodeCallExpr(CAND_T_PRIME, ((NodeCallExpr)
+                oldT_nodeCallEq.expr).args));
 
         List<Expr> tighterCallParams = new ArrayList<>(DiscoveryUtil.varDeclToIdExpr(oldInputVars));
         tighterCallParams.addAll(newFreeOutExprs);
