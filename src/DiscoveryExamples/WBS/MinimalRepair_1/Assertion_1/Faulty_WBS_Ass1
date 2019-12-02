@@ -1,6 +1,5 @@
--- lets get rid of implication.
-
-repair node discover_binary_Bool_0_Int_4(i0:int; i1:int; i2:int;i3:int) [valhole_0: inthole; valhole_1: inthole;
+repair node discover_binary_Bool_1_Int_3(a0: bool; i0:int; i1:int; i2:int) [valhole_0: inthole; valhole_1:
+inthole;
 valhole_2: inthole;
 valhole_3: inthole;
 valhole_4: inthole;
@@ -30,13 +29,11 @@ var
 bExprlevel_0_1_0:bool;
 bExprlevel_0_2_0:bool;
 bExprlevel_0_3_0:bool;
-bExprlevel_0_4_0:bool;
 
 
 bExprlevel_0_1_1:bool;
 bExprlevel_0_2_1:bool;
 bExprlevel_0_3_1:bool;
-bExprlevel_0_4_1:bool;
 
 
 bExprlevel_1_0:bool;
@@ -46,115 +43,104 @@ bExprlevel_2:bool;
 
 let
 
-    bExprlevel_0_1_0 = if(valhole_0 = 0) then i0 <= const_hole0
-                   else if(valhole_0 = 1) then i0 > const_hole0
+    bExprlevel_0_1_0 = if(valhole_0 = 0) then true
+                   else if(valhole_0 = 1) then false
+                   else if(valhole_0 = 2) then a0
+                   else if(valhole_0 = 3) then i0 <= const_hole0
+                   else if(valhole_0 = 4) then i0 > const_hole0
                    else i0 = const_hole0;
 
-    bExprlevel_0_2_0 = if(valhole_1 = 0) then i1 <= const_hole1
-                   else if(valhole_1 = 1) then i1 > const_hole1
+    bExprlevel_0_2_0 = if(valhole_1 = 0) then true
+                   else if(valhole_1 = 1) then false
+                   else if(valhole_1 = 2) then a0
+                   else if(valhole_1 = 3) then i1 <= const_hole1
+                   else if(valhole_1 = 4) then i1 > const_hole1
                    else i1 = const_hole1;
 
-    bExprlevel_0_3_0 =  if(valhole_2 = 0) then i2 <= const_hole2
-                   else if(valhole_2 = 1) then i2 > const_hole2
+    bExprlevel_0_3_0 =  if(valhole_2 = 0) then true
+                   else if(valhole_2 = 1) then false
+                   else if(valhole_2 = 2) then a0
+                   else if(valhole_2 = 3) then i2 <= const_hole2
+                   else if(valhole_2 = 4) then i2 > const_hole2
                    else i2 = const_hole2;
-
-    bExprlevel_0_4_0 =  if(valhole_3 = 0) then i3 <= const_hole3
-                   else if(valhole_3 = 1) then i3 > const_hole3
-                   else i3 = const_hole3;
 
 
     bExprlevel_1_0 = if(level_1_hole_0 = 1) then bExprlevel_0_1_0
                    else if(level_1_hole_0 = 2) then bExprlevel_0_2_0
                    else if(level_1_hole_0 = 3) then bExprlevel_0_3_0
-                   else if(level_1_hole_0 = 4) then bExprlevel_0_4_0
 
                    else if(level_1_hole_0 = 5) then not bExprlevel_0_1_0
                    else if(level_1_hole_0 = 6) then not bExprlevel_0_2_0
                    else if(level_1_hole_0 = 7) then not bExprlevel_0_3_0
-                   else if(level_1_hole_0 = 8) then not bExprlevel_0_4_0
 
                    else if(level_1_hole_0 = 9) then bExprlevel_0_1_0 and bExprlevel_0_2_0
                    else if(level_1_hole_0 = 10) then bExprlevel_0_1_0 and bExprlevel_0_3_0
-                   else if(level_1_hole_0 = 11) then bExprlevel_0_1_0 and bExprlevel_0_4_0
 
                    else if(level_1_hole_0 = 12) then bExprlevel_0_2_0 and bExprlevel_0_3_0
-                   else if(level_1_hole_0 = 13) then bExprlevel_0_2_0 and bExprlevel_0_4_0
-
-                   else if(level_1_hole_0 = 14) then bExprlevel_0_3_0 and bExprlevel_0_4_0
 
                    else if(level_1_hole_0 = 19) then bExprlevel_0_1_0 or bExprlevel_0_2_0
                    else if(level_1_hole_0 = 20) then bExprlevel_0_1_0 or bExprlevel_0_3_0
-                   else if(level_1_hole_0 = 21) then bExprlevel_0_1_0 or bExprlevel_0_4_0
 
                    else if(level_1_hole_0 = 22) then bExprlevel_0_2_0 or bExprlevel_0_3_0
-                   else if(level_1_hole_0 = 23) then bExprlevel_0_2_0 or bExprlevel_0_4_0
-
-                   else if(level_1_hole_0 = 24) then bExprlevel_0_3_0 or bExprlevel_0_4_0
 
                    else if(level_1_hole_0 = 29) then bExprlevel_0_1_0 xor bExprlevel_0_2_0
                    else if(level_1_hole_0 = 30) then bExprlevel_0_1_0 xor bExprlevel_0_3_0
-                   else if(level_1_hole_0 = 31) then bExprlevel_0_1_0 xor bExprlevel_0_4_0
 
                    else if(level_1_hole_0 = 32) then bExprlevel_0_2_0 xor bExprlevel_0_3_0
-                   else if(level_1_hole_0 = 33) then bExprlevel_0_2_0 xor bExprlevel_0_4_0
 
-                   else bExprlevel_0_3_0 xor bExprlevel_0_4_0;
+                   else if(level_1_hole_0 = 35) then bExprlevel_0_1_0 => bExprlevel_0_2_0
+                   else if(level_1_hole_0 = 36) then bExprlevel_0_1_0 => bExprlevel_0_3_0
+
+                   else bExprlevel_0_2_0 => bExprlevel_0_3_0;
 
 
-
-    bExprlevel_0_1_1 = if(valhole_4 = 0) then i0 <= const_hole4
-                   else if(valhole_4 = 1) then i0 > const_hole4
+    bExprlevel_0_1_1 = if(valhole_4 = 0) then true
+                   else if(valhole_4 = 1) then false
+                   else if(valhole_4 = 2) then a0
+                   else if(valhole_4 = 3) then i0 <= const_hole4
+                   else if(valhole_4 = 4) then i0 > const_hole4
                    else i0 = const_hole4;
 
-    bExprlevel_0_2_1 = if(valhole_5 = 0) then i1 <= const_hole5
-                   else if(valhole_5 = 1) then i1 > const_hole5
+
+    bExprlevel_0_2_1 = if(valhole_5 = 0) then true
+                   else if(valhole_5 = 1) then false
+                   else if(valhole_5 = 2) then a0
+                   else if(valhole_5 = 3) then i1 <= const_hole5
+                   else if(valhole_5 = 4) then i1 > const_hole5
                    else i1 = const_hole5;
 
-    bExprlevel_0_3_1 =  if(valhole_6 = 0) then i2 <= const_hole6
-                   else if(valhole_6 = 1) then i2 > const_hole6
+
+    bExprlevel_0_3_1 =  if(valhole_6 = 0) then true
+                   else if(valhole_6 = 1) then false
+                   else if(valhole_6 = 2) then a0
+                   else if(valhole_6 = 3) then i2 <= const_hole6
+                   else if(valhole_6 = 4) then i2 > const_hole6
                    else i2 = const_hole6;
 
-    bExprlevel_0_4_1 =  if(valhole_7 = 0) then i3 <= const_hole7
-                   else if(valhole_7 = 1) then i3 > const_hole7
-                   else i3 = const_hole7;
 
 
     bExprlevel_1_1 = if(level_1_hole_1 = 1) then bExprlevel_0_1_1
                    else if(level_1_hole_1 = 2) then bExprlevel_0_2_1
                    else if(level_1_hole_1 = 3) then bExprlevel_0_3_1
-                   else if(level_1_hole_1 = 4) then bExprlevel_0_4_1
 
                    else if(level_1_hole_1 = 5) then not bExprlevel_0_1_1
                    else if(level_1_hole_1 = 6) then not bExprlevel_0_2_1
                    else if(level_1_hole_1 = 7) then not bExprlevel_0_3_1
-                   else if(level_1_hole_1 = 8) then not bExprlevel_0_4_1
 
                    else if(level_1_hole_1 = 9) then bExprlevel_0_1_1 and bExprlevel_0_2_1
                    else if(level_1_hole_1 = 10) then bExprlevel_0_1_1 and bExprlevel_0_3_1
-                   else if(level_1_hole_1 = 11) then bExprlevel_0_1_1 and bExprlevel_0_4_1
 
                    else if(level_1_hole_1 = 12) then bExprlevel_0_2_1 and bExprlevel_0_3_1
-                   else if(level_1_hole_1 = 13) then bExprlevel_0_2_1 and bExprlevel_0_4_1
-
-                   else if(level_1_hole_1 = 14) then bExprlevel_0_3_1 and bExprlevel_0_4_1
 
                    else if(level_1_hole_1 = 19) then bExprlevel_0_1_1 or bExprlevel_0_2_1
                    else if(level_1_hole_1 = 20) then bExprlevel_0_1_1 or bExprlevel_0_3_1
-                   else if(level_1_hole_1 = 21) then bExprlevel_0_1_1 or bExprlevel_0_4_1
 
                    else if(level_1_hole_1 = 22) then bExprlevel_0_2_1 or bExprlevel_0_3_1
-                   else if(level_1_hole_1 = 23) then bExprlevel_0_2_1 or bExprlevel_0_4_1
-
-                   else if(level_1_hole_1 = 24) then bExprlevel_0_3_1 or bExprlevel_0_4_1
 
                    else if(level_1_hole_1 = 29) then bExprlevel_0_1_1 xor bExprlevel_0_2_1
                    else if(level_1_hole_1 = 30) then bExprlevel_0_1_1 xor bExprlevel_0_3_1
-                   else if(level_1_hole_1 = 31) then bExprlevel_0_1_1 xor bExprlevel_0_4_1
 
-                   else if(level_1_hole_1 = 32) then bExprlevel_0_2_1 xor bExprlevel_0_3_1
-                   else if(level_1_hole_1 = 33) then bExprlevel_0_2_1 xor bExprlevel_0_4_1
-
-                   else bExprlevel_0_3_1 xor bExprlevel_0_4_1;
+                   else bExprlevel_0_2_1 xor bExprlevel_0_3_1;
 
 
 
@@ -177,9 +163,9 @@ node main(pedal_r: int; autoBreak_r: bool; skid_r: bool; NormalPressure_r:int; A
 
 let
 
-    p1 = true -> skid_r => repair(false,
-        discover_binary_Bool_0_Int_4(pedal_r, AltPressure_r, NormalPressure_r, Sys_Mode)) ;
+    p1 = true -> repair(not(pedal_r > 0 and pedal_r <= 4 and not skid_r) => (AltPressure_r > 0 or NormalPressure_r >
+        0),discover_binary_Bool_1_Int_3(skid_r, pedal_r, NormalPressure_r, Sys_Mode)) ;
 
-  --%PROPERTY p1;
+      --%PROPERTY p1;
 
 tel;

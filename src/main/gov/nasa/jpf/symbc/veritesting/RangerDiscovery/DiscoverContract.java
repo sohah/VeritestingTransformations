@@ -59,6 +59,7 @@ public class DiscoverContract {
     public static String className;
     public static String packageName;
     private static boolean repaired;
+    private static String innerDirectory; // directory under ../src/DiscoveryExample
 
     /***** end of unused vars***/
 

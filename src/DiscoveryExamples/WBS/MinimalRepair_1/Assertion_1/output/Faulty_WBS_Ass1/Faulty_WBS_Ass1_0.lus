@@ -9,7 +9,7 @@ node T_node(
   p1 : bool
 );
 let
-  p1 = (true -> ((((pedal_r > 0) and (pedal_r <= 4)) and (not skid_r)) => ((AltPressure_r > 0) or (NormalPressure_r > 0))));
+  p1 = (true -> ((not (((pedal_r > 0) and (pedal_r <= 4)) and (not skid_r))) => ((AltPressure_r > 0) or (NormalPressure_r > 0))));
 
   --%PROPERTY p1;
 
