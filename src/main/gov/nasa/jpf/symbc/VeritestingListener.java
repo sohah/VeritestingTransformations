@@ -50,6 +50,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.folderName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractDiscoveryOn;
 import static gov.nasa.jpf.symbc.veritesting.ChoiceGenerator.StaticBranchChoiceGenerator.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
@@ -222,6 +223,12 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                     DiscoverContract.contractMethodName = conf.getString("contractMethodName");
                 if (conf.hasValue("specRepair"))
                     gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.specLevelRepair = conf.getBoolean("specRepair");
+                if (conf.hasValue("SpecDirectory")) {
+                    folderName = folderName +
+                            conf.getString("SpecDirectory");
+                    if (folderName.charAt(folderName.length() - 1) != '/')
+                        folderName += "/";
+                }
                 if (conf.hasValue("spec"))
                     gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.spec = conf.getString("spec");
                 if (conf.hasValue("faultySpec"))

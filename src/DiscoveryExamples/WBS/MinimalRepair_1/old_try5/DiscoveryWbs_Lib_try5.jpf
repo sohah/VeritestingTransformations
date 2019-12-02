@@ -42,6 +42,7 @@ specRepair = true
 repairMode = 2
 
 contractMethodName = FaultySpec_Wbs_Lib_try5
+SpecDirectory = WBS/MinimalRepair_1/old_try5
 contractDiscoveryOn = true
 faultySpec = FaultySpec_Wbs_Lib_try5
 repairInitialValues = true

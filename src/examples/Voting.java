@@ -13,6 +13,10 @@ public class Voting {
         out = a || b || c;
     }
 
+    public void vote0(boolean a, boolean b, boolean c) {
+        out = a;
+    }
+
     public static void main(String[] args) {
         Voting voting = new Voting();
         voting.makeStep(true, true, true, 4, false, true);
@@ -23,6 +27,6 @@ public class Voting {
         this.out = out;
 
         if (symVar)
-            vote2(a, b, c, threshold);
+            vote0(a, b, c);
     }
 }
