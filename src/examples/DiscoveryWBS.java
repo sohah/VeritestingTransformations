@@ -328,12 +328,22 @@ public class DiscoveryWBS {
 
         //   assert Skid ? ((!(Alt_Pressure == -1)) || ((PedalPos > 4) ^ (Sys_Mode == -8))) : true;
 
-        //assert (Skid && (Nor_Pressure == 1)) ? ((PedalPos <= -8) && (Nor_Pressure == -6)) : true;     //this is passing all the time, because it is never the case that Skid && Nor_Pressure ==1 is true!
-
         //assert ((!((PedalPos == 1) && (Alt_Pressure == 6))) && (!((PedalPos == 1) && (Alt_Pressure == 6))));
 
-        //assert (! (Nor_Pressure > 11)); // obtained from repairing the second assertion, which is failing by
-        // definition.
+        //obtained from repairing "not" of the 1st assertion.
+        //assert (Skid && (Nor_Pressure == 1)) ? ((PedalPos <= -8) && (Nor_Pressure == -6)) : true;     //this is passing all the time, because it is never the case that Skid && Nor_Pressure ==1 is true!
+
+
+
+        //obtained from repairing the 2nd assertion.
+        //assert (! (Nor_Pressure > 11));
+
+
+        //obtained from repairing the 4th assertion.
+        assert (!(Skid ^ true) || (Sys_Mode == 0));
+
+        //obtained from repairing 5th assertion.
+        //assert (!((PedalPos == 8) && (Nor_Pressure == -1)) || (true ^ (Sys_Mode > -6)));
     }
 
 
