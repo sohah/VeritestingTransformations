@@ -9,7 +9,7 @@ node T_node(
   p1 : bool
 );
 let
-  p1 = (true -> (not ((skid_r => (AltPressure_r = -1)) xor (skid_r => (AltPressure_r = -1)))));
+  p1 = (true -> (skid_r => false));
 
   --%PROPERTY p1;
 
@@ -212,17 +212,17 @@ let
 
   r347_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_1_2 = w41_2;
 
-  r347_WBS_Node_WBS_rlt_PRE2_1_3_2 = (0 -> (if (not (symVar = 0)) then r347_WBS_Node_WBS_rlt_PRE2_1_1_2 else WBS_Node_WBS_rlt_PRE2));
-
   r347_Alt_Pressure_1_13_2 = (0 -> (if (not (symVar = 0)) then r347_Alt_Pressure_1_11_2 else Alt_Pressure));
 
-  r347_Sys_Mode_1_5_2 = (0 -> (if (not (symVar = 0)) then r347_Sys_Mode_1_3_2 else Sys_Mode));
-
   r347_Nor_Pressure_1_13_2 = (0 -> (if (not (symVar = 0)) then r347_Nor_Pressure_1_11_2 else Nor_Pressure));
+
+  r347_WBS_Node_WBS_rlt_PRE2_1_3_2 = (0 -> (if (not (symVar = 0)) then r347_WBS_Node_WBS_rlt_PRE2_1_1_2 else WBS_Node_WBS_rlt_PRE2));
 
   r347_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_3_2 = (0 -> (if (not (symVar = 0)) then r347_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_1_2 else WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE));
 
   r347_WBS_Node_WBS_BSCU_rlt_PRE1_1_3_2 = (0 -> (if (not (symVar = 0)) then r347_WBS_Node_WBS_BSCU_rlt_PRE1_1_1_2 else WBS_Node_WBS_BSCU_rlt_PRE1));
+
+  r347_Sys_Mode_1_5_2 = (0 -> (if (not (symVar = 0)) then r347_Sys_Mode_1_3_2 else Sys_Mode));
 
   autoBrake = (if autoBrake_bool then 1 else 0);
 

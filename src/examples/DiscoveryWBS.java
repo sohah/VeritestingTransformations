@@ -17,11 +17,6 @@
  */
 
 
-import gov.nasa.jpf.symbc.Debug;
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.InputOutput.DiscoveryUtil;
-import gov.nasa.jpf.vm.Verify;
-
-
 public class DiscoveryWBS {
 
     //Internal state
@@ -301,22 +296,46 @@ public class DiscoveryWBS {
         // This assertion should prove:
         //boolean myassert = (PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true;
         //assert(myassert);
+
+        // 1. passing assertion
         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
         // This assertion should fail:
+
+        //2. failing assertion
         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0) : true);
 
-        // This assertion may fail (depending on encoding):
+        // This assertion may fail (depending on encoding): //SH: I am confirming that it is failing.
         //Debug.printPC("PC before assertion ((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true) = ");
 
-        // assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
+        //3. failing assertion
+         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
 
-        // This assertion should fail:
+        //4. failing assertion
+         // This assertion should fail:
         //assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
+
+        //5. failing assertion
         // This assertion should also fail:
         //assert((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+
+        /************** generated contract discovery properties ***************/
+
+        //assert Skid ? Nor_Pressure == 0 : true;   // original discovered property p1 = (true -> (skid_r => ((not (not (NormalPressure_r = 0))) or (not (not (NormalPressure_r = 0))))));
+
+
+        //   assert Skid ? ((!(Alt_Pressure == -1)) || ((PedalPos > 4) ^ (Sys_Mode == -8))) : true;
+
+        //assert (Skid && (Nor_Pressure == 1)) ? ((PedalPos <= -8) && (Nor_Pressure == -6)) : true;     //this is passing all the time, because it is never the case that Skid && Nor_Pressure ==1 is true!
+
+        //assert ((!((PedalPos == 1) && (Alt_Pressure == 6))) && (!((PedalPos == 1) && (Alt_Pressure == 6))));
+
+        //assert (! (Nor_Pressure > 11)); // obtained from repairing the second assertion, which is failing by
+        // definition.
     }
+
 
 /*
 

@@ -1,4 +1,4 @@
-target=Voting
+target=DiscoveryWBS
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil
@@ -6,7 +6,7 @@ symbolic.debug=true
 
 
 ######## miscellaneous  ######
-symbolic.method=Voting.makeStep(sym#sym#sym#sym#sym#sym)
+symbolic.method=DiscoveryWBS.discoveryLaunch(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 
 symbolic.dp=z3
 
@@ -25,17 +25,24 @@ listener = .symbc.VeritestingListener
 #listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
 
 veritestingMode = 3
-simplify = false
 symbolic.lazy = true
 showLocalNames = true
+contractMethodName = wbs.update
+
+simplify = false
+contractDiscoveryOn = true
+specRepair = true
+spec = FaultyImaginaryWBS
+
 
 
 ################## contract Discovery configurations ###############
-spec = vote
+spec = wbs
 specRepair = true
 repairMode = 2
 
-contractMethodName = FaultyMinimal_Spec_Vote_Extension
+contractMethodName = Faulty_WBS_Ass3
+SpecDirectory = WBS/MinimalRepair_1/Assertion_3
 contractDiscoveryOn = true
-faultySpec = FaultySpec_Vote_ExtensionUnflat
-repairInitialValues = false
+faultySpec = Faulty_WBS_Ass3
+repairInitialValues = true

@@ -121,7 +121,28 @@ let
 
 tel;
 
+node Fixed_T(
+  pedal_r : int;
+  autoBreak_r : bool;
+  skid_r : bool;
+  NormalPressure_r : int;
+  AltPressure_r : int;
+  Sys_Mode : int
+) returns (
+  p1 : bool
+);
+let
+  p1 = (true -> (not ((skid_r => (AltPressure_r = -1)) xor (skid_r => (AltPressure_r = -1)))));
+
+tel;
+
 node main(
+  pedal_r : int;
+  autoBreak_r : bool;
+  skid_r : bool;
+  NormalPressure_r : int;
+  AltPressure_r : int;
+  Sys_Mode : int;
   valhole_0_0 : int;
   valhole_1_1 : int;
   valhole_2_2 : int;
@@ -145,6 +166,8 @@ var
   out_10 : int;
   out_20 : int;
   ok_0 : bool;
+  fixedRout : bool;
+  rPrimeOut : bool;
 let
   --%MAIN;
   pedal_r0 = (6 -> (pre 2));
@@ -161,7 +184,11 @@ let
 
   ok_0 = Check_spec(pedal_r0, autoBreak_r0, skid_r0, out_00, out_10, out_20, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, const_hole0_5, const_hole1_6, const_hole2_7, const_hole3_8, level_1_hole_9, level_2_hole_10, level_3_hole_11, 1);
 
-  fail = (not ok_0);
+  fixedRout = Fixed_T(pedal_r, autoBreak_r, skid_r, NormalPressure_r, AltPressure_r, Sys_Mode);
+
+  rPrimeOut = Check_spec(pedal_r, autoBreak_r, skid_r, NormalPressure_r, AltPressure_r, Sys_Mode, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, const_hole0_5, const_hole1_6, const_hole2_7, const_hole3_8, level_1_hole_9, level_2_hole_10, level_3_hole_11, 1);
+
+  fail = (not (ok_0 and (fixedRout and (not rPrimeOut))));
 
   assert (true -> (valhole_0_0 = (pre valhole_0_0)));
 

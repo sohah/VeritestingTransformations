@@ -84,10 +84,11 @@ public class MinimalRepairDriver {
 
                     switch (counterExampleResult.getPropertyResult(candidateSpecPropertyName).getStatus()) {
                         case VALID:
+                            laskKnwnGoodRepairPgm = candTPrimePgm;
+                            minimalRepairLoopCount = minimalLoopCount; //storing the current loop count where a
                             System.out.print("Great! a tighter repair was found at, outer loop # = " +
                                     DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + minimalRepairLoopCount);
-                            laskKnwnGoodRepairPgm = candTPrimePgm;
-                            minimalLoopCount = minimalRepairLoopCount; //storing the current loop count where a
+
                             // minimal repair was found.
                             return candTPrimePgm;
                         case INVALID:

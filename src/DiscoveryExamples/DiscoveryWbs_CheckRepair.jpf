@@ -18,8 +18,8 @@ symbolic.dp=z3
 
 #symbolic.min_int=-2147483648
 #symbolic.max_int=2147483647
-listener = .symbc.VeritestingListener
-#listener = .symbc.SymbolicListener
+#listener = .symbc.VeritestingListener
+listener = .symbc.SymbolicListener
 
 #####running test case generation
 #listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
@@ -30,7 +30,7 @@ showLocalNames = true
 contractMethodName = wbs.update
 
 simplify = false
-contractDiscoveryOn = true
+contractDiscoveryOn = false
 specRepair = true
 spec = FaultyImaginaryWBS
 

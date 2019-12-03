@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<Results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Progress source="bmc" trueFor="1">
+    <PropertyProgress name="T_node~0.p1"/>
+  </Progress>
+  <Property name="T_node~0.p1">
+    <Runtime unit="sec">0.213</Runtime>
+    <Answer source="bmc">falsifiable</Answer>
+    <K>2</K>
+    <Counterexample>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.a" type="int">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.a_bool" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.b" type="int">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.b_bool" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.c" type="int">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.c_bool" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.out" type="int">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.out_bool" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.r347_out_1_1_2" type="int">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.r347_out_1_3_2" type="int">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.r347_out_1_3_2_bool" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.symVar" type="int">
+        <Value time="0">1</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.Ranger_node~0.threshold" type="int">
+        <Value time="0">2</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.a_bool" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.b_bool" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.c_bool" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.out_0" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.out_bool" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="Ranger_wrapper~0.threshold" type="int">
+        <Value time="0">2</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="T_node~0.a" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="T_node~0.b" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="T_node~0.c" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="T_node~0.out" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="T_node~0.p1" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="T_node~0.threshold" type="int">
+        <Value time="0">2</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="a" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="b" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="c" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="discovery_out" type="bool">
+        <Value time="0">1</Value>
+        <Value time="1">0</Value>
+      </Signal>
+      <Signal name="out" type="bool">
+        <Value time="0">0</Value>
+        <Value time="1">1</Value>
+      </Signal>
+      <Signal name="threshold" type="int">
+        <Value time="0">2</Value>
+        <Value time="1">0</Value>
+      </Signal>
+    </Counterexample>
+  </Property>
+</Results>

@@ -1,20 +1,3 @@
-node T_node(
-  pedal_r : int;
-  autoBreak_r : bool;
-  skid_r : bool;
-  NormalPressure_r : int;
-  AltPressure_r : int;
-  Sys_Mode : int
-) returns (
-  p1 : bool
-);
-let
-  p1 = (true -> (not ((skid_r => (AltPressure_r = -1)) xor (skid_r => (AltPressure_r = -1)))));
-
-  --%PROPERTY p1;
-
-tel;
-
 node Ranger_node(
   pedal : int;
   autoBrake_bool : bool;
@@ -259,10 +242,47 @@ let
 
 tel;
 
+node T_node(
+  pedal_r : int;
+  autoBreak_r : bool;
+  skid_r : bool;
+  NormalPressure_r : int;
+  AltPressure_r : int;
+  Sys_Mode : int
+) returns (
+  p1 : bool
+);
+let
+  p1 = (true -> (true or (Sys_Mode <= 4)));
+
+  --%PROPERTY p1;
+
+tel;
+
+node Candidate_T_Prime(
+  pedal_r : int;
+  autoBreak_r : bool;
+  skid_r : bool;
+  NormalPressure_r : int;
+  AltPressure_r : int;
+  Sys_Mode : int
+) returns (
+  p1 : bool
+);
+let
+  p1 = (true -> (not (NormalPressure_r > 11)));
+
+  --%PROPERTY p1;
+
+tel;
+
 node main(
   pedal_r : int;
   autoBreak_r : bool;
-  skid_r : bool
+  skid_r : bool;
+  NormalPressure_r__ : int;
+  AltPressure_r__ : int;
+  Sys_Mode__ : int
 ) returns (
   discovery_out : bool
 );
@@ -270,10 +290,18 @@ var
   NormalPressure_r : int;
   AltPressure_r : int;
   Sys_Mode : int;
+  isMatchImpl : bool;
+  isTighter : bool;
 let
   --%MAIN;
   NormalPressure_r, AltPressure_r, Sys_Mode = Ranger_wrapper(pedal_r, autoBreak_r, skid_r);
 
-  discovery_out = T_node(pedal_r, autoBreak_r, skid_r, NormalPressure_r, AltPressure_r, Sys_Mode);
+  isMatchImpl = Candidate_T_Prime(pedal_r, autoBreak_r, skid_r, NormalPressure_r, AltPressure_r, Sys_Mode);
+
+  isTighter = (Candidate_T_Prime(pedal_r, autoBreak_r, skid_r, NormalPressure_r__, AltPressure_r__, Sys_Mode__) => T_node(pedal_r, autoBreak_r, skid_r, NormalPressure_r__, AltPressure_r__, Sys_Mode__));
+
+  discovery_out = (isMatchImpl and isTighter);
+
+  --%PROPERTY discovery_out;
 
 tel;
