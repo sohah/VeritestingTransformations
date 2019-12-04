@@ -297,16 +297,8 @@ public class WBS {
 	   WBS_Node_WBS_BSCU_rlt_PRE1 = WBS_Node_WBS_BSCU_Switch2; 
 
 	   WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE = Sys_Mode;
-//	   WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE += WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6 ? 1 : 0;
-
-		// Assertions added by MWW: these are the truth values for "my" version of the model - may not be true for this code, but should be
-		// consistent between SPF and Veritest-SPF.
-
-		// I prefer ite to !a || b for implications.
 
 		// This assertion should prove:
-        //boolean myassert = (PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true;
-        //assert(myassert);
 		//assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
 		// This assertion should fail:
@@ -321,7 +313,30 @@ public class WBS {
 		 //assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
 		// This assertion should also fail:
+
+
+		/************ SH edits starts here **********/
+//		Debug.printPC("PC before assertion ((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true) = ");
+
+		//assertion (1) -- passing assertion
+		//assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+		//assertion(2) -- failing assertion
+		//assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0) : true);
+
+		//assertion(3) -- passing assertion.
+		//assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
+
+
+		//assertion(4) -- failing assertion.
+		//assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+
+		//assertion(5) -- failing assertion
 		//assert((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+		/************ SH edits ends here **********/
+
 	}
 
 

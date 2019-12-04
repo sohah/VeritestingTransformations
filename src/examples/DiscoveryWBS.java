@@ -286,62 +286,62 @@ public class DiscoveryWBS {
         WBS_Node_WBS_BSCU_rlt_PRE1 = WBS_Node_WBS_BSCU_Switch2;
 
         WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE = Sys_Mode;
-//	   WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE += WBS_Node_WBS_BSCU_SystemModeSelCmd_Logical_Operator6 ? 1 : 0;
 
-        // Assertions added by MWW: these are the truth values for "my" version of the model - may not be true for this code, but should be
-        // consistent between SPF and Veritest-SPF.
+        /************ SH edits starts here **********/
+//		Debug.printPC("PC before assertion ((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true) = ");
 
-        // I prefer ite to !a || b for implications.
-
-        // This assertion should prove:
-        //boolean myassert = (PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true;
-        //assert(myassert);
-
-        // 1. passing assertion
+        //assertion (1) -- passing assertion
         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
-        // This assertion should fail:
-
-        //2. failing assertion
+        //assertion(2) -- failing assertion
         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0) : true);
 
-        // This assertion may fail (depending on encoding): //SH: I am confirming that it is failing.
-        //Debug.printPC("PC before assertion ((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true) = ");
-
-        //3. failing assertion
+        //assertion(3) -- passing assertion.
          //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
 
-        //4. failing assertion
-         // This assertion should fail:
+        //assertion(4) -- failing assertion.
         //assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
 
-        //5. failing assertion
-        // This assertion should also fail:
+        //assertion(5) -- failing assertion
         //assert((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+
+        /************ SH edits ends here **********/
 
 
         /************** generated contract discovery properties ***************/
 
-        //assert Skid ? Nor_Pressure == 0 : true;   // original discovered property p1 = (true -> (skid_r => ((not (not (NormalPressure_r = 0))) or (not (not (NormalPressure_r = 0))))));
+        //assertion (1) -- Repair of "not" -- useless repair
+        //assert (Skid && (Nor_Pressure == 1)) ? ((PedalPos <= -8) && (Nor_Pressure == -6)) : true;
 
-
-        //   assert Skid ? ((!(Alt_Pressure == -1)) || ((PedalPos > 4) ^ (Sys_Mode == -8))) : true;
-
-        //assert ((!((PedalPos == 1) && (Alt_Pressure == 6))) && (!((PedalPos == 1) && (Alt_Pressure == 6))));
-
-        //obtained from repairing "not" of the 1st assertion.
-        //assert (Skid && (Nor_Pressure == 1)) ? ((PedalPos <= -8) && (Nor_Pressure == -6)) : true;     //this is passing all the time, because it is never the case that Skid && Nor_Pressure ==1 is true!
-
-        //obtained from repairing the 2nd assertion.
+        //assertion(2) -- Repair
         //assert (! (Nor_Pressure > 11));
 
+        //assertion(3) -- Repair of "not"
 
-        //obtained from repairing the 4th assertion. ALERT: assertion not passing with SPF
+
+        //assertion(4) -- Repair
         //assert (!(Skid ^ true) || (Sys_Mode == 0));
 
-        //obtained from repairing 5th assertion.
+        //assertion(5) -- Repair
         //assert (!((PedalPos == 8) && (Nor_Pressure == -1)) || (true ^ (Sys_Mode > -6)));
+
+
+
+
+        // ------- other repair attempts of fake assertions/properties.-------
+
+        // (1)
+        //assert Skid ? Nor_Pressure == 0 : true;   // original discovered property p1 = (true -> (skid_r => ((not (not (NormalPressure_r = 0))) or (not (not (NormalPressure_r = 0))))));
+
+        // (2)
+        // assert Skid ? ((!(Alt_Pressure == -1)) || ((PedalPos > 4) ^ (Sys_Mode == -8))) : true;
+
+        // (3)
+        //assert ((!((PedalPos == 1) && (Alt_Pressure == 6))) && (!((PedalPos == 1) && (Alt_Pressure == 6))));
+
+
     }
 
 
