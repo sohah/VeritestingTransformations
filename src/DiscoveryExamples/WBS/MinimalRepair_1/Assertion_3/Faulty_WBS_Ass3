@@ -165,7 +165,7 @@ let
 
 -- this property was the third assertion in WBS which is failing by definition. Thus no pass spec pair.
 
-    p1 = true -> repair((pedal_r > 0 and pedal_r <= 4 and not skid_r) => (NormalPressure_r > 0),
+    p1 = true -> repair(not ((pedal_r > 0 and pedal_r <= 4 and not skid_r) => (NormalPressure_r > 0)),
     discover_binary_Bool_1_Int_3(skid_r, pedal_r, NormalPressure_r, Sys_Mode)) ;
 
       --%PROPERTY p1;

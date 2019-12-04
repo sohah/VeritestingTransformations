@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+import gov.nasa.jpf.symbc.Debug;
+import gov.nasa.jpf.vm.Verify;
 
 public class DiscoveryWBS {
 
@@ -297,7 +299,8 @@ public class DiscoveryWBS {
         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0) : true);
 
         //assertion(3) -- passing assertion.
-         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
+        System.out.println("Nor_Pressure = " + Debug.isSymbolicInteger(Nor_Pressure));
+        assert ((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
 
         //assertion(4) -- failing assertion.
         //assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
@@ -319,15 +322,13 @@ public class DiscoveryWBS {
         //assert (! (Nor_Pressure > 11));
 
         //assertion(3) -- Repair of "not"
-
+        //assert (!((Nor_Pressure == -1) && true) || ((PedalPos == 4) ^ Skid));
 
         //assertion(4) -- Repair
         //assert (!(Skid ^ true) || (Sys_Mode == 0));
 
         //assertion(5) -- Repair
         //assert (!((PedalPos == 8) && (Nor_Pressure == -1)) || (true ^ (Sys_Mode > -6)));
-
-
 
 
         // ------- other repair attempts of fake assertions/properties.-------
