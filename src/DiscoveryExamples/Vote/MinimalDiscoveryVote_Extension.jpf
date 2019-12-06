@@ -36,6 +36,7 @@ specRepair = true
 repairMode = 2
 
 contractMethodName = FaultyMinimal_Spec_Vote_Extension
+SpecDirectory = Vote
 contractDiscoveryOn = true
 faultySpec = FaultyMinimal_Spec_Vote_Extension
 repairInitialValues = false

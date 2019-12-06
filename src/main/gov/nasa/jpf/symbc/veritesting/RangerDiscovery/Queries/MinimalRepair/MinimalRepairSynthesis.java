@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.findNodeStr;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.renameNode;
 
 
@@ -21,12 +22,6 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.
  */
 public class MinimalRepairSynthesis extends ThereExistsQuery {
     private Node lastRepairNode;
-
-    //these are the tighter holes that we are trying to find, these are different from "holes" which just hold the
-    // to be repaired expressions.
-
-    List<Hole> tighterHolesInput = new ArrayList<>();
-    List<Hole> tighterHolesOutput = new ArrayList<>();
 
     /**
      * initial minimal repair is made from the last known good repair, not test cases yet, just new free variables as
@@ -144,7 +139,7 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
         List actualExpArgsCheckSpec = new ArrayList();
         actualExpArgsCheckSpec.addAll(freeExpArgs);
         actualExpArgsCheckSpec.addAll(holes);
-        actualExpArgsCheckSpec.add(new IntExpr(getMaxTestCaseK()-1));
+        actualExpArgsCheckSpec.add(new IntExpr(getMaxTestCaseK() - 1));
         NodeCallExpr callCheckSpec = new NodeCallExpr(CHECKSPECNODE, actualExpArgsCheckSpec);
         Equation checkSpecCall = new Equation(outputOfRPrimeCallExp, callCheckSpec);
         equations.add(checkSpecCall); // to find the R'
@@ -192,6 +187,17 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
     public void collectCounterExample(JKindResult counterExampleResult, Node lastSynMainNode) {
         testCaseManager.collectCounterExampleMinimal(counterExampleResult, lastSynMainNode);
         synthesizedProgram = makeNewProgram(true);
+    }
+
+    //have the side effect of changing its internal synthesized program to the new known repair node.
+    public void changeFixedR(Node newMain) {
+        List newNodes = new ArrayList<>(synthesizedProgram.nodes);
+        Node oldKnownRepairNode = findNodeStr(synthesizedProgram.nodes, FIXED_T);
+        newNodes.remove(oldKnownRepairNode); // removing the old main node;
+        Node newFixedT = renameNode(FIXED_T, newMain);
+        newNodes.add(newFixedT); //adding the new main
+        synthesizedProgram = new Program(synthesizedProgram.location, synthesizedProgram.types, synthesizedProgram.constants, synthesizedProgram.functions, newNodes, null, synthesizedProgram.main);
+
     }
 
 /*

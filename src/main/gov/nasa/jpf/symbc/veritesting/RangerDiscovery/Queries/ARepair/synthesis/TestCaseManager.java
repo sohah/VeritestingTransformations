@@ -22,7 +22,8 @@ import java.util.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.minimalLoopCount;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.candidateLoopCount;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.knownRepairLoopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.findEqWithLhs;
 
 /**
@@ -97,7 +98,7 @@ public class TestCaseManager {
                 Counterexample counterExample = ip.getCounterexample();
                 String fileName;
 
-                fileName = contractMethodName + "_" + minimalLoopCount + "_" + "MinimalCEX.lus";
+                fileName = contractMethodName + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" + "CandidateCEX.lus";
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString(), true);
                 translateTestCaseMinimal(counterExample, lastSynMainNode);
                 return;
