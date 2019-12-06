@@ -98,7 +98,8 @@ public class TestCaseManager {
                 Counterexample counterExample = ip.getCounterexample();
                 String fileName;
 
-                fileName = contractMethodName + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" + "CandidateCEX.lus";
+                fileName = contractMethodName + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" +
+                        "existsCEX.lus";
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString(), true);
                 translateTestCaseMinimal(counterExample, lastSynMainNode);
                 return;

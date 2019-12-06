@@ -24,7 +24,7 @@ JavaPathfinder core system v8.0 (rev 32+) - (C) 2005-2014 United States Governme
 ====================================================== system under test
 DiscoveryWBS.main()
 
-====================================================== search started: 12/2/19 9:05 PM
+====================================================== search started: 12/6/19 11:31 AM
 choiceGeneratorRegistered(class gov.nasa.jpf.symbc.numeric.PCChoiceGenerator) at MethodInfo[DiscoveryWBS.main([Ljava/lang/String;)V]#10
 New sym int pedal min=-2147483648, max=2147483647
 New sym int autoBrake min=0, max=1
@@ -16376,10 +16376,19 @@ repairing holes for iteration#:1
 ^-^Ranger Discovery Result ^-^
 Initial repair found, in iteration #: 2
 Trying minimal repair.
-Trying minimal repair iteration #: 0
-Trying minimal repair iteration #: 1
-Trying minimal repair iteration #: 2
-Great! a tighter repair was found at, outer loop # = 2 minimal repair loop # = 2
+trying minimal good repair iteration #: 0
+Trying candidate #: 0
+Trying candidate #: 1
+Trying candidate #: 2
+Great! a tighter repair was found at, outer loop # = 2 minimal repair loop # = 0 successful candidate # = 2
+trying minimal good repair iteration #: 1
+Trying candidate #: 0
+Trying candidate #: 1
+Trying candidate #: 2
+^-^ Ranger Discovery Result ^-^
+No more R' can be found, last known good repair was found at, outer loop # = 2 minimal repair loop # = 0
+Great!! Minimal repair was found at, outer loop # = 2 minimal repair loop # = 0 the LAST candidate repair loop # = 2
+
 --------------- NO-SKIP OPTIMIZATION ---------------
 w6$2 := WBS_Node_WBS_rlt_PRE2; 
 w7$2 := WBS_Node_WBS_BSCU_rlt_PRE1; 
@@ -16546,19 +16555,19 @@ Unknown phases exception count = 0
 
 
 /************************ Printing Time Decomposition Statistics *****************
-static analysis time = 3043 msec
-Veritesting Dyn Time = 14272 msec
-Veritesting fix-pint Time = 429 msec
+static analysis time = 3217 msec
+Veritesting Dyn Time = 26582 msec
+Veritesting fix-pint Time = 478 msec
 
 /************************ Printing Solver Statistics *****************
 Total Solver Queries Count = 0
-Total Solver Time = 96 msec
+Total Solver Time = 55 msec
 Total Solver Parse Time = 23 msec
 Region Summary Parse Time = 0 msec
 Total Solver Clean up Time = 0 msec
 PCSatSolverCount = 1
-PCSatSolverTime = 106 msec
-Constant Propagation Time for PC sat. checks = 0
+PCSatSolverTime = 66 msec
+Constant Propagation Time for PC sat. checks = 1
 Array SPF Case count = 0
 If-removed count = 0
 
@@ -16586,19 +16595,19 @@ DiscoveryWBS.discoveryLaunch(IZZIIIIIIZ)V#52
 Finished printing keys of regions that were instantiated at least once
 
 Metrics Vector:
-17315,3043,14272,1,0,96,23,0,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,2,1,1,2,2.0,0,0,0
+29799,3217,26582,1,0,55,23,0,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,2,1,1,2,2.0,0,0,0
 Contract is repaired in iteration number:2
 ====================================================== results
 no errors detected
 
 ====================================================== statistics
-elapsed time:       00:00:17
+elapsed time:       00:00:29
 states:             new=2,visited=0,backtracked=2,end=1
 search:             maxDepth=2,constraints=0
 choice generators:  thread=1 (signal=0,lock=1,sharedRef=0,threadApi=0,reschedule=0), data=1
 heap:               new=347,released=12,maxLive=344,gcCycles=2
 instructions:       3160
-max memory:         524MB
+max memory:         550MB
 loaded code:        classes=60,methods=1292
 
-====================================================== search finished: 12/2/19 9:05 PM
+====================================================== search finished: 12/6/19 11:32 AM

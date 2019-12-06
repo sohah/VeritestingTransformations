@@ -75,7 +75,7 @@ public class MinimalRepairDriver {
                     case VALID:
                         System.out.println("^-^ Ranger Discovery Result ^-^");
                         System.out.println("No more R' can be found, last known good repair was found at, outer loop # = " +
-                                DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + knownRepairLoopCount);
+                                DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + lastKnownRepairLoopCount);
                         canFindMoreTighterRepair = false;
                         break;
                     case INVALID:
