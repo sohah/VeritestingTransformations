@@ -1,4 +1,4 @@
-target=Voting
+target=DiscoveryExamples.DiscoveryVoting
 classpath=${jpf-symbc}/build/examples,${jpf-symbc}/lib/com.ibm.wala.util-1.4.4-SNAPSHOT.jar
 sourcepath=${jpf-symbc}/src/examples
 vm.storage.class=nil
@@ -6,7 +6,7 @@ symbolic.debug=true
 
 
 ######## miscellaneous  ######
-symbolic.method=Voting.makeStep(sym#sym#sym#sym#sym#sym)
+symbolic.method=DiscoveryExamples.DiscoveryVoting.makeStep(sym#sym#sym#sym#sym#sym)
 
 symbolic.dp=z3
 

@@ -1,4 +1,6 @@
-public class Voting {
+package DiscoveryExamples;
+
+public class DiscoveryVoting {
     boolean out = false;
 
     public void vote1(boolean a, boolean b, boolean c) {
@@ -18,8 +20,8 @@ public class Voting {
     }
 
     public static void main(String[] args) {
-        Voting voting = new Voting();
-        voting.makeStep(true, true, true, 4, false, true);
+        DiscoveryVoting discoveryVoting = new DiscoveryVoting();
+        discoveryVoting.makeStep(true, true, true, 4, false, true);
     }
 
 

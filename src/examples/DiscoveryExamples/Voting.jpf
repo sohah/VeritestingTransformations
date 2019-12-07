@@ -1,0 +1,16 @@
+target=DiscoveryExamples.Voting
+classpath=${jpf-symbc}/build/examples
+sourcepath=${jpf-symbc}/src/examples
+
+symbolic.method = DiscoveryExamples.Voting.makeStep(sym#sym#sym#sym#sym#sym)
+#symbolic.minint=-100
+#symbolic.maxint=100
+vm.storage.class=nil
+
+listener = .symbc.SymbolicListener
+#listener = .listener.ChoiceTracker
+symbolic.dp=z3bitvector
+
+
+################## contract Discovery configurations ###############
+contractDiscoveryOn = false
