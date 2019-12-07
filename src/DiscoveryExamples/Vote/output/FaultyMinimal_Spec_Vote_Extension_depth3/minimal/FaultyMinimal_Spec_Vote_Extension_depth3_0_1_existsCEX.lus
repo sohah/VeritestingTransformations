@@ -2,6 +2,18 @@
 variable                                                     0     1 
 
 SIGNALS                                                  
+Candidate_T_Prime~0.a                                    false  true 
+Candidate_T_Prime~0.b                                    false  true 
+Candidate_T_Prime~0.c                                    false false 
+Candidate_T_Prime~0.out                                  false  true 
+Candidate_T_Prime~0.p1                                    true false 
+Candidate_T_Prime~0.threshold                                0     6 
+Candidate_T_Prime~1.a                                    false  true 
+Candidate_T_Prime~1.b                                    false  true 
+Candidate_T_Prime~1.c                                    false false 
+Candidate_T_Prime~1.out                                  false false 
+Candidate_T_Prime~1.p1                                    true  true 
+Candidate_T_Prime~1.threshold                                0     6 
 Ranger_wrapper~0.Ranger_node~0.a                             0     1 
 Ranger_wrapper~0.Ranger_node~0.a_bool                    false  true 
 Ranger_wrapper~0.Ranger_node~0.b                             0     1 
@@ -25,12 +37,15 @@ Ranger_wrapper~0.threshold                                   0     6
 T_node~0.a                                               false  true 
 T_node~0.b                                               false  true 
 T_node~0.c                                               false false 
-T_node~0.out                                             false  true 
-T_node~0.p1                                               true false 
+T_node~0.out                                             false false 
+T_node~0.p1                                               true  true 
 T_node~0.threshold                                           0     6 
 a                                                        false  true 
 b                                                        false  true 
 c                                                        false false 
 discovery_out                                             true false 
+isMatchImpl                                               true false 
+isTighter                                                 true  true 
 out                                                      false  true 
+out__                                                    false false 
 threshold                                                    0     6 
