@@ -27,6 +27,6 @@ public class Voting {
         this.out = out;
 
         if (symVar)
-            vote0(a, b, c);
+            vote2(a, b, c, threshold);
     }
 }

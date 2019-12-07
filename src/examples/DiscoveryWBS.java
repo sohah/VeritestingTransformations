@@ -299,8 +299,8 @@ public class DiscoveryWBS {
         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0) : true);
 
         //assertion(3) -- passing assertion.
-        System.out.println("Nor_Pressure = " + Debug.isSymbolicInteger(Nor_Pressure));
-        assert ((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
+        //System.out.println("Nor_Pressure = " + Debug.isSymbolicInteger(Nor_Pressure));
+        //assert ((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
 
         //assertion(4) -- failing assertion.
         //assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
