@@ -14,6 +14,3 @@ let
   --%PROPERTY p1;
 
 tel;
-
-
-(((a) or !(c xor b)))
