@@ -1,17 +1,19 @@
-node main(a: bool; b:bool; c:bool; out : bool; threshold:int) returns (p1: bool);
+node main(a: bool; b:bool; c:bool; threshold:int) returns (p1: bool);
 
 var
 
    prop1: bool;
+   out : bool;
 
 let
 
-   prop1 = (((not c) xor (a => c)) => ((out => b) or (a and a)));
 
-    -- prop1 = (true -> (((out or out) and (out or out)) or (not (out and b))));
+    out = ((a and b) or (b and c) or (a and c)) and (threshold < 10) and (threshold > 5);
+
+    prop1 = (out => ((b and a) or (b xor a)));
 
 
-    p1 = prop1 => out   ;
+    p1 = prop1   ;
 
   --%PROPERTY p1;
 

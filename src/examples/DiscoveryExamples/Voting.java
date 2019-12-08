@@ -21,7 +21,7 @@ public class Voting {
         this.out = out;
 
         vote2(a, b, c, threshold);
-        assert out ? !(!a && (c ^ b)) : true;
+        assert this.out ? ((b && a) || (b ^ a)) : true;
 
     }
 }
