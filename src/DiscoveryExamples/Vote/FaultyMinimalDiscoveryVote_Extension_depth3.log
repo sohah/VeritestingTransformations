@@ -24,7 +24,7 @@ JavaPathfinder core system v8.0 (rev 32+) - (C) 2005-2014 United States Governme
 ====================================================== system under test
 DiscoveryExamples.DiscoveryVoting.main()
 
-====================================================== search started: 12/7/19 8:45 PM
+====================================================== search started: 12/8/19 9:59 AM
 choiceGeneratorRegistered(class gov.nasa.jpf.symbc.numeric.PCChoiceGenerator) at MethodInfo[DiscoveryExamples.DiscoveryVoting.main([Ljava/lang/String;)V]#15
 New sym int a min=0, max=1
 New sym int b min=0, max=1
@@ -581,20 +581,10 @@ Stack output: null
 Repair does NOT include initial values
 repairing holes for iteration#:0
 repairing holes for iteration#:1
-^-^Ranger Discovery Result ^-^
-Initial repair found, in iteration #: 2
-Trying minimal repair.
-trying minimal good repair iteration #: 0
-Trying candidate #: 0
-Trying candidate #: 1
-Trying candidate #: 2
-Trying candidate #: 3
-Trying candidate #: 4
-Trying candidate #: 5
-Trying candidate #: 6
+repairing holes for iteration#:2
+repairing holes for iteration#:3
 ^-^ Ranger Discovery Result ^-^
-No more R' can be found, last known good repair was found at, outer loop # = 2 minimal repair loop # = -1
-Great!! Minimal repair was found at, outer loop # = 2 minimal repair loop # = -1 the LAST candidate repair loop # = -1
+Cannot find a synthesis
 
 --------------- NO-SKIP OPTIMIZATION ---------------
 w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
@@ -635,9 +625,9 @@ Unknown phases exception count = 0
 
 
 /************************ Printing Time Decomposition Statistics *****************
-static analysis time = 2677 msec
-Veritesting Dyn Time = 288487 msec
-Veritesting fix-pint Time = 52 msec
+static analysis time = 2546 msec
+Veritesting Dyn Time = 14940 msec
+Veritesting fix-pint Time = 46 msec
 
 /************************ Printing Solver Statistics *****************
 Total Solver Queries Count = 0
@@ -675,19 +665,19 @@ DiscoveryExamples.DiscoveryVoting.makeStep(ZZZIZZ)V#8
 Finished printing keys of regions that were instantiated at least once
 
 Metrics Vector:
-291164,2677,288487,1,0,38,11,0,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,2,1,1,2,2.0,0,0,0
-Contract is repaired in iteration number:2
+17486,2546,14940,1,0,38,11,0,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,2,1,1,2,2.0,0,0,0
+Contract is NOT repaired
 ====================================================== results
 no errors detected
 
 ====================================================== statistics
-elapsed time:       00:04:51
+elapsed time:       00:00:17
 states:             new=2,visited=0,backtracked=2,end=1
 search:             maxDepth=2,constraints=0
 choice generators:  thread=1 (signal=0,lock=1,sharedRef=0,threadApi=0,reschedule=0), data=1
 heap:               new=347,released=12,maxLive=345,gcCycles=2
 instructions:       3127
-max memory:         700MB
+max memory:         576MB
 loaded code:        classes=60,methods=1284
 
-====================================================== search finished: 12/7/19 8:50 PM
+====================================================== search finished: 12/8/19 9:59 AM

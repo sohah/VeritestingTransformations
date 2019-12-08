@@ -1,0 +1,11 @@
+node main(a: bool; b:bool; c:bool; threshold:int) returns (p1: bool);
+
+var
+   out : bool;
+let
+    out = (((a and b) or (b and c) or (a and c)) and (threshold < 10) and (threshold > 5));
+    p1 = (a or (out => c)); --((b => out) or (c and b));
+
+  --%PROPERTY p1;
+
+tel;

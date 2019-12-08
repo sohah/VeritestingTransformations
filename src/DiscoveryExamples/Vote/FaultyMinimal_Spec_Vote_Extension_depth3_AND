@@ -310,7 +310,7 @@ node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool)
 
 let
 
-    p1 = true -> (repair((a and b), discover_binary_Bool_3_Int_0(a,b,c))) => out;
+    p1 = true -> (repair((a and b), discover_binary_Bool_3_Int_0(a,b,c))) xor out;
 
   --%PROPERTY p1;
 
