@@ -1,16 +1,16 @@
-node main(a: bool; b:bool; c:bool; threshold:int) returns (p1: bool);
+node main(a: bool; b:bool; c:bool; out:bool; threshold:int) returns (p1: bool);
 
 var
 
    prop1: bool;
-   out : bool;
+   --out : bool;
 
 let
 
 
-    out = ((a and b) or (b and c) or (a and c)) and (threshold < 10) and (threshold > 5);
+    --out = ((a and b) or (b and c) or (a and c)) and (threshold < 10) and (threshold > 5);
 
-    prop1 = (out => ((b and a) or (b xor a)));
+    prop1 = (out => (((b xor c) or (c and a)) xor (a => (b xor b))));
 
 
     p1 = prop1   ;

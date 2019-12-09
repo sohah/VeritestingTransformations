@@ -35,8 +35,8 @@ spec = vote
 specRepair = true
 repairMode = 2
 
-contractMethodName = Vote_Implication_depth2_Outer_True_False
-SpecDirectory  = Vote/RepairImplication
+contractMethodName = Vote_AND_depth1_Outer_True_False
+SpecDirectory  = Vote/RepairAnd
 contractDiscoveryOn = true
-faultySpec = Vote_Implication_depth2_Outer_True_False
+faultySpec = Vote_AND_depth1_Outer_True_False
 repairInitialValues = false
