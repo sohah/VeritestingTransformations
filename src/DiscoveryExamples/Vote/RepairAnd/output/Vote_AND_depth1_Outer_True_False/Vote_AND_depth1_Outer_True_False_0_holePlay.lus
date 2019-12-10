@@ -1,0 +1,131 @@
+node T_node(
+  a : bool;
+  b : bool;
+  c : bool;
+  threshold : int;
+  out : bool;
+  valhole_0_0 : int;
+  valhole_1_1 : int;
+  valhole_2_2 : int;
+  level_1_hole_3 : int;
+  out_hole_4 : int
+) returns (
+  p1 : bool
+);
+let
+  p1 = (true -> (discover_binary_Bool_4_Int_0_0(a, b, c, valhole_0_0, valhole_1_1, valhole_2_2, level_1_hole_3, out_hole_4) and out));
+
+tel;
+
+node discover_binary_Bool_4_Int_0_0(
+  a0 : bool;
+  a1 : bool;
+  a2 : bool;
+  valhole_0_0 : int;
+  valhole_1_1 : int;
+  valhole_2_2 : int;
+  level_1_hole_3 : int;
+  out_hole_4 : int
+) returns (
+  out : bool
+);
+var
+  bExprlevel_0_0 : bool;
+  bExprlevel_0_1 : bool;
+  bExprlevel_0_2 : bool;
+  bExprlevel_1 : bool;
+let
+  bExprlevel_0_0 = (if (valhole_0_0 = 3) then a0 else (if (valhole_0_0 = 4) then a1 else a2));
+
+  bExprlevel_0_1 = (if (valhole_1_1 = 3) then a0 else (if (valhole_1_1 = 4) then a1 else a2));
+
+  bExprlevel_0_2 = (if (valhole_2_2 = 3) then a0 else (if (valhole_2_2 = 4) then a1 else a2));
+
+  bExprlevel_1 = (if (level_1_hole_3 = 0) then bExprlevel_0_0 else (if (level_1_hole_3 = 1) then bExprlevel_0_0 else (if (level_1_hole_3 = 2) then bExprlevel_0_0 else (if (level_1_hole_3 = 3) then bExprlevel_0_1 else (if (level_1_hole_3 = 4) then bExprlevel_0_2 else (if (level_1_hole_3 = 5) then (not bExprlevel_0_0) else (if (level_1_hole_3 = 6) then (not bExprlevel_0_1) else (if (level_1_hole_3 = 7) then (not bExprlevel_0_2) else (if (level_1_hole_3 = 8) then (bExprlevel_0_0 and bExprlevel_0_1) else (if (level_1_hole_3 = 9) then (bExprlevel_0_0 and bExprlevel_0_2) else (if (level_1_hole_3 = 10) then (bExprlevel_0_1 and bExprlevel_0_2) else (if (level_1_hole_3 = 11) then (bExprlevel_0_0 or bExprlevel_0_1) else (if (level_1_hole_3 = 12) then (bExprlevel_0_0 or bExprlevel_0_2) else (if (level_1_hole_3 = 13) then (bExprlevel_0_1 or bExprlevel_0_2) else (if (level_1_hole_3 = 14) then (bExprlevel_0_0 xor bExprlevel_0_1) else (if (level_1_hole_3 = 15) then (bExprlevel_0_0 xor bExprlevel_0_2) else (if (level_1_hole_3 = 16) then (bExprlevel_0_1 xor bExprlevel_0_2) else (if (level_1_hole_3 = 17) then (bExprlevel_0_0 => bExprlevel_0_1) else (if (level_1_hole_3 = 18) then (bExprlevel_0_0 => bExprlevel_0_2) else (if (level_1_hole_3 = 19) then (bExprlevel_0_1 => bExprlevel_0_2) else (if (level_1_hole_3 = 20) then true else false)))))))))))))))))))));
+
+  out = bExprlevel_1;
+
+tel;
+
+node H_discovery(
+  in : bool
+) returns (
+  out : bool
+);
+let
+  out = (in -> (in and (pre out)));
+
+tel;
+
+node Check_spec(
+  a : bool;
+  b : bool;
+  c : bool;
+  threshold : int;
+  out : bool;
+  valhole_0_0 : int;
+  valhole_1_1 : int;
+  valhole_2_2 : int;
+  level_1_hole_3 : int;
+  out_hole_4 : int;
+  k : int
+) returns (
+  p1 : bool
+);
+var
+  step : int;
+  stepOK : bool;
+let
+  step = (0 -> (1 + (pre step)));
+
+  stepOK = (if (step <= k) then T_node(a, b, c, threshold, out, valhole_0_0, valhole_1_1, valhole_2_2, level_1_hole_3, out_hole_4) else true);
+
+  p1 = ((step >= k) and H_discovery(stepOK));
+
+tel;
+
+node main(
+  valhole_0_0 : int;
+  valhole_1_1 : int;
+  valhole_2_2 : int;
+  level_1_hole_3 : int;
+  out_hole_4 : int
+) returns (
+  fail : bool
+);
+var
+  a0 : bool;
+  b0 : bool;
+  c0 : bool;
+  threshold0 : int;
+  out_00 : bool;
+  ok_0 : bool;
+let
+  --%MAIN;
+  a0 = (true -> (pre false));
+
+  b0 = (false -> (pre true));
+
+  c0 = (false -> (pre false));
+
+  threshold0 = (10 -> (pre 0));
+
+  out_00 = (false -> (pre false));
+
+  ok_0 = Check_spec(a0, b0, c0, threshold0, out_00, valhole_0_0, valhole_1_1, valhole_2_2, level_1_hole_3, out_hole_4, 1);
+
+  fail = (not ok_0);
+
+  assert (true -> (valhole_0_0 = (pre valhole_0_0)));
+
+  assert (true -> (valhole_1_1 = (pre valhole_1_1)));
+
+  assert (true -> (valhole_2_2 = (pre valhole_2_2)));
+
+  assert (true -> (level_1_hole_3 = (pre level_1_hole_3)));
+
+  assert (true -> (out_hole_4 = (pre out_hole_4)));
+
+  --%PROPERTY fail;
+
+tel;
