@@ -44,7 +44,7 @@ public class TestCaseManager {
     private int testCaseCounter = 0;
 
     //this is LinkedHashMap in the form of varName -> pair of location and type
-    private static LinkedHashMap<String, Pair<String, NamedType>> testCaseInputNameLoc = new LinkedHashMap<>();
+    private static LinkedHashMap<String, MainTCVar> testCaseInputNameLoc = new LinkedHashMap<>();
 
     //private static LinkedHashMap<String, Pair<String, NamedType>> testCaseOutputNameLoc = new LinkedHashMap<>();
 
@@ -138,7 +138,7 @@ public class TestCaseManager {
         List<VarDecl> localTestInputVars = createVarDeclForTestInput();
         VarDecl localTestCallVar = createTestCallVars();
 
-        List<Equation> localTestInputEqs = makeTestInputEqs(counterExResult, localTestInputVars);
+        List<Equation> localTestInputEqs = makeTestInputEqsMinimal(counterExResult, localTestInputVars);
 
         Equation localTestCallEq = makeTestCallEq(counterExResult, localTestInputVars, localTestCallVar);
 
@@ -166,7 +166,8 @@ public class TestCaseManager {
         if (!isMatchImpl.value) //then add the new test case in affirmative form
             newInnerExpr = new BinaryExpr(DiscoveryUtil.varDeclToIdExpr(localTestCallVar), BinaryOp.AND, oldInnerExpr);
         else if (!isTighter.value)
-            newInnerExpr = new BinaryExpr(new UnaryExpr(UnaryOp.NOT, DiscoveryUtil.varDeclToIdExpr(localTestCallVar)), BinaryOp.AND, oldInnerExpr);
+            // newInnerExpr = new BinaryExpr(new UnaryExpr(UnaryOp.NOT, DiscoveryUtil.varDeclToIdExpr(localTestCallVar)), BinaryOp.AND, oldInnerExpr);
+            newInnerExpr = new BinaryExpr(DiscoveryUtil.varDeclToIdExpr(localTestCallVar), BinaryOp.AND, oldInnerExpr);
         else {
             System.out.print("this can't happen, both isMatchImpl and isTighter are true yet we are collecting the counter example!");
             assert false;
@@ -194,34 +195,72 @@ public class TestCaseManager {
         int varDeclIndex = 0;
         HashMap<String, List<Value>> testCaseMap = new HashMap<>();
 
-        for (Map.Entry<String, Pair<String, NamedType>> entry : testCaseInputNameLoc.entrySet()) {
-            String varName = entry.getKey();
-            String location = entry.getValue().getFirst();
-            NamedType varType = entry.getValue().getSecond();
+        for (Map.Entry<String, MainTCVar> entry : testCaseInputNameLoc.entrySet()) {
+            if (entry.getValue().purpose != Purpose.TIGHTEROUTPUT) {
+                String varName = entry.getKey();
+                String location = entry.getValue().location;
+                NamedType varType = entry.getValue().type;
 
-            String smtVarName = String.valueOf(createSmtVarName(varName, location));
+                String smtVarName = String.valueOf(createSmtVarName(varName, location));
 
-            List<Value> values = getVarTestValues(counterExResult, smtVarName, varType);
+                List<Value> values = getVarTestValues(counterExResult, smtVarName, varType);
 
-            testCaseMap.put(varName, values);
+                testCaseMap.put(varName, values);
 
-            IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(localTestInputVars.get(varDeclIndex));
+                IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(localTestInputVars.get(varDeclIndex));
 
-            Expr rhs = createValueExpr(varType, values.get(values.size() - 1));
+                Expr rhs = createValueExpr(varType, values.get(values.size() - 1));
 
-            for (int i = values.size() - 2; i >= 0; i--) {
-                rhs = new UnaryExpr(UnaryOp.PRE, rhs);
-                rhs = new BinaryExpr(createValueExpr(varType, values.get(i)), BinaryOp.ARROW, rhs);
+                for (int i = values.size() - 2; i >= 0; i--) {
+                    rhs = new UnaryExpr(UnaryOp.PRE, rhs);
+                    rhs = new BinaryExpr(createValueExpr(varType, values.get(i)), BinaryOp.ARROW, rhs);
+                }
+
+                testInputEqs.add(new Equation(lhs, rhs));
+                varDeclIndex++;
             }
-
-            testInputEqs.add(new Equation(lhs, rhs));
-            varDeclIndex++;
         }
-
         checkAndAddTestCase(new TestCase(testCaseMap));
 
         return testInputEqs;
     }
+
+    private List<Equation> makeTestInputEqsMinimal(Counterexample counterExResult, List<VarDecl> localTestInputVars) {
+        List<Equation> testInputEqs = new ArrayList<>();
+
+        int varDeclIndex = 0;
+        HashMap<String, List<Value>> testCaseMap = new HashMap<>();
+
+        for (Map.Entry<String, MainTCVar> entry : testCaseInputNameLoc.entrySet()) {
+            if (entry.getValue().purpose != Purpose.IMPLEMENTATIONOUTPUT) {
+                String varName = entry.getKey();
+                String location = entry.getValue().location;
+                NamedType varType = entry.getValue().type;
+
+                String smtVarName = String.valueOf(createSmtVarName(varName, location));
+
+                List<Value> values = getVarTestValues(counterExResult, smtVarName, varType);
+
+                testCaseMap.put(varName, values);
+
+                IdExpr lhs = DiscoveryUtil.varDeclToIdExpr(localTestInputVars.get(varDeclIndex));
+
+                Expr rhs = createValueExpr(varType, values.get(values.size() - 1));
+
+                for (int i = values.size() - 2; i >= 0; i--) {
+                    rhs = new UnaryExpr(UnaryOp.PRE, rhs);
+                    rhs = new BinaryExpr(createValueExpr(varType, values.get(i)), BinaryOp.ARROW, rhs);
+                }
+
+                testInputEqs.add(new Equation(lhs, rhs));
+                varDeclIndex++;
+            }
+        }
+        checkAndAddTestCase(new TestCase(testCaseMap));
+
+        return testInputEqs;
+    }
+
 
     /**
      * checks if we are encountering a repeated test case.
@@ -352,26 +391,23 @@ public class TestCaseManager {
 
 
     /**
-     * this creates a pair of the Name and the Location of the test input. The location will later be used to compose the SMT name for the input to search in the counter example.
+     * Collects the names of vars and their location and type. These are the names of the variables we would like to look up their valuation to prepare testcases.
      *
      * @return
      */
-    private LinkedHashMap<String, Pair<String, NamedType>> createNamesofTestInputs() {
+    private LinkedHashMap<String, MainTCVar> createNamesofTestInputs() {
 
         //test cases needs to have the inputs of the main (not the input in the main that are actually output) and the output of the r_wrapper
 
         SpecInputOutput mainFreeInput = this.contract.tInOutManager.getFreeInputs();
 
         //contains all the vars to be passed in the call except the hole vars, and it attaches with every one of those its location.
-        LinkedHashMap<String, Pair<String, NamedType>> testCaseInputVars = collectTestCaseInputs(mainFreeInput, "main");
+        LinkedHashMap<String, MainTCVar> testCaseInputVars = collectTestCaseInputs(mainFreeInput, "main");
 
-/*
-        SpecInputOutput mainInOut = this.contract.tInOutManager.getInOutput();
+        //this collects the specific output variable we would like to see if we are looking for tighter testcase. This is because at the time of checking the forall part of the minimality
+        //we can have two test cases, on if we are not matching the implementation and other if it is not tighter, in every test case the output we need to be collected is different.
+        testCaseInputVars.putAll(getContractOutput());
 
-        //contains all the vars to be passed in the call except the hole vars, and it attaches with every one of those its location.
-        LinkedHashMap<String, Pair<String, NamedType>> testCaseInputOutVars = collectTestCaseInputs(mainInOut, WRAPPERNODE);
-
-*/
         //the output is exactly the output of the wrapper which has the same type as the method output of the R node
         //testCaseInputVars.put("out", new Pair(WRAPPERNODE, this.contract.rInOutManager.getMethodOutType()));
         testCaseInputVars.putAll(getWrapperOutput());
@@ -382,15 +418,25 @@ public class TestCaseManager {
         return testCaseInputVars;
     }
 
-    private Map<? extends String, ? extends Pair<String, NamedType>> getWrapperOutput() {
-        LinkedHashMap<String, Pair<String, NamedType>> wrapperOutputTCvars = new LinkedHashMap<>();
+    private Map<? extends String, MainTCVar> getWrapperOutput() {
+        LinkedHashMap<String, MainTCVar> wrapperOutputTCvars = new LinkedHashMap<>();
 
         for (VarDecl out : CounterExampleQuery.rWrapper.outputs) {
-            wrapperOutputTCvars.put(out.id, new Pair(WRAPPERNODE, out.type));
+            assert (out.type instanceof NamedType);
+            wrapperOutputTCvars.put(out.id, new MainTCVar(out.id, WRAPPERNODE, (NamedType) out.type, Purpose.IMPLEMENTATIONOUTPUT));
         }
         return wrapperOutputTCvars;
     }
 
+
+    private Map<? extends String, MainTCVar> getContractOutput() {
+        LinkedHashMap<String, MainTCVar> wrapperOutputTCvars = new LinkedHashMap<>();
+
+        for (Pair<String, NamedType> varDecl : contract.tInOutManager.getInOutput().varList) {
+            wrapperOutputTCvars.put(varDecl.getFirst(), new MainTCVar(varDecl.getFirst(), "main", varDecl.getSecond(), Purpose.TIGHTEROUTPUT));
+        }
+        return wrapperOutputTCvars;
+    }
 
     /**
      * this composes the test case inputs as a linkedhashmap of the form testInputStrName -> Pair(location, NamedType)
@@ -399,12 +445,12 @@ public class TestCaseManager {
      * @param location
      * @return
      */
-    private LinkedHashMap<String, Pair<String, NamedType>> collectTestCaseInputs(SpecInputOutput mainFreeInput, String location) {
-        LinkedHashMap<String, Pair<String, NamedType>> inputList = new LinkedHashMap<>();
+    private LinkedHashMap<String, MainTCVar> collectTestCaseInputs(SpecInputOutput mainFreeInput, String location) {
+        LinkedHashMap<String, MainTCVar> inputList = new LinkedHashMap<>();
 
         for (int i = 0; i < mainFreeInput.getSize(); i++) {
             Pair<String, NamedType> varNameType = mainFreeInput.varList.get(i);
-            inputList.put(varNameType.getFirst(), new Pair(location, varNameType.getSecond()));
+            inputList.put(varNameType.getFirst(), new MainTCVar(varNameType.getFirst(), location, varNameType.getSecond(), Purpose.INPUT));
         }
         return inputList;
     }
@@ -412,6 +458,5 @@ public class TestCaseManager {
     public static String createTestVarStr(int prefix) {
         return (testCaseVarName + "_" + prefix);
     }
-
 
 }

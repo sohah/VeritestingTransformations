@@ -297,7 +297,7 @@ let
 
   ok_8 = Check_spec(a8, b8, c8, threshold8, out_08, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
 
-  fail = (not (ok_8 and (ok_7 and (ok_6 and (ok_5 and (((((ok_0 and ok_1) and ok_2) and ok_3) and ok_4) and (fixedRout and (not rPrimeOut))))))));
+  fail = (not ((not ok_8) and (ok_7 and (ok_6 and (ok_5 and (((((ok_0 and ok_1) and ok_2) and ok_3) and ok_4) and (fixedRout and (not rPrimeOut))))))));
 
   fixedRout = Fixed_T(a, b, c, threshold, out);
 

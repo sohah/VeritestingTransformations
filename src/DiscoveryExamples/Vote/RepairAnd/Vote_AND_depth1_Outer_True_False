@@ -1,5 +1,6 @@
 -- This discovers what implies out.
--- RESULT: Great!! Minimal repair was found at, outer loop # = 3 minimal repair loop # = -1 the LAST candidate repair loop # = -1
+-- RESULT: Cannot find a synthesis
+
 
 -- INITIAL REPAIRED PROPERTY:   p1 = (true -> ((c xor c) => out));
 

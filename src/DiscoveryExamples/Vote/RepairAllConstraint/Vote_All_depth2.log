@@ -24,7 +24,7 @@ JavaPathfinder core system v8.0 (rev 32+) - (C) 2005-2014 United States Governme
 ====================================================== system under test
 DiscoveryExamples.DiscoveryVoting.main()
 
-====================================================== search started: 12/8/19 10:37 AM
+====================================================== search started: 12/11/19 1:18 PM
 choiceGeneratorRegistered(class gov.nasa.jpf.symbc.numeric.PCChoiceGenerator) at MethodInfo[DiscoveryExamples.DiscoveryVoting.main([Ljava/lang/String;)V]#15
 New sym int a min=0, max=1
 New sym int b min=0, max=1
@@ -596,102 +596,6 @@ Great! a tighter repair was found at, outer loop # = 5 minimal repair loop # = 0
 trying minimal good repair iteration #: 1
 Trying candidate #: 0
 Trying candidate #: 1
-^-^ Ranger Discovery Result ^-^
-No more R' can be found, last known good repair was found at, outer loop # = 5 minimal repair loop # = 0
-Great!! Minimal repair was found at, outer loop # = 5 minimal repair loop # = 0 the LAST candidate repair loop # = 3
-
---------------- NO-SKIP OPTIMIZATION ---------------
-w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
-r347.out.1.1.2 := w11$2; 
-r347.out.1.3.2 := (Gamma !(symVar==0) r347.out.1.1.2 out); 
-
-
---------------- TO GREEN TRANSFORMATION ---------------
-|Stmt                                                                  |Green Expression                                                                                   
-|-----------------------------------------------------------           |------------------------------------------------------                                             
-w11$2 := ((Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0) ) ((((0 == 0) && ((((((!(a == 0)) && (b != 0)) || ((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (!(b == 0))) && (c != 0))) || ((((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (b == 0)) || ((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (!(b == 0))) && (!(c != 0)))) && (!(a == 0))) && (!(c == 0)))) && (!(threshold >= 10))) && (!(threshold <= 5)))) && (w11$2 == 1)) || (((0 == 0) && (!((((((!(a == 0)) && (b != 0)) || ((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (!(b == 0))) && (c != 0))) || ((((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (b == 0)) || ((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (!(b == 0))) && (!(c != 0)))) && (!(a == 0))) && (!(c == 0)))) && (!(threshold >= 10))) && (!(threshold <= 5))))) && (w11$2 == 0)))
-r347.out.1.1.2 := (w11$2 )                                             (r347.out.1.1.2 == w11$2)                                                                           
-r347.out.1.3.2 := ((Gamma !(symVar==0) r347.out.1.1.2 out) )           ((((0 == 0) && (!(symVar == 0))) && (r347.out.1.3.2 == r347.out.1.1.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.out.1.3.2 == out)))
-
-Green Expression pushed on the Path Condition:
-((((((0 == 0) && ((((((!(a == 0)) && (b != 0)) || ((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (!(b == 0))) && (c != 0))) || ((((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (b == 0)) || ((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (!(b == 0))) && (!(c != 0)))) && (!(a == 0))) && (!(c == 0)))) && (!(threshold >= 10))) && (!(threshold <= 5)))) && (w11$2 == 1)) || (((0 == 0) && (!((((((!(a == 0)) && (b != 0)) || ((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (!(b == 0))) && (c != 0))) || ((((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (b == 0)) || ((((a == 0) || ((!(a == 0)) && (!(b != 0)))) && (!(b == 0))) && (!(c != 0)))) && (!(a == 0))) && (!(c == 0)))) && (!(threshold >= 10))) && (!(threshold <= 5))))) && (w11$2 == 0))) && (r347.out.1.1.2 == w11$2)) && ((((0 == 0) && (!(symVar == 0))) && (r347.out.1.3.2 == r347.out.1.1.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.out.1.3.2 == out))))
-Stack output: null
-numeric PC: constraint # = 1
-0==0&&!(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5)&&w11$2==1||0==0&&!(!(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5))&&w11$2==0&&r347.out.1.1.2==w11$2&&0==0&&!(symVar==0)&&r347.out.1.3.2==r347.out.1.1.2||0==0&&!(!(symVar==0))&&r347.out.1.3.2==out -> true
-
-### PCs: total:1 sat:1 unsat:0
-
-string analysis: SPC # = 0
-NPC constraint # = 1
-0==0&&!(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5)&&w11$2==1||0==0&&!(!(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5))&&w11$2==0&&r347.out.1.1.2==w11$2&&0==0&&!(symVar==0)&&r347.out.1.3.2==r347.out.1.1.2||0==0&&!(!(symVar==0))&&r347.out.1.3.2==out
-New sym int r347.out.1.3.2 min=-2147483648, max=2147483647
-------------- Region was successfully veritested --------------- 
-threadTerminated
-choiceGeneratorProcessed: at MethodInfo[DiscoveryExamples.DiscoveryVoting.main([Ljava/lang/String;)V]#15
-choiceGeneratorProcessed: at MethodInfo[java.lang.Boolean.[<clinit>]]#0
-
-====================================================== VeritestingListener report:
-
-/************************ Printing Exception Statistics *****************
-Static Analysis exceptions count = 0
-Instantiation Time exceptions count = 0
-Unknown phases exception count = 0
-
-
-/************************ Printing Time Decomposition Statistics *****************
-static analysis time = 2688 msec
-Veritesting Dyn Time = 33523 msec
-Veritesting fix-pint Time = 48 msec
-
-/************************ Printing Solver Statistics *****************
-Total Solver Queries Count = 0
-Total Solver Time = 38 msec
-Total Solver Parse Time = 11 msec
-Region Summary Parse Time = 0 msec
-Total Solver Clean up Time = 0 msec
-PCSatSolverCount = 1
-PCSatSolverTime = 66 msec
-Constant Propagation Time for PC sat. checks = 0
-Array SPF Case count = 0
-If-removed count = 0
-
-/************************ Printing Region Statistics *****************
-Number of Distinct Veritested Regions = 1
-Number of Distinct Un-Veritested Symbolic Regions = 0
-Number of Distinct Failed Regions for Field Reference = 0
-Number of Distinct Failed Regions for SPFCases = 0
-Number of Distinct Failed Regions for missing method summaries = 0
-Number of Distinct Failed Regions for Other Reasons = 0
-Number of High Order Regions Used = 1
-
-/************************ Printing Instantiation Statistics *****************
-Number of successful instantiations = 1
-Total Number of unsuccessful instantiations = 0
-Number of failed instantiations due to Field Reference = 0
-Number of failed instantiations due to SPFCases = 0
-Number of failed instantiations due to missing method summaries = 0
-Number of failed instantiations due to Other Reasons = 0
-
-
-Number of Veritested Regions Instances = 1
-Printing keys of regions that were instantiated at least once
-DiscoveryExamples.DiscoveryVoting.makeStep(ZZZIZZ)V#8
-Finished printing keys of regions that were instantiated at least once
-
-Metrics Vector:
-36211,2688,33523,1,0,38,11,0,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,2,1,1,2,2.0,0,0,0
-Contract is repaired in iteration number:5
-====================================================== results
-no errors detected
-
-====================================================== statistics
-elapsed time:       00:00:36
-states:             new=2,visited=0,backtracked=2,end=1
-search:             maxDepth=2,constraints=0
-choice generators:  thread=1 (signal=0,lock=1,sharedRef=0,threadApi=0,reschedule=0), data=1
-heap:               new=347,released=12,maxLive=345,gcCycles=2
-instructions:       3127
-max memory:         532MB
-loaded code:        classes=60,methods=1284
-
-====================================================== search finished: 12/8/19 10:38 AM
+Trying candidate #: 2
+Trying candidate #: 3
+Trying candidate #: 4
