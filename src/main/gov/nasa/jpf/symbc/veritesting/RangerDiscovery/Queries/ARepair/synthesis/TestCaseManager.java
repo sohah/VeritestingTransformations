@@ -22,6 +22,7 @@ import java.util.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairCheck.internalId;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.candidateLoopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.knownRepairLoopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.findEqWithLhs;
@@ -111,7 +112,7 @@ public class TestCaseManager {
     public void translateTestCase(Counterexample counterExResult) {
         testCaseCounter++;
 
-        List<VarDecl> localTestInputVars = createVarDeclForTestInput();
+        List<VarDecl> localTestInputVars = createVarDeclForTestInput(false);
         VarDecl localTestCallVar = createTestCallVars();
 
         List<Equation> localTestInputEqs = makeTestInputEqs(counterExResult, localTestInputVars);
@@ -134,11 +135,12 @@ public class TestCaseManager {
         Signal<BooleanValue> isMatchImpl = findCEXvarOut(counterExResult, "isMatchImpl");
         Signal<BooleanValue> isTighter = findCEXvarOut(counterExResult, "isTighter");
         testCaseCounter++;
+        boolean isTighterCEX = isTighter.getValue(counterExResult.getLength() - 1).value;
 
-        List<VarDecl> localTestInputVars = createVarDeclForTestInput();
+        List<VarDecl> localTestInputVars = createVarDeclForTestInput(isTighterCEX);
         VarDecl localTestCallVar = createTestCallVars();
 
-        List<Equation> localTestInputEqs = makeTestInputEqsMinimal(counterExResult, localTestInputVars);
+        List<Equation> localTestInputEqs = makeTestInputEqsMinimal(counterExResult, localTestInputVars, isTighterCEX);
 
         Equation localTestCallEq = makeTestCallEq(counterExResult, localTestInputVars, localTestCallVar);
 
@@ -201,7 +203,7 @@ public class TestCaseManager {
                 String location = entry.getValue().location;
                 NamedType varType = entry.getValue().type;
 
-                String smtVarName = String.valueOf(createSmtVarName(varName, location));
+                String smtVarName = String.valueOf(createSmtVarName(varName, location, entry.getValue().purpose));
 
                 List<Value> values = getVarTestValues(counterExResult, smtVarName, varType);
 
@@ -225,19 +227,22 @@ public class TestCaseManager {
         return testInputEqs;
     }
 
-    private List<Equation> makeTestInputEqsMinimal(Counterexample counterExResult, List<VarDecl> localTestInputVars) {
+    private List<Equation> makeTestInputEqsMinimal(Counterexample counterExResult, List<VarDecl> localTestInputVars, boolean isTighter) {
         List<Equation> testInputEqs = new ArrayList<>();
 
         int varDeclIndex = 0;
         HashMap<String, List<Value>> testCaseMap = new HashMap<>();
 
         for (Map.Entry<String, MainTCVar> entry : testCaseInputNameLoc.entrySet()) {
-            if (entry.getValue().purpose != Purpose.IMPLEMENTATIONOUTPUT) {
-                String varName = entry.getKey();
-                String location = entry.getValue().location;
-                NamedType varType = entry.getValue().type;
 
-                String smtVarName = String.valueOf(createSmtVarName(varName, location));
+            String varName = entry.getKey();
+            String location = entry.getValue().location;
+            NamedType varType = entry.getValue().type;
+            Purpose purpose = entry.getValue().purpose;
+
+            if ((isTighter && purpose != Purpose.TIGHTEROUTPUT) || (!isTighter && purpose != Purpose.IMPLEMENTATIONOUTPUT)) {
+
+                String smtVarName = String.valueOf(createSmtVarName(varName, location, purpose));
 
                 List<Value> values = getVarTestValues(counterExResult, smtVarName, varType);
 
@@ -310,10 +315,12 @@ public class TestCaseManager {
         return values;
     }
 
-
-    private String createSmtVarName(String varName, String location) {
-        if (location.equals("main"))
+    //creates the nammes expected to appear in the counter example, if the names of the var are in main or exists in other node, then they will have different prefix. similarly, if the purpose of the var is to capture the tightness output, then we need to append its "internalId" that distinguish the output of these tpes of variables.
+    private String createSmtVarName(String varName, String location, Purpose purpose) {
+        if (location.equals("main") && (purpose != Purpose.TIGHTEROUTPUT))
             return varName;
+        else if (location.equals("main") && (purpose == Purpose.TIGHTEROUTPUT))
+            return varName + internalId;
         else {
             assert (location.equals(WRAPPERNODE));
             return WRAPPERNODE + "~0." + varName;
@@ -379,12 +386,17 @@ public class TestCaseManager {
      *
      * @return
      */
-    private List<VarDecl> createVarDeclForTestInput() {
+    private List<VarDecl> createVarDeclForTestInput(boolean isTighter) {
         List<VarDecl> testCaseInputVars = new ArrayList<>();
 
-        for (Map.Entry<String, Pair<String, NamedType>> entry : testCaseInputNameLoc.entrySet()) {
-            String testCaseVarName = entry.getKey() + (testCaseCounter - 1);
-            testCaseInputVars.add(new VarDecl(testCaseVarName, entry.getValue().getSecond()));
+        for (Map.Entry<String, MainTCVar> entry : testCaseInputNameLoc.entrySet()) {
+            Purpose purpose = entry.getValue().purpose;
+
+
+            if ((isTighter && purpose != Purpose.TIGHTEROUTPUT) || (!isTighter && purpose != Purpose.IMPLEMENTATIONOUTPUT)) {
+                String testCaseVarName = entry.getKey() + (testCaseCounter - 1);
+                testCaseInputVars.add(new VarDecl(testCaseVarName, entry.getValue().type));
+            }
         }
         return testCaseInputVars;
     }
