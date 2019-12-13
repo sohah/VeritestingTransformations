@@ -15,7 +15,7 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.
 public class MinimalRepairCheck {
 
     //used to identify the new free variables, that are going to be exactly like the locals defined in the main, so we have to distinguish them with some unique names
-    private static final String internalId = "__";
+    public static final String internalId = "__";
 
 
     public static Program execute(Contract contract, Program origCounterEx, Node fixedTNode, Node candTnode) {

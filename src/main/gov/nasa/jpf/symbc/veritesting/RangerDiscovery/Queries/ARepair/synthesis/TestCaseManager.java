@@ -168,8 +168,8 @@ public class TestCaseManager {
         if (!isMatchImpl.value) //then add the new test case in affirmative form
             newInnerExpr = new BinaryExpr(DiscoveryUtil.varDeclToIdExpr(localTestCallVar), BinaryOp.AND, oldInnerExpr);
         else if (!isTighter.value)
-            // newInnerExpr = new BinaryExpr(new UnaryExpr(UnaryOp.NOT, DiscoveryUtil.varDeclToIdExpr(localTestCallVar)), BinaryOp.AND, oldInnerExpr);
-            newInnerExpr = new BinaryExpr(DiscoveryUtil.varDeclToIdExpr(localTestCallVar), BinaryOp.AND, oldInnerExpr);
+             newInnerExpr = new BinaryExpr(new UnaryExpr(UnaryOp.NOT, DiscoveryUtil.varDeclToIdExpr(localTestCallVar)), BinaryOp.AND, oldInnerExpr);
+            //newInnerExpr = new BinaryExpr(DiscoveryUtil.varDeclToIdExpr(localTestCallVar), BinaryOp.AND, oldInnerExpr);
         else {
             System.out.print("this can't happen, both isMatchImpl and isTighter are true yet we are collecting the counter example!");
             assert false;
