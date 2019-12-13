@@ -10,7 +10,7 @@ let
 
     --out = ((a and b) or (b and c) or (a and c)) and (threshold < 10) and (threshold > 5);
 
-    prop1 = (out => (((b xor c) or (c and a)) xor (a => (b xor b))));
+    prop1 = ((not (b xor out)) or ((out => c) and (a or b))) => (((c xor b) and (a xor false)) or ((out => b) and (out => c)));
 
 
     p1 = prop1   ;

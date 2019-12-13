@@ -18,13 +18,13 @@ symbolic.max_char=65535
 symbolic.min_double=4.9E-324
 symbolic.max_double=1.7976931348623157E308
 choiceGeneratorRegistered(class gov.nasa.jpf.vm.choice.ThreadChoiceFromSet) at MethodInfo[java.lang.Boolean.[<clinit>]]#0
-JavaPathfinder core system v8.0 (rev 32+) - (C) 2005-2014 United States Government. All rights reserved.
+JavaPathfinder core system v8.0 - (C) 2005-2014 United States Government. All rights reserved.
 
 
 ====================================================== system under test
 DiscoveryExamples.DiscoveryVoting.main()
 
-====================================================== search started: 12/12/19 7:35 PM
+====================================================== search started: 12/13/19 10:23 AM
 choiceGeneratorRegistered(class gov.nasa.jpf.symbc.numeric.PCChoiceGenerator) at MethodInfo[DiscoveryExamples.DiscoveryVoting.main([Ljava/lang/String;)V]#15
 New sym int a min=0, max=1
 New sym int b min=0, max=1
@@ -581,30 +581,26 @@ Stack output: null
 Repair does NOT include initial values
 repairing holes for iteration#:0
 repairing holes for iteration#:1
-repairing holes for iteration#:2
-repairing holes for iteration#:3
-repairing holes for iteration#:4
 ^-^Ranger Discovery Result ^-^
-Initial repair found, in iteration #: 5
+Initial repair found, in iteration #: 2
 Trying minimal repair.
 trying minimal good repair iteration #: 0
 Trying candidate #: 0
 Trying candidate #: 1
 Trying candidate #: 2
 Trying candidate #: 3
-Great! a tighter repair was found at, outer loop # = 5 minimal repair loop # = 0 successful candidate # = 3
+Trying candidate #: 4
+Trying candidate #: 5
+Trying candidate #: 6
+Trying candidate #: 7
+Trying candidate #: 8
+Great! a tighter repair was found at, outer loop # = 2 minimal repair loop # = 0 successful candidate # = 8
 trying minimal good repair iteration #: 1
 Trying candidate #: 0
 Trying candidate #: 1
 Trying candidate #: 2
-Great! a tighter repair was found at, outer loop # = 5 minimal repair loop # = 1 successful candidate # = 2
+Great! a tighter repair was found at, outer loop # = 2 minimal repair loop # = 1 successful candidate # = 2
 trying minimal good repair iteration #: 2
 Trying candidate #: 0
 Trying candidate #: 1
 Trying candidate #: 2
-Great! a tighter repair was found at, outer loop # = 5 minimal repair loop # = 2 successful candidate # = 2
-trying minimal good repair iteration #: 3
-Trying candidate #: 0
-Great! a tighter repair was found at, outer loop # = 5 minimal repair loop # = 3 successful candidate # = 0
-trying minimal good repair iteration #: 4
-Trying candidate #: 0

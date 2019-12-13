@@ -64,7 +64,7 @@ node T_node(
   p1 : bool
 );
 let
-  p1 = (true -> (((true => false) => (b => out)) or ((c and b) xor (out and false))));
+  p1 = (true -> ((not (out or true)) => ((c and false) and (out or out))));
 
   --%PROPERTY p1;
 
@@ -80,7 +80,7 @@ node Candidate_T_Prime(
   p1 : bool
 );
 let
-  p1 = (true -> (not ((false or false) or (a and c))));
+  p1 = (true -> (((false xor out) or (c and a)) or (not (a or b))));
 
   --%PROPERTY p1;
 

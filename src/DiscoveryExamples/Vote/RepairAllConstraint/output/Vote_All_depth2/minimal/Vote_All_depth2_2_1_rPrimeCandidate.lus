@@ -9,7 +9,7 @@ node main(
 );
 let
   --%MAIN;
-  p1 = (true -> ((out => a) or (c and b)));
+  p1 = (true -> ((a and b) or (out => c)));
 
   --%PROPERTY p1;
 

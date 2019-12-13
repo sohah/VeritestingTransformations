@@ -64,9 +64,8 @@ node T_node(
   p1 : bool
 );
 let
-  p1 = (true -> (a or (out => c)));
+  p1 = (true -> ((out => c) or (out and a)));
 
-  --%PROPERTY p1;
 
 tel;
 
@@ -80,9 +79,8 @@ node Candidate_T_Prime(
   p1 : bool
 );
 let
-  p1 = (true -> ((out => c) or (b and a)));
+  p1 = (true -> ((b and c) or (out => a)));
 
-  --%PROPERTY p1;
 
 tel;
 
@@ -109,6 +107,6 @@ let
 
   discovery_out = (isMatchImpl and isTighter);
 
-  --%PROPERTY discovery_out;
+  --%PROPERTY isTighter;
 
 tel;

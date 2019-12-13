@@ -138,9 +138,9 @@ let
 
   b0 = (false -> (pre true));
 
-  c0 = (true -> (pre false));
+  c0 = (false -> (pre true));
 
-  threshold0 = (10 -> (pre 0));
+  threshold0 = (0 -> (pre 0));
 
   out0 = (false -> (pre false));
 

@@ -1,0 +1,53 @@
+
+node T_node(
+  a : bool;
+  b : bool;
+  c : bool;
+  out : bool
+) returns (
+  p1 : bool
+);
+let
+  p1 = ((out => c) or (out and a));
+
+
+tel;
+
+node Candidate_T_Prime(
+  a : bool;
+  b : bool;
+  c : bool;
+  out : bool
+) returns (
+  p1 : bool
+);
+let
+  p1 = ((b and c) or (out => a));
+
+
+tel;
+
+node main(
+  a : bool;
+  b : bool;
+  c : bool;
+  out__ : bool
+) returns (
+  discovery_out : bool
+);
+var
+  isTighter : bool;
+let
+  --%MAIN;
+
+  --isTighter = (Candidate_T_Prime(a, b, c, threshold, out__) => T_node(a, b, c, threshold, out__));
+
+  --isTighter = ((b and c) or (out__ => a)) => ((out__ => c) or (out__ and a));
+
+  isTighter = ((true and false) or (true => false)) => ((true => false) or (true and true))
+
+  discovery_out = isTighter;
+
+  --%PROPERTY isTighter;
+
+tel;

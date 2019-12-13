@@ -9,7 +9,7 @@ node main(
 );
 let
   --%MAIN;
-  p1 = (true -> (((b xor b) or (c and a)) or (true => b)));
+  p1 = (true -> ((a xor out) => ((true and false) or (c => b))));
 
   --%PROPERTY p1;
 

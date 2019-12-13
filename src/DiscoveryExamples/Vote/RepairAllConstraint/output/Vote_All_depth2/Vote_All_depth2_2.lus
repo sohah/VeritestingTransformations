@@ -8,7 +8,7 @@ node T_node(
   p1 : bool
 );
 let
-  p1 = (true -> ((c => out) or (c and out)));
+  p1 = (true -> (not (out xor out)));
 
   --%PROPERTY p1;
 

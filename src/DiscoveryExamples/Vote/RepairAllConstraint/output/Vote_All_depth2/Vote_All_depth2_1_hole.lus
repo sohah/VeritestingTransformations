@@ -144,17 +144,17 @@ let
 
   b0 = (false -> (pre true));
 
-  c0 = (true -> (pre false));
+  c0 = (false -> (pre true));
 
-  threshold0 = (10 -> (pre 0));
+  threshold0 = (0 -> (pre 0));
 
   out0 = (false -> (pre false));
 
-  a1 = (true -> (pre false));
+  a1 = (true -> (pre true));
 
   b1 = (false -> (pre false));
 
-  c1 = (true -> (pre false));
+  c1 = (false -> (pre true));
 
   threshold1 = (0 -> (pre 10));
 

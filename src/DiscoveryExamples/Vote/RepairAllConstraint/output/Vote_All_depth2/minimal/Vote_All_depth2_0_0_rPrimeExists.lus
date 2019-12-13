@@ -122,7 +122,7 @@ node Fixed_T(
   p1 : bool
 );
 let
-  p1 = (true -> ((true and false) or (true and true)));
+  p1 = (true -> (not (out xor out)));
 
 tel;
 
@@ -147,9 +147,6 @@ node main(
 var
   ok_0 : bool;
   ok_1 : bool;
-  ok_2 : bool;
-  ok_3 : bool;
-  ok_4 : bool;
   a0 : bool;
   b0 : bool;
   c0 : bool;
@@ -160,21 +157,6 @@ var
   c1 : bool;
   threshold1 : int;
   out1 : bool;
-  a2 : bool;
-  b2 : bool;
-  c2 : bool;
-  threshold2 : int;
-  out2 : bool;
-  a3 : bool;
-  b3 : bool;
-  c3 : bool;
-  threshold3 : int;
-  out3 : bool;
-  a4 : bool;
-  b4 : bool;
-  c4 : bool;
-  threshold4 : int;
-  out4 : bool;
   fixedRout : bool;
   rPrimeOut : bool;
 let
@@ -183,67 +165,31 @@ let
 
   b0 = (false -> (pre true));
 
-  c0 = (true -> (pre false));
+  c0 = (false -> (pre true));
 
-  threshold0 = (10 -> (pre 0));
+  threshold0 = (0 -> (pre 0));
 
   out0 = (false -> (pre false));
 
-  a1 = (true -> (pre false));
+  a1 = (true -> (pre true));
 
   b1 = (false -> (pre false));
 
-  c1 = (true -> (pre false));
+  c1 = (false -> (pre true));
 
   threshold1 = (0 -> (pre 10));
 
   out1 = (false -> (pre false));
 
-  a2 = (true -> (pre false));
-
-  b2 = (false -> (pre false));
-
-  c2 = (false -> (pre true));
-
-  threshold2 = (0 -> (pre 0));
-
-  out2 = (false -> (pre false));
-
-  a3 = (true -> (pre true));
-
-  b3 = (false -> (pre false));
-
-  c3 = (true -> (pre false));
-
-  threshold3 = (0 -> (pre 0));
-
-  out3 = (false -> (pre false));
-
-  a4 = (true -> (pre false));
-
-  b4 = (false -> (pre true));
-
-  c4 = (true -> (pre true));
-
-  threshold4 = (0 -> (pre 6));
-
-  out4 = (false -> (pre true));
-
   ok_0 = Check_spec(a0, b0, c0, threshold0, out0, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
 
   ok_1 = Check_spec(a1, b1, c1, threshold1, out1, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
-
-  ok_2 = Check_spec(a2, b2, c2, threshold2, out2, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
-
-  ok_3 = Check_spec(a3, b3, c3, threshold3, out3, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
-
-  ok_4 = Check_spec(a4, b4, c4, threshold4, out4, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
 
   fixedRout = Fixed_T(a, b, c, threshold, out);
 
   rPrimeOut = Check_spec(a, b, c, threshold, out, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
 
-  fail = (not (((((ok_0 and ok_1) and ok_2) and ok_3) and ok_4) and (fixedRout and (not rPrimeOut))));
+  fail = (not ((ok_0 and ok_1) and (fixedRout and (not rPrimeOut))));
 
   assert (true -> (valhole_0_0 = (pre valhole_0_0)));
 

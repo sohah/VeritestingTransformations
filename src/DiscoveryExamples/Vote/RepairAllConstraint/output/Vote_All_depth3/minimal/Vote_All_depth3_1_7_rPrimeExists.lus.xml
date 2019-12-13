@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Progress source="bmc" trueFor="1">
+    <PropertyProgress name="fail"/>
+  </Progress>
+  <Property name="fail">
+    <Runtime unit="sec">350.91</Runtime>
+    <Answer>unknown</Answer>
+    <TrueFor>1</TrueFor>
+  </Property>
+</Results>
