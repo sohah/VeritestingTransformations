@@ -24,7 +24,7 @@ JavaPathfinder core system v8.0 (rev 32+) - (C) 2005-2014 United States Governme
 ====================================================== system under test
 DiscoveryExamples.DiscoveryVoting.main()
 
-====================================================== search started: 12/11/19 1:18 PM
+====================================================== search started: 12/12/19 7:35 PM
 choiceGeneratorRegistered(class gov.nasa.jpf.symbc.numeric.PCChoiceGenerator) at MethodInfo[DiscoveryExamples.DiscoveryVoting.main([Ljava/lang/String;)V]#15
 New sym int a min=0, max=1
 New sym int b min=0, max=1
@@ -597,5 +597,14 @@ trying minimal good repair iteration #: 1
 Trying candidate #: 0
 Trying candidate #: 1
 Trying candidate #: 2
-Trying candidate #: 3
-Trying candidate #: 4
+Great! a tighter repair was found at, outer loop # = 5 minimal repair loop # = 1 successful candidate # = 2
+trying minimal good repair iteration #: 2
+Trying candidate #: 0
+Trying candidate #: 1
+Trying candidate #: 2
+Great! a tighter repair was found at, outer loop # = 5 minimal repair loop # = 2 successful candidate # = 2
+trying minimal good repair iteration #: 3
+Trying candidate #: 0
+Great! a tighter repair was found at, outer loop # = 5 minimal repair loop # = 3 successful candidate # = 0
+trying minimal good repair iteration #: 4
+Trying candidate #: 0

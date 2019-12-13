@@ -435,9 +435,9 @@ public class DiscoveryUtil {
 
         JKindApi api = new JKindApi();
         JKindResult result = new JKindResult("");
-        if (!kInductionOn)
+        /*if (!kInductionOn)
             api.disableKInduction();
-
+*/
         if (maxK != -1) //if not set
             api.setN(maxK);
 
