@@ -7,7 +7,10 @@ import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.ARepairSynthesis;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.sketchRepair.SketchVisitor;
 import jkind.api.results.JKindResult;
+import jkind.lustre.Node;
 import jkind.lustre.Program;
+
+import java.util.ArrayList;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
@@ -29,6 +32,8 @@ public class MinimalRepairDriver {
 
     public static int lastKnownRepairLoopCount = -1;
 
+    public static ArrayList<Node> repairs = new ArrayList<>();
+
     /**
      * This method initiates the discovery of finding minimal repair enclosed in the repairedProgram. It starts by
      * finding the there exist part of finding some R', then proceeds by calling the forall part to ensure that
@@ -45,6 +50,8 @@ public class MinimalRepairDriver {
     public static Program execute(Program counterExamplePgm, Contract contract, Program repairedProgram, ARepairSynthesis
             lastSynthizedContract, Program flatExtendedPgm) {
 
+
+        repairs.add(repairedProgram.getMainNode());
 
         MinimalRepairDriver.counterExamplePgm = counterExamplePgm;
         MinimalRepairDriver.laskKnwnGoodRepairPgm = repairedProgram;
@@ -71,6 +78,8 @@ public class MinimalRepairDriver {
 
                 JKindResult synthesisResult = callJkind(fileName, false, tPrimeExistsQ
                         .getMaxTestCaseK() - 2, true);
+
+
                 switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
                     case VALID:
                         System.out.println("^-^ Ranger Discovery Result ^-^");
@@ -96,12 +105,19 @@ public class MinimalRepairDriver {
                                 laskKnwnGoodRepairPgm = candTPrimePgm;
                                 successfulCandidateNum = candidateLoopCount; //storing the current loop count where a
                                 lastKnownRepairLoopCount = knownRepairLoopCount; // storing the loop number at which
-                                // the last good tight repair was found.
-                                System.out.println("Great! a tighter repair was found at, outer loop # = " + DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + lastKnownRepairLoopCount + " successful candidate # = " + successfulCandidateNum);
+                                if (!containsNode(repairs, candTPrimePgm.getMainNode())) {
+                                    repairs.add(candTPrimePgm.getMainNode());
+                                    // the last good tight repair was found.
+                                    System.out.println("Great! a tighter repair was found at, outer loop # = " + DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + lastKnownRepairLoopCount + " successful candidate # = " + successfulCandidateNum);
 
-                                // minimal repair was found.
-                                tighterRepairFound = true;
-                                break;
+                                    // minimal repair was found.
+                                    tighterRepairFound = true;
+                                    break;
+                                } else {
+                                    System.out.println("encountering the same repair, aborting.");
+                                    canFindMoreTighterRepair = false;
+                                    break;
+                                }
                             case INVALID:
                                 tPrimeExistsQ.collectCounterExample(counterExampleResult, tPrimeExistsQ.getSynthesizedProgram().getMainNode());
                                 ++candidateLoopCount;
@@ -133,5 +149,15 @@ public class MinimalRepairDriver {
 
         System.out.println("Great!! Minimal repair was found at, outer loop # = " + DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + lastKnownRepairLoopCount + " the LAST candidate repair loop # = " + successfulCandidateNum);
         return laskKnwnGoodRepairPgm;
+    }
+
+
+    //unfortungely we will do string comparision since node does not implement isEqual method.
+    private static boolean containsNode(ArrayList<Node> repairs, Node mainNode) {
+        for(Node node: repairs){
+            if(node.toString().equals(mainNode.toString()))
+                return true;
+        }
+        return false;
     }
 }

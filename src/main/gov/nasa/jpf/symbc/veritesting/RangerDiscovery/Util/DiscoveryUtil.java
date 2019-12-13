@@ -3,6 +3,7 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
+import jkind.SolverOption;
 import jkind.api.JKindApi;
 import jkind.api.results.JKindResult;
 import jkind.lustre.*;
@@ -435,15 +436,20 @@ public class DiscoveryUtil {
 
         JKindApi api = new JKindApi();
         JKindResult result = new JKindResult("");
-        /*if (!kInductionOn)
+        if (!kInductionOn)
             api.disableKInduction();
-*/
+
         if (maxK != -1) //if not set
             api.setN(maxK);
 
         api.disableSlicing();
+        //api.setSolver(SolverOption.Z3);
+
+
+        // The monitor is only currently used to detect cancellation NullProgressMonitor
 
         api.execute(file, result, new NullProgressMonitor());
+
         return result;
     }
 
