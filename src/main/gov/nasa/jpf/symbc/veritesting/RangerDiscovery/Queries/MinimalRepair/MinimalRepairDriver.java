@@ -34,6 +34,10 @@ public class MinimalRepairDriver {
 
     public static ArrayList<Node> repairs = new ArrayList<>();
 
+    private static long thereExistsTime;
+
+    private static long forAllTime;
+
     /**
      * This method initiates the discovery of finding minimal repair enclosed in the repairedProgram. It starts by
      * finding the there exist part of finding some R', then proceeds by calling the forall part to ensure that
@@ -64,6 +68,8 @@ public class MinimalRepairDriver {
         boolean canFindMoreTighterRepair = true;
         boolean tighterRepairFound = false;
 
+        long singleQueryTime;
+
         MinimalRepairSynthesis tPrimeExistsQ = new MinimalRepairSynthesis(lastSynthizedContract, laskKnwnGoodRepairPgm.getMainNode());
 
         while (canFindMoreTighterRepair) {//we are still trying to discover a minimal repair, thus there is a
@@ -76,9 +82,14 @@ public class MinimalRepairDriver {
                 String fileName = contractMethodName + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" + "rPrimeExists.lus";
                 writeToFile(fileName, tPrimeExistsQ.toString(), true);
 
+
+                singleQueryTime = System.currentTimeMillis();
                 JKindResult synthesisResult = callJkind(fileName, false, tPrimeExistsQ
                         .getMaxTestCaseK() - 2, true);
 
+                singleQueryTime = (System.currentTimeMillis()-singleQueryTime)/1000;
+
+                System.out.println("Time of ThereExists Query of : " + fileName +"= " + singleQueryTime);
 
                 switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
                     case VALID:
@@ -98,7 +109,14 @@ public class MinimalRepairDriver {
                         fileName = contractMethodName + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" + "forAllMinimal.lus";
                         writeToFile(fileName, ToLutre.lustreFriendlyString(forAllQ.toString()), true);
 
+
+                        singleQueryTime = System.currentTimeMillis();
+
                         JKindResult counterExampleResult = callJkind(fileName, false, -1, true);
+
+                        singleQueryTime = (System.currentTimeMillis()-singleQueryTime)/1000;
+
+                        System.out.println("Time of forAll Query of : " + fileName +"= " + singleQueryTime);
 
                         switch (counterExampleResult.getPropertyResult(candidateSpecPropertyName).getStatus()) {
                             case VALID:
