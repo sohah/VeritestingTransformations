@@ -139,10 +139,10 @@ public class MinimalRepairSynthesis extends ThereExistsQuery {
         List actualExpArgsCheckSpec = new ArrayList();
         actualExpArgsCheckSpec.addAll(freeExpArgs);
         actualExpArgsCheckSpec.addAll(holes);
-        actualExpArgsCheckSpec.add(new IntExpr(getMaxTestCaseK() - 1));
-        NodeCallExpr callCheckSpec = new NodeCallExpr(CHECKSPECNODE, actualExpArgsCheckSpec);
-        Equation checkSpecCall = new Equation(outputOfRPrimeCallExp, callCheckSpec);
-        equations.add(checkSpecCall); // to find the R'
+        //actualExpArgsCheckSpec.add(new IntExpr(getMaxTestCaseK() - 1));
+        NodeCallExpr callTnode = new NodeCallExpr(TNODE, actualExpArgsCheckSpec);
+        Equation tNodeCall = new Equation(outputOfRPrimeCallExp, callTnode);
+        equations.add(tNodeCall); // to find the R'
 
         //creating the equation of the property we want to check.
         equations = makeNewFailPropEqs(outputOfRCallExp, outputOfRPrimeCallExp, equations);
