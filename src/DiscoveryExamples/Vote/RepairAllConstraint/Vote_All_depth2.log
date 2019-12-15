@@ -18,13 +18,13 @@ symbolic.max_char=65535
 symbolic.min_double=4.9E-324
 symbolic.max_double=1.7976931348623157E308
 choiceGeneratorRegistered(class gov.nasa.jpf.vm.choice.ThreadChoiceFromSet) at MethodInfo[java.lang.Boolean.[<clinit>]]#0
-JavaPathfinder core system v8.0 - (C) 2005-2014 United States Government. All rights reserved.
+JavaPathfinder core system v8.0 (rev 32+) - (C) 2005-2014 United States Government. All rights reserved.
 
 
 ====================================================== system under test
 DiscoveryExamples.DiscoveryVoting.main()
 
-====================================================== search started: 12/13/19 10:23 AM
+====================================================== search started: 12/15/19 10:42 AM
 choiceGeneratorRegistered(class gov.nasa.jpf.symbc.numeric.PCChoiceGenerator) at MethodInfo[DiscoveryExamples.DiscoveryVoting.main([Ljava/lang/String;)V]#15
 New sym int a min=0, max=1
 New sym int b min=0, max=1
@@ -581,26 +581,44 @@ Stack output: null
 Repair does NOT include initial values
 repairing holes for iteration#:0
 repairing holes for iteration#:1
+repairing holes for iteration#:2
+repairing holes for iteration#:3
 ^-^Ranger Discovery Result ^-^
-Initial repair found, in iteration #: 2
+Initial repair found, in iteration #: 4
 Trying minimal repair.
 trying minimal good repair iteration #: 0
 Trying candidate #: 0
+Time of ThereExists Query of : Vote_All_depth2_0_0_rPrimeExists.lus= 1
+Time of forAll Query of : Vote_All_depth2_0_0_forAllMinimal.lus= 0
 Trying candidate #: 1
+Time of ThereExists Query of : Vote_All_depth2_0_1_rPrimeExists.lus= 1
+Time of forAll Query of : Vote_All_depth2_0_1_forAllMinimal.lus= 1
 Trying candidate #: 2
+Time of ThereExists Query of : Vote_All_depth2_0_2_rPrimeExists.lus= 2
+Time of forAll Query of : Vote_All_depth2_0_2_forAllMinimal.lus= 0
 Trying candidate #: 3
+Time of ThereExists Query of : Vote_All_depth2_0_3_rPrimeExists.lus= 2
+Time of forAll Query of : Vote_All_depth2_0_3_forAllMinimal.lus= 0
 Trying candidate #: 4
-Trying candidate #: 5
-Trying candidate #: 6
-Trying candidate #: 7
-Trying candidate #: 8
-Great! a tighter repair was found at, outer loop # = 2 minimal repair loop # = 0 successful candidate # = 8
+Time of ThereExists Query of : Vote_All_depth2_0_4_rPrimeExists.lus= 2
+Time of forAll Query of : Vote_All_depth2_0_4_forAllMinimal.lus= 0
+Great! a tighter repair was found at, outer loop # = 4 minimal repair loop # = 0 successful candidate # = 4
 trying minimal good repair iteration #: 1
 Trying candidate #: 0
+Time of ThereExists Query of : Vote_All_depth2_1_0_rPrimeExists.lus= 2
+Time of forAll Query of : Vote_All_depth2_1_0_forAllMinimal.lus= 0
 Trying candidate #: 1
+Time of ThereExists Query of : Vote_All_depth2_1_1_rPrimeExists.lus= 2
+Time of forAll Query of : Vote_All_depth2_1_1_forAllMinimal.lus= 0
 Trying candidate #: 2
-Great! a tighter repair was found at, outer loop # = 2 minimal repair loop # = 1 successful candidate # = 2
+Time of ThereExists Query of : Vote_All_depth2_1_2_rPrimeExists.lus= 2
+Time of forAll Query of : Vote_All_depth2_1_2_forAllMinimal.lus= 0
+Great! a tighter repair was found at, outer loop # = 4 minimal repair loop # = 1 successful candidate # = 2
 trying minimal good repair iteration #: 2
 Trying candidate #: 0
+Time of ThereExists Query of : Vote_All_depth2_2_0_rPrimeExists.lus= 3
+Time of forAll Query of : Vote_All_depth2_2_0_forAllMinimal.lus= 0
 Trying candidate #: 1
+Time of ThereExists Query of : Vote_All_depth2_2_1_rPrimeExists.lus= 4
+Time of forAll Query of : Vote_All_depth2_2_1_forAllMinimal.lus= 0
 Trying candidate #: 2
