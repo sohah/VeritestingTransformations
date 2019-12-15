@@ -445,7 +445,7 @@ public class DiscoveryUtil {
         api.disableSlicing();
         //api.setSolver(SolverOption.Z3);
 
-
+        api.setTimeout(600);
         // The monitor is only currently used to detect cancellation NullProgressMonitor
 
         api.execute(file, result, new NullProgressMonitor());
