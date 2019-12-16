@@ -112,7 +112,7 @@ level_2_0_hole_16                                                               
 level_2_1_hole_17                                                                            4     4 
 level_3_hole_18                                                                              7     7 
 ok_0                                                                                     false  true 
-out0                                                                                     false false 
+out_00                                                                                   false false 
 threshold0                                                                                  10     0 
 valhole_0_0                                                                                  3     3 
 valhole_1_1                                                                                  0     0 

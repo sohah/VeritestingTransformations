@@ -214,8 +214,8 @@ level_2_1_hole_17                                                               
 level_3_hole_18                                                                              5     5 
 ok_0                                                                                     false  true 
 ok_1                                                                                     false  true 
-out0                                                                                     false false 
-out1                                                                                     false false 
+out_00                                                                                   false false 
+out_01                                                                                   false false 
 threshold0                                                                                  10     0 
 threshold1                                                                                   0     0 
 valhole_0_0                                                                                  3     3 

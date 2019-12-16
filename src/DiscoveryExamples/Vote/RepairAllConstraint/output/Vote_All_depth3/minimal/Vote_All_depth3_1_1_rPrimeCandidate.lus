@@ -1,0 +1,16 @@
+node main(
+  a : bool;
+  b : bool;
+  c : bool;
+  threshold : int;
+  out : bool
+) returns (
+  p1 : bool
+);
+let
+  --%MAIN;
+  p1 = (true -> (((b or out) or (b => c)) and ((out => c) or (b and a))));
+
+  --%PROPERTY p1;
+
+tel;
