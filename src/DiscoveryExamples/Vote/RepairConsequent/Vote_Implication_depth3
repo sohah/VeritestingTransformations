@@ -1,0 +1,322 @@
+-- This discovers what does it mean to have "out" being true, with depth 3
+-- RESULT:
+
+
+-- INITIAL REPAIRED PROPERTY:
+
+-- MINIMAL REPAIRED PROPERTY:
+
+
+
+
+repair node discover_binary_Bool_4_Int_0_Depth_3(a0:bool; a1:bool; a2:bool; a3:bool) [valhole_0: inthole; valhole_1:
+inthole;
+valhole_2: inthole;
+
+valhole_3: inthole;
+valhole_4: inthole;
+valhole_5: inthole;
+
+valhole_6: inthole;
+valhole_7: inthole;
+valhole_8: inthole;
+
+valhole_9: inthole;
+valhole_10: inthole;
+valhole_11: inthole;
+
+level_0_1_0_hole:inthole;
+level_0_1_1_hole:inthole;
+
+
+level_1_1_0_hole:inthole;
+level_1_1_1_hole:inthole;
+
+level_2_0_hole: inthole;
+level_2_1_hole: inthole;
+level_3_hole: inthole
+
+]
+
+returns (out: bool);
+
+var
+bExprlevel_0_0_0:bool;
+bExprlevel_0_0_1:bool;
+bExprlevel_0_0_2:bool;
+
+bExprlevel_0_0_3:bool;
+bExprlevel_0_0_4:bool;
+bExprlevel_0_0_5:bool;
+
+bExprlevel_0_1_0:bool;
+
+bExprlevel_0_1_1:bool;
+
+bExprlevel_0_2_0:bool;
+
+
+
+bExprlevel_1_0_0:bool;
+bExprlevel_1_0_1:bool;
+bExprlevel_1_0_2:bool;
+
+bExprlevel_1_0_3:bool;
+bExprlevel_1_0_4:bool;
+bExprlevel_1_0_5:bool;
+
+bExprlevel_1_1_0:bool;
+
+bExprlevel_1_1_1:bool;
+
+bExprlevel_1_2_0:bool;
+
+bExprlevel_1_3:bool;
+
+let
+    bExprlevel_0_0_0 = if(valhole_0 = 3) then a0
+                    else if(valhole_0 = 4) then a1
+                    else if(valhole_0 = 5) then a2
+                    else a3;
+
+
+
+    bExprlevel_0_0_1 = if(valhole_1 = 3) then a0
+                    else if(valhole_1 = 4) then a1
+                    else if(valhole_1 = 5) then a2
+                    else a3;
+
+    bExprlevel_0_0_2 = if(valhole_2 = 3) then a0
+                    else if(valhole_2 = 4) then a1
+                    else if(valhole_2 = 5) then a2
+                    else a3;
+
+
+    bExprlevel_0_1_0 = if(level_0_1_0_hole = 0) then bExprlevel_0_0_0
+                   else if(level_0_1_0_hole = 3) then bExprlevel_0_0_1
+                   else if(level_0_1_0_hole = 4) then bExprlevel_0_0_2
+
+                   else if(level_0_1_0_hole = 5) then not bExprlevel_0_0_0
+                   else if(level_0_1_0_hole = 6) then not bExprlevel_0_0_1
+                   else if(level_0_1_0_hole = 7) then not bExprlevel_0_0_2
+                   else if(level_0_1_0_hole = 8) then bExprlevel_0_0_0 and bExprlevel_0_0_1
+                   else if(level_0_1_0_hole = 9) then bExprlevel_0_0_0 and bExprlevel_0_0_2
+                   else if(level_0_1_0_hole = 10) then bExprlevel_0_0_1 and bExprlevel_0_0_2
+
+                   else if(level_0_1_0_hole = 11) then bExprlevel_0_0_0 or bExprlevel_0_0_1
+                   else if(level_0_1_0_hole = 12) then bExprlevel_0_0_0 or bExprlevel_0_0_2
+                   else if(level_0_1_0_hole = 13) then bExprlevel_0_0_1 or bExprlevel_0_0_2
+
+                   else if(level_0_1_0_hole = 14) then bExprlevel_0_0_0 xor bExprlevel_0_0_1
+                   else if(level_0_1_0_hole = 15) then bExprlevel_0_0_0 xor bExprlevel_0_0_2
+                   else if(level_0_1_0_hole = 16) then bExprlevel_0_0_1 xor bExprlevel_0_0_2
+
+                   else if(level_0_1_0_hole = 17) then bExprlevel_0_0_0 => bExprlevel_0_0_1
+                   else if(level_0_1_0_hole = 18) then bExprlevel_0_0_0 => bExprlevel_0_0_2
+                   else bExprlevel_0_0_1 => bExprlevel_0_0_2;
+
+
+
+    bExprlevel_0_0_3 = if(valhole_3 = 3) then a0
+                    else if(valhole_3 = 4) then a1
+                    else if(valhole_3 = 5) then a2
+                    else a3;
+
+
+    bExprlevel_0_0_4 = if(valhole_4 = 3) then a0
+                    else if(valhole_4 = 4) then a1
+                    else if(valhole_4 = 5) then a2
+                    else a3;
+
+
+    bExprlevel_0_0_5 = if(valhole_5 = 3) then a0
+                    else if(valhole_5 = 4) then a1
+                    else if(valhole_5 = 5) then a2
+                    else a3;
+
+
+
+
+
+    bExprlevel_0_1_1 = if(level_0_1_1_hole = 0) then bExprlevel_0_0_3
+                   else if(level_0_1_1_hole = 3) then bExprlevel_0_0_4
+                   else if(level_0_1_1_hole = 4) then bExprlevel_0_0_5
+
+                   else if(level_0_1_1_hole = 5) then not bExprlevel_0_0_3
+                   else if(level_0_1_1_hole = 6) then not bExprlevel_0_0_4
+                   else if(level_0_1_1_hole = 7) then not bExprlevel_0_0_5
+                   else if(level_0_1_1_hole = 8) then bExprlevel_0_0_3 and bExprlevel_0_0_4
+                   else if(level_0_1_1_hole = 9) then bExprlevel_0_0_3 and bExprlevel_0_0_5
+                   else if(level_0_1_1_hole = 10) then bExprlevel_0_0_4 and bExprlevel_0_0_5
+
+                   else if(level_0_1_1_hole = 11) then bExprlevel_0_0_3 or bExprlevel_0_0_4
+                   else if(level_0_1_1_hole = 12) then bExprlevel_0_0_3 or bExprlevel_0_0_5
+                   else if(level_0_1_1_hole = 13) then bExprlevel_0_0_4 or bExprlevel_0_0_5
+
+                   else if(level_0_1_1_hole = 14) then bExprlevel_0_0_3 xor bExprlevel_0_0_4
+                   else if(level_0_1_1_hole = 15) then bExprlevel_0_0_3 xor bExprlevel_0_0_5
+                   else if(level_0_1_1_hole = 16) then bExprlevel_0_0_4 xor bExprlevel_0_0_5
+
+                   else if(level_0_1_1_hole = 17) then bExprlevel_0_0_3 => bExprlevel_0_0_4
+                   else if(level_0_1_1_hole = 18) then bExprlevel_0_0_3 => bExprlevel_0_0_5
+                   else bExprlevel_0_0_4 => bExprlevel_0_0_5;
+
+
+--level 2
+
+   bExprlevel_0_2_0 = if(level_2_0_hole = 0) then bExprlevel_0_1_0
+                   else if(level_2_0_hole = 1) then bExprlevel_0_1_1
+
+                   else if(level_2_0_hole = 2) then not bExprlevel_0_1_0
+                   else if(level_2_0_hole = 3) then not bExprlevel_0_1_1
+
+                   else if(level_2_0_hole = 4) then bExprlevel_0_1_0 and bExprlevel_0_1_1
+
+                   else if(level_2_0_hole = 5) then bExprlevel_0_1_0 or bExprlevel_0_1_1
+
+                   else if(level_2_0_hole = 6) then bExprlevel_0_1_0 xor bExprlevel_0_1_1
+
+                   else bExprlevel_0_1_0 => bExprlevel_0_1_1;
+
+
+
+
+
+
+
+
+
+    bExprlevel_1_0_0 = if(valhole_6 = 3) then a0
+                    else if(valhole_6 = 4) then a1
+                    else if(valhole_6 = 5) then a2
+                    else a3;
+
+
+    bExprlevel_1_0_1 = if(valhole_7 = 3) then a0
+                    else if(valhole_7 = 4) then a1
+                    else if(valhole_7 = 5) then a2
+                    else a3;
+
+
+    bExprlevel_1_0_2 = if(valhole_8 = 3) then a0
+                    else if(valhole_8 = 4) then a1
+                    else if(valhole_8 = 5) then a2
+                    else a3;
+
+
+    bExprlevel_1_1_0 = if(level_1_1_0_hole = 0) then bExprlevel_1_0_0
+                   else if(level_1_1_0_hole = 3) then bExprlevel_1_0_1
+                   else if(level_1_1_0_hole = 4) then bExprlevel_1_0_2
+
+                   else if(level_1_1_0_hole = 5) then not bExprlevel_1_0_0
+                   else if(level_1_1_0_hole = 6) then not bExprlevel_1_0_1
+                   else if(level_1_1_0_hole = 7) then not bExprlevel_1_0_2
+                   else if(level_1_1_0_hole = 8) then bExprlevel_1_0_0 and bExprlevel_1_0_1
+                   else if(level_1_1_0_hole = 9) then bExprlevel_1_0_0 and bExprlevel_1_0_2
+                   else if(level_1_1_0_hole = 10) then bExprlevel_1_0_1 and bExprlevel_1_0_2
+
+                   else if(level_1_1_0_hole = 11) then bExprlevel_1_0_0 or bExprlevel_1_0_1
+                   else if(level_1_1_0_hole = 12) then bExprlevel_1_0_0 or bExprlevel_1_0_2
+                   else if(level_1_1_0_hole = 13) then bExprlevel_1_0_1 or bExprlevel_1_0_2
+
+                   else if(level_1_1_0_hole = 14) then bExprlevel_1_0_0 xor bExprlevel_1_0_1
+                   else if(level_1_1_0_hole = 15) then bExprlevel_1_0_0 xor bExprlevel_1_0_2
+                   else if(level_1_1_0_hole = 16) then bExprlevel_1_0_1 xor bExprlevel_1_0_2
+
+                   else if(level_1_1_0_hole = 17) then bExprlevel_1_0_0 => bExprlevel_1_0_1
+                   else if(level_1_1_0_hole = 18) then bExprlevel_1_0_0 => bExprlevel_1_0_2
+                   else bExprlevel_1_0_1 => bExprlevel_1_0_2;
+
+
+
+    bExprlevel_1_0_3 = if(valhole_9 = 3) then a0
+                    else if(valhole_9 = 4) then a1
+                    else if(valhole_9 = 5) then a2
+                    else a3;
+
+
+    bExprlevel_1_0_4 = if(valhole_10 = 3) then a0
+                    else if(valhole_10 = 4) then a1
+                    else if(valhole_10 = 5) then a2
+                    else a3;
+
+    bExprlevel_1_0_5 = if(valhole_11 = 3) then a0
+                    else if(valhole_11 = 4) then a1
+                    else if(valhole_11 = 5) then a2
+                    else a3;
+
+
+
+
+    bExprlevel_1_1_1 = if(level_1_1_1_hole = 0) then bExprlevel_1_0_3
+                   else if(level_1_1_1_hole = 3) then bExprlevel_1_0_4
+                   else if(level_1_1_1_hole = 4) then bExprlevel_1_0_5
+
+                   else if(level_1_1_1_hole = 5) then not bExprlevel_1_0_3
+                   else if(level_1_1_1_hole = 6) then not bExprlevel_1_0_4
+                   else if(level_1_1_1_hole = 7) then not bExprlevel_1_0_5
+                   else if(level_1_1_1_hole = 8) then bExprlevel_1_0_3 and bExprlevel_1_0_4
+                   else if(level_1_1_1_hole = 9) then bExprlevel_1_0_3 and bExprlevel_1_0_5
+                   else if(level_1_1_1_hole = 10) then bExprlevel_1_0_4 and bExprlevel_1_0_5
+
+                   else if(level_1_1_1_hole = 11) then bExprlevel_1_0_3 or bExprlevel_1_0_4
+                   else if(level_1_1_1_hole = 12) then bExprlevel_1_0_3 or bExprlevel_1_0_5
+                   else if(level_1_1_1_hole = 13) then bExprlevel_1_0_4 or bExprlevel_1_0_5
+
+                   else if(level_1_1_1_hole = 14) then bExprlevel_1_0_3 xor bExprlevel_1_0_4
+                   else if(level_1_1_1_hole = 15) then bExprlevel_1_0_3 xor bExprlevel_1_0_5
+                   else if(level_1_1_1_hole = 16) then bExprlevel_1_0_4 xor bExprlevel_1_0_4
+
+                   else if(level_1_1_1_hole = 17) then bExprlevel_1_0_3 => bExprlevel_1_0_4
+                   else if(level_1_1_1_hole = 18) then bExprlevel_1_0_3 => bExprlevel_1_0_5
+                   else bExprlevel_1_0_4 => bExprlevel_1_0_4;
+
+
+
+    bExprlevel_1_2_0 = if(level_2_1_hole = 0) then bExprlevel_1_1_0
+                   else if(level_2_1_hole = 1) then bExprlevel_1_1_1
+
+                   else if(level_2_1_hole = 2) then not bExprlevel_1_1_0
+                   else if(level_2_1_hole = 3) then not bExprlevel_1_1_1
+
+                   else if(level_2_1_hole = 4) then bExprlevel_1_1_0 and bExprlevel_1_1_1
+
+                   else if(level_2_1_hole = 5) then bExprlevel_1_1_0 or bExprlevel_1_1_1
+
+                   else if(level_2_1_hole = 6) then bExprlevel_1_1_0 xor bExprlevel_1_1_1
+
+                   else bExprlevel_1_1_0 => bExprlevel_1_1_1;
+
+
+    bExprlevel_1_3 = if(level_3_hole = 0) then bExprlevel_0_2_0
+                     else if(level_3_hole = 1) then bExprlevel_1_2_0
+
+                     else if(level_3_hole = 2) then not bExprlevel_0_2_0
+                     else if(level_3_hole = 3) then not bExprlevel_1_2_0
+
+                     else if(level_3_hole = 4) then bExprlevel_0_2_0 and bExprlevel_1_2_0
+
+                     else if(level_3_hole = 5) then bExprlevel_0_2_0 or bExprlevel_1_2_0
+
+                     else if(level_3_hole = 6) then bExprlevel_0_2_0 xor bExprlevel_1_2_0
+
+                     else if(level_3_hole = 7) then bExprlevel_0_2_0 => bExprlevel_1_2_0
+                     else if(level_3_hole = 8) then true
+                     else false;
+
+
+    out = bExprlevel_1_3;
+
+tel;
+
+
+
+node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool);
+
+let
+
+    p1 = true -> out => (repair((a and b), discover_binary_Bool_3_Int_0(a,b,c)));
+
+  --%PROPERTY p1;
+
+tel;

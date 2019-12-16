@@ -1,0 +1,81 @@
+-- This discovers what implies out.
+-- RESULT:
+
+-- INITIAL REPAIRED PROPERTY:
+
+-- MINIMAL REPAIRED PROPERTY:
+
+
+repair node discover_binary_Bool_4_Int_0(a0:bool; a1:bool; a2:bool) [valhole_0: inthole; valhole_1:
+inthole;
+valhole_2: inthole;
+level_1_hole:inthole;
+out_hole: inthole]
+returns (out: bool);
+
+var
+bExprlevel_0_0:bool;
+bExprlevel_0_1:bool;
+bExprlevel_0_2:bool;
+
+bExprlevel_1:bool;
+
+
+
+let
+    bExprlevel_0_0 = if(valhole_0 = 3) then a0
+                    else if(valhole_0 = 4) then a1
+                    else a2;
+
+
+    bExprlevel_0_1 = if(valhole_1 = 3) then a0
+                    else if(valhole_1 = 4) then a1
+                    else a2;
+
+    bExprlevel_0_2 = if(valhole_2 = 3) then a0
+                    else if(valhole_2 = 4) then a1
+                    else a2;
+
+
+    bExprlevel_1 = if(level_1_hole = 0) then bExprlevel_0_0
+                   else if(level_1_hole = 1) then bExprlevel_0_0
+                   else if(level_1_hole = 2) then bExprlevel_0_0
+                   else if(level_1_hole = 3) then bExprlevel_0_1
+                   else if(level_1_hole = 4) then bExprlevel_0_2
+
+                   else if(level_1_hole = 5) then not bExprlevel_0_0
+                   else if(level_1_hole = 6) then not bExprlevel_0_1
+                   else if(level_1_hole = 7) then not bExprlevel_0_2
+                   else if(level_1_hole = 8) then bExprlevel_0_0 and bExprlevel_0_1
+                   else if(level_1_hole = 9) then bExprlevel_0_0 and bExprlevel_0_2
+                   else if(level_1_hole = 10) then bExprlevel_0_1 and bExprlevel_0_2
+
+                   else if(level_1_hole = 11) then bExprlevel_0_0 or bExprlevel_0_1
+                   else if(level_1_hole = 12) then bExprlevel_0_0 or bExprlevel_0_2
+                   else if(level_1_hole = 13) then bExprlevel_0_1 or bExprlevel_0_2
+
+                   else if(level_1_hole = 14) then bExprlevel_0_0 xor bExprlevel_0_1
+                   else if(level_1_hole = 15) then bExprlevel_0_0 xor bExprlevel_0_2
+                   else if(level_1_hole = 16) then bExprlevel_0_1 xor bExprlevel_0_2
+
+                   else if(level_1_hole = 17) then bExprlevel_0_0 => bExprlevel_0_1
+                   else if(level_1_hole = 18) then bExprlevel_0_0 => bExprlevel_0_2
+                   else if(level_1_hole = 19) then bExprlevel_0_1 => bExprlevel_0_2
+                   else if(level_1_hole = 20) then true
+                   else false;
+
+
+    out = bExprlevel_1;
+
+tel;
+
+
+node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool);
+
+let
+
+    p1 = true -> (repair((a and b), discover_binary_Bool_4_Int_0(a,b,c))) => out;
+
+  --%PROPERTY p1;
+
+tel;
