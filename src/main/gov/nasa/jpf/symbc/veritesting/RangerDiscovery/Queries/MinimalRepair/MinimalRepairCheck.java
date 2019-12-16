@@ -20,9 +20,12 @@ public class MinimalRepairCheck {
 
     public static Program execute(Contract contract, Program origCounterEx, Node fixedTNode, Node candTnode) {
 
-        Node tNode = addProperty("p1", DiscoveryUtil.renameNode(TNODE, fixedTNode)); //rename it to R so we can call it again
+        //Node tNode = addProperty("p1", DiscoveryUtil.renameNode(TNODE, fixedTNode)); //rename it to R so we can call
+        // it again
 
-        Node tPrimeNode = addProperty("p1", DiscoveryUtil.renameNode(CAND_T_PRIME, candTnode)); //rename it to R so we can call it again
+        Node tNode = DiscoveryUtil.renameNode(TNODE, fixedTNode); //rename it to R so we can call it again
+
+        Node tPrimeNode = DiscoveryUtil.renameNode(CAND_T_PRIME, candTnode); //rename it to R so we can call it again
 
         List<Node> newNodes = new ArrayList<>(origCounterEx.nodes);
 
