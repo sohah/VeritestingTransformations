@@ -112,7 +112,8 @@ public class TestCaseManager {
     public void translateTestCase(Counterexample counterExResult) {
         testCaseCounter++;
 
-        List<VarDecl> localTestInputVars = createVarDeclForTestInput(false);
+        List<VarDecl> localTestInputVars = createVarDeclForTestInput(true); //assuming that the tightness is okay,
+        // that is we are not in the case of creating a tightness test case, where the itTighter property is false.
         VarDecl localTestCallVar = createTestCallVars();
 
         List<Equation> localTestInputEqs = makeTestInputEqs(counterExResult, localTestInputVars);
@@ -383,7 +384,8 @@ public class TestCaseManager {
 
     /**
      * uses the populated testCaseInputLoc to generate a VarDecl list for all the enteries.
-     *
+     *isTighter: indicates if the tightness property is not holding or not. For the outer loop of non-minimal we
+     * assume that the isTight holds.
      * @return
      */
     private List<VarDecl> createVarDeclForTestInput(boolean isTighter) {

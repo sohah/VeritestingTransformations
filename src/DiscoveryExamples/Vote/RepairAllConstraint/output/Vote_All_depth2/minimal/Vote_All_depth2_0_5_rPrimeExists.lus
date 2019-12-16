@@ -156,12 +156,12 @@ var
   b0 : bool;
   c0 : bool;
   threshold0 : int;
-  out0 : bool;
+  out_00 : bool;
   a1 : bool;
   b1 : bool;
   c1 : bool;
   threshold1 : int;
-  out1 : bool;
+  out_01 : bool;
   a2 : bool;
   b2 : bool;
   c2 : bool;
@@ -199,7 +199,7 @@ let
 
   threshold0 = (10 -> (pre 6));
 
-  out0 = (false -> (pre false));
+  out_00 = (false -> (pre false));
 
   a1 = (false -> (pre true));
 
@@ -209,7 +209,7 @@ let
 
   threshold1 = (7 -> (pre 6));
 
-  out1 = (false -> (pre true));
+  out_01 = (false -> (pre true));
 
   a2 = (false -> (pre false));
 
@@ -261,9 +261,9 @@ let
 
   out_06 = (false -> (pre false));
 
-  ok_0 = Check_spec(a0, b0, c0, threshold0, out0, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
+  ok_0 = Check_spec(a0, b0, c0, threshold0, out_00, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
 
-  ok_1 = Check_spec(a1, b1, c1, threshold1, out1, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
+  ok_1 = Check_spec(a1, b1, c1, threshold1, out_01, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
 
   ok_2 = Check_spec(a2, b2, c2, threshold2, out_02, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, level_1_hole_6, level_1_1_hole_7, level_2_hole_8, 1);
 

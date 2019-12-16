@@ -365,8 +365,8 @@ ok_2                                                                            
 ok_3                                                                                  false  true 
 ok_4                                                                                  false  true 
 out                                                                                    true  true 
-out0                                                                                  false false 
-out1                                                                                  false  true 
+out_00                                                                                false false 
+out_01                                                                                false  true 
 out_02                                                                                false false 
 out_03                                                                                false  true 
 out_04                                                                                false false 

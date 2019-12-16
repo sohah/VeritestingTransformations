@@ -427,8 +427,8 @@ ok_3                                                                            
 ok_4                                                                                  false  true 
 ok_5                                                                                  false  true 
 out                                                                                   false false 
-out0                                                                                  false false 
-out1                                                                                  false  true 
+out_00                                                                                false false 
+out_01                                                                                false  true 
 out_02                                                                                false false 
 out_03                                                                                false  true 
 out_04                                                                                false false 

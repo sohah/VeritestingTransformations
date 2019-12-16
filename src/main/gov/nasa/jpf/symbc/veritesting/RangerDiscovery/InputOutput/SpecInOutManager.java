@@ -83,6 +83,7 @@ public class SpecInOutManager {
     private void discoverOutputVarWbs() {
         inOutputVars.add("NormalPressure_r", NamedType.INT);
         inOutputVars.add("AltPressure_r", NamedType.INT);
+        inOutputVars.add("Sys_Mode", NamedType.INT);
     }
 
 

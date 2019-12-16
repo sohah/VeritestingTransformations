@@ -130,8 +130,8 @@ level_1_hole_6                                                                  
 level_2_hole_8                                                                            7     7 
 ok_0                                                                                  false  true 
 ok_1                                                                                  false  true 
-out0                                                                                  false false 
-out1                                                                                  false  true 
+out_00                                                                                false false 
+out_01                                                                                false  true 
 threshold0                                                                               10     6 
 threshold1                                                                                7     6 
 valhole_0_0                                                                              19    19 

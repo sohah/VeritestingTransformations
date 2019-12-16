@@ -31,6 +31,10 @@ public class TestCase {
     }
 
     private boolean valuesEquals(List<Value> values1, List<Value> values2) {
+        if(values1 != null && values2 == null) //meaning there is a mapping that isn't quite matching, because we
+            // could not find the entry of a variable in the test case, then we consider the test case different.
+            return false;
+
         if (values1.size() != values2.size())
             return false;
         else {
