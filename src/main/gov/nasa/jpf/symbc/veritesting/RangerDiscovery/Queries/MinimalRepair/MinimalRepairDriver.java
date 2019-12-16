@@ -126,7 +126,7 @@ public class MinimalRepairDriver {
                                 if (!containsNode(repairs, candTPrimePgm.getMainNode())) {
                                     repairs.add(candTPrimePgm.getMainNode());
                                     // the last good tight repair was found.
-                                    System.out.println("Great! a tighter repair was found at, outer loop # = " + DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + lastKnownRepairLoopCount + " successful candidate # = " + successfulCandidateNum);
+                                    System .out.println("Great! a tighter repair was found at, outer loop # = " + DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + lastKnownRepairLoopCount + " successful candidate # = " + successfulCandidateNum);
 
                                     // minimal repair was found.
                                     tighterRepairFound = true;
@@ -139,6 +139,8 @@ public class MinimalRepairDriver {
                             case INVALID:
                                 tPrimeExistsQ.collectCounterExample(counterExampleResult, tPrimeExistsQ.getSynthesizedProgram().getMainNode());
                                 ++candidateLoopCount;
+                                if(candidateLoopCount == 30) //exit if we tried 30 candidates.
+                                    canFindMoreTighterRepair=false;
                                 break;
                             default:
                                 System.out.println("^-^ Ranger Discovery Result ^-^");

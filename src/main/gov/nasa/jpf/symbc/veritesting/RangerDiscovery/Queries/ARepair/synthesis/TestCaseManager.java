@@ -166,11 +166,27 @@ public class TestCaseManager {
 
         Expr newInnerExpr = null;
 
-        if (!isMatchImpl.value) //then add the new test case in affirmative form
+        if ((!isMatchImpl.value) && (isTighter.value))//then add the new test case in affirmative form
             newInnerExpr = new BinaryExpr(DiscoveryUtil.varDeclToIdExpr(localTestCallVar), BinaryOp.AND, oldInnerExpr);
-        else if (!isTighter.value)
-             newInnerExpr = new BinaryExpr(new UnaryExpr(UnaryOp.NOT, DiscoveryUtil.varDeclToIdExpr(localTestCallVar)), BinaryOp.AND, oldInnerExpr);
+        else if ((isMatchImpl.value) && (!isTighter.value))//then we need to add in the neg form, assuming that the
+            // test case collected so far captures the behaviour of upper property that we are trying to find a
+            // tighter version of. The only way that we can come here the candidate property was true but the upper
+            // property was false, in this case we want to ensure that on that test input we want to see a false
+            // behaviour just like the upper property.
+            newInnerExpr = new BinaryExpr(new UnaryExpr(UnaryOp.NOT, DiscoveryUtil.varDeclToIdExpr(localTestCallVar)), BinaryOp.AND, oldInnerExpr);
             //newInnerExpr = new BinaryExpr(DiscoveryUtil.varDeclToIdExpr(localTestCallVar), BinaryOp.AND, oldInnerExpr);
+        else if ((!isMatchImpl.value) && (!isTighter.value)){
+            //this case were both are false is interesting and is in tight behaviour with the test case being
+            // collected, that is if we collected the test case of being matching the implementation then we need to
+            // add the test case in an affirmative form, however if we collected the test case of the upper property
+            // then we need to add the test case in the neg form.
+            //According to createVarDeclForTestInput , we collect in this case the test case of the upper property thus
+            // we will
+            // construct
+            // the
+            // neg form of the test case.
+            newInnerExpr = new BinaryExpr(new UnaryExpr(UnaryOp.NOT, DiscoveryUtil.varDeclToIdExpr(localTestCallVar)), BinaryOp.AND, oldInnerExpr);
+        }
         else {
             System.out.print("this can't happen, both isMatchImpl and isTighter are true yet we are collecting the counter example!");
             assert false;
@@ -384,8 +400,12 @@ public class TestCaseManager {
 
     /**
      * uses the populated testCaseInputLoc to generate a VarDecl list for all the enteries.
-     *isTighter: indicates if the tightness property is not holding or not. For the outer loop of non-minimal we
+     * isTighter: indicates if the tightness property is not holding or not. For the outer loop of non-minimal we
      * assume that the isTight holds.
+     *
+     * Assumption here about the created test input if the counter example had both isTighter and matchImp both being
+     * false, in this case the test case is created with the input of the upper property, and therefore, it is in
+     * tight connection with how the equation of fail is being created, in this case it should appear in the neg form.
      * @return
      */
     private List<VarDecl> createVarDeclForTestInput(boolean isTighter) {
