@@ -10,7 +10,7 @@ node main(
 );
 let
   --%MAIN;
-  p1 =  => (((NormalPressure_r <= 5) xor (Sys_Mode > 11)) and ((NormalPressure_r > -1) and (Sys_Mode = 0)));
+  p1 = (not ((NormalPressure_r <= 14) and (Sys_Mode = 13))) => (not ((NormalPressure_r = -1) or (Sys_Mode = 13)));
   --%PROPERTY p1;
 
 tel;
