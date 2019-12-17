@@ -365,39 +365,39 @@ let
 
   b0 = (false -> (pre true));
 
-  c0 = (false -> (pre true));
+  c0 = (false -> (pre false));
 
-  threshold0 = (7 -> (pre 6));
+  threshold0 = (2 -> (pre 3));
 
   out_00 = (false -> (pre true));
 
-  a1 = (false -> (pre true));
+  a1 = (false -> (pre false));
 
-  b1 = (false -> (pre true));
+  b1 = (false -> (pre false));
 
   c1 = (false -> (pre false));
 
-  threshold1 = (10 -> (pre 6));
+  threshold1 = (2 -> (pre 3));
 
-  out_01 = (false -> (pre true));
+  out_01 = (false -> (pre false));
 
-  a2 = (false -> (pre true));
+  a2 = (false -> (pre false));
 
-  b2 = (false -> (pre false));
+  b2 = (false -> (pre true));
 
-  c2 = (true -> (pre true));
+  c2 = (false -> (pre true));
 
-  threshold2 = (6 -> (pre 0));
+  threshold2 = (2 -> (pre 3));
 
-  out_02 = (false -> (pre false));
+  out_02 = (false -> (pre true));
 
-  a3 = (false -> (pre true));
+  a3 = (false -> (pre false));
 
   b3 = (false -> (pre false));
 
-  c3 = (true -> (pre true));
+  c3 = (false -> (pre true));
 
-  threshold3 = (0 -> (pre 6));
+  threshold3 = (2 -> (pre 3));
 
   out_03 = (false -> (pre true));
 

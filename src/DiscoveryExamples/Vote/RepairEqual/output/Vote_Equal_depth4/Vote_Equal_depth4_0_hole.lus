@@ -347,9 +347,9 @@ let
 
   b0 = (false -> (pre true));
 
-  c0 = (false -> (pre true));
+  c0 = (false -> (pre false));
 
-  threshold0 = (7 -> (pre 6));
+  threshold0 = (2 -> (pre 3));
 
   out_00 = (false -> (pre true));
 

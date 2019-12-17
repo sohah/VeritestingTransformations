@@ -9,7 +9,7 @@ node main(
 );
 let
   --%MAIN;
-  p1 = (true -> (out = repair( ((b or a) and ((b or b) xor (a xor a))) , discover_binary_Bool_3_Int_0_depth4_0(a, b, c) ) ));
+  p1 = (true -> (out = repair( (not (((c xor c) or (not b)) or ((a => a) => (b xor b)))) , discover_binary_Bool_3_Int_0_depth4_0(a, b, c) ) ));
 
   --%PROPERTY p1;
 

@@ -359,31 +359,31 @@ let
 
   b0 = (false -> (pre true));
 
-  c0 = (false -> (pre true));
+  c0 = (false -> (pre false));
 
-  threshold0 = (7 -> (pre 6));
+  threshold0 = (2 -> (pre 3));
 
   out_00 = (false -> (pre true));
 
-  a1 = (false -> (pre true));
+  a1 = (false -> (pre false));
 
-  b1 = (false -> (pre true));
+  b1 = (false -> (pre false));
 
   c1 = (false -> (pre false));
 
-  threshold1 = (10 -> (pre 6));
+  threshold1 = (2 -> (pre 3));
 
-  out_01 = (false -> (pre true));
+  out_01 = (false -> (pre false));
 
-  a2 = (false -> (pre true));
+  a2 = (false -> (pre false));
 
-  b2 = (false -> (pre false));
+  b2 = (false -> (pre true));
 
-  c2 = (true -> (pre true));
+  c2 = (false -> (pre true));
 
-  threshold2 = (6 -> (pre 0));
+  threshold2 = (2 -> (pre 3));
 
-  out_02 = (false -> (pre false));
+  out_02 = (false -> (pre true));
 
   ok_0 = Check_spec(a0, b0, c0, threshold0, out_00, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, valhole_6_6, valhole_7_7, valhole_8_8, valhole_9_9, valhole_10_10, valhole_11_11, level_0_0_1_0_hole_12, level_0_0_1_1_hole_13, level_0_1_1_0_hole_14, level_0_1_1_1_hole_15, level_0_2_0_hole_16, level_0_2_1_hole_17, level_0_3_hole_18, valhole_12_19, valhole_13_20, valhole_14_21, valhole_15_22, valhole_16_23, valhole_17_24, valhole_18_25, valhole_19_26, valhole_20_27, valhole_21_28, valhole_22_29, valhole_23_30, level_1_0_1_0_hole_31, level_1_0_1_1_hole_32, level_1_1_1_0_hole_33, level_1_1_1_1_hole_34, level_1_2_0_hole_35, level_1_2_1_hole_36, level_1_3_hole_37, level_1_4_hole_38, 1);
 
