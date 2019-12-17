@@ -1,3 +1,13 @@
+-- RESULT :
+
+-- Tried  minimal/tight Candidate
+
+-- INITIAL PROPERTY:
+-- TIGHT 1:
+-- TIGHT 2:
+
+
+
 repair node discover_binary_Bool_1_Int_3(a0: bool; i0:int; i1:int; i2:int) [valhole_0: inthole; valhole_1:
 inthole;
 valhole_2: inthole;

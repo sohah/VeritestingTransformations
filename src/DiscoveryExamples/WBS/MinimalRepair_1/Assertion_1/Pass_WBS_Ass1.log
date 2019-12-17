@@ -24,7 +24,7 @@ JavaPathfinder core system v8.0 (rev 32+) - (C) 2005-2014 United States Governme
 ====================================================== system under test
 DiscoveryWBS.main()
 
-====================================================== search started: 12/16/19 3:30 PM
+====================================================== search started: 12/16/19 8:20 PM
 choiceGeneratorRegistered(class gov.nasa.jpf.symbc.numeric.PCChoiceGenerator) at MethodInfo[DiscoveryWBS.main([Ljava/lang/String;)V]#10
 New sym int pedal min=-2147483648, max=2147483647
 New sym int autoBrake min=0, max=1
@@ -16540,18 +16540,18 @@ Unknown phases exception count = 0
 
 
 /************************ Printing Time Decomposition Statistics *****************
-static analysis time = 7654 msec
-Veritesting Dyn Time = 4460 msec
-Veritesting fix-pint Time = 1577 msec
+static analysis time = 3949 msec
+Veritesting Dyn Time = 2260 msec
+Veritesting fix-pint Time = 714 msec
 
 /************************ Printing Solver Statistics *****************
 Total Solver Queries Count = 0
-Total Solver Time = 202 msec
-Total Solver Parse Time = 136 msec
+Total Solver Time = 131 msec
+Total Solver Parse Time = 42 msec
 Region Summary Parse Time = 0 msec
 Total Solver Clean up Time = 0 msec
 PCSatSolverCount = 1
-PCSatSolverTime = 214 msec
+PCSatSolverTime = 142 msec
 Constant Propagation Time for PC sat. checks = 0
 Array SPF Case count = 0
 If-removed count = 0
@@ -16580,19 +16580,19 @@ DiscoveryWBS.discoveryLaunch(IZZIIIIIIZ)V#52
 Finished printing keys of regions that were instantiated at least once
 
 Metrics Vector:
-12114,7654,4460,1,0,202,136,0,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,2,1,1,2,2.0,0,0,0
+6209,3949,2260,1,0,131,42,0,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,2,1,1,2,2.0,0,0,0
 Contract is repaired in iteration number:0
 ====================================================== results
 no errors detected
 
 ====================================================== statistics
-elapsed time:       00:00:12
+elapsed time:       00:00:06
 states:             new=2,visited=0,backtracked=2,end=1
 search:             maxDepth=2,constraints=0
 choice generators:  thread=1 (signal=0,lock=1,sharedRef=0,threadApi=0,reschedule=0), data=1
 heap:               new=347,released=12,maxLive=344,gcCycles=2
 instructions:       3160
-max memory:         582MB
+max memory:         578MB
 loaded code:        classes=60,methods=1292
 
-====================================================== search finished: 12/16/19 3:30 PM
+====================================================== search finished: 12/16/19 8:20 PM

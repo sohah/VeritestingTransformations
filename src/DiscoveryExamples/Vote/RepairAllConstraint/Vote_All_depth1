@@ -1,6 +1,7 @@
 -- depth 1 of four bools, that tries to discover the relationship among the input and the output.
--- RESULT :
--- PROPERTY DISCOVERED:
+-- RESULT : Great!! Minimal repair was found at, outer loop # = 2 minimal repair loop # = -1 the LAST candidate repair loop # = -1
+-- PROPERTY DISCOVERED:   p1 = (true -> true);
+
 
 repair node discover_binary_Bool_4_Int_0(a0:bool; a1:bool; a2:bool; a3:bool) [valhole_0: inthole; valhole_1:
 inthole;
@@ -16,7 +17,7 @@ bExprlevel_0_2:bool;
 bExprlevel_1:bool;
 
 let
-    bExprlevel_0_0 = else if(valhole_0 = 3) then a0
+    bExprlevel_0_0 = if(valhole_0 = 3) then a0
                     else if(valhole_0 = 4) then a1
                     else if(valhole_0 = 5) then a2
                     else a3;

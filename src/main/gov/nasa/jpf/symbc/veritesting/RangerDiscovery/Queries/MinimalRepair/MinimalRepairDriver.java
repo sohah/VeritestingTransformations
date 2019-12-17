@@ -167,7 +167,8 @@ public class MinimalRepairDriver {
             }
         }
 
-        System.out.println("Great!! Minimal repair was found at, outer loop # = " + DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + lastKnownRepairLoopCount + " the LAST candidate repair loop # = " + successfulCandidateNum);
+        System.out.println("Minimal repair finished with the following result, outer loop # = " + DiscoverContract.outerLoopRepairNum +
+                " minimal repair loop # = " + lastKnownRepairLoopCount + " the LAST candidate repair loop # = " + successfulCandidateNum);
         return laskKnwnGoodRepairPgm;
     }
 

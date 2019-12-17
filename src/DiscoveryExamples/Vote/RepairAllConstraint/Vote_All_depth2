@@ -1,7 +1,11 @@
 -- depth 2 of four bools, that tries to discover the relationship among the input and the output.
--- RESULT :
--- INITIAL PROPERTY:
--- MINIMAL PROPERTY:
+-- RESULT : Great!! Minimal repair was found at, outer loop # = 2 minimal repair loop # = 1 the LAST candidate repair loop # = 2
+
+-- Tried 13 minimal/tight Candidate
+
+-- INITIAL PROPERTY: p1 = (true -> (out => out));
+-- TIGHT 1:   p1 = (true -> ((out => c) or (out and a)));
+-- TIGHT 2:   p1 = (true -> ((out => c) or (b and a)));
 
 
 repair node discover_binary_Bool_4_Int_0_Depth_2(a0:bool; a1:bool; a2:bool; a3:bool) [valhole_0: inthole; valhole_1:

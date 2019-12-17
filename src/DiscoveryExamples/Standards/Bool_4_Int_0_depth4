@@ -1,4 +1,4 @@
-repair node discover_binary_Bool_4_Int_0_Depth_3(a0:bool; a1:bool; a2:bool; a3:bool) [
+repair node discover_binary_Bool_4_Int_0_Depth_4(a0:bool; a1:bool; a2:bool; a3:bool) [
 valhole_0: inthole;
 valhole_1: inthole;
 valhole_2: inthole;
@@ -24,7 +24,7 @@ level_0_1_1_1_hole:inthole;
 
 level_0_2_0_hole: inthole;
 level_0_2_1_hole: inthole;
-level_0_3_hole: inthole
+level_0_3_hole: inthole;
 
 
 --holes for level 4
@@ -132,6 +132,9 @@ bExprlevel_1_1_2_0:bool;
 
 bExprlevel_1_1_3:bool;
 
+
+
+bExprlevel_4 :bool;
 
 let
     bExprlevel_0_0_0_0 = if(valhole_0 = 3) then a0
@@ -621,4 +624,3 @@ let
     out = bExprlevel_4;
 
 tel;
-

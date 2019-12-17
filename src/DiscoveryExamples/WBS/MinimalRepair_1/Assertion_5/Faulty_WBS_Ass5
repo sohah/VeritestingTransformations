@@ -1,3 +1,16 @@
+
+-- RESULT : Great!! Minimal repair was found at, outer loop # = 2 minimal repair loop # = 4 the LAST candidate repair loop # = 2
+
+-- Tried  73 minimal/tight Candidate
+
+-- INITIAL PROPERTY:   p1 = (true -> (not (NormalPressure_r = -1)));
+-- TIGHT 1:  p1 = (true -> (not (NormalPressure_r <= -1)));
+-- TIGHT 2:  p1 = (true -> (((NormalPressure_r <= 5) xor (Sys_Mode = -2)) and (NormalPressure_r > -1)));
+-- TIGHT 3:  p1 = (true -> (((NormalPressure_r > 5) or (Sys_Mode <= -2)) xor ((NormalPressure_r > -1) or (Sys_Mode <= -2))));
+-- TIGHT 4:  p1 = (true -> ((NormalPressure_r > -1) and ((NormalPressure_r <= 5) and (Sys_Mode > -1))));
+-- TIGHT 5:  p1 = (true -> (((NormalPressure_r <= 5) or (Sys_Mode = -2)) and ((NormalPressure_r > -1) and (Sys_Mode = 0))));
+
+
 repair node discover_binary_Bool_1_Int_3(a0: bool; i0:int; i1:int; i2:int) [valhole_0: inthole; valhole_1:
 inthole;
 valhole_2: inthole;

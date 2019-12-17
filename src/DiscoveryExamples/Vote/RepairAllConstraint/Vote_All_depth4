@@ -1,13 +1,18 @@
 -- depth 3 of four bools, that tries to discover the relationship among the input and the output.
 -- This version is different than Vote_All_depth3, in that it lifted the True and False at the upper level instead of
 -- being part of the inner clauses.
--- RESULT:
+-- RESULT: Great! a tighter repair was found at, outer loop # = 8 minimal repair loop # = 3 successful candidate # = 0
 
--- INITIAL REPAIRED PROPERTY:
+-- Tried: 10 minimal/tight candidate
+-- INITIAL REPAIRED PROPERTY:   p1 = (true -> ((not (not (a xor a))) => (not (out => a))));
 
--- MINIMAL REPAIRED PROPERTY:
+-- TIGHT 1:   p1 = (true -> ((not (not (out xor c))) or ((c and c) => (a or b))));
+-- TIGHT 2:   p1 = (true -> ((not ((not b) and (c xor a))) or (not (out xor b))));
+-- TIGHT 3:   p1 = (true -> (not (((not b) and (b xor out)) and (not (a and c)))));
+-- TIGHT 4:   p1 = (true -> (((b => out) xor (b xor out)) xor ((not (c xor a)) and ((out => b) xor (out => c)))));
 
-repair node discover_binary_Bool_4_Int_0_Depth_3(a0:bool; a1:bool; a2:bool; a3:bool) [
+
+repair node discover_binary_Bool_4_Int_0_Depth_4(a0:bool; a1:bool; a2:bool; a3:bool) [
 valhole_0: inthole;
 valhole_1: inthole;
 valhole_2: inthole;
@@ -33,7 +38,7 @@ level_0_1_1_1_hole:inthole;
 
 level_0_2_0_hole: inthole;
 level_0_2_1_hole: inthole;
-level_0_3_hole: inthole
+level_0_3_hole: inthole;
 
 
 --holes for level 4
@@ -141,6 +146,9 @@ bExprlevel_1_1_2_0:bool;
 
 bExprlevel_1_1_3:bool;
 
+
+
+bExprlevel_4 :bool;
 
 let
     bExprlevel_0_0_0_0 = if(valhole_0 = 3) then a0
