@@ -1,7 +1,7 @@
 -- RESULT : Minimal repair finished with the following result, outer loop # = 1 minimal repair loop # = 4 the LAST candidate repair loop # = 2
 
 
--- Tried  minimal/tight Candidate
+-- Tried 50 minimal/tight Candidate
 
 -- INITIAL PROPERTY:  p1 = (true -> (not ((NormalPressure_r <= 14) and (Sys_Mode = 13))));
 -- TIGHT 1:  p1 = (true -> (not ((NormalPressure_r = -1) or (Sys_Mode = 13))));

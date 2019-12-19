@@ -1,3 +1,15 @@
+-- depth 4 for if and only if outer level.
+-- RESULT : Minimal repair finished with the following result, outer loop # = 2 minimal repair loop # = 1 the LAST candidate repair loop # = 8
+
+-- Tried  15 minimal/tight Candidate
+
+-- INITIAL PROPERTY:   p1 = (true -> true);
+
+-- TIGHT 1: p1 = (true -> ((((c => a) or (a xor b)) => ((not out) xor (a or b))) and (((c xor b) => (b or out)) => (b => b))));
+-- TIGHT 2:   p1 = (true -> ((((a => b) xor (not out)) => (b or c)) and ((not out) => ((b or c) xor (not out)))));
+
+
+
 repair node discover_IFF_Bool_4_Int_0_depth4(a0:bool; a1:bool; a2:bool; a3:bool) [
 valhole_0: inthole;
 valhole_1: inthole;

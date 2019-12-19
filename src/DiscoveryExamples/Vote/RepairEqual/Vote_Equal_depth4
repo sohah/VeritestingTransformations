@@ -1,3 +1,14 @@
+-- depth 4 of 3 bools, that tries to discover the exact property for the output.
+
+-- RESULT:Minimal repair finished with the following result, outer loop # = 7 minimal repair loop # = -1 the LAST candidate repair loop # = -1
+
+
+ --Tried: 1 minimal/tight candidate
+ --INITIAL REPAIRED PROPERTY: p1 = (true -> (out = (((not (c => a)) or (b or (a xor c))) or (not ((b => c) => (not c))))));
+
+ --TIGHT 1: None
+
+
 repair node discover_binary_Bool_3_Int_0_depth4(a0:bool; a1:bool; a2:bool) [
 valhole_0: inthole;
 valhole_1: inthole;

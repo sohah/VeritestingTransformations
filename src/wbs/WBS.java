@@ -312,7 +312,7 @@ public class WBS {
         /************ SH edits starts here **********/
 //		Debug.printPC("PC before assertion ((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true) = ");
 
-        //assertion (1) -- passing assertion
+        //assertion (1) -- passing assertion -- repairing its negation.
         //assert (!((Nor_Pressure <= 14) && (Sys_Mode == 13))); //initial repair
         //assert (! ((Nor_Pressure == -1) || (Sys_Mode == 13))); //tight(1)
         //assert (!((Nor_Pressure == -1) || (Sys_Mode > 12))); //tight(2)
@@ -320,7 +320,7 @@ public class WBS {
 		//assert (! ((Nor_Pressure <= -1) || (Sys_Mode > 3)));//tight(4)
 		//assert ((Sys_Mode == 0) && ((Nor_Pressure <= -1) ^ (Sys_Mode <= 14)));//tight(5)
 
-        //assertion(2) -- failing assertion
+        //assertion(2)
 		//assert (((Nor_Pressure == 5) || (Sys_Mode == 0)) || ((Nor_Pressure == -9) && Skid)); //tight(1)
 		//assert ((Nor_Pressure <= 5) && (Sys_Mode == 0)); //tight(2)
 		//assert (((Nor_Pressure <= 5) && (Sys_Mode == 0)) && ((PedalPos > 9) || (Nor_Pressure > -3))); //tight(3)
@@ -340,7 +340,7 @@ public class WBS {
 		//assert ((Nor_Pressure > -1) && (Sys_Mode == 0)); //tight(2)
 		//assert ((!Skid || (Nor_Pressure == 0)) && ((Nor_Pressure > -1) && (Sys_Mode == 0))); //tight(3)
 
-        //assertion(5) -- failing assertion
+        //assertion(5)
 		//assert  !(Nor_Pressure == -1); //initial repair prop
 		//assert (!(Nor_Pressure <= -1)); //tight(1)
 		//assert (((Nor_Pressure <= 5) ^ (Sys_Mode == -2)) && (Nor_Pressure > -1)); //tight(2)
