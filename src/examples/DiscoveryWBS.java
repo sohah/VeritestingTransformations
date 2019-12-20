@@ -290,8 +290,6 @@ public class DiscoveryWBS {
         WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE = Sys_Mode;
 
         /************ SH edits starts here **********/
-//		Debug.printPC("PC before assertion ((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true) = ");
-
         //assertion (1) -- passing assertion
         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 

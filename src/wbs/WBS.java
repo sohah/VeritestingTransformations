@@ -292,66 +292,73 @@ public class WBS {
 
         WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE = Sys_Mode;
 
-        // This assertion should prove:
+
+        //assert ((Alt_Pressure == 0)); //SPF passing
+        //assert (Sys_Mode == 0); //SPF passing
+        //assert (Nor_Pressure == 0); //SPF failing
+
+        /************ SH edits starts here **********/
+        //assertion (1) -- passing assertion
         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
-        // This assertion should fail:
+        //assertion(2) -- failing assertion
         //assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Alt_Pressure > 0) : true);
 
-        // This assertion may fail (depending on encoding):
-        //Debug.printPC("PC before assertion ((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true) = ");
+        //assertion(3) -- passing assertion.
+        //System.out.println("Nor_Pressure = " + Debug.isSymbolicInteger(Nor_Pressure));
+        //assert ((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
 
-        // assert((PedalPos > 0 && PedalPos <= 4 && !Skid) ? (Nor_Pressure > 0) : true);
-
-        // This assertion should fail:
+        //assertion(4) -- failing assertion.
         //assert((PedalPos > 0 && PedalPos <= 4) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
 
-        // This assertion should also fail:
+
+        //assertion(5) -- failing assertion
+        //assert((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true);
+
+
+        /************ SH edits ends here **********/
 
 
         /************ SH edits starts here **********/
-//		Debug.printPC("PC before assertion ((PedalPos > 0 && !Skid) ? (Alt_Pressure > 0 || Nor_Pressure > 0) : true) = ");
 
         //assertion (1) -- passing assertion -- repairing its negation.
         //assert (!((Nor_Pressure <= 14) && (Sys_Mode == 13))); //initial repair
         //assert (! ((Nor_Pressure == -1) || (Sys_Mode == 13))); //tight(1)
         //assert (!((Nor_Pressure == -1) || (Sys_Mode > 12))); //tight(2)
-		//assert (! ((Nor_Pressure <= -1) || (Sys_Mode > 8))); //tight(3)
-		//assert (! ((Nor_Pressure <= -1) || (Sys_Mode > 3)));//tight(4)
-		//assert ((Sys_Mode == 0) && ((Nor_Pressure <= -1) ^ (Sys_Mode <= 14)));//tight(5)
+        //assert (! ((Nor_Pressure <= -1) || (Sys_Mode > 8))); //tight(3)
+        //assert (! ((Nor_Pressure <= -1) || (Sys_Mode > 3)));//tight(4)
+        //assert ((Sys_Mode == 0) && ((Nor_Pressure <= -1) ^ (Sys_Mode <= 14)));//tight(5)
 
         //assertion(2)
-		//assert (((Nor_Pressure == 5) || (Sys_Mode == 0)) || ((Nor_Pressure == -9) && Skid)); //tight(1)
-		//assert ((Nor_Pressure <= 5) && (Sys_Mode == 0)); //tight(2)
-		//assert (((Nor_Pressure <= 5) && (Sys_Mode == 0)) && ((PedalPos > 9) || (Nor_Pressure > -3))); //tight(3)
-		//assert (((Nor_Pressure <= 5) ^ (Sys_Mode > 11)) && ((Nor_Pressure > -1) && (Sys_Mode == 0))); //tight(4)
+        //assert (((Nor_Pressure == 5) || (Sys_Mode == 0)) || ((Nor_Pressure == -9) && Skid)); //tight(1)
+        //assert ((Nor_Pressure <= 5) && (Sys_Mode == 0)); //tight(2)
+        //assert (((Nor_Pressure <= 5) && (Sys_Mode == 0)) && ((PedalPos > 9) || (Nor_Pressure > -3))); //tight(3)
+        //assert (((Nor_Pressure <= 5) ^ (Sys_Mode > 11)) && ((Nor_Pressure > -1) && (Sys_Mode == 0))); //tight(4)
 
-		//assertion(3)
-		//assert (!((PedalPos == 0) && (Sys_Mode > 13)) || ((PedalPos == 3) && (Nor_Pressure <= -1))); //initial
-		// repaired prop
-		//assert ((!(Nor_Pressure <= -2) || (Sys_Mode <= 0)) && (Sys_Mode == 0)); //tight(1)
-		//assert (((Nor_Pressure == 0) && (Sys_Mode == 0)) || ((Nor_Pressure > 0) && (Sys_Mode == 0))); //tight(2)
-		//assert (((Nor_Pressure == 15) ^ (Sys_Mode <= 0)) && ((Nor_Pressure > -1) && (Sys_Mode == 0))); //tight(3)
-		//assert (((Nor_Pressure <= -1) ^ (Sys_Mode > -3)) && ((Nor_Pressure <= 5) && (Sys_Mode == 0))); //tight(4)
+        //assertion(3)
+        //assert (!((PedalPos == 0) && (Sys_Mode > 13)) || ((PedalPos == 3) && (Nor_Pressure <= -1))); //initial
+        // repaired prop
+        //assert ((!(Nor_Pressure <= -2) || (Sys_Mode <= 0)) && (Sys_Mode == 0)); //tight(1)
+        //assert (((Nor_Pressure == 0) && (Sys_Mode == 0)) || ((Nor_Pressure > 0) && (Sys_Mode == 0))); //tight(2)
+        //assert (((Nor_Pressure == 15) ^ (Sys_Mode <= 0)) && ((Nor_Pressure > -1) && (Sys_Mode == 0))); //tight(3)
+        //assert (((Nor_Pressure <= -1) ^ (Sys_Mode > -3)) && ((Nor_Pressure <= 5) && (Sys_Mode == 0))); //tight(4)
 
         //assertion(4)
-		//assert (!((Nor_Pressure == -1) && (Sys_Mode == -4))); //initial repaired prop
-		//assert (((Nor_Pressure > -2) && (Sys_Mode > -5)) && (Sys_Mode == 0)); //tight(1)
-		//assert ((Nor_Pressure > -1) && (Sys_Mode == 0)); //tight(2)
-		//assert ((!Skid || (Nor_Pressure == 0)) && ((Nor_Pressure > -1) && (Sys_Mode == 0))); //tight(3)
+        //assert (!((Nor_Pressure == -1) && (Sys_Mode == -4))); //initial repaired prop
+        //assert (((Nor_Pressure > -2) && (Sys_Mode > -5)) && (Sys_Mode == 0)); //tight(1)
+        //assert ((Nor_Pressure > -1) && (Sys_Mode == 0)); //tight(2)
+        //assert ((!Skid || (Nor_Pressure == 0)) && ((Nor_Pressure > -1) && (Sys_Mode == 0))); //tight(3)
 
         //assertion(5)
-		//assert  !(Nor_Pressure == -1); //initial repair prop
-		//assert (!(Nor_Pressure <= -1)); //tight(1)
-		//assert (((Nor_Pressure <= 5) ^ (Sys_Mode == -2)) && (Nor_Pressure > -1)); //tight(2)
-		//assert (((Nor_Pressure > 5) || (Sys_Mode <= -2)) ^ ((Nor_Pressure > -1) || (Sys_Mode <= -2))); //tight(2)
-		//assert ((Nor_Pressure > -1) && ((Nor_Pressure <= 5) && (Sys_Mode > -1))); //tight(2)
-		//assert (((Nor_Pressure <= 5) || (Sys_Mode == -2)) && ((Nor_Pressure > -1) && (Sys_Mode == 0))); //tight(2)
+        //assert  !(Nor_Pressure == -1); //initial repair prop
+        //assert (!(Nor_Pressure <= -1)); //tight(1)
+        //assert (((Nor_Pressure <= 5) ^ (Sys_Mode == -2)) && (Nor_Pressure > -1)); //tight(2)
+        //assert (((Nor_Pressure > 5) || (Sys_Mode <= -2)) ^ ((Nor_Pressure > -1) || (Sys_Mode <= -2))); //tight(2)
+        //assert ((Nor_Pressure > -1) && ((Nor_Pressure <= 5) && (Sys_Mode > -1))); //tight(2)
+        //assert (((Nor_Pressure <= 5) || (Sys_Mode == -2)) && ((Nor_Pressure > -1) && (Sys_Mode == 0))); //tight(2)
 
 
         /************ SH edits ends here **********/
-
-        //assert (((Nor_Pressure <= 5) ^ (Sys_Mode > 11)) && ((Nor_Pressure > -1) && (Sys_Mode == 0)));
     }
 
 
