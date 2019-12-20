@@ -9,12 +9,12 @@ node Ranger_node(
   Alt_Pressure : int;
   Sys_Mode : int
 ) returns (
-  r347_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_3_2 : int;
-  r347_WBS_Node_WBS_BSCU_rlt_PRE1_1_3_2 : int;
-  r347_WBS_Node_WBS_rlt_PRE2_1_3_2 : int;
-  r347_Nor_Pressure_1_13_2 : int;
-  r347_Alt_Pressure_1_13_2 : int;
-  r347_Sys_Mode_1_5_2 : int
+  r351_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_3_2 : int;
+  r351_WBS_Node_WBS_BSCU_rlt_PRE1_1_3_2 : int;
+  r351_WBS_Node_WBS_rlt_PRE2_1_3_2 : int;
+  r351_Nor_Pressure_1_13_2 : int;
+  r351_Alt_Pressure_1_13_2 : int;
+  r351_Sys_Mode_1_5_2 : int
 );
 var
   w6_2 : int;
@@ -35,46 +35,46 @@ var
   w27_2 : int;
   w28_2 : int;
   w29_2 : int;
-  r347_Sys_Mode_1_1_2 : int;
-  r347_Sys_Mode_1_2_2 : int;
-  r347_Sys_Mode_1_3_2 : int;
+  r351_Sys_Mode_1_1_2 : int;
+  r351_Sys_Mode_1_2_2 : int;
+  r351_Sys_Mode_1_3_2 : int;
   w30_2 : int;
   w31_2 : int;
   w34_2 : int;
   w35_2 : int;
-  r347_Nor_Pressure_1_1_2 : int;
-  r347_Nor_Pressure_1_2_2 : int;
-  r347_Nor_Pressure_1_3_2 : int;
-  r347_Nor_Pressure_1_4_2 : int;
-  r347_Nor_Pressure_1_5_2 : int;
+  r351_Nor_Pressure_1_1_2 : int;
+  r351_Nor_Pressure_1_2_2 : int;
+  r351_Nor_Pressure_1_3_2 : int;
+  r351_Nor_Pressure_1_4_2 : int;
+  r351_Nor_Pressure_1_5_2 : int;
   w33_2 : int;
-  r347_Nor_Pressure_1_6_2 : int;
-  r347_Nor_Pressure_1_7_2 : int;
+  r351_Nor_Pressure_1_6_2 : int;
+  r351_Nor_Pressure_1_7_2 : int;
   w32_2 : int;
-  r347_Nor_Pressure_1_8_2 : int;
-  r347_Nor_Pressure_1_9_2 : int;
-  r347_Nor_Pressure_1_10_2 : int;
-  r347_Nor_Pressure_1_11_2 : int;
+  r351_Nor_Pressure_1_8_2 : int;
+  r351_Nor_Pressure_1_9_2 : int;
+  r351_Nor_Pressure_1_10_2 : int;
+  r351_Nor_Pressure_1_11_2 : int;
   w36_2 : int;
-  r347_Alt_Pressure_1_1_2 : int;
+  r351_Alt_Pressure_1_1_2 : int;
   w37_2 : int;
-  r347_Alt_Pressure_1_2_2 : int;
+  r351_Alt_Pressure_1_2_2 : int;
   w38_2 : int;
   w39_2 : int;
-  r347_Alt_Pressure_1_3_2 : int;
-  r347_Alt_Pressure_1_4_2 : int;
-  r347_Alt_Pressure_1_5_2 : int;
-  r347_Alt_Pressure_1_6_2 : int;
-  r347_Alt_Pressure_1_7_2 : int;
-  r347_Alt_Pressure_1_8_2 : int;
-  r347_Alt_Pressure_1_9_2 : int;
-  r347_Alt_Pressure_1_10_2 : int;
-  r347_Alt_Pressure_1_11_2 : int;
+  r351_Alt_Pressure_1_3_2 : int;
+  r351_Alt_Pressure_1_4_2 : int;
+  r351_Alt_Pressure_1_5_2 : int;
+  r351_Alt_Pressure_1_6_2 : int;
+  r351_Alt_Pressure_1_7_2 : int;
+  r351_Alt_Pressure_1_8_2 : int;
+  r351_Alt_Pressure_1_9_2 : int;
+  r351_Alt_Pressure_1_10_2 : int;
+  r351_Alt_Pressure_1_11_2 : int;
   w40_2 : int;
-  r347_WBS_Node_WBS_rlt_PRE2_1_1_2 : int;
-  r347_WBS_Node_WBS_BSCU_rlt_PRE1_1_1_2 : int;
+  r351_WBS_Node_WBS_rlt_PRE2_1_1_2 : int;
+  r351_WBS_Node_WBS_BSCU_rlt_PRE1_1_1_2 : int;
   w41_2 : int;
-  r347_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_1_2 : int;
+  r351_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_1_2 : int;
   symVar : int;
   autoBrake : int;
   skid : int;
@@ -115,11 +115,11 @@ let
 
   w29_2 = (if (skid = 0) then w28_2 else 0);
 
-  r347_Sys_Mode_1_1_2 = 0;
+  r351_Sys_Mode_1_1_2 = 0;
 
-  r347_Sys_Mode_1_2_2 = 1;
+  r351_Sys_Mode_1_2_2 = 1;
 
-  r347_Sys_Mode_1_3_2 = (if (w17_2 = 0) then r347_Sys_Mode_1_1_2 else r347_Sys_Mode_1_2_2);
+  r351_Sys_Mode_1_3_2 = (if (w17_2 = 0) then r351_Sys_Mode_1_1_2 else r351_Sys_Mode_1_2_2);
 
   w30_2 = (if (w17_2 = 0) then (if ((not (w29_2 < 0)) and (not (w29_2 >= 1))) then 0 else (if ((w29_2 < 1) or ((not (w29_2 < 1)) and (w29_2 >= 2))) then (if ((w29_2 < 2) or ((not (w29_2 < 2)) and (w29_2 >= 3))) then (if ((not (w29_2 < 3)) and (not (w29_2 >= 4))) then 3 else 4) else 2) else 1)) else 0);
 
@@ -129,83 +129,83 @@ let
 
   w35_2 = (w34_2 * 3);
 
-  r347_Nor_Pressure_1_1_2 = w35_2;
+  r351_Nor_Pressure_1_1_2 = w35_2;
 
-  r347_Nor_Pressure_1_2_2 = w31_2;
+  r351_Nor_Pressure_1_2_2 = w31_2;
 
-  r347_Nor_Pressure_1_3_2 = 0;
+  r351_Nor_Pressure_1_3_2 = 0;
 
-  r347_Nor_Pressure_1_4_2 = (if (not (w30_2 <> 4)) then r347_Nor_Pressure_1_2_2 else r347_Nor_Pressure_1_3_2);
+  r351_Nor_Pressure_1_4_2 = (if (not (w30_2 <> 4)) then r351_Nor_Pressure_1_2_2 else r351_Nor_Pressure_1_3_2);
 
-  r347_Nor_Pressure_1_5_2 = (if (not (w30_2 <> 3)) then r347_Nor_Pressure_1_1_2 else r347_Nor_Pressure_1_4_2);
+  r351_Nor_Pressure_1_5_2 = (if (not (w30_2 <> 3)) then r351_Nor_Pressure_1_1_2 else r351_Nor_Pressure_1_4_2);
 
   w33_2 = (w31_2 div 2);
 
-  r347_Nor_Pressure_1_6_2 = w33_2;
+  r351_Nor_Pressure_1_6_2 = w33_2;
 
-  r347_Nor_Pressure_1_7_2 = (if (w30_2 <> 2) then r347_Nor_Pressure_1_5_2 else r347_Nor_Pressure_1_6_2);
+  r351_Nor_Pressure_1_7_2 = (if (w30_2 <> 2) then r351_Nor_Pressure_1_5_2 else r351_Nor_Pressure_1_6_2);
 
   w32_2 = (w31_2 div 4);
 
-  r347_Nor_Pressure_1_8_2 = w32_2;
+  r351_Nor_Pressure_1_8_2 = w32_2;
 
-  r347_Nor_Pressure_1_9_2 = (if (w30_2 <> 1) then r347_Nor_Pressure_1_7_2 else r347_Nor_Pressure_1_8_2);
+  r351_Nor_Pressure_1_9_2 = (if (w30_2 <> 1) then r351_Nor_Pressure_1_7_2 else r351_Nor_Pressure_1_8_2);
 
-  r347_Nor_Pressure_1_10_2 = 0;
+  r351_Nor_Pressure_1_10_2 = 0;
 
-  r347_Nor_Pressure_1_11_2 = (if (w30_2 <> 0) then r347_Nor_Pressure_1_9_2 else r347_Nor_Pressure_1_10_2);
+  r351_Nor_Pressure_1_11_2 = (if (w30_2 <> 0) then r351_Nor_Pressure_1_9_2 else r351_Nor_Pressure_1_10_2);
 
   w36_2 = (w27_2 div 4);
 
-  r347_Alt_Pressure_1_1_2 = w36_2;
+  r351_Alt_Pressure_1_1_2 = w36_2;
 
   w37_2 = (w27_2 div 2);
 
-  r347_Alt_Pressure_1_2_2 = w37_2;
+  r351_Alt_Pressure_1_2_2 = w37_2;
 
   w38_2 = (w27_2 div 4);
 
   w39_2 = (w38_2 * 3);
 
-  r347_Alt_Pressure_1_3_2 = w39_2;
+  r351_Alt_Pressure_1_3_2 = w39_2;
 
-  r347_Alt_Pressure_1_4_2 = w27_2;
+  r351_Alt_Pressure_1_4_2 = w27_2;
 
-  r347_Alt_Pressure_1_5_2 = 0;
+  r351_Alt_Pressure_1_5_2 = 0;
 
-  r347_Alt_Pressure_1_6_2 = (if (not (w15_2 <> 4)) then r347_Alt_Pressure_1_4_2 else r347_Alt_Pressure_1_5_2);
+  r351_Alt_Pressure_1_6_2 = (if (not (w15_2 <> 4)) then r351_Alt_Pressure_1_4_2 else r351_Alt_Pressure_1_5_2);
 
-  r347_Alt_Pressure_1_7_2 = (if (not (w15_2 <> 3)) then r347_Alt_Pressure_1_3_2 else r347_Alt_Pressure_1_6_2);
+  r351_Alt_Pressure_1_7_2 = (if (not (w15_2 <> 3)) then r351_Alt_Pressure_1_3_2 else r351_Alt_Pressure_1_6_2);
 
-  r347_Alt_Pressure_1_8_2 = (if (not (w15_2 <> 2)) then r347_Alt_Pressure_1_2_2 else r347_Alt_Pressure_1_7_2);
+  r351_Alt_Pressure_1_8_2 = (if (not (w15_2 <> 2)) then r351_Alt_Pressure_1_2_2 else r351_Alt_Pressure_1_7_2);
 
-  r347_Alt_Pressure_1_9_2 = (if (not (w15_2 <> 1)) then r347_Alt_Pressure_1_1_2 else r347_Alt_Pressure_1_8_2);
+  r351_Alt_Pressure_1_9_2 = (if (not (w15_2 <> 1)) then r351_Alt_Pressure_1_1_2 else r351_Alt_Pressure_1_8_2);
 
-  r347_Alt_Pressure_1_10_2 = 0;
+  r351_Alt_Pressure_1_10_2 = 0;
 
-  r347_Alt_Pressure_1_11_2 = (if (w15_2 <> 0) then r347_Alt_Pressure_1_9_2 else r347_Alt_Pressure_1_10_2);
+  r351_Alt_Pressure_1_11_2 = (if (w15_2 <> 0) then r351_Alt_Pressure_1_9_2 else r351_Alt_Pressure_1_10_2);
 
-  w40_2 = r347_Nor_Pressure_1_11_2;
+  w40_2 = r351_Nor_Pressure_1_11_2;
 
-  r347_WBS_Node_WBS_rlt_PRE2_1_1_2 = w40_2;
+  r351_WBS_Node_WBS_rlt_PRE2_1_1_2 = w40_2;
 
-  r347_WBS_Node_WBS_BSCU_rlt_PRE1_1_1_2 = w30_2;
+  r351_WBS_Node_WBS_BSCU_rlt_PRE1_1_1_2 = w30_2;
 
-  w41_2 = r347_Sys_Mode_1_3_2;
+  w41_2 = r351_Sys_Mode_1_3_2;
 
-  r347_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_1_2 = w41_2;
+  r351_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_1_2 = w41_2;
 
-  r347_WBS_Node_WBS_rlt_PRE2_1_3_2 = (0 -> (if (not (symVar = 0)) then r347_WBS_Node_WBS_rlt_PRE2_1_1_2 else WBS_Node_WBS_rlt_PRE2));
+  r351_WBS_Node_WBS_rlt_PRE2_1_3_2 = (0 -> (if (not (symVar = 0)) then r351_WBS_Node_WBS_rlt_PRE2_1_1_2 else WBS_Node_WBS_rlt_PRE2));
 
-  r347_Alt_Pressure_1_13_2 = (0 -> (if (not (symVar = 0)) then r347_Alt_Pressure_1_11_2 else Alt_Pressure));
+  r351_WBS_Node_WBS_BSCU_rlt_PRE1_1_3_2 = (0 -> (if (not (symVar = 0)) then r351_WBS_Node_WBS_BSCU_rlt_PRE1_1_1_2 else WBS_Node_WBS_BSCU_rlt_PRE1));
 
-  r347_Sys_Mode_1_5_2 = (0 -> (if (not (symVar = 0)) then r347_Sys_Mode_1_3_2 else Sys_Mode));
+  r351_Alt_Pressure_1_13_2 = (0 -> (if (not (symVar = 0)) then r351_Alt_Pressure_1_11_2 else Alt_Pressure));
 
-  r347_Nor_Pressure_1_13_2 = (0 -> (if (not (symVar = 0)) then r347_Nor_Pressure_1_11_2 else Nor_Pressure));
+  r351_Nor_Pressure_1_13_2 = (0 -> (if (not (symVar = 0)) then r351_Nor_Pressure_1_11_2 else Nor_Pressure));
 
-  r347_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_3_2 = (0 -> (if (not (symVar = 0)) then r347_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_1_2 else WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE));
+  r351_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_3_2 = (0 -> (if (not (symVar = 0)) then r351_WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE_1_1_2 else WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE));
 
-  r347_WBS_Node_WBS_BSCU_rlt_PRE1_1_3_2 = (0 -> (if (not (symVar = 0)) then r347_WBS_Node_WBS_BSCU_rlt_PRE1_1_1_2 else WBS_Node_WBS_BSCU_rlt_PRE1));
+  r351_Sys_Mode_1_5_2 = (0 -> (if (not (symVar = 0)) then r351_Sys_Mode_1_3_2 else Sys_Mode));
 
   autoBrake = (if autoBrake_bool then 1 else 0);
 
@@ -253,7 +253,7 @@ node T_node(
   p1 : bool
 );
 let
-  p1 = (true -> (not ((NormalPressure_r = -1) or (Sys_Mode = 13))));
+  p1 = (true -> ((NormalPressure_r <= 5) and (Sys_Mode > -5)));
 
 tel;
 
@@ -268,7 +268,7 @@ node Candidate_T_Prime(
   p1 : bool
 );
 let
-  p1 = (true -> (not ((pedal_r <= 8) xor (Sys_Mode = 0))));
+  p1 = (true -> (((NormalPressure_r <= 5) => (Sys_Mode = -7)) xor ((pedal_r > -4) or (Sys_Mode <= -3))));
 
 tel;
 

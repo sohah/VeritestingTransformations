@@ -155,7 +155,7 @@ node Fixed_T(
   p1 : bool
 );
 let
-  p1 = (true -> (not ((NormalPressure_r <= 14) and (Sys_Mode = 13))));
+  p1 = (true -> (not ((NormalPressure_r > 6) xor (Sys_Mode = -7))));
 
 tel;
 
@@ -189,18 +189,25 @@ node main(
   fail : bool
 );
 var
+  ok_0 : bool;
+  ok_1 : bool;
   pedal_r0 : int;
   autoBreak_r0 : bool;
   skid_r0 : bool;
   out_00 : int;
   out_10 : int;
   out_20 : int;
-  ok_0 : bool;
+  pedal_r1 : int;
+  autoBreak_r1 : bool;
+  skid_r1 : bool;
+  out_01 : int;
+  out_11 : int;
+  out_21 : int;
   fixedRout : bool;
   rPrimeOut : bool;
 let
   --%MAIN;
-  pedal_r0 = (4 -> (pre -1));
+  pedal_r0 = (4 -> (pre 6));
 
   autoBreak_r0 = (false -> (pre false));
 
@@ -212,13 +219,27 @@ let
 
   out_20 = (0 -> (pre 0));
 
+  pedal_r1 = (1 -> (pre 4));
+
+  autoBreak_r1 = (false -> (pre false));
+
+  skid_r1 = (false -> (pre false));
+
+  out_01 = (0 -> (pre 5));
+
+  out_11 = (0 -> (pre 0));
+
+  out_21 = (0 -> (pre 0));
+
   ok_0 = Check_spec(pedal_r0, autoBreak_r0, skid_r0, out_00, out_10, out_20, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, valhole_6_6, valhole_7_7, const_hole0_8, const_hole1_9, const_hole2_10, const_hole3_11, const_hole4_12, const_hole5_13, const_hole6_14, const_hole7_15, level_1_hole_0_16, level_1_hole_1_17, level_2_hole_18, 1);
+
+  ok_1 = Check_spec(pedal_r1, autoBreak_r1, skid_r1, out_01, out_11, out_21, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, valhole_6_6, valhole_7_7, const_hole0_8, const_hole1_9, const_hole2_10, const_hole3_11, const_hole4_12, const_hole5_13, const_hole6_14, const_hole7_15, level_1_hole_0_16, level_1_hole_1_17, level_2_hole_18, 1);
 
   fixedRout = Fixed_T(pedal_r, autoBreak_r, skid_r, NormalPressure_r, AltPressure_r, Sys_Mode);
 
   rPrimeOut = T_node(pedal_r, autoBreak_r, skid_r, NormalPressure_r, AltPressure_r, Sys_Mode, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, valhole_4_4, valhole_5_5, valhole_6_6, valhole_7_7, const_hole0_8, const_hole1_9, const_hole2_10, const_hole3_11, const_hole4_12, const_hole5_13, const_hole6_14, const_hole7_15, level_1_hole_0_16, level_1_hole_1_17, level_2_hole_18);
 
-  fail = (not (ok_0 and (fixedRout and (not rPrimeOut))));
+  fail = (not ((ok_0 and ok_1) and (fixedRout and (not rPrimeOut))));
 
   assert (true -> (valhole_0_0 = (pre valhole_0_0)));
 

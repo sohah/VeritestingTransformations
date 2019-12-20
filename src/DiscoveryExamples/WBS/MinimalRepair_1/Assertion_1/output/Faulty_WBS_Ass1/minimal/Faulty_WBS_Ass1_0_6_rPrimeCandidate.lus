@@ -10,7 +10,7 @@ node main(
 );
 let
   --%MAIN;
-  p1 = (true -> (not ((NormalPressure_r = -1) or (Sys_Mode = 13))));
+  p1 = (true -> (not (skid_r or (NormalPressure_r > 5))));
 
   --%PROPERTY p1;
 

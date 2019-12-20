@@ -133,7 +133,7 @@ public class DiscoverContract {
             fileName = contractMethodName + "_" + loopCount + ".lus";
             writeToFile(fileName, counterExampleQueryStrStr, false);
 
-            JKindResult counterExResult = callJkind(fileName, false, -1, false);
+            JKindResult counterExResult = callJkind(fileName, true, -1, false);
             switch (counterExResult.getPropertyResult(tnodeSpecPropertyName).getStatus()) {
                 case VALID: //valid match
                     System.out.println("^-^Ranger Discovery Result ^-^");

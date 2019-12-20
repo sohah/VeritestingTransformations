@@ -10,7 +10,7 @@ node main(
 );
 let
   --%MAIN;
-  p1 = (true -> (((NormalPressure_r <= -1) => skid_r) and ((NormalPressure_r > 6) xor (Sys_Mode = 0))));
+  p1 = (true -> ((NormalPressure_r = 3) xor ((NormalPressure_r <= 5) and (Sys_Mode > -1))));
 
   --%PROPERTY p1;
 

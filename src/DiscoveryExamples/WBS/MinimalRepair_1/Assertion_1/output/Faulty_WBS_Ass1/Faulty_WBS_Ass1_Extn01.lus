@@ -10,7 +10,7 @@ node main(
 );
 let
   --%MAIN;
-  p1 = (true -> repair( (not ((NormalPressure_r <= 14) and (Sys_Mode = 13))) , discover_binary_Bool_1_Int_3_0(skid_r, pedal_r, NormalPressure_r, Sys_Mode) ) );
+  p1 = (true -> repair( (not ((pedal_r <= 5) or (Sys_Mode = -7))) , discover_binary_Bool_1_Int_3_0(skid_r, pedal_r, NormalPressure_r, Sys_Mode) ) );
 
   --%PROPERTY p1;
 

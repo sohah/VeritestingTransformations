@@ -177,7 +177,7 @@ var
   ok_0 : bool;
 let
   --%MAIN;
-  pedal_r0 = (4 -> (pre -1));
+  pedal_r0 = (4 -> (pre 6));
 
   autoBreak_r0 = (false -> (pre false));
 

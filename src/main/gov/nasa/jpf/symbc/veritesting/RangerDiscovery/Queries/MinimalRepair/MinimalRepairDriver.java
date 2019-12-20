@@ -84,7 +84,7 @@ public class MinimalRepairDriver {
 
 
                 singleQueryTime = System.currentTimeMillis();
-                JKindResult synthesisResult = callJkind(fileName, false, tPrimeExistsQ
+                JKindResult synthesisResult = callJkind(fileName, true, tPrimeExistsQ
                         .getMaxTestCaseK() - 2, true);
 
                 singleQueryTime = (System.currentTimeMillis()-singleQueryTime)/1000;
@@ -112,7 +112,7 @@ public class MinimalRepairDriver {
 
                         singleQueryTime = System.currentTimeMillis();
 
-                        JKindResult counterExampleResult = callJkind(fileName, false, -1, true);
+                        JKindResult counterExampleResult = callJkind(fileName, true, -1, true);
 
                         singleQueryTime = (System.currentTimeMillis()-singleQueryTime)/1000;
 
@@ -139,8 +139,8 @@ public class MinimalRepairDriver {
                             case INVALID:
                                 tPrimeExistsQ.collectCounterExample(counterExampleResult, tPrimeExistsQ.getSynthesizedProgram().getMainNode());
                                 ++candidateLoopCount;
-                                if(candidateLoopCount == 30) //exit if we tried 30 candidates.
-                                    canFindMoreTighterRepair=false;
+                               /* if(candidateLoopCount == 30) //exit if we tried 30 candidates.
+                                    canFindMoreTighterRepair=false;*/
                                 break;
                             default:
                                 System.out.println("^-^ Ranger Discovery Result ^-^");

@@ -10,7 +10,7 @@ node main(
 );
 let
   --%MAIN;
-  p1 = (true -> (not ((NormalPressure_r = -1) or (Sys_Mode > 7))));
+  p1 = (true -> (((pedal_r <= 10) xor (NormalPressure_r > 5)) and ((NormalPressure_r > 6) xor (Sys_Mode > -1))));
 
   --%PROPERTY p1;
 
