@@ -1,0 +1,174 @@
+node T_node(
+  pedal_r : int;
+  autoBreak_r : bool;
+  skid_r : bool;
+  NormalPressure_r : int;
+  AltPressure_r : int;
+  Sys_Mode : int;
+  valhole_0_0 : int;
+  valhole_1_1 : int;
+  valhole_2_2 : int;
+  valhole_3_3 : int;
+  const_hole0_4 : int;
+  const_hole1_5 : int;
+  const_hole2_6 : int;
+  const_hole3_7 : int;
+  level_1_hole_0_8 : int;
+  level_2_hole_9 : int
+) returns (
+  p1 : bool
+);
+let
+  p1 = (true -> discover_binary_Bool_1_Int_4_ssa_0(skid_r, pedal_r, NormalPressure_r, Sys_Mode, AltPressure_r, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, const_hole0_4, const_hole1_5, const_hole2_6, const_hole3_7, level_1_hole_0_8, level_2_hole_9));
+
+tel;
+
+node discover_binary_Bool_1_Int_4_ssa_0(
+  a0 : bool;
+  i0 : int;
+  i1 : int;
+  i2 : int;
+  i3 : int;
+  valhole_0_0 : int;
+  valhole_1_1 : int;
+  valhole_2_2 : int;
+  valhole_3_3 : int;
+  const_hole0_4 : int;
+  const_hole1_5 : int;
+  const_hole2_6 : int;
+  const_hole3_7 : int;
+  level_1_hole_0_8 : int;
+  level_2_hole_9 : int
+) returns (
+  out : bool
+);
+var
+  bExprlevel_0_1_0 : bool;
+  bExprlevel_0_2_0 : bool;
+  bExprlevel_0_3_0 : bool;
+  bExprlevel_0_4_0 : bool;
+  bExprlevel_1_0 : bool;
+  bExprlevel_2 : bool;
+let
+  bExprlevel_0_1_0 = a0;
+
+  bExprlevel_0_2_0 = (if (valhole_1_1 = 3) then (i1 <= const_hole1_5) else (if (valhole_1_1 = 4) then (i1 > const_hole1_5) else (i1 = const_hole1_5)));
+
+  bExprlevel_0_3_0 = (if (valhole_2_2 = 3) then (i2 <= const_hole2_6) else (if (valhole_2_2 = 4) then (i2 > const_hole2_6) else (i2 = const_hole2_6)));
+
+  bExprlevel_0_4_0 = (if (valhole_3_3 = 3) then (i3 <= const_hole3_7) else (if (valhole_2_2 = 4) then (i3 > const_hole3_7) else (i3 = const_hole3_7)));
+
+  bExprlevel_1_0 = (if (level_1_hole_0_8 = 1) then bExprlevel_0_1_0 else (if (level_1_hole_0_8 = 2) then bExprlevel_0_2_0 else (if (level_1_hole_0_8 = 3) then bExprlevel_0_3_0 else (if (level_1_hole_0_8 = 4) then bExprlevel_0_4_0 else (if (level_1_hole_0_8 = 8) then (bExprlevel_0_1_0 and bExprlevel_0_2_0) else (if (level_1_hole_0_8 = 9) then (bExprlevel_0_1_0 and bExprlevel_0_3_0) else (if (level_1_hole_0_8 = 10) then (bExprlevel_0_1_0 and bExprlevel_0_4_0) else (if (level_1_hole_0_8 = 11) then (bExprlevel_0_2_0 and bExprlevel_0_3_0) else (if (level_1_hole_0_8 = 12) then (bExprlevel_0_2_0 and bExprlevel_0_4_0) else (if (level_1_hole_0_8 = 13) then (bExprlevel_0_3_0 and bExprlevel_0_4_0) else (if (level_1_hole_0_8 = 14) then (bExprlevel_0_1_0 or bExprlevel_0_2_0) else (if (level_1_hole_0_8 = 15) then (bExprlevel_0_1_0 or bExprlevel_0_3_0) else (if (level_1_hole_0_8 = 16) then (bExprlevel_0_1_0 or bExprlevel_0_4_0) else (if (level_1_hole_0_8 = 17) then (bExprlevel_0_2_0 or bExprlevel_0_3_0) else (if (level_1_hole_0_8 = 18) then (bExprlevel_0_2_0 or bExprlevel_0_4_0) else (if (level_1_hole_0_8 = 19) then (bExprlevel_0_3_0 or bExprlevel_0_4_0) else (if (level_1_hole_0_8 = 20) then (bExprlevel_0_1_0 => bExprlevel_0_2_0) else (if (level_1_hole_0_8 = 21) then (bExprlevel_0_1_0 => bExprlevel_0_3_0) else (if (level_1_hole_0_8 = 22) then (bExprlevel_0_1_0 => bExprlevel_0_4_0) else (if (level_1_hole_0_8 = 23) then (bExprlevel_0_2_0 => bExprlevel_0_3_0) else (if (level_1_hole_0_8 = 24) then (bExprlevel_0_2_0 => bExprlevel_0_4_0) else (if (level_1_hole_0_8 = 25) then (bExprlevel_0_3_0 => bExprlevel_0_4_0) else (if (level_1_hole_0_8 = 26) then (bExprlevel_0_1_0 xor bExprlevel_0_2_0) else (if (level_1_hole_0_8 = 27) then (bExprlevel_0_1_0 xor bExprlevel_0_3_0) else (if (level_1_hole_0_8 = 28) then (bExprlevel_0_1_0 xor bExprlevel_0_4_0) else (if (level_1_hole_0_8 = 29) then (bExprlevel_0_2_0 xor bExprlevel_0_3_0) else (if (level_1_hole_0_8 = 30) then (bExprlevel_0_2_0 xor bExprlevel_0_4_0) else (bExprlevel_0_3_0 xor bExprlevel_0_4_0))))))))))))))))))))))))))));
+
+  bExprlevel_2 = (if (level_2_hole_9 = 0) then bExprlevel_1_0 else (if (level_2_hole_9 = 1) then (not bExprlevel_1_0) else (if (level_2_hole_9 = 2) then (bExprlevel_1_0 and bExprlevel_0_1_0) else (if (level_2_hole_9 = 3) then (bExprlevel_1_0 and bExprlevel_0_2_0) else (if (level_2_hole_9 = 4) then (bExprlevel_1_0 and bExprlevel_0_3_0) else (if (level_2_hole_9 = 5) then (bExprlevel_1_0 and bExprlevel_0_4_0) else (if (level_2_hole_9 = 6) then (bExprlevel_1_0 or bExprlevel_0_1_0) else (if (level_2_hole_9 = 7) then (bExprlevel_1_0 or bExprlevel_0_2_0) else (if (level_2_hole_9 = 8) then (bExprlevel_1_0 or bExprlevel_0_3_0) else (if (level_2_hole_9 = 9) then (bExprlevel_1_0 or bExprlevel_0_4_0) else (if (level_2_hole_9 = 10) then (bExprlevel_1_0 => bExprlevel_0_1_0) else (if (level_2_hole_9 = 11) then (bExprlevel_1_0 => bExprlevel_0_2_0) else (if (level_2_hole_9 = 12) then (bExprlevel_1_0 => bExprlevel_0_3_0) else (if (level_2_hole_9 = 13) then (bExprlevel_1_0 => bExprlevel_0_4_0) else (if (level_2_hole_9 = 14) then (bExprlevel_1_0 xor bExprlevel_0_1_0) else (if (level_2_hole_9 = 15) then (bExprlevel_1_0 xor bExprlevel_0_2_0) else (if (level_2_hole_9 = 16) then (bExprlevel_1_0 xor bExprlevel_0_3_0) else (if (level_2_hole_9 = 17) then (bExprlevel_1_0 xor bExprlevel_0_4_0) else (if (level_2_hole_9 = 18) then true else false)))))))))))))))))));
+
+  out = bExprlevel_2;
+
+tel;
+
+node H_discovery(
+  in : bool
+) returns (
+  out : bool
+);
+let
+  out = (in -> (in and (pre out)));
+
+tel;
+
+node Check_spec(
+  pedal_r : int;
+  autoBreak_r : bool;
+  skid_r : bool;
+  NormalPressure_r : int;
+  AltPressure_r : int;
+  Sys_Mode : int;
+  valhole_0_0 : int;
+  valhole_1_1 : int;
+  valhole_2_2 : int;
+  valhole_3_3 : int;
+  const_hole0_4 : int;
+  const_hole1_5 : int;
+  const_hole2_6 : int;
+  const_hole3_7 : int;
+  level_1_hole_0_8 : int;
+  level_2_hole_9 : int;
+  k : int
+) returns (
+  p1 : bool
+);
+var
+  step : int;
+  stepOK : bool;
+let
+  step = (0 -> (1 + (pre step)));
+
+  stepOK = (if (step <= k) then T_node(pedal_r, autoBreak_r, skid_r, NormalPressure_r, AltPressure_r, Sys_Mode, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, const_hole0_4, const_hole1_5, const_hole2_6, const_hole3_7, level_1_hole_0_8, level_2_hole_9) else true);
+
+  p1 = ((step >= k) and H_discovery(stepOK));
+
+tel;
+
+node main(
+  valhole_0_0 : int;
+  valhole_1_1 : int;
+  valhole_2_2 : int;
+  valhole_3_3 : int;
+  const_hole0_4 : int;
+  const_hole1_5 : int;
+  const_hole2_6 : int;
+  const_hole3_7 : int;
+  level_1_hole_0_8 : int;
+  level_2_hole_9 : int
+) returns (
+  fail : bool
+);
+var
+  pedal_r0 : int;
+  autoBreak_r0 : bool;
+  skid_r0 : bool;
+  out_00 : int;
+  out_10 : int;
+  out_20 : int;
+  ok_0 : bool;
+let
+  --%MAIN;
+  pedal_r0 = (3 -> (pre 4));
+
+  autoBreak_r0 = (false -> (pre false));
+
+  skid_r0 = (false -> (pre false));
+
+  out_00 = (0 -> (pre 5));
+
+  out_10 = (0 -> (pre 0));
+
+  out_20 = (0 -> (pre 0));
+
+  ok_0 = Check_spec(pedal_r0, autoBreak_r0, skid_r0, out_00, out_10, out_20, valhole_0_0, valhole_1_1, valhole_2_2, valhole_3_3, const_hole0_4, const_hole1_5, const_hole2_6, const_hole3_7, level_1_hole_0_8, level_2_hole_9, 1);
+
+  fail = (not ok_0);
+
+  assert (true -> (valhole_0_0 = (pre valhole_0_0)));
+
+  assert (true -> (valhole_1_1 = (pre valhole_1_1)));
+
+  assert (true -> (valhole_2_2 = (pre valhole_2_2)));
+
+  assert (true -> (valhole_3_3 = (pre valhole_3_3)));
+
+  assert (true -> (const_hole0_4 = (pre const_hole0_4)));
+
+  assert (true -> (const_hole1_5 = (pre const_hole1_5)));
+
+  assert (true -> (const_hole2_6 = (pre const_hole2_6)));
+
+  assert (true -> (const_hole3_7 = (pre const_hole3_7)));
+
+  assert (true -> (level_1_hole_0_8 = (pre level_1_hole_0_8)));
+
+  assert (true -> (level_2_hole_9 = (pre level_2_hole_9)));
+
+  --%PROPERTY fail;
+
+tel;

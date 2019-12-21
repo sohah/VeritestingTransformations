@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<Results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Property name="fail">
+    <Runtime unit="sec">75.328</Runtime>
+    <Answer>unknown</Answer>
+    <TrueFor>0</TrueFor>
+  </Property>
+</Results>

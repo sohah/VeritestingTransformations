@@ -92,7 +92,7 @@ node Fixed_T(
   p1 : bool
 );
 let
-  p1 = (true -> true);
+  p1 = (true -> (c => c));
 
 tel;
 

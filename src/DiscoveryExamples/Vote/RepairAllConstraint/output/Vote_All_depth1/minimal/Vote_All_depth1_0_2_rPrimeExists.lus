@@ -92,7 +92,7 @@ node Fixed_T(
   p1 : bool
 );
 let
-  p1 = (true -> true);
+  p1 = (true -> (c => c));
 
 tel;
 
@@ -158,13 +158,13 @@ let
 
   out_01 = (false -> (pre false));
 
-  a2 = (false -> (pre true));
+  a2 = (false -> (pre false));
 
-  b2 = (false -> (pre false));
+  b2 = (false -> (pre true));
 
   c2 = (false -> (pre false));
 
-  threshold2 = (7 -> (pre 6));
+  threshold2 = (10 -> (pre 6));
 
   out_02 = (false -> (pre false));
 

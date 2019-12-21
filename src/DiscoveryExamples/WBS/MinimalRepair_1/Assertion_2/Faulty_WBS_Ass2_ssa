@@ -1,0 +1,141 @@
+
+-- RESULT :
+
+-- Tried
+
+-- INITIAL PROPERTY:
+-- TIGHT 1:
+-- TIGHT 2:
+-- TIGHT 3:
+-- TIGHT 4:
+-- TIGHT 5:
+
+
+repair node discover_binary_Bool_1_Int_4_ssa(a0: bool; i0:int; i1:int; i2:int;i3:int) [valhole_0: inthole; valhole_1:
+inthole;
+valhole_2: inthole;
+valhole_3: inthole;
+
+const_hole0: inthole;
+const_hole1 : inthole;
+const_hole2 :inthole;
+const_hole3 :inthole;
+
+level_1_hole_0:inthole;
+
+level_2_hole:inthole
+]
+
+returns (out: bool);
+var
+
+bExprlevel_0_1_0:bool;
+bExprlevel_0_2_0:bool;
+bExprlevel_0_3_0:bool;
+bExprlevel_0_4_0:bool;
+
+bExprlevel_1_0:bool;
+
+bExprlevel_2:bool;
+
+
+let
+
+    bExprlevel_0_1_0 = a0;
+
+    bExprlevel_0_2_0 = if(valhole_1 = 3) then i1 <= const_hole1
+                   else if(valhole_1 = 4) then i1 > const_hole1
+                   else i1 = const_hole1;
+
+    bExprlevel_0_3_0 = if(valhole_2 = 3) then i2 <= const_hole2
+                   else if(valhole_2 = 4) then i2 > const_hole2
+                   else i2 = const_hole2;
+
+
+    bExprlevel_0_4_0 = if(valhole_3 = 3) then i3 <= const_hole3
+                   else if(valhole_2 = 4) then i3 > const_hole3
+                   else i3 = const_hole3;
+
+
+    bExprlevel_1_0 = if(level_1_hole_0 = 1) then bExprlevel_0_1_0
+                   else if(level_1_hole_0 = 2) then bExprlevel_0_2_0
+                   else if(level_1_hole_0 = 3) then bExprlevel_0_3_0
+                   else if(level_1_hole_0 = 4) then bExprlevel_0_4_0
+
+--                   else if(level_1_hole_0 = 5) then not bExprlevel_0_1_0
+--                   else if(level_1_hole_0 = 6) then not bExprlevel_0_2_0
+--                   else if(level_1_hole_0 = 7) then not bExprlevel_0_3_0
+
+                   else if(level_1_hole_0 = 8) then bExprlevel_0_1_0 and bExprlevel_0_2_0
+                   else if(level_1_hole_0 = 9) then bExprlevel_0_1_0 and bExprlevel_0_3_0
+                   else if(level_1_hole_0 = 10) then bExprlevel_0_1_0 and bExprlevel_0_4_0
+                   else if(level_1_hole_0 = 11) then bExprlevel_0_2_0 and bExprlevel_0_3_0
+                   else if(level_1_hole_0 = 12) then bExprlevel_0_2_0 and bExprlevel_0_4_0
+                   else if(level_1_hole_0 = 13) then bExprlevel_0_3_0 and bExprlevel_0_4_0
+
+
+                   else if(level_1_hole_0 = 14) then bExprlevel_0_1_0 or bExprlevel_0_2_0
+                   else if(level_1_hole_0 = 15) then bExprlevel_0_1_0 or bExprlevel_0_3_0
+                   else if(level_1_hole_0 = 16) then bExprlevel_0_1_0 or bExprlevel_0_4_0
+                   else if(level_1_hole_0 = 17) then bExprlevel_0_2_0 or bExprlevel_0_3_0
+                   else if(level_1_hole_0 = 18) then bExprlevel_0_2_0 or bExprlevel_0_4_0
+                   else if(level_1_hole_0 = 19) then bExprlevel_0_3_0 or bExprlevel_0_4_0
+
+                    else if(level_1_hole_0 = 20) then bExprlevel_0_1_0 => bExprlevel_0_2_0
+                    else if(level_1_hole_0 = 21) then bExprlevel_0_1_0 => bExprlevel_0_3_0
+                    else if(level_1_hole_0 = 22) then bExprlevel_0_1_0 => bExprlevel_0_4_0
+                    else if(level_1_hole_0 = 23) then bExprlevel_0_2_0 => bExprlevel_0_3_0
+                    else if(level_1_hole_0 = 24) then bExprlevel_0_2_0 => bExprlevel_0_4_0
+                    else if(level_1_hole_0 = 25) then bExprlevel_0_3_0 => bExprlevel_0_4_0
+
+                   else if(level_1_hole_0 = 26) then bExprlevel_0_1_0 xor bExprlevel_0_2_0
+                   else if(level_1_hole_0 = 27) then bExprlevel_0_1_0 xor bExprlevel_0_3_0
+                   else if(level_1_hole_0 = 28) then bExprlevel_0_1_0 xor bExprlevel_0_4_0
+                   else if(level_1_hole_0 = 29) then bExprlevel_0_2_0 xor bExprlevel_0_3_0
+                   else if(level_1_hole_0 = 30) then bExprlevel_0_2_0 xor bExprlevel_0_4_0
+                   else bExprlevel_0_3_0 xor bExprlevel_0_4_0;
+
+
+   bExprlevel_2 =  if(level_2_hole = 0) then bExprlevel_1_0
+                   else if(level_2_hole = 1) then not bExprlevel_1_0
+                   else if(level_2_hole = 2) then bExprlevel_1_0 and bExprlevel_0_1_0
+                   else if(level_2_hole = 3) then bExprlevel_1_0 and bExprlevel_0_2_0
+                   else if(level_2_hole = 4) then bExprlevel_1_0 and bExprlevel_0_3_0
+                   else if(level_2_hole = 5) then bExprlevel_1_0 and bExprlevel_0_4_0
+
+                   else if(level_2_hole = 6) then bExprlevel_1_0 or bExprlevel_0_1_0
+                   else if(level_2_hole = 7) then bExprlevel_1_0 or bExprlevel_0_2_0
+                   else if(level_2_hole = 8) then bExprlevel_1_0 or bExprlevel_0_3_0
+                   else if(level_2_hole = 9) then bExprlevel_1_0 or bExprlevel_0_4_0
+
+                   else if(level_2_hole = 10) then bExprlevel_1_0 => bExprlevel_0_1_0
+                   else if(level_2_hole = 11) then bExprlevel_1_0 => bExprlevel_0_2_0
+                   else if(level_2_hole = 12) then bExprlevel_1_0 => bExprlevel_0_3_0
+                   else if(level_2_hole = 13) then bExprlevel_1_0 => bExprlevel_0_4_0
+
+                   else if(level_2_hole = 14) then bExprlevel_1_0 xor bExprlevel_0_1_0
+                   else if(level_2_hole = 15) then bExprlevel_1_0 xor bExprlevel_0_2_0
+                   else if(level_2_hole = 16) then bExprlevel_1_0 xor bExprlevel_0_3_0
+                   else if(level_2_hole = 17) then bExprlevel_1_0 xor bExprlevel_0_4_0
+
+                   else if(level_2_hole = 18) then true
+                   else false;
+
+
+    out = bExprlevel_2;
+tel;
+
+
+node main(pedal_r: int; autoBreak_r: bool; skid_r: bool; NormalPressure_r:int; AltPressure_r:int; Sys_Mode: int) returns (p1: bool);
+
+
+let
+
+-- repairing failing property #2 in WBS.
+    p1 = true -> repair((pedal_r > 0 and pedal_r <= 4 and not skid_r) => (AltPressure_r > 0),
+    discover_binary_Bool_1_Int_4_ssa
+    (skid_r, pedal_r, NormalPressure_r, Sys_Mode,AltPressure_r )) ;
+
+      --%PROPERTY p1;
+
+tel;

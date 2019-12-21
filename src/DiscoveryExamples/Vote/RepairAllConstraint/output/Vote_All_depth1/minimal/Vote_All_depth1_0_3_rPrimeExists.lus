@@ -92,7 +92,7 @@ node Fixed_T(
   p1 : bool
 );
 let
-  p1 = (true -> true);
+  p1 = (true -> (c => c));
 
 tel;
 
@@ -164,13 +164,13 @@ let
 
   out_01 = (false -> (pre false));
 
-  a2 = (false -> (pre true));
+  a2 = (false -> (pre false));
 
-  b2 = (false -> (pre false));
+  b2 = (false -> (pre true));
 
   c2 = (false -> (pre false));
 
-  threshold2 = (7 -> (pre 6));
+  threshold2 = (10 -> (pre 6));
 
   out_02 = (false -> (pre false));
 
@@ -188,11 +188,11 @@ let
 
   b4 = (false -> (pre true));
 
-  c4 = (false -> (pre false));
+  c4 = (false -> (pre true));
 
-  threshold4 = (6 -> (pre 0));
+  threshold4 = (10 -> (pre 6));
 
-  out_04 = (false -> (pre false));
+  out_04 = (false -> (pre true));
 
   ok_0 = Check_spec(a0, b0, c0, threshold0, out_00, valhole_0_0, valhole_1_1, valhole_2_2, level_1_hole_3, 1);
 

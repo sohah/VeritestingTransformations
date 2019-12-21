@@ -5,12 +5,12 @@ node Ranger_node(
   threshold : int;
   out_bool : bool
 ) returns (
-  r347_out_1_3_2_bool : bool
+  r351_out_1_3_2_bool : bool
 );
 var
   w11_2 : int;
-  r347_out_1_1_2 : int;
-  r347_out_1_3_2 : int;
+  r351_out_1_1_2 : int;
+  r351_out_1_3_2 : int;
   symVar : int;
   a : int;
   b : int;
@@ -19,9 +19,9 @@ var
 let
   w11_2 = (if ((((((not (a = 0)) and (b <> 0)) or ((((a = 0) or ((not (a = 0)) and (not (b <> 0)))) and (not (b = 0))) and (c <> 0))) or ((((((a = 0) or ((not (a = 0)) and (not (b <> 0)))) and (b = 0)) or ((((a = 0) or ((not (a = 0)) and (not (b <> 0)))) and (not (b = 0))) and (not (c <> 0)))) and (not (a = 0))) and (not (c = 0)))) and (not (threshold >= 10))) and (not (threshold <= 5))) then 1 else 0);
 
-  r347_out_1_1_2 = w11_2;
+  r351_out_1_1_2 = w11_2;
 
-  r347_out_1_3_2 = (if (not (symVar = 0)) then r347_out_1_1_2 else out);
+  r351_out_1_3_2 = (if (not (symVar = 0)) then r351_out_1_1_2 else out);
 
   a = (if a_bool then 1 else 0);
 
@@ -31,7 +31,7 @@ let
 
   out = (if out_bool then 1 else 0);
 
-  r347_out_1_3_2_bool = (false -> (if (r347_out_1_3_2 = 1) then true else false));
+  r351_out_1_3_2_bool = (false -> (if (r351_out_1_3_2 = 1) then true else false));
 
   symVar = 1;
 
@@ -64,7 +64,7 @@ node T_node(
   p1 : bool
 );
 let
-  p1 = (true -> true);
+  p1 = (true -> (c => c));
 
 tel;
 
@@ -78,7 +78,7 @@ node Candidate_T_Prime(
   p1 : bool
 );
 let
-  p1 = (true -> (out => a));
+  p1 = (true -> (a => out));
 
 tel;
 
