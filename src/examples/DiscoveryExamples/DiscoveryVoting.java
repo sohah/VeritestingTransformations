@@ -29,6 +29,6 @@ public class DiscoveryVoting {
         this.out = out;
 
         if (symVar)
-            vote2(a, b, c, threshold);
+            vote1(a, b, c);
     }
 }

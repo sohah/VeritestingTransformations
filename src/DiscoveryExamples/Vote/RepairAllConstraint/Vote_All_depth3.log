@@ -24,7 +24,7 @@ JavaPathfinder core system v8.0 (rev 32+) - (C) 2005-2014 United States Governme
 ====================================================== system under test
 DiscoveryExamples.DiscoveryVoting.main()
 
-====================================================== search started: 12/16/19 7:50 PM
+====================================================== search started: 1/21/20 10:54 AM
 choiceGeneratorRegistered(class gov.nasa.jpf.symbc.numeric.PCChoiceGenerator) at MethodInfo[DiscoveryExamples.DiscoveryVoting.main([Ljava/lang/String;)V]#15
 New sym int a min=0, max=1
 New sym int b min=0, max=1
@@ -38,7 +38,7 @@ Starting region analysis for makeStep(DiscoveryExamples.DiscoveryVoting.makeStep
 Method
 putfield 1.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> > = 6
 if ((! (== w7 0 ) )) {
-   invokevirtual < Application, LDiscoveryExamples/DiscoveryVoting, vote2(ZZZI)V > 1,2,3,4,5 @17 exception:10
+   invokevirtual < Application, LDiscoveryExamples/DiscoveryVoting, vote1(ZZZ)V > 1,2,3,4 @15 exception:10
 } else {
    skip; 
 }
@@ -47,7 +47,7 @@ return
 
 ---------- STARTING Transformations for conditional region: DiscoveryExamples.DiscoveryVoting.makeStep(ZZZIZZ)V#8
 if ((! (== w7 0 ) )) {
-   invokevirtual < Application, LDiscoveryExamples/DiscoveryVoting, vote2(ZZZI)V > 1,2,3,4,5 @17 exception:10
+   invokevirtual < Application, LDiscoveryExamples/DiscoveryVoting, vote1(ZZZ)V > 1,2,3,4 @15 exception:10
 } else {
    skip; 
 }
@@ -60,7 +60,6 @@ Region Stack Slot Map (var -> slot)
 @w2 --------- [1]
 @w3 --------- [2]
 @w4 --------- [3]
-@w5 --------- [4]
 
 printing Region Input Table (var->slot)
 @w7 --------- 6
@@ -68,7 +67,6 @@ printing Region Input Table (var->slot)
 @w2 --------- 1
 @w3 --------- 2
 @w4 --------- 3
-@w5 --------- 4
 
 printing Region Output Table (slot->var)
 
@@ -79,12 +77,11 @@ printing WalaVarTypeTable ( var ->type)
 @w2 --------- boolean
 @w3 --------- boolean
 @w4 --------- boolean
-@w5 --------- int
 
 --------------- UNIQUENESS TRANSFORMATION ---------------
 if ((! (== w7$1 0 ) )) {
    
-[] = invoke < Application, LDiscoveryExamples/DiscoveryVoting, vote2(ZZZI)V >[w1$1, w2$1, w3$1, w4$1, w5$1]
+[] = invoke < Application, LDiscoveryExamples/DiscoveryVoting, vote1(ZZZ)V >[w1$1, w2$1, w3$1, w4$1]
 } else {
    skip; 
 }
@@ -95,7 +92,6 @@ w1$1 --------- [0]
 w2$1 --------- [1]
 w3$1 --------- [2]
 w4$1 --------- [3]
-w5$1 --------- [4]
 w7$1 --------- [6]
 
 printing Region Input Table (var->slot)
@@ -103,7 +99,6 @@ w1$1 --------- 0
 w2$1 --------- 1
 w3$1 --------- 2
 w4$1 --------- 3
-w5$1 --------- 4
 w7$1 --------- 6
 
 printing WalaVarTypeTable ( var ->type)
@@ -111,73 +106,72 @@ w1$1 --------- DiscoveryExamples.DiscoveryVoting
 w2$1 --------- boolean
 w3$1 --------- boolean
 w4$1 --------- boolean
-w5$1 --------- int
 w6$1 --------- boolean
 w7$1 --------- boolean
 
 printing Region Output Table (slot->var)
 Stack output: null
 ========================================= RUNNING FIXED POINT ITERATION # 1=========================================
-Starting region analysis for vote2(DiscoveryExamples.DiscoveryVoting.vote2(ZZZI)V)
+Starting region analysis for vote1(DiscoveryExamples.DiscoveryVoting.vote1(ZZZ)V)
 Method
-if ((&& (&& (|| (|| (&& (! (== w2 0 ) ) (!= w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (!= w4 0 ) ) ) (&& (&& (|| (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (== w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (! (!= w4 0 ) ) ) ) (! (== w2 0 ) ) ) (! (== w4 0 ) ) ) ) (! (>= w5 10 ) ) ) (! (<= w5 5 ) ) )) {
+if ((|| (|| (&& (! (== w2 0 ) ) (!= w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (!= w4 0 ) ) ) (&& (&& (|| (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (== w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (! (!= w4 0 ) ) ) ) (! (== w2 0 ) ) ) (! (== w4 0 ) ) ) )) {
    skip; 
 } else {
    skip; 
 }
-w11 := (Gamma !(w2==0)&&w3!=0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&w4!=0||w2==0||!(w2==0)&&!(w3!=0)&&w3==0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&!(w4!=0)&&!(w2==0)&&!(w4==0)&&!(w5>=10)&&!(w5<=5) 1 0); 
-putfield 1.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> > = 11
+w8 := (Gamma !(w2==0)&&w3!=0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&w4!=0||w2==0||!(w2==0)&&!(w3!=0)&&w3==0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&!(w4!=0)&&!(w2==0)&&!(w4==0) 1 0); 
+putfield 1.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> > = 8
 return
 
 
-********** High Order Region Discovered for region: DiscoveryExamples.DiscoveryVoting.vote2(ZZZI)V
+********** High Order Region Discovered for region: DiscoveryExamples.DiscoveryVoting.vote1(ZZZ)V
 
 
 ---------- STARTING Inlining Transformation for region: ---------------
-if ((&& (&& (|| (|| (&& (! (== w2 0 ) ) (!= w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (!= w4 0 ) ) ) (&& (&& (|| (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (== w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (! (!= w4 0 ) ) ) ) (! (== w2 0 ) ) ) (! (== w4 0 ) ) ) ) (! (>= w5 10 ) ) ) (! (<= w5 5 ) ) )) {
+if ((|| (|| (&& (! (== w2 0 ) ) (!= w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (!= w4 0 ) ) ) (&& (&& (|| (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (== w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (! (!= w4 0 ) ) ) ) (! (== w2 0 ) ) ) (! (== w4 0 ) ) ) )) {
    skip; 
 } else {
    skip; 
 }
-w11 := (Gamma !(w2==0)&&w3!=0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&w4!=0||w2==0||!(w2==0)&&!(w3!=0)&&w3==0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&!(w4!=0)&&!(w2==0)&&!(w4==0)&&!(w5>=10)&&!(w5<=5) 1 0); 
+w8 := (Gamma !(w2==0)&&w3!=0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&w4!=0||w2==0||!(w2==0)&&!(w3!=0)&&w3==0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&!(w4!=0)&&!(w2==0)&&!(w4==0) 1 0); 
 
- put(w1.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> >) = w11
+ put(w1.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> >) = w8
 
  return w-1
 
 
 
-Region prior to removeEarlyReturns: if ((&& (&& (|| (|| (&& (! (== w2 0 ) ) (!= w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (!= w4 0 ) ) ) (&& (&& (|| (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (== w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (! (!= w4 0 ) ) ) ) (! (== w2 0 ) ) ) (! (== w4 0 ) ) ) ) (! (>= w5 10 ) ) ) (! (<= w5 5 ) ) )) {
+Region prior to removeEarlyReturns: if ((|| (|| (&& (! (== w2 0 ) ) (!= w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (!= w4 0 ) ) ) (&& (&& (|| (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (== w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (! (!= w4 0 ) ) ) ) (! (== w2 0 ) ) ) (! (== w4 0 ) ) ) )) {
    skip; 
 } else {
    skip; 
 }
-w11 := (Gamma !(w2==0)&&w3!=0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&w4!=0||w2==0||!(w2==0)&&!(w3!=0)&&w3==0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&!(w4!=0)&&!(w2==0)&&!(w4==0)&&!(w5>=10)&&!(w5<=5) 1 0); 
-putfield 1.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> > = 11
+w8 := (Gamma !(w2==0)&&w3!=0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&w4!=0||w2==0||!(w2==0)&&!(w3!=0)&&w3==0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&!(w4!=0)&&!(w2==0)&&!(w4==0) 1 0); 
+putfield 1.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> > = 8
 return
 
 
-Region after removeEarlyReturns: if ((&& (&& (|| (|| (&& (! (== w2 0 ) ) (!= w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (!= w4 0 ) ) ) (&& (&& (|| (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (== w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (! (!= w4 0 ) ) ) ) (! (== w2 0 ) ) ) (! (== w4 0 ) ) ) ) (! (>= w5 10 ) ) ) (! (<= w5 5 ) ) )) {
+Region after removeEarlyReturns: if ((|| (|| (&& (! (== w2 0 ) ) (!= w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (!= w4 0 ) ) ) (&& (&& (|| (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (== w3 0 ) ) (&& (&& (|| (== w2 0 ) (&& (! (== w2 0 ) ) (! (!= w3 0 ) ) ) ) (! (== w3 0 ) ) ) (! (!= w4 0 ) ) ) ) (! (== w2 0 ) ) ) (! (== w4 0 ) ) ) )) {
    skip; 
 } else {
    skip; 
 }
-w11 := (Gamma !(w2==0)&&w3!=0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&w4!=0||w2==0||!(w2==0)&&!(w3!=0)&&w3==0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&!(w4!=0)&&!(w2==0)&&!(w4==0)&&!(w5>=10)&&!(w5<=5) 1 0); 
+w8 := (Gamma !(w2==0)&&w3!=0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&w4!=0||w2==0||!(w2==0)&&!(w3!=0)&&w3==0||w2==0||!(w2==0)&&!(w3!=0)&&!(w3==0)&&!(w4!=0)&&!(w2==0)&&!(w4==0) 1 0); 
 
- put(w1.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> >) = w11
+ put(w1.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> >) = w8
 skip; 
 ~earlyReturnResult := w-1; 
 
 
 --------------- UNIQUENESS TRANSFORMATION ---------------
-if ((&& (&& (|| (|| (&& (! (== w2$2 0 ) ) (!= w3$2 0 ) ) (&& (&& (|| (== w2$2 0 ) (&& (! (== w2$2 0 ) ) (! (!= w3$2 0 ) ) ) ) (! (== w3$2 0 ) ) ) (!= w4$2 0 ) ) ) (&& (&& (|| (&& (|| (== w2$2 0 ) (&& (! (== w2$2 0 ) ) (! (!= w3$2 0 ) ) ) ) (== w3$2 0 ) ) (&& (&& (|| (== w2$2 0 ) (&& (! (== w2$2 0 ) ) (! (!= w3$2 0 ) ) ) ) (! (== w3$2 0 ) ) ) (! (!= w4$2 0 ) ) ) ) (! (== w2$2 0 ) ) ) (! (== w4$2 0 ) ) ) ) (! (>= w5$2 10 ) ) ) (! (<= w5$2 5 ) ) )) {
+if ((|| (|| (&& (! (== w2$2 0 ) ) (!= w3$2 0 ) ) (&& (&& (|| (== w2$2 0 ) (&& (! (== w2$2 0 ) ) (! (!= w3$2 0 ) ) ) ) (! (== w3$2 0 ) ) ) (!= w4$2 0 ) ) ) (&& (&& (|| (&& (|| (== w2$2 0 ) (&& (! (== w2$2 0 ) ) (! (!= w3$2 0 ) ) ) ) (== w3$2 0 ) ) (&& (&& (|| (== w2$2 0 ) (&& (! (== w2$2 0 ) ) (! (!= w3$2 0 ) ) ) ) (! (== w3$2 0 ) ) ) (! (!= w4$2 0 ) ) ) ) (! (== w2$2 0 ) ) ) (! (== w4$2 0 ) ) ) )) {
    skip; 
 } else {
    skip; 
 }
-w11$2 := (Gamma !(w2$2==0)&&w3$2!=0||w2$2==0||!(w2$2==0)&&!(w3$2!=0)&&!(w3$2==0)&&w4$2!=0||w2$2==0||!(w2$2==0)&&!(w3$2!=0)&&w3$2==0||w2$2==0||!(w2$2==0)&&!(w3$2!=0)&&!(w3$2==0)&&!(w4$2!=0)&&!(w2$2==0)&&!(w4$2==0)&&!(w5$2>=10)&&!(w5$2<=5) 1 0); 
+w8$2 := (Gamma !(w2$2==0)&&w3$2!=0||w2$2==0||!(w2$2==0)&&!(w3$2!=0)&&!(w3$2==0)&&w4$2!=0||w2$2==0||!(w2$2==0)&&!(w3$2!=0)&&w3$2==0||w2$2==0||!(w2$2==0)&&!(w3$2!=0)&&!(w3$2==0)&&!(w4$2!=0)&&!(w2$2==0)&&!(w4$2==0) 1 0); 
 
- put(w1$2.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> >) = w11$2
+ put(w1$2.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> >) = w8$2
 skip; 
 ~earlyReturnResult$2 := w-1$2; 
 
@@ -187,26 +181,21 @@ w1$2 --------- [0]
 w2$2 --------- [1]
 w3$2 --------- [2]
 w4$2 --------- [3]
-w5$2 --------- [4]
 
 printing Region Input Table (var->param)
 w1$2 --------- 0
 w2$2 --------- 1
 w3$2 --------- 2
 w4$2 --------- 3
-w5$2 --------- 4
 
 printing WalaVarTypeTable ( var ->type)
 w1$2 --------- DiscoveryExamples.DiscoveryVoting
 w2$2 --------- boolean
 w3$2 --------- boolean
 w4$2 --------- boolean
-w5$2 --------- int
+w6$2 --------- int
 w7$2 --------- int
 w8$2 --------- int
-w9$2 --------- int
-w10$2 --------- int
-w11$2 --------- int
 
 printing Region Output Table (return->var)
 Stack output: null
@@ -215,7 +204,7 @@ Stack output: null
 
 if ((! (== w7$1 0 ) )) {
    
-[] = invoke < Application, LDiscoveryExamples/DiscoveryVoting, vote2(ZZZI)V >[w1$1, w2$1, w3$1, w4$1, w5$1]
+[] = invoke < Application, LDiscoveryExamples/DiscoveryVoting, vote1(ZZZ)V >[w1$1, w2$1, w3$1, w4$1]
 } else {
    skip; 
 }
@@ -226,7 +215,6 @@ w1$1 --------- [0]
 w2$1 --------- [1]
 w3$1 --------- [2]
 w4$1 --------- [3]
-w5$1 --------- [4]
 w7$1 --------- [6]
 
 printing Region Output Table (slot->var)
@@ -236,31 +224,27 @@ w1$1 --------- LDiscoveryExamples/DiscoveryVoting;
 w2$1 --------- boolean
 w3$1 --------- boolean
 w4$1 --------- boolean
-w5$1 --------- int
 w6$1 --------- boolean
 w7$1 --------- boolean
 w1$2 --------- DiscoveryExamples.DiscoveryVoting
 w2$2 --------- boolean
 w3$2 --------- boolean
 w4$2 --------- boolean
-w5$2 --------- int
+w6$2 --------- int
 w7$2 --------- int
 w8$2 --------- int
-w9$2 --------- int
-w10$2 --------- int
-w11$2 --------- int
 
 --------------- AFTER SUBSTITUTION TRANSFORMATION for: DiscoveryExamples.DiscoveryVoting.makeStep(ZZZIZZ)V#8 ---------------
 
 if ((! (== symVar 0 ) )) {
-   if ((&& (&& (|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) ) (! (>= threshold 10 ) ) ) (! (<= threshold 5 ) ) )) {
+   if ((|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) )) {
       skip; 
    } else {
       skip; 
    }
-   w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
+   w8$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0) 1 0); 
    
- put(347.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> >) = w11$2
+ put(347.< Application, LDiscoveryExamples/DiscoveryVoting, out, <Primordial,Z> >) = w8$2
    skip; 
    skip; 
 } else {
@@ -273,7 +257,6 @@ w1$1 --------- [0]
 w2$1 --------- [1]
 w3$1 --------- [2]
 w4$1 --------- [3]
-w5$1 --------- [4]
 w7$1 --------- [6]
 
 printing Region Output Table (slot->var)
@@ -283,31 +266,27 @@ w1$1 --------- LDiscoveryExamples/DiscoveryVoting;
 w2$1 --------- boolean
 w3$1 --------- boolean
 w4$1 --------- boolean
-w5$1 --------- int
 w6$1 --------- boolean
 w7$1 --------- boolean
 w1$2 --------- DiscoveryExamples.DiscoveryVoting
 w2$2 --------- boolean
 w3$2 --------- boolean
 w4$2 --------- boolean
-w5$2 --------- int
+w6$2 --------- int
 w7$2 --------- int
 w8$2 --------- int
-w9$2 --------- int
-w10$2 --------- int
-w11$2 --------- int
 Stack output: null
 
 --------------- FIELD REFERENCE TRANSFORMATION ---------------
 
 if ((! (== symVar 0 ) )) {
-   if ((&& (&& (|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) ) (! (>= threshold 10 ) ) ) (! (<= threshold 5 ) ) )) {
+   if ((|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) )) {
       skip; 
    } else {
       skip; 
    }
-   w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
-   r347.out.1.1 := w11$2; 
+   w8$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0) 1 0); 
+   r347.out.1.1 := w8$2; 
    skip; 
    skip; 
 } else {
@@ -319,13 +298,13 @@ r347.out.1.3 := (Gamma !(symVar==0) r347.out.1.1 out);
 --------------- ARRAY TRANSFORMATION ---------------
 
 if ((! (== symVar 0 ) )) {
-   if ((&& (&& (|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) ) (! (>= threshold 10 ) ) ) (! (<= threshold 5 ) ) )) {
+   if ((|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) )) {
       skip; 
    } else {
       skip; 
    }
-   w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
-   r347.out.1.1 := w11$2; 
+   w8$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0) 1 0); 
+   r347.out.1.1 := w8$2; 
    skip; 
    skip; 
 } else {
@@ -340,13 +319,13 @@ Array Outputs Table
 --------------- SUBSTITUTION TRANSFORMATION for: DiscoveryExamples.DiscoveryVoting.makeStep(ZZZIZZ)V#8 ---------------
 
 if ((! (== symVar 0 ) )) {
-   if ((&& (&& (|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) ) (! (>= threshold 10 ) ) ) (! (<= threshold 5 ) ) )) {
+   if ((|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) )) {
       skip; 
    } else {
       skip; 
    }
-   w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
-   r347.out.1.1 := w11$2; 
+   w8$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0) 1 0); 
+   r347.out.1.1 := w8$2; 
    skip; 
    skip; 
 } else {
@@ -360,7 +339,6 @@ w1$1 --------- [0]
 w2$1 --------- [1]
 w3$1 --------- [2]
 w4$1 --------- [3]
-w5$1 --------- [4]
 w7$1 --------- [6]
 
 printing Region Output Table (slot->var)
@@ -370,30 +348,26 @@ w1$1 --------- LDiscoveryExamples/DiscoveryVoting;
 w2$1 --------- boolean
 w3$1 --------- boolean
 w4$1 --------- boolean
-w5$1 --------- int
 w6$1 --------- boolean
 w7$1 --------- boolean
 w1$2 --------- DiscoveryExamples.DiscoveryVoting
 w2$2 --------- boolean
 w3$2 --------- boolean
 w4$2 --------- boolean
-w5$2 --------- int
+w6$2 --------- int
 w7$2 --------- int
 w8$2 --------- int
-w9$2 --------- int
-w10$2 --------- int
-w11$2 --------- int
 
 --------------- AFTER SUBSTITUTION TRANSFORMATION for: DiscoveryExamples.DiscoveryVoting.makeStep(ZZZIZZ)V#8 ---------------
 
 if ((! (== symVar 0 ) )) {
-   if ((&& (&& (|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) ) (! (>= threshold 10 ) ) ) (! (<= threshold 5 ) ) )) {
+   if ((|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) )) {
       skip; 
    } else {
       skip; 
    }
-   w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
-   r347.out.1.1 := w11$2; 
+   w8$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0) 1 0); 
+   r347.out.1.1 := w8$2; 
    skip; 
    skip; 
 } else {
@@ -407,7 +381,6 @@ w1$1 --------- [0]
 w2$1 --------- [1]
 w3$1 --------- [2]
 w4$1 --------- [3]
-w5$1 --------- [4]
 w7$1 --------- [6]
 
 printing Region Output Table (slot->var)
@@ -417,31 +390,27 @@ w1$1 --------- LDiscoveryExamples/DiscoveryVoting;
 w2$1 --------- boolean
 w3$1 --------- boolean
 w4$1 --------- boolean
-w5$1 --------- int
 w6$1 --------- boolean
 w7$1 --------- boolean
 w1$2 --------- DiscoveryExamples.DiscoveryVoting
 w2$2 --------- boolean
 w3$2 --------- boolean
 w4$2 --------- boolean
-w5$2 --------- int
+w6$2 --------- int
 w7$2 --------- int
 w8$2 --------- int
-w9$2 --------- int
-w10$2 --------- int
-w11$2 --------- int
 Stack output: null
 
 --------------- FIELD REFERENCE TRANSFORMATION ---------------
 
 if ((! (== symVar 0 ) )) {
-   if ((&& (&& (|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) ) (! (>= threshold 10 ) ) ) (! (<= threshold 5 ) ) )) {
+   if ((|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) )) {
       skip; 
    } else {
       skip; 
    }
-   w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
-   r347.out.1.1 := w11$2; 
+   w8$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0) 1 0); 
+   r347.out.1.1 := w8$2; 
    skip; 
    skip; 
 } else {
@@ -453,13 +422,13 @@ r347.out.1.3 := (Gamma !(symVar==0) r347.out.1.1 out);
 --------------- ARRAY TRANSFORMATION ---------------
 
 if ((! (== symVar 0 ) )) {
-   if ((&& (&& (|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) ) (! (>= threshold 10 ) ) ) (! (<= threshold 5 ) ) )) {
+   if ((|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) )) {
       skip; 
    } else {
       skip; 
    }
-   w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
-   r347.out.1.1 := w11$2; 
+   w8$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0) 1 0); 
+   r347.out.1.1 := w8$2; 
    skip; 
    skip; 
 } else {
@@ -474,13 +443,13 @@ Array Outputs Table
 --------------- SUBSTITUTION TRANSFORMATION for: DiscoveryExamples.DiscoveryVoting.makeStep(ZZZIZZ)V#8 ---------------
 
 if ((! (== symVar 0 ) )) {
-   if ((&& (&& (|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) ) (! (>= threshold 10 ) ) ) (! (<= threshold 5 ) ) )) {
+   if ((|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) )) {
       skip; 
    } else {
       skip; 
    }
-   w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
-   r347.out.1.1 := w11$2; 
+   w8$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0) 1 0); 
+   r347.out.1.1 := w8$2; 
    skip; 
    skip; 
 } else {
@@ -494,7 +463,6 @@ w1$1 --------- [0]
 w2$1 --------- [1]
 w3$1 --------- [2]
 w4$1 --------- [3]
-w5$1 --------- [4]
 w7$1 --------- [6]
 
 printing Region Output Table (slot->var)
@@ -504,30 +472,26 @@ w1$1 --------- LDiscoveryExamples/DiscoveryVoting;
 w2$1 --------- boolean
 w3$1 --------- boolean
 w4$1 --------- boolean
-w5$1 --------- int
 w6$1 --------- boolean
 w7$1 --------- boolean
 w1$2 --------- DiscoveryExamples.DiscoveryVoting
 w2$2 --------- boolean
 w3$2 --------- boolean
 w4$2 --------- boolean
-w5$2 --------- int
+w6$2 --------- int
 w7$2 --------- int
 w8$2 --------- int
-w9$2 --------- int
-w10$2 --------- int
-w11$2 --------- int
 
 --------------- AFTER SUBSTITUTION TRANSFORMATION for: DiscoveryExamples.DiscoveryVoting.makeStep(ZZZIZZ)V#8 ---------------
 
 if ((! (== symVar 0 ) )) {
-   if ((&& (&& (|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) ) (! (>= threshold 10 ) ) ) (! (<= threshold 5 ) ) )) {
+   if ((|| (|| (&& (! (== a 0 ) ) (!= b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (!= c 0 ) ) ) (&& (&& (|| (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (== b 0 ) ) (&& (&& (|| (== a 0 ) (&& (! (== a 0 ) ) (! (!= b 0 ) ) ) ) (! (== b 0 ) ) ) (! (!= c 0 ) ) ) ) (! (== a 0 ) ) ) (! (== c 0 ) ) ) )) {
       skip; 
    } else {
       skip; 
    }
-   w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
-   r347.out.1.1 := w11$2; 
+   w8$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0) 1 0); 
+   r347.out.1.1 := w8$2; 
    skip; 
    skip; 
 } else {
@@ -541,7 +505,6 @@ w1$1 --------- [0]
 w2$1 --------- [1]
 w3$1 --------- [2]
 w4$1 --------- [3]
-w5$1 --------- [4]
 w7$1 --------- [6]
 
 printing Region Output Table (slot->var)
@@ -551,26 +514,22 @@ w1$1 --------- LDiscoveryExamples/DiscoveryVoting;
 w2$1 --------- boolean
 w3$1 --------- boolean
 w4$1 --------- boolean
-w5$1 --------- int
 w6$1 --------- boolean
 w7$1 --------- boolean
 w1$2 --------- DiscoveryExamples.DiscoveryVoting
 w2$2 --------- boolean
 w3$2 --------- boolean
 w4$2 --------- boolean
-w5$2 --------- int
+w6$2 --------- int
 w7$2 --------- int
 w8$2 --------- int
-w9$2 --------- int
-w10$2 --------- int
-w11$2 --------- int
 Stack output: null
 
 --------------- LINEARIZATION TRANSFORMATION ---------------
 skip; 
 skip; 
-w11$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0)&&!(threshold>=10)&&!(threshold<=5) 1 0); 
-r347.out.1.1.2 := w11$2; 
+w8$2 := (Gamma !(a==0)&&b!=0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&c!=0||a==0||!(a==0)&&!(b!=0)&&b==0||a==0||!(a==0)&&!(b!=0)&&!(b==0)&&!(c!=0)&&!(a==0)&&!(c==0) 1 0); 
+r347.out.1.1.2 := w8$2; 
 skip; 
 skip; 
 skip; 
@@ -581,52 +540,31 @@ Stack output: null
 Repair does NOT include initial values
 repairing holes for iteration#:0
 repairing holes for iteration#:1
-repairing holes for iteration#:2
-repairing holes for iteration#:3
-repairing holes for iteration#:4
-repairing holes for iteration#:5
-repairing holes for iteration#:6
-repairing holes for iteration#:7
 ^-^Ranger Discovery Result ^-^
-Initial repair found, in iteration #: 8
+Initial repair found, in iteration #: 2
 Trying minimal repair.
 trying minimal good repair iteration #: 0
 Trying candidate #: 0
-Time of ThereExists Query of : Vote_All_depth4_0_0_rPrimeExists.lus= 4
-Time of forAll Query of : Vote_All_depth4_0_0_forAllMinimal.lus= 0
-Great! a tighter repair was found at, outer loop # = 8 minimal repair loop # = 0 successful candidate # = 0
+Time of ThereExists Query of : Vote_All_depth3_0_0_rPrimeExists.lus= 1
+Time of forAll Query of : Vote_All_depth3_0_0_forAllMinimal.lus= 0
+Trying candidate #: 1
+Time of ThereExists Query of : Vote_All_depth3_0_1_rPrimeExists.lus= 0
+Time of forAll Query of : Vote_All_depth3_0_1_forAllMinimal.lus= 0
+Trying candidate #: 2
+Time of ThereExists Query of : Vote_All_depth3_0_2_rPrimeExists.lus= 1
+Time of forAll Query of : Vote_All_depth3_0_2_forAllMinimal.lus= 0
+Trying candidate #: 3
+Time of ThereExists Query of : Vote_All_depth3_0_3_rPrimeExists.lus= 1
+Time of forAll Query of : Vote_All_depth3_0_3_forAllMinimal.lus= 0
+Trying candidate #: 4
+Time of ThereExists Query of : Vote_All_depth3_0_4_rPrimeExists.lus= 1
+Time of forAll Query of : Vote_All_depth3_0_4_forAllMinimal.lus= 0
+Great! a tighter repair was found at, outer loop # = 2 minimal repair loop # = 0 successful candidate # = 4
 trying minimal good repair iteration #: 1
 Trying candidate #: 0
-Time of ThereExists Query of : Vote_All_depth4_1_0_rPrimeExists.lus= 11
-Time of forAll Query of : Vote_All_depth4_1_0_forAllMinimal.lus= 0
+Time of ThereExists Query of : Vote_All_depth3_1_0_rPrimeExists.lus= 1
+Time of forAll Query of : Vote_All_depth3_1_0_forAllMinimal.lus= 0
 Trying candidate #: 1
-Time of ThereExists Query of : Vote_All_depth4_1_1_rPrimeExists.lus= 13
-Time of forAll Query of : Vote_All_depth4_1_1_forAllMinimal.lus= 0
+Time of ThereExists Query of : Vote_All_depth3_1_1_rPrimeExists.lus= 2
+Time of forAll Query of : Vote_All_depth3_1_1_forAllMinimal.lus= 0
 Trying candidate #: 2
-Time of ThereExists Query of : Vote_All_depth4_1_2_rPrimeExists.lus= 7
-Time of forAll Query of : Vote_All_depth4_1_2_forAllMinimal.lus= 0
-Trying candidate #: 3
-Time of ThereExists Query of : Vote_All_depth4_1_3_rPrimeExists.lus= 8
-Time of forAll Query of : Vote_All_depth4_1_3_forAllMinimal.lus= 0
-Trying candidate #: 4
-Time of ThereExists Query of : Vote_All_depth4_1_4_rPrimeExists.lus= 11
-Time of forAll Query of : Vote_All_depth4_1_4_forAllMinimal.lus= 0
-Trying candidate #: 5
-Time of ThereExists Query of : Vote_All_depth4_1_5_rPrimeExists.lus= 12
-Time of forAll Query of : Vote_All_depth4_1_5_forAllMinimal.lus= 0
-Great! a tighter repair was found at, outer loop # = 8 minimal repair loop # = 1 successful candidate # = 5
-trying minimal good repair iteration #: 2
-Trying candidate #: 0
-Time of ThereExists Query of : Vote_All_depth4_2_0_rPrimeExists.lus= 53
-Time of forAll Query of : Vote_All_depth4_2_0_forAllMinimal.lus= 0
-Trying candidate #: 1
-Time of ThereExists Query of : Vote_All_depth4_2_1_rPrimeExists.lus= 61
-Time of forAll Query of : Vote_All_depth4_2_1_forAllMinimal.lus= 0
-Great! a tighter repair was found at, outer loop # = 8 minimal repair loop # = 2 successful candidate # = 1
-trying minimal good repair iteration #: 3
-Trying candidate #: 0
-Time of ThereExists Query of : Vote_All_depth4_3_0_rPrimeExists.lus= 109
-Time of forAll Query of : Vote_All_depth4_3_0_forAllMinimal.lus= 0
-Great! a tighter repair was found at, outer loop # = 8 minimal repair loop # = 3 successful candidate # = 0
-trying minimal good repair iteration #: 4
-Trying candidate #: 0

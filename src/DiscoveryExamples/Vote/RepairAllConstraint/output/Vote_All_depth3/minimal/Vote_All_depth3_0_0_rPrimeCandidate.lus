@@ -9,7 +9,7 @@ node main(
 );
 let
   --%MAIN;
-  p1 = (true -> (not (not (out => a))));
+  p1 = (true -> (((a => b) => b) xor a));
 
   --%PROPERTY p1;
 

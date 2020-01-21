@@ -8,7 +8,7 @@ node Ranger_node(
   r347_out_1_3_2_bool : bool
 );
 var
-  w11_2 : int;
+  w8_2 : int;
   r347_out_1_1_2 : int;
   r347_out_1_3_2 : int;
   symVar : int;
@@ -17,9 +17,9 @@ var
   c : int;
   out : int;
 let
-  w11_2 = (if ((((((not (a = 0)) and (b <> 0)) or ((((a = 0) or ((not (a = 0)) and (not (b <> 0)))) and (not (b = 0))) and (c <> 0))) or ((((((a = 0) or ((not (a = 0)) and (not (b <> 0)))) and (b = 0)) or ((((a = 0) or ((not (a = 0)) and (not (b <> 0)))) and (not (b = 0))) and (not (c <> 0)))) and (not (a = 0))) and (not (c = 0)))) and (not (threshold >= 10))) and (not (threshold <= 5))) then 1 else 0);
+  w8_2 = (if ((((not (a = 0)) and (b <> 0)) or ((((a = 0) or ((not (a = 0)) and (not (b <> 0)))) and (not (b = 0))) and (c <> 0))) or ((((((a = 0) or ((not (a = 0)) and (not (b <> 0)))) and (b = 0)) or ((((a = 0) or ((not (a = 0)) and (not (b <> 0)))) and (not (b = 0))) and (not (c <> 0)))) and (not (a = 0))) and (not (c = 0)))) then 1 else 0);
 
-  r347_out_1_1_2 = w11_2;
+  r347_out_1_1_2 = w8_2;
 
   r347_out_1_3_2 = (if (not (symVar = 0)) then r347_out_1_1_2 else out);
 
@@ -64,7 +64,7 @@ node T_node(
   p1 : bool
 );
 let
-  p1 = (true -> (((out or out) and (out or out)) or (not (out and b))));
+  p1 = (true -> (((a or a) and b) => b));
 
 tel;
 
@@ -78,7 +78,7 @@ node Candidate_T_Prime(
   p1 : bool
 );
 let
-  p1 = (true -> (a or b));
+  p1 = (true -> (((b => b) and c) or b));
 
 tel;
 
