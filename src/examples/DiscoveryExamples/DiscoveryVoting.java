@@ -15,6 +15,10 @@ public class DiscoveryVoting {
         out = a || b || c;
     }
 
+    public void vote4(boolean a, boolean b, boolean c) {
+        out = (a || b) && (b ||c) && (a || c);
+    }
+
     public void vote0(boolean a, boolean b, boolean c) {
         out = a;
     }
@@ -29,6 +33,7 @@ public class DiscoveryVoting {
         this.out = out;
 
         if (symVar)
-            vote2(a, b, c, threshold);
+            //vote2(a, b, c, threshold);
+        vote4(a, b, c);
     }
 }

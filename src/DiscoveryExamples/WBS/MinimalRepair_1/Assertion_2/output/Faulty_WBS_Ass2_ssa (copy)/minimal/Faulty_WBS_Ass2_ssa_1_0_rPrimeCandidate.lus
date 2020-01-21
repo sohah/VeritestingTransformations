@@ -1,0 +1,17 @@
+node main(
+  pedal_r : int;
+  autoBreak_r : bool;
+  skid_r : bool;
+  NormalPressure_r : int;
+  AltPressure_r : int;
+  Sys_Mode : int
+) returns (
+  p1 : bool
+);
+let
+  --%MAIN;
+  p1 = (true -> (not (skid_r or (NormalPressure_r = 6))));
+
+  --%PROPERTY p1;
+
+tel;
