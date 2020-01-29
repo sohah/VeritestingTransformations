@@ -13,7 +13,7 @@
 
 
 
-repair node discover_binary_Bool_4_Int_0_Depth_4(a0:bool; a1:bool; a2:bool; a3:bool) [valhole_0: inthole; valhole_1:
+repair node discover_binary_Bool_4_Int_0_depth_4(a0:bool; a1:bool; a2:bool; a3:bool) [valhole_0: inthole; valhole_1:
 inthole;
 valhole_2: inthole;
 
@@ -76,7 +76,12 @@ let
 
                    else if(level_1_hole = 17) then bExprlevel_0_0 => bExprlevel_0_1
                    else if(level_1_hole = 18) then bExprlevel_0_0 => bExprlevel_0_2
-                   else bExprlevel_0_1 => bExprlevel_0_2;
+                   else if(level_1_hole = 19) then bExprlevel_0_1 => bExprlevel_0_2
+
+                   else if(level_1_hole = 20) then bExprlevel_0_0 = bExprlevel_0_1
+                   else if(level_1_hole = 21) then bExprlevel_0_0 = bExprlevel_0_2
+                   else bExprlevel_0_1 = bExprlevel_0_2;
+
 
 
    bExprlevel_2 = if(level_2_hole = 0) then bExprlevel_1
@@ -97,7 +102,12 @@ let
 
                    else if(level_2_hole = 11) then bExprlevel_1 => bExprlevel_0_0
                    else if(level_2_hole = 12) then bExprlevel_1 => bExprlevel_0_1
-                   else bExprlevel_1 => bExprlevel_0_2;
+                   else if(level_2_hole = 12) then bExprlevel_1 => bExprlevel_0_2
+
+                   else if(level_1_hole = 13) then bExprlevel_1 = bExprlevel_0_0
+                   else if(level_1_hole = 14) then bExprlevel_1 = bExprlevel_0_1
+                   else bExprlevel_1 = bExprlevel_0_2;
+
 
 
    bExprlevel_3 = if(level_3_hole = 0) then bExprlevel_2
@@ -124,7 +134,12 @@ let
                    else if(level_3_hole = 14) then bExprlevel_2 => bExprlevel_0_0
                    else if(level_3_hole = 15) then bExprlevel_2 => bExprlevel_0_1
                    else if(level_3_hole = 16) then bExprlevel_2 => bExprlevel_0_2
-                   else bExprlevel_2 => bExprlevel_0_1;
+
+                   else if(level_3_hole = 17) then bExprlevel_2 = bExprlevel_0_1
+                   else if(level_3_hole = 14) then bExprlevel_2 = bExprlevel_0_0
+                   else if(level_3_hole = 15) then bExprlevel_2 = bExprlevel_0_1
+                   else if(level_3_hole = 16) then bExprlevel_2 = bExprlevel_0_2
+                   else bExprlevel_2 = bExprlevel_0_1;
 
 
    bExprlevel_4 = if(level_4_hole = 0) then bExprlevel_3
@@ -159,6 +174,13 @@ let
                    else if(level_4_hole = 24) then bExprlevel_3 => bExprlevel_2
                    else if(level_4_hole = 25) then bExprlevel_3 => bExprlevel_1
 
+                   else if(level_4_hole = 26) then bExprlevel_3 = bExprlevel_0_0
+                   else if(level_4_hole = 27) then bExprlevel_3 = bExprlevel_0_1
+                   else if(level_4_hole = 28) then bExprlevel_3 = bExprlevel_0_2
+                   else if(level_4_hole = 29) then bExprlevel_3 = bExprlevel_0_1
+                   else if(level_4_hole = 30) then bExprlevel_3 = bExprlevel_2
+                   else if(level_4_hole = 31) then bExprlevel_3 = bExprlevel_1
+
                    else if(level_4_hole = 26) then true
                    else false;
 
@@ -172,7 +194,7 @@ node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool)
 
 let
 
-    p1 = true -> (repair((a and b), discover_binary_Bool_4_Int_0_Depth_3(a,b,c, out)));
+    p1 = true -> (repair((a and b), discover_binary_Bool_4_Int_0_depth_4(a,b,c, out)));
 
   --%PROPERTY p1;
 

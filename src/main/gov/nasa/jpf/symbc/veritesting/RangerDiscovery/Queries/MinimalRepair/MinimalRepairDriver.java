@@ -72,10 +72,10 @@ public class MinimalRepairDriver {
 
         MinimalRepairSynthesis tPrimeExistsQ = new MinimalRepairSynthesis(lastSynthizedContract, laskKnwnGoodRepairPgm.getMainNode());
 
-        while (canFindMoreTighterRepair) {//we are still trying to discover a minimal repair, thus there is a
+        while (canFindMoreTighterRepair) {//we are still trying to discover a minimal repair, thus there is a potiential tighter repair that we haven't discovered so far.
 
             System.out.println("trying minimal good repair iteration #: " + knownRepairLoopCount);
-            // potiential tighter repair that we haven't discovered so far.
+
             while (!tighterRepairFound && canFindMoreTighterRepair) { //while we haven't found a tighter repair and we know that we can find a tighter repair.
                 System.out.println("Trying candidate #: " + candidateLoopCount);
 
@@ -84,8 +84,8 @@ public class MinimalRepairDriver {
 
 
                 singleQueryTime = System.currentTimeMillis();
-                JKindResult synthesisResult = callJkind(fileName, true, tPrimeExistsQ
-                        .getMaxTestCaseK() - 2, true);
+                JKindResult synthesisResult = callJkind(fileName, false, (tPrimeExistsQ
+                        .getMaxTestCaseK() - 2), true);
 
                 singleQueryTime = (System.currentTimeMillis()-singleQueryTime)/1000;
 

@@ -1,8 +1,3 @@
--- depth
--- RESULT :
--- PROPERTY DISCOVERED:
-
-
 repair node discover_Bool_3_Int_0_depth1(a0:bool; a1:bool; a2:bool) [valhole_0: inthole; valhole_1:
 inthole;
 valhole_2: inthole;
@@ -60,15 +55,5 @@ let
 
 
     out = bExprlevel_1;
-
-tel;
-
-
-node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool);
-
-let
-
-p1 = true -> (out = ((repair(a and a, discover_Bool_3_Int_0_depth1(a,b,c))) or (a and c) or (b and c)));
-  --%PROPERTY p1;
 
 tel;
