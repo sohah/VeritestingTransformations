@@ -133,7 +133,7 @@ public class DiscoverContract {
             fileName = contractMethodName + "_" + loopCount + ".lus";
             writeToFile(fileName, counterExampleQueryStrStr, false);
 
-            JKindResult counterExResult = callJkind(fileName, true, -1, false);
+            JKindResult counterExResult = callJkind(fileName, true, -1, false, false);
             switch (counterExResult.getPropertyResult(tnodeSpecPropertyName).getStatus()) {
                 case VALID: //valid match
                     System.out.println("^-^Ranger Discovery Result ^-^");
@@ -184,7 +184,7 @@ public class DiscoverContract {
                     writeToFile(fileName, synthesisContractStr, false);
 
                     JKindResult synthesisResult = callJkind(fileName, false, ARepairSynthesis
-                            .getMaxTestCaseK() - 2, false);
+                            .getMaxTestCaseK() - 2, false, false);
                     switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
                         case VALID:
                             System.out.println("^-^ Ranger Discovery Result ^-^");

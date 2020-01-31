@@ -23,6 +23,10 @@ public class DiscoveryVoting {
         out = a;
     }
 
+    public void vote5(boolean a, boolean b, boolean c) {
+        out = ((a && b) || (b && c) || (a && c)) ;
+    }
+
     public static void main(String[] args) {
         DiscoveryVoting discoveryVoting = new DiscoveryVoting();
         discoveryVoting.makeStep(true, true, true, 4, false, true);
@@ -33,8 +37,8 @@ public class DiscoveryVoting {
         this.out = out;
 
         if (symVar)
-            vote1(a, b, c);
+            vote5(a, b, c);
             //vote2(a, b, c, threshold);
-        vote4(a, b, c);
+        //vote4(a, b, c);
     }
 }

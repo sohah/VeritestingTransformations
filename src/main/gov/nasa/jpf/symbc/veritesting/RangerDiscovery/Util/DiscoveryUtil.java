@@ -3,7 +3,6 @@ package gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config;
 import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.ARepair.synthesis.Hole;
 import gov.nasa.jpf.symbc.veritesting.VeritestingUtil.Pair;
-import jkind.SolverOption;
 import jkind.api.JKindApi;
 import jkind.api.results.JKindResult;
 import jkind.lustre.*;
@@ -410,7 +409,7 @@ public class DiscoveryUtil {
         return permutationList;
     }
 
-    public static JKindResult callJkind(String fileName, boolean kInductionOn, int maxK, boolean minimal) {
+    public static JKindResult callJkind(String fileName, boolean kInductionOn, int maxK, boolean minimal, boolean existsQuery) {
         File file1;
 
         if (!minimal)
@@ -418,10 +417,14 @@ public class DiscoveryUtil {
         else
             file1 = new File(folderName + "/output/" + Config.faultySpec + "/minimal/" + fileName);
 
-        return runJKind(file1, kInductionOn, maxK);
+        if (minimal)
+            return runJKind(file1, kInductionOn, maxK, existsQuery);
+        else // ensuring that you can't have a exists query true, without having a minimal query
+            return runJKind(file1, kInductionOn, maxK, false);
     }
 
-    private static JKindResult runJKind(File file, boolean kInductionOn, int maxK) {
+    //exists query is used only when it is a minimal query and its job is to turn off the pdr.
+    private static JKindResult runJKind(File file, boolean kInductionOn, int maxK, boolean existsQuery) {
 
 /*
         String[] jkindArgs = new String[5];
@@ -436,13 +439,27 @@ public class DiscoveryUtil {
 
         JKindApi api = new JKindApi();
         JKindResult result = new JKindResult("");
-        if (!kInductionOn)
-            api.disableKInduction();
+        if (!kInductionOn) { // I have not yet noticed considerable benefit from stopping kInduction on the there
+            // exists query. I'm turning it off for now.
+         //   api.disableKInduction();
+        }
+
+
+
+        api.disableSlicing();
+
+        // useful in minimization query where we want to not halt in the last query, for that we need to stop
+        // generation of pdr while checking the needed steps in BMC.
+
+        if(existsQuery){
+            maxK = maxK==0 ? 5 : maxK*3;
+            api.setPdrMax(0);
+        }
+
 
         if (maxK != -1) //if not set
             api.setN(maxK);
 
-        api.disableSlicing();
         //api.setSolver(SolverOption.Z3);
 
         //api.setTimeout(300);

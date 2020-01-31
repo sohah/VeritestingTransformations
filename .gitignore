@@ -23,3 +23,4 @@ src/examples/VeritestingPerf.jpf
 .idea/workspace.xml
 .idea
 *.iml
+output/

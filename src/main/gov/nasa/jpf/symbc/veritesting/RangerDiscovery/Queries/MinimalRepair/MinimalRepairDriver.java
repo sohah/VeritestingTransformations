@@ -85,7 +85,7 @@ public class MinimalRepairDriver {
 
                 singleQueryTime = System.currentTimeMillis();
                 JKindResult synthesisResult = callJkind(fileName, false, (tPrimeExistsQ
-                        .getMaxTestCaseK() - 2), true);
+                        .getMaxTestCaseK() - 2), true, true);
 
                 singleQueryTime = (System.currentTimeMillis()-singleQueryTime)/1000;
 
@@ -112,7 +112,7 @@ public class MinimalRepairDriver {
 
                         singleQueryTime = System.currentTimeMillis();
 
-                        JKindResult counterExampleResult = callJkind(fileName, true, -1, true);
+                        JKindResult counterExampleResult = callJkind(fileName, true, -1, true, false);
 
                         singleQueryTime = (System.currentTimeMillis()-singleQueryTime)/1000;
 
