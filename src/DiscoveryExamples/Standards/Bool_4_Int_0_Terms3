@@ -1,4 +1,4 @@
-repair node discover_binary_Bool_1_Int_4_Terms3(a0: bool; a1:int; a2:int; a3:int)
+repair node discover_binary_Bool_1_Int_4_Terms3(a0: bool; a1:bool; a2:bool; a3:bool)
 [valhole_0: inthole;
 valhole_1:inthole;
 valhole_2: inthole;
@@ -6,7 +6,7 @@ valhole_2: inthole;
 level_0_hole:inthole;
 level_1_hole:inthole;
 level_2_hole:inthole;
-level_3_hole:inthole;
+level_3_hole:inthole
 
 ]
 
@@ -25,13 +25,13 @@ let
     leaf_0 = if(valhole_0 = 0) then a0
                    else if(valhole_0 = 1) then a1
                    else if(valhole_0 = 2) then a2
-                   else i3 = a3;
+                   else a3;
 
 
     leaf_1 = if(valhole_1 = 0) then a0
                    else if(valhole_1 = 1) then a1
                    else if(valhole_1 = 2) then a2
-                   else i3 = a3;
+                   else a3;
 
 
     bExprlevel_1 =  if(level_2_hole = 1) then leaf_0 and leaf_1
@@ -46,7 +46,7 @@ let
     leaf_2 = if(valhole_2 = 0) then a0
                    else if(valhole_2 = 1) then a1
                    else if(valhole_2 = 2) then a2
-                   else i3 = a3;
+                   else a3;
 
 
     bExprlevel_2 =  if(level_3_hole = 1) then bExprlevel_1 and leaf_2

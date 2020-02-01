@@ -1,3 +1,7 @@
+-- SSA depth 2 of four bools, that tries to discover the relationship among the input and the output.
+-- RESULT :
+
+
 repair node discover_binary_Bool_1_Int_4_Terms2(a0: bool; a1:bool; a2:bool; a3:bool)
 [valhole_0: inthole;
 valhole_1:inthole;
@@ -43,3 +47,15 @@ let
     out = bExprlevel_1;
 tel;
 
+
+
+
+node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool);
+
+let
+
+p1 = true -> (repair(a and a, discover_binary_Bool_1_Int_4_Terms2(a,b,c,out)));
+
+  --%PROPERTY p1;
+
+tel;

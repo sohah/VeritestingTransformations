@@ -1,3 +1,8 @@
+-- depth
+-- RESULT :
+-- PROPERTY DISCOVERED:
+
+
 repair node discover_binary_Bool_1_Int_4_Terms1(a0: bool; a1:bool; a2:bool; a3:bool)
 [valhole_0: inthole;
 
@@ -20,3 +25,13 @@ let
     out = leaf_0;
 tel;
 
+
+
+node main(a: bool; b:bool; c:bool; threshold :int; out: bool) returns (p1: bool);
+
+let
+
+p1 = true -> (repair(a and a, discover_binary_Bool_1_Int_4_Terms1(a,b,c,out)));
+  --%PROPERTY p1;
+
+tel;
