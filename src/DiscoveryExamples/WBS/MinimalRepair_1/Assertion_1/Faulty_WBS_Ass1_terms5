@@ -129,7 +129,7 @@ let
     bExprlevel_3 =  if(level_4_hole = 1) then bExprlevel_2 and leaf_3
                      else if(level_4_hole = 2) then bExprlevel_2 or leaf_3
                      else if(level_4_hole = 3) then bExprlevel_2 => leaf_3
-                     else if(level_5_hole = 4) then bExprlevel_2 xor leaf_3
+                     else if(level_4_hole = 4) then bExprlevel_2 xor leaf_3
                      else not leaf_3;
 
 
@@ -171,8 +171,7 @@ let
 
 -- introducing a fault in passing assertion #1 in WBS, basically by wrapping the assertion with a not
     p1 = true -> repair(not(pedal_r > 0 and pedal_r <= 4 and not skid_r) => (AltPressure_r > 0 or NormalPressure_r >
-        0),discover_binary_Bool_2_Int_4_Terms5(autoBreak_r, skid_r, pedal_r, NormalPressure_r, AltPressure_r, Sys_Mode))
-         ;
+        0),discover_binary_Bool_2_Int_4_Terms5(autoBreak_r, skid_r, pedal_r, NormalPressure_r, AltPressure_r, Sys_Mode));
 
       --%PROPERTY p1;
 

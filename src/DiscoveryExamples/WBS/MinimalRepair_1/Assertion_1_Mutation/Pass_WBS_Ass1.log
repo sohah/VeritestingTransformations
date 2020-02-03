@@ -1,3 +1,10 @@
+Running Symbolic PathFinder ...
+symbolic.dp=z3
+symbolic.string_dp_timeout_ms=0
+symbolic.string_dp=none
+symbolic.max_pc_length=2147483647
+symbolic.max_pc_msec=0
+symbolic.bvlength=32
 symbolic.min_int=-2147483648
 symbolic.min_long=-9223372036854775808
 symbolic.min_short=-32768
@@ -17,8 +24,18 @@ JavaPathfinder core system v8.0 (rev 32+) - (C) 2005-2014 United States Governme
 ====================================================== system under test
 DiscoveryWBS.main()
 
-====================================================== search started: 2/3/20 3:43 PM
+====================================================== search started: 12/16/19 8:20 PM
 choiceGeneratorRegistered(class gov.nasa.jpf.symbc.numeric.PCChoiceGenerator) at MethodInfo[DiscoveryWBS.main([Ljava/lang/String;)V]#10
+New sym int pedal min=-2147483648, max=2147483647
+New sym int autoBrake min=0, max=1
+New sym int skid min=0, max=1
+New sym int WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE min=-2147483648, max=2147483647
+New sym int WBS_Node_WBS_BSCU_rlt_PRE1 min=-2147483648, max=2147483647
+New sym int WBS_Node_WBS_rlt_PRE2 min=-2147483648, max=2147483647
+New sym int Nor_Pressure min=-2147483648, max=2147483647
+New sym int Alt_Pressure min=-2147483648, max=2147483647
+New sym int Sys_Mode min=-2147483648, max=2147483647
+New sym int symVar min=0, max=1
 ^_^ running jitAnalysis ^_^
 Constructing class hierarchy...done!
 Starting region analysis for discoveryLaunch(DiscoveryWBS.discoveryLaunch(IZZIIIIIIZ)V)
@@ -14431,12 +14448,12 @@ if ((! (== symVar 0 ) )) {
 } else {
    skip; 
 }
-r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
-r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 r347.WBS_Node_WBS_rlt_PRE2.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1 WBS_Node_WBS_rlt_PRE2); 
 r347.Alt_Pressure.1.13 := (Gamma !(symVar==0) r347.Alt_Pressure.1.11 Alt_Pressure); 
+r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
 r347.Nor_Pressure.1.13 := (Gamma !(symVar==0) r347.Nor_Pressure.1.11 Nor_Pressure); 
 r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE); 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 
 
 --------------- ARRAY TRANSFORMATION ---------------
@@ -14650,12 +14667,12 @@ if ((! (== symVar 0 ) )) {
 } else {
    skip; 
 }
-r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
-r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 r347.WBS_Node_WBS_rlt_PRE2.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1 WBS_Node_WBS_rlt_PRE2); 
 r347.Alt_Pressure.1.13 := (Gamma !(symVar==0) r347.Alt_Pressure.1.11 Alt_Pressure); 
+r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
 r347.Nor_Pressure.1.13 := (Gamma !(symVar==0) r347.Nor_Pressure.1.11 Nor_Pressure); 
 r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE); 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 
 Array Outputs Table
 
@@ -14872,12 +14889,12 @@ if ((! (== symVar 0 ) )) {
 } else {
    skip; 
 }
-r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
-r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 r347.WBS_Node_WBS_rlt_PRE2.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1 WBS_Node_WBS_rlt_PRE2); 
 r347.Alt_Pressure.1.13 := (Gamma !(symVar==0) r347.Alt_Pressure.1.11 Alt_Pressure); 
+r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
 r347.Nor_Pressure.1.13 := (Gamma !(symVar==0) r347.Nor_Pressure.1.11 Nor_Pressure); 
 r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE); 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 
 
 printing stack-slot table (var->slot)
@@ -15158,12 +15175,12 @@ if ((! (== symVar 0 ) )) {
 } else {
    skip; 
 }
-r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
-r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 r347.WBS_Node_WBS_rlt_PRE2.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1 WBS_Node_WBS_rlt_PRE2); 
 r347.Alt_Pressure.1.13 := (Gamma !(symVar==0) r347.Alt_Pressure.1.11 Alt_Pressure); 
+r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
 r347.Nor_Pressure.1.13 := (Gamma !(symVar==0) r347.Nor_Pressure.1.11 Nor_Pressure); 
 r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE); 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 
 
 printing stack-slot table (var->slot)
@@ -15445,12 +15462,12 @@ if ((! (== symVar 0 ) )) {
 } else {
    skip; 
 }
-r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
-r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 r347.WBS_Node_WBS_rlt_PRE2.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1 WBS_Node_WBS_rlt_PRE2); 
 r347.Alt_Pressure.1.13 := (Gamma !(symVar==0) r347.Alt_Pressure.1.11 Alt_Pressure); 
+r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
 r347.Nor_Pressure.1.13 := (Gamma !(symVar==0) r347.Nor_Pressure.1.11 Nor_Pressure); 
 r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE); 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 
 
 --------------- ARRAY TRANSFORMATION ---------------
@@ -15664,12 +15681,12 @@ if ((! (== symVar 0 ) )) {
 } else {
    skip; 
 }
-r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
-r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 r347.WBS_Node_WBS_rlt_PRE2.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1 WBS_Node_WBS_rlt_PRE2); 
 r347.Alt_Pressure.1.13 := (Gamma !(symVar==0) r347.Alt_Pressure.1.11 Alt_Pressure); 
+r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
 r347.Nor_Pressure.1.13 := (Gamma !(symVar==0) r347.Nor_Pressure.1.11 Nor_Pressure); 
 r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE); 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 
 Array Outputs Table
 
@@ -15886,12 +15903,12 @@ if ((! (== symVar 0 ) )) {
 } else {
    skip; 
 }
-r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
-r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 r347.WBS_Node_WBS_rlt_PRE2.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1 WBS_Node_WBS_rlt_PRE2); 
 r347.Alt_Pressure.1.13 := (Gamma !(symVar==0) r347.Alt_Pressure.1.11 Alt_Pressure); 
+r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
 r347.Nor_Pressure.1.13 := (Gamma !(symVar==0) r347.Nor_Pressure.1.11 Nor_Pressure); 
 r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE); 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 
 
 printing stack-slot table (var->slot)
@@ -16172,12 +16189,12 @@ if ((! (== symVar 0 ) )) {
 } else {
    skip; 
 }
-r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
-r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 r347.WBS_Node_WBS_rlt_PRE2.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1 WBS_Node_WBS_rlt_PRE2); 
 r347.Alt_Pressure.1.13 := (Gamma !(symVar==0) r347.Alt_Pressure.1.11 Alt_Pressure); 
+r347.Sys_Mode.1.5 := (Gamma !(symVar==0) r347.Sys_Mode.1.3 Sys_Mode); 
 r347.Nor_Pressure.1.13 := (Gamma !(symVar==0) r347.Nor_Pressure.1.11 Nor_Pressure); 
 r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE); 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1 WBS_Node_WBS_BSCU_rlt_PRE1); 
 
 
 printing stack-slot table (var->slot)
@@ -16344,37 +16361,238 @@ r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2 := w41$2;
 skip; 
 skip; 
 skip; 
-r347.Sys_Mode.1.5.2 := (Gamma !(symVar==0) r347.Sys_Mode.1.3.2 Sys_Mode); 
-r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2 WBS_Node_WBS_BSCU_rlt_PRE1); 
 r347.WBS_Node_WBS_rlt_PRE2.1.3.2 := (Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1.2 WBS_Node_WBS_rlt_PRE2); 
 r347.Alt_Pressure.1.13.2 := (Gamma !(symVar==0) r347.Alt_Pressure.1.11.2 Alt_Pressure); 
+r347.Sys_Mode.1.5.2 := (Gamma !(symVar==0) r347.Sys_Mode.1.3.2 Sys_Mode); 
 r347.Nor_Pressure.1.13.2 := (Gamma !(symVar==0) r347.Nor_Pressure.1.11.2 Nor_Pressure); 
 r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE); 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2 WBS_Node_WBS_BSCU_rlt_PRE1); 
 
 
 Stack output: null
 Repair includes initial values
-repairing holes for iteration#:0
-repairing holes for iteration#:1
 ^-^Ranger Discovery Result ^-^
-Initial repair found, in iteration #: 2
-Trying minimal repair.
-trying minimal good repair iteration #: 0
-Trying candidate #: 0
-Time of ThereExists Query of : Faulty_WBS_Ass1_terms6_0_0_rPrimeExists.lus= 1
-Time of forAll Query of : Faulty_WBS_Ass1_terms6_0_0_forAllMinimal.lus= 0
-Great! a tighter repair was found at, outer loop # = 2 minimal repair loop # = 0 successful candidate # = 0
-trying minimal good repair iteration #: 1
-Trying candidate #: 0
-Time of ThereExists Query of : Faulty_WBS_Ass1_terms6_1_0_rPrimeExists.lus= 1
-Time of forAll Query of : Faulty_WBS_Ass1_terms6_1_0_forAllMinimal.lus= 0
-Trying candidate #: 1
-Time of ThereExists Query of : Faulty_WBS_Ass1_terms6_1_1_rPrimeExists.lus= 1
-Time of forAll Query of : Faulty_WBS_Ass1_terms6_1_1_forAllMinimal.lus= 0
-Trying candidate #: 2
-Time of ThereExists Query of : Faulty_WBS_Ass1_terms6_1_2_rPrimeExists.lus= 1
-Time of forAll Query of : Faulty_WBS_Ass1_terms6_1_2_forAllMinimal.lus= 1
-Trying candidate #: 3
-Time of ThereExists Query of : Faulty_WBS_Ass1_terms6_1_3_rPrimeExists.lus= 1
-Time of forAll Query of : Faulty_WBS_Ass1_terms6_1_3_forAllMinimal.lus= 0
-Trying candidate #: 4
+Contract Matching! Printing repair and aborting!
+
+--------------- NO-SKIP OPTIMIZATION ---------------
+w6$2 := WBS_Node_WBS_rlt_PRE2; 
+w7$2 := WBS_Node_WBS_BSCU_rlt_PRE1; 
+w8$2 := WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE; 
+w11$2 := (Gamma !(w8$2!=0) 1 0); 
+w15$2 := (Gamma !(pedal!=0) 0 (Gamma pedal!=1 (Gamma !(pedal!=2) 2 (Gamma pedal!=3 (Gamma pedal!=4 0 4) 3)) 1)); 
+w16$2 := (Gamma !(autoBrake==0)&&!(w11$2==0) 1 0); 
+w17$2 := (Gamma w7$2==0||!(w7$2==0)&&w6$2>0||!(w7$2==0)&&!(w6$2>0)&&!(w11$2!=0)&&w11$2!=0 0 1); 
+w18$2 := (Gamma w17$2==0 4 (Gamma !(skid==0) 0 4)); 
+w20$2 := (Gamma !(w17$2==0) 0 5); 
+w21$2 := (Gamma w20$2<1 5 0); 
+w22$2 := (Gamma !(w17$2!=0) 0 (Gamma !(w21$2<1) w21$2 5)); 
+w24$2 := (/ w22$2 2 ); 
+w25$2 := (/ w22$2 4 ); 
+w26$2 := (* w25$2 3 ); 
+w23$2 := (/ w22$2 4 ); 
+w27$2 := (Gamma !(w18$2!=0) 0 (Gamma w18$2!=1 (Gamma !(w18$2!=2) w24$2 (Gamma w18$2!=3 (Gamma w18$2!=4 0 w22$2) w26$2)) w23$2)); 
+w28$2 := (+ w16$2 w15$2 ); 
+w29$2 := (Gamma skid==0 w28$2 0); 
+r347.Sys_Mode.1.1.2 := 0; 
+r347.Sys_Mode.1.2.2 := 1; 
+r347.Sys_Mode.1.3.2 := (Gamma w17$2==0 r347.Sys_Mode.1.1.2 r347.Sys_Mode.1.2.2); 
+w30$2 := (Gamma w17$2==0 (Gamma !(w29$2<0)&&!(w29$2>=1) 0 (Gamma w29$2<1||!(w29$2<1)&&w29$2>=2 (Gamma w29$2<2||!(w29$2<2)&&w29$2>=3 (Gamma !(w29$2<3)&&!(w29$2>=4) 3 4) 2) 1)) 0); 
+w31$2 := (Gamma w20$2<1 0 w20$2); 
+w34$2 := (/ w31$2 4 ); 
+w35$2 := (* w34$2 3 ); 
+r347.Nor_Pressure.1.1.2 := w35$2; 
+r347.Nor_Pressure.1.2.2 := w31$2; 
+r347.Nor_Pressure.1.3.2 := 0; 
+r347.Nor_Pressure.1.4.2 := (Gamma !(w30$2!=4) r347.Nor_Pressure.1.2.2 r347.Nor_Pressure.1.3.2); 
+r347.Nor_Pressure.1.5.2 := (Gamma !(w30$2!=3) r347.Nor_Pressure.1.1.2 r347.Nor_Pressure.1.4.2); 
+w33$2 := (/ w31$2 2 ); 
+r347.Nor_Pressure.1.6.2 := w33$2; 
+r347.Nor_Pressure.1.7.2 := (Gamma w30$2!=2 r347.Nor_Pressure.1.5.2 r347.Nor_Pressure.1.6.2); 
+w32$2 := (/ w31$2 4 ); 
+r347.Nor_Pressure.1.8.2 := w32$2; 
+r347.Nor_Pressure.1.9.2 := (Gamma w30$2!=1 r347.Nor_Pressure.1.7.2 r347.Nor_Pressure.1.8.2); 
+r347.Nor_Pressure.1.10.2 := 0; 
+r347.Nor_Pressure.1.11.2 := (Gamma w30$2!=0 r347.Nor_Pressure.1.9.2 r347.Nor_Pressure.1.10.2); 
+w36$2 := (/ w27$2 4 ); 
+r347.Alt_Pressure.1.1.2 := w36$2; 
+w37$2 := (/ w27$2 2 ); 
+r347.Alt_Pressure.1.2.2 := w37$2; 
+w38$2 := (/ w27$2 4 ); 
+w39$2 := (* w38$2 3 ); 
+r347.Alt_Pressure.1.3.2 := w39$2; 
+r347.Alt_Pressure.1.4.2 := w27$2; 
+r347.Alt_Pressure.1.5.2 := 0; 
+r347.Alt_Pressure.1.6.2 := (Gamma !(w15$2!=4) r347.Alt_Pressure.1.4.2 r347.Alt_Pressure.1.5.2); 
+r347.Alt_Pressure.1.7.2 := (Gamma !(w15$2!=3) r347.Alt_Pressure.1.3.2 r347.Alt_Pressure.1.6.2); 
+r347.Alt_Pressure.1.8.2 := (Gamma !(w15$2!=2) r347.Alt_Pressure.1.2.2 r347.Alt_Pressure.1.7.2); 
+r347.Alt_Pressure.1.9.2 := (Gamma !(w15$2!=1) r347.Alt_Pressure.1.1.2 r347.Alt_Pressure.1.8.2); 
+r347.Alt_Pressure.1.10.2 := 0; 
+r347.Alt_Pressure.1.11.2 := (Gamma w15$2!=0 r347.Alt_Pressure.1.9.2 r347.Alt_Pressure.1.10.2); 
+w40$2 := r347.Nor_Pressure.1.11.2; 
+r347.WBS_Node_WBS_rlt_PRE2.1.1.2 := w40$2; 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2 := w30$2; 
+w41$2 := r347.Sys_Mode.1.3.2; 
+r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2 := w41$2; 
+r347.WBS_Node_WBS_rlt_PRE2.1.3.2 := (Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1.2 WBS_Node_WBS_rlt_PRE2); 
+r347.Alt_Pressure.1.13.2 := (Gamma !(symVar==0) r347.Alt_Pressure.1.11.2 Alt_Pressure); 
+r347.Sys_Mode.1.5.2 := (Gamma !(symVar==0) r347.Sys_Mode.1.3.2 Sys_Mode); 
+r347.Nor_Pressure.1.13.2 := (Gamma !(symVar==0) r347.Nor_Pressure.1.11.2 Nor_Pressure); 
+r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE); 
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2 := (Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2 WBS_Node_WBS_BSCU_rlt_PRE1); 
+
+
+--------------- TO GREEN TRANSFORMATION ---------------
+|Stmt                                                                  |Green Expression                                                                                   
+|-----------------------------------------------------------           |------------------------------------------------------                                             
+w6$2 := (WBS_Node_WBS_rlt_PRE2 )                                       (w6$2 == WBS_Node_WBS_rlt_PRE2)                                                                     
+w7$2 := (WBS_Node_WBS_BSCU_rlt_PRE1 )                                  (w7$2 == WBS_Node_WBS_BSCU_rlt_PRE1)                                                                
+w8$2 := (WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE )                  (w8$2 == WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE)                                                
+w11$2 := ((Gamma !(w8$2!=0) 1 0) )                                     ((((0 == 0) && (!(w8$2 != 0))) && (w11$2 == 1)) || (((0 == 0) && (!(!(w8$2 != 0)))) && (w11$2 == 0)))
+w15$2 := ((Gamma !(pedal!=0) 0 (Gamma pedal!=1 (Gamma !(pedal!=2) 2 (Gamma pedal!=3 (Gamma pedal!=4 0 4) 3)) 1)) ) ((((0 == 0) && (!(pedal != 0))) && (w15$2 == 0)) || (((((((0 == 0) && (!(!(pedal != 0)))) && (pedal != 1)) && (!(pedal != 2))) && (w15$2 == 2)) || (((((((((0 == 0) && (!(!(pedal != 0)))) && (pedal != 1)) && (!(!(pedal != 2)))) && (pedal != 3)) && (pedal != 4)) && (w15$2 == 0)) || (((((((0 == 0) && (!(!(pedal != 0)))) && (pedal != 1)) && (!(!(pedal != 2)))) && (pedal != 3)) && (!(pedal != 4))) && (w15$2 == 4))) || ((((((0 == 0) && (!(!(pedal != 0)))) && (pedal != 1)) && (!(!(pedal != 2)))) && (!(pedal != 3))) && (w15$2 == 3)))) || ((((0 == 0) && (!(!(pedal != 0)))) && (!(pedal != 1))) && (w15$2 == 1))))
+w16$2 := ((Gamma !(autoBrake==0)&&!(w11$2==0) 1 0) )                   ((((0 == 0) && ((!(autoBrake == 0)) && (!(w11$2 == 0)))) && (w16$2 == 1)) || (((0 == 0) && (!((!(autoBrake == 0)) && (!(w11$2 == 0))))) && (w16$2 == 0)))
+w17$2 := ((Gamma w7$2==0||!(w7$2==0)&&w6$2>0||!(w7$2==0)&&!(w6$2>0)&&!(w11$2!=0)&&w11$2!=0 0 1) ) ((((0 == 0) && ((((w7$2 == 0) || ((!(w7$2 == 0)) && (w6$2 > 0))) || (((!(w7$2 == 0)) && (!(w6$2 > 0))) && (!(w11$2 != 0)))) && (w11$2 != 0))) && (w17$2 == 0)) || (((0 == 0) && (!((((w7$2 == 0) || ((!(w7$2 == 0)) && (w6$2 > 0))) || (((!(w7$2 == 0)) && (!(w6$2 > 0))) && (!(w11$2 != 0)))) && (w11$2 != 0)))) && (w17$2 == 1)))
+w18$2 := ((Gamma w17$2==0 4 (Gamma !(skid==0) 0 4)) )                  ((((0 == 0) && (w17$2 == 0)) && (w18$2 == 4)) || (((((0 == 0) && (!(w17$2 == 0))) && (!(skid == 0))) && (w18$2 == 0)) || ((((0 == 0) && (!(w17$2 == 0))) && (!(!(skid == 0)))) && (w18$2 == 4))))
+w20$2 := ((Gamma !(w17$2==0) 0 5) )                                    ((((0 == 0) && (!(w17$2 == 0))) && (w20$2 == 0)) || (((0 == 0) && (!(!(w17$2 == 0)))) && (w20$2 == 5)))
+w21$2 := ((Gamma w20$2<1 5 0) )                                        ((((0 == 0) && (w20$2 < 1)) && (w21$2 == 5)) || (((0 == 0) && (!(w20$2 < 1))) && (w21$2 == 0)))     
+w22$2 := ((Gamma !(w17$2!=0) 0 (Gamma !(w21$2<1) w21$2 5)) )           ((((0 == 0) && (!(w17$2 != 0))) && (w22$2 == 0)) || (((((0 == 0) && (!(!(w17$2 != 0)))) && (!(w21$2 < 1))) && (w22$2 == w21$2)) || ((((0 == 0) && (!(!(w17$2 != 0)))) && (!(!(w21$2 < 1)))) && (w22$2 == 5))))
+w24$2 := (w22$2/2 )                                                    (w24$2 == (w22$2 / 2))                                                                              
+w25$2 := (w22$2/4 )                                                    (w25$2 == (w22$2 / 4))                                                                              
+w26$2 := (w25$2*3 )                                                    (w26$2 == (w25$2 * 3))                                                                              
+w23$2 := (w22$2/4 )                                                    (w23$2 == (w22$2 / 4))                                                                              
+w27$2 := ((Gamma !(w18$2!=0) 0 (Gamma w18$2!=1 (Gamma !(w18$2!=2) w24$2 (Gamma w18$2!=3 (Gamma w18$2!=4 0 w22$2) w26$2)) w23$2)) ) ((((0 == 0) && (!(w18$2 != 0))) && (w27$2 == 0)) || (((((((0 == 0) && (!(!(w18$2 != 0)))) && (w18$2 != 1)) && (!(w18$2 != 2))) && (w27$2 == w24$2)) || (((((((((0 == 0) && (!(!(w18$2 != 0)))) && (w18$2 != 1)) && (!(!(w18$2 != 2)))) && (w18$2 != 3)) && (w18$2 != 4)) && (w27$2 == 0)) || (((((((0 == 0) && (!(!(w18$2 != 0)))) && (w18$2 != 1)) && (!(!(w18$2 != 2)))) && (w18$2 != 3)) && (!(w18$2 != 4))) && (w27$2 == w22$2))) || ((((((0 == 0) && (!(!(w18$2 != 0)))) && (w18$2 != 1)) && (!(!(w18$2 != 2)))) && (!(w18$2 != 3))) && (w27$2 == w26$2)))) || ((((0 == 0) && (!(!(w18$2 != 0)))) && (!(w18$2 != 1))) && (w27$2 == w23$2))))
+w28$2 := (w16$2+w15$2 )                                                (w28$2 == (w16$2 + w15$2))                                                                          
+w29$2 := ((Gamma skid==0 w28$2 0) )                                    ((((0 == 0) && (skid == 0)) && (w29$2 == w28$2)) || (((0 == 0) && (!(skid == 0))) && (w29$2 == 0))) 
+r347.Sys_Mode.1.1.2 := (0 )                                            (r347.Sys_Mode.1.1.2 == 0)                                                                          
+r347.Sys_Mode.1.2.2 := (1 )                                            (r347.Sys_Mode.1.2.2 == 1)                                                                          
+r347.Sys_Mode.1.3.2 := ((Gamma w17$2==0 r347.Sys_Mode.1.1.2 r347.Sys_Mode.1.2.2) ) ((((0 == 0) && (w17$2 == 0)) && (r347.Sys_Mode.1.3.2 == r347.Sys_Mode.1.1.2)) || (((0 == 0) && (!(w17$2 == 0))) && (r347.Sys_Mode.1.3.2 == r347.Sys_Mode.1.2.2)))
+w30$2 := ((Gamma w17$2==0 (Gamma !(w29$2<0)&&!(w29$2>=1) 0 (Gamma w29$2<1||!(w29$2<1)&&w29$2>=2 (Gamma w29$2<2||!(w29$2<2)&&w29$2>=3 (Gamma !(w29$2<3)&&!(w29$2>=4) 3 4) 2) 1)) 0) ) ((((((0 == 0) && (w17$2 == 0)) && ((!(w29$2 < 0)) && (!(w29$2 >= 1)))) && (w30$2 == 0)) || ((((((((((0 == 0) && (w17$2 == 0)) && (!((!(w29$2 < 0)) && (!(w29$2 >= 1))))) && ((w29$2 < 1) || ((!(w29$2 < 1)) && (w29$2 >= 2)))) && ((w29$2 < 2) || ((!(w29$2 < 2)) && (w29$2 >= 3)))) && ((!(w29$2 < 3)) && (!(w29$2 >= 4)))) && (w30$2 == 3)) || (((((((0 == 0) && (w17$2 == 0)) && (!((!(w29$2 < 0)) && (!(w29$2 >= 1))))) && ((w29$2 < 1) || ((!(w29$2 < 1)) && (w29$2 >= 2)))) && ((w29$2 < 2) || ((!(w29$2 < 2)) && (w29$2 >= 3)))) && (!((!(w29$2 < 3)) && (!(w29$2 >= 4))))) && (w30$2 == 4))) || ((((((0 == 0) && (w17$2 == 0)) && (!((!(w29$2 < 0)) && (!(w29$2 >= 1))))) && ((w29$2 < 1) || ((!(w29$2 < 1)) && (w29$2 >= 2)))) && (!((w29$2 < 2) || ((!(w29$2 < 2)) && (w29$2 >= 3))))) && (w30$2 == 2))) || (((((0 == 0) && (w17$2 == 0)) && (!((!(w29$2 < 0)) && (!(w29$2 >= 1))))) && (!((w29$2 < 1) || ((!(w29$2 < 1)) && (w29$2 >= 2))))) && (w30$2 == 1)))) || (((0 == 0) && (!(w17$2 == 0))) && (w30$2 == 0)))
+w31$2 := ((Gamma w20$2<1 0 w20$2) )                                    ((((0 == 0) && (w20$2 < 1)) && (w31$2 == 0)) || (((0 == 0) && (!(w20$2 < 1))) && (w31$2 == w20$2))) 
+w34$2 := (w31$2/4 )                                                    (w34$2 == (w31$2 / 4))                                                                              
+w35$2 := (w34$2*3 )                                                    (w35$2 == (w34$2 * 3))                                                                              
+r347.Nor_Pressure.1.1.2 := (w35$2 )                                    (r347.Nor_Pressure.1.1.2 == w35$2)                                                                  
+r347.Nor_Pressure.1.2.2 := (w31$2 )                                    (r347.Nor_Pressure.1.2.2 == w31$2)                                                                  
+r347.Nor_Pressure.1.3.2 := (0 )                                        (r347.Nor_Pressure.1.3.2 == 0)                                                                      
+r347.Nor_Pressure.1.4.2 := ((Gamma !(w30$2!=4) r347.Nor_Pressure.1.2.2 r347.Nor_Pressure.1.3.2) ) ((((0 == 0) && (!(w30$2 != 4))) && (r347.Nor_Pressure.1.4.2 == r347.Nor_Pressure.1.2.2)) || (((0 == 0) && (!(!(w30$2 != 4)))) && (r347.Nor_Pressure.1.4.2 == r347.Nor_Pressure.1.3.2)))
+r347.Nor_Pressure.1.5.2 := ((Gamma !(w30$2!=3) r347.Nor_Pressure.1.1.2 r347.Nor_Pressure.1.4.2) ) ((((0 == 0) && (!(w30$2 != 3))) && (r347.Nor_Pressure.1.5.2 == r347.Nor_Pressure.1.1.2)) || (((0 == 0) && (!(!(w30$2 != 3)))) && (r347.Nor_Pressure.1.5.2 == r347.Nor_Pressure.1.4.2)))
+w33$2 := (w31$2/2 )                                                    (w33$2 == (w31$2 / 2))                                                                              
+r347.Nor_Pressure.1.6.2 := (w33$2 )                                    (r347.Nor_Pressure.1.6.2 == w33$2)                                                                  
+r347.Nor_Pressure.1.7.2 := ((Gamma w30$2!=2 r347.Nor_Pressure.1.5.2 r347.Nor_Pressure.1.6.2) ) ((((0 == 0) && (w30$2 != 2)) && (r347.Nor_Pressure.1.7.2 == r347.Nor_Pressure.1.5.2)) || (((0 == 0) && (!(w30$2 != 2))) && (r347.Nor_Pressure.1.7.2 == r347.Nor_Pressure.1.6.2)))
+w32$2 := (w31$2/4 )                                                    (w32$2 == (w31$2 / 4))                                                                              
+r347.Nor_Pressure.1.8.2 := (w32$2 )                                    (r347.Nor_Pressure.1.8.2 == w32$2)                                                                  
+r347.Nor_Pressure.1.9.2 := ((Gamma w30$2!=1 r347.Nor_Pressure.1.7.2 r347.Nor_Pressure.1.8.2) ) ((((0 == 0) && (w30$2 != 1)) && (r347.Nor_Pressure.1.9.2 == r347.Nor_Pressure.1.7.2)) || (((0 == 0) && (!(w30$2 != 1))) && (r347.Nor_Pressure.1.9.2 == r347.Nor_Pressure.1.8.2)))
+r347.Nor_Pressure.1.10.2 := (0 )                                       (r347.Nor_Pressure.1.10.2 == 0)                                                                     
+r347.Nor_Pressure.1.11.2 := ((Gamma w30$2!=0 r347.Nor_Pressure.1.9.2 r347.Nor_Pressure.1.10.2) ) ((((0 == 0) && (w30$2 != 0)) && (r347.Nor_Pressure.1.11.2 == r347.Nor_Pressure.1.9.2)) || (((0 == 0) && (!(w30$2 != 0))) && (r347.Nor_Pressure.1.11.2 == r347.Nor_Pressure.1.10.2)))
+w36$2 := (w27$2/4 )                                                    (w36$2 == (w27$2 / 4))                                                                              
+r347.Alt_Pressure.1.1.2 := (w36$2 )                                    (r347.Alt_Pressure.1.1.2 == w36$2)                                                                  
+w37$2 := (w27$2/2 )                                                    (w37$2 == (w27$2 / 2))                                                                              
+r347.Alt_Pressure.1.2.2 := (w37$2 )                                    (r347.Alt_Pressure.1.2.2 == w37$2)                                                                  
+w38$2 := (w27$2/4 )                                                    (w38$2 == (w27$2 / 4))                                                                              
+w39$2 := (w38$2*3 )                                                    (w39$2 == (w38$2 * 3))                                                                              
+r347.Alt_Pressure.1.3.2 := (w39$2 )                                    (r347.Alt_Pressure.1.3.2 == w39$2)                                                                  
+r347.Alt_Pressure.1.4.2 := (w27$2 )                                    (r347.Alt_Pressure.1.4.2 == w27$2)                                                                  
+r347.Alt_Pressure.1.5.2 := (0 )                                        (r347.Alt_Pressure.1.5.2 == 0)                                                                      
+r347.Alt_Pressure.1.6.2 := ((Gamma !(w15$2!=4) r347.Alt_Pressure.1.4.2 r347.Alt_Pressure.1.5.2) ) ((((0 == 0) && (!(w15$2 != 4))) && (r347.Alt_Pressure.1.6.2 == r347.Alt_Pressure.1.4.2)) || (((0 == 0) && (!(!(w15$2 != 4)))) && (r347.Alt_Pressure.1.6.2 == r347.Alt_Pressure.1.5.2)))
+r347.Alt_Pressure.1.7.2 := ((Gamma !(w15$2!=3) r347.Alt_Pressure.1.3.2 r347.Alt_Pressure.1.6.2) ) ((((0 == 0) && (!(w15$2 != 3))) && (r347.Alt_Pressure.1.7.2 == r347.Alt_Pressure.1.3.2)) || (((0 == 0) && (!(!(w15$2 != 3)))) && (r347.Alt_Pressure.1.7.2 == r347.Alt_Pressure.1.6.2)))
+r347.Alt_Pressure.1.8.2 := ((Gamma !(w15$2!=2) r347.Alt_Pressure.1.2.2 r347.Alt_Pressure.1.7.2) ) ((((0 == 0) && (!(w15$2 != 2))) && (r347.Alt_Pressure.1.8.2 == r347.Alt_Pressure.1.2.2)) || (((0 == 0) && (!(!(w15$2 != 2)))) && (r347.Alt_Pressure.1.8.2 == r347.Alt_Pressure.1.7.2)))
+r347.Alt_Pressure.1.9.2 := ((Gamma !(w15$2!=1) r347.Alt_Pressure.1.1.2 r347.Alt_Pressure.1.8.2) ) ((((0 == 0) && (!(w15$2 != 1))) && (r347.Alt_Pressure.1.9.2 == r347.Alt_Pressure.1.1.2)) || (((0 == 0) && (!(!(w15$2 != 1)))) && (r347.Alt_Pressure.1.9.2 == r347.Alt_Pressure.1.8.2)))
+r347.Alt_Pressure.1.10.2 := (0 )                                       (r347.Alt_Pressure.1.10.2 == 0)                                                                     
+r347.Alt_Pressure.1.11.2 := ((Gamma w15$2!=0 r347.Alt_Pressure.1.9.2 r347.Alt_Pressure.1.10.2) ) ((((0 == 0) && (w15$2 != 0)) && (r347.Alt_Pressure.1.11.2 == r347.Alt_Pressure.1.9.2)) || (((0 == 0) && (!(w15$2 != 0))) && (r347.Alt_Pressure.1.11.2 == r347.Alt_Pressure.1.10.2)))
+w40$2 := (r347.Nor_Pressure.1.11.2 )                                   (w40$2 == r347.Nor_Pressure.1.11.2)                                                                 
+r347.WBS_Node_WBS_rlt_PRE2.1.1.2 := (w40$2 )                           (r347.WBS_Node_WBS_rlt_PRE2.1.1.2 == w40$2)                                                         
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2 := (w30$2 )                      (r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2 == w30$2)                                                    
+w41$2 := (r347.Sys_Mode.1.3.2 )                                        (w41$2 == r347.Sys_Mode.1.3.2)                                                                      
+r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2 := (w41$2 )      (r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2 == w41$2)                                    
+r347.WBS_Node_WBS_rlt_PRE2.1.3.2 := ((Gamma !(symVar==0) r347.WBS_Node_WBS_rlt_PRE2.1.1.2 WBS_Node_WBS_rlt_PRE2) ) ((((0 == 0) && (!(symVar == 0))) && (r347.WBS_Node_WBS_rlt_PRE2.1.3.2 == r347.WBS_Node_WBS_rlt_PRE2.1.1.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.WBS_Node_WBS_rlt_PRE2.1.3.2 == WBS_Node_WBS_rlt_PRE2)))
+r347.Alt_Pressure.1.13.2 := ((Gamma !(symVar==0) r347.Alt_Pressure.1.11.2 Alt_Pressure) ) ((((0 == 0) && (!(symVar == 0))) && (r347.Alt_Pressure.1.13.2 == r347.Alt_Pressure.1.11.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.Alt_Pressure.1.13.2 == Alt_Pressure)))
+r347.Sys_Mode.1.5.2 := ((Gamma !(symVar==0) r347.Sys_Mode.1.3.2 Sys_Mode) ) ((((0 == 0) && (!(symVar == 0))) && (r347.Sys_Mode.1.5.2 == r347.Sys_Mode.1.3.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.Sys_Mode.1.5.2 == Sys_Mode)))
+r347.Nor_Pressure.1.13.2 := ((Gamma !(symVar==0) r347.Nor_Pressure.1.11.2 Nor_Pressure) ) ((((0 == 0) && (!(symVar == 0))) && (r347.Nor_Pressure.1.13.2 == r347.Nor_Pressure.1.11.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.Nor_Pressure.1.13.2 == Nor_Pressure)))
+r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2 := ((Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2 WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE) ) ((((0 == 0) && (!(symVar == 0))) && (r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2 == r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2 == WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE)))
+r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2 := ((Gamma !(symVar==0) r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2 WBS_Node_WBS_BSCU_rlt_PRE1) ) ((((0 == 0) && (!(symVar == 0))) && (r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2 == r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2 == WBS_Node_WBS_BSCU_rlt_PRE1)))
+
+Green Expression pushed on the Path Condition:
+(((w6$2 == WBS_Node_WBS_rlt_PRE2) && ((w7$2 == WBS_Node_WBS_BSCU_rlt_PRE1) && ((w8$2 == WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE) && (((((0 == 0) && (!(w8$2 != 0))) && (w11$2 == 1)) || (((0 == 0) && (!(!(w8$2 != 0)))) && (w11$2 == 0))) && (((((0 == 0) && (!(pedal != 0))) && (w15$2 == 0)) || (((((((0 == 0) && (!(!(pedal != 0)))) && (pedal != 1)) && (!(pedal != 2))) && (w15$2 == 2)) || (((((((((0 == 0) && (!(!(pedal != 0)))) && (pedal != 1)) && (!(!(pedal != 2)))) && (pedal != 3)) && (pedal != 4)) && (w15$2 == 0)) || (((((((0 == 0) && (!(!(pedal != 0)))) && (pedal != 1)) && (!(!(pedal != 2)))) && (pedal != 3)) && (!(pedal != 4))) && (w15$2 == 4))) || ((((((0 == 0) && (!(!(pedal != 0)))) && (pedal != 1)) && (!(!(pedal != 2)))) && (!(pedal != 3))) && (w15$2 == 3)))) || ((((0 == 0) && (!(!(pedal != 0)))) && (!(pedal != 1))) && (w15$2 == 1)))) && (((((0 == 0) && ((!(autoBrake == 0)) && (!(w11$2 == 0)))) && (w16$2 == 1)) || (((0 == 0) && (!((!(autoBrake == 0)) && (!(w11$2 == 0))))) && (w16$2 == 0))) && (((((0 == 0) && ((((w7$2 == 0) || ((!(w7$2 == 0)) && (w6$2 > 0))) || (((!(w7$2 == 0)) && (!(w6$2 > 0))) && (!(w11$2 != 0)))) && (w11$2 != 0))) && (w17$2 == 0)) || (((0 == 0) && (!((((w7$2 == 0) || ((!(w7$2 == 0)) && (w6$2 > 0))) || (((!(w7$2 == 0)) && (!(w6$2 > 0))) && (!(w11$2 != 0)))) && (w11$2 != 0)))) && (w17$2 == 1))) && (((((0 == 0) && (w17$2 == 0)) && (w18$2 == 4)) || (((((0 == 0) && (!(w17$2 == 0))) && (!(skid == 0))) && (w18$2 == 0)) || ((((0 == 0) && (!(w17$2 == 0))) && (!(!(skid == 0)))) && (w18$2 == 4)))) && (((((0 == 0) && (!(w17$2 == 0))) && (w20$2 == 0)) || (((0 == 0) && (!(!(w17$2 == 0)))) && (w20$2 == 5))) && (((((0 == 0) && (w20$2 < 1)) && (w21$2 == 5)) || (((0 == 0) && (!(w20$2 < 1))) && (w21$2 == 0))) && (((((0 == 0) && (!(w17$2 != 0))) && (w22$2 == 0)) || (((((0 == 0) && (!(!(w17$2 != 0)))) && (!(w21$2 < 1))) && (w22$2 == w21$2)) || ((((0 == 0) && (!(!(w17$2 != 0)))) && (!(!(w21$2 < 1)))) && (w22$2 == 5)))) && (((((w24$2 == (w22$2 / 2)) && ((w25$2 == (w22$2 / 4)) && (w26$2 == (w25$2 * 3)))) && (w23$2 == (w22$2 / 4))) && ((((0 == 0) && (!(w18$2 != 0))) && (w27$2 == 0)) || (((((((0 == 0) && (!(!(w18$2 != 0)))) && (w18$2 != 1)) && (!(w18$2 != 2))) && (w27$2 == w24$2)) || (((((((((0 == 0) && (!(!(w18$2 != 0)))) && (w18$2 != 1)) && (!(!(w18$2 != 2)))) && (w18$2 != 3)) && (w18$2 != 4)) && (w27$2 == 0)) || (((((((0 == 0) && (!(!(w18$2 != 0)))) && (w18$2 != 1)) && (!(!(w18$2 != 2)))) && (w18$2 != 3)) && (!(w18$2 != 4))) && (w27$2 == w22$2))) || ((((((0 == 0) && (!(!(w18$2 != 0)))) && (w18$2 != 1)) && (!(!(w18$2 != 2)))) && (!(w18$2 != 3))) && (w27$2 == w26$2)))) || ((((0 == 0) && (!(!(w18$2 != 0)))) && (!(w18$2 != 1))) && (w27$2 == w23$2))))) && (((w28$2 == (w16$2 + w15$2)) && ((((0 == 0) && (skid == 0)) && (w29$2 == w28$2)) || (((0 == 0) && (!(skid == 0))) && (w29$2 == 0)))) && ((((r347.Sys_Mode.1.1.2 == 0) && (r347.Sys_Mode.1.2.2 == 1)) && ((((0 == 0) && (w17$2 == 0)) && (r347.Sys_Mode.1.3.2 == r347.Sys_Mode.1.1.2)) || (((0 == 0) && (!(w17$2 == 0))) && (r347.Sys_Mode.1.3.2 == r347.Sys_Mode.1.2.2)))) && (((((((0 == 0) && (w17$2 == 0)) && ((!(w29$2 < 0)) && (!(w29$2 >= 1)))) && (w30$2 == 0)) || ((((((((((0 == 0) && (w17$2 == 0)) && (!((!(w29$2 < 0)) && (!(w29$2 >= 1))))) && ((w29$2 < 1) || ((!(w29$2 < 1)) && (w29$2 >= 2)))) && ((w29$2 < 2) || ((!(w29$2 < 2)) && (w29$2 >= 3)))) && ((!(w29$2 < 3)) && (!(w29$2 >= 4)))) && (w30$2 == 3)) || (((((((0 == 0) && (w17$2 == 0)) && (!((!(w29$2 < 0)) && (!(w29$2 >= 1))))) && ((w29$2 < 1) || ((!(w29$2 < 1)) && (w29$2 >= 2)))) && ((w29$2 < 2) || ((!(w29$2 < 2)) && (w29$2 >= 3)))) && (!((!(w29$2 < 3)) && (!(w29$2 >= 4))))) && (w30$2 == 4))) || ((((((0 == 0) && (w17$2 == 0)) && (!((!(w29$2 < 0)) && (!(w29$2 >= 1))))) && ((w29$2 < 1) || ((!(w29$2 < 1)) && (w29$2 >= 2)))) && (!((w29$2 < 2) || ((!(w29$2 < 2)) && (w29$2 >= 3))))) && (w30$2 == 2))) || (((((0 == 0) && (w17$2 == 0)) && (!((!(w29$2 < 0)) && (!(w29$2 >= 1))))) && (!((w29$2 < 1) || ((!(w29$2 < 1)) && (w29$2 >= 2))))) && (w30$2 == 1)))) || (((0 == 0) && (!(w17$2 == 0))) && (w30$2 == 0))) && (((((0 == 0) && (w20$2 < 1)) && (w31$2 == 0)) || (((0 == 0) && (!(w20$2 < 1))) && (w31$2 == w20$2))) && (((((((((((w34$2 == (w31$2 / 4)) && ((w35$2 == (w34$2 * 3)) && (r347.Nor_Pressure.1.1.2 == w35$2))) && (((r347.Nor_Pressure.1.2.2 == w31$2) && (r347.Nor_Pressure.1.3.2 == 0)) && ((((0 == 0) && (!(w30$2 != 4))) && (r347.Nor_Pressure.1.4.2 == r347.Nor_Pressure.1.2.2)) || (((0 == 0) && (!(!(w30$2 != 4)))) && (r347.Nor_Pressure.1.4.2 == r347.Nor_Pressure.1.3.2))))) && ((((0 == 0) && (!(w30$2 != 3))) && (r347.Nor_Pressure.1.5.2 == r347.Nor_Pressure.1.1.2)) || (((0 == 0) && (!(!(w30$2 != 3)))) && (r347.Nor_Pressure.1.5.2 == r347.Nor_Pressure.1.4.2)))) && ((w33$2 == (w31$2 / 2)) && (r347.Nor_Pressure.1.6.2 == w33$2))) && ((((0 == 0) && (w30$2 != 2)) && (r347.Nor_Pressure.1.7.2 == r347.Nor_Pressure.1.5.2)) || (((0 == 0) && (!(w30$2 != 2))) && (r347.Nor_Pressure.1.7.2 == r347.Nor_Pressure.1.6.2)))) && ((w32$2 == (w31$2 / 4)) && (r347.Nor_Pressure.1.8.2 == w32$2))) && ((((0 == 0) && (w30$2 != 1)) && (r347.Nor_Pressure.1.9.2 == r347.Nor_Pressure.1.7.2)) || (((0 == 0) && (!(w30$2 != 1))) && (r347.Nor_Pressure.1.9.2 == r347.Nor_Pressure.1.8.2)))) && (r347.Nor_Pressure.1.10.2 == 0)) && ((((0 == 0) && (w30$2 != 0)) && (r347.Nor_Pressure.1.11.2 == r347.Nor_Pressure.1.9.2)) || (((0 == 0) && (!(w30$2 != 0))) && (r347.Nor_Pressure.1.11.2 == r347.Nor_Pressure.1.10.2)))) && (((((((w36$2 == (w27$2 / 4)) && (r347.Alt_Pressure.1.1.2 == w36$2)) && ((((w37$2 == (w27$2 / 2)) && (r347.Alt_Pressure.1.2.2 == w37$2)) && ((((w38$2 == (w27$2 / 4)) && ((w39$2 == (w38$2 * 3)) && (r347.Alt_Pressure.1.3.2 == w39$2))) && (((r347.Alt_Pressure.1.4.2 == w27$2) && (r347.Alt_Pressure.1.5.2 == 0)) && ((((0 == 0) && (!(w15$2 != 4))) && (r347.Alt_Pressure.1.6.2 == r347.Alt_Pressure.1.4.2)) || (((0 == 0) && (!(!(w15$2 != 4)))) && (r347.Alt_Pressure.1.6.2 == r347.Alt_Pressure.1.5.2))))) && ((((0 == 0) && (!(w15$2 != 3))) && (r347.Alt_Pressure.1.7.2 == r347.Alt_Pressure.1.3.2)) || (((0 == 0) && (!(!(w15$2 != 3)))) && (r347.Alt_Pressure.1.7.2 == r347.Alt_Pressure.1.6.2))))) && ((((0 == 0) && (!(w15$2 != 2))) && (r347.Alt_Pressure.1.8.2 == r347.Alt_Pressure.1.2.2)) || (((0 == 0) && (!(!(w15$2 != 2)))) && (r347.Alt_Pressure.1.8.2 == r347.Alt_Pressure.1.7.2))))) && ((((0 == 0) && (!(w15$2 != 1))) && (r347.Alt_Pressure.1.9.2 == r347.Alt_Pressure.1.1.2)) || (((0 == 0) && (!(!(w15$2 != 1)))) && (r347.Alt_Pressure.1.9.2 == r347.Alt_Pressure.1.8.2)))) && (r347.Alt_Pressure.1.10.2 == 0)) && ((((0 == 0) && (w15$2 != 0)) && (r347.Alt_Pressure.1.11.2 == r347.Alt_Pressure.1.9.2)) || (((0 == 0) && (!(w15$2 != 0))) && (r347.Alt_Pressure.1.11.2 == r347.Alt_Pressure.1.10.2)))) && ((w40$2 == r347.Nor_Pressure.1.11.2) && ((r347.WBS_Node_WBS_rlt_PRE2.1.1.2 == w40$2) && ((r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2 == w30$2) && ((w41$2 == r347.Sys_Mode.1.3.2) && (r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2 == w41$2))))))))))))))))))))))) && (((((((((0 == 0) && (!(symVar == 0))) && (r347.WBS_Node_WBS_rlt_PRE2.1.3.2 == r347.WBS_Node_WBS_rlt_PRE2.1.1.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.WBS_Node_WBS_rlt_PRE2.1.3.2 == WBS_Node_WBS_rlt_PRE2))) && ((((0 == 0) && (!(symVar == 0))) && (r347.Alt_Pressure.1.13.2 == r347.Alt_Pressure.1.11.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.Alt_Pressure.1.13.2 == Alt_Pressure)))) && ((((0 == 0) && (!(symVar == 0))) && (r347.Sys_Mode.1.5.2 == r347.Sys_Mode.1.3.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.Sys_Mode.1.5.2 == Sys_Mode)))) && ((((0 == 0) && (!(symVar == 0))) && (r347.Nor_Pressure.1.13.2 == r347.Nor_Pressure.1.11.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.Nor_Pressure.1.13.2 == Nor_Pressure)))) && ((((0 == 0) && (!(symVar == 0))) && (r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2 == r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2 == WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE)))) && ((((0 == 0) && (!(symVar == 0))) && (r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2 == r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2)) || (((0 == 0) && (!(!(symVar == 0)))) && (r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2 == WBS_Node_WBS_BSCU_rlt_PRE1)))))
+Stack output: null
+numeric PC: constraint # = 1
+w6$2==WBS_Node_WBS_rlt_PRE2&&w7$2==WBS_Node_WBS_BSCU_rlt_PRE1&&w8$2==WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE&&0==0&&!(w8$2!=0)&&w11$2==1||0==0&&!(!(w8$2!=0))&&w11$2==0&&0==0&&!(pedal!=0)&&w15$2==0||0==0&&!(!(pedal!=0))&&pedal!=1&&!(pedal!=2)&&w15$2==2||0==0&&!(!(pedal!=0))&&pedal!=1&&!(!(pedal!=2))&&pedal!=3&&pedal!=4&&w15$2==0||0==0&&!(!(pedal!=0))&&pedal!=1&&!(!(pedal!=2))&&pedal!=3&&!(pedal!=4)&&w15$2==4||0==0&&!(!(pedal!=0))&&pedal!=1&&!(!(pedal!=2))&&!(pedal!=3)&&w15$2==3||0==0&&!(!(pedal!=0))&&!(pedal!=1)&&w15$2==1&&0==0&&!(autoBrake==0)&&!(w11$2==0)&&w16$2==1||0==0&&!(!(autoBrake==0)&&!(w11$2==0))&&w16$2==0&&0==0&&w7$2==0||!(w7$2==0)&&w6$2>0||!(w7$2==0)&&!(w6$2>0)&&!(w11$2!=0)&&w11$2!=0&&w17$2==0||0==0&&!(w7$2==0||!(w7$2==0)&&w6$2>0||!(w7$2==0)&&!(w6$2>0)&&!(w11$2!=0)&&w11$2!=0)&&w17$2==1&&0==0&&w17$2==0&&w18$2==4||0==0&&!(w17$2==0)&&!(skid==0)&&w18$2==0||0==0&&!(w17$2==0)&&!(!(skid==0))&&w18$2==4&&0==0&&!(w17$2==0)&&w20$2==0||0==0&&!(!(w17$2==0))&&w20$2==5&&0==0&&w20$2<1&&w21$2==5||0==0&&!(w20$2<1)&&w21$2==0&&0==0&&!(w17$2!=0)&&w22$2==0||0==0&&!(!(w17$2!=0))&&!(w21$2<1)&&w22$2==w21$2||0==0&&!(!(w17$2!=0))&&!(!(w21$2<1))&&w22$2==5&&w24$2==w22$2/2&&w25$2==w22$2/4&&w26$2==w25$2*3&&w23$2==w22$2/4&&0==0&&!(w18$2!=0)&&w27$2==0||0==0&&!(!(w18$2!=0))&&w18$2!=1&&!(w18$2!=2)&&w27$2==w24$2||0==0&&!(!(w18$2!=0))&&w18$2!=1&&!(!(w18$2!=2))&&w18$2!=3&&w18$2!=4&&w27$2==0||0==0&&!(!(w18$2!=0))&&w18$2!=1&&!(!(w18$2!=2))&&w18$2!=3&&!(w18$2!=4)&&w27$2==w22$2||0==0&&!(!(w18$2!=0))&&w18$2!=1&&!(!(w18$2!=2))&&!(w18$2!=3)&&w27$2==w26$2||0==0&&!(!(w18$2!=0))&&!(w18$2!=1)&&w27$2==w23$2&&w28$2==w16$2+w15$2&&0==0&&skid==0&&w29$2==w28$2||0==0&&!(skid==0)&&w29$2==0&&r347.Sys_Mode.1.1.2==0&&r347.Sys_Mode.1.2.2==1&&0==0&&w17$2==0&&r347.Sys_Mode.1.3.2==r347.Sys_Mode.1.1.2||0==0&&!(w17$2==0)&&r347.Sys_Mode.1.3.2==r347.Sys_Mode.1.2.2&&0==0&&w17$2==0&&!(w29$2<0)&&!(w29$2>=1)&&w30$2==0||0==0&&w17$2==0&&!(!(w29$2<0)&&!(w29$2>=1))&&w29$2<1||!(w29$2<1)&&w29$2>=2&&w29$2<2||!(w29$2<2)&&w29$2>=3&&!(w29$2<3)&&!(w29$2>=4)&&w30$2==3||0==0&&w17$2==0&&!(!(w29$2<0)&&!(w29$2>=1))&&w29$2<1||!(w29$2<1)&&w29$2>=2&&w29$2<2||!(w29$2<2)&&w29$2>=3&&!(!(w29$2<3)&&!(w29$2>=4))&&w30$2==4||0==0&&w17$2==0&&!(!(w29$2<0)&&!(w29$2>=1))&&w29$2<1||!(w29$2<1)&&w29$2>=2&&!(w29$2<2||!(w29$2<2)&&w29$2>=3)&&w30$2==2||0==0&&w17$2==0&&!(!(w29$2<0)&&!(w29$2>=1))&&!(w29$2<1||!(w29$2<1)&&w29$2>=2)&&w30$2==1||0==0&&!(w17$2==0)&&w30$2==0&&0==0&&w20$2<1&&w31$2==0||0==0&&!(w20$2<1)&&w31$2==w20$2&&w34$2==w31$2/4&&w35$2==w34$2*3&&r347.Nor_Pressure.1.1.2==w35$2&&r347.Nor_Pressure.1.2.2==w31$2&&r347.Nor_Pressure.1.3.2==0&&0==0&&!(w30$2!=4)&&r347.Nor_Pressure.1.4.2==r347.Nor_Pressure.1.2.2||0==0&&!(!(w30$2!=4))&&r347.Nor_Pressure.1.4.2==r347.Nor_Pressure.1.3.2&&0==0&&!(w30$2!=3)&&r347.Nor_Pressure.1.5.2==r347.Nor_Pressure.1.1.2||0==0&&!(!(w30$2!=3))&&r347.Nor_Pressure.1.5.2==r347.Nor_Pressure.1.4.2&&w33$2==w31$2/2&&r347.Nor_Pressure.1.6.2==w33$2&&0==0&&w30$2!=2&&r347.Nor_Pressure.1.7.2==r347.Nor_Pressure.1.5.2||0==0&&!(w30$2!=2)&&r347.Nor_Pressure.1.7.2==r347.Nor_Pressure.1.6.2&&w32$2==w31$2/4&&r347.Nor_Pressure.1.8.2==w32$2&&0==0&&w30$2!=1&&r347.Nor_Pressure.1.9.2==r347.Nor_Pressure.1.7.2||0==0&&!(w30$2!=1)&&r347.Nor_Pressure.1.9.2==r347.Nor_Pressure.1.8.2&&r347.Nor_Pressure.1.10.2==0&&0==0&&w30$2!=0&&r347.Nor_Pressure.1.11.2==r347.Nor_Pressure.1.9.2||0==0&&!(w30$2!=0)&&r347.Nor_Pressure.1.11.2==r347.Nor_Pressure.1.10.2&&w36$2==w27$2/4&&r347.Alt_Pressure.1.1.2==w36$2&&w37$2==w27$2/2&&r347.Alt_Pressure.1.2.2==w37$2&&w38$2==w27$2/4&&w39$2==w38$2*3&&r347.Alt_Pressure.1.3.2==w39$2&&r347.Alt_Pressure.1.4.2==w27$2&&r347.Alt_Pressure.1.5.2==0&&0==0&&!(w15$2!=4)&&r347.Alt_Pressure.1.6.2==r347.Alt_Pressure.1.4.2||0==0&&!(!(w15$2!=4))&&r347.Alt_Pressure.1.6.2==r347.Alt_Pressure.1.5.2&&0==0&&!(w15$2!=3)&&r347.Alt_Pressure.1.7.2==r347.Alt_Pressure.1.3.2||0==0&&!(!(w15$2!=3))&&r347.Alt_Pressure.1.7.2==r347.Alt_Pressure.1.6.2&&0==0&&!(w15$2!=2)&&r347.Alt_Pressure.1.8.2==r347.Alt_Pressure.1.2.2||0==0&&!(!(w15$2!=2))&&r347.Alt_Pressure.1.8.2==r347.Alt_Pressure.1.7.2&&0==0&&!(w15$2!=1)&&r347.Alt_Pressure.1.9.2==r347.Alt_Pressure.1.1.2||0==0&&!(!(w15$2!=1))&&r347.Alt_Pressure.1.9.2==r347.Alt_Pressure.1.8.2&&r347.Alt_Pressure.1.10.2==0&&0==0&&w15$2!=0&&r347.Alt_Pressure.1.11.2==r347.Alt_Pressure.1.9.2||0==0&&!(w15$2!=0)&&r347.Alt_Pressure.1.11.2==r347.Alt_Pressure.1.10.2&&w40$2==r347.Nor_Pressure.1.11.2&&r347.WBS_Node_WBS_rlt_PRE2.1.1.2==w40$2&&r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2==w30$2&&w41$2==r347.Sys_Mode.1.3.2&&r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2==w41$2&&0==0&&!(symVar==0)&&r347.WBS_Node_WBS_rlt_PRE2.1.3.2==r347.WBS_Node_WBS_rlt_PRE2.1.1.2||0==0&&!(!(symVar==0))&&r347.WBS_Node_WBS_rlt_PRE2.1.3.2==WBS_Node_WBS_rlt_PRE2&&0==0&&!(symVar==0)&&r347.Alt_Pressure.1.13.2==r347.Alt_Pressure.1.11.2||0==0&&!(!(symVar==0))&&r347.Alt_Pressure.1.13.2==Alt_Pressure&&0==0&&!(symVar==0)&&r347.Sys_Mode.1.5.2==r347.Sys_Mode.1.3.2||0==0&&!(!(symVar==0))&&r347.Sys_Mode.1.5.2==Sys_Mode&&0==0&&!(symVar==0)&&r347.Nor_Pressure.1.13.2==r347.Nor_Pressure.1.11.2||0==0&&!(!(symVar==0))&&r347.Nor_Pressure.1.13.2==Nor_Pressure&&0==0&&!(symVar==0)&&r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2==r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2||0==0&&!(!(symVar==0))&&r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2==WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE&&0==0&&!(symVar==0)&&r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2==r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2||0==0&&!(!(symVar==0))&&r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2==WBS_Node_WBS_BSCU_rlt_PRE1 -> true
+
+### PCs: total:1 sat:1 unsat:0
+
+string analysis: SPC # = 0
+NPC constraint # = 1
+w6$2==WBS_Node_WBS_rlt_PRE2&&w7$2==WBS_Node_WBS_BSCU_rlt_PRE1&&w8$2==WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE&&0==0&&!(w8$2!=0)&&w11$2==1||0==0&&!(!(w8$2!=0))&&w11$2==0&&0==0&&!(pedal!=0)&&w15$2==0||0==0&&!(!(pedal!=0))&&pedal!=1&&!(pedal!=2)&&w15$2==2||0==0&&!(!(pedal!=0))&&pedal!=1&&!(!(pedal!=2))&&pedal!=3&&pedal!=4&&w15$2==0||0==0&&!(!(pedal!=0))&&pedal!=1&&!(!(pedal!=2))&&pedal!=3&&!(pedal!=4)&&w15$2==4||0==0&&!(!(pedal!=0))&&pedal!=1&&!(!(pedal!=2))&&!(pedal!=3)&&w15$2==3||0==0&&!(!(pedal!=0))&&!(pedal!=1)&&w15$2==1&&0==0&&!(autoBrake==0)&&!(w11$2==0)&&w16$2==1||0==0&&!(!(autoBrake==0)&&!(w11$2==0))&&w16$2==0&&0==0&&w7$2==0||!(w7$2==0)&&w6$2>0||!(w7$2==0)&&!(w6$2>0)&&!(w11$2!=0)&&w11$2!=0&&w17$2==0||0==0&&!(w7$2==0||!(w7$2==0)&&w6$2>0||!(w7$2==0)&&!(w6$2>0)&&!(w11$2!=0)&&w11$2!=0)&&w17$2==1&&0==0&&w17$2==0&&w18$2==4||0==0&&!(w17$2==0)&&!(skid==0)&&w18$2==0||0==0&&!(w17$2==0)&&!(!(skid==0))&&w18$2==4&&0==0&&!(w17$2==0)&&w20$2==0||0==0&&!(!(w17$2==0))&&w20$2==5&&0==0&&w20$2<1&&w21$2==5||0==0&&!(w20$2<1)&&w21$2==0&&0==0&&!(w17$2!=0)&&w22$2==0||0==0&&!(!(w17$2!=0))&&!(w21$2<1)&&w22$2==w21$2||0==0&&!(!(w17$2!=0))&&!(!(w21$2<1))&&w22$2==5&&w24$2==w22$2/2&&w25$2==w22$2/4&&w26$2==w25$2*3&&w23$2==w22$2/4&&0==0&&!(w18$2!=0)&&w27$2==0||0==0&&!(!(w18$2!=0))&&w18$2!=1&&!(w18$2!=2)&&w27$2==w24$2||0==0&&!(!(w18$2!=0))&&w18$2!=1&&!(!(w18$2!=2))&&w18$2!=3&&w18$2!=4&&w27$2==0||0==0&&!(!(w18$2!=0))&&w18$2!=1&&!(!(w18$2!=2))&&w18$2!=3&&!(w18$2!=4)&&w27$2==w22$2||0==0&&!(!(w18$2!=0))&&w18$2!=1&&!(!(w18$2!=2))&&!(w18$2!=3)&&w27$2==w26$2||0==0&&!(!(w18$2!=0))&&!(w18$2!=1)&&w27$2==w23$2&&w28$2==w16$2+w15$2&&0==0&&skid==0&&w29$2==w28$2||0==0&&!(skid==0)&&w29$2==0&&r347.Sys_Mode.1.1.2==0&&r347.Sys_Mode.1.2.2==1&&0==0&&w17$2==0&&r347.Sys_Mode.1.3.2==r347.Sys_Mode.1.1.2||0==0&&!(w17$2==0)&&r347.Sys_Mode.1.3.2==r347.Sys_Mode.1.2.2&&0==0&&w17$2==0&&!(w29$2<0)&&!(w29$2>=1)&&w30$2==0||0==0&&w17$2==0&&!(!(w29$2<0)&&!(w29$2>=1))&&w29$2<1||!(w29$2<1)&&w29$2>=2&&w29$2<2||!(w29$2<2)&&w29$2>=3&&!(w29$2<3)&&!(w29$2>=4)&&w30$2==3||0==0&&w17$2==0&&!(!(w29$2<0)&&!(w29$2>=1))&&w29$2<1||!(w29$2<1)&&w29$2>=2&&w29$2<2||!(w29$2<2)&&w29$2>=3&&!(!(w29$2<3)&&!(w29$2>=4))&&w30$2==4||0==0&&w17$2==0&&!(!(w29$2<0)&&!(w29$2>=1))&&w29$2<1||!(w29$2<1)&&w29$2>=2&&!(w29$2<2||!(w29$2<2)&&w29$2>=3)&&w30$2==2||0==0&&w17$2==0&&!(!(w29$2<0)&&!(w29$2>=1))&&!(w29$2<1||!(w29$2<1)&&w29$2>=2)&&w30$2==1||0==0&&!(w17$2==0)&&w30$2==0&&0==0&&w20$2<1&&w31$2==0||0==0&&!(w20$2<1)&&w31$2==w20$2&&w34$2==w31$2/4&&w35$2==w34$2*3&&r347.Nor_Pressure.1.1.2==w35$2&&r347.Nor_Pressure.1.2.2==w31$2&&r347.Nor_Pressure.1.3.2==0&&0==0&&!(w30$2!=4)&&r347.Nor_Pressure.1.4.2==r347.Nor_Pressure.1.2.2||0==0&&!(!(w30$2!=4))&&r347.Nor_Pressure.1.4.2==r347.Nor_Pressure.1.3.2&&0==0&&!(w30$2!=3)&&r347.Nor_Pressure.1.5.2==r347.Nor_Pressure.1.1.2||0==0&&!(!(w30$2!=3))&&r347.Nor_Pressure.1.5.2==r347.Nor_Pressure.1.4.2&&w33$2==w31$2/2&&r347.Nor_Pressure.1.6.2==w33$2&&0==0&&w30$2!=2&&r347.Nor_Pressure.1.7.2==r347.Nor_Pressure.1.5.2||0==0&&!(w30$2!=2)&&r347.Nor_Pressure.1.7.2==r347.Nor_Pressure.1.6.2&&w32$2==w31$2/4&&r347.Nor_Pressure.1.8.2==w32$2&&0==0&&w30$2!=1&&r347.Nor_Pressure.1.9.2==r347.Nor_Pressure.1.7.2||0==0&&!(w30$2!=1)&&r347.Nor_Pressure.1.9.2==r347.Nor_Pressure.1.8.2&&r347.Nor_Pressure.1.10.2==0&&0==0&&w30$2!=0&&r347.Nor_Pressure.1.11.2==r347.Nor_Pressure.1.9.2||0==0&&!(w30$2!=0)&&r347.Nor_Pressure.1.11.2==r347.Nor_Pressure.1.10.2&&w36$2==w27$2/4&&r347.Alt_Pressure.1.1.2==w36$2&&w37$2==w27$2/2&&r347.Alt_Pressure.1.2.2==w37$2&&w38$2==w27$2/4&&w39$2==w38$2*3&&r347.Alt_Pressure.1.3.2==w39$2&&r347.Alt_Pressure.1.4.2==w27$2&&r347.Alt_Pressure.1.5.2==0&&0==0&&!(w15$2!=4)&&r347.Alt_Pressure.1.6.2==r347.Alt_Pressure.1.4.2||0==0&&!(!(w15$2!=4))&&r347.Alt_Pressure.1.6.2==r347.Alt_Pressure.1.5.2&&0==0&&!(w15$2!=3)&&r347.Alt_Pressure.1.7.2==r347.Alt_Pressure.1.3.2||0==0&&!(!(w15$2!=3))&&r347.Alt_Pressure.1.7.2==r347.Alt_Pressure.1.6.2&&0==0&&!(w15$2!=2)&&r347.Alt_Pressure.1.8.2==r347.Alt_Pressure.1.2.2||0==0&&!(!(w15$2!=2))&&r347.Alt_Pressure.1.8.2==r347.Alt_Pressure.1.7.2&&0==0&&!(w15$2!=1)&&r347.Alt_Pressure.1.9.2==r347.Alt_Pressure.1.1.2||0==0&&!(!(w15$2!=1))&&r347.Alt_Pressure.1.9.2==r347.Alt_Pressure.1.8.2&&r347.Alt_Pressure.1.10.2==0&&0==0&&w15$2!=0&&r347.Alt_Pressure.1.11.2==r347.Alt_Pressure.1.9.2||0==0&&!(w15$2!=0)&&r347.Alt_Pressure.1.11.2==r347.Alt_Pressure.1.10.2&&w40$2==r347.Nor_Pressure.1.11.2&&r347.WBS_Node_WBS_rlt_PRE2.1.1.2==w40$2&&r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2==w30$2&&w41$2==r347.Sys_Mode.1.3.2&&r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2==w41$2&&0==0&&!(symVar==0)&&r347.WBS_Node_WBS_rlt_PRE2.1.3.2==r347.WBS_Node_WBS_rlt_PRE2.1.1.2||0==0&&!(!(symVar==0))&&r347.WBS_Node_WBS_rlt_PRE2.1.3.2==WBS_Node_WBS_rlt_PRE2&&0==0&&!(symVar==0)&&r347.Alt_Pressure.1.13.2==r347.Alt_Pressure.1.11.2||0==0&&!(!(symVar==0))&&r347.Alt_Pressure.1.13.2==Alt_Pressure&&0==0&&!(symVar==0)&&r347.Sys_Mode.1.5.2==r347.Sys_Mode.1.3.2||0==0&&!(!(symVar==0))&&r347.Sys_Mode.1.5.2==Sys_Mode&&0==0&&!(symVar==0)&&r347.Nor_Pressure.1.13.2==r347.Nor_Pressure.1.11.2||0==0&&!(!(symVar==0))&&r347.Nor_Pressure.1.13.2==Nor_Pressure&&0==0&&!(symVar==0)&&r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2==r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.1.2||0==0&&!(!(symVar==0))&&r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2==WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE&&0==0&&!(symVar==0)&&r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2==r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.1.2||0==0&&!(!(symVar==0))&&r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2==WBS_Node_WBS_BSCU_rlt_PRE1
+New sym int r347.WBS_Node_WBS_rlt_PRE2.1.3.2 min=-2147483648, max=2147483647
+New sym int r347.Alt_Pressure.1.13.2 min=-2147483648, max=2147483647
+New sym int r347.Sys_Mode.1.5.2 min=-2147483648, max=2147483647
+New sym int r347.Nor_Pressure.1.13.2 min=-2147483648, max=2147483647
+New sym int r347.WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2 min=-2147483648, max=2147483647
+New sym int r347.WBS_Node_WBS_BSCU_rlt_PRE1.1.3.2 min=-2147483648, max=2147483647
+------------- Region was successfully veritested --------------- 
+threadTerminated
+choiceGeneratorProcessed: at MethodInfo[DiscoveryWBS.main([Ljava/lang/String;)V]#10
+choiceGeneratorProcessed: at MethodInfo[java.lang.Boolean.[<clinit>]]#0
+
+====================================================== VeritestingListener report:
+
+/************************ Printing Exception Statistics *****************
+Static Analysis exceptions count = 0
+Instantiation Time exceptions count = 0
+Unknown phases exception count = 0
+
+
+/************************ Printing Time Decomposition Statistics *****************
+static analysis time = 3949 msec
+Veritesting Dyn Time = 2260 msec
+Veritesting fix-pint Time = 714 msec
+
+/************************ Printing Solver Statistics *****************
+Total Solver Queries Count = 0
+Total Solver Time = 131 msec
+Total Solver Parse Time = 42 msec
+Region Summary Parse Time = 0 msec
+Total Solver Clean up Time = 0 msec
+PCSatSolverCount = 1
+PCSatSolverTime = 142 msec
+Constant Propagation Time for PC sat. checks = 0
+Array SPF Case count = 0
+If-removed count = 0
+
+/************************ Printing Region Statistics *****************
+Number of Distinct Veritested Regions = 1
+Number of Distinct Un-Veritested Symbolic Regions = 0
+Number of Distinct Failed Regions for Field Reference = 0
+Number of Distinct Failed Regions for SPFCases = 0
+Number of Distinct Failed Regions for missing method summaries = 0
+Number of Distinct Failed Regions for Other Reasons = 0
+Number of High Order Regions Used = 1
+
+/************************ Printing Instantiation Statistics *****************
+Number of successful instantiations = 1
+Total Number of unsuccessful instantiations = 0
+Number of failed instantiations due to Field Reference = 0
+Number of failed instantiations due to SPFCases = 0
+Number of failed instantiations due to missing method summaries = 0
+Number of failed instantiations due to Other Reasons = 0
+
+
+Number of Veritested Regions Instances = 1
+Printing keys of regions that were instantiated at least once
+DiscoveryWBS.discoveryLaunch(IZZIIIIIIZ)V#52
+Finished printing keys of regions that were instantiated at least once
+
+Metrics Vector:
+6209,3949,2260,1,0,131,42,0,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,2,1,1,2,2.0,0,0,0
+Contract is repaired in iteration number:0
+====================================================== results
+no errors detected
+
+====================================================== statistics
+elapsed time:       00:00:06
+states:             new=2,visited=0,backtracked=2,end=1
+search:             maxDepth=2,constraints=0
+choice generators:  thread=1 (signal=0,lock=1,sharedRef=0,threadApi=0,reschedule=0), data=1
+heap:               new=347,released=12,maxLive=344,gcCycles=2
+instructions:       3160
+max memory:         578MB
+loaded code:        classes=60,methods=1292
+
+====================================================== search finished: 12/16/19 8:20 PM

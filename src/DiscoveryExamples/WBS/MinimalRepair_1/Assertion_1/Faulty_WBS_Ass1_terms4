@@ -122,9 +122,9 @@ let
     bExprlevel_3 =  if(level_4_hole = 1) then bExprlevel_2 and leaf_3
                      else if(level_4_hole = 2) then bExprlevel_2 or leaf_3
                      else if(level_4_hole = 3) then bExprlevel_2 => leaf_3
-                     else if(level_5_hole = 4) then bExprlevel_2 xor leaf_3
-                     else if(level_5_hole = 5) then not leaf_3
-                     else if(level_6_hole = 6) then true
+                     else if(level_4_hole = 4) then bExprlevel_2 xor leaf_3
+                     else if(level_4_hole = 5) then not leaf_3
+                     else if(level_4_hole = 6) then true
                      else false;
 
 
