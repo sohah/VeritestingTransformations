@@ -10,7 +10,7 @@ const_hole2 :inthole;
 level_0_hole:inthole;
 level_1_hole:inthole;
 level_2_hole:inthole;
-level_3_hole:inthole;
+level_3_hole:inthole
 
 ]
 
