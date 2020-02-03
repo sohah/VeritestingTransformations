@@ -37,5 +37,5 @@ repairMode = 2
 
 SpecDirectory = Vote/RepairAllConstraint
 contractDiscoveryOn = true
-faultySpec = Vote_All_terms1,Vote_All_terms2,Vote_All_terms3
+faultySpec = Vote_All_terms1,Vote_All_terms2,Vote_All_terms3,Vote_All_terms4
 repairInitialValues = false
