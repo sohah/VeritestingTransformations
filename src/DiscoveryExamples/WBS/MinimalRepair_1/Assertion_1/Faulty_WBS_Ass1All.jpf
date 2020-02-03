@@ -43,7 +43,6 @@ repairMode = 2
 
 SpecDirectory = WBS/MinimalRepair_1/Assertion_1
 contractDiscoveryOn = true
-faultySpec = Faulty_WBS_Ass1_terms6
-#,Faulty_WBS_Ass1_terms3,Faulty_WBS_Ass1_terms4,Faulty_WBS_Ass1_terms5,
+faultySpec = Faulty_WBS_Ass1_terms3,Faulty_WBS_Ass1_terms4,Faulty_WBS_Ass1_terms5,
 Faulty_WBS_Ass1_terms6,Faulty_WBS_Ass1_terms7,Faulty_WBS_Ass1_terms8
 repairInitialValues = true
