@@ -20,7 +20,6 @@ import jkind.results.Signal;
 import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.*;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairCheck.internalId;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.candidateLoopCount;
@@ -78,9 +77,10 @@ public class TestCaseManager {
                 Counterexample counterExample = ip.getCounterexample();
                 String fileName;
                 if (Config.specLevelRepair)
-                    fileName = contractMethodName + "_" + loopCount + "_" + "CEX.lus";
+                    fileName = faultySpec + "_" + loopCount + "_" + "CEX.lus";
                 else
-                    fileName = "def_" + contractMethodName + "_" + DiscoverContract.permutationCount + "_" + loopCount + "_" + "CEX.lus";
+                    fileName = "def_" + faultySpec + "_" + DiscoverContract.permutationCount + "_" + loopCount + "_" + "CEX" +
+                            ".lus";
 
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString(), false);
                 translateTestCase(counterExample);
@@ -99,7 +99,7 @@ public class TestCaseManager {
                 Counterexample counterExample = ip.getCounterexample();
                 String fileName;
 
-                fileName = contractMethodName + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" +
+                fileName = faultySpec + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" +
                         "existsCEX.lus";
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString(), true);
                 translateTestCaseMinimal(counterExample, lastSynMainNode);

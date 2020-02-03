@@ -14,7 +14,7 @@ import jkind.results.Signal;
 import java.util.*;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.counterExPropertyName;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.contractMethodName;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.faultySpec;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.candidateLoopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Queries.MinimalRepair.MinimalRepairDriver.knownRepairLoopCount;
@@ -138,9 +138,9 @@ public class SketchVisitor extends AstMapVisitor {
         //logging
         String fileName;
         if (isMinimal)
-            fileName = contractMethodName + "_" + knownRepairLoopCount+ "_" + candidateLoopCount + "_" + "holeCEX.txt";
+            fileName = faultySpec + "_" + knownRepairLoopCount+ "_" + candidateLoopCount + "_" + "holeCEX.txt";
         else
-            fileName = contractMethodName + "_" + loopCount + "_" + "holeCEX.txt";
+            fileName = faultySpec + "_" + loopCount + "_" + "holeCEX.txt";
 
         DiscoveryUtil.writeToFile(fileName, counterExample.toString(), isMinimal);
 

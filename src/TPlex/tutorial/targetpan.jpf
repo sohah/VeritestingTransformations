@@ -1,0 +1,9 @@
+@using tplex
+
+target=SymbolicDriver
+#listener=edu.umn.crisys.spf.SymbolicSequenceListener
+classpath=bin
+psxlistener.output_dir=TargetPanoramaScripts
+#psxlistener.output_all_tests=true
+#psxlistener.output_debug_comments=true
+search.depth_limit=40

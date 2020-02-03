@@ -35,7 +35,6 @@ spec = vote
 specRepair = true
 repairMode = 2
 
-contractMethodName = Vote_All_depth2SSA
 SpecDirectory = Vote/RepairAllConstraint
 contractDiscoveryOn = true
 faultySpec = Vote_All_depth2SSA

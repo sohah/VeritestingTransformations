@@ -35,7 +35,6 @@ spec = vote
 specRepair = true
 repairMode = 2
 
-contractMethodName = Vote_All_terms3
 SpecDirectory = Vote/RepairAllConstraint
 contractDiscoveryOn = true
 faultySpec = Vote_All_terms3

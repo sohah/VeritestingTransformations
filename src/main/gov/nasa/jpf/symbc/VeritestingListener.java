@@ -219,8 +219,6 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
             }
 
             if (contractDiscoveryOn) {
-                if (conf.hasValue("contractMethodName"))
-                    DiscoverContract.contractMethodName = conf.getString("contractMethodName");
                 if (conf.hasValue("specRepair"))
                     gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.specLevelRepair = conf.getBoolean("specRepair");
                 if (conf.hasValue("SpecDirectory")) {

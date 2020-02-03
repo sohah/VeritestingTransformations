@@ -55,7 +55,6 @@ public class DiscoverContract {
      * This later needs to be changed to generalize it by looking only at the method
      * and the class of interest.
      */
-    public static String contractMethodName;
     public static String className;
     public static String packageName;
     private static boolean repaired;
@@ -130,7 +129,7 @@ public class DiscoverContract {
         String counterExampleQueryStrStr = counterExampleQuery.toString();
 
         do {
-            fileName = contractMethodName + "_" + loopCount + ".lus";
+            fileName = faultySpec + "_" + loopCount + ".lus";
             writeToFile(fileName, counterExampleQueryStrStr, false);
 
             JKindResult counterExResult = callJkind(fileName, true, -1, false, false);
@@ -180,7 +179,7 @@ public class DiscoverContract {
                         holeRepairState.createEmptyHoleRepairValues();
 
                     String synthesisContractStr = ARepairSynthesis.toString();
-                    fileName = contractMethodName + "_" + loopCount + "_" + "hole.lus";
+                    fileName = faultySpec + "_" + loopCount + "_" + "hole.lus";
                     writeToFile(fileName, synthesisContractStr, false);
 
                     JKindResult synthesisResult = callJkind(fileName, false, ARepairSynthesis
@@ -204,7 +203,7 @@ public class DiscoverContract {
                             } else {
                                 inputExtendedPgm = SketchVisitor.execute(flatExtendedPgm, synthesisResult, false);
                                 originalProgram = RemoveRepairConstructVisitor.execute(inputExtendedPgm);
-                                fileName = contractMethodName + "_Extn" + loopCount + 1 + ".lus";
+                                fileName = faultySpec + "_Extn" + loopCount + 1 + ".lus";
                                 writeToFile(fileName, inputExtendedPgm.toString(), false);
 
                                 counterExampleQuery = new CounterExampleQuery(dynRegion, originalProgram, contract);

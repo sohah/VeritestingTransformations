@@ -1,3 +1,5 @@
+import examples.Outputs;
+
 public class ReplaceEqCheck {
 
     Outputs runReplace(int in0, int in1, int in2, int in3, int in4, int in5,
