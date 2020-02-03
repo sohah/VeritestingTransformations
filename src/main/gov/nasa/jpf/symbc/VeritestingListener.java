@@ -229,8 +229,13 @@ public class VeritestingListener extends PropertyListenerAdapter implements Publ
                 }
                 if (conf.hasValue("spec"))
                     gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.spec = conf.getString("spec");
-                if (conf.hasValue("faultySpec"))
-                    gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.faultySpec = conf.getString("faultySpec");
+                if (conf.hasValue("faultySpec")) {
+                    //gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.currFaultySpec = conf.getString(
+                    //"faultySpec");
+                    gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.faultySpecs = conf.getStringArray(
+                            "faultySpec");
+                }
+
                 if (conf.hasValue("repairInitialValues"))
                     gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.repairInitialValues = conf.getBoolean("repairInitialValues");
                 if (conf.hasValue("repairMode")) {

@@ -19,9 +19,9 @@ import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Util.DiscoveryUtil.
 public class MinimalRepairDriver {
 
     private static Program laskKnwnGoodRepairPgm; // last repair the matches the implementation.
-    private static ARepairSynthesis lastSynthizedContract; // last query used to find the above repaired program
+    //private static ARepairSynthesis lastSynthizedContract; // last query used to find the above repaired program
 
-    private static Program counterExamplePgm;
+    //private static Program counterExamplePgm;
 
     public static int candidateLoopCount = 0; //counts the candidates attempted inside every tightness loop.
 
@@ -36,6 +36,17 @@ public class MinimalRepairDriver {
     private static long thereExistsTime;
 
     private static long forAllTime;
+
+    public static void resetState() {
+        laskKnwnGoodRepairPgm = null;
+        candidateLoopCount = 0;
+        knownRepairLoopCount = 0;
+        successfulCandidateNum = -1;
+        lastKnownRepairLoopCount = -1;
+        repairs = new ArrayList<>();
+        thereExistsTime = 0;
+        forAllTime = 0;
+    }
 
     /**
      * This method initiates the discovery of finding minimal repair enclosed in the repairedProgram. It starts by
@@ -56,7 +67,7 @@ public class MinimalRepairDriver {
 
         repairs.add(repairedProgram.getMainNode());
 
-        MinimalRepairDriver.counterExamplePgm = counterExamplePgm;
+        //MinimalRepairDriver.counterExamplePgm = counterExamplePgm;
         MinimalRepairDriver.laskKnwnGoodRepairPgm = repairedProgram;
 
         /*//removing the repair expression keeping only the repair value included
@@ -78,7 +89,7 @@ public class MinimalRepairDriver {
             while (!tighterRepairFound && canFindMoreTighterRepair) { //while we haven't found a tighter repair and we know that we can find a tighter repair.
                 System.out.println("Trying candidate #: " + candidateLoopCount);
 
-                String fileName = faultySpec + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" + "rPrimeExists.lus";
+                String fileName = currFaultySpec + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" + "rPrimeExists.lus";
                 writeToFile(fileName, tPrimeExistsQ.toString(), true);
 
 
@@ -86,9 +97,9 @@ public class MinimalRepairDriver {
                 JKindResult synthesisResult = callJkind(fileName, false, (tPrimeExistsQ
                         .getMaxTestCaseK() - 2), true, true);
 
-                singleQueryTime = (System.currentTimeMillis()-singleQueryTime)/1000;
+                singleQueryTime = (System.currentTimeMillis() - singleQueryTime) / 1000;
 
-                System.out.println("Time of ThereExists Query of : " + fileName +"= " + singleQueryTime);
+                System.out.println("Time of ThereExists Query of : " + fileName + "= " + singleQueryTime);
 
                 switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
                     case VALID:
@@ -100,13 +111,13 @@ public class MinimalRepairDriver {
                     case INVALID:
                         Program candTPrimePgm = RemoveRepairConstructVisitor.execute(SketchVisitor.execute(flatExtendedPgm, synthesisResult, true));
 
-                        fileName = faultySpec + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" +
+                        fileName = currFaultySpec + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" +
                                 "rPrimeCandidate.lus";
                         writeToFile(fileName, candTPrimePgm.toString(), true);
 
                         forAllQ = MinimalRepairCheck.execute(contract, counterExamplePgm, laskKnwnGoodRepairPgm.getMainNode(), candTPrimePgm.getMainNode());
 
-                        fileName = faultySpec + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" + "forAllMinimal" +
+                        fileName = currFaultySpec + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" + "forAllMinimal" +
                                 ".lus";
                         writeToFile(fileName, ToLutre.lustreFriendlyString(forAllQ.toString()), true);
 
@@ -115,9 +126,9 @@ public class MinimalRepairDriver {
 
                         JKindResult counterExampleResult = callJkind(fileName, true, -1, true, false);
 
-                        singleQueryTime = (System.currentTimeMillis()-singleQueryTime)/1000;
+                        singleQueryTime = (System.currentTimeMillis() - singleQueryTime) / 1000;
 
-                        System.out.println("Time of forAll Query of : " + fileName +"= " + singleQueryTime);
+                        System.out.println("Time of forAll Query of : " + fileName + "= " + singleQueryTime);
 
                         switch (counterExampleResult.getPropertyResult(candidateSpecPropertyName).getStatus()) {
                             case VALID:
@@ -127,7 +138,7 @@ public class MinimalRepairDriver {
                                 if (!containsNode(repairs, candTPrimePgm.getMainNode())) {
                                     repairs.add(candTPrimePgm.getMainNode());
                                     // the last good tight repair was found.
-                                    System .out.println("Great! a tighter repair was found at, outer loop # = " + DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + lastKnownRepairLoopCount + " successful candidate # = " + successfulCandidateNum);
+                                    System.out.println("Great! a tighter repair was found at, outer loop # = " + DiscoverContract.outerLoopRepairNum + " minimal repair loop # = " + lastKnownRepairLoopCount + " successful candidate # = " + successfulCandidateNum);
 
                                     // minimal repair was found.
                                     tighterRepairFound = true;
@@ -176,8 +187,8 @@ public class MinimalRepairDriver {
 
     //unfortungely we will do string comparision since node does not implement isEqual method.
     private static boolean containsNode(ArrayList<Node> repairs, Node mainNode) {
-        for(Node node: repairs){
-            if(node.toString().equals(mainNode.toString()))
+        for (Node node : repairs) {
+            if (node.toString().equals(mainNode.toString()))
                 return true;
         }
         return false;

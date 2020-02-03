@@ -20,6 +20,9 @@ public class LustreAstMapExtnVisitor extends AstMapVisitor {
     List<Node> newNodes = new ArrayList<>();
     public static List<RepairNode> existingRepairNodes = new ArrayList<>();
 
+    public static void resetState(){
+        nodeToHoleVarDeclMap = new HashMap<>();
+    }
 
     @Override
     public Constant visit(Constant e) {

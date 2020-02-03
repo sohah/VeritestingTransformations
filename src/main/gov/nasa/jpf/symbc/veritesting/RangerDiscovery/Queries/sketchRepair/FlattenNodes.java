@@ -10,7 +10,8 @@ import java.util.List;
 
 public class FlattenNodes extends AstMapVisitor {
 
-    private static int holePostFix = 0;
+    //removing that being static
+    private int holePostFix = 0;
     private final Program pgm;
 
     // tights every repair node with the number of copy that have been instantiated for it in the program so far.
@@ -26,7 +27,6 @@ public class FlattenNodes extends AstMapVisitor {
     public FlattenNodes(Program pgm) {
         repairNodeCopyMap = createRepairNodeMap(pgm);
         this.pgm = pgm;
-
     }
 
 

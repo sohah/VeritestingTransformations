@@ -25,7 +25,7 @@ public class Config {
 
     public static String tnodeSpecPropertyName;
 
-    public static String candidateSpecPropertyName ="discovery_out";
+    public static String candidateSpecPropertyName = "discovery_out";
 
     public static Ast defaultHoleValBool = new BoolExpr(false);
     public static Ast defaultHoleValInt = new IntExpr(1);
@@ -36,7 +36,10 @@ public class Config {
 
     public static String spec;// = "even";
 
-    public static String faultySpec;
+    public static String currFaultySpec;
+    public static String[] faultySpecs;
+
+    public static int faultySpecIndex = 0;
 
     public static boolean defaultBoolValue = false;
     public static int initialIntValue = 0;
@@ -60,14 +63,21 @@ public class Config {
     public static boolean allEqRepair = true;
 
 
-    public static void setup() throws IOException {
+    public static boolean canSetup() throws IOException {
 
-        tFileName = folderName + faultySpec;
+        if ((faultySpecIndex) >= faultySpecs.length)
+            return false;
+
+        currFaultySpec = faultySpecs[faultySpecIndex];
+        ++faultySpecIndex;
+
+        tFileName = folderName + currFaultySpec;
         tnodeSpecPropertyName = "T_node~0.p1";
 
         //make a new directory for the output of that spec
-        new File(folderName + "/output/" + Config.faultySpec).mkdirs();
+        new File(folderName + "/output/" + Config.currFaultySpec).mkdirs();
 
+        return true;
         /*if (spec.equals("pad")) {
             tFileName = folderName + "FaultyPreImaginaryPad";
         } else if (spec.equals("even")) {

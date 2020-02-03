@@ -61,6 +61,13 @@ public abstract class ThereExistsQuery {
 
     public final static String FAIL = "fail";
 
+    public static void resetState(){
+        contract = null;
+        holes = new ArrayList<>();
+        testCaseManager = null;
+        synthesisSpecNode = null;
+    }
+
     public int getMaxTestCaseK() {
         return testCaseManager.getMaxK();
     }

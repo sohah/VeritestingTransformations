@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.counterExPropertyName;
-import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.faultySpec;
+import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.Config.currFaultySpec;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.loopCount;
 import static gov.nasa.jpf.symbc.veritesting.RangerDiscovery.DiscoverContract.permutationCount;
 
@@ -71,9 +71,9 @@ public class HoleRepairState {
                     fillHolesWithRepairs(counterExample);
                     String fileName;
                     if (Config.specLevelRepair)
-                        fileName = faultySpec + "_" + loopCount + "_" + "holeCEX.txt";
+                        fileName = currFaultySpec + "_" + loopCount + "_" + "holeCEX.txt";
                     else
-                        fileName = "def_" + faultySpec + "_" + permutationCount + "_" + loopCount + "_" + "holeCEX.txt";
+                        fileName = "def_" + currFaultySpec + "_" + permutationCount + "_" + loopCount + "_" + "holeCEX.txt";
                     DiscoveryUtil.writeToFile(fileName, counterExample.toString(),false);
                 }
             }

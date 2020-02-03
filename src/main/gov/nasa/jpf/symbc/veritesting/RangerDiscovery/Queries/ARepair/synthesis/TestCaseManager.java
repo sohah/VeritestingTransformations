@@ -56,6 +56,10 @@ public class TestCaseManager {
     public static int maxK;
 
 
+    public static void resetState() {
+        maxK = 0;
+    }
+
     public TestCaseManager(Contract contract, ArrayList<Hole> holes, JKindResult counterExResult) {
         this.contract = contract;
         testCaseInputNameLoc = createNamesofTestInputs();
@@ -77,9 +81,9 @@ public class TestCaseManager {
                 Counterexample counterExample = ip.getCounterexample();
                 String fileName;
                 if (Config.specLevelRepair)
-                    fileName = faultySpec + "_" + loopCount + "_" + "CEX.lus";
+                    fileName = currFaultySpec + "_" + loopCount + "_" + "CEX.lus";
                 else
-                    fileName = "def_" + faultySpec + "_" + DiscoverContract.permutationCount + "_" + loopCount + "_" + "CEX" +
+                    fileName = "def_" + currFaultySpec + "_" + DiscoverContract.permutationCount + "_" + loopCount + "_" + "CEX" +
                             ".lus";
 
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString(), false);
@@ -99,7 +103,7 @@ public class TestCaseManager {
                 Counterexample counterExample = ip.getCounterexample();
                 String fileName;
 
-                fileName = faultySpec + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" +
+                fileName = currFaultySpec + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" +
                         "existsCEX.lus";
                 DiscoveryUtil.writeToFile(fileName, counterExample.toString(), true);
                 translateTestCaseMinimal(counterExample, lastSynMainNode);
@@ -175,7 +179,7 @@ public class TestCaseManager {
             // behaviour just like the upper property.
             newInnerExpr = new BinaryExpr(new UnaryExpr(UnaryOp.NOT, DiscoveryUtil.varDeclToIdExpr(localTestCallVar)), BinaryOp.AND, oldInnerExpr);
             //newInnerExpr = new BinaryExpr(DiscoveryUtil.varDeclToIdExpr(localTestCallVar), BinaryOp.AND, oldInnerExpr);
-        else if ((!isMatchImpl.value) && (!isTighter.value)){
+        else if ((!isMatchImpl.value) && (!isTighter.value)) {
             //this case were both are false is interesting and is in tight behaviour with the test case being
             // collected, that is if we collected the test case of being matching the implementation then we need to
             // add the test case in an affirmative form, however if we collected the test case of the upper property
@@ -186,8 +190,7 @@ public class TestCaseManager {
             // the
             // neg form of the test case.
             newInnerExpr = new BinaryExpr(new UnaryExpr(UnaryOp.NOT, DiscoveryUtil.varDeclToIdExpr(localTestCallVar)), BinaryOp.AND, oldInnerExpr);
-        }
-        else {
+        } else {
             System.out.print("this can't happen, both isMatchImpl and isTighter are true yet we are collecting the counter example!");
             assert false;
         }
@@ -402,10 +405,11 @@ public class TestCaseManager {
      * uses the populated testCaseInputLoc to generate a VarDecl list for all the enteries.
      * isTighter: indicates if the tightness property is not holding or not. For the outer loop of non-minimal we
      * assume that the isTight holds.
-     *
+     * <p>
      * Assumption here about the created test input if the counter example had both isTighter and matchImp both being
      * false, in this case the test case is created with the input of the upper property, and therefore, it is in
      * tight connection with how the equation of fail is being created, in this case it should appear in the neg form.
+     *
      * @return
      */
     private List<VarDecl> createVarDeclForTestInput(boolean isTighter) {

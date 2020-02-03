@@ -37,6 +37,13 @@ public class CounterExampleQuery extends ForAllQuery {
      *
      * @return
      */
+
+    public static void resetState(){
+        CounterExampleQuery.rNode = null;
+        CounterExampleQuery.rWrapper = null;
+        CounterExampleQuery.mainNode = null;
+    }
+
     public CounterExampleQuery(DynamicRegion dynRegion, Program program, Contract contract) {
 
         //generating rNode and rWrapper

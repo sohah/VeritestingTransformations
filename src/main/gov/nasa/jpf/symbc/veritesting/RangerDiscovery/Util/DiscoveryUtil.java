@@ -145,10 +145,10 @@ public class DiscoveryUtil {
         String directory;
 
         if (minimal)
-            directory = folderName + "output/" + Config.faultySpec + "/minimal/";
+            directory = folderName + "output/" + Config.currFaultySpec + "/minimal/";
 
         else
-            directory = folderName + "output/" + Config.faultySpec + "/";
+            directory = folderName + "output/" + Config.currFaultySpec + "/";
 
 
         fileName = directory + fileName;
@@ -413,9 +413,9 @@ public class DiscoveryUtil {
         File file1;
 
         if (!minimal)
-            file1 = new File(folderName + "/output/" + Config.faultySpec + "/" + fileName);
+            file1 = new File(folderName + "/output/" + Config.currFaultySpec + "/" + fileName);
         else
-            file1 = new File(folderName + "/output/" + Config.faultySpec + "/minimal/" + fileName);
+            file1 = new File(folderName + "/output/" + Config.currFaultySpec + "/minimal/" + fileName);
 
         if (minimal)
             return runJKind(file1, kInductionOn, maxK, existsQuery);
