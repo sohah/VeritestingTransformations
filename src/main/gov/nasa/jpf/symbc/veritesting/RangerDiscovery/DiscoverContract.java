@@ -64,6 +64,9 @@ public class DiscoverContract {
         fillUserSynNodes();
         try {
             while (Config.canSetup()) {
+                long singleTermTime = System.currentTimeMillis();
+
+                System.out.println("-|-|-|-|-|  resetting state and trying repairing: " + currFaultySpec);
                 resetState();
                 assert (userSynNodes.size() > 0);
                 if (Config.specLevelRepair)
@@ -71,6 +74,8 @@ public class DiscoverContract {
                 else
                     assert false; //removed definition repair for now.
                 //repairDef(dynRegion);
+                singleTermTime = (System.currentTimeMillis() - singleTermTime) / 1000;
+                System.out.println("The overall time for : " + currFaultySpec + "= " + singleTermTime + " sec");
             }
         } catch (IOException e) {
             System.out.println("Unable to read specification file.! Aborting");
