@@ -89,10 +89,15 @@ let
         -- 0),discover_binary_Bool_2_Int_4_Terms2(autoBreak_r, skid_r, pedal_r, NormalPressure_r, AltPressure_r,
         -- Sys_Mode)) ;
 
-    -- mutation "AltPressure_r > 0 or NormalPressure_r > 0" => "AltPressure_r > 0 or NormalPressure_r > 0"
+    -- mutation "AltPressure_r > 0 or NormalPressure_r > 0" => "AltPressure_r > 0 and NormalPressure_r > 0"
+    -- mutation ""
 
-    p1 = true -> ((pedal_r > 3 and pedal_r <= 9 and not skid_r) => repair(AltPressure_r > 0 and NormalPressure_r > 0,
+    p1 = true -> (pedal_r > 3 and repair((pedal_r <= 9 and skid_r),
+                                           discover_binary_Bool_2_Int_4_Terms2(autoBreak_r, skid_r, pedal_r, NormalPressure_r, AltPressure_r, Sys_Mode))
+                                            =>
+    repair(AltPressure_r > 0 and NormalPressure_r > 0,
     discover_binary_Bool_2_Int_4_Terms2(autoBreak_r, skid_r, pedal_r, NormalPressure_r, AltPressure_r, Sys_Mode)));
+
       --%PROPERTY p1;
 
 tel;
