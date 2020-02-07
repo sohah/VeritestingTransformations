@@ -9,7 +9,7 @@ vm.storage.class=nil
 
 #listener = .symbc.SymbolicListener
 #symbolic.dp=z3bitvector
-#listener = .symbc.VeritestingListener
+#Listener = .symbc.VeritestingListener
 
 symbolic.dp=z3bitvectorinc
 #listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener

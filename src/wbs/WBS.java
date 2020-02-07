@@ -357,8 +357,26 @@ public class WBS {
         //assert ((Nor_Pressure > -1) && ((Nor_Pressure <= 5) && (Sys_Mode > -1))); //tight(2)
         //assert (((Nor_Pressure <= 5) || (Sys_Mode == -2)) && ((Nor_Pressure > -1) && (Sys_Mode == 0))); //tight(2)
 
-
         /************ SH edits ends here **********/
+
+
+        /************ SH Mutation Results starts here **********/
+
+        //mutation (1) fix
+        //assert (!((AutoBrake || (Sys_Mode <= -1)) && (! Skid)) || ((Alt_Pressure > 0) || (Nor_Pressure > 0)));
+
+        //mutation (2) fix
+        //assert (!((!(Sys_Mode == 0) || (Alt_Pressure <= -1)) && (! Skid)) || ((Alt_Pressure > 0) || (Nor_Pressure >
+        // 0)));
+
+        //mutation(3)
+        //assert (!((PedalPos > 3) && (!(Sys_Mode == 0) || (Nor_Pressure <= -1))) || ((Alt_Pressure > 0) ||
+        // (Nor_Pressure > 0)));
+
+        //mutation(5)
+        //assert ((!(PedalPos > 3)) || ((Sys_Mode == 0) && (Alt_Pressure == 0)));
+        /************ SH Mutation Results ends here **********/
+
     }
 
 

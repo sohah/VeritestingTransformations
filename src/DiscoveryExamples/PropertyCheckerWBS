@@ -10,7 +10,8 @@ node main(
 );
 let
   --%MAIN;
-  p1 = (not ((NormalPressure_r <= 14) and (Sys_Mode = 13))) => (not ((NormalPressure_r = -1) or (Sys_Mode = 13)));
+  p1 = (((pedal_r > 3) and true) => ((Sys_Mode = 0) and (AltPressure_r = 0))) => (((pedal_r > 3) and ((Sys_Mode <= 0) =>
+   (AltPressure_r > 1))) => (autoBreak_r xor autoBreak_r));
   --%PROPERTY p1;
 
 tel;

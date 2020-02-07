@@ -92,6 +92,7 @@ public class MinimalRepairDriver {
                 String fileName = currFaultySpec + "_" + knownRepairLoopCount + "_" + candidateLoopCount + "_" + "rPrimeExists.lus";
                 writeToFile(fileName, tPrimeExistsQ.toString(), true);
 
+                System.out.println("ThereExists Query of : " + fileName );
 
                 singleQueryTime = System.currentTimeMillis();
                 JKindResult synthesisResult = callJkind(fileName, false, (tPrimeExistsQ
@@ -99,7 +100,8 @@ public class MinimalRepairDriver {
 
                 singleQueryTime = (System.currentTimeMillis() - singleQueryTime) / 1000;
 
-                System.out.println("Time of ThereExists Query of : " + fileName + "= " + singleQueryTime);
+                //System.out.println("TIME of ThereExists Query of : " + fileName + "= " + singleQueryTime);
+                System.out.println("TIME = " + singleQueryTime);
 
                 switch (synthesisResult.getPropertyResult(counterExPropertyName).getStatus()) {
                     case VALID:
@@ -124,11 +126,14 @@ public class MinimalRepairDriver {
 
                         singleQueryTime = System.currentTimeMillis();
 
+                        System.out.println("ForAll Query of : " + fileName);
+
                         JKindResult counterExampleResult = callJkind(fileName, true, -1, true, false);
 
                         singleQueryTime = (System.currentTimeMillis() - singleQueryTime) / 1000;
 
-                        System.out.println("Time of forAll Query of : " + fileName + "= " + singleQueryTime);
+                        //System.out.println("TIME of forAll Query of : " + fileName + "= " + singleQueryTime);
+                        System.out.println("TIME = " + singleQueryTime);
 
                         switch (counterExampleResult.getPropertyResult(candidateSpecPropertyName).getStatus()) {
                             case VALID:
