@@ -1,7 +1,3 @@
-package examples;
-
-import gov.nasa.jpf.symbc.veritesting.RangerDiscovery.LustreTranslation.ToLutre;
-
 public class DiscoveryTCAS {
 
     //free input

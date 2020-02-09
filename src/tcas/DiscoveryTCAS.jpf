@@ -1,22 +1,22 @@
-target=SpfTCAS
+target=DiscoveryTCAS
 classpath=${jpf-symbc}/build/tcas
 sourcepath=${jpf-symbc}/src/tcas
-symbolic.method =SpfTCAS.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+symbolic.method = DiscoveryTCAS.discoveryMainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
 #symbolic.minint=-100
 #symbolic.maxint=100
 vm.storage.class=nil
 
-listener = .symbc.SymbolicListener
+
+listener = .symbc.VeritestingListener
 #symbolic.dp=z3bitvector
 #Listener = .symbc.VeritestingListener
 
 symbolic.dp=z3bitvectorinc
-#listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 
 #listener = gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
 
-symbolic.optimizechoices=false
-
 veritestingMode = 5
 performanceMode = true
-testingMode = true
+simplify = false
+contractDiscoveryOn = false

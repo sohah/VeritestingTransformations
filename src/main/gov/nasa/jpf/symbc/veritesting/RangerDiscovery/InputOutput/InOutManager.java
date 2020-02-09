@@ -112,6 +112,18 @@ public class InOutManager {
 
             discoverContractOutputWBS();
             doContractOutputTypeConversion();
+        } else if (Config.spec.equals("tcas")) {
+            discoverFreeInputTCAS();
+            doFreeTypeConversion();
+
+            discoverStateInputTCAS();
+            doStateInputTypeConversion();
+
+            discoverStateOutputTCAS();
+            doStateOutputTypeConversion();
+
+            discoverContractOutputTCAS();
+            doContractOutputTypeConversion();
 
         } else if (Config.spec.equals("vote")) {
             discoverFreeInputVote();
@@ -210,7 +222,6 @@ public class InOutManager {
     }
 
 
-
     //entered by hand for now
     private void discoverStateInputPad() {
         stateInput.add("start_btn", NamedType.BOOL);
@@ -232,7 +243,6 @@ public class InOutManager {
         stateOutput.addInit(referenceObjectName + ".start_btn.1.15.4", new BoolExpr(false));
 
     }
-
 
 
     //====================== WBS ====================================
@@ -295,6 +305,71 @@ public class InOutManager {
 
     }
 
+
+
+    //====================== TCAS ====================================
+
+    //entered by hand for now - this defines the output that we expect to validate with the T_node,i.e, this is the
+    // output of the wrapper that gets plugged in the T_node to  validate it. Therefore it is not directly reflecting
+    // the method output of the implementation, instead it is the output of the to-be-created r_wrapper node.
+
+    private void discoverContractOutputTCAS() {
+
+        contractOutput.add(referenceObjectName + ".Nor_Pressure.1.13.2", NamedType.INT);
+        contractOutput.addInit(referenceObjectName + ".Nor_Pressure.1.13.2", new IntExpr(0));
+    }
+
+    //entered by hand for now
+    private void discoverFreeInputTCAS() {
+        freeInput.add("Cur_Vertical_Sep", NamedType.INT);
+        freeInput.add("High_Confidence_flag", NamedType.INT);
+        freeInput.add("Two_of_Three_Reports_Valid_flag", NamedType.INT);
+        freeInput.add("Own_Tracked_Alt", NamedType.INT);
+        freeInput.add("Own_Tracked_Alt_Rate", NamedType.INT);
+        freeInput.add("Other_Tracked_Alt", NamedType.INT);
+        freeInput.add("Alt_Layer_Value", NamedType.INT);
+        freeInput.add("Up_Separation", NamedType.INT);
+        freeInput.add("Down_Separation", NamedType.INT);
+        freeInput.add("Other_RAC", NamedType.INT);
+        freeInput.add("Other_Capability", NamedType.INT);
+        freeInput.add("Climb_Inhibit", NamedType.INT);
+
+
+        /*if (freeInput.containsBool()) {
+            Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
+            typeConversionEq.addAll(conversionResult.getSecond());
+            conversionLocalList.addAll(conversionResult.getFirst());
+        }*/
+    }
+
+    //entered by hand for now
+    private void discoverStateInputTCAS() {
+        stateInput.add("OLEV", NamedType.INT);
+        stateInput.add("MAXALTDIFF", NamedType.INT);
+        stateInput.add("MINSEP", NamedType.INT);
+        stateInput.add("NOZCROSS", NamedType.INT);
+        stateInput.add("High_Confidence", NamedType.INT);
+        stateInput.add("Two_of_Three_Reports_Valid", NamedType.INT);
+        stateInput.add("Positive_RA_Alt_Thresh_0", NamedType.INT);
+        stateInput.add("Positive_RA_Alt_Thresh_1", NamedType.INT);
+        stateInput.add("Positive_RA_Alt_Thresh_2", NamedType.INT);
+        stateInput.add("Positive_RA_Alt_Thresh_3", NamedType.INT);
+        stateInput.add("NO_INTENT", NamedType.INT);
+        stateInput.add("DO_NOT_CLIMB", NamedType.INT);
+        stateInput.add("DO_NOT_DESCEND", NamedType.INT);
+        stateInput.add("TCAS_TA", NamedType.INT);
+        stateInput.add("OTHER", NamedType.INT);
+        stateInput.add("UNRESOLVED", NamedType.INT);
+        stateInput.add("UPWARD_RA", NamedType.INT);
+        stateInput.add("DOWNWARD_RA", NamedType.INT);
+    }
+
+    //entered by hand for now - order is important, needs to match in order of the input
+    private void discoverStateOutputTCAS() {
+
+        stateOutput.add(referenceObjectName + ".WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2", NamedType.INT);
+
+    }
 
 
     //=========================== Even ============================
@@ -372,7 +447,6 @@ public class InOutManager {
     }
 
 
-
     //=========================== Vote2 ===========================
 
     private void discoverContractOutputVote2() {
@@ -414,7 +488,6 @@ public class InOutManager {
     //entered by hand for now - order is important, needs to match in order of the input
     private void discoverStateOutputVote2() {
     }
-
 
 
     public ArrayList<VarDecl> generateInputDecl() {
