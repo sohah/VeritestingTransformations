@@ -445,6 +445,7 @@ public class DiscoveryUtil {
         }
 
 
+        api.setJKindJar("../../../jkind/jkind.jar");
 
         api.disableSlicing();
 
