@@ -315,11 +315,11 @@ public class InOutManager {
 
     private void discoverContractOutputTCAS() {
 
-        contractOutput.add("r-1.result_alt_sep_test.1.3.32", NamedType.INT);
-        contractOutput.addInit("r-1.result_alt_sep_test.1.3.32", new IntExpr(0));
+        contractOutput.add("r-1.result_alt_sep_test.1.4.33", NamedType.INT);
+        contractOutput.addInit("r-1.result_alt_sep_test.1.4.33", new IntExpr(0));
 
-        contractOutput.add("r-1.alim_res.1.3.33", NamedType.INT);
-        contractOutput.addInit("r-1.alim_res.1.3.33", new IntExpr(0));
+        contractOutput.add("r-1.alim_res.1.4.33", NamedType.INT);
+        contractOutput.addInit("r-1.alim_res.1.4.33", new IntExpr(0));
     }
 
 
@@ -404,23 +404,23 @@ public class InOutManager {
         contractOutput.add("r-1.Other_Capability.1.3.32", NamedType.INT);
         contractOutput.addInit("r-1.Other_Capability.1.3.32", new IntExpr(0));
 */
-        stateOutput.add("r-1.High_Confidence.1.5.32", NamedType.INT);
-        stateOutput.addInit("r-1.High_Confidence.1.5.32", new IntExpr(0));
+        stateOutput.add("r-1.High_Confidence.1.5.33", NamedType.INT);
+        stateOutput.addInit("r-1.High_Confidence.1.5.33", new IntExpr(0));
 
-        stateOutput.add("r-1.Two_of_Three_Reports_Valid.1.5.32", NamedType.INT);
-        stateOutput.addInit("r-1.Two_of_Three_Reports_Valid.1.5.32", new IntExpr(0));
+        stateOutput.add("r-1.Two_of_Three_Reports_Valid.1.5.33", NamedType.INT);
+        stateOutput.addInit("r-1.Two_of_Three_Reports_Valid.1.5.33", new IntExpr(0));
 
-        stateOutput.add("r-1.Positive_RA_Alt_Thresh_0.1.3.32", NamedType.INT);
-        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_0.1.3.32", new IntExpr(0));
+        stateOutput.add("r-1.Positive_RA_Alt_Thresh_0.1.3.33", NamedType.INT);
+        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_0.1.3.33", new IntExpr(0));
 
-        stateOutput.add("r-1.Positive_RA_Alt_Thresh_1", NamedType.INT);
-        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_1", new IntExpr(0));
+        stateOutput.add("r-1.Positive_RA_Alt_Thresh_1.1.3.33", NamedType.INT);
+        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_1.1.3.33", new IntExpr(0));
 
-        stateOutput.add("r-1.Positive_RA_Alt_Thresh_2", NamedType.INT);
-        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_2", new IntExpr(0));
+        stateOutput.add("r-1.Positive_RA_Alt_Thresh_2.1.3.33", NamedType.INT);
+        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_2.1.3.33", new IntExpr(0));
 
-        stateOutput.add("r-1.Positive_RA_Alt_Thresh_3", NamedType.INT);
-        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_3", new IntExpr(0));
+        stateOutput.add("r-1.Positive_RA_Alt_Thresh_3.1.3.33", NamedType.INT);
+        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_3.1.3.33", new IntExpr(0));
     }
 
 

@@ -253,6 +253,9 @@ public class DiscoveryTCAS {
         DiscoveryTCAS.Other_RAC = Other_RAC;
         DiscoveryTCAS.Other_Capability = Other_Capability;
         DiscoveryTCAS.Climb_Inhibit = Climb_Inhibit;
+
+        DiscoveryTCAS.result_alt_sep_test = alt_sep_test();
+        DiscoveryTCAS.alim_res = ALIM();
     }
 
     public static void discoveryMainProcess(int Cur_Vertical_Sep, int High_Confidence_flag,

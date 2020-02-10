@@ -51,3 +51,28 @@ let
 
     out = term1;
 tel;
+
+
+
+node main(Cur_Vertical_Sep_s: int; High_Confidence_flag_s:int; Two_of_Three_Reports_Valid_flag_s:int;
+Own_Tracked_Alt_s:int; Own_Tracked_Alt_Rate_s:int; Other_Tracked_Alt_s:int; Alt_Layer_Value_s:int; Up_Separation_s:int;Down_Separation_s:int; Other_RAC_s:int; Other_Capability_s:int; Climb_Inhibit_s:int;
+--output
+ result_alt_sep_test_s:int; alim_res_s:int) returns (p1:
+ bool);
+
+
+let
+
+-- repairing 2nd passing assertion in TCAS, which should pass. where DOWNWARD_RA, UPWARD_RA is encoded in the
+--implementation as 2,1 respectively. we can have a different encoding for it, but lets keep it like this for now.
+
+    p1 = true -> repair(((Up_Separation_s > alim_res_s) and (Down_Separation_s >= alim_res_s) and (Own_Tracked_Alt_s >
+    Other_Tracked_Alt_s ))=>  (result_alt_sep_test_s  <> 2),
+    discover_binary_Bool_0_Int_14_Terms1(Cur_Vertical_Sep_s, High_Confidence_flag_s,
+    Two_of_Three_Reports_Valid_flag_s, Own_Tracked_Alt_s, Own_Tracked_Alt_Rate_s, Other_Tracked_Alt_s,
+    Alt_Layer_Value_s, Up_Separation_s,Down_Separation_s, Other_RAC_s, Other_Capability_s,  Climb_Inhibit_s,
+    result_alt_sep_test_s, alim_res_s)) ;
+
+  --%PROPERTY p1;
+
+tel;

@@ -1,0 +1,32 @@
+target=DiscoveryTCAS
+classpath=${jpf-symbc}/build/tcas
+sourcepath=${jpf-symbc}/src/tcas
+vm.storage.class=nil
+
+
+######## miscellaneous  ######
+symbolic.method=DiscoveryTCAS.discoveryMainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym)
+
+symbolic.dp=z3bitvectorinc
+
+listener = .symbc.VeritestingListener,gov.nasa.jpf.symbc.numeric.solvers.IncrementalListener
+
+#listener = gov.nasa.jpf.symbc.sequences.SymbolicSequenceListener
+
+veritestingMode = 5
+showLocalNames = true
+
+simplify = false
+contractDiscoveryOn = true
+specRepair = true
+
+
+################## contract Discovery configurations ###############
+spec = tcas
+specRepair = true
+repairMode = 2
+
+SpecDirectory = TCAS
+contractDiscoveryOn = true
+faultySpec = TCAS_Pass_Ass1
+repairInitialValues = true
