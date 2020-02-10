@@ -131,6 +131,7 @@ public class ToLutre {
         String nodeStr = node.toString();
         nodeStr = nodeStr.replaceAll("\\.", "_");
         nodeStr = nodeStr.replaceAll("\\$", "_");
+        nodeStr = nodeStr.replaceAll("r\\-", "r_");
         return nodeStr;
     }
 

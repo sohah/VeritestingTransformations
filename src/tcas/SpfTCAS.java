@@ -35,7 +35,8 @@ public class SpfTCAS {
 
 
     //created field for output
-    private static int result_alt_sep_test = -1;
+    private static int result_alt_sep_test = 0;
+    private static int alim_res = 0;
 
     public static void initialize() {
         Positive_RA_Alt_Thresh_0 = 400;
@@ -275,6 +276,33 @@ public class SpfTCAS {
         SpfTCAS.Climb_Inhibit = Climb_Inhibit;
 
         result_alt_sep_test = alt_sep_test();
+        SpfTCAS.alim_res = ALIM();
+
+        // MWW assertions.  These come from ACSL safety property paper: http://people.rennes.inria.fr/Arnaud.Gotlieb/CT_ATM_gotlieb.pdf
+
+
+        // passes(1)
+		/*assert((Up_Separation < alim_res &&
+				Down_Separation < alim_res) ?
+				result_alt_sep_test != DOWNWARD_RA : true);
+*/
+        //passes(2)
+		/*assert((Up_Separation < alim_res &&
+				Down_Separation >= alim_res) ?
+				result_alt_sep_test != UPWARD_RA : true);
+*/
+        // fails (1)
+		/*assert((Up_Separation > alim_res &&
+				Down_Separation >= alim_res &&
+				Own_Tracked_Alt > Other_Tracked_Alt) ?
+				result_alt_sep_test != DOWNWARD_RA : true);
+*/
+        // fails(2)
+		/*assert((Up_Separation >= alim_res &&
+				Down_Separation < alim_res) ?
+				result_alt_sep_test != DOWNWARD_RA: true);*/
+
+
     }
 
     public static void main(String[] argv) {

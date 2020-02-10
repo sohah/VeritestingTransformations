@@ -29,6 +29,9 @@ public class SpecInOutManager {
         } else if (Config.spec.equals("wbs")) {
             discoverFreeInputWbs();
             discoverOutputVarWbs();
+        } else if (Config.spec.equals("tcas")) {
+            discoverFreeInputTcas();
+            discoverOutputVarTcas();
         } else if (Config.spec.equals("vote")) {
             discoverFreeInputVote();
             discoverOutputVarVote();
@@ -84,6 +87,29 @@ public class SpecInOutManager {
         inOutputVars.add("NormalPressure_r", NamedType.INT);
         inOutputVars.add("AltPressure_r", NamedType.INT);
         inOutputVars.add("Sys_Mode", NamedType.INT);
+    }
+
+//=========================== TCAS ===========================
+
+    private void discoverFreeInputTcas() {
+        freeInput.add("Cur_Vertical_Sep_s", NamedType.INT);
+        freeInput.add("High_Confidence_flag_s", NamedType.INT);
+        freeInput.add("Two_of_Three_Reports_Valid_flag_s", NamedType.INT);
+        freeInput.add("Own_Tracked_Alt_s", NamedType.INT);
+        freeInput.add("Own_Tracked_Alt_Rate_s", NamedType.INT);
+        freeInput.add("Other_Tracked_Alt_s", NamedType.INT);
+        freeInput.add("Alt_Layer_Value_s", NamedType.INT);
+        freeInput.add("Up_Separation_s", NamedType.INT);
+        freeInput.add("Down_Separation_s", NamedType.INT);
+        freeInput.add("Other_RAC_s", NamedType.INT);
+        freeInput.add("Other_Capability_s", NamedType.INT);
+        freeInput.add("Climb_Inhibit_s", NamedType.INT);
+    }
+
+
+    private void discoverOutputVarTcas() {
+        inOutputVars.add("result_alt_sep_test_s", NamedType.INT);
+        inOutputVars.add("alim_res_s", NamedType.INT);
     }
 
 

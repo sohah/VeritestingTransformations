@@ -315,9 +315,13 @@ public class InOutManager {
 
     private void discoverContractOutputTCAS() {
 
-        contractOutput.add(referenceObjectName + ".Nor_Pressure.1.13.2", NamedType.INT);
-        contractOutput.addInit(referenceObjectName + ".Nor_Pressure.1.13.2", new IntExpr(0));
+        contractOutput.add("r-1.result_alt_sep_test.1.3.32", NamedType.INT);
+        contractOutput.addInit("r-1.result_alt_sep_test.1.3.32", new IntExpr(0));
+
+        contractOutput.add("r-1.alim_res.1.3.33", NamedType.INT);
+        contractOutput.addInit("r-1.alim_res.1.3.33", new IntExpr(0));
     }
+
 
     //entered by hand for now
     private void discoverFreeInputTCAS() {
@@ -334,7 +338,6 @@ public class InOutManager {
         freeInput.add("Other_Capability", NamedType.INT);
         freeInput.add("Climb_Inhibit", NamedType.INT);
 
-
         /*if (freeInput.containsBool()) {
             Pair<ArrayList<VarDecl>, ArrayList<Equation>> conversionResult = freeInput.convertInput();
             typeConversionEq.addAll(conversionResult.getSecond());
@@ -344,31 +347,80 @@ public class InOutManager {
 
     //entered by hand for now
     private void discoverStateInputTCAS() {
+/*
+// constants -- not an input.
         stateInput.add("OLEV", NamedType.INT);
         stateInput.add("MAXALTDIFF", NamedType.INT);
         stateInput.add("MINSEP", NamedType.INT);
         stateInput.add("NOZCROSS", NamedType.INT);
+        stateInput.add("NO_INTENT", NamedType.INT);
+        stateInput.add("DO_NOT_CLIMB", NamedType.INT);
+        stateInput.add("DO_NOT_DESCEND", NamedType.INT);
+        stateInput.add("TCAS_TA", NamedType.INT);
+        stateInput.add("OTHER", NamedType.INT);
+*/
+
         stateInput.add("High_Confidence", NamedType.INT);
         stateInput.add("Two_of_Three_Reports_Valid", NamedType.INT);
         stateInput.add("Positive_RA_Alt_Thresh_0", NamedType.INT);
         stateInput.add("Positive_RA_Alt_Thresh_1", NamedType.INT);
         stateInput.add("Positive_RA_Alt_Thresh_2", NamedType.INT);
         stateInput.add("Positive_RA_Alt_Thresh_3", NamedType.INT);
-        stateInput.add("NO_INTENT", NamedType.INT);
-        stateInput.add("DO_NOT_CLIMB", NamedType.INT);
-        stateInput.add("DO_NOT_DESCEND", NamedType.INT);
-        stateInput.add("TCAS_TA", NamedType.INT);
-        stateInput.add("OTHER", NamedType.INT);
-        stateInput.add("UNRESOLVED", NamedType.INT);
-        stateInput.add("UPWARD_RA", NamedType.INT);
-        stateInput.add("DOWNWARD_RA", NamedType.INT);
+
+        stateInput.add("result_alt_sep_test", NamedType.INT);
+        stateInput.add("alim_res", NamedType.INT);
     }
 
     //entered by hand for now - order is important, needs to match in order of the input
     private void discoverStateOutputTCAS() {
 
-        stateOutput.add(referenceObjectName + ".WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE.1.3.2", NamedType.INT);
+        //commenting these out even though they capture a side-effect and thus can be thought of as state output,
+        // they are in fact the input in TCAS, thus we need not capture them.
 
+        /*contractOutput.add("r-1.Cur_Vertical_Sep.1.3.32", NamedType.INT);
+        contractOutput.addInit("r-1.Cur_Vertical_Sep.1.3.32", new IntExpr(0));
+
+        contractOutput.add("r-1.Own_Tracked_Alt.1.3.32", NamedType.INT);
+        contractOutput.addInit("r-1.Own_Tracked_Alt.1.3.32", new IntExpr(0));
+
+        contractOutput.add("r-1.Own_Tracked_Alt_Rate.1.3.32", NamedType.INT);
+        contractOutput.addInit("r-1.Own_Tracked_Alt_Rate.1.3.32", new IntExpr(0));
+
+        contractOutput.add("r-1.Other_Tracked_Alt.1.3.32", NamedType.INT);
+        contractOutput.addInit("r-1.Other_Tracked_Alt.1.3.32", new IntExpr(0));
+
+        contractOutput.add("r-1.Alt_Layer_Value.1.3.32", NamedType.INT);
+        contractOutput.addInit("r-1.Alt_Layer_Value.1.3.32", new IntExpr(0));
+
+        contractOutput.add("r-1.Up_Separation.1.3.32", NamedType.INT);
+        contractOutput.addInit("r-1.Up_Separation.1.3.32", new IntExpr(0));
+
+        contractOutput.add("r-1.Down_Separation.1.3.32", NamedType.INT);
+        contractOutput.addInit("r-1.Down_Separation.1.3.32", new IntExpr(0));
+
+        contractOutput.add("r-1.Other_RAC.1.3.32", NamedType.INT);
+        contractOutput.addInit("r-1.Other_RAC.1.3.32", new IntExpr(0));
+
+        contractOutput.add("r-1.Other_Capability.1.3.32", NamedType.INT);
+        contractOutput.addInit("r-1.Other_Capability.1.3.32", new IntExpr(0));
+*/
+        stateOutput.add("r-1.High_Confidence.1.5.32", NamedType.INT);
+        stateOutput.addInit("r-1.High_Confidence.1.5.32", new IntExpr(0));
+
+        stateOutput.add("r-1.Two_of_Three_Reports_Valid.1.5.32", NamedType.INT);
+        stateOutput.addInit("r-1.Two_of_Three_Reports_Valid.1.5.32", new IntExpr(0));
+
+        stateOutput.add("r-1.Positive_RA_Alt_Thresh_0.1.3.32", NamedType.INT);
+        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_0.1.3.32", new IntExpr(0));
+
+        stateOutput.add("r-1.Positive_RA_Alt_Thresh_1", NamedType.INT);
+        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_1", new IntExpr(0));
+
+        stateOutput.add("r-1.Positive_RA_Alt_Thresh_2", NamedType.INT);
+        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_2", new IntExpr(0));
+
+        stateOutput.add("r-1.Positive_RA_Alt_Thresh_3", NamedType.INT);
+        stateOutput.addInit("r-1.Positive_RA_Alt_Thresh_3", new IntExpr(0));
     }
 
 

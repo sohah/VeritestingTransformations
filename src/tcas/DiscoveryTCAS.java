@@ -35,7 +35,9 @@ public class DiscoveryTCAS {
 
 
     //created field for output
-    private static int result_alt_sep_test = -1;
+    private static int result_alt_sep_test = 0;
+    private static int alim_res = 0;
+
 
     public static void initialize() {
         Positive_RA_Alt_Thresh_0 = 400;
@@ -251,16 +253,19 @@ public class DiscoveryTCAS {
         DiscoveryTCAS.Other_RAC = Other_RAC;
         DiscoveryTCAS.Other_Capability = Other_Capability;
         DiscoveryTCAS.Climb_Inhibit = Climb_Inhibit;
-
-        result_alt_sep_test = alt_sep_test();
     }
 
     public static void discoveryMainProcess(int Cur_Vertical_Sep, int High_Confidence_flag,
                                             int Two_of_Three_Reports_Valid_flag,
                                             int Own_Tracked_Alt, int Own_Tracked_Alt_Rate, int Other_Tracked_Alt,
                                             int Alt_Layer_Value, int Up_Separation, int Down_Separation, int Other_RAC,
-                                            int Other_Capability, int Climb_Inhibit, boolean symVar) {
+                                            int Other_Capability, int Climb_Inhibit, int result_alt_sep_test,
+                                            int alim_res,
+                                            boolean symVar) {
         if (symVar) {
+            DiscoveryTCAS.result_alt_sep_test = result_alt_sep_test;
+            DiscoveryTCAS.alim_res = alim_res;
+
             mainProcess(Cur_Vertical_Sep, High_Confidence_flag, Two_of_Three_Reports_Valid_flag, Own_Tracked_Alt,
                     Own_Tracked_Alt_Rate, Other_Tracked_Alt, Alt_Layer_Value, Up_Separation, Down_Separation,
                     Other_RAC, Other_Capability, Climb_Inhibit);
@@ -269,6 +274,6 @@ public class DiscoveryTCAS {
 
     public static void main(String[] argv) {
 
-        discoveryMainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1, true);
+        discoveryMainProcess(601, -1, 0, -1, 0, 0, 0, 301, 400, 0, 0, 1, 1, 1, true);
     }
 }

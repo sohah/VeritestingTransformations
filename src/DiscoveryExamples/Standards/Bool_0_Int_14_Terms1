@@ -1,0 +1,54 @@
+repair node discover_binary_Bool_0_Int_14_Terms1(i0: int; i1:int; i2:int; i3:int; i4: int; i5:int; i6:int; i7:int; i8:
+int; i9:int; i10:int; i11:int; i12:int; i13:int )
+[valhole_0: inthole; const_hole:int
+]
+
+returns (out: bool);
+var
+
+leaf_0:int;
+leaf_1:int;
+term1:bool;
+
+let
+
+    leaf_0 = if(valhole_0 = 0) then a0
+                   else if(valhole_0 = 1) then a1
+                   else if(valhole_0 = 2) then a2
+                   else if(valhole_0 = 3) then a3
+                   else if(valhole_0 = 4) then a4
+                   else if(valhole_0 = 5) then a5
+                   else if(valhole_0 = 6) then a6
+                   else if(valhole_0 = 7) then a7
+                   else if(valhole_0 = 8) then a8
+                   else if(valhole_0 = 9) then a9
+                   else if(valhole_0 = 10) then a10
+                   else if(valhole_0 = 11) then a11
+                   else if(valhole_0 = 12) then a12
+                   else if(valhole_0 = 13) then a13
+                   else const_hole;
+
+    leaf_1 = if(valhole_1 = 0) then a0
+                   else if(valhole_1 = 1) then a1
+                   else if(valhole_1 = 2) then a2
+                   else if(valhole_1 = 3) then a3
+                   else if(valhole_1 = 4) then a4
+                   else if(valhole_1 = 5) then a5
+                   else if(valhole_1 = 6) then a6
+                   else if(valhole_1 = 7) then a7
+                   else if(valhole_1 = 8) then a8
+                   else if(valhole_1 = 9) then a9
+                   else if(valhole_1 = 10) then a10
+                   else if(valhole_1 = 11) then a11
+                   else if(valhole_1 = 12) then a12
+                   else if(valhole_1 = 13) then a13
+                   else const_hole;
+
+    term1 = if(valhole_2 = 0) then leaf_0 > leaf_1
+                else if(valhole_2 = 1) then leaf_0 <= leaf_1
+                else if(valhole_2 = 2) then leaf_0 <> leaf_1
+                else leaf_0 = leaf_1 ;
+
+    out = term1;
+tel;
+
