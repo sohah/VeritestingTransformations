@@ -303,6 +303,8 @@ public class SpfTCAS {
 				result_alt_sep_test != DOWNWARD_RA: true);*/
 
 
+		/***************** assertions from repairing**************/
+		assert(alim_res > 399);
     }
 
     public static void main(String[] argv) {
