@@ -5,6 +5,7 @@ symbolic.method =SpfTCAS.mainProcess(sym#sym#sym#sym#sym#sym#sym#sym#sym#sym#sym
 #symbolic.minint=-100
 #symbolic.maxint=100
 vm.storage.class=nil
+#symbolic.debug=true
 
 #listener = .symbc.SymbolicListener
 #symbolic.dp=z3bitvector

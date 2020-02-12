@@ -1,3 +1,5 @@
+import gov.nasa.jpf.symbc.Debug;
+
 public class SpfTCAS {
 
     //free input
@@ -46,16 +48,13 @@ public class SpfTCAS {
     }
 
     public static int ALIM() {
-        if (Alt_Layer_Value == 0){
+        if (Alt_Layer_Value == 0) {
             return Positive_RA_Alt_Thresh_0;
-        }
-        else if (Alt_Layer_Value == 1){
+        } else if (Alt_Layer_Value == 1) {
             return Positive_RA_Alt_Thresh_1;
-        }
-        else if (Alt_Layer_Value == 2){
+        } else if (Alt_Layer_Value == 2) {
             return Positive_RA_Alt_Thresh_2;
-        }
-        else{
+        } else {
             return Positive_RA_Alt_Thresh_3;
         }
     }
@@ -64,8 +63,7 @@ public class SpfTCAS {
         if (Climb_Inhibit > 0) {
             int ret = Up_Separation + NOZCROSS;
             return ret;
-        }
-        else{
+        } else {
             return Up_Separation;
         }
     }
@@ -80,28 +78,23 @@ public class SpfTCAS {
         }
         if (upward_preferred != 0) {
             int alim = ALIM();
-            if(!(Down_Separation >= alim)){
+            if (!(Down_Separation >= alim)) {
                 return true;
-            }
-            else{
+            } else {
                 return false;
             }
-        }
-        else {
-            if (!(Cur_Vertical_Sep >= MINSEP)){
+        } else {
+            if (!(Cur_Vertical_Sep >= MINSEP)) {
                 return false;
-            }
-            else{
+            } else {
                 int alim = ALIM();
-                if(!(Up_Separation >= alim)){
+                if (!(Up_Separation >= alim)) {
                     return false;
-                }
-                else{
+                } else {
                     boolean own_above_thread = Own_Above_Threat();
-                    if (!own_above_thread){
+                    if (!own_above_thread) {
                         return false;
-                    }
-                    else{
+                    } else {
                         return true;
                     }
                 }
@@ -115,38 +108,31 @@ public class SpfTCAS {
         int inhibit_biased_climb = Inhibit_Biased_Climb();
         if (inhibit_biased_climb > Down_Separation) {
             upward_preferred = 1;
-        }
-        else {
+        } else {
             upward_preferred = 0;
         }
         if (upward_preferred != 0) {
             int alim = ALIM();
             boolean own_below_threat = Own_Below_Threat();
             // reduction source
-            if (!(Cur_Vertical_Sep >= MINSEP)){
+            if (!(Cur_Vertical_Sep >= MINSEP)) {
                 return false;
-            }
-            else if (!(Down_Separation >= alim)){
+            } else if (!(Down_Separation >= alim)) {
                 return false;
-            }
-            else if (!own_below_threat){
+            } else if (!own_below_threat) {
                 return false;
-            }
-            else{
+            } else {
                 return true;
             }
-        }
-        else {
+        } else {
             int alim = ALIM();
             boolean own_above_threat = Own_Above_Threat();
             // reduction source
-            if(!(Up_Separation >= alim)){
+            if (!(Up_Separation >= alim)) {
                 return false;
-            }
-            else if(!own_above_threat){
+            } else if (!own_above_threat) {
                 return false;
-            }
-            else{
+            } else {
                 return true;
             }
         }
@@ -154,7 +140,7 @@ public class SpfTCAS {
 
     public static boolean Own_Below_Threat() {
         boolean ret = false;
-        if(Own_Tracked_Alt < Other_Tracked_Alt){
+        if (Own_Tracked_Alt < Other_Tracked_Alt) {
             ret = true;
         }
         return ret;
@@ -162,43 +148,40 @@ public class SpfTCAS {
 
     public static boolean Own_Above_Threat() {
         boolean ret = false;
-        if(Other_Tracked_Alt < Own_Tracked_Alt){
+        if (Other_Tracked_Alt < Own_Tracked_Alt) {
             ret = true;
         }
         return ret;
     }
 
-    public static int alt_assign(){
+    public static int alt_assign() {
         int alt_sep = UNRESOLVED;
         boolean need_upward_RA = false;
         boolean non_crossing_biased_climb = Non_Crossing_Biased_Climb();
-        if(non_crossing_biased_climb){
+        if (non_crossing_biased_climb) {
             boolean own_below_threat = Own_Below_Threat(); //return symbolic temp variable
-            if(own_below_threat){
+            if (own_below_threat) {
                 need_upward_RA = true; //is symbolic
             }
         }
         boolean need_downward_RA = false;
         boolean non_crossing_biased_descend = Non_Crossing_Biased_Descend();
-        if(non_crossing_biased_descend){
+        if (non_crossing_biased_descend) {
             boolean own_above_threat = Own_Above_Threat();
-            if(own_above_threat){
+            if (own_above_threat) {
                 need_downward_RA = true;
             }
         }
-        if (need_upward_RA){
-            if(need_downward_RA){
+        if (need_upward_RA) {
+            if (need_downward_RA) {
                 alt_sep = UNRESOLVED;
-            }
-            else{
+            } else {
                 alt_sep = UPWARD_RA;
             }
-        }
-        else{
-            if (need_downward_RA){
+        } else {
+            if (need_downward_RA) {
                 alt_sep = DOWNWARD_RA;
-            }
-            else{
+            } else {
                 alt_sep = UNRESOLVED;
             }
         }
@@ -217,29 +200,28 @@ public class SpfTCAS {
         boolean intent_not_known = false;
         int alt_sep = UNRESOLVED;
 
-        if(High_Confidence){
-            if(Own_Tracked_Alt_Rate <= OLEV){
-                if(Cur_Vertical_Sep > MAXALTDIFF){
+        if (High_Confidence) {
+            if (Own_Tracked_Alt_Rate <= OLEV) {
+                if (Cur_Vertical_Sep > MAXALTDIFF) {
                     enabled = true;
                 }
             }
         }
 
-        if(enabled){
-            if(Other_Capability == TCAS_TA){
+        if (enabled) {
+            if (Other_Capability == TCAS_TA) {
                 tcas_equipped = true;
             }
-            if(tcas_equipped){
-                if(Two_of_Three_Reports_Valid){
-                    if(Other_RAC == NO_INTENT){
+            if (tcas_equipped) {
+                if (Two_of_Three_Reports_Valid) {
+                    if (Other_RAC == NO_INTENT) {
                         intent_not_known = true;
                     }
                 }
-                if(intent_not_known){
+                if (intent_not_known) {
                     alt_sep = alt_assign();
                 }
-            }
-            else{
+            } else {
                 alt_sep = alt_assign();
             }
         }
@@ -254,14 +236,12 @@ public class SpfTCAS {
         SpfTCAS.Cur_Vertical_Sep = Cur_Vertical_Sep;
         if (High_Confidence_flag == 0) {
             SpfTCAS.High_Confidence = false;
-        }
-        else {
+        } else {
             SpfTCAS.High_Confidence = true;
         }
         if (Two_of_Three_Reports_Valid_flag == 0) {
             SpfTCAS.Two_of_Three_Reports_Valid = false;
-        }
-        else {
+        } else {
             SpfTCAS.Two_of_Three_Reports_Valid = true;
         }
 
@@ -292,19 +272,28 @@ public class SpfTCAS {
 				result_alt_sep_test != UPWARD_RA : true);
 */
         // fails (1)
-		/*assert((Up_Separation > alim_res &&
+		assert((Up_Separation > alim_res &&
 				Down_Separation >= alim_res &&
 				Own_Tracked_Alt > Other_Tracked_Alt) ?
 				result_alt_sep_test != DOWNWARD_RA : true);
-*/
         // fails(2)
-		/*assert((Up_Separation >= alim_res &&
-				Down_Separation < alim_res) ?
-				result_alt_sep_test != DOWNWARD_RA: true);*/
+//        Debug.printPC("printing pc before assertion");
+
+        /*if (Up_Separation >= alim_res &&
+                Down_Separation < alim_res && result_alt_sep_test == DOWNWARD_RA){
+            Debug.printPC("printing pc before assertion");
+        assert false;}
+*/
+/*
+
+        assert ((Up_Separation >= alim_res &&
+                Down_Separation < alim_res) ?
+                result_alt_sep_test != DOWNWARD_RA : true);
+*/
 
 
-		/***************** assertions from repairing**************/
-		assert(alim_res > 399);
+        /***************** assertions from repairing**************/
+        //assert(alim_res > 399);
     }
 
     public static void main(String[] argv) {
