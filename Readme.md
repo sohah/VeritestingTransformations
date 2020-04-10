@@ -1,6 +1,6 @@
 ### Note:
 
-This repo used to hold "JavaRanger", it has moved to [here](https://github.com/vaibhavbsharma/java-ranger). Going forward this repo contains the implementation of contract discovery described [here](https://github.com/sohah/ContractDiscovery). Sept. 10th 2019.
+This repo used to hold "JavaRanger", it has moved to [here](https://github.com/vaibhavbsharma/java-ranger). 
 
 # JavaRanger for Symbolic PathFinder
 
